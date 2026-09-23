@@ -53,6 +53,10 @@ namespace ores::compute::domain {
  * eventing integration test) now links the FK by member assignment after
  * generation. No model knob or paste block is needed for the parameterized
  * overload; the template shape is the sanctioned surface.
+ *
+ * Key exception: result declares no key field, so callers address it by its
+ * storage key. The retired Qt list window keyed on the audit column
+ * modified_by, which is not an identity and is not a column of this model.
  */
 struct result final {
     /**
@@ -134,8 +138,26 @@ struct result final {
 
     /**
      * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const result&, const result&) = default;
 };
 
 /**

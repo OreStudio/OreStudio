@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 7BB0B235-0579-5241-8021-531EAC9FA5DD
+:END:
+#+title: How do I run the app_versions commands from the shell?
+#+description: Every command the app_versions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:app_versions:
+
+This file documents the app_versions resource at the shell, one section per command. Every command is a subcommand of =app_versions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: C657ABCC-7B6B-502F-921B-52DD5928041B
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_versions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.app_versions.list=.
+
+#+name: app_versions-list
+#+begin_src ores-shell :tangle app_versions-list.ores :exports none
+app_versions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0ADE5281-E1D8-5D9C-901E-2831DC59B32F
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_versions get <wrapper_version>
+#+end_example
+
+It is addressed at =compute.v1.app_versions.get=.
+
+#+name: app_versions-get
+#+begin_src ores-shell :tangle app_versions-get.ores :exports none
+app_versions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 793F9FD7-AE53-5B8D-90E9-16AD63162C19
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_versions get-many <wrapper_version>
+#+end_example
+
+It is addressed at =compute.v1.app_versions.get_many=.
+
+#+name: app_versions-get-many
+#+begin_src ores-shell :tangle app_versions-get-many.ores :exports none
+app_versions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 28D1C612-F5F2-550C-81D4-949DC7A95C79
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_versions add <id> <app_id> <wrapper_version> <engine_version> <min_ram_mb> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.app_versions.put=.
+
+#+name: app_versions-add
+#+begin_src ores-shell :tangle app_versions-add.ores :exports none
+app_versions add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: A8F14548-A8B6-5874-BF30-2ED4FE65C2BB
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_versions set <id> <app_id> <wrapper_version> <engine_version> <min_ram_mb> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =compute.v1.app_versions.put=.
+
+#+name: app_versions-set
+#+begin_src ores-shell :tangle app_versions-set.ores :exports none
+app_versions set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 56273B06-D38C-5249-AAE7-C5AC19113EC9
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_versions put-many --count <n> <id> <app_id> <wrapper_version> <engine_version> <min_ram_mb> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.app_versions.put_many=.
+
+#+name: app_versions-put-many
+#+begin_src ores-shell :tangle app_versions-put-many.ores :exports none
+app_versions put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 700C6CFE-DACE-58BC-8D87-198A895C486B
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_versions delete <wrapper_version> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =compute.v1.app_versions.delete=.
+
+#+name: app_versions-delete
+#+begin_src ores-shell :tangle app_versions-delete.ores :exports none
+app_versions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 65CEDDE5-BA3E-5FF4-9AFB-98F17327FC7F
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_versions delete-many <wrapper_version> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.app_versions.delete_many=.
+
+#+name: app_versions-delete-many
+#+begin_src ores-shell :tangle app_versions-delete-many.ores :exports none
+app_versions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 3520FCED-59B6-5002-9EF2-A777CF0EEA51
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_versions versions <wrapper_version> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.app_versions_versions.list=.
+
+#+name: app_versions-versions
+#+begin_src ores-shell :tangle app_versions-versions.ores :exports none
+app_versions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C5B05B4D-6FC5-5588-810E-CFE4492BFA1E
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_versions version <wrapper_version> --version <n>
+#+end_example
+
+It is addressed at =compute.v1.app_versions_versions.get=.
+
+#+name: app_versions-version
+#+begin_src ores-shell :tangle app_versions-version.ores :exports none
+app_versions version __none__ --version 1
+#+end_src
+

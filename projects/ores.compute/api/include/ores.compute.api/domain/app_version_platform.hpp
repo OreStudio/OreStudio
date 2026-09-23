@@ -124,6 +124,10 @@ struct app_version_platform final {
      * table has no code column.
      */
     std::string platform_code;
+    /**
+     * @brief Value equality, on the same terms as an entity's.
+     */
+    friend bool operator==(const app_version_platform&, const app_version_platform&) = default;
 };
 
 /**

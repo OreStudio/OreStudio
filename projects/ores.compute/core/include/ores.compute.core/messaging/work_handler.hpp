@@ -141,7 +141,7 @@ public:
 
                 service::workunit_service wu_svc(ctx);
                 const auto wu_id_str = boost::uuids::to_string(r.workunit_id);
-                const auto wu_opt = wu_svc.get_workunit(wu_id_str);
+                const auto wu_opt = wu_svc.get_workunit(r.workunit_id);
                 if (!wu_opt) {
                     reply(nats_,
                           msg,
@@ -176,7 +176,8 @@ public:
         if (auto req = decode<heartbeat_message>(msg)) {
             try {
                 service::host_service svc(ctx_);
-                auto existing = svc.get_host(req->host_id);
+                auto existing = svc.get_host(
+                    boost::lexical_cast<boost::uuids::uuid>(req->host_id));
                 if (existing) {
                     auto h = *existing;
                     h.last_rpc_time = std::chrono::system_clock::now();
@@ -231,7 +232,7 @@ public:
                 if (r.host_id == boost::uuids::uuid{})
                     continue;
                 const auto host_id_str = boost::uuids::to_string(r.host_id);
-                const auto host_opt = host_svc.get_host(host_id_str);
+                const auto host_opt = host_svc.get_host(r.host_id);
                 if (!host_opt)
                     continue;
 

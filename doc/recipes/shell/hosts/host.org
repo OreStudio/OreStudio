@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: CA65AF08-8279-5D49-9654-0C26560FD7B1
+:END:
+#+title: How do I run the hosts commands from the shell?
+#+description: Every command the hosts submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:hosts:
+
+This file documents the hosts resource at the shell, one section per command. Every command is a subcommand of =hosts=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1EC3FDF0-1964-51F6-B58C-79FD980526DA
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+hosts list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.hosts.list=.
+
+#+name: hosts-list
+#+begin_src ores-shell :tangle hosts-list.ores :exports none
+hosts list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 261D86DB-9CF0-5905-BA73-EA7C0EF7C237
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+hosts get <external_id>
+#+end_example
+
+It is addressed at =compute.v1.hosts.get=.
+
+#+name: hosts-get
+#+begin_src ores-shell :tangle hosts-get.ores :exports none
+hosts get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: FE8482D4-354F-5D71-95F1-5D4EC6F0A358
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+hosts get-many <external_id>
+#+end_example
+
+It is addressed at =compute.v1.hosts.get_many=.
+
+#+name: hosts-get-many
+#+begin_src ores-shell :tangle hosts-get-many.ores :exports none
+hosts get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 409BE8DF-32D6-5C2F-8E2E-5DB4E74A83FB
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+hosts add <id> <external_id> <location> <cpu_count> <ram_mb> <gpu_type> <display_name> <last_rpc_time> <credit_total> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.hosts.put=.
+
+#+name: hosts-add
+#+begin_src ores-shell :tangle hosts-add.ores :exports none
+hosts add 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 0 __none__ __none__ 1970-01-01T00:00:00Z 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 961DD095-1D87-5C59-8676-5A727E50DAD5
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+hosts set <id> <external_id> <location> <cpu_count> <ram_mb> <gpu_type> <display_name> <last_rpc_time> <credit_total> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =compute.v1.hosts.put=.
+
+#+name: hosts-set
+#+begin_src ores-shell :tangle hosts-set.ores :exports none
+hosts set 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 0 __none__ __none__ 1970-01-01T00:00:00Z 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 808ED395-9B16-56E1-8E52-D743552B32D6
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+hosts put-many --count <n> <id> <external_id> <location> <cpu_count> <ram_mb> <gpu_type> <display_name> <last_rpc_time> <credit_total> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.hosts.put_many=.
+
+#+name: hosts-put-many
+#+begin_src ores-shell :tangle hosts-put-many.ores :exports none
+hosts put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 0 __none__ __none__ 1970-01-01T00:00:00Z 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 81EB6D3F-5E9F-5F0C-87D9-E84C510DE419
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+hosts delete <external_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =compute.v1.hosts.delete=.
+
+#+name: hosts-delete
+#+begin_src ores-shell :tangle hosts-delete.ores :exports none
+hosts delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: CA49CC99-CA01-5FBC-9470-687048775145
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+hosts delete-many <external_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.hosts.delete_many=.
+
+#+name: hosts-delete-many
+#+begin_src ores-shell :tangle hosts-delete-many.ores :exports none
+hosts delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 6B665BE3-BE49-5CDF-966C-EBE77980A4B5
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+hosts versions <external_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.hosts_versions.list=.
+
+#+name: hosts-versions
+#+begin_src ores-shell :tangle hosts-versions.ores :exports none
+hosts versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 6DCA090B-E644-5CE8-9E98-7C0D10EE711B
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+hosts version <external_id> --version <n>
+#+end_example
+
+It is addressed at =compute.v1.hosts_versions.get=.
+
+#+name: hosts-version
+#+begin_src ores-shell :tangle hosts-version.ores :exports none
+hosts version __none__ --version 1
+#+end_src
+

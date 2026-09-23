@@ -26,6 +26,7 @@
 #define ORES_COMPUTE_CORE_SERVICE_APP_SERVICE_HPP
 
 #include "ores.compute.api/domain/app.hpp"
+#include "ores.compute.api/messaging/app_protocol.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/app_repository.hpp"
 #include "ores.database/domain/context.hpp"
@@ -65,6 +66,32 @@ public:
     explicit app_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_apps_response list_apps(const messaging::list_apps_request& request);
+    messaging::get_app_response get_app(const messaging::get_app_request& request);
+    messaging::get_many_apps_response
+    get_many_apps(const messaging::get_many_apps_request& request);
+    messaging::put_app_response put_app(const messaging::put_app_request& request);
+    messaging::put_many_apps_response
+    put_many_apps(const messaging::put_many_apps_request& request);
+    messaging::delete_app_response delete_app(const messaging::delete_app_request& request);
+    messaging::delete_many_apps_response
+    delete_many_apps(const messaging::delete_many_apps_request& request);
+    messaging::list_apps_versions_response
+    list_apps_versions(const messaging::list_apps_versions_request& request);
+    messaging::get_apps_version_response
+    get_apps_version(const messaging::get_apps_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists compute apps with pagination support.
      *
      * @param offset Number of records to skip.
@@ -88,14 +115,35 @@ public:
      * @param version The version to fetch.
      * @return The compute app at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::app> get_app_at_version(const std::string& id, std::uint32_t version);
+    std::optional<domain::app> get_app_at_version(const boost::uuids::uuid& id,
+                                                  std::uint32_t version);
 
     /**
      * @brief Retrieves a single compute app by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The compute app if found, std::nullopt otherwise.
      */
-    std::optional<domain::app> get_app(const std::string& id);
+    std::optional<domain::app> get_app(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single compute app by the key the model
+     * declares -- the human-readable key a caller holds.
+     *
+     * This is the counterpart of the uuid overload above: the two keys an
+     * entity holds are different keys, and a call site has to say which one it
+     * means.
+     *
+     * @return The compute app if found, std::nullopt otherwise.
+     */
+    std::optional<domain::app> get_app_by_name(const std::string& name);
+
+    /**
+     * @brief Retrieves a batch of compute apps by primary key.
+     */
+    std::vector<domain::app> get_apps(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a compute app (creates or updates).
@@ -118,7 +166,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_app(const std::string& id);
+    void delete_app(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes compute apps by their primary keys.
@@ -127,12 +175,33 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a compute app.
+     *
+     * Addressed by the key the model declares, which is the one a caller
+     * holds; the storage key is resolved from it here, the same step every
+     * other read makes.
      */
-    std::vector<domain::app> get_app_history(const std::string& id);
+    std::vector<domain::app> get_app_history(const std::string& key);
 
 private:
     context ctx_;
     repository::app_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::app_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::app& out);
 };
 
 }

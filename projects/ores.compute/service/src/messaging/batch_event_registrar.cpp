@@ -23,8 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.compute.service/messaging/batch_event_registrar.hpp"
-#include "ores.compute.api/eventing/batch_changed_event.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.compute.api/eventing/batch_event.hpp"
+#include "ores.compute.api/messaging/batch_protocol.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
 
@@ -38,18 +39,17 @@ namespace ev = ores::eventing;
 register_batch_event_mapping(ev::service::postgres_event_source& event_source,
                              ev::service::event_bus& event_bus,
                              ores::nats::service::client& nats) {
-    ev::service::registrar::register_mapping<compute::eventing::batch_changed_event>(
-        event_source, "ores.compute.batch", "ores_compute_batches");
+    // The trigger publishes on the table's own channel, and the mapping turns
+    // what it says into this entity's event.
+    event_source.register_entity_event_mapping<compute::messaging::batch_event>(
+        "ores_compute_batches");
 
-    return event_bus.subscribe<compute::eventing::batch_changed_event>(
-        [&nats](const compute::eventing::batch_changed_event& e) {
+    return event_bus.subscribe<compute::messaging::batch_event>(
+        [&nats](const compute::messaging::batch_event& e) {
+            // One payload is addressed by three subjects, so the subject is
+            // the collection's prefix and the action the event reports.
             ev::service::publish_entity_event(
-                nats,
-                std::string(ev::domain::event_traits<compute::eventing::batch_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.compute.batch",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.batch_ids,
-                                                .tenant_id = e.tenant_id});
+                nats, ev::domain::event_subject<compute::messaging::batch_event>(e.action), e);
         });
 }
 

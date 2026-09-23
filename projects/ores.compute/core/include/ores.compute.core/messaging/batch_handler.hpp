@@ -63,7 +63,16 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves compute.v1.batches.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_batches(ores::nats::message msg) {
         BOOST_LOG_SEV(batch_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -71,28 +80,122 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::batch_service svc(req_ctx);
-        get_batches_response resp;
-        if (auto req = decode<get_batches_request>(msg)) {
-            try {
-                resp.batches = svc.list_batches(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_batches());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(batch_handler_lg(), error) << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
+        auto req = decode<list_batches_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(batch_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(batch_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        service::batch_service svc(req_ctx);
+        try {
+            auto response = svc.list_batches(*req);
+            BOOST_LOG_SEV(batch_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(batch_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            list_batches_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves compute.v1.batches.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_batch(ores::nats::message msg) {
+        BOOST_LOG_SEV(batch_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_batch_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(batch_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::batch_service svc(req_ctx);
+        try {
+            auto response = svc.get_batch(*req);
+            BOOST_LOG_SEV(batch_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(batch_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_batch_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves compute.v1.batches.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_batches(ores::nats::message msg) {
+        BOOST_LOG_SEV(batch_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_batches_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(batch_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::batch_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_batches(*req);
+            BOOST_LOG_SEV(batch_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(batch_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_many_batches_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves compute.v1.batches.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_batch(ores::nats::message msg) {
         BOOST_LOG_SEV(batch_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -104,23 +207,40 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::batch_service svc(req_ctx);
-        if (auto req = decode<save_batch_request>(msg)) {
-            try {
-                svc.save_batch(req->data);
-                BOOST_LOG_SEV(batch_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, save_batch_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(batch_handler_lg(), error) << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_batch_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_batch_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(batch_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::batch_service svc(req_ctx);
+        try {
+            auto response = svc.put_batch(*req);
+            BOOST_LOG_SEV(batch_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(batch_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            put_batch_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves compute.v1.batches.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_batches(ores::nats::message msg) {
         BOOST_LOG_SEV(batch_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -128,26 +248,44 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::batch_service svc(req_ctx);
-        if (auto req = decode<get_batch_history_request>(msg)) {
-            try {
-                auto hist = svc.get_batch_history(req->id);
-                BOOST_LOG_SEV(batch_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_batch_history_response{.history = std::move(hist), .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(batch_handler_lg(), error) << msg.subject << " failed: " << e.what();
-                reply(
-                    nats_, msg, get_batch_history_response{.success = false, .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "compute::batches:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_batches_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(batch_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::batch_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_batches(*req);
+            BOOST_LOG_SEV(batch_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(batch_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            put_many_batches_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves compute.v1.batches.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_batch(ores::nats::message msg) {
         BOOST_LOG_SEV(batch_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -159,19 +297,154 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::batch_service svc(req_ctx);
-        if (auto req = decode<delete_batch_request>(msg)) {
-            try {
-                svc.delete_batches(req->ids);
-                BOOST_LOG_SEV(batch_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, delete_batch_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(batch_handler_lg(), error) << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_batch_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_batch_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(batch_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::batch_service svc(req_ctx);
+        try {
+            auto response = svc.delete_batch(*req);
+            BOOST_LOG_SEV(batch_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(batch_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            delete_batch_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves compute.v1.batches.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_batches(ores::nats::message msg) {
+        BOOST_LOG_SEV(batch_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "compute::batches:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_batches_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(batch_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::batch_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_batches(*req);
+            BOOST_LOG_SEV(batch_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(batch_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            delete_many_batches_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves compute.v1.batches_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_batch_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(batch_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_batch_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(batch_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::batch_service svc(req_ctx);
+        try {
+            auto response = svc.list_batch_versions(*req);
+            BOOST_LOG_SEV(batch_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(batch_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            list_batch_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves compute.v1.batches_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_batch_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(batch_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_batch_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(batch_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::batch_service svc(req_ctx);
+        try {
+            auto response = svc.get_batch_version(*req);
+            BOOST_LOG_SEV(batch_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(batch_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_batch_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

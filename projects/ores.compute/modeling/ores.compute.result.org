@@ -30,6 +30,10 @@ eventing integration test) now links the FK by member assignment after
 generation. No model knob or paste block is needed for the parameterized
 overload; the template shape is the sanctioned surface.
 
+Key exception: result declares no key field, so callers address it by its
+storage key. The retired Qt list window keyed on the audit column
+=modified_by=, which is not an identity and is not a column of this model.
+
 * Flags
 :PROPERTIES:
 :schema:    public
@@ -251,7 +255,6 @@ them.
 :domain_class:            compute::domain::result
 :protocol_include:        ores.compute.api/messaging/result_protocol.hpp
 :collection_name:         results
-:key_field:               modified_by
 :get_request_class:       compute::messaging::get_results_request
 :get_response_class:      compute::messaging::get_results_response
 :get_message_type:        get_results_request

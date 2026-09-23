@@ -28,9 +28,9 @@ ores.compute passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:543DE51B-B9D8-4261-9DB1-9B97D4C9F187][Clean ores.compute to the component clean standard]] |
-| Now          | Section 1 recorded. Regeneration probed and its two generator defects located. |
-| Waiting on   | The two org_loader.py fixes, which unblock G01. |
-| Next         | Fix the two naming defects at source with codegen regression tests, then regenerate and build. |
+| Now          | Section 1 recorded. The component regenerates and its five libraries build. |
+| Waiting on   | Nothing. |
+| Next         | Work section 2, Models, and the shell scaffold S01 needs. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -62,48 +62,66 @@ record each item's result in the table below.
 | B03  | Partial | Same file: 258 C++ files outside tests, 189 generated and 69 hand-written. Classification in Notes. |
 | B04  | Pass    | Same file: 40 subjects across ten protocol headers. Eleven raw subject literals in hand-written code, seven of them in the three hand-written protocol headers. |
 | B05  | Pass    | Nothing blocks the work. PR #2138 already edits six compute models for M09, so this branch rebases onto it. No other in-flight branch touches =projects/ores.compute=. |
-| G01  | Blocked | Regeneration realises the canonical protocol and the tree no longer builds. 13 errors in =ores.compute.core.lib=. =evidence/g01_build_errors.txt=, =evidence/g01_regeneration_run1.txt=. |
-| G05  | Blocked | Two shared-codegen naming defects, both in =org_loader.py=, cause the failures. Neither can be fixed in generated output. Details in Notes. |
+| G01  | Pass    | Regeneration is byte-clean and the component builds. =compass build ores.compute.api.lib ores.compute.core.lib ores.compute.service.lib ores.compute.wrapper.lib ores.compute.client.lib= exits 0. =evidence/g01_regeneration_run4.txt=. |
+| G05  | Pass    | Five generator defects, all in =org_loader.py=, fixed at source with eleven cases in =projects/ores.codegen/tests/test_protocol_name_collisions.py=. Details in Notes. |
+| M09  | Partial | The five codegen defects are fixed, and =result= no longer declares the audit column =modified_by= as its key. The presentation drawer remains in all six entity models. |
+| V01  | Partial | The component's five libraries build. The shell units are not wired, and the whole-tree build and the component's tests are not run yet. |
 
 Items not listed are not yet worked. Sections 2 to 8 are open.
 
 * Notes
 
-** Regeneration probe, G01 and G05
+** Regeneration, G01 and G05
 
 The component's whole generated tree drifted from its models, so the first
-move was to regenerate it and build. =ores.compute.api.lib= built. The
-build then failed in =ores.compute.core.lib= with 13 errors. They have
-three root causes.
+move was to regenerate it and build. The build failed in
+=ores.compute.core.lib= with 13 errors. Five generator defects were
+behind them, all in
+=projects/ores.codegen/src/codegen/org_loader.py= and the templates it
+feeds. Each is fixed at source, with eleven cases in
+=projects/ores.codegen/tests/test_protocol_name_collisions.py=.
 
 - *The version facet collides with a real sibling entity.* The loader
   derives =app_version_key= and =list_app_versions_request= for the =app=
   entity's version history, and the =app_version= entity derives the same
-  names for itself. Source:
-  =projects/ores.codegen/src/codegen/org_loader.py=, the
-  =has_audit_columns= branch at 3039 to 3043 and the facet at 3121 to
-  3136. iam hides this because it has no entity named =account_version=,
-  so the facet's derived names have no sibling entity to collide with;
-  iam derives and serves =account_version= types from the facet itself.
+  names for itself. The facet now reads the component's entity set and
+  takes the plural as its stem when a sibling named
+  =<singular>_version= exists. iam hides this because it has no entity
+  named =account_version=.
 - *The response payload member collides with the envelope result member.*
   Every response carries =ores::utility::domain::result result= beside a
   payload member named after the entity singular. For the =result= entity
-  both members are named =result=. Source: =org_loader.py= 3063 to 3065
-  and 3078 to 3089.
-- *The hand-written legacy handlers call the retired service API.*
-  =result_submit_handler.hpp= and =work_handler.hpp= call
-  =get_result=, =get_workunit= and =get_host= with a string, and the
-  regenerated services take a request object or a uuid. These are the
-  M06 and P04 files.
+  both members were named =result=. The payload member is now
+  =result_value=, derived once in =response_payload_member=.
+- *The versions verb was inferred from a name suffix.* A request whose
+  name ended in =_versions_request= was read as the versions sub-resource,
+  so the =app_version= entity's own list rendered the version body and
+  could not compile: no =request.key=, no =response.versions=. The verb is
+  now stated on the message that answers a sub-resource.
+- *The service body assumed the payload member was the entity name.* It
+  assigned into =response.result= for the =result= entity. Both payload
+  sites now read =payload_member= from the same derivation the protocol
+  header reads.
+- *The modified-by key could not be built.* =result.org= declared
+  =:key_field: modified_by= in its presentation drawer. =modified_by= is
+  an audit column and not a column of the model, so the key record fell
+  back to the primary key while the finders still built
+  =key.modified_by= and =read_any_by_modified_by=. The declaration is
+  removed, so result is addressed by its storage key.
 
-=check_component_drift.py --component iam-cpp --dry-run= reports no drift,
-so the shared codegen is self-consistent for the component already under
-test. The defects are triggered by compute's model names, not by the
-regeneration. Control output in =evidence/g01_iam_drift_control.txt=.
+=check_component_drift.py --component iam-cpp= reports no drift both times
+it was run, so the shared codegen is self-consistent for the component
+already under test and every change is confined to the shapes compute
+exposes. Control output in =evidence/g01_iam_drift_control.txt=.
 
-The regeneration was reverted, because a commit that does not build is not
-a verifiable unit and the whole regeneration is one command to reproduce.
-The branch is green at the baseline commit.
+The hand-written handlers then had to follow the regenerated services,
+which take a uuid where they took a string. Six call sites in
+=result_submit_handler.hpp=, =work_handler.hpp=,
+=workunit_dispatcher.cpp= and =batch_workflow_bridge.cpp= were migrated.
+
+With all of that, the component regenerates and all five of its libraries
+build. The regeneration was reverted once, before the fixes, because a
+commit that does not build is not a verifiable unit.
 
 ** B03 classification of the 69 hand-written C++ files
 

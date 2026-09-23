@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 32B694B6-1D3D-5BA0-A6CA-065A174A44A9
+:END:
+#+title: How do I run the results commands from the shell?
+#+description: Every command the results submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:results:
+
+This file documents the results resource at the shell, one section per command. Every command is a subcommand of =results=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D1FEF7ED-CA8A-508D-85A2-21C35524B812
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+results list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.results.list=.
+
+#+name: results-list
+#+begin_src ores-shell :tangle results-list.ores :exports none
+results list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: E978EBC6-DA6E-5729-A910-B5D36CBDF152
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+results get <id>
+#+end_example
+
+It is addressed at =compute.v1.results.get=.
+
+#+name: results-get
+#+begin_src ores-shell :tangle results-get.ores :exports none
+results get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 0FDEC771-707B-56D0-B61A-A64036AB294E
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+results get-many <id>
+#+end_example
+
+It is addressed at =compute.v1.results.get_many=.
+
+#+name: results-get-many
+#+begin_src ores-shell :tangle results-get-many.ores :exports none
+results get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 24409BC2-B5EA-572F-A901-959A4C776F54
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+results add <id> <workunit_id> <host_id> <pgmq_msg_id> <server_state> <outcome> <output_uri> <error_message> <received_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.results.put=.
+
+#+name: results-add
+#+begin_src ores-shell :tangle results-add.ores :exports none
+results add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 0 0 __none__ __none__ 1970-01-01T00:00:00Z system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 17599E39-944B-5E72-8273-355384277BC1
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+results set <id> <workunit_id> <host_id> <pgmq_msg_id> <server_state> <outcome> <output_uri> <error_message> <received_at> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =compute.v1.results.put=.
+
+#+name: results-set
+#+begin_src ores-shell :tangle results-set.ores :exports none
+results set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 0 0 __none__ __none__ 1970-01-01T00:00:00Z system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 0B6541A2-7F4C-542F-8240-09F7897D16C4
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+results put-many --count <n> <id> <workunit_id> <host_id> <pgmq_msg_id> <server_state> <outcome> <output_uri> <error_message> <received_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.results.put_many=.
+
+#+name: results-put-many
+#+begin_src ores-shell :tangle results-put-many.ores :exports none
+results put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 0 0 __none__ __none__ 1970-01-01T00:00:00Z system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 0ED305DF-D4AD-5938-9FF4-DA4F087C9969
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+results delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =compute.v1.results.delete=.
+
+#+name: results-delete
+#+begin_src ores-shell :tangle results-delete.ores :exports none
+results delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 0B2247B9-9D48-567A-955B-8D7DA3BF3EA0
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+results delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.results.delete_many=.
+
+#+name: results-delete-many
+#+begin_src ores-shell :tangle results-delete-many.ores :exports none
+results delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-workunit-id=
+:PROPERTIES:
+:ID: D53D0272-5F4F-5FCA-B3ED-9F70CC5D6E0A
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+results by-workunit-id <workunit_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.results.list_by_workunit_id=.
+
+#+name: results-by-workunit-id
+#+begin_src ores-shell :tangle results-by-workunit-id.ores :exports none
+results by-workunit-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 9F56774F-FB6A-5690-B901-B299401CE7E2
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+results versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.results_versions.list=.
+
+#+name: results-versions
+#+begin_src ores-shell :tangle results-versions.ores :exports none
+results versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: E63A019A-F50B-5A7D-8735-2C6F915A4A4C
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+results version <id> --version <n>
+#+end_example
+
+It is addressed at =compute.v1.results_versions.get=.
+
+#+name: results-version
+#+begin_src ores-shell :tangle results-version.ores :exports none
+results version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

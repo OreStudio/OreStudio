@@ -39,24 +39,46 @@ register_result_handlers(ores::nats::service::client& nats,
                          std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<result_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_results_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_result_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_results_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_results(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_result_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_result(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_results_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_many_results(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_result_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_result(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_results_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_many_results(std::move(msg));
+        }));
     subs.push_back(nats.queue_subscribe(
         delete_result_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->remove(std::move(msg));
+            h->delete_result(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_result_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->history(std::move(msg));
+        delete_many_results_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->delete_many_results(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_results_by_workunit_id_request::nats_subject,
+        list_by_workunit_id_results_request::nats_subject,
         queue_group,
-        [h](ores::nats::message msg) { h->list_by_workunit_id(std::move(msg)); }));
+        [h](ores::nats::message msg) { h->list_by_workunit_id_results(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_result_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_result_versions(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_result_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_result_version(std::move(msg));
+        }));
     return subs;
 }
 

@@ -29,7 +29,10 @@
 #include "ores.compute.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -57,12 +60,51 @@ public:
 
     std::string sql();
 
-    void write(const domain::app_version_platform& app_version_platform);
-    void write(const std::vector<domain::app_version_platform>& app_version_platforms);
+    /**
+     * @brief Writes app version platforms to database.
+     *
+     * The plain form replaces the link the caller last read: it states the
+     * version the row carries now, so the store can tell a replace from a
+     * create. A row that moved on since that read is a conflict, never a
+     * silent overwrite.
+     */
+    /**@{*/
+    void write(const domain::app_version_platform& v);
+    void write(const std::vector<domain::app_version_platform>& v);
+    /**@}*/
+
+    /**
+     * @brief Writes a app version platform, honouring the claim it states.
+     *
+     * The claim is the version the caller read (@c must_match_version), that no
+     * current row exists (@c must_not_exist), or neither (@c any, which
+     * replaces the row as it stands). The store decides in the write's own
+     * transaction, so a create that collides with a live row and a write over a
+     * row that moved on are refused by the store rather than by a check a
+     * caller might have forgotten.
+     */
+    void write(const domain::app_version_platform& v,
+               const ores::utility::domain::precondition& claim);
+
+    /**
+     * @brief Writes a set of app version platforms, each honouring its own claim, as
+     * one statement.
+     */
+    void write(const std::vector<domain::app_version_platform>& v,
+               const std::vector<ores::utility::domain::precondition>& claims);
 
     std::vector<domain::app_version_platform> read_latest();
     std::vector<domain::app_version_platform> read_latest(std::uint32_t offset,
                                                           std::uint32_t limit);
+
+    /**
+     * @brief Reads the app version platform rows for the given pair of keys.
+     *
+     * A junction key is the whole pair the link names, so a read that states
+     * only one half addresses a set and not a row.
+     */
+    std::vector<domain::app_version_platform> read_latest(const boost::uuids::uuid& app_version_id,
+                                                          const boost::uuids::uuid& platform_id);
 
     /**
      * @brief Gets the total count of active app version platforms.
@@ -91,25 +133,57 @@ public:
     std::uint32_t
     get_total_app_version_platform_count_by_platform(const boost::uuids::uuid& platform_id);
 
-    void remove(const boost::uuids::uuid& app_version_id, const boost::uuids::uuid& platform_id);
-    void remove_by_app_version(const boost::uuids::uuid& app_version_id);
     /**
-     * @brief Replaces the active app version platforms for a app version.
-     *
-     * Soft-closes the currently active rows for the given
-     * app version and inserts the rows in @p app_version_platforms,
-     * so the active set exactly matches the caller's list.
+     * @brief Deletes a app version platform by its pair of keys.
      */
-    void
-    replace_by_app_version(const boost::uuids::uuid& app_version_id,
-                           const std::vector<domain::app_version_platform>& app_version_platforms,
-                           const std::string& modified_by,
-                           const std::string& performed_by,
-                           const std::string& change_reason_code,
-                           const std::string& change_commentary);
+    void remove(const boost::uuids::uuid& app_version_id, const boost::uuids::uuid& platform_id);
+
+    /**
+     * @brief What a removal did, so a caller reports a conflict as an outcome
+     * rather than catching an exception.
+     *
+     * @c missing means there was no current row to remove, and @c unsupported
+     * means the store cannot answer the version at all.
+     */
+    enum class remove_status { removed, conflicting, missing, unsupported };
+
+    /**
+     * @brief Removes a app version platform, refusing a row that moved on.
+     *
+     * A stated version is the version the caller read. The removal is refused
+     * with @c conflicting when the current row carries another, so a caller
+     * that decided on stale state cannot remove a change it never saw. A null
+     * version removes whatever is current, which is what a caller that stated
+     * no version asked for.
+     */
+    remove_status remove(const boost::uuids::uuid& app_version_id,
+                         const boost::uuids::uuid& platform_id,
+                         std::optional<std::uint32_t> version);
+
+    /**
+     * @brief Deletes app version platforms by their pairs of keys.
+     */
+    void remove(const std::vector<boost::uuids::uuid>& app_version_ids,
+                const std::vector<boost::uuids::uuid>& platform_ids);
+
+    void remove_by_app_version(const boost::uuids::uuid& app_version_id);
 
 private:
     context ctx_;
+
+    /**
+     * @brief The claim a replace makes: the version the row carries now, or
+     * that no row exists yet.
+     */
+    ores::utility::domain::precondition replace_claim(const domain::app_version_platform& v);
+
+    /**
+     * @brief The object with the claim's version stamped onto it.
+     *
+     * A claim the store cannot check is refused here rather than ignored.
+     */
+    domain::app_version_platform apply_claim(const domain::app_version_platform& v,
+                                             const ores::utility::domain::precondition& claim);
 };
 
 }

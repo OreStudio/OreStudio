@@ -78,7 +78,8 @@ public:
         if (auto req = decode<submit_result_request>(msg)) {
             try {
                 service::result_service result_svc(ctx_);
-                auto existing = result_svc.get_result(req->result_id);
+                auto existing = result_svc.get_result(
+                    boost::lexical_cast<boost::uuids::uuid>(req->result_id));
                 if (!existing) {
                     reply(nats_,
                           msg,
@@ -113,7 +114,7 @@ public:
                 // treats a set canonical_result_id as the terminal state.
                 service::workunit_service wu_svc(ctx_);
                 const auto wu_id_str = boost::uuids::to_string(r.workunit_id);
-                const auto wu_opt = wu_svc.get_workunit(wu_id_str);
+                const auto wu_opt = wu_svc.get_workunit(r.workunit_id);
                 if (wu_opt && wu_opt->canonical_result_id == boost::uuids::uuid{}) {
                     const auto wu_results =
                         result_svc.list_results_by_workunit_id(wu_id_str, 0, 1000);
@@ -140,7 +141,7 @@ public:
                         });
                         if (all_done) {
                             service::batch_service batch_svc(ctx_);
-                            const auto batch_opt = batch_svc.get_batch(batch_id_str);
+                            const auto batch_opt = batch_svc.get_batch(wu.batch_id);
                             if (batch_opt) {
                                 auto batch = *batch_opt;
                                 batch.status = "closed";

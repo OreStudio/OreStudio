@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "domain/app_json_io.cpp"
     "domain/app_table.cpp"
@@ -81,11 +84,17 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/domain/workunit_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/domain/workunit_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/eventing/app_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/eventing/app_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/eventing/app_version_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/eventing/app_version_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/eventing/batch_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/eventing/batch_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/eventing/host_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/eventing/host_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/eventing/result_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/eventing/result_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/eventing/workunit_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/eventing/workunit_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/generators/app_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/generators/app_version_generator.hpp"

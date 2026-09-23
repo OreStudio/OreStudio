@@ -26,6 +26,7 @@
 #define ORES_COMPUTE_CORE_SERVICE_RESULT_SERVICE_HPP
 
 #include "ores.compute.api/domain/result.hpp"
+#include "ores.compute.api/messaging/result_protocol.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/result_repository.hpp"
 #include "ores.database/domain/context.hpp"
@@ -63,6 +64,35 @@ public:
      * @param ctx The database context for operations.
      */
     explicit result_service(context ctx);
+
+    /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_results_response list_results(const messaging::list_results_request& request);
+    messaging::get_result_response get_result(const messaging::get_result_request& request);
+    messaging::get_many_results_response
+    get_many_results(const messaging::get_many_results_request& request);
+    messaging::put_result_response put_result(const messaging::put_result_request& request);
+    messaging::put_many_results_response
+    put_many_results(const messaging::put_many_results_request& request);
+    messaging::delete_result_response
+    delete_result(const messaging::delete_result_request& request);
+    messaging::delete_many_results_response
+    delete_many_results(const messaging::delete_many_results_request& request);
+    messaging::list_by_workunit_id_results_response
+    list_by_workunit_id_results(const messaging::list_by_workunit_id_results_request& request);
+    messaging::list_result_versions_response
+    list_result_versions(const messaging::list_result_versions_request& request);
+    messaging::get_result_version_response
+    get_result_version(const messaging::get_result_version_request& request);
+    /**@}*/
 
     /**
      * @brief Lists compute results with pagination support.
@@ -109,15 +139,23 @@ public:
      * @param version The version to fetch.
      * @return The compute result at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::result> get_result_at_version(const std::string& id,
+    std::optional<domain::result> get_result_at_version(const boost::uuids::uuid& id,
                                                         std::uint32_t version);
 
     /**
      * @brief Retrieves a single compute result by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The compute result if found, std::nullopt otherwise.
      */
-    std::optional<domain::result> get_result(const std::string& id);
+    std::optional<domain::result> get_result(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a batch of compute results by primary key.
+     */
+    std::vector<domain::result> get_results(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a compute result (creates or updates).
@@ -140,7 +178,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_result(const std::string& id);
+    void delete_result(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes compute results by their primary keys.
@@ -149,6 +187,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a compute result.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::result> get_result_history(const std::string& id);
 
@@ -160,6 +200,23 @@ public:
 private:
     context ctx_;
     repository::result_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::result_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::result& out);
 };
 
 }

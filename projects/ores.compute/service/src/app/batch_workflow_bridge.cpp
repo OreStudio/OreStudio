@@ -26,7 +26,9 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/system/system_error.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <format>
 
 namespace ores::compute::service::app {
@@ -58,7 +60,8 @@ void batch_workflow_bridge::poll_once() {
                 ores::database::service::tenant_context::with_tenant(ctx_, link.tenant_id);
 
             ores::compute::service::batch_service batch_svc(std::move(tenant_ctx));
-            const auto batch = batch_svc.get_batch(batch_id);
+            const auto batch = batch_svc.get_batch(
+                boost::lexical_cast<boost::uuids::uuid>(batch_id));
 
             if (!batch) {
                 BOOST_LOG_SEV(lg(), warn) << "Batch not found, removing stale link: " << batch_id;

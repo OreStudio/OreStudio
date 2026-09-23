@@ -26,6 +26,7 @@
 #define ORES_COMPUTE_CORE_SERVICE_BATCH_SERVICE_HPP
 
 #include "ores.compute.api/domain/batch.hpp"
+#include "ores.compute.api/messaging/batch_protocol.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/batch_repository.hpp"
 #include "ores.database/domain/context.hpp"
@@ -65,6 +66,32 @@ public:
     explicit batch_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_batches_response list_batches(const messaging::list_batches_request& request);
+    messaging::get_batch_response get_batch(const messaging::get_batch_request& request);
+    messaging::get_many_batches_response
+    get_many_batches(const messaging::get_many_batches_request& request);
+    messaging::put_batch_response put_batch(const messaging::put_batch_request& request);
+    messaging::put_many_batches_response
+    put_many_batches(const messaging::put_many_batches_request& request);
+    messaging::delete_batch_response delete_batch(const messaging::delete_batch_request& request);
+    messaging::delete_many_batches_response
+    delete_many_batches(const messaging::delete_many_batches_request& request);
+    messaging::list_batch_versions_response
+    list_batch_versions(const messaging::list_batch_versions_request& request);
+    messaging::get_batch_version_response
+    get_batch_version(const messaging::get_batch_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists compute batches with pagination support.
      *
      * @param offset Number of records to skip.
@@ -88,14 +115,35 @@ public:
      * @param version The version to fetch.
      * @return The compute batch at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::batch> get_batch_at_version(const std::string& id, std::uint32_t version);
+    std::optional<domain::batch> get_batch_at_version(const boost::uuids::uuid& id,
+                                                      std::uint32_t version);
 
     /**
      * @brief Retrieves a single compute batch by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The compute batch if found, std::nullopt otherwise.
      */
-    std::optional<domain::batch> get_batch(const std::string& id);
+    std::optional<domain::batch> get_batch(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single compute batch by the key the model
+     * declares -- the human-readable key a caller holds.
+     *
+     * This is the counterpart of the uuid overload above: the two keys an
+     * entity holds are different keys, and a call site has to say which one it
+     * means.
+     *
+     * @return The compute batch if found, std::nullopt otherwise.
+     */
+    std::optional<domain::batch> get_batch_by_external_ref(const std::string& external_ref);
+
+    /**
+     * @brief Retrieves a batch of compute batches by primary key.
+     */
+    std::vector<domain::batch> get_batches(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a compute batch (creates or updates).
@@ -118,7 +166,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_batch(const std::string& id);
+    void delete_batch(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes compute batches by their primary keys.
@@ -127,12 +175,33 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a compute batch.
+     *
+     * Addressed by the key the model declares, which is the one a caller
+     * holds; the storage key is resolved from it here, the same step every
+     * other read makes.
      */
-    std::vector<domain::batch> get_batch_history(const std::string& id);
+    std::vector<domain::batch> get_batch_history(const std::string& key);
 
 private:
     context ctx_;
     repository::batch_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::batch_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::batch& out);
 };
 
 }

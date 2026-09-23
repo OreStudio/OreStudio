@@ -23,64 +23,211 @@
  * To modify, update the template and regenerate.
  */
 import type { Result } from '../domain/result.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
-export interface GetResultsRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetResultsResponse {
-    results: Result[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveResultRequest {
-    data: Result;
-}
-
-export interface SaveResultResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteResultRequest {
-    ids: string[];
-}
-
-export interface DeleteResultResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetResultHistoryRequest {
+export interface ResultKey {
     id: string;
 }
 
-export interface GetResultHistoryResponse {
-    history: Result[];
-    success: boolean;
-    message: string;
+export interface ResultWrite {
+    id: string;
+    workunit_id: string;
+    host_id: string;
+    pgmq_msg_id: number;
+    server_state: number;
+    outcome: number;
+    output_uri: string;
+    error_message: string;
+    received_at: string;
 }
 
-export interface GetResultsByWorkunitIdRequest {
-    workunit_id: string;
+export interface ResultChange {
+    write: ResultWrite;
+    precondition: Precondition;
+}
+
+export interface ResultRemoval {
+    key: ResultKey;
+    precondition: Precondition;
+}
+
+export interface ResultLookup {
+    key: ResultKey;
+    result: Result | null;
+}
+
+export interface ResultsFilter {
+    workunit_id: string | null;
+}
+
+export interface ResultEvent {
+    event_id: string;
+    key: ResultKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface ResultVersionKey {
+    result: ResultKey;
+    version: number;
+}
+
+export interface ResultVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListResultsRequest {
     offset: number;
     limit: number;
+    order: Order;
+    filter: ResultsFilter | null;
 }
 
-export interface GetResultsByWorkunitIdResponse {
+export interface ListResultsResponse {
+    result: Result;
     results: Result[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
+    total: number;
+}
+
+export interface GetResultRequest {
+    key: ResultKey;
+}
+
+export interface GetResultResponse {
+    result: Result;
+    result_value: Result | null;
+}
+
+export interface GetManyResultsRequest {
+    keys: ResultKey[];
+}
+
+export interface GetManyResultsResponse {
+    result: Result;
+    entries: ResultLookup[];
+}
+
+export interface PutResultRequest {
+    change: ResultChange;
+    intent: ChangeIntent;
+}
+
+export interface PutResultResponse {
+    result: Result;
+    result_value: Result;
+}
+
+export interface PutManyResultsRequest {
+    changes: ResultChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyResultsResponse {
+    result: Result;
+    results: Result[];
+}
+
+export interface DeleteResultRequest {
+    removal: ResultRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteResultResponse {
+    result: Result;
+}
+
+export interface DeleteManyResultsRequest {
+    removals: ResultRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyResultsResponse {
+    result: Result;
+}
+
+export interface ListByWorkunitIdResultsRequest {
+    workunit_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: ResultsFilter | null;
+}
+
+export interface ListByWorkunitIdResultsResponse {
+    result: Result;
+    results: Result[];
+    total: number;
+}
+
+export interface ListResultVersionsRequest {
+    key: ResultKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: ResultVersionsFilter | null;
+}
+
+export interface ListResultVersionsResponse {
+    result: Result;
+    versions: Result[];
+    total: number;
+}
+
+export interface GetResultVersionRequest {
+    key: ResultVersionKey;
+}
+
+export interface GetResultVersionResponse {
+    result: Result;
+    version: Result;
 }
 
 export const subjects = {
-    get_results_request: "compute.v1.results.list",
-    save_result_request: "compute.v1.results.save",
+    list_results_request: "compute.v1.results.list",
+    get_result_request: "compute.v1.results.get",
+    get_many_results_request: "compute.v1.results.get_many",
+    put_result_request: "compute.v1.results.put",
+    put_many_results_request: "compute.v1.results.put_many",
     delete_result_request: "compute.v1.results.delete",
-    get_result_history_request: "compute.v1.results.history",
-    get_results_by_workunit_id_request: "compute.v1.results.list_by_workunit_id",
+    delete_many_results_request: "compute.v1.results.delete_many",
+    list_by_workunit_id_results_request: "compute.v1.results.list_by_workunit_id",
+    list_result_versions_request: "compute.v1.results_versions.list",
+    get_result_version_request: "compute.v1.results_versions.get",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_results_request: true,
+    get_result_request: true,
+    get_many_results_request: true,
+    put_result_request: true,
+    put_many_results_request: true,
+    delete_result_request: true,
+    delete_many_results_request: true,
+    list_by_workunit_id_results_request: true,
+    list_result_versions_request: true,
+    get_result_version_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "compute.v1.results_events.created",
+    updated: "compute.v1.results_events.updated",
+    deleted: "compute.v1.results_events.deleted",
 } as const;

@@ -29,6 +29,7 @@
 #include "ores.dq.api/domain/change_reason_codes.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -68,7 +69,8 @@ void workunit_dispatcher::dispatch(const ores::compute::eventing::workunit_chang
 void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx,
                                        const std::string& workunit_id) {
     ores::compute::service::workunit_service wu_svc(tenant_ctx);
-    const auto wu = wu_svc.get_workunit(workunit_id);
+    const auto wu = wu_svc.get_workunit(
+        boost::lexical_cast<boost::uuids::uuid>(workunit_id));
     if (!wu) {
         BOOST_LOG_SEV(lg(), warn) << "Workunit not found for dispatch: " << workunit_id;
         return;

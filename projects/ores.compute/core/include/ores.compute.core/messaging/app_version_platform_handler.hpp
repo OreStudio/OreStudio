@@ -34,9 +34,6 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <cstddef>
 #include <optional>
 
 namespace ores::compute::messaging {
@@ -57,6 +54,12 @@ using namespace ores::logging;
 
 /**
  * @brief NATS message handler for app version platforms operations.
+ *
+ * The adapter decides nothing: it proves the request, checks the permission a
+ * write needs, decodes the canonical request, calls the service and replies
+ * with the response the service filled. The outcome a caller reads -- missing,
+ * conflicting, denied -- is the service's answer, so the two cannot disagree
+ * about what happened.
  */
 class app_version_platform_handler {
 public:
@@ -67,7 +70,10 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves compute.v1.app_version_platforms.list.
+     */
+    void list_app_version_platforms(ores::nats::message msg) {
         BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -75,31 +81,36 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::app_version_platform_service svc(req_ctx);
-        if (auto req = decode<get_app_version_platforms_request>(msg)) {
-            get_app_version_platforms_response resp;
-            try {
-                resp.app_version_platforms =
-                    svc.list_app_version_platforms(req->offset, req->limit);
-                resp.total_available_count =
-                    static_cast<int>(svc.get_total_app_version_platform_count());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(app_version_platform_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<list_app_version_platforms_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(app_version_platform_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::app_version_platform_service svc(req_ctx);
+        try {
+            auto response = svc.list_app_version_platforms(*req);
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_app_version_platforms_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void list_by_app_version(ores::nats::message msg) {
+    /**
+     * @brief Serves compute.v1.app_version_platforms.get.
+     */
+    void get_app_version_platform(ores::nats::message msg) {
         BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -107,41 +118,73 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::app_version_platform_service svc(req_ctx);
-        if (auto req = decode<get_app_version_platforms_by_app_version_request>(msg)) {
-            get_app_version_platforms_by_app_version_response resp;
-            try {
-                auto rows = svc.list_app_version_platforms_by_app_version(
-                    boost::lexical_cast<boost::uuids::uuid>(req->app_version_id),
-                    req->offset,
-                    req->limit);
-                resp.total_available_count =
-                    static_cast<int>(svc.get_total_app_version_platform_count_by_app_version(
-                        boost::lexical_cast<boost::uuids::uuid>(req->app_version_id)));
-                resp.app_version_platforms.reserve(rows.size());
-                for (auto& row : rows) {
-                    app_version_platform_view view;
-                    view.app_version_platform = std::move(row);
-                    view.platform_code = view.app_version_platform.platform_code;
-                    resp.app_version_platforms.push_back(std::move(view));
-                }
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(app_version_platform_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<get_app_version_platform_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(app_version_platform_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::app_version_platform_service svc(req_ctx);
+        try {
+            auto response = svc.get_app_version_platform(*req);
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_app_version_platform_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves compute.v1.app_version_platforms.get_many.
+     */
+    void get_many_app_version_platforms(ores::nats::message msg) {
+        BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_app_version_platforms_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::app_version_platform_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_app_version_platforms(*req);
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_app_version_platforms_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves compute.v1.app_version_platforms.put.
+     */
+    void put_app_version_platform(ores::nats::message msg) {
         BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -153,28 +196,36 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::app_version_platform_service svc(req_ctx);
-        if (auto req = decode<save_app_version_platform_request>(msg)) {
-            save_app_version_platform_response resp;
-            try {
-                svc.save_app_version_platforms(req->app_version_platforms);
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(app_version_platform_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<put_app_version_platform_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(app_version_platform_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::app_version_platform_service svc(req_ctx);
+        try {
+            auto response = svc.put_app_version_platform(*req);
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_app_version_platform_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves compute.v1.app_version_platforms.put_many.
+     */
+    void put_many_app_version_platforms(ores::nats::message msg) {
         BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -186,41 +237,36 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::app_version_platform_service svc(req_ctx);
-        if (auto req = decode<delete_app_version_platform_request>(msg)) {
-            if (req->app_version_ids.size() != req->platform_ids.size()) {
-                BOOST_LOG_SEV(app_version_platform_handler_lg(), warn)
-                    << msg.subject << " rejected: key vectors differ in length, "
-                    << req->app_version_ids.size() << " and " << req->platform_ids.size();
-                error_reply(nats_, msg, ores::service::error_code::bad_request);
-                return;
-            }
-            delete_app_version_platform_response resp;
-            try {
-                for (std::size_t i = 0; i < req->app_version_ids.size(); ++i) {
-                    const auto app_version_id_key =
-                        boost::lexical_cast<boost::uuids::uuid>(req->app_version_ids[i]);
-                    const auto platform_id_key =
-                        boost::lexical_cast<boost::uuids::uuid>(req->platform_ids[i]);
-                    svc.remove_app_version_platform(app_version_id_key, platform_id_key);
-                }
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(app_version_platform_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<put_many_app_version_platforms_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(app_version_platform_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::app_version_platform_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_app_version_platforms(*req);
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_many_app_version_platforms_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void count_by_app_version(ores::nats::message msg) {
+    /**
+     * @brief Serves compute.v1.app_version_platforms.delete.
+     */
+    void delete_app_version_platform(ores::nats::message msg) {
         BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -228,92 +274,111 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::app_version_platform_service svc(req_ctx);
-        if (auto req = decode<count_app_version_platforms_by_app_version_request>(msg)) {
-            count_app_version_platforms_by_app_version_response resp;
-            try {
-                resp.total_available_count =
-                    static_cast<int>(svc.get_total_app_version_platform_count_by_app_version(
-                        boost::lexical_cast<boost::uuids::uuid>(req->app_version_id)));
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(app_version_platform_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.total_available_count = 0;
-            }
-            BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
-            BOOST_LOG_SEV(app_version_platform_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-        }
-    }
-
-    void count_by_platform(ores::nats::message msg) {
-        BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        service::app_version_platform_service svc(req_ctx);
-        if (auto req = decode<count_app_version_platforms_by_platform_request>(msg)) {
-            count_app_version_platforms_by_platform_response resp;
-            try {
-                resp.total_available_count =
-                    static_cast<int>(svc.get_total_app_version_platform_count_by_platform(
-                        boost::lexical_cast<boost::uuids::uuid>(req->platform_id)));
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(app_version_platform_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.total_available_count = 0;
-            }
-            BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
-            BOOST_LOG_SEV(app_version_platform_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-        }
-    }
-
-    void replace_by_app_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "compute::app_version_platforms:write")) {
+        if (!has_permission(req_ctx, "compute::app_version_platforms:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::app_version_platform_service svc(req_ctx);
-        if (auto req = decode<replace_app_version_platforms_by_app_version_request>(msg)) {
-            replace_app_version_platforms_by_app_version_response resp;
-            try {
-                svc.replace_app_version_platforms_by_app_version(
-                    boost::lexical_cast<boost::uuids::uuid>(req->app_version_id),
-                    req->app_version_platforms,
-                    req->modified_by,
-                    req->performed_by,
-                    req->change_reason_code,
-                    req->change_commentary);
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(app_version_platform_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<delete_app_version_platform_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(app_version_platform_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::app_version_platform_service svc(req_ctx);
+        try {
+            auto response = svc.delete_app_version_platform(*req);
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_app_version_platform_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves compute.v1.app_version_platforms.delete_many.
+     */
+    void delete_many_app_version_platforms(ores::nats::message msg) {
+        BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "compute::app_version_platforms:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_app_version_platforms_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::app_version_platform_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_app_version_platforms(*req);
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_many_app_version_platforms_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves compute.v1.app_version_platforms.list_by_app_version_id.
+     */
+    void list_by_app_version_id_app_version_platforms(ores::nats::message msg) {
+        BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_by_app_version_id_app_version_platforms_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::app_version_platform_service svc(req_ctx);
+        try {
+            auto response = svc.list_by_app_version_id_app_version_platforms(*req);
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(app_version_platform_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_by_app_version_id_app_version_platforms_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

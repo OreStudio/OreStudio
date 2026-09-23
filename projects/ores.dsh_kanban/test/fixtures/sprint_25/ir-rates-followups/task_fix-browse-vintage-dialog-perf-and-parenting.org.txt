@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 09256701-DF1E-4ADB-AF3F-171F1C9D5061
+:END:
+#+title: Task: Fix Browse-available-vintages dialog: slow unfiltered fetch and detached window
+#+description: Discovered while manually verifying vintage-aware IR curve seeding: both FxSpotRateEditor::onBrowseVintageClicked and IrCurveEditor::onBrowseVintageClicked fetch up to 10000 market series then up to 10000 observations per series with no server-side qualifier filter (get_market_series_request/get_market_observations_by_series_id_request only support offset/limit), making the resulting picker dialog very slow to appear. The picker (QDialog dialog(self)) is also not properly rooted to the MDI main window -- it shows as a detached top-level window rather than centered/owned like other modals in the app. Pre-existing in both editors, not introduced by this story's IR curve work, which only mirrored the existing FX pattern.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-27
+#+updated: 2026-07-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Discovered while manually verifying vintage-aware IR curve seeding
+([[id:FC800706-1673-4E48-84C2-22569E836DF5][task]]): clicking *Browse
+available…* on either editor's Instrument tab works functionally, but
+has two rough edges shared by both:
+
+- *Slow to appear*: =get_market_series_request= (limit 10000) and
+  =get_market_observations_by_series_id_request= (limit 10000) have no
+  server-side qualifier/series filter, so the handler fetches and
+  deserialises up to 10000 rows twice, client-side-filtering down to
+  one qualifier afterwards, even when the tenant only actually has a
+  handful of relevant series/observations.
+- *Detached window*: the resulting picker (=QDialog dialog(self);= in
+  both =onBrowseVintageClicked= implementations) doesn't appear rooted
+  to the MDI main window the way other app modals are -- it shows as
+  a separate top-level window.
+
+Pre-existing in both editors -- this story's IR curve work only
+mirrored FX's existing pattern, it didn't introduce either issue.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-27                               |
+
+* Acceptance
+
+- The Browse-available-vintages picker appears promptly regardless of
+  how much unrelated market data the tenant holds -- either by adding
+  a qualifier-scoped filter to the series/observations lookup
+  protocol, or another mechanism that avoids the unfiltered
+  10000-row fetches.
+- The picker dialog is properly rooted to the MDI main window (parented/
+  positioned like other modals in the app), in both =FxSpotRateEditor=
+  and =IrCurveEditor=.
+- Fix applied to both editors identically -- no divergence between the
+  FX and IR pickers.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

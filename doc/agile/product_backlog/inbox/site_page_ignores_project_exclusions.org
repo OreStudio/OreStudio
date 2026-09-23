@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 84ABCEB9-45E5-47E5-A9C4-829564FB8B03
+:END:
+#+title: compass site page publishes paths the full build excludes
+#+description: compass site page hands the changed files to ores-build-page.el by name, and that path calls org-publish-file directly, so it never consults the site:pages project's :exclude regex. A page under an excluded path is therefore published by compass site page while a full build skips it. Observed: with projects/ores.dsh_kanban/test/fixtures added to the exclude regex, the page builder still published 65 fixture pages, and only stopped once the named-file loop was given its own exclusion test. The fix is to apply the project exclusion in that loop, or to route named files through the project machinery.
+#+type: capture
+#+level: cross
+#+filetags: :compass:site:build:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

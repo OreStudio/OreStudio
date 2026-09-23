@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: A3DA0BB5-FDB4-4C18-B738-3BE87CA8BC31
+:END:
+#+title: Task: Keep stated but default-valued elements in the bond export
+#+description: A bond future states SettlementDirty, FairPrice and ExpiryLag, each with a value equal to its type default, and the export drops all three. The reverse mapper tests the value instead of the presence, so the container needs a presence flag per member. That is a modeling and codegen change to ores.trading.bond_future, not a mapper edit.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A bond future export writes back every element the source stated,
+including one whose value equals its type's default.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-12                               |
+
+* Acceptance
+
+- The =bond_future= container carries a presence flag for every
+  member the schema states as optional, and the reverse mapper emits
+  on presence rather than on a non-default value.
+- A bond future that states =SettlementDirty=, =FairPrice= or
+  =ExpiryLag= with the type's default value writes all three back.
+- The corpus cannot measure this: no document in
+  =external/ore/examples= is a BondFuture trade. The check is a
+  crafted probe, and =ores.ore.core.tests= covers it.
+
+* Plan
+
+The fix is in the model, not the mapper. =bond_future= is generated
+from =projects/ores.trading/modeling/ores.trading.bond_future.org=,
+so the presence flags land there and are regenerated, following the
+presence pass the schedule container already took. Touches the
+modeling org, the generated container, the reverse mapper, and the
+SQL if a new column is needed for a presence flag that storage
+cannot otherwise infer.
+
+* Notes
+
+Found while reviewing the bond round-trip branch, with a crafted
+probe. The source stated:
+
+#+begin_example
+<BondFutureData>
+  <ContractName>OE</ContractName>
+  <ContractNotional>100000</ContractNotional>
+  <LongShort>Long</LongShort>
+  <Currency>EUR</Currency>
+  <ContractMonth>2026-06</ContractMonth>
+  <FairPrice>0</FairPrice>
+  <SettlementDirty>N</SettlementDirty>
+  <ExpiryLag>0</ExpiryLag>
+</BondFutureData>
+#+end_example
+
+and the export kept only the first five elements.
+
+=reverse_bond_future= guards each of the three with a value test
+(=if (f.expiry_lag != 0)=, =if (f.settlement_dirty)=, =if
+(f.fair_price != 0.0)=), so a stated default is indistinguishable
+from an absent element. =external/ore/xsd/instruments.xsd:422=
+declares =SettlementDirty= as =xs:string= with =minOccurs="0"=, so
+the stated value is schema-valid and the loss is ours.
+
+The corpus reads zero on this, because no example document is a
+BondFuture trade. The bond gate cannot regress on a class the corpus
+never states.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

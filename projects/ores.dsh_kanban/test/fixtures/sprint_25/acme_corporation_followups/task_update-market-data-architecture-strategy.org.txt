@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 34D09192-16D1-471B-845C-790F8B38A341
+:END:
+#+title: Task: Update Market Data Architecture with the simulated-data-generation strategy
+#+description: Record the 2026-08-12 simulated-data strategy in doc/knowledge/architecture/market_data_architecture.org: two use cases (consistent world vs. scenario workspaces), system-party ownership of the sim config, the feed_binding workspace seam (Live sentinel default), per-party consumption and realtime streams, CRM per party. Strategy and decisions in doc/llm/specs/simulated-market-data-strategy.allium.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_followups:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Market Data Architecture knowledge doc
+(doc/knowledge/architecture/market_data_architecture.org) records
+the simulated-data-generation strategy decided 2026-08-12: the two
+use cases (consistent world vs. scenario workspaces), system-party
+ownership of the sim config, the feed_binding workspace seam with the
+Live sentinel default, per-party consumption and per-party realtime
+streams, and per-party CRM. The doc becomes the architecture-level
+reference for these decisions, complementing the allium spec.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-12                               |
+
+* Acceptance
+
+- The doc covers the two use cases for simulated data and explains
+  why each drives a different design.
+- The doc records: system-party config ownership (the no-override
+  guarantee), one producer per source (the controller dedup is
+  correct), per-party consumption and per-party materialization of
+  the shared stream, the feed_binding workspace seam (Live sentinel),
+  and the per-party republish subject shape.
+- The doc states what the workspaces feature will add (per-workspace
+  producers, locking, workspace scoping of configs/series) and what
+  remains unchanged (producer internals, vendor producers).
+- The doc links the allium spec (doc/llm/specs/simulated-market-data-strategy.allium).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

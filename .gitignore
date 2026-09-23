@@ -105,6 +105,7 @@ build/nats/
 .zprofile
 .zshrc
 node_modules/
+.pnpm-store/
 /package.json
 /package-lock.json
 

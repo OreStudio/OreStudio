@@ -1,0 +1,215 @@
+:PROPERTIES:
+:ID: 390E6886-6A04-4840-A53D-9873FC491ABB
+:END:
+#+title: Task: Rename CIR, OU, and GMM processes to their proper names
+#+description: Rename cir_process/ou_process/gmm_process/arithmetic_gmm_process to their proper names (Cox-Ingersoll-Ross, Ornstein-Uhlenbeck, Gaussian Mixture Model), matching QuantLib's naming and this codebase's other spelled-out process names (vasicek_process, hull_white_process), rather than bare acronyms/initialisms -- including fixing IrCurveEditor's combo, which shows the raw "CIR" code instead of a spelled-out label.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_25:v0:
+#+owner: marco
+#+branch: feature/rename-cir-to-cox-ingersoll-ross
+#+pr: 1697
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every other short-rate process in this codebase is spelled out
+(=vasicek_process=, =hull_white_process=); =cir_process=, =ou_process=,
+=gmm_process=, and =arithmetic_gmm_process= are the remaining bare
+acronym/initialism names. QuantLib itself spells the first two out
+(=CoxIngersollRossProcess=/=ExtendedCoxIngersollRoss=,
+=OrnsteinUhlenbeckProcess=; QuantLib has no direct GMM-mixture
+equivalent to cross-check against, but the same "no bare acronym"
+convention applies). Rename:
+- =cir_process= → =cox_ingersoll_ross_process=
+- =ou_process= → =ornstein_uhlenbeck_process=
+- =gmm_process= → =gaussian_mixture_model_process=
+- =arithmetic_gmm_process= → =arithmetic_gaussian_mixture_model_process=
+(class, file, test file, header, doc, for each) for consistency.
+
+These acronyms also appear well beyond their process classes themselves,
+and — unlike a purely internal rename — some of that surface is directly
+user-visible, so the rename genuinely propagates up to the UI:
+- =cir=: the =synthetic_yield_curve_process_types= catalog/enum, the
+  =ir_curve_generation_config.process_type= stored value,
+  =process_factory=/=process_parameter_validation=, doc references
+  across sprint_23/24. *User-visible*: =IrCurveEditor='s =kEngines=
+  combo shows the raw code =\"CIR\"= as the selectable item text (only
+  the tooltip spells it out as "Cox-Ingersoll-Ross") — this is the
+  concrete UI gap to fix, not just an internal identifier.
+- =ou=: =fx_spot_generation_config.process_type='s check constraint
+  (=in ('geometric', 'arithmetic', 'ou')=), =hull_white_process='s own
+  docstring (its =kappa &lt;= 0= degenerate branch is documented as
+  reducing to exactly =ou_process='s formula — that cross-reference
+  needs updating too), doc references. Qt's =ProcessTypeLabel=/
+  =FxSpotRateEditor= already show the fully spelled-out "Ornstein-
+  Uhlenbeck" label for this code, so no UI-visible gap here — only the
+  internal class name changes.
+- =gmm=/=arithmetic_gmm=: these process_type strings are already the
+  spelled-out =\"geometric\"=/=\"arithmetic\"=, and
+  =ProcessTypeLabel=/=FxSpotRateEditor= already show "Geometric
+  Brownian Motion"/"Arithmetic Brownian Motion" — so, like =ou=, no
+  UI-visible gap, only the internal class-name mismatch (a class
+  literally named "Gaussian Mixture Model" implementing what the UI
+  correctly calls Geometric/Arithmetic Brownian Motion, since a
+  single-component Gaussian mixture applied multiplicatively/
+  additively *is* GBM/ABM — the class name should reflect what it
+  actually is at the code level, GMM, while the UI-facing
+  Geometric/Arithmetic Brownian Motion labelling for the common
+  single-component case stays as-is).
+
+Scope this task to identifier/type renames the codebase controls
+directly. *Decision*: the stored =process_type= string values also
+change to their full spelled-out form — =cir= → =cox_ingersoll_ross=,
+=ou= → =ornstein_uhlenbeck= (=gmm=/=arithmetic_gmm= don't apply, since
+those stored values are already =\"geometric\"=/=\"arithmetic\"=, not
+the class-name acronym). This includes the reference-data catalogue
+code (=CIR= → =COX_INGERSOLL_ROSS= in
+=ores_synthetic_yield_curve_process_types_tbl=), the SQL check
+constraints referencing =cir=/=ou=/=CIR=, and every C++/UI string
+literal and comment that names the short code — a genuine data/wire
+migration, not just an internal symbol rename.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-26                               |
+
+* Acceptance
+
+- =cir_process= → =cox_ingersoll_ross_process=, =ou_process= →
+  =ornstein_uhlenbeck_process=, =gmm_process= →
+  =gaussian_mixture_model_process=, =arithmetic_gmm_process= →
+  =arithmetic_gaussian_mixture_model_process= (class, header, source,
+  tests, for each) throughout =ores.analytics.quant= (including
+  =process_factory=/=process_parameter_validation=).
+- Every other codebase reference to any of these classes/types (Qt's
+  =IrCurveEditor=/=ProcessTypeLabel=/=FxSpotRateEditor=, =ores.ore=
+  domain, =hull_white_process='s own cross-reference to =ou_process=,
+  doc knowledge pages) updated to match.
+- =IrCurveEditor='s =kEngines= combo shows a spelled-out label for the
+  CIR entry (e.g. "Cox-Ingersoll-Ross"), not the raw =\"CIR\"= code —
+  mirroring the pattern =ProcessTypeLabel=/=FxSpotRateEditor= already
+  use for FX's engine combo.
+- Stored =process_type= values also renamed to their full form:
+  =cir= → =cox_ingersoll_ross=, =ou= → =ornstein_uhlenbeck=
+  (=gmm=/=arithmetic_gmm= don't apply — see Goal). Covers the
+  =ores_synthetic_yield_curve_process_types_tbl= catalogue row code
+  (=CIR= → =COX_INGERSOLL_ROSS=), SQL check constraints
+  (=synthetic_yield_curve_process_types_create.sql=,
+  =synthetic_fx_spot_generation_configs_create.sql=,
+  =synthetic_ir_curve_generation_configs_create.sql=), populate
+  scripts, and every C++/Qt string literal comparing against these
+  codes (=process_factory=, =process_parameter_validation=,
+  =ProcessTypeLabel=, =FxSpotRateEditor=, =IrCurveEditor=).
+- Full build and test suite green after the rename (this is a rename,
+  not a behaviour change — no test assertions should need updating
+  beyond identifier/value names).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+1. Renamed the four process files (header/source/tests) in
+   =ores.analytics.quant= via =git mv=, then renamed the class,
+   include-guard, and every in-repo reference (=process_factory=,
+   =process_parameter_validation=, =hull_white_process='s
+   cross-reference, tests) via targeted sed passes.
+2. Decision (superseding the original "keep stored value as-is"
+   framing in the Goal): stored =process_type= values also become the
+   full spelled-out form — =cir=/=CIR= → =cox_ingersoll_ross=/
+   =COX_INGERSOLL_ROSS=, =ou= → =ornstein_uhlenbeck=. Updated the SQL
+   check constraints and populate scripts (dev DB rebuilt from
+   scratch via =db recreate=, so no migration script needed) and every
+   C++/Qt string literal comparing against these codes.
+3. =IrCurveEditor='s engine combo previously stored the raw code as
+   both display text and value (=addItem(code)= / =currentText()=).
+   Refactored to the code/label split =FxSpotRateEditor= already
+   uses (=EngineInfo{code, label}=, =addItem(tr(label), code)=,
+   =currentData()= for the underlying value) so the combo shows
+   "Cox-Ingersoll-Ross" while =process_type= still stores
+   =COX_INGERSOLL_ROSS=.
+4. Updated the live knowledge docs (=doc/knowledge/domain/*.org=,
+   renaming =cir_process.org= → =cox_ingersoll_ross_process.org=) and
+   the component model (=component_overview.org=,
+   =ores.analytics.quant.puml=) to match. Left closed sprint
+   story/task docs (historical record) and not-yet-scheduled backlog
+   captures referencing the old names untouched — out of this task's
+   scope.
+5. Full =compass build= and the =ores.analytics.quant=,
+   =ores.synthetic.api/core/service=, and =ores.qt= test suites all
+   green. =db recreate= confirms the renamed catalogue row
+   (=COX_INGERSOLL_ROSS=) and constraints apply cleanly.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:293F4585-9A59-4649-83A7-11729E6430C7][Verify CIR/OU/GMM process rename]] | PENDING | |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1697][#1697]] | [analytics.quant,synthetic,qt,sql] Rename CIR/OU/GMM processes to their full names |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Stale =CIR=/=cir= doc-comments left in files this PR otherwise touched line-by-line | yield_curve_process_type.hpp, ir_curve_preview_handler.hpp, simulate_ir_curve_paths_protocol.hpp | Accepted | Fixed the 3 flagged in-scope files |
+| 2 | Same stale pattern in files not touched by this PR at all | ir_curve_generation_config.hpp, IrCurveEditor.hpp | Accepted | Fixed for consistency, since the rename's own stated scope is "every C++/Qt string literal comparing against these codes" |
+| 3 | Generated =ores_schema.puml= inherits stale =CIR= text from the un-fixed source comment | ores.sql/modeling/ores_schema.puml | Accepted | Hand-patched the two stale lines rather than regenerating (a full regen pulled in unrelated schema growth from main); =.png=/=.cmapx= left untouched since the source text is what mattered |
+| 4 | Human-readable description prose reads the raw enum code instead of the display name | synthetic_ir_curve_configs_realistic_2026_populate.sql:141 | Accepted | Fixed to "Cox-Ingersoll-Ross's" matching the surrounding sentence's style |
+| 5 | =ou=/=Ou= abbreviation kept in local identifiers (=buildOuSimpleControls=, =ouThetaLabel_=, local =bool ou=) while surrounding comments say =ornstein_uhlenbeck= | FxSpotRateEditor.hpp/.cpp | Declined | Deliberate scope boundary: renaming the wire-level string literal and class/file names, not every internal identifier abbreviation; applied consistently |
+| 6 | (self-review, following the same pattern) live component-model docs still said =ou=/=cir= for the stored wire value | component_overview.org, ores.synthetic.fx_spot_generation_config.org, ores.synthetic.ir_curve_generation_config.org, ores.synthetic.yield_curve_process_type.org, IrCurveGenerationConfigDetailDialog.ui | Accepted | Same stored-value rename scope as the reviewed files; fixed for consistency |
+| 7 | FX-side counterpart of finding #2's fixed IR placeholder was missed: =FxSpotGenerationConfigDetailDialog.ui='s placeholder still said "...or ou" | FxSpotGenerationConfigDetailDialog.ui, ores.synthetic.fx_spot_generation_config.org | Accepted | Fixed in 2nd follow-up commit; also caught the same stale CHECK-constraint/placeholder text in the FX modeling doc while fixing this |
+| 8 | QA scenario's documented "Target dialog"/menu path (Configuration > IR/FX Curve Generation Configs) actually opens a different, flat-form dialog (=IrCurveGenerationConfigDetailDialog=/=FxSpotGenerationConfigDetailDialog=) than the one exercised (=IrCurveEditor=/=FxSpotRateEditor=, reached via Market Simulator) | scenario_verify_process_rename.org | Accepted | Corrected the scenario's Target dialog field and step menu paths to Market Data > Synthetic > Market Simulator; the manual QA pass itself is unaffected (the tester used the correct dialog via domain knowledge, only the written menu-path directions were wrong) |
+
+* Result
+
+All four processes renamed throughout =ores.analytics.quant=
+(=cir_process= → =cox_ingersoll_ross_process=, =ou_process= →
+=ornstein_uhlenbeck_process=, =gmm_process= →
+=gaussian_mixture_model_process=, =arithmetic_gmm_process= →
+=arithmetic_gaussian_mixture_model_process=), including every
+downstream reference in =ores.synthetic=, =ores.qt=, and =ores.sql=.
+Stored =process_type= values renamed to match (=cir=/=CIR= →
+=cox_ingersoll_ross=/=COX_INGERSOLL_ROSS=, =ou= →
+=ornstein_uhlenbeck=), covering the yield-curve-process-types
+catalogue, SQL check constraints, and populate scripts.
+=IrCurveEditor='s engine combo now shows "Cox-Ingersoll-Ross" instead
+of the raw code, via the same code/label =EngineInfo= split
+=FxSpotRateEditor= already used. Live knowledge docs and the component
+model updated to match; closed sprint history and unscheduled backlog
+captures referencing the old names were left untouched (out of scope).
+
+Full =compass build rat= (whole-repo build + test suite) green, SQL
+schema validation passed, and a fresh =db recreate= +
+Barclays-provisioning cycle confirmed the renamed catalogue row and
+constraints apply cleanly to real data. Manual QA scenario
+[[id:293F4585-9A59-4649-83A7-11729E6430C7][Verify CIR/OU/GMM process rename]] — CRUD, history, and both engine
+combos (IR curve's Cox-Ingersoll-Ross, FX's Ornstein-Uhlenbeck) — all
+steps PASSED.

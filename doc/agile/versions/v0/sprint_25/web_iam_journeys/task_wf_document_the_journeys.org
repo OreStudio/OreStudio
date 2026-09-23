@@ -8,7 +8,7 @@
 #+filetags: :web_iam_journeys:sprint_25:v0:
 #+owner: marco
 #+branch: feature/iam-screens-from-user-journeys
-#+pr:
+#+pr: 2131
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -71,7 +71,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2131][#2131]] | [agile,codegen,doc] Publish the post-setup IAM user journeys |
 
 * Review
 

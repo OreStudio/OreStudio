@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: 5A1C7E93-2B48-4D61-9F03-8C6E5A2D7149
+:END:
+#+title: ores.assets.image
+#+description: Codegen entity model for the assets =image= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: assets
+#+filetags: :model:entity:assets:
+#+brief: An SVG image published to the platform.
+#+entity_singular: image
+#+entity_plural: images
+#+entity_title: Image
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+An image is a named SVG document the platform renders, such as a currency
+flag or a commodity icon. The document is stored as text, which is the
+canonical spelling of the column: the payload is SVG markup, not an opaque
+binary blob. Images carry tags through the =image_tag= junction, and an
+image arrives either by upload or from the data-quality publish path.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: assets
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate identifier for the image.
+
+** key
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-meaningful image key, unique within the tenant. Callers ask for an
+image by this key, for example =GBP= or =gold=.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the image depicts.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " image"
+#+end_src
+
+** mime_type
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       'image/svg+xml'
+:default_value: "image/svg+xml"
+:END:
+
+Media type of the stored document. Every image in the platform is SVG, so
+the default is the only value in practice.
+
+** data
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The SVG document itself.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_assets_images_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: image
+:entity_plural_short:   images
+:entity_singular_words: asset image
+:entity_plural_words:   asset images
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: i
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| id          | ID          |
+| key         | Key         |
+| description | Description |
+| mime_type   | Media Type  |
+| modified_by | Modified By |
+| recorded_at | Recorded At |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.assets.api/domain/image.hpp
+:domain_class:            assets::domain::image
+:protocol_include:        ores.assets.api/messaging/image_protocol.hpp
+:collection_name:         images
+:item_var:                image
+:key_field:               key
+:get_request_class:       assets::messaging::get_images_request
+:get_response_class:      assets::messaging::get_images_response
+:get_message_type:        get_images_request
+:save_request_class:      assets::messaging::save_image_request
+:save_response_class:     assets::messaging::save_image_response
+:save_message_type:       save_image_request
+:delete_request_class:    assets::messaging::delete_image_request
+:delete_response_class:   assets::messaging::delete_image_response
+:delete_message_type:     delete_image_request
+:history_request_class:   assets::messaging::get_image_history_request
+:history_response_class:  assets::messaging::get_image_history_response
+:history_message_type:    get_image_history_request
+:changed_event_class:     assets::eventing::image_changed_event
+:changed_event_include:   ores.assets.api/eventing/image_changed_event.hpp
+:END:
+
+* See also
+
+- [[id:8C604D55-6F20-41D2-A66A-12A767B81D07][ores.assets]] — component group overview.

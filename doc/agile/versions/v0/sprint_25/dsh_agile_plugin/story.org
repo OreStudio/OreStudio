@@ -2,7 +2,7 @@
 :ID: 3085B911-3030-4AB8-976F-0F037D4332E7
 :END:
 #+title: Story: Show the current agile work item inside DSH
-#+description: A DSH plugin that reports the sprint, story, and task this work tree is working on, shows them inside the live DSH session, and lets the user interact with that state.
+#+description: A DSH plugin that renders the sprint's stories and tasks as a kanban board, read from the org tree, with the work tree properties visible on every card.
 #+type: story
 #+level: s2
 #+filetags: :dsh:agile:plugin:tooling:sprint_25:v0:
@@ -15,7 +15,12 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-A DSH plugin, specific to this repository, that shows the agile work item for the current work tree in an interactive panel inside the DSH Web session. The panel keeps the existing agile dashboard's look and answers one question at a glance: which sprint, story, and task is this tree on right now.
+A DSH plugin that shows the sprint as a kanban board inside the DSH web
+session. The board reads the agile org tree directly, so it is never stale,
+and it surfaces the properties the org files already carry: the environment
+working each story and task, the state, the branch, the PR, the owner, the
+epic, and the task progress. The work tree the session runs in is
+highlighted, and one control filters the board to a single environment.
 
 * Status
 
@@ -30,9 +35,15 @@ A DSH plugin, specific to this repository, that shows the agile work item for th
 
 * Acceptance
 
-- The plugin loads into the DSH web profile and renders in a live session.
-- The panel names the current sprint, story, and task, derived from the work tree rather than typed by hand.
-- The panel is interactive and uses DSH client UI primitives rather than a separate web server.
+- The board renders in a live DSH session and reads the current sprint from
+  =doc/agile/versions=, with no build step and no stale index.
+- Every card shows the story's environment, state, epic, task progress,
+  branch, and PR.
+- The session's own work tree is identified and its story is highlighted.
+- Filtering by environment answers which story and task a given work tree
+  is on.
+- Story and task details are reachable from the board without leaving the
+  session.
 
 * Tasks
 

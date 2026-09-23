@@ -1,26 +1,31 @@
 :PROPERTIES:
 :ID: 2612E669-545E-4482-8115-E9C1A3278770
 :END:
-#+title: Task: Build the DSH agile session panel
-#+description: Initial task for: Show the current agile work item inside DSH
+#+title: Task: Build the ORE Studio kanban plugin for DSH
+#+description: A DSH plugin that renders the sprint's stories and tasks as a kanban board, read from the org tree, with the work tree properties visible on every card.
 #+type: task
 #+level: s1
 #+filetags: :dsh_agile_plugin:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/dsh-agile-plugin
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3085B911-3030-4AB8-976F-0F037D4332E7][Show the current agile work item inside DSH]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A DSH plugin, specific to this repository, that shows the agile work item for the current work tree in an interactive panel inside the DSH Web session. The panel keeps the existing agile dashboard's look and answers one question at a glance: which sprint, story, and task is this tree on right now.
+A DSH plugin that shows the sprint as a kanban board inside the DSH web
+session. The board reads the agile org tree directly, so it is never stale,
+and it surfaces the properties the org files already carry: the environment
+working each story and task, the state, the branch, the PR, the owner, the
+epic, and the task progress. The work tree the session runs in is
+highlighted, and one control filters the board to a single environment.
 
 * Status
 
@@ -35,9 +40,15 @@ A DSH plugin, specific to this repository, that shows the agile work item for th
 
 * Acceptance
 
-- The plugin loads into the DSH web profile and renders in a live session.
-- The panel names the current sprint, story, and task, derived from the work tree rather than typed by hand.
-- The panel is interactive and uses DSH client UI primitives rather than a separate web server.
+- The board renders in a live DSH session and reads the current sprint from
+  =doc/agile/versions=, with no build step and no stale index.
+- Every card shows the story's environment, state, epic, task progress,
+  branch, and PR.
+- The session's own work tree is identified and its story is highlighted.
+- Filtering by environment answers which story and task a given work tree
+  is on.
+- Story and task details are reachable from the board without leaving the
+  session.
 
 * Plan
 

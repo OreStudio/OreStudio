@@ -7,8 +7,8 @@
 #+level: s2
 #+filetags: :sprint_health_review:sprint_25:
 #+created: 2026-08-07
-#+updated: 2026-08-07
-#+environment:
+#+updated: 2026-09-23
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -25,12 +25,12 @@ summary row is added to sprint.org's =* Health Review= table.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Health review 1 complete (mid-sprint, day 5). |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Health review 2 at sprint close.       |
-| Last touched  | 2026-08-07                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-23                               |
 
 * Acceptance
 
@@ -44,6 +44,7 @@ summary row is added to sprint.org's =* Health Review= table.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:5D5BC371-CCD5-4AB6-AD4C-91493EFDA6E4][Health review 1 — sprint 25 mid-sprint analysis]] | DONE | 2026-08-07 | 2026-08-07 | System 2 health review 1 of sprint 25: mid-sprint check on goal alignment, load, PR velocity, story/task balance, and focus. |
+| [[id:1887CE40-5C81-4EB3-AD84-0CF65C2DB39F][Health review 2 — sprint 25 close analysis]] | DONE | 2026-09-23 | 2026-09-23 | System 2 health review 2 of sprint 25: close analysis of goal alignment, load, PR velocity, story and task balance, and focus. |
 
 * Decisions
 

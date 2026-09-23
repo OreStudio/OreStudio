@@ -104,12 +104,15 @@ the browser is not told the host, the port, the namespace, or the certificates.
 | Module | Job |
 |---|---|
 | =transport.ts= | Sends a request, parses the JSON, and raises =ApiFailure= on a non-success status. |
-| =client.ts= | The typed calls: the session calls above, and the change reasons. |
-| =site.ts= | Reads the site and deployment description. |
-| =changeReasons.ts= | Reads the audit reason list. |
+| =client.ts= | The typed session calls: sign in, read the session, select the party, sign out. |
 
-Every response is parsed against a Zod schema from =@ores/wire-protocol=. A
-response that does not match its schema is a failure, not a surprise later.
+Every response is parsed against a Zod schema from
+=@ores/wire-protocol/browser=. A response that does not match its schema is a
+failure, not a surprise later.
+
+The shell reads the session and nothing else. The routes below that no module
+calls yet are served by the BFF and reachable, and a journey screen adds the
+call it needs.
 
 ** The HTTP surface
 

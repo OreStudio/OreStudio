@@ -13,11 +13,11 @@
   },
   "dependencies": {
     "@tanstack/react-query": "5.103.1",
-    "@ores/contracts": "*",
     "@ores/wire-protocol": "*",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "react-router": "8.4.0"
+    "react-router": "8.4.0",
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

@@ -81,7 +81,7 @@ Username of the account that made the association. The insert trigger
 stamps it from the acting user, so a client never sets it.
 
 #+begin_src cpp :name generator
-std::string(faker::internet::username(std::string(faker::person::firstName()), std::string(faker::person::lastName())))
+std::string(faker::word::noun()) + "-user"
 #+end_src
 
 ** assigned_at

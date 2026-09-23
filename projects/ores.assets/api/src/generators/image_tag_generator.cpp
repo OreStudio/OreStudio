@@ -40,8 +40,7 @@ domain::image_tag generate_synthetic_image_tag(utility::generation::generation_c
     r.tenant_id = tenant_id;
     r.image_id = ctx.generate_uuid();
     r.tag_id = ctx.generate_uuid();
-    r.assigned_by = std::string(faker::internet::username(std::string(faker::person::firstName()),
-                                                          std::string(faker::person::lastName())));
+    r.assigned_by = std::string(faker::word::noun()) + "-user";
     r.assigned_at = ctx.past_timepoint();
     r.modified_by = modified_by;
     r.performed_by = modified_by;

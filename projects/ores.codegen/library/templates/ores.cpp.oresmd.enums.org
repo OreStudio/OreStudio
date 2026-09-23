@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 8A1B2C3D-4E5F-6A7B-8C9D-0E1F2A3B4C5D6
+:ID: 8A1B2C3D-4E5F-6A7B-8C9D-E1F2A3B4C5D6
 :END:
 #+title: ores.cpp.oresmd.enums
 #+description: All per-asset-class quote-type enums plus volatility_model_subtype.

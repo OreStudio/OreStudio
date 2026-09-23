@@ -124,7 +124,7 @@ registry item is recorded as the accepted exception on the task.
 * Result
 
 ores.connections is removed, and the references it left behind are removed
-with it. Seven files were transitively dead inside the component as well,
+with it. Six files were transitively dead inside the component as well,
 because =get_recent_parties=, =get_child_folders= and =resolve_connection=
 had no caller of their own.
 

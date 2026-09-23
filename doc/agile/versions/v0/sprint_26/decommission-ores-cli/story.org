@@ -26,9 +26,9 @@ supported command surface.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The component, its round-trip chain and its 65 recipes are deleted. Build and reference-sweep verification is running. |
+| Now           | The component, its round-trip chain and its 65 recipes are deleted, verified and up for review. One follow-up task remains. |
 | Waiting on    | Nothing.                               |
-| Next          | Verify the build and the reference sweep, then raise the PR. |
+| Next          | Close the follow-up task, then close the story. |
 | Last touched  | 2026-09-23                               |
 
 * Acceptance
@@ -45,7 +45,7 @@ supported command surface.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:22EDB3D2-10F7-4FBB-960B-2AD6AD9945D5][Delete the ores.cli component and its round-trip chain]] | STARTED | 2026-09-23 | | Task for: Decommission ores.cli |
+| [[id:22EDB3D2-10F7-4FBB-960B-2AD6AD9945D5][Delete the ores.cli component and its round-trip chain]] | DONE | 2026-09-23 | 2026-09-23 | Task for: Decommission ores.cli |
 | [[id:BC0854B0-E6FD-4935-B326-7FDC654A80CB][Retire the orphaned ORE directory round-trip export]] | BACKLOG | | | ores::ore::xml::exporter::roundtrip lost its only caller when ores.cli was deleted. The directory-level round-trip has no test coverage and no consumer. Decide whether to delete the method and its options model or keep it as library API. |
 
 * Decisions

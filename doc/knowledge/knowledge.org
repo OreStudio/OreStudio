@@ -87,6 +87,7 @@ How the codebase is put together.
 | [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] | Layer ordering and conventions for a full-stack entity, and the per-transport pattern pages |
 | [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] | Every layer of a NATS service, with a stand-up checklist |
 | [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design]] | The three regimes, and how to review a component's data model against them |
+| [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] | The four composition classes for a journey, where the transaction boundary sits, and why a journey is not a saga |
 | [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] | Producers, the marketdata authority, feed configs, source-independent consumers |
 | [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] | Schema layout, roles, session settings, bitemporal design |
 | [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol Specification]] | The subject grammar, verb set, envelopes, write model and security rules every common entity message follows |

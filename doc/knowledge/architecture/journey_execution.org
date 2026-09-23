@@ -1,0 +1,171 @@
+:PROPERTIES:
+:ID: 3361CF92-89B0-481E-9E51-ACE2FEEF2FAA
+:END:
+#+title: Journey execution
+#+description: How a user journey is executed server-side: the composition classes, where the transaction boundary sits, and the vocabulary.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:journey:workflow:saga:orchestration:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+* Summary
+
+A [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]] is a design artefact,
+not a server-side object. A journey is executed by one of four composition
+classes, and the class decides where the transaction boundary sits: a *direct*
+journey makes one immediate call, a *composite* journey must land several writes
+together, a *workflow* journey runs work that takes time and must be resumable,
+and a *read model* journey never writes at all. A journey is not a saga: a saga
+is one consistency strategy a step may use, and it trades atomicity for
+recoverability. The entity subjects stay the only write path; a coordinator owns
+order, idempotency, retry and progress, and never field rules.
+
+* Detail
+
+** The vocabulary
+
+Three words are in play and they are not synonyms. Each sits at a different level.
+
+#+ATTR_HTML: :class hug-leading
+| Term | What it is | Where it lives |
+|------+------------+----------------|
+| [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]] | A design artefact: what one person is trying to do, written before anything is built. Its implemented form is a definition — an ordered list of steps. | =doc/knowledge/journeys/= |
+| [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] | Persisted progress: which journey, which step, what it is waiting for. | [[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]] |
+| /saga/ | A consistency strategy for one step that must write several entities and must be recoverable rather than atomic. | A step's implementation |
+
+The temptation is to call the second one a "journey" too, because it holds a
+journey's state. Resist it, because *the journey is not server-side; its state
+is*. That sentence settles the confusion, and it is why this page drops the
+phrase "server-side journey" altogether: it is a category error, not a
+distinction.
+
+The same reasoning means no second entity is needed. =workflow_instance= already
+carries everything a journey's progress requires: =type= names the journey,
+beside =state_id=, =current_step_index=, =step_count=, =materialised_steps_json=,
+=request_json=, =result_json=, =error= and =completed_at=. A journey is the
+definition; a workflow instance is that definition running. The bootstrap map's
+decision to add "a journey entity in =ores.workflow=, next to workflow instance"
+is therefore redundant, and the cheapest time to notice that is before it is
+built.
+
+** A saga is not a journey
+
+A saga is a way to keep several writes consistent without holding one
+transaction: a sequence of local transactions, each with a compensating action,
+coordinated so the whole either completes or is undone in part. Its defining
+property is that it is *not* atomic, and that intermediate states are visible.
+
+That makes it a different kind of thing from a journey, at a different level:
+
+- A journey is what the person does. A saga is how the system stays consistent.
+- One journey step may be a saga; a journey may contain no saga at all.
+- A saga can exist with no journey anywhere near it, as when one service calls
+  another.
+
+So "saga" cannot replace "journey" — doing so would name the person's experience
+after an implementation pattern. The useful move is the opposite: where a journey
+step *is* a saga, the journey document must say so, because the screen then has to
+be honest about partial state rather than implying the work either happened or
+did not.
+
+*** History
+
+Before 2026-09-23 the IAM knowledge doc defined a capital-J /Journey/ as "a guided
+path that takes a person through workflows and their own actions in order", with
+the state kept on the server. The bootstrap map's decisions and prototypes use
+that word throughout. Those documents are the historical record and are left as
+they stand; the vocabulary above supersedes them.
+
+** The composition classes
+
+Every journey falls into one of four classes. The class is a property of the
+journey, and it decides how much machinery the journey gets. Most journeys need
+none.
+
+#+ATTR_HTML: :class hug-leading
+| Class | What it needs | Journeys |
+|-------+---------------+----------|
+| *Direct* | One immediate subject call. No coordinator, no state. | Set default party; assign or revoke a role; role and lookup edits |
+| *Composite* | Several writes that must land together. | [[id:2FB693D1-ACC7-4112-924F-56732FF9DE0B][Bring someone in]] (five writes); [[id:4A98E343-6EAE-4969-8E83-01F507D92490][Change someone's details]] (two) |
+| *Workflow* | Work that takes time, can fail half way, must resume and report progress. | [[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup]]: First run, New tenant, New party |
+| *Read model* | Composition over reads, never writes. | [[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][See who has access]] |
+
+Only two of the four want a service, and for different reasons: composite wants a
+transaction boundary, workflow wants resumable state. A read-model journey wants
+a query that returns the joined rows in one request, not a service and not a call
+per row.
+
+** Where the transaction boundary sits
+
+This is the decision that the phrase "a service with the journey's interface"
+hides. A service that makes five subject calls still makes five transactions. The
+half-way failure does not disappear; it moves to the server, where it is harder
+to show the person what happened. Correctness across several writes needs one of
+two things, and the choice is per step:
+
+- *One transaction.* One subject, the server applying several tables' writes
+  together. Atomic. Use it when the writes are one conceptual act that cannot
+  sensibly be half-done — creating an account is the account, its contact record,
+  its parties and its role, and the person thinks of that as one thing.
+- *A saga.* Idempotent steps, recorded progress, a compensating action each. Not
+  atomic, intermediate states visible. Use it when the work is long or crosses
+  services, and recovery matters more than isolation.
+
+Choosing "a service" without choosing between these changes nothing observable,
+which is why the class must be recorded per journey rather than assumed.
+
+** Guard rails
+
+A coordinator is a state machine over commands. It may own order, idempotency,
+retry, compensation and progress. It must not own field validation, business
+rules or SQL, and the entity subjects remain the only write path.
+
+That is not a stylistic preference. The repo already carries the counter-example.
+=account_setup_service= is a coordinator, and its own header says:
+
+#+begin_quote
+Use this service instead of calling =account_operations_service::create_account()=
+directly to ensure accounts are properly initialized with roles.
+#+end_quote
+
+A comment telling callers which of two creation entry points to use is a contract
+that cannot be enforced. The consequences are already visible: =save_account_request=
+carries =account_type=, the coordinator does not pass it on, and the layer beneath
+hard-codes =new_account.account_type = "user";=, so a service account cannot be
+created at all. The same shape appears one layer up, where =account_handler.hpp=
+and =account_operations_handler.hpp= both handle the account entity and the
+permission guard was applied to one and not the other — one of the defects in
+[[id:653E5D7E-13BC-4588-B5BC-40752F49D823][IAM handlers skip their permission checks]].
+
+So the guard rails are: one entry point per concern; a declared contract for what
+a coordinator must preserve; and a test that a request field reaches the table.
+Where a journey is composite, prefer a single subject over a coordinator, because
+it removes the seam rather than policing it.
+
+** What exists, and what is missing
+
+#+ATTR_HTML: :class hug-leading
+| Piece | State |
+|-------+-------|
+| [[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]], with =workflow_instance= and =workflow_step= | Exists |
+| [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]], for a service acting as a person | Exists |
+| =account_setup_service=, the first coordinator | Exists, and is where the =account_type= defect lives |
+| Progress streaming | Missing: =provision-acme= returns its steps only at the end |
+| A composite account-creation subject | Missing |
+| A joined roster read | Missing |
+| A =journey= entity beside =workflow_instance= | Not needed; see the vocabulary above |
+
+Sixteen of the twenty-one journeys are direct or read-only, and need none of this.
+
+* See also
+
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — a coordinator does not
+  breach it. The regimes govern data layout, value semantics and projection, not
+  where a transaction boundary sits. The one real cost is Regime 3's rule that the
+  wire shape be a codegen projection of the entity: a journey's messages are
+  hand-written, so they need their own Regime 3 walk.
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the catalogue this
+  classifies.
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — where
+  the old /Journey/ definition lived.

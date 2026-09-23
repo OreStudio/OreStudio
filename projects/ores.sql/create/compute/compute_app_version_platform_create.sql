@@ -32,10 +32,9 @@
  *
  * The junction uses the full generated stack: NATS protocol, handler
  * and registrar. The generated list_by_app_version op returns the
- * platform rows enriched with the platform code, and
- * replace_by_app_version replaces the active platform set of an app
- * version. Both are consumed by the desktop console and by the
- * repository tests.
+ * platform rows enriched with the platform code. Both it and the write
+ * and remove ops are consumed by the desktop console and by the repository
+ * tests.
  */
 
 create table if not exists "ores_compute_app_version_platforms_tbl" (

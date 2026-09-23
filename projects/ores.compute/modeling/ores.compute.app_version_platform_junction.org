@@ -24,10 +24,9 @@ assignments without the wrapper needing to negotiate package selection.
 
 The junction uses the full generated stack: NATS protocol, handler
 and registrar. The generated list_by_app_version op returns the
-platform rows enriched with the platform code, and
-replace_by_app_version replaces the active platform set of an app
-version. Both are consumed by the desktop console and by the
-repository tests.
+platform rows enriched with the platform code. Both it and the write
+and remove ops are consumed by the desktop console and by the repository
+tests.
 
 * Flags
 :PROPERTIES:
@@ -43,7 +42,6 @@ repository tests.
 :cpp_type:      boost::uuids::uuid
 :index_comment: Index for looking up platforms for an app version
 :list_by:       true
-:replace_by:    true
 :END:
 
 FK reference to ores_compute_app_versions_tbl.

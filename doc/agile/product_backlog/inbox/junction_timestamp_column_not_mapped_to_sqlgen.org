@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C8681960-D245-4FD2-9D2D-5CC695E8FA74
+:END:
+#+title: A junction's timestamp column is not mapped to sqlgen::Timestamp
+#+description: The junction C++ entity template emits a raw std::chrono::time_point for a junction's own timestamp column, which sqlgen cannot serialise, so ores.assets.image_tag fails to compile in image_tag_repository.cpp. The same column type on a domain entity is correctly emitted as std::optional<sqlgen::Timestamp<...>> (compare ores.compute host last_rpc_time with ores.assets image_tag assigned_at). The entity path sets is_optional_timestamp and is_required_timestamp in core.py around line 2418; the junction column-decoration block near line 4595 sets is_int, is_uuid, is_optional_uuid and is_date but never the timestamp flags. Adding them there did NOT change the generated output, so the C++ context for a junction is built on another path that still needs finding. Per G05 the fix belongs in the codegen source with a regression test in the codegen suite.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:generator-defect:junction:tech_debt:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,6 +21,4 @@
 drop rule if exists ores_assets_tags_delete_rule on "ores_assets_tags_tbl";
 drop trigger if exists ores_assets_tags_insert_trg on "ores_assets_tags_tbl";
 drop function if exists ores_assets_tags_insert_fn;
-drop index if exists tags_name_uniq_idx;
-drop index if exists tags_version_uniq_idx;
 drop table if exists "ores_assets_tags_tbl";

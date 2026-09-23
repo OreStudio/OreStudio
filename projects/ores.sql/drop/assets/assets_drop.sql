@@ -18,6 +18,11 @@
  *
  */
 
+-- Drop the notify triggers before the tables they watch.
+-- The image_tag junction carries no notify trigger, so it has none to drop.
+\ir ./assets_tags_notify_trigger_drop.sql
+\ir ./assets_images_notify_trigger_drop.sql
+
 -- Drop image_tags first (depends on both tags and images)
 \ir ./assets_image_tags_drop.sql
 
@@ -26,3 +31,5 @@
 
 -- Drop images last
 \ir ./assets_images_drop.sql
+
+\ir ./assets_rls_policies_drop.sql

@@ -80,6 +80,10 @@ ctx.generate_uuid()
 Username of the account that made the association. The insert trigger
 stamps it from the acting user, so a client never sets it.
 
+#+begin_src cpp :name generator
+std::string(faker::internet::username(std::string(faker::person::firstName()), std::string(faker::person::lastName())))
+#+end_src
+
 ** assigned_at
 :PROPERTIES:
 :type:       timestamp with time zone
@@ -89,6 +93,10 @@ stamps it from the acting user, so a client never sets it.
 
 When the association was made. The insert trigger stamps it, so a client
 never sets it.
+
+#+begin_src cpp :name generator
+ctx.past_timepoint()
+#+end_src
 
 * SQL
 

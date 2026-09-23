@@ -18,12 +18,12 @@
  *
  */
 #include "ores.assets.core/messaging/registrar.hpp"
-#include "ores.assets.api/messaging/assets_protocol.hpp"
-#include "ores.assets.core/messaging/image_handler.hpp"
+#include "ores.assets.core/messaging/image_registrar.hpp"
 #include "ores.assets.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.assets.core/messaging/tag_registrar.hpp"
+#include <iterator>
 #include <memory>
-#include <optional>
-#include <vector>
+#include <utility>
 
 namespace ores::assets::messaging {
 
@@ -33,19 +33,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
-    auto h = std::make_shared<image_handler>(nats, ctx, std::move(verifier));
-
-    subs.push_back(nats.queue_subscribe(get_images_request::nats_subject,
-                                        "ores.assets.service",
-                                        [h](ores::nats::message msg) { h->get(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(list_images_request::nats_subject,
-                                        "ores.assets.service",
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(save_image_request::nats_subject,
-                                        "ores.assets.service",
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    // Generated per-entity registrars: images and tags each wire the standard
+    // CRUD surface. The image_tag junction has no handler of its own, because
+    // its protocol is generic. subscription is move-only, so each returned
+    // vector folds in with move iterators. This aggregator is the only caller
+    // of the generated registrars, which is what keeps application.cpp a
+    // single call as the component gains entities.
+    const auto fold = [&subs](std::vector<ores::nats::service::subscription> s) {
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+    };
+    fold(register_image_handlers(nats, ctx, verifier));
+    fold(register_tag_handlers(nats, ctx, verifier));
 
     // ----------------------------------------------------------------
     // Publish-from-DQ workflow step handler

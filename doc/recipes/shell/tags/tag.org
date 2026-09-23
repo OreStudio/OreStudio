@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: B08A234B-9FEF-5B71-B0FC-DC4A43CAA19A
+:END:
+#+title: How do I run the tags commands from the shell?
+#+description: Every command the tags submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:tags:
+
+This file documents the tags resource at the shell, one section per command. Every command is a subcommand of =tags=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: ACAEA6BB-EBE4-5EEA-ABA3-B764243B9F13
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+tags list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =assets.v1.tags.list=.
+
+#+name: tags-list
+#+begin_src ores-shell :tangle tags-list.ores :exports none
+tags list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 8800F32B-BF6D-5F80-8E1A-C17FD15BCE72
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tags get <name>
+#+end_example
+
+It is addressed at =assets.v1.tags.get=.
+
+#+name: tags-get
+#+begin_src ores-shell :tangle tags-get.ores :exports none
+tags get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: F5899199-CC51-5493-A17E-5BFF08698F65
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tags get-many <name>
+#+end_example
+
+It is addressed at =assets.v1.tags.get_many=.
+
+#+name: tags-get-many
+#+begin_src ores-shell :tangle tags-get-many.ores :exports none
+tags get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: A1454DA4-6D77-5188-9BBF-34D3A9B2E58B
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tags add <id> <name> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =assets.v1.tags.put=.
+
+#+name: tags-add
+#+begin_src ores-shell :tangle tags-add.ores :exports none
+tags add 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: F37E8037-1BF0-56BF-8A35-E1193D6E7F10
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tags set <id> <name> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =assets.v1.tags.put=.
+
+#+name: tags-set
+#+begin_src ores-shell :tangle tags-set.ores :exports none
+tags set 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: F9C477CB-8C57-5261-AC00-BD2444AD727B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tags put-many --count <n> <id> <name> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =assets.v1.tags.put_many=.
+
+#+name: tags-put-many
+#+begin_src ores-shell :tangle tags-put-many.ores :exports none
+tags put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: BB6DA722-C430-5267-851D-53C1A8BFAD95
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tags delete <name> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =assets.v1.tags.delete=.
+
+#+name: tags-delete
+#+begin_src ores-shell :tangle tags-delete.ores :exports none
+tags delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: FAA3E173-C304-5FCD-800A-5594FB16704B
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tags delete-many <name> <reason> <commentary>
+#+end_example
+
+It is addressed at =assets.v1.tags.delete_many=.
+
+#+name: tags-delete-many
+#+begin_src ores-shell :tangle tags-delete-many.ores :exports none
+tags delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: BD410F98-EF9B-51C8-B552-3BB0342F776F
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+tags versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =assets.v1.tags_versions.list=.
+
+#+name: tags-versions
+#+begin_src ores-shell :tangle tags-versions.ores :exports none
+tags versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 1A44400D-4101-5AC4-83C9-524D3577F9A3
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tags version <name> --version <n>
+#+end_example
+
+It is addressed at =assets.v1.tags_versions.get=.
+
+#+name: tags-version
+#+begin_src ores-shell :tangle tags-version.ores :exports none
+tags version __none__ --version 1
+#+end_src
+

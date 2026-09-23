@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,13 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.assets.core/repository/tag_repository.hpp"
+#include "ores.assets.api/domain/tag_json_io.hpp" // IWYU pragma: keep.
 #include "ores.assets.core/repository/tag_entity.hpp"
 #include "ores.assets.core/repository/tag_mapper.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include "ores.utility/domain/protocol.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::assets::repository {
 
@@ -36,118 +42,267 @@ std::string tag_repository::sql() {
     return generate_create_table_sql<tag_entity>(lg());
 }
 
-void tag_repository::write(context ctx, const domain::tag& tag) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tag to database. Name: " << tag.name;
-
-    execute_write_query(ctx, tag_mapper::map(tag), lg(), "Writing tag to database.");
+ores::utility::domain::precondition tag_repository::replace_claim(context ctx,
+                                                                  const domain::tag& v) {
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
 }
 
-void tag_repository::write(context ctx, const std::vector<domain::tag>& tags) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tags to database. Count: " << tags.size();
+domain::tag tag_repository::apply_claim(context ctx,
+                                        const domain::tag& v,
+                                        const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
 
-    execute_write_query(ctx, tag_mapper::map(tags), lg(), "Writing tags to database.");
+void tag_repository::write(context ctx, const domain::tag& v) {
+    write(ctx, v, replace_claim(ctx, v));
+}
+
+void tag_repository::write(context ctx, const std::vector<domain::tag>& v) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void tag_repository::write(context ctx,
+                           const domain::tag& v,
+                           const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing asset tag. " << "id: " << v.id;
+    const auto t = apply_claim(ctx, v, claim);
+    execute_write_query(ctx, tag_mapper::map(t), lg(), "Writing asset tag to database.");
+}
+
+void tag_repository::write(context ctx,
+                           const std::vector<domain::tag>& v,
+                           const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing asset tags. Count: " << v.size();
+    std::vector<domain::tag> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(ctx, tag_mapper::map(batch), lg(), "Writing asset tags to database.");
 }
 
 std::vector<domain::tag> tag_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<tag_entity>> | where("valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc());
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<tag_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<tag_entity, domain::tag>(
         ctx,
         query,
         [](const auto& entities) { return tag_mapper::map(entities); },
         lg(),
-        "Reading latest tags");
+        "Reading latest asset tags");
 }
 
-std::vector<domain::tag> tag_repository::read_latest_by_id(context ctx, const std::string& tag_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tags by ID: " << tag_id;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+std::vector<domain::tag> tag_repository::read_latest(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset tag. " << "id: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tag_entity>> |
-                       where("tag_id"_c == tag_id && "valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<tag_entity, domain::tag>(
         ctx,
         query,
         [](const auto& entities) { return tag_mapper::map(entities); },
         lg(),
-        "Reading latest tags by ID.");
+        "Reading latest asset tag by id.");
 }
 
 std::vector<domain::tag> tag_repository::read_latest_by_name(context ctx, const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tags by name: " << name;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<tag_entity>> |
-                       where("name"_c == name && "valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc());
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset tag by name: " << name;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<tag_entity>> |
+        where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max.value());
 
     return execute_read_query<tag_entity, domain::tag>(
         ctx,
         query,
         [](const auto& entities) { return tag_mapper::map(entities); },
         lg(),
-        "Reading latest tags by name.");
+        "Reading latest asset tag by name.");
+}
+
+std::vector<domain::tag> tag_repository::read_any_by_name(context ctx, const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any asset tag by name: " << name;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<tag_entity>> |
+                       where("tenant_id"_c == tid && "name"_c == name) |
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+
+    return execute_read_query<tag_entity, domain::tag>(
+        ctx,
+        query,
+        [](const auto& entities) { return tag_mapper::map(entities); },
+        lg(),
+        "Reading any asset tag by name.");
+}
+
+
+std::vector<domain::tag> tag_repository::read_all(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all asset tag versions. " << "id: " << id;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<tag_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
+
+    return execute_read_query<tag_entity, domain::tag>(
+        ctx,
+        query,
+        [](const auto& entities) { return tag_mapper::map(entities); },
+        lg(),
+        "Reading all asset tag versions by id.");
+}
+
+std::optional<domain::tag>
+tag_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading asset tag at version. " << "id: " << id
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<tag_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<tag_entity, domain::tag>(
+        ctx,
+        query,
+        [](const auto& entities) { return tag_mapper::map(entities); },
+        lg(),
+        "Reading asset tag at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+tag_repository::remove_status
+tag_repository::remove(context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing asset tag. " << "id: " << id;
+    const auto current = read_latest(ctx, id);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<tag_entity> |
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
+
+    execute_delete_query(ctx, query, lg(), "Removing asset tag from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, id).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void tag_repository::remove(context ctx, const std::string& id) {
+    static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::tag>
 tag_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tags with offset: " << offset
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset tags with offset: " << offset
                                << " and limit: " << limit;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<tag_entity>> | where("valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc()) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<tag_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<tag_entity, domain::tag>(
         ctx,
         query,
         [](const auto& entities) { return tag_mapper::map(entities); },
         lg(),
-        "Reading latest tags with pagination.");
+        "Reading latest asset tags with pagination.");
 }
 
 std::uint32_t tag_repository::get_total_tag_count(context ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tag count";
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset tag count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
     };
 
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::select_from<tag_entity>(sqlgen::count().as<"count">()) |
-                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active tag count: " << count;
+    BOOST_LOG_SEV(lg(), debug) << "Total active asset tag count: " << count;
     return count;
 }
 
-std::vector<domain::tag> tag_repository::read_all(context ctx) {
-    const auto query = sqlgen::read<std::vector<tag_entity>> | order_by("valid_from"_c.desc());
-
-    return execute_read_query<tag_entity, domain::tag>(
+std::vector<domain::tag> tag_repository::read_latest(context ctx,
+                                                     const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<tag_entity>> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = execute_read_query<tag_entity, domain::tag>(
         ctx,
         query,
         [](const auto& entities) { return tag_mapper::map(entities); },
         lg(),
-        "Reading all tags.");
+        "Reading latest asset tags by ids.");
+    return result;
 }
 
-void tag_repository::remove(context ctx, const std::string& tag_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tag from database: " << tag_id;
-
-    const auto query = sqlgen::delete_from<tag_entity> | where("tag_id"_c == tag_id);
-
-    execute_delete_query(ctx, query, lg(), "Removing tag from database.");
+void tag_repository::remove(context ctx, const std::vector<std::string>& ids) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<tag_entity> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing asset tags.");
 }
+
 
 }

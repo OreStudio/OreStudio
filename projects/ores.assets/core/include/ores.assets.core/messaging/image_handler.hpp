@@ -17,13 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ASSETS_MESSAGING_IMAGE_HANDLER_HPP
-#define ORES_ASSETS_MESSAGING_IMAGE_HANDLER_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_handler.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_ASSETS_CORE_MESSAGING_IMAGE_HANDLER_HPP
+#define ORES_ASSETS_CORE_MESSAGING_IMAGE_HANDLER_HPP
 
-#include "ores.assets.api/messaging/assets_protocol.hpp"
-#include "ores.assets.core/export.hpp"
-#include "ores.assets.core/repository/image_repository.hpp"
-#include "ores.assets.core/service/assets_service.hpp"
+#include "ores.assets.api/messaging/image_protocol.hpp"
+#include "ores.assets.core/service/image_service.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -31,9 +34,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <boost/uuid/uuid_io.hpp>
 #include <optional>
-#include <vector>
 
 namespace ores::assets::messaging {
 
@@ -46,12 +47,14 @@ inline auto& image_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
-using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class ORES_ASSETS_CORE_EXPORT image_handler {
+/**
+ * @brief NATS message handler for asset image operations.
+ */
+class image_handler {
 public:
     image_handler(ores::nats::service::client& nats,
                   ores::database::context ctx,
@@ -60,95 +63,388 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void get(ores::nats::message msg) {
+    /**
+     * @brief Serves assets.v1.images.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_images(ores::nats::message msg) {
         BOOST_LOG_SEV(image_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<get_images_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        try {
-            service::assets_service svc(ctx);
-            const auto images = svc.get_images(req->image_ids);
-            BOOST_LOG_SEV(image_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, get_images_response{true, {}, images});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(image_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_images_response{false, e.what()});
-        }
-    }
-
-    void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(image_handler_lg(), debug) << "Handling " << msg.subject;
+        const auto& req_ctx = *req_ctx_expected;
         auto req = decode<list_images_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
+        service::image_service svc(req_ctx);
         try {
-            repository::image_repository repo;
-            std::vector<domain::image> images;
-            if (req->modified_since.has_value())
-                images = repo.read_latest_since(ctx, *req->modified_since);
-            else
-                images = repo.read_latest(ctx);
-            list_images_response resp;
-            resp.success = true;
-            resp.images.reserve(images.size());
-            for (const auto& img : images) {
-                image_info info;
-                info.image_id = boost::uuids::to_string(img.image_id);
-                info.key = img.key;
-                info.description = img.description;
-                info.size_bytes = img.data.size();
-                resp.images.push_back(std::move(info));
-            }
+            auto response = svc.list_images(*req);
             BOOST_LOG_SEV(image_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(image_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, list_images_response{false, e.what()});
+            list_images_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves assets.v1.images.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_image(ores::nats::message msg) {
         BOOST_LOG_SEV(image_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<save_image_request>(msg);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_image_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        service::image_service svc(req_ctx);
+        try {
+            auto response = svc.get_image(*req);
+            BOOST_LOG_SEV(image_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(image_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_image_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves assets.v1.images.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_images(ores::nats::message msg) {
+        BOOST_LOG_SEV(image_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "assets::images:write")) {
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_images_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::image_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_images(*req);
+            BOOST_LOG_SEV(image_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(image_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_many_images_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves assets.v1.images.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_image(ores::nats::message msg) {
+        BOOST_LOG_SEV(image_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "assets::images:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        auto req = decode<put_image_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::image_service svc(req_ctx);
         try {
-            repository::image_repository repo;
-            stamp(req->data, ctx);
-            repo.write(ctx, req->data);
+            auto response = svc.put_image(*req);
             BOOST_LOG_SEV(image_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, save_image_response{true, {}});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(image_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_image_response{false, e.what()});
+            put_image_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves assets.v1.images.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_images(ores::nats::message msg) {
+        BOOST_LOG_SEV(image_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "assets::images:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_images_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::image_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_images(*req);
+            BOOST_LOG_SEV(image_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(image_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            put_many_images_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves assets.v1.images.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_image(ores::nats::message msg) {
+        BOOST_LOG_SEV(image_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "assets::images:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_image_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::image_service svc(req_ctx);
+        try {
+            auto response = svc.delete_image(*req);
+            BOOST_LOG_SEV(image_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(image_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            delete_image_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves assets.v1.images.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_images(ores::nats::message msg) {
+        BOOST_LOG_SEV(image_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "assets::images:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_images_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::image_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_images(*req);
+            BOOST_LOG_SEV(image_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(image_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            delete_many_images_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves assets.v1.images_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_image_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(image_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_image_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::image_service svc(req_ctx);
+        try {
+            auto response = svc.list_image_versions(*req);
+            BOOST_LOG_SEV(image_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(image_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            list_image_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves assets.v1.images_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_image_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(image_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_image_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::image_service svc(req_ctx);
+        try {
+            auto response = svc.get_image_version(*req);
+            BOOST_LOG_SEV(image_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(image_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_image_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

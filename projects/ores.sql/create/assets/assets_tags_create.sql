@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,14 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- Categories for images.
--- Examples: flag, currency, commodity.
--- =============================================================================
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * Tag Table
+ *
+ * A tag classifies an image. A tag belongs to one tenant, names a single
+ * category such as flag, currency or commodity, and its name is unique
+ * within that tenant. Images carry tags through the image_tag junction, so
+ * a tag has no lifecycle of its own beyond its own version history.
+ */
 
 create table if not exists "ores_assets_tags_tbl" (
-    "tag_id" uuid not null,
+    "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
     "name" text not null,
@@ -35,20 +42,28 @@ create table if not exists "ores_assets_tags_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tag_id, valid_from, valid_to),
+    primary key (tenant_id, id, valid_from, valid_to),
     exclude using gist (
-        tag_id WITH =,
+        tenant_id WITH =,
+        id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to")
+    check ("valid_from" < "valid_to"),
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
-create unique index if not exists tags_version_uniq_idx
-on "ores_assets_tags_tbl" (tenant_id, tag_id, version)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
+-- Unique name for active records
 create unique index if not exists tags_name_uniq_idx
 on "ores_assets_tags_tbl" (tenant_id, name)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Version uniqueness for optimistic concurrency
+create unique index if not exists tags_version_uniq_idx
+on "ores_assets_tags_tbl" (tenant_id, id, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists tags_id_uniq_idx
+on "ores_assets_tags_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists tags_tenant_idx
@@ -61,51 +76,69 @@ declare
     current_version integer;
 begin
     -- Validate tenant_id
-    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
+    -- Version management
     select version into current_version
     from "ores_assets_tags_tbl"
-    where tag_id = new.tag_id
-    and valid_to = ores_utility_infinity_timestamp_fn()
+    where tenant_id = NEW.tenant_id
+      and id = NEW.id
+      and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
-        if new.version != 0 and new.version != current_version then
+        -- The write states what it believes about the row, and the store is
+        -- what decides. Version zero means one thing: no current row exists.
+        -- So a create that collides with a live row is refused here, for every
+        -- client, rather than by a check each client has to remember.
+        if NEW.version = 0 then
+            if not ores_utility_version_replace_allowed_fn() then
+                raise exception
+                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
+                    using errcode = '23505';
+            end if;
+        elsif NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
-                new.version, current_version
+                NEW.version, current_version
                 using errcode = 'P0002';
         end if;
-        new.version = current_version + 1;
-
+        NEW.version = current_version + 1;
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_assets_tags_tbl"
-        set valid_to = current_timestamp
-        where tag_id = new.tag_id
-        and valid_to = ores_utility_infinity_timestamp_fn()
-        and valid_from < current_timestamp;
+        set valid_to = clock_timestamp()
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and valid_from < clock_timestamp();
     else
-        new.version = 1;
+        NEW.version = 1;
     end if;
 
-    new.valid_from = current_timestamp;
-    new.valid_to = ores_utility_infinity_timestamp_fn();
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+    NEW.valid_from = clock_timestamp();
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
-
-    return new;
+    return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_assets_tags_insert_trg
 before insert on "ores_assets_tags_tbl"
-for each row
-execute function ores_assets_tags_insert_fn();
+for each row execute function ores_assets_tags_insert_fn();
 
 create or replace rule ores_assets_tags_delete_rule as
-on delete to "ores_assets_tags_tbl"
-do instead
-  update "ores_assets_tags_tbl"
-  set valid_to = current_timestamp
-  where tag_id = old.tag_id
-  and valid_to = ores_utility_infinity_timestamp_fn();
+on delete to "ores_assets_tags_tbl" do instead (
+    update "ores_assets_tags_tbl"
+    set valid_to = clock_timestamp()
+    where tenant_id = OLD.tenant_id
+      and id = OLD.id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+);

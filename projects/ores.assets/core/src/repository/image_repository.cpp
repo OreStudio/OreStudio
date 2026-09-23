@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,16 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.assets.core/repository/image_repository.hpp"
+#include "ores.assets.api/domain/image_json_io.hpp" // IWYU pragma: keep.
 #include "ores.assets.core/repository/image_entity.hpp"
 #include "ores.assets.core/repository/image_mapper.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.platform/time/datetime.hpp"
-#include <charconv>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include <sstream>
+#include "ores.utility/domain/protocol.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::assets::repository {
 
@@ -39,216 +42,267 @@ std::string image_repository::sql() {
     return generate_create_table_sql<image_entity>(lg());
 }
 
-void image_repository::write(context ctx, const domain::image& image) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing image to database. Key: " << image.key;
-
-    execute_write_query(ctx, image_mapper::map(image), lg(), "Writing image to database.");
+ores::utility::domain::precondition image_repository::replace_claim(context ctx,
+                                                                    const domain::image& v) {
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
 }
 
-void image_repository::write(context ctx, const std::vector<domain::image>& images) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing images to database. Count: " << images.size();
+domain::image image_repository::apply_claim(context ctx,
+                                            const domain::image& v,
+                                            const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
 
-    execute_write_query(ctx, image_mapper::map(images), lg(), "Writing images to database.");
+void image_repository::write(context ctx, const domain::image& v) {
+    write(ctx, v, replace_claim(ctx, v));
+}
+
+void image_repository::write(context ctx, const std::vector<domain::image>& v) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void image_repository::write(context ctx,
+                             const domain::image& v,
+                             const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing asset image. " << "id: " << v.id;
+    const auto t = apply_claim(ctx, v, claim);
+    execute_write_query(ctx, image_mapper::map(t), lg(), "Writing asset image to database.");
+}
+
+void image_repository::write(context ctx,
+                             const std::vector<domain::image>& v,
+                             const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing asset images. Count: " << v.size();
+    std::vector<domain::image> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(ctx, image_mapper::map(batch), lg(), "Writing asset images to database.");
 }
 
 std::vector<domain::image> image_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<image_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc());
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<image_entity, domain::image>(
         ctx,
         query,
         [](const auto& entities) { return image_mapper::map(entities); },
         lg(),
-        "Reading latest images");
+        "Reading latest asset images");
 }
 
-std::vector<domain::image> image_repository::read_latest_by_id(context ctx,
-                                                               const std::string& image_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest images by ID: " << image_id;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+std::vector<domain::image> image_repository::read_latest(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset image. " << "id: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<image_entity>> |
-                       where("image_id"_c == image_id && "valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<image_entity, domain::image>(
         ctx,
         query,
         [](const auto& entities) { return image_mapper::map(entities); },
         lg(),
-        "Reading latest images by ID.");
-}
-
-std::vector<domain::image>
-image_repository::read_latest_by_ids(context ctx, const std::vector<std::string>& image_ids) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest images by IDs. Count: " << image_ids.size();
-
-    if (image_ids.empty()) {
-        return {};
-    }
-
-    // Build IN clause with properly escaped values
-    std::ostringstream in_clause;
-    for (size_t i = 0; i < image_ids.size(); ++i) {
-        if (i > 0)
-            in_clause << ", ";
-        // Escape single quotes by doubling them
-        std::string escaped_id;
-        for (char c : image_ids[i]) {
-            if (c == '\'')
-                escaped_id += "''";
-            else
-                escaped_id += c;
-        }
-        in_clause << "'" << escaped_id << "'";
-    }
-
-    // Build the complete SQL query
-    std::ostringstream sql;
-    sql << "SELECT image_id, tenant_id, version, key, description, mime_type, data, "
-        << "modified_by, performed_by, change_reason_code, change_commentary, "
-        << "valid_from, valid_to " << "FROM ores_assets_images_tbl " << "WHERE image_id IN ("
-        << in_clause.str() << ") " << "AND valid_to = ores_utility_infinity_timestamp_fn() "
-        << "ORDER BY valid_from DESC";
-
-    auto rows =
-        execute_raw_multi_column_query(ctx, sql.str(), lg(), "Reading latest images by IDs");
-
-    // Convert raw results to domain objects
-    std::vector<domain::image> results;
-    results.reserve(rows.size());
-
-    for (const auto& row : rows) {
-        if (row.size() < 13)
-            continue;
-
-        image_entity entity;
-        entity.image_id = row[0].value_or("");
-        entity.tenant_id = row[1].value_or("");
-
-        // Use std::from_chars for safe, non-throwing integer parsing
-        int version = 0;
-        if (row[2]) {
-            std::from_chars(row[2]->data(), row[2]->data() + row[2]->size(), version);
-        }
-        entity.version = version;
-
-        entity.key = row[3].value_or("");
-        entity.description = row[4].value_or("");
-        entity.mime_type = row[5].value_or("image/svg+xml");
-        entity.data = row[6].value_or("");
-        entity.modified_by = row[7].value_or("");
-        entity.performed_by = row[8].value_or("");
-        entity.change_reason_code = row[9].value_or("");
-        entity.change_commentary = row[10].value_or("");
-        entity.valid_from = row[11].value_or(std::string(MAX_TIMESTAMP_NAIVE));
-        entity.valid_to = row[12].value_or(std::string(MAX_TIMESTAMP_NAIVE));
-
-        results.push_back(image_mapper::map(entity));
-    }
-
-    return results;
+        "Reading latest asset image by id.");
 }
 
 std::vector<domain::image> image_repository::read_latest_by_key(context ctx,
                                                                 const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest images by key: " << key;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset image by key: " << key;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<image_entity>> |
-                       where("key"_c == key && "valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc());
+                       where("tenant_id"_c == tid && "key"_c == key && "valid_to"_c == max.value());
 
     return execute_read_query<image_entity, domain::image>(
         ctx,
         query,
         [](const auto& entities) { return image_mapper::map(entities); },
         lg(),
-        "Reading latest images by key.");
+        "Reading latest asset image by key.");
+}
+
+std::vector<domain::image> image_repository::read_any_by_key(context ctx, const std::string& key) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any asset image by key: " << key;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<image_entity>> |
+                       where("tenant_id"_c == tid && "key"_c == key) |
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+
+    return execute_read_query<image_entity, domain::image>(
+        ctx,
+        query,
+        [](const auto& entities) { return image_mapper::map(entities); },
+        lg(),
+        "Reading any asset image by key.");
+}
+
+
+std::vector<domain::image> image_repository::read_all(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all asset image versions. " << "id: " << id;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<image_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
+
+    return execute_read_query<image_entity, domain::image>(
+        ctx,
+        query,
+        [](const auto& entities) { return image_mapper::map(entities); },
+        lg(),
+        "Reading all asset image versions by id.");
+}
+
+std::optional<domain::image>
+image_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading asset image at version. " << "id: " << id
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<image_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<image_entity, domain::image>(
+        ctx,
+        query,
+        [](const auto& entities) { return image_mapper::map(entities); },
+        lg(),
+        "Reading asset image at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+image_repository::remove_status
+image_repository::remove(context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing asset image. " << "id: " << id;
+    const auto current = read_latest(ctx, id);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<image_entity> |
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
+
+    execute_delete_query(ctx, query, lg(), "Removing asset image from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, id).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void image_repository::remove(context ctx, const std::string& id) {
+    static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::image>
 image_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest images with offset: " << offset
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset images with offset: " << offset
                                << " and limit: " << limit;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<image_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<image_entity, domain::image>(
         ctx,
         query,
         [](const auto& entities) { return image_mapper::map(entities); },
         lg(),
-        "Reading latest images with pagination.");
-}
-
-std::vector<domain::image>
-image_repository::read_latest_since(context ctx,
-                                    std::chrono::system_clock::time_point modified_since) {
-
-    // Format timestamp for sqlgen query (thread-safe)
-    const auto timestamp_str = platform::time::datetime::to_iso8601_utc(modified_since);
-
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest images modified since: " << timestamp_str;
-
-    // Use sqlgen query with timestamp comparison
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto since_ts = make_timestamp(timestamp_str, lg());
-
-    const auto query = sqlgen::read<std::vector<image_entity>> |
-                       where("valid_to"_c == max.value() && "valid_from"_c >= since_ts.value()) |
-                       order_by("valid_from"_c.desc());
-
-    return execute_read_query<image_entity, domain::image>(
-        ctx,
-        query,
-        [](const auto& entities) { return image_mapper::map(entities); },
-        lg(),
-        "Reading latest images since timestamp");
+        "Reading latest asset images with pagination.");
 }
 
 std::uint32_t image_repository::get_total_image_count(context ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active image count";
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset image count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
     };
 
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::select_from<image_entity>(sqlgen::count().as<"count">()) |
-                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active image count: " << count;
+    BOOST_LOG_SEV(lg(), debug) << "Total active asset image count: " << count;
     return count;
 }
 
-std::vector<domain::image> image_repository::read_all(context ctx) {
-    const auto query = sqlgen::read<std::vector<image_entity>> | order_by("valid_from"_c.desc());
-
-    return execute_read_query<image_entity, domain::image>(
+std::vector<domain::image> image_repository::read_latest(context ctx,
+                                                         const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<image_entity>> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = execute_read_query<image_entity, domain::image>(
         ctx,
         query,
         [](const auto& entities) { return image_mapper::map(entities); },
         lg(),
-        "Reading all images.");
+        "Reading latest asset images by ids.");
+    return result;
 }
 
-void image_repository::remove(context ctx, const std::string& image_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing image from database: " << image_id;
-
-    const auto query = sqlgen::delete_from<image_entity> | where("image_id"_c == image_id);
-
-    execute_delete_query(ctx, query, lg(), "Removing image from database.");
+void image_repository::remove(context ctx, const std::vector<std::string>& ids) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<image_entity> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing asset images.");
 }
+
 
 }

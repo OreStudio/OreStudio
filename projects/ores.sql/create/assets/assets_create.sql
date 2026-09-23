@@ -19,6 +19,9 @@
  */
 
 \ir ./assets_images_create.sql
+\ir ./assets_images_notify_trigger_create.sql
 \ir ./assets_tags_create.sql
-\ir ./assets_image_tags_create.sql
+\ir ./assets_tags_notify_trigger_create.sql
+\ir ./assets_image_tag_create.sql
 \ir ./assets_publish_from_dq_create.sql
+\ir ./assets_rls_policies_create.sql

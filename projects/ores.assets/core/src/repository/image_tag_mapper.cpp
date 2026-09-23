@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,7 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.assets.core/repository/image_tag_mapper.hpp"
+#include "ores.assets.api/domain/image_tag_json_io.hpp" // IWYU pragma: keep.
 #include "ores.database/repository/mapper_helpers.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -31,25 +37,36 @@ domain::image_tag image_tag_mapper::map(const image_tag_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::image_tag r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.version = v.version;
+    r.tenant_id = v.tenant_id;
     r.image_id = boost::lexical_cast<boost::uuids::uuid>(v.image_id.value());
-    r.tag_id = boost::lexical_cast<boost::uuids::uuid>(v.tag_id.value());
+    r.tag_id = boost::lexical_cast<boost::uuids::uuid>(v.tag_id);
     r.assigned_by = v.assigned_by;
-    r.assigned_at = timestamp_to_timepoint(v.assigned_at);
+    r.assigned_at = v.assigned_at;
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity.";
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 image_tag_entity image_tag_mapper::map(const domain::image_tag& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity.";
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     image_tag_entity r;
-    r.tenant_id = v.tenant_id.to_string();
     r.image_id = boost::uuids::to_string(v.image_id);
+    r.tenant_id = v.tenant_id;
     r.tag_id = boost::uuids::to_string(v.tag_id);
+    r.version = v.version;
     r.assigned_by = v.assigned_by;
-    // Note: assigned_at is read-only; managed by database triggers
+    r.assigned_at = v.assigned_at;
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

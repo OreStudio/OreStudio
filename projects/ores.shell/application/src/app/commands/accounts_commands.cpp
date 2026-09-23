@@ -30,9 +30,9 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/commands/history_diff_renderer.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
 #include "ores.shell/app/login_helpers.hpp"
-#include "ores.shell/app/commands/history_diff_renderer.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>

@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_25:v0:
 #+created: 2026-09-11
-#+updated: 2026-09-11
+#+updated: 2026-09-23
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -28,12 +28,12 @@ version it wants and we can compare the two on live jobs.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | ABANDONED |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Story scaffolded. No implementation work has started. |
-| Waiting on    | The v1.8.17.0 engine build under =/home/marco/Development/ORE/Engine=. Only the packaging step waits on it. |
-| Next          | Raise the scaffold PR, then start the first task. |
-| Last touched  | 2026-09-11                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23 |
 
 * Acceptance
 
@@ -58,8 +58,8 @@ version it wants and we can compare the two on live jobs.
 | [[id:EB84218C-FF1E-4EB6-8E65-218F41930350][Scaffold story: Update ORE to v17]] | DONE | 2026-09-11 | 2026-09-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:25EC2B31-812F-4EB1-8ADE-966DF496D5E8][Sync ORE examples and XSD to v1.8.17.0]] | DONE | 2026-09-11 | 2026-09-12 | Sync external/ore/examples/ and external/ore/xsd/ from the v1.8.17.0 engine checkout, and regenerate the C++ domain types from the new XSD. |
 | [[id:E6AD2AD9-2EF9-4F3E-8D10-526E0B60232A][Build and vendor the ORE v1.8.17.0 engine package]] | DONE | 2026-09-11 | 2026-09-12 | Build the v1.8.17.0 engine into one self-contained package with external/ore/tools/package_ore.sh, self-test it against TA002, and commit it beside the v1.8.16.0 package. |
-| [[id:ADA8C792-C844-485E-81EE-8BA4073FF3F8][Publish both ORE engine versions during provisioning]] | STARTED | 2026-09-11 | | Register both engine versions in the compute seed and publish both packages during ACME provisioning, so a grid job can run on v1.8.16.0 or v1.8.17.0. |
-| [[id:64CB13D8-4848-4C66-8B6B-5946A4F4D8FF][Cover the seven new ORE v1.8.17.0 trade types]] | BACKLOG | | | Add mapper and round-trip coverage for the trade types that appear for the first time in v1.8.17.0, none of which maps into an ORES trading type today. |
+| [[id:ADA8C792-C844-485E-81EE-8BA4073FF3F8][Publish both ORE engine versions during provisioning]] | ABANDONED | 2026-09-11 | 2026-09-23 | Register both engine versions in the compute seed and publish both packages during ACME provisioning, so a grid job can run on v1.8.16.0 or v1.8.17.0. |
+| [[id:64CB13D8-4848-4C66-8B6B-5946A4F4D8FF][Cover the seven new ORE v1.8.17.0 trade types]] | ABANDONED | | 2026-09-23 | Add mapper and round-trip coverage for the trade types that appear for the first time in v1.8.17.0, none of which maps into an ORES trading type today. |
 | [[id:67DA4CE7-A259-491F-9015-7220BC5FBAA6][Generate the ORE reference data types and fix the bond future mapper]] | DONE | 2026-09-12 | 2026-09-12 | main does not build: ORE v17 moved the bond future's contract terms from the trade into reference data, which codegen never emitted because xsdcpp only generates types reachable from the Trade root. |
 
 * Decisions
@@ -90,3 +90,7 @@ version it wants and we can compare the two on live jobs.
   changes about 1190 paths, which would bury the sync, and which of the
   two round-trip datasets is canonical is unresolved. Tracked by
   [[id:2E4FFE8F-3804-400F-BCB2-6DAA6987A498][Regenerate or retire the domain round-trip dataset]].
+
+* Result
+
+Abandoned at sprint 25 close, as part of the reset to one approach for sprint 26. The work is not in the sprint 26 plan. The done tasks stay as the record of what shipped.

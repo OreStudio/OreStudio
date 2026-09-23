@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-21
-#+updated: 2026-09-21
+#+updated: 2026-09-23
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Every document that describes NATS messaging states exactly one responsibility -
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-21                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-23 |
 
 * Acceptance
 
@@ -134,3 +134,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned at sprint 25 close. Sprint 26 replaces the codegen approaches tried so far with one method: for each module, sync codegen and clear its drift. Sprint 26 opens new, clean stories for each module. This story is not carried forward.

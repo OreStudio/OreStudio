@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-13
-#+updated: 2026-09-13
+#+updated: 2026-09-23
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -43,12 +43,12 @@ label names something the model does not hold.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-13                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-23 |
 
 * Acceptance
 
@@ -111,3 +111,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned at sprint 25 close. Sprint 26 replaces the codegen approaches tried so far with one method: for each module, sync codegen and clear its drift. Sprint 26 opens new, clean stories for each module. This story is not carried forward.

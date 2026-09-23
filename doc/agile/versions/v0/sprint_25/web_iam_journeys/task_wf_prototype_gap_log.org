@@ -34,12 +34,12 @@ statistics with no NATS subject. Not blocked by anything.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED |
 | Parent story | [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-23 |
 
 * Acceptance
 
@@ -77,3 +77,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned at sprint 25 close. Sprint 26 orders the work as: codegen sync for each module, then user-journey analysis, then UX. New journey and UX stories start clean after the codegen pass. This story is not carried forward. The journey documents that this story produced stay in place as input to the journey pass.

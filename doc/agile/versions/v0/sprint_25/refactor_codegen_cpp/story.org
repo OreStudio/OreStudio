@@ -8,7 +8,7 @@
 #+filetags: :tooling:codegen:sprint_25:v0:
 #+branch: feature/refactor-codegen-cpp
 #+created: 2026-05-30
-#+updated: 2026-08-04
+#+updated: 2026-09-23
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -115,12 +115,12 @@ trading, iam, dq, and all remaining components.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | ABANDONED |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]                              |
-| Now           | Postponed from sprint 20; org-mode migration blocker cleared. 6 audit/analysis tasks done; 13 drift-application tasks remain. |
-| Waiting on    | Nothing.                               |
-| Next          | Pull into sprint 21.                   |
-| Last touched  | 2026-07-06                             |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23 |
 
 * Acceptance
 
@@ -159,7 +159,7 @@ trading, iam, dq, and all remaining components.
 | [[id:950FB9D4-48E0-45A4-BC71-F9668D42BE9A][Apply safe drift to workspace-cpp]] | BACKLOG | | | Add has_party_id template flag; restore workspace_service, workspace_repository, workspace_protocol. |
 | [[id:51E65D05-7F22-4DE1-9509-D50A9D98A503][Apply safe drift to compute-cpp]] | BACKLOG | | | Heaviest exclusion catalogue: restore all 6 services + 6 other files. |
 | [[id:A0A1834D-F274-4066-A38D-D597A8827C8D][Apply safe drift to marketdata-cpp]] | BACKLOG | | | The 75-model drift catalog never audited ores.marketdata; market_fixing regenerates with new untracked files (messaging/presentation registrars) on clean origin/main. Audit and apply safe drift following the refdata-cpp pilot pattern. |
-| [[id:E5EEFA91-BE41-4E0B-A69E-DDF965A7F39F][Retrospective: clang-format non-idempotency causing refdata codegen drift]] | BACKLOG | | | Write up the clang-format single-pass non-idempotency bug found and fixed while unblocking PR #1820's CI, and audit for other affected patterns/components beyond ores.refdata. |
+| [[id:E5EEFA91-BE41-4E0B-A69E-DDF965A7F39F][Retrospective: clang-format non-idempotency causing refdata codegen drift]] | ABANDONED | | 2026-09-23 | Write up the clang-format single-pass non-idempotency bug found and fixed while unblocking PR #1820's CI, and audit for other affected patterns/components beyond ores.refdata. |
 | [[id:98D0B4FD-EBF9-4DB4-863F-CF0EACD2A1B2][Fix profile binding: single canonical point in * Flags section]] | DONE | 2026-08-08 | 2026-08-09 | read_physical_space_overrides reads :profile: from file-level :PROPERTIES: drawer for Physical-space facet enablement, but every entity model declares :profile: in * Flags. Unify to a single binding point in * Flags, add validation that throws if :profile: is in the wrong place, and revert the workaround on reporting entities. |
 
 * Notes
@@ -209,3 +209,7 @@ the production project layout for any of the above. Every model must have explic
 | Output files | ~30 SQL files | ~1,746 C++ files |
 | Components | 1 (refdata pilot) | 8+ component pairs |
 | Breaking changes | None | 4+ known |
+
+* Result
+
+Abandoned at sprint 25 close. Sprint 26 replaces the codegen approaches tried so far with one method: for each module, sync codegen and clear its drift. Sprint 26 opens new, clean stories for each module. This story is not carried forward.

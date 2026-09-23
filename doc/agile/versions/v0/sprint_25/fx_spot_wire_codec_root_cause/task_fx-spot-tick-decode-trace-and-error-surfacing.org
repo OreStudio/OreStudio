@@ -30,7 +30,7 @@ decode, instead of the row silently sitting at PENDING forever.
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:E3786E5B-1039-4256-A61B-BFBF34465578][Find root cause of FX Spot Monitor wire-codec decode mismatch]] |
-| Now          | Trace logging and FeedStatus::Error UI shipped and confirmed working; superseded as a root-cause tool by the fix landing directly (see parent story Decisions). |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing — task complete.               |
 | Last touched | 2026-08-04                             |
@@ -93,3 +93,5 @@ merged the same day this diagnostics task was authored. Verified
 environment, logged in as tenant_admin@acme_corporation, opened FX
 Spot Monitor -- rows tick live, wire format resolves to msgpack, zero
 "Failed to deserialise fx_spot_tick" warnings in the client log.
+
+Status at close: Trace logging and FeedStatus::Error UI shipped and confirmed working; superseded as a root-cause tool by the fix landing directly (see parent story Decisions).

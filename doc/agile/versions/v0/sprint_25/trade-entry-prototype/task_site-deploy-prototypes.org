@@ -35,7 +35,7 @@ the org pages. An org page describes the prototypes and links them.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] |
-| Now          | Built and verified 2026-09-11. The build deploys the prototype under =doc/prototypes/=, and the gallery and the nav link are on the site. |
+| Now          | Nothing. |
 | Waiting on   | PR review. The user checks the published gallery. |
 | Next         | Review the gallery and the prototype on the published site. |
 | Last touched | 2026-09-11                               |
@@ -199,3 +199,5 @@ them would leave one pull request unbuildable.
   gallery. That is the check that the republish reached the cached pages.
 - =misspell-fixer= on the three changed paths exited 0 with nothing to
   replace.
+
+Status at close: Built and verified 2026-09-11. The build deploys the prototype under =doc/prototypes/=, and the gallery and the nav link are on the site.

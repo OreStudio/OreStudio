@@ -39,7 +39,7 @@ and distilled back into the shared skeleton.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] |
-| Now          | Batch committed (3a4a0e4bd3, 0dd2515fe4, 0ea3563012); full preset build, ctest 71/71 and the roundtrip, cmake-sources and codegen drift checks green. The six-family legacy-wire anomaly was a stale service process mapping a pre-consolidation lib image; a restart onto the rebuilt lib resolved it.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Generic instrument-family batch (task_shell-trading-generic-instrument-verbs).                  |
 | Last touched | 2026-09-08                               |
@@ -164,3 +164,5 @@ Closing battery green: full preset build exit 0; ctest 71/71 passed
 baseline, no outputs touched); shell cmake-sources drift clean;
 codegen drift clean (=--all=); working tree clean after drift
 regeneration.
+
+Status at close: Batch committed (3a4a0e4bd3, 0dd2515fe4, 0ea3563012); full preset build, ctest 71/71 and the roundtrip, cmake-sources and codegen drift checks green. The six-family legacy-wire anomaly was a stale service process mapping a pre-consolidation lib image; a restart onto the rebuilt lib resolved it.

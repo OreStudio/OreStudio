@@ -33,7 +33,7 @@ recommendation on whether/how to spin off a follow-on story.
 |--------------+----------------------------------------|
 | State        | DONE                                    |
 | Parent story | [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] |
-| Now          | Findings written up; recommend a follow-on story. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                |
 | Next         | None -- task closed.                    |
 | Last touched | 2026-08-07                              |
@@ -190,3 +190,5 @@ missing UI, not new backend). The story's other stated goal, IAS
 consolidated-accounting feature unrelated to risk-book NPV -- nothing
 found here supports building it as part of the same effort; it needs
 its own scoping if ever pursued.
+
+Status at close: Findings written up; recommend a follow-on story.

@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :codegen:drift:tooling:sprint_25:v0:
 #+created: 2026-08-04
-#+updated: 2026-09-07
+#+updated: 2026-09-23
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,12 +21,12 @@ Bring ores.database to the state the compass-codegen-fix-drift skill defines: ev
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | ABANDONED |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Claim the bind task.                   |
-| Last touched  | 2026-09-07                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23 |
 
 * Acceptance
 
@@ -41,10 +41,14 @@ Bring ores.database to the state the compass-codegen-fix-drift skill defines: ev
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6E463DC4-2E12-4564-91C1-55A28D1E1AD3][Bind ores.database entities to profiles; verify zero-diff regen]] | BACKLOG | | | Implement profile binding for the database-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the compass-codegen-fix-drift skill. Known starting point: no model changes expected, smallest component (7 files). |
+| [[id:6E463DC4-2E12-4564-91C1-55A28D1E1AD3][Bind ores.database entities to profiles; verify zero-diff regen]] | ABANDONED | | 2026-09-23 | Implement profile binding for the database-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the compass-codegen-fix-drift skill. Known starting point: no model changes expected, smallest component (7 files). |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+Abandoned at sprint 25 close. Sprint 26 replaces the codegen approaches tried so far with one method: for each module, sync codegen and clear its drift. Sprint 26 opens new, clean stories for each module. This story is not carried forward.

@@ -28,7 +28,7 @@ The nine ores.qt Trade files come from the model like the rest of the trade esta
 |--------------+----------------------------------------|
 | State        | ABANDONED                            |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Abandoned. Qt is no longer the target. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing here. A TypeScript experiment replaces it. |
 | Last touched | 2026-09-18                               |
@@ -103,6 +103,8 @@ template change.
 
 The direction is now a TypeScript UI using ordinary code reuse rather
 than codegen. Trade work ends at the C++ layer.
+
+Status at close: Abandoned. Qt is no longer the target.
 
 * Notes
 

@@ -30,7 +30,7 @@ built in this story -- see the investigation task and Out of scope.
 |---------------+-------------------------------------------------------------------------------------------------------------|
 | State         | DONE                                                                                                       |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]                                                     |
-| Now           | All six tasks done. Story closed.                                                                          |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                                                                                                   |
 | Next          | None -- story closed. Manual screenshots are a small standalone follow-up, not a new task in this story.   |
 | Last touched  | 2026-08-07                                                                                                 |
@@ -180,3 +180,7 @@ built in this story -- see the investigation task and Out of scope.
 - Consolidated/group-level risk reporting is investigated, not
   committed to being built here -- see the investigation task, which
   is expected to spin off its own follow-on story once scoped.
+
+* Result
+
+Status at close: All six tasks done. Story closed.

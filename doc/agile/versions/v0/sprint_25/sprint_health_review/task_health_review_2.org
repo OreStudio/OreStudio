@@ -126,16 +126,18 @@ IR curves. The FOMC short end (DONE) and the oresmd quote-type coverage
 slowly:
 
 - [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]]: 5/8 tasks,
-  carried from sprint 24. The official curve republish is not done.
+  carried from sprint 24. The engine, the official curve republish
+  (#1879) and the lineage shipped. The open tasks are Qt UI tasks.
 - [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data]]: 11/20 tasks, carried from sprint 24.
 - [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]]: 3/11 tasks. Five of its
   BACKLOG tasks have a merged PR (#1932). The real progress is higher
   than the file shows.
 - [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]]: 6/6 tasks DONE, story still STARTED.
 
-The IR goal has progress, but the headline deliverable (a
-bootstrapped curve that is republished as an official stream) did not
-ship.
+The headline deliverable (a bootstrapped curve that is republished as
+an official stream) shipped before sprint 25 started. In sprint 25 the
+IR goal got the FOMC short end, six new process engines with no wiring,
+and bookkeeping that lagged behind the work.
 
 No mapped goal. From 2026-09-19, the work moved to a new direction:
 [[id:6C5EE3F6-0DE6-48C2-9325-21D818C7FD6B][Retire Qt]], [[id:BAAFD7B2-A37F-4ED8-A9F2-E2A997E3D488][Integrate ores.web]], [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype bootstrap in ores.web]],

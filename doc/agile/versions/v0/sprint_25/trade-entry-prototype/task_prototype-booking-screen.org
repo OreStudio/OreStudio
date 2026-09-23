@@ -44,7 +44,7 @@ Fixtures only. No backend and no valuation.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] |
-| Now          | Built and verified 2026-09-12. Both screens run, the site build deploys them, and the second feedback round is in. |
+| Now          | Nothing. |
 | Waiting on   | PR review. The user reacts to the prototype. |
 | Next         | Review the revised prototype on the published site. |
 | Last touched | 2026-09-12                               |
@@ -342,3 +342,5 @@ screen is the smaller half.
 
 That ticket stays BLOCKED and unclaimed. Its acceptance has not been
 walked against it here, so this diff does not close it.
+
+Status at close: Built and verified 2026-09-12. Both screens run, the site build deploys them, and the second feedback round is in.

@@ -28,7 +28,7 @@ Synthetic generation of an entity with a requires_unique_suffix column produces 
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Nothing. Abandoned on a false premise. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-09-11                               |
@@ -129,3 +129,5 @@ it is set on one column in the corpus. The unused counter that
 prompted the filing is stale generated code in =trade=, recorded as
 further evidence on the codegen drift task, which is where regenerating
 the component belongs.
+
+Status at close: Nothing. Abandoned on a false premise.

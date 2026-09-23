@@ -32,7 +32,7 @@ operating office already gets.
 |--------------+------------------------------------------|
 | State        | DONE                                      |
 | Parent story | [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] |
-| Now          | Implemented, verified end-to-end via the real provisioning orchestration and a Qt client test scenario (4/4 steps PASSED). |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                  |
 | Next         | Nothing -- task complete.                 |
 | Last touched | 2026-08-05                                |
@@ -138,3 +138,5 @@ missing derivation_kind/scope/binding_mode on DQ-publish inserts --
 plus a duplicate-menu bug (stale AdminPlugin build artifact) that
 was blocking manual verification specifically. See commits
 d606ccc90 and 08c507183.
+
+Status at close: Implemented, verified end-to-end via the real provisioning orchestration and a Qt client test scenario (4/4 steps PASSED).

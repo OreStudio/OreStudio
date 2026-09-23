@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 2120576C-C1D1-4F94-875B-D44984EADD9E
+:END:
+#+title: Refactor the IR rates implementation before more IR features land
+#+description: The IR synthetic data and stochastic process work stopped at sprint 25 close with open features that sit on a per-asset-class, scalar-parameter implementation. Refactor that implementation first, then pick up the open IR features on the new shape.
+#+type: capture
+#+level: cross
+#+filetags: :ir:curves:synthetic:quant:refactor:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Refactor the implementation of the IR rates work before any more IR
+features land. The work covers the synthetic IR curve data, the
+stochastic process family and the curve bootstrap. Sprint 25 closed
+three IR stories with open work (see References). The open features in
+those stories all sit on an implementation that does not scale to
+them. Refactor first, then build the features on the new shape.
+
+Known problems in the current implementation, from the open tasks:
+
+- *Synthetic config is one silo per asset class.* FX and IR each have
+  their own request and response pair, their own config shape and their
+  own topology query. The IR config has no stored =ore_key=, so a client
+  computes it. The feed control plane was already made asset-class
+  agnostic in sprint 25; the generation configs were not.
+- *Process parameters are scalars only.* BDT, HJM and LMM need
+  vector-valued parameters. The definition and value model cannot
+  store them.
+- *Six IR engines exist but nothing uses them.* PR #1932 added the
+  Black-Karasinski, BDT, affine, HJM, LMM and Quadratic Gaussian
+  engines. Only Black-Karasinski and G2++ have factory wiring, seed
+  data and config storage.
+- *One self-discounting curve.* One short-rate process feeds every
+  instrument. OIS discounting is not separate from index projection.
+- *Vintage handling has defects.* =find_series= gives a false negative
+  on vintage validity, and party provisioning publishes the FX driver
+  rates for one vintage only.
+
+Open features to pick up after the refactor:
+
+1. Wire the six IR engines into the system: factory, seed data and
+   config storage.
+2. Vector-valued process parameters (a precondition for 1).
+3. Dual-curve discounting and projection with a basis spread.
+4. The FX jump-diffusion (Merton) engine and its wiring.
+5. The vintage fixes: =find_series= validity, and all theme vintages
+   published on party provisioning.
+6. Curve bootstrap templates and a review and sign-off step, as
+   ores.web screens (the Qt versions went with the Qt client).
+
+Define the refactor itself before the features. A good first task is
+an analysis that reads the current code and names the target shape.
+
+* Why
+
+The IR work gave the synthetic IR curve feeds, six process engines, the
+curve bootstrap and the official curve republish. But each new feature
+adds another per-asset-class copy or another special case. Features
+built on the current shape will cost more and need rework later.
+Sprint 26 works on codegen for each module, then user journeys, then
+UX, so this work waits until after that.
+
+* References
+
+- [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]]
+  (sprint 25, abandoned at close): the open synthetic data tasks.
+- [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] (sprint 25, abandoned at close): the
+  engine landscape analysis and the open wiring tasks.
+- [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] (sprint 25,
+  DONE): the engine, the republish and the lineage that shipped.
+- [[id:E95A3D20-7BE2-4126-89F6-896F0F965C90][Asset-class-agnostic Market Simulator client]] (sprint 25,
+  abandoned at close): the per-asset-class duplication on the client
+  side.
+
+* See also
+
+- [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization]]: the precedent for making one
+  layer asset-class agnostic.

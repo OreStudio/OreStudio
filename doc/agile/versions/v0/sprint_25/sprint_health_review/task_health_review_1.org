@@ -31,7 +31,7 @@ focus signal, and bookkeeping hygiene. Write the full analysis into
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:187B03E4-D468-445A-B970-A048ED3FC430][Sprint health review — System 2 analysis]] |
-| Now          | Complete.                               |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                                |
 | Last touched | 2026-08-07                               |
@@ -242,3 +242,5 @@ the accompanying bookkeeping pass (2 stories closed, STARTED count 9→7).
 The most important remaining fix: evaluate the two sprawling stories
 (Refactor codegen C++, IR Rates) for split-and-close. The 5 sprint table
 disagreements and stale Now fields have been resolved.
+
+Status at close: Complete.

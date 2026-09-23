@@ -30,7 +30,7 @@ refdata does not.
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Superseded before implementation started. |
+| Now          | Nothing. |
 | Waiting on   | [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift to refdata-cpp (pilot)]] |
 | Next         | Start once refdata pattern is merged.  |
 | Last touched | 2026-05-31                             |
@@ -129,3 +129,5 @@ baseline: ores.trading]] story, which applies the fuller ores.refdata-pilot
 bar (profile binding + zero-diff regen + CI drift-check extension). This
 task's full worklist (per-model flag groups, exclusions to restore) carried
 forward into that story's C++ task Notes.
+
+Status at close: Superseded before implementation started.

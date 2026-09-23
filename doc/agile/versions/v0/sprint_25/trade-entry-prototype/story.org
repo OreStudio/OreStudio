@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :trading:prototype:structures:booking:sprint_25:v0:
 #+created: 2026-09-11
-#+updated: 2026-09-11
+#+updated: 2026-09-23
 #+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -117,12 +117,12 @@ story branch.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | ABANDONED |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Charted 2026-09-11. The product-type research is done, both screens are built, and the site serves them behind a prototypes gallery. The user's second review round is in, and the screen separates reference data from economics. All under PR #2067 review. |
-| Waiting on    | The prototype PR. The user reacts to the artifact. |
-| Next          | Review the revised prototype on the published site, then take the next frontier ticket. |
-| Last touched  | 2026-09-12                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23 |
 
 * Acceptance
 
@@ -148,14 +148,14 @@ story branch.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:741B9065-5ADB-4391-BB21-B6C72D979771][Research: catalogue the product types and their existing Qt form coverage]] | DONE | 2026-09-11 | 2026-09-11 | List every ORE Studio product type the component picker must offer, grouped by asset class, and record which ones already have a specialised Qt form in InstrumentFormRegistry and which do not. The list feeds the picker and the rule that decides which types fall through to the generic form. |
-| [[id:D36D2221-7DC8-4DA8-A727-5C82BB8A022A][Research: what the compute grid can do for an ad-hoc valuation run]] | BACKLOG | | | Establish what ores.compute offers today for a one-off valuation: what a run configuration and a computation definition require, how an input token resolves to a versioned market data snapshot, whether a single trade or structure can be valued on demand, and what a result carries. This is the fact the initial-NPV decision waits on. |
+| [[id:D36D2221-7DC8-4DA8-A727-5C82BB8A022A][Research: what the compute grid can do for an ad-hoc valuation run]] | ABANDONED | | 2026-09-23 | Establish what ores.compute offers today for a one-off valuation: what a run configuration and a computation definition require, how an input token resolves to a versioned market data snapshot, whether a single trade or structure can be valued on demand, and what a result carries. This is the fact the initial-NPV decision waits on. |
 | [[id:EE8DF78E-B3DC-45A8-AB91-0EC4943EEBAE][Capture the structures and deal-composition notes into the repo]] | ABANDONED | | | Superseded on 2026-09-11: the =eager maxwell= worktree already has this page in flight as *Trade Structures and Deal Composition* (=FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160=), on branch =feature/document-structures-and-deal-composition=. Two worktrees writing one page would clash. |
 | [[id:07E0C977-798A-4801-A623-E294169D6960][Make the site build copy and deploy doc/prototypes]] | DONE | 2026-09-11 | 2026-09-11 | The prototype lives under doc/prototypes/ and must be viewable from the published site. Extend the site build to copy the prototype assets and deploy them alongside the org pages, and confirm a published prototype loads with its assets intact. Nothing else in this story is viewable until this lands. |
-| [[id:08A64F8B-2834-459B-8401-ACE814A99E0C][Decide how the booking screen obtains its initial NPV]] | BLOCKED | | | The booking screen must capture the NPV at the time of booking, but no pricing layer exists. The candidate is to have the user request a valuation and dispatch a compute run, whose result carries the NPV and the market data snapshot it was struck against. Decide the request path, what the booker sees while it runs, what happens when it fails or is stale, and what provenance is stored beside the number. |
-| [[id:3EF0E6D8-72FE-4239-AB12-8670E234B5AC][Decide how audit and object versioning surface in the booking screen]] | BACKLOG | | | The booking screen must show the structure version and its audit trail. ores.history already dispatches by entity_type to one generic history dialog, and Temporal Composite Entity Versioning already specifies that a child write bumps the parent's version. Decide what the screen shows, at which level, and how a component change reads in the structure's history. |
-| [[id:82C8FB53-F0E2-4C5C-8415-5D3E7237C91D][Decide which strategies the strategy mode encodes and what their invariants are]] | BACKLOG | | | Strategy mode fixes the leg set and refuses a structure that breaks the strategy's invariants. Decide which strategies the prototype carries, prompted by the source document's examples (Risk Reversal, Butterfly, Straddle, Strangle, FX Swap, Vega Spread), what each one's invariant actually is, and how the screen reports a broken one without blocking an amend that only touches reference data. |
+| [[id:08A64F8B-2834-459B-8401-ACE814A99E0C][Decide how the booking screen obtains its initial NPV]] | ABANDONED | | 2026-09-23 | The booking screen must capture the NPV at the time of booking, but no pricing layer exists. The candidate is to have the user request a valuation and dispatch a compute run, whose result carries the NPV and the market data snapshot it was struck against. Decide the request path, what the booker sees while it runs, what happens when it fails or is stale, and what provenance is stored beside the number. |
+| [[id:3EF0E6D8-72FE-4239-AB12-8670E234B5AC][Decide how audit and object versioning surface in the booking screen]] | ABANDONED | | 2026-09-23 | The booking screen must show the structure version and its audit trail. ores.history already dispatches by entity_type to one generic history dialog, and Temporal Composite Entity Versioning already specifies that a child write bumps the parent's version. Decide what the screen shows, at which level, and how a component change reads in the structure's history. |
+| [[id:82C8FB53-F0E2-4C5C-8415-5D3E7237C91D][Decide which strategies the strategy mode encodes and what their invariants are]] | ABANDONED | | 2026-09-23 | Strategy mode fixes the leg set and refuses a structure that breaks the strategy's invariants. Decide which strategies the prototype carries, prompted by the source document's examples (Risk Reversal, Butterfly, Straddle, Strangle, FX Swap, Vega Spread), what each one's invariant actually is, and how the screen reports a broken one without blocking an amend that only touches reference data. |
 | [[id:EDA1C2B2-C029-4BFC-8DEF-A15E8B369B4A][Build the booking screen prototype]] | DONE | 2026-09-11 | 2026-09-11 | Build the throwaway clickable prototype of the booking screen: the two-level structure panel, strategy and package modes, the component picker over every product type, the four archetype widgets with a generic fallback, the version and authorisation header, the read-only initial NPV with its provenance, and forming a structure from existing trades. Mock fixtures only, from the ORE example trades. |
-| [[id:DD436803-DCB9-4774-8A77-133AA0614219][Build the pricing screen prototype and the Book handoff]] | BLOCKED | | | Build the throwaway prototype of the pricing screen: single-leg and structure modes, condensed and expanded views, tweakable vols and rates under a ticking market data indicator, a NPV readout, and the Book button that carries the economics across to the booking screen. The prototype fakes the valuation; the point is the handoff and the two views. |
+| [[id:DD436803-DCB9-4774-8A77-133AA0614219][Build the pricing screen prototype and the Book handoff]] | ABANDONED | | 2026-09-23 | Build the throwaway prototype of the pricing screen: single-leg and structure modes, condensed and expanded views, tweakable vols and rates under a ticking market data indicator, a NPV readout, and the Book button that carries the economics across to the booking screen. The prototype fakes the valuation; the point is the handoff and the two views. |
 
 * Decisions
 
@@ -192,3 +192,7 @@ resolve.
 - Containment deeper than two levels. The source document does not ask for it.
 - The Structured Transaction Approval Request workflow.
 - Confirmation and settlement at structure level.
+
+* Result
+
+Abandoned at sprint 25 close. Sprint 26 orders the work as: codegen sync for each module, then user-journey analysis, then UX. New journey and UX stories start clean after the codegen pass. This story is not carried forward.

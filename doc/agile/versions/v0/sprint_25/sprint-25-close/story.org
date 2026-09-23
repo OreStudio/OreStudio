@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: ABB0BD89-E149-4E8C-9EA0-5B3514DFE4C0
+:END:
+#+title: Story: Sprint 25 closure: story cleanup and reset for sprint 26
+#+description: Close out sprint 25: close every story that is finished, abandon the superseded codegen, web and half-finished approaches, split the skills catalogue story, and file one clean capture for the IR work.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-23                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:826C9671-AE0D-48CD-B8E6-666DF92DB4AF][Clean up the sprint 25 stories for close]] | STARTED | 2026-09-23 | | Close every finished story, abandon the superseded and half-finished ones, split the skills catalogue story, and file one capture for the IR work. |
+
+* Decisions
+
+* Out of scope
+
+-

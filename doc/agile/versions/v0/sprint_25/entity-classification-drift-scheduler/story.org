@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :codegen:drift:tooling:sprint_25:v0:
 #+created: 2026-08-04
-#+updated: 2026-09-07
+#+updated: 2026-09-23
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,12 +21,12 @@ Bring ores.scheduler to the state the compass-codegen-fix-drift skill defines: e
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | ABANDONED |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Claim the bind task.                   |
-| Last touched  | 2026-09-07                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23 |
 
 * Acceptance
 
@@ -42,10 +42,14 @@ Bring ores.scheduler to the state the compass-codegen-fix-drift skill defines: e
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:66997EC9-8A28-4436-8496-181DF8EC0F83][Bind ores.scheduler entities to profiles; verify zero-diff regen]] | BACKLOG | | | Implement profile binding for the scheduler-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the compass-codegen-fix-drift skill. Known starting point: set service_find_prefix on job_definition; delete leftover hand-written generators/ directory that conflicts with the new template-generated generator/ directory. |
+| [[id:66997EC9-8A28-4436-8496-181DF8EC0F83][Bind ores.scheduler entities to profiles; verify zero-diff regen]] | ABANDONED | | 2026-09-23 | Implement profile binding for the scheduler-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the compass-codegen-fix-drift skill. Known starting point: set service_find_prefix on job_definition; delete leftover hand-written generators/ directory that conflicts with the new template-generated generator/ directory. |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+Abandoned at sprint 25 close. Sprint 26 replaces the codegen approaches tried so far with one method: for each module, sync codegen and clear its drift. Sprint 26 opens new, clean stories for each module. This story is not carried forward.

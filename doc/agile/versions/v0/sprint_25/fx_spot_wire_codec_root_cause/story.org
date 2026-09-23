@@ -26,7 +26,7 @@ instead of coming up blank.
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | FX Spot wire-codec root cause found, fixed, and verified live. CRM investigation found and fixed two real bugs (stale JWT snapshot, party-scoping mismatch); the larger holding-company gap those bugs exposed is scoped as its own story. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing -- story complete. Follow-on work continues in the holding-company treasury story. |
 | Last touched  | 2026-08-04                             |
@@ -103,3 +103,7 @@ instead of coming up blank.
 * Out of scope
 
 -
+
+* Result
+
+Status at close: FX Spot wire-codec root cause found, fixed, and verified live. CRM investigation found and fixed two real bugs (stale JWT snapshot, party-scoping mismatch); the larger holding-company gap those bugs exposed is scoped as its own story.

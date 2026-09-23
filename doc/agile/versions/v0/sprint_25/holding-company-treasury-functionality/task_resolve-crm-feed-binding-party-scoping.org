@@ -32,7 +32,7 @@ feed_binding.
 |--------------+------------------------------------------|
 | State        | DONE                                      |
 | Parent story | [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] |
-| Now          | Implemented, verified end-to-end and live via a Qt client test scenario (4/4 steps PASSED). |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                  |
 | Next         | Nothing -- task complete.                 |
 | Last touched | 2026-08-06                                |
@@ -129,3 +129,5 @@ publish-crm-topology task already fixed (PR #1864), but by changing
 the writer to FpML-style literals instead of the validator wiring --
 incompatible with #1864's fix once both merged. Reverted the writer
 back to the short codes matching the correct validator.
+
+Status at close: Implemented, verified end-to-end and live via a Qt client test scenario (4/4 steps PASSED).

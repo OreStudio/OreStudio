@@ -57,7 +57,7 @@ and distil the decision into the story's =* Decisions=.
 |--------------+-------------------------------------------------------------------------|
 | State        | DONE                                                                    |
 | Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
-| Now          |                                                                         |
+| Now          | Nothing. |
 | Waiting on   |                                                                         |
 | Next         |                                                                         |
 | Last touched | 2026-08-09                                                              |

@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :ui:verification:sprint_25:v0:
 #+created: 2026-09-06
-#+updated: 2026-09-06
+#+updated: 2026-09-23
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -30,12 +30,12 @@ what fails and what the shell-only run could not see.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | ABANDONED |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-09-06                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23 |
 
 * Acceptance
 
@@ -84,3 +84,7 @@ evidence that protection still holds.
   the system-test report already recorded its evidence.
 - Service-side fixes the UI run may surface: findings land here with
   their owning fix PR, in the same style as the report.
+
+* Result
+
+Abandoned at sprint 25 close. The Qt client that this story targets was removed in sprint 25 (Retire Qt and emit the UI metadata to TypeScript).

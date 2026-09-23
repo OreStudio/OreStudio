@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 826C9671-AE0D-48CD-B8E6-666DF92DB4AF
+:END:
+#+title: Task: Clean up the sprint 25 stories for close
+#+description: Close every finished story, abandon the superseded and half-finished ones, split the skills catalogue story, and file one capture for the IR work.
+#+type: task
+#+level: s1
+#+filetags: :sprint-25-close:sprint_25:v0:
+#+owner: marco
+#+branch: feature/health-review-2
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:ABB0BD89-E149-4E8C-9EA0-5B3514DFE4C0][Sprint 25 closure: story cleanup and reset for sprint 26]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:ABB0BD89-E149-4E8C-9EA0-5B3514DFE4C0][Sprint 25 closure: story cleanup and reset for sprint 26]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

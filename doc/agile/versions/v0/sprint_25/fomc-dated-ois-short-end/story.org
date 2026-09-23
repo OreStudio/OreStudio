@@ -46,7 +46,7 @@ decision lands in =* Decisions= below when the analysis completes.
 |---------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State         | DONE                                                                                                                                                                                                                                                                                                                                                                          |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]                                                                                                                                                                                                                                                                                                                        |
-| Now           | All five tasks DONE. D3 (fomc-bootstrap-segment) implemented, verified and merged via PR #1953 (2026-08-11): the FOMC short end as one config of the existing engine, seeds live in a recreated DB (schema 0.0.25), full build + rat + PR CI green. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                                                                                                                                                                                                                                                                                                                                                                      |
 | Next          | End-to-end feed verification of the FOMC segment (feed start, republish chain) needs the folder cascade to cover IR curve configs; tracked on the feed lifecycle harmonization story (task folder-cascade-all-asset-classes).                                                                                     |
 | Last touched  | 2026-08-11                                                                                                                                                                                                                                                                                                                                                                    |
@@ -358,3 +358,7 @@ meeting confirms them.
   deliverability restrictions, P&L attribution).
 - Reconciliation of the bootstrap engine against QuantLib's own
   implementation.
+
+* Result
+
+Status at close: All five tasks DONE. D3 (fomc-bootstrap-segment) implemented, verified and merged via PR #1953 (2026-08-11): the FOMC short end as one config of the existing engine, seeds live in a recreated DB (schema 0.0.25), full build + rat + PR CI green.

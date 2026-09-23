@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_25:v0:
 #+created: 2026-09-18
-#+updated: 2026-09-18
+#+updated: 2026-09-23
 #+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,12 +21,12 @@ Complete the org-migration story: convert the remaining legacy JSON-format entit
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | ABANDONED |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-09-18                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23 |
 
 * Acceptance
 
@@ -36,10 +36,10 @@ Complete the org-migration story: convert the remaining legacy JSON-format entit
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:64A63677-2C11-4585-8291-8F5D0721B5F3][Prune orphaned deployed skills and make the skills build delete removed sources]] | STARTED | 2026-09-18 | | Task for: Migrate remaining ~100 entity models from JSON to org |
-| [[id:B7BE4D95-2C5F-4AC0-8845-90B083A45810][Retire the JSON-era residue the org migration left behind]] | STARTED | 2026-09-18 | | Task for: Migrate remaining ~100 entity models from JSON to org |
+| [[id:64A63677-2C11-4585-8291-8F5D0721B5F3][Prune orphaned deployed skills and make the skills build delete removed sources]] | ABANDONED | 2026-09-18 | 2026-09-23 | Task for: Migrate remaining ~100 entity models from JSON to org |
+| [[id:B7BE4D95-2C5F-4AC0-8845-90B083A45810][Retire the JSON-era residue the org migration left behind]] | ABANDONED | 2026-09-18 | 2026-09-23 | Task for: Migrate remaining ~100 entity models from JSON to org |
 | [[id:7917CA28-A69D-4FA5-A95B-B0346C73272A][Decommission the legacy ores.codegen bash scripts]] | DONE | 2026-09-18 | 2026-09-18 | Task for: Migrate remaining ~100 entity models from JSON to org |
-| [[id:9B900D8C-8F98-4733-96AF-2C838370ED9C][Add the dataset archetypes the four-dataset migration needs]] | STARTED | 2026-09-18 | | Image artefacts, the ip2country artefact plus TSV import, and FPML per-entity refdata, so crypto/flags/ip2country/FPML can move onto the org dataset pipeline. |
+| [[id:9B900D8C-8F98-4733-96AF-2C838370ED9C][Add the dataset archetypes the four-dataset migration needs]] | DONE | 2026-09-18 | 2026-09-23 | Image artefacts, the ip2country artefact plus TSV import, and FPML per-entity refdata, so crypto/flags/ip2country/FPML can move onto the org dataset pipeline. |
 
 * Decisions
 
@@ -118,3 +118,7 @@ prune step.
 
 Retire the residue that the JSON-to-org migration left behind. Delete
 what nothing calls. Correct what still misleads a reader.
+
+* Result
+
+Abandoned at sprint 25 close. Sprint 26 replaces the codegen approaches tried so far with one method: for each module, sync codegen and clear its drift. Sprint 26 opens new, clean stories for each module. This story is not carried forward.

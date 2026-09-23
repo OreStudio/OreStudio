@@ -31,7 +31,7 @@ complexity measure per component. Fix every mechanical gap.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:18BC9395-DE6B-4F95-A9DD-2834DEECF7C1][Component architecture audit: first run on the drift-free components]] |
-| Now          | All four audits are done and committed on the branch. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Review and merge the branch.           |
 | Last touched | 2026-09-07                               |
@@ -115,3 +115,5 @@ command was added. =validate_docs.py= is now composite-aware with a
 =ores.analytics.quant= and the diagram-less parts. The marketdata
 client-part registration gap is out of scope and recorded in the
 audit story.
+
+Status at close: All four audits are done and committed on the branch.

@@ -39,7 +39,7 @@ them.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] |
-| Now          | Batch committed (af564bfda9, 7175414576); full preset build, ctest 71/71 and the roundtrip, cmake-sources and codegen drift checks green. Live matrix green for all five served families.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Trade-side surface (task 1D07E7C3).                  |
 | Last touched | 2026-09-08                               |
@@ -170,3 +170,5 @@ Closing battery green: full preset build exit 0; ctest 71/71 passed
 (904 s); roundtrip check exit 0 (pre-existing partial-fidelity
 baseline, no outputs touched); shell cmake-sources drift clean; codegen
 drift clean (=--all=); working tree clean after drift regeneration.
+
+Status at close: Batch committed (af564bfda9, 7175414576); full preset build, ctest 71/71 and the roundtrip, cmake-sources and codegen drift checks green. Live matrix green for all five served families.

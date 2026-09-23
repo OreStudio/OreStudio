@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :ore:acme:synthetic:trading:seeder:sprint_25:v0:
 #+created: 2026-09-07
-#+updated: 2026-09-07
+#+updated: 2026-09-23
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -48,12 +48,12 @@ a trade stay in one place.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BLOCKED                              |
+| State         | ABANDONED |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Paused after analysis; nothing in flight. |
-| Waiting on    | The trading model cleanup, by choice rather than by necessity. |
-| Next          | Resume once the model defects that bound coverage are repaired. |
-| Last touched  | 2026-09-08                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23 |
 
 * Acceptance
 
@@ -117,7 +117,7 @@ in when history is genuinely needed.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:BC57336F-9823-428F-8060-15DB3AEB47B3][Scaffold story: Generate realistic trade populations for Acme using ORE's TradeGenerator]] | DONE | 2026-09-07 | 2026-09-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:A1405F36-C32F-46CE-A550-40015616B986][Analyse the trade population pipeline end to end]] | BACKLOG | | | Survey the ways a sized population could be produced, evaluate each on speed, reproducibility, realism and cost, and present the options for a decision. |
+| [[id:A1405F36-C32F-46CE-A550-40015616B986][Analyse the trade population pipeline end to end]] | ABANDONED | | 2026-09-23 | Survey the ways a sized population could be produced, evaluate each on speed, reproducibility, realism and cost, and present the options for a decision. |
 
 * Decisions
 
@@ -153,3 +153,7 @@ proceed against what the schema stores today.
   story.
 - Extending instrument coverage. 28 of ORE's 112 trade types cannot be stored,
   and adding them is a model change rather than a generation change.
+
+* Result
+
+Abandoned at sprint 25 close, as part of the reset to one approach for sprint 26. The work is not in the sprint 26 plan. The done tasks stay as the record of what shipped.

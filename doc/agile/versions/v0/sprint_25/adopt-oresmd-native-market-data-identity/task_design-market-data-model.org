@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-17
-#+updated: 2026-09-17
+#+updated: 2026-09-23
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 #+startup: inlineimages
@@ -42,12 +42,12 @@ and no code.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED |
 | Parent story | [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] |
-| Now          | Design drafted and revised 2026-09-17; awaiting agreement on the open questions in section 4.10. |
-| Waiting on   | Agreement on the open questions, and a ruling on the story's out-of-scope conflict in section 4.8.1. |
-| Next         | Distil the agreed decisions into the story, amend the affected implementation tasks, and raise the round-trip workstream. |
-| Last touched | 2026-09-17                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-23 |
 
 * Acceptance
 
@@ -609,3 +609,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned at sprint 25 close, as part of the reset to one approach for sprint 26. The work is not in the sprint 26 plan. The done tasks stay as the record of what shipped.

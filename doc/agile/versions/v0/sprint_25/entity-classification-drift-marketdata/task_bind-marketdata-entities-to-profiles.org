@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
-#+updated: 2026-09-07
+#+updated: 2026-09-23
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Survey every ores.marketdata entity against the profile catalogue, rebind matche
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | ABANDONED |
 | Parent story | [[id:649C97F1-EB47-4CA8-A3AE-AA7D78FCD46D][Entity classification and drift baseline: ores.marketdata]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-07                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-23 |
 
 * Acceptance
 
@@ -73,3 +73,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned at sprint 25 close. Sprint 26 replaces the codegen approaches tried so far with one method: for each module, sync codegen and clear its drift. Sprint 26 opens new, clean stories for each module. This story is not carried forward.

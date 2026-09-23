@@ -43,7 +43,7 @@ is verified at the DB layer and on the changed-event stream.
 |--------------+----------------------------------------|
 | State        | DONE                                  |
 | Parent story | [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] |
-| Now          | Batch committed (3997afdcbb); full preset build and ctest 71/71 green. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Equity batch (task_shell-trading-equity-instrument-verbs). |
 | Last touched | 2026-09-07                               |
@@ -173,3 +173,5 @@ tables (e.g. =1e+06=); the instrument uuid renders raw.
 Verification: cmake-sources drift clean
 (=regenerate_cmake_component_files.py --all --check=); full preset
 build green; ctest 71/71 passed.
+
+Status at close: Batch committed (3997afdcbb); full preset build and ctest 71/71 green.

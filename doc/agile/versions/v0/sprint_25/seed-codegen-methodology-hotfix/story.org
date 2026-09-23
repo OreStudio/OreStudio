@@ -23,7 +23,7 @@ Database recreation completes on main again, and every seed script that names th
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Done. The seed is restored.            |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. The story is closed.          |
 | Last touched  | 2026-09-18                               |
@@ -46,3 +46,7 @@ Database recreation completes on main again, and every seed script that names th
 * Out of scope
 
 -
+
+* Result
+
+Status at close: Done. The seed is restored.

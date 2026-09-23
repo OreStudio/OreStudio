@@ -47,7 +47,7 @@ Fix the four, and add the check that makes the promise verifiable.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Done; PR pending.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-09-10                               |
@@ -126,3 +126,5 @@ It failed before the fix, naming the four files and lines, and passes
 after. That was the point of the acceptance: the check that would have
 caught the defect is demonstrated against the defect rather than
 asserted against a clean tree.
+
+Status at close: Done; PR pending.

@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-18
-#+updated: 2026-09-18
+#+updated: 2026-09-23
 #+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Phase 2 of the story. Add the =ores.ts= technical space so the ores.qt UI consum
 
 | Field        | Value                                                        |
 |--------------+--------------------------------------------------------------|
-| State        | STARTED                                                      |
+| State        | DONE |
 | Parent story | [[id:FA160AE1-CB9A-410F-A8B0-31FBF2247962][Generate protocol messages from one model into C++ and TypeScript]] |
-| Now          | Done. Committed as =8af78455ee= and open as PR #2104. The =ores.ts= space renders six IAM protocols; =tsc --strict= passes; regeneration is idempotent. |
-| Waiting on   | CI and the merge.                                            |
-| Next         | Merge, then close this task.                                 |
-| Last touched | 2026-09-18                                                   |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-23 |
 
 * Acceptance
 
@@ -109,3 +109,5 @@ Two properties of the generated surface are worth a follow-up decision:
 - A message with no fields renders as =export interface X {}=, which
   accepts any object. =Record<string, never>= would reject junk the
   server ignores.
+
+Closed at sprint 25 close. Its work merged in PR #2104.

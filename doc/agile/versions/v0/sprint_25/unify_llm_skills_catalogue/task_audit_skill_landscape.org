@@ -36,7 +36,7 @@ since that mapping is what the sequencing function is built from.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-08-25                               |
@@ -81,6 +81,8 @@ read but assessed rather than mined, since they assume Graphite and a
 cloud VM fleet; Matt's =ask-matt= and =teach= were skimmed, since the
 first is a router we replace and the second is multi-session tutoring
 with no bearing on this work.
+
+Status at close: Not yet started.
 
 * Plan
 

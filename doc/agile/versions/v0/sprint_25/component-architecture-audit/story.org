@@ -28,7 +28,7 @@ same checks.
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | All four audits are done. The branch carries the records for review. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Review and merge the branch.           |
 | Last touched  | 2026-09-07                               |
@@ -61,3 +61,7 @@ same checks.
   The audit records them as findings for a later pass.
 - The =ores.marketdata= client-part registration gap, recorded for a
   later audit.
+
+* Result
+
+Status at close: All four audits are done. The branch carries the records for review.

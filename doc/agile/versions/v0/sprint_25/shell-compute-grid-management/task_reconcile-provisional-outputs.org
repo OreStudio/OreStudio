@@ -12,7 +12,7 @@
 #+blocked_on: A97F58CC-6C2D-4138-AE4C-60D8C53B88A7
 #+blocked_since: 2026-08-10
 #+created: 2026-08-10
-#+updated: 2026-08-10
+#+updated: 2026-09-23
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Every compute verb the shell exposes renders through its codegen table renderer.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | ABANDONED |
 | Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:A97F58CC-6C2D-4138-AE4C-60D8C53B88A7][Bind ores.compute entities to profiles; verify zero-diff regen]] |
-| Next         | Begin implementation once the drift task generates the renderers. |
-| Last touched | 2026-08-10                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-23 |
 
 * Acceptance
 
@@ -71,3 +71,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned at sprint 25 close. Sprint 26 replaces the codegen approaches tried so far with one method: for each module, sync codegen and clear its drift. Sprint 26 opens new, clean stories for each module. This story is not carried forward.

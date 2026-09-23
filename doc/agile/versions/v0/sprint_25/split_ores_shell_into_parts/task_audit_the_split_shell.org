@@ -31,7 +31,7 @@ a known position.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:A52DCD72-BEF4-4655-9987-A3103B288576][Split ores.shell into composable parts]] |
-| Now          | Done. The triage is written into the component overview. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next          | Two findings wait on a decision: the adapter include prefix and =scripts/=. |
 | Last touched | 2026-09-16                               |
@@ -111,3 +111,4 @@ failed out of 72. The complexity measure is 21702 NLOC over 610 functions at
 an average CCN of 4.2, with 16 warnings, 15 of them in the =application=
 command units.
 
+Status at close: Done. The triage is written into the component overview.

@@ -17,14 +17,14 @@ They were designed and prototyped first, on throwaway branches, and those
 prototypes are the model the later journeys follow. Where a journey here has a
 prototype, the document links it.
 
-*The one group that carries server-side state.* A setup journey runs work that
-takes time and can fail half way, so the path it describes is backed by a
-[[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][journey]] in the server sense: the state
-lives in =ores.workflow=, the person can leave the page and come back, and the
-shell can drive the same steps. The document is still a user journey — a design
-document — but it is the one kind whose screens are a view onto server-side
-state. Every other group describes a path over immediate operations, which keeps
-no such state.
+*The one group whose journeys carry state.* A setup journey runs work that takes
+time and can fail half way, so it is the *workflow* composition class: the
+journey is the definition, and its progress is a
+[[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in
+=ores.workflow=. The person can leave the page and come back, and the shell can
+drive the same steps. Every other group describes a path over immediate
+operations, which keeps no such state. See
+[[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]].
 
 The order matters. First run is the only one that can happen on an empty
 database; the other two need a running installation and a signed-in

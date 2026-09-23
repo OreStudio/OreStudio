@@ -14,12 +14,13 @@ built. Each journey is one document: the actor, the trigger, the steps, a
 wireframe of the screen, the entity models it composes, and the operations and
 messages each step needs — including the ones the server does not provide yet.
 
-These are *client-side journeys*. They describe what a person does in the
-interface, which screens they move between, and what each screen shows. They are
-not [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][journeys]] in the server sense,
-which are stateful paths in =ores.workflow= that a client can resume. A
-client-side journey usually keeps no server-side state at all; where one needs
-resumable state it becomes a server-side journey, and the document says so.
+These documents describe what a person does in the interface, which screens they
+move between, and what each screen shows. A journey is a definition, and where a
+journey needs resumable state, *the journey is not server-side — its state is*,
+kept as a [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in
+=ores.workflow=. Most journeys need no such state at all. See
+[[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] for the four
+composition classes and where the transaction boundary sits.
 
 Journeys are grouped by /logical topic/, never by component. A component is an
 implementation concept, and it changes as the code moves; what a person is

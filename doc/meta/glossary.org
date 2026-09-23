@@ -407,12 +407,13 @@ operations and messages each step needs. Lives under
 logical topics, not components — a component is an implementation concept, and a
 journey is grouped by what the person is trying to do.
 
-A user journey is not a [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][journey]]. A journey is a server-side object whose state
-is persisted, so any client can resume it where it stopped; the journeys are
-first run, new tenant and new party. A user journey is written before anything is
-built and usually keeps no server-side state; when one needs resumable state it
-becomes a journey. See
-[[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] for the full contract.
+A user journey is written before anything is built. The journey itself is the
+definition it becomes, and the state that lets a client resume it is a
+[[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]]: the journey is not
+server-side, its state is. Most user journeys keep no such state at all. See
+[[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] for the
+contract, and [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] for how a
+journey is executed.
 
 #+ATTR_HTML: :class hug-leading
 | Field           | Value                                       |

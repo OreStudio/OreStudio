@@ -92,8 +92,10 @@ and end, and a screen a person can be dropped into without context. Under that
 rule "manage accounts" is not a journey and "bring someone in" is.
 
 Most post-setup journeys carry no server-side state. They are guided sequences
-over immediate operations. Where one does need resumable state it becomes a
-[[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][journey]] in the server sense.
+over immediate operations. Where one does need resumable state, the journey is
+the definition and its progress is a
+[[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in =ores.workflow=;
+the journey is not server-side, its state is.
 
 The member's journeys and the tenant administrator's journeys are separate
 journeys with separate screens. Fourteen journeys in six topic groups:

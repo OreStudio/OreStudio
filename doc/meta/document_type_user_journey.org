@@ -58,11 +58,18 @@ carries only what is specific to =user_journey=.
 
 * Relation to a journey
 
-A user journey is not a [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][journey]]. A journey is a server-side object whose
-state is persisted, so any client can resume it where it stopped; the journeys
-are first run, new tenant and new party. A user journey is a design document
-describing a path a person takes, and most keep no server-side state at all.
-When a user journey needs resumable state, it becomes a journey.
+A user journey is the design artefact. The journey itself is the definition it
+becomes when built — an ordered list of steps and the screens that carry them. A
+journey is not a server-side object: *the journey is not server-side, its state
+is*, and that state is a
+[[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in
+=ores.workflow=, which is what lets any client resume it.
+
+Most user journeys need none of that. They are runs of screens over immediate
+operations and keep no server-side state at all. When one does need resumable
+state, it becomes a journey whose progress is a workflow instance. See
+[[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] for the
+composition classes and where the transaction boundary sits.
 
 * Why one screen, not one per entity
 

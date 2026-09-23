@@ -74,10 +74,13 @@ operation for each stage.
   can act for: at sign-in, an account that works in more than one party
   chooses one, and it can switch between them later. Provisioning a
   party associates the accounts chosen for it.
-- *Journey*: a guided path that takes a person through workflows and
-  their own actions (sign-in, onboarding) in order. The journeys are
-  /first run/, /new tenant/ and /new party/. The server keeps the
-  journey's state, so any client can resume it where it stopped.
+- *Journey*: an ordered definition of steps that takes a person through
+  workflows and their own actions (sign-in, onboarding) in order. The journeys
+  are /first run/, /new tenant/ and /new party/. A journey is a definition, not
+  a server-side object: its progress is kept as a
+  [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in
+  =ores.workflow=, so any client can resume it where it stopped. See
+  [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]].
 - *Seed profile*: the data set that provisioning gives a new tenant.
   The profile selects where the parties come from and which bundles
   are published. The profiles are:

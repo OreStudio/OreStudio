@@ -69,11 +69,14 @@ before any code is written.
 - Pattern to copy: =prototype/first-run-journey=,
   =prototype/new-tenant-journey= and =prototype/new-party-journey= -- the same
   approach applied to the bootstrap journeys.
-- The word /journey/ is settled: a server-side journey is a stateful guided
-  path in =ores.workflow=, and a
+- The word /journey/ is settled: a
   [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]] is a design
-  document. Most post-setup journeys keep no server-side state; one that needs
-  resumable state becomes a server-side journey.
+  document, and the journey is the definition it becomes. The journey is not
+  server-side; its state is, and that state is a
+  [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in
+  =ores.workflow=. Most post-setup journeys keep no such state.
+  [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] records this
+  and the four composition classes.
 - The authoritative entity is /account/. "User" is not a defined term: it is one
   value of account type, beside service, algorithm and LLM.
 - Grilling tasks: use the grilling and domain-modeling skills. Research tasks:

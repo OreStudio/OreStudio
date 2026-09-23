@@ -197,15 +197,17 @@ Related documents:
 
 ** ores.analytics
 
-Risk analytics results and aggregation — NPV, sensitivities, Greeks, and
-scenario analysis. Consumes ores.reporting output and provides the query layer
-for the analytics UI.
+Pricing model configuration and quantitative math: the pricing engine type
+registry, model configurations, product-to-engine mappings and their
+normalised parameters, plus the dependency-light math library the domain
+uses for CRM topology and stochastic price processes.
 
 | Sub-component          | Role                                          | Dependencies                                        |
 |------------------------+-----------------------------------------------+-----------------------------------------------------|
 | [[id:66D3F1D6-1926-40CF-BCF5-AA42F14AD6D5][ores.analytics.api]]     | Shared analytics types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                                   |
-| [[id:BC804C31-D6F7-4E4E-9C4F-F4578BEAF4F5][ores.analytics.core]]    | NPV, sensitivity, scenario aggregation        | [[id:66D3F1D6-1926-40CF-BCF5-AA42F14AD6D5][ores.analytics.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]] |
+| [[id:BC804C31-D6F7-4E4E-9C4F-F4578BEAF4F5][ores.analytics.core]]    | Pricing model configuration — engine types, model types and product parameters | [[id:66D3F1D6-1926-40CF-BCF5-AA42F14AD6D5][ores.analytics.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]] |
 | [[id:E5952F27-53BD-4C4D-85CD-556B6421B768][ores.analytics.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                     | [[id:BC804C31-D6F7-4E4E-9C4F-F4578BEAF4F5][ores.analytics.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                      |
+| [[id:D9424733-9602-45DB-8E87-88F2851C3C29][ores.analytics.quant]]   | Dependency-light quant math: CRM spanning-tree topology, derived-rate engine, stochastic price processes | Boost, immer; no database, NATS or refdata coupling |
 
 ** ores.workflow
 

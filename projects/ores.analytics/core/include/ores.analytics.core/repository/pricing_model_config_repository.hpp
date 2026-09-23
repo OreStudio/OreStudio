@@ -113,6 +113,12 @@ public:
                                                                   const std::string& name);
 
     /**
+     * @brief Reads latest pricing model configurations filtered by name.
+     */
+    std::vector<domain::pricing_model_config> read_latest_by_name(context ctx,
+                                                                  const std::string& name);
+
+    /**
      * @brief Reads the newest pricing model configurations filtered by name, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

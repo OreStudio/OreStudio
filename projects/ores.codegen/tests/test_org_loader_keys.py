@@ -417,7 +417,27 @@ def test_the_older_opt_in_keeps_its_method_name_whatever_column_it_reads():
     """Hand-written callers spell `read_latest_by_code`, so it cannot move."""
     entity = _entity("short_code")
     entity["service_find_by_code"] = {"column": "short_code"}
-    assert key_finders(entity) == [{"column": "short_code", "suffix": "code"}]
+    assert key_finders(entity) == [
+        {"column": "short_code", "suffix": "code"},
+        {"column": "short_code", "suffix": "short_code"},
+    ]
+
+
+def test_a_legacy_finder_beside_a_differently_spelled_key_needs_both_reads():
+    """The service resolves a caller's key through `read_latest_by_<key>`.
+
+    pricing_model_config opts into `service_find_by_code_column: name` and
+    declares `name` as its key. The legacy finder spells its method
+    `read_latest_by_code`, so deduplicating the two by column alone leaves the
+    generated service calling `read_latest_by_name` on a repository that never
+    declares it.
+    """
+    entity = _entity("name")
+    entity["service_find_by_code"] = {"column": "name"}
+    assert key_finders(entity) == [
+        {"column": "name", "suffix": "code"},
+        {"column": "name", "suffix": "name"},
+    ]
 
 
 def test_two_finders_that_name_one_column_are_one_method():

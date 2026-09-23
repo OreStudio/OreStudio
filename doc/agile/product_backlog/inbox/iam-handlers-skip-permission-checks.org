@@ -35,10 +35,17 @@ The sites, all verified in source:
    line 94 checks =perms::roles_revoke= at line 113. The asymmetry is the bug:
    taking a role away is guarded, handing one out is not. Nothing needs to be
    added to the permission catalogue; =iam::roles:assign= is already seeded.
-2. *The account and login reads are unguarded.*
-   =account_operations_handler.hpp= checks =has_permission= for create, delete,
-   lock, unlock, reset_password and update — at lines 250, 306, 336, 371, 406 and
-   494 — but not for =list= or =get=. =iam::accounts:read= and
+2. *The account and login reads are unguarded, in a different file from the
+   writes.* The six guarded writes live in =account_operations_handler.hpp=,
+   which checks =has_permission= for create, delete, lock, unlock, reset_password
+   and update at lines 250, 306, 336, 371, 406 and 494. The reads live in a
+   separately named file, =account_handler.hpp=: =list_accounts= at line 75 and
+   =get_account= at line 116. That file declares
+   =using ores::service::messaging::has_permission;= at line 51 and never calls
+   it. =login_info_handler.hpp= has the same shape — =list_login_info= at line
+   75 and =get_login_info= at line 116, with no call. So the guard was not
+   forgotten in one place: the read handlers were written separately from the
+   write handlers and never got it. =iam::accounts:read= and
    =iam::login_info:read= exist in =permission_codes.hpp= and are seeded, and no
    handler consults them. Any signed-in account can read every account in the
    tenant and every account's sign-in state.
@@ -62,7 +69,9 @@ forgotten twice.
 * References
 
 - =projects/ores.iam/core/include/ores.iam.core/messaging/authorization_handler.hpp= — =assign= (66), =revoke= (94), =assign_by_name= (218).
-- =projects/ores.iam/core/include/ores.iam.core/messaging/account_operations_handler.hpp= — the six guarded writes and the two unguarded reads.
+- =projects/ores.iam/core/include/ores.iam.core/messaging/account_operations_handler.hpp= — the six guarded writes.
+- =projects/ores.iam/core/include/ores.iam.core/messaging/account_handler.hpp= — =list_accounts= (75) and =get_account= (116), the unguarded account reads.
+- =projects/ores.iam/core/include/ores.iam.core/messaging/login_info_handler.hpp= — =list_login_info= (75) and =get_login_info= (116), the unguarded login reads.
 - =projects/ores.iam/api/include/ores.iam.api/domain/permission_codes.hpp= — the codes that exist but go unchecked.
 
 * See also

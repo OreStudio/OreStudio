@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 29892436-DF05-4EB8-B2DE-C8724211ACEB
+:END:
+#+title: The settings build reverts a hand-added compass test
+#+description: compass build --direct settings tangles doc/llm/claude_code_settings.org, which regenerates projects/ores.compass/tests/test_deny_bare_stash_hook.py. Commit 20cd5089d5 hand-added test_compass_does_not_run_a_denied_stash to that generated file without adding it to the org source at line 996, so every settings refresh silently deletes the test. Reproduced twice on 2026-09-23 from feature/clean-assets: run the build, the test disappears (grep count 1 to 0); git checkout restores it. Fix by adding the test block to the org source and re-tangling, or the drift returns on the next bearings next-action.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:drift:compass:tech_debt:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

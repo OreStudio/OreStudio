@@ -36,11 +36,9 @@ import './styles.css';
 const queryClient = createQueryClient();
 
 /**
- * The session, in one line.
- *
- * Reading it is what makes the transport visible: the placeholder looks the
- * same whether the server answered or not, and a shell that cannot tell the
- * difference is not a shell anybody can debug.
+ * Reading the session is what makes the transport visible: the placeholder
+ * looks the same whether the server answered or not, and a shell that cannot
+ * tell the difference is not a shell anybody can debug.
  */
 function sessionLine(state: SessionState): string {
   switch (state.status) {

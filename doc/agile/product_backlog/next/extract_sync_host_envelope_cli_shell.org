@@ -51,3 +51,10 @@ already extracted.
 
 - [[id:DAA69C0E-E1E6-4441-954A-037ACB494F04][Review whether ores.cli/ores.shell's host.cpp divergence is load-bearing or historical]] — the investigation that surfaced this
 - [[id:4544572F-7C42-4A37-8440-C11B58511C94][Unify application.cpp and service initialisation across services]] — the original async extraction
+
+* Notes
+
+=ores.cli= was retired on 2026-09-23 (story
+[[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]]), so =ores.shell= is now the only consumer of
+this sync sibling. The item needs re-scoping around =ores.shell=
+alone, or it should be discarded.

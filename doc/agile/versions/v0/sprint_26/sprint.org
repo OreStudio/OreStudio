@@ -84,8 +84,9 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:873B0E5C-BDDE-40DE-9729-F0278D0F8EC2][Clean ores.ore to the component clean standard]] | BACKLOG | | | Bring ores.ore to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] | BACKLOG | | | Bring ores.trading to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:2EF0EF31-6FED-48C7-BA6F-7006D29EFE60][Clean ores.testing to the component clean standard]] | BACKLOG | | | Bring ores.testing to the Component Clean Standard (All items): tier 4, client or test support. |
-| [[id:534EAFC1-37CC-4A0D-A508-C10272612F23][Clean ores.cli to the component clean standard]] | BACKLOG | | | Bring ores.cli to the Component Clean Standard (All items): tier 4, client or test support. |
+| [[id:534EAFC1-37CC-4A0D-A508-C10272612F23][Clean ores.cli to the component clean standard]] | ABANDONED | | | Bring ores.cli to the Component Clean Standard (All items): tier 4, client or test support. |
 | [[id:6B32DFC7-06B6-4B3C-B49D-7779EDF43B3F][Clean ores.shell to the component clean standard]] | BACKLOG | | | Bring ores.shell to the Component Clean Standard (All items): tier 4, client or test support. |
+| [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] | STARTED | 2026-09-23 | | Remove the ores.cli component, its round-trip dataset and its recipes. A clean-standard review found no capability the shell or the service layer does not already provide. |
 | [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] | STARTED | 2026-09-23 | | Second pass of the sprint 26 mission: document the user journeys of every component that had a UX, including its legacy ores.qt screens. |
 | [[id:3085B911-3030-4AB8-976F-0F037D4332E7][Show the current agile work item inside DSH]] | DONE | 2026-09-23 | 2026-09-23 | A DSH plugin that renders the sprint's stories and tasks as a kanban board, read from the org tree, with the work tree properties visible on every card. |
 

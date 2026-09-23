@@ -16,7 +16,7 @@ state across every access layer: the generated code must match what the
 templates produce, the hand-written code must satisfy the per-layer criteria
 in the =* Commissioning criteria by layer= section, and the operator must be
 able to interact with the entity through
-every supported interface (Qt, shell, CLI) without regression.
+every supported interface (Qt, shell) without regression.
 
 The commission stories in sprint planning exist to drive this work to
 completion, one entity at a time. This reference document defines what "done"
@@ -33,7 +33,7 @@ Two meta-types exist. They share most layers but differ in expected UI surface.
 
 | Meta-type | Examples | Characteristic |
 |-----------+---------+----------------|
-| Domain entity | currency, party, book | Full CRUD UI, own MDI window, shell + CLI commands, manual chapter |
+| Domain entity | currency, party, book | Full CRUD UI, own MDI window, shell commands, manual chapter |
 | Auxiliary type | rounding_type, monetary_nature, party_type | Lookup table; appears as a dropdown in a domain entity's detail dialog; may have its own MDI window but that is secondary |
 
 The =* Commissioning criteria by layer= section below documents which items
@@ -163,15 +163,14 @@ the check. See the criteria provenance notes at the end of this section.
 | =history= command | Shows temporal history | Always | If applicable | =history= case |
 | Post-NATS service wiring | Commands call service via NATS, not directly | Always | If applicable | Service calls use NATS client, not direct repository |
 
-** CLI layer (=ores.cli= non-interactive)
+** Scripted shell layer (=ores.shell=)
 
 | Item | Description | Domain | Aux | What to look for |
 |------+-------------+--------+-----+------------------|
-| Options config struct | CLI argument struct for add/save | Always | If applicable | =projects/ores.cli/include/ores.cli/config/add_<entity>_options.hpp= |
 | =list= subcommand | Non-interactive list | Always | If applicable | Subcommand registered and implemented |
 | =add= / =save= subcommand | Non-interactive create/update | Always | If applicable | Subcommand registered and implemented |
 | =remove= / =delete= subcommand | Non-interactive delete | Always | If applicable | Subcommand registered and implemented |
-| Post-NATS service wiring | Commands call service via NATS | Always | If applicable | Same as shell |
+| Post-NATS service wiring | Commands call service via NATS | Always | If applicable | Same as REPL |
 
 ** HTTP layer
 
@@ -202,7 +201,6 @@ the check. See the criteria provenance notes at the end of this section.
 | Qt detail dialog documented | Field-by-field documentation | Always | If applicable | Table of fields with type, validation, and meaning |
 | Qt history dialog documented | History usage explained | Always | If applicable | How to view and interpret change history |
 | Shell commands documented | All shell commands with examples | Always | If applicable | =#+begin_example= blocks showing command + output |
-| CLI commands documented | All CLI subcommands with flags | Always | If applicable | =#+begin_example= blocks showing invocation |
 | Aux type documented in parent chapter | Valid values listed and explained | N/A | Always | Subsection in parent entity chapter: table of codes + descriptions |
 | Indexed from manual root | Chapter reachable from table of contents | Always | If applicable | Entry in =doc/manual/user_guide/index.org= or equivalent |
 | Site builds cleanly | No broken links or missing files | Always | Always | =make site= passes without error |
@@ -432,11 +430,10 @@ entity with a brief reason.
 | 9 | Sync codegen: nats-eventing profile | Always | |
 | 10 | Sync codegen: nats-handler profile | Always | |
 | 11 | Sync codegen: qt profile | Domain always; Aux if Qt window exists | 12 output files per entity |
-| 12 | Verify and fix CLI commands | Always | list, add/save, remove; post-NATS wiring |
-| 13 | Verify and fix shell commands | Always | list, add/save, remove, history; post-NATS wiring |
-| 14 | Verify Qt UI end-to-end | Domain always; Aux if Qt window exists | MDI list, detail, history, delete, eventing |
-| 15 | Write documentation | Always | Manual chapter, CLI recipe, shell recipe, NATS message reference |
-| 16 | File Wt and HTTP gap captures | Always | Backlog only — not in-sprint tasks |
+| 12 | Verify and fix shell commands | Always | list, add/save, remove, history; post-NATS wiring |
+| 13 | Verify Qt UI end-to-end | Domain always; Aux if Qt window exists | MDI list, detail, history, delete, eventing |
+| 14 | Write documentation | Always | Manual chapter, shell recipe, NATS message reference |
+| 15 | File Wt and HTTP gap captures | Always | Backlog only — not in-sprint tasks |
 
 Tasks 3–11 (codegen sync) are often grouped into one or two tasks per sprint for
 efficiency, but must each produce a signed-off diff table (zero diff or explicit

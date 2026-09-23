@@ -55,4 +55,4 @@ Continued from: [[id:7BE09D1C-E25A-4783-A911-C37DEC55CC43][CLI / REPL reshape]].
 * See also
 
 - [[id:7BE09D1C-E25A-4783-A911-C37DEC55CC43][CLI / REPL reshape]] (sprint 05) — predecessor.
-- [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] and [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] — the components polished here.
+- =ores.cli= and [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] — the components polished here.

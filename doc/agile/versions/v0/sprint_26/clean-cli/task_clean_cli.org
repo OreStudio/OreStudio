@@ -26,11 +26,11 @@ ores.cli passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:534EAFC1-37CC-4A0D-A508-C10272612F23][Clean ores.cli to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Closed unstarted. The component retires instead. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -85,3 +85,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed without running the checklist. A decommission review on
+2026-09-23 found no capability that the shell or the service layer does
+not already provide, so cleaning the component would have spent effort
+on code that then gets deleted. The work moves to
+[[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]].
+
+What the review established:
+
+- =ores.cli= passes the automated half of the standard today
+  (=validate_docs.py= reports all 42 components clean), so the clean
+  pass had no validator failure to fix.
+- Its 125 test cases are 95% argument parsing. The six that touch the
+  database are covered better elsewhere: =currency_repository= by 12
+  cases in =ores.refdata/core/tests=, and =import_currency_config= by 3
+  cases in =ores.ore/core/tests=.
+- The shell covers the same entity surface through the service layer,
+  with 73 command units against the CLI's direct-repository calls.
+- Compute host registration, the one capability that looked unique, is
+  not: =work_handler::heartbeat= auto-registers a host on its first
+  heartbeat.
+- The only capability with no replacement is bulk file import and
+  export straight to the database, and no automated path calls it.

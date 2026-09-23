@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 32606E40-CCC2-4FFF-9CE4-2516CCC086B2
+:END:
+#+title: Story: Decommission ores.cli
+#+description: Remove the ores.cli component, its round-trip dataset, and the CLI recipes. An investigation found no capability that ores.shell or the service layer does not already provide.
+#+type: story
+#+level: s2
+#+filetags: :cli:tech_debt:decommission:sprint_26:v0:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ores.cli and its round-trip dataset are gone. The shipped packages no
+longer carry a second command-line client that reaches the database
+directly and bypasses the service layer. ores.shell is the single
+supported command surface.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | The component, its round-trip chain and its 65 recipes are deleted, verified and up for review. One follow-up task remains. |
+| Waiting on    | Nothing.                               |
+| Next          | Close the follow-up task, then close the story. |
+| Last touched  | 2026-09-23                               |
+
+* Acceptance
+
+- =projects/ores.cli/=, =doc/recipes/cli/=,
+  =assets/test_data/domain_roundtrip/=, and
+  =scripts/ore_domain_roundtrip_check.py= are gone, along with the
+  =ore_coverage= workflow and the =ores.cli= line in =projects/CMakeLists.txt=.
+- A reference sweep over live paths returns no =ores.cli= hit.
+- The tree configures and builds, and =compass lint= passes with no
+  dangling id link.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:22EDB3D2-10F7-4FBB-960B-2AD6AD9945D5][Delete the ores.cli component and its round-trip chain]] | DONE | 2026-09-23 | 2026-09-23 | Task for: Decommission ores.cli |
+| [[id:BC0854B0-E6FD-4935-B326-7FDC654A80CB][Retire the orphaned ORE directory round-trip export]] | BACKLOG | | | ores::ore::xml::exporter::roundtrip lost its only caller when ores.cli was deleted. The directory-level round-trip has no test coverage and no consumer. Decide whether to delete the method and its options model or keep it as library API. |
+
+* Decisions
+
+- *Decommission instead of cleaning.* The component passed the
+  Component Clean Standard's automated half already, so a clean pass had
+  no validator failure to fix. Its 125 test cases are 95% argument
+  parsing, and the six that reach the database are covered better by the
+  repository and importer suites. Every command surface it carries has a
+  shell equivalent over the service layer.
+- *Delete the round-trip dataset rather than regenerate it.* Only
+  `ores.cli ore roundtrip` produced it. The CI job that compared it ran
+  without `--strict` and listed `assets/**` in its paths-ignore, so it
+  could not fail. `assets/test_data/golden_dataset/` is the dataset with
+  teeth, enforced by 13 Catch2 suites.
+- *Delete the CLI recipes rather than rewrite them for the shell.*
+  `doc/recipes/shell/` already covers the same topics, and the shell
+  recipes are tangled into the runnable script library.
+- *Keep the `ores_<env>_cli_user` database role and the
+  `cli@system.ores` service account for now.* The role is a developer
+  psql login, and renaming it reaches provisioning across environments.
+  Its justification is now historical.
+- *Drop bulk file import and export to the database.* It was the one
+  capability with no replacement, and no automated path called it.
+
+* Out of scope
+
+- The orphaned `ores::ore::xml::exporter::roundtrip`, tracked as a
+  follow-up task below.
+- Collapsing `ores.service::run_host_sync`, which now has one caller.

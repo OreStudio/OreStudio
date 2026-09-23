@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID: 247E026A-540B-4835-A1CD-FD051A12A416
 :END:
-#+title: Story: Add tenant discovery to CLI and compass
-#+description: Developers have no single command to discover which tenants are provisioned and obtain their UUIDs for ORES_TENANT. Add ores.cli iam tenants list to expose tenants from the IAM layer, then wrap it in compass db tenants so one compass command prints code, name, tenant_id and a copy-pasteable export hint.
+#+title: Story: Add tenant discovery to shell and compass
+#+description: Developers have no single command to discover which tenants are provisioned and obtain their UUIDs for ORES_TENANT. The shell's tenants list verb (doc/recipes/shell/tenants/) already exposes tenants from the IAM layer, so wrap it in compass db tenants so one compass command prints code, name, tenant_id and a copy-pasteable export hint.
 #+type: story
 #+level: s2
-#+filetags: :tooling:cli:compass:iam:tenant:
+#+filetags: :tooling:shell:compass:iam:tenant:
 #+created: 2026-06-25
-#+updated: 2026-06-25
+#+updated: 2026-09-23
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in the product backlog. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -20,14 +20,17 @@ as =ORES_TENANT=. Today there is no command to do this — the UUID
 must be obtained by running raw SQL or by inspecting provisioning
 output.
 
-Two layers of discovery need to be added:
+=ores.cli= was retired on 2026-09-23, so discovery re-points at
+=ores.shell=. The shell already carries a =tenants= resource whose
+verbs live in =doc/recipes/shell/tenants/= (see =tenant.org=):
 
-1. *CLI*: =ores.cli iam tenants list= — a new entity under the IAM
-   domain that queries the database and returns all active tenants
-   with their =code=, =name=, and =tenant_id= (UUID).
-2. *Compass*: =compass db tenants= — wraps =ores.cli iam tenants list=
-   (reading credentials from =.env=) and formats the output with a
-   copy-pasteable =export ORES_TENANT=<uuid>= hint per row.
+1. *Shell*: =tenants list= — reads the collection of active tenants
+   from the IAM domain over NATS. Its shape is
+   =tenants list [--offset <n>] [--limit <n>] [--order <field>]
+   [--desc]=, addressed at =iam.v1.tenants.list=.
+2. *Compass*: =compass db tenants= — wraps =tenants list= (driving
+   =./ores.shell=) and formats the output with a copy-pasteable
+   =export ORES_TENANT=<uuid>= hint per row.
 
 Once in place, the standard post-provision developer workflow becomes:
 
@@ -46,28 +49,27 @@ export ORES_TENANT=<uuid>   # copy from output
 | Parent sprint | None (product backlog)                 |
 | Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Pick up CLI task first; compass task depends on it. |
-| Last touched  | 2026-06-25                             |
+| Next          | Pick up shell task first; compass task depends on it. |
+| Last touched  | 2026-09-23                             |
 
 * Acceptance
 
-- =ores.cli iam tenants list= lists all active tenants (=code=, =name=,
-  =tenant_id=) from the database.
-- =ores.cli iam tenants list --format json= and =--format table= both
-  work.
-- =compass db tenants= (reading =.env= for DB credentials) calls the
-  CLI and prints a table of code / name / tenant_id with an
+- =tenants list= (in =ores.shell=, per =doc/recipes/shell/tenants/=)
+  lists all active tenants (=code=, =name=, =tenant_id=) from the IAM
+  domain.
+- =compass db tenants= drives the shell's =tenants list= and prints a
+  table of code / name / tenant_id with an
   =export ORES_TENANT=<uuid>= hint alongside each row.
-- The =ores.cli iam --help= crash (=boost::bad_any_cast=) is fixed or
-  filed as a separate bug during the CLI task.
-- A recipe is added: =How do I list tenants?= (CLI and compass variants).
+- A recipe is added: =How do I list tenants?= (shell and compass
+  variants), or the existing =doc/recipes/shell/tenants/= recipes are
+  cross-linked from the story.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A2CD62D0-9CA2-49DF-8CEE-5D8D8809C0F0][Add ores.cli iam tenants list command]] | BACKLOG | | | Add a tenants entity to the ores.cli IAM domain: list active tenants (code, name, tenant_id). Fix or file the iam --help crash found during verification. |
-| [[id:3CD8A395-A01B-4CB6-AEB7-71CC39C592AD][Add compass db tenants command]] | BACKLOG | | | Wrap ores.cli iam tenants list in a compass db tenants subcommand that reads .env for DB credentials and shows code, name, tenant_id with a copy-pasteable export ORES_TENANT=<uuid> hint. Blocked on CLI task. |
+| [[id:A2CD62D0-9CA2-49DF-8CEE-5D8D8809C0F0][Add shell tenants list command]] | BACKLOG | | | Confirm the shell's tenants list verb (doc/recipes/shell/tenants/) lists active tenants (code, name, tenant_id) for discovery. |
+| [[id:3CD8A395-A01B-4CB6-AEB7-71CC39C592AD][Add compass db tenants command]] | BACKLOG | | | Wrap the shell's tenants list in a compass db tenants subcommand that drives ./ores.shell and shows code, name, tenant_id with a copy-pasteable export ORES_TENANT=<uuid> hint. Blocked on shell task. |
 
 * Notes
 
@@ -88,7 +90,8 @@ tenant-specific by design (a developer chooses which tenant to target).
 The compass command makes this self-service without requiring knowledge
 of the schema or raw SQL access.
 
-The =ores.cli iam --help= crash (=boost::bad_any_cast=) was noticed
-during the CLI task [[id:1D7A5AA2-3F1F-49F5-855A-EB69AECBEDB8][1D7A5AA2]] but not investigated; the CLI task
-here should resolve it so that =iam --help= works correctly once the
-tenants entity is registered.
+=ores.cli= was retired on 2026-09-23 (story
+[[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]]). This story is re-pointed at =ores.shell=,
+whose =tenants= resource already carries the discovery verbs under
+=doc/recipes/shell/tenants/=. The remaining work is the =compass db
+tenants= wrapper.

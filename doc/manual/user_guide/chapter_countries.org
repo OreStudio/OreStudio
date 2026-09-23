@@ -2,7 +2,7 @@
 :ID: 849845B0-29BE-4BBB-96D1-05579F06EEED
 :END:
 #+title: Countries
-#+description: Country management in OreStudio: ISO 3166-1, the Qt UI, history and revert, shell and CLI commands.
+#+description: Country management in OreStudio: ISO 3166-1, the Qt UI, history and revert, shell commands.
 #+type: manual
 #+level: cross
 #+filetags: :knowledge:manual:countries:refdata:user_guide:
@@ -36,7 +36,7 @@ record in [[*Country Details][Country Details]] and its General and Provenance t
 turns to changing a record under audit — [[*Editing a country][Editing]], [[*Deleting a country][Deleting]], and
 [[*Country history][Country history]] — culminating in reverting to an earlier version, the
 point at which the bitemporal audit trail does its work. Finally it shows
-the same operations automated from the [[*Shell commands][shell]] and the [[*CLI commands][CLI]], and the
+the same operations automated from the [[*Shell commands][shell]], and the
 [[*Conclusion][Conclusion]] draws these steps together.
 
 ** ISO 3166-1 and its limitations
@@ -195,29 +195,6 @@ countries delete XX
 countries history GB
 #+end_example
 
-** CLI commands
-
-The =ores.cli= command-line tool provides a richer interface for
-automation. All country commands live under =ores.cli refdata countries=:
-
-#+begin_example
-# List all countries as a table
-ores.cli refdata countries list --tenant "$ORES_TENANT" --format table
-
-# List a specific country as JSON
-ores.cli refdata countries list --tenant "$ORES_TENANT" --format json --key US
-
-# Add a new country
-ores.cli refdata countries add \
-  --tenant "$ORES_TENANT" \
-  --alpha2-code XX --alpha3-code XXX --numeric-code 999 \
-  --name "Test Country" --official-name "The Republic of Test Country" \
-  --modified-by super_admin --change-reason-code system.new_record
-
-# Delete a country by alpha-2 code
-ores.cli refdata countries delete --tenant "$ORES_TENANT" --alpha2-code XX
-#+end_example
-
 ** Conclusion
 
 The chapter set out to show that managing a country well follows from
@@ -229,7 +206,7 @@ filling the gaps the standard leaves. Building on that, the Qt interface
 took the record from the list view down to a single detail dialog and
 through the editing, deletion, and history workflows, where reverting to
 an earlier version demonstrated the bitemporal audit trail keeping the
-full record intact rather than overwriting it. The shell and the CLI then
+full record intact rather than overwriting it. The shell then
 reproduced the same operations for scripted use, closing the loop between
 interactive and automated management. Country is deliberately the same
 shape as the currency chapter, and the entity chapters that follow adopt

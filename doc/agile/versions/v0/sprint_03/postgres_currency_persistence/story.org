@@ -62,7 +62,7 @@ configurable via CLI flags.
 - [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]] — the reference-data component that hosts the
   currency repository.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the Postgres setup; sqlgen targets this.
-- [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] — host of the new database CLI flags.
+- =ores.cli= — host of the new database CLI flags.
 - [[id:AF70CDF6-071F-43A9-91BB-7EB9A59A550F][Currencies end-to-end]] (sprint 01) and [[id:ED5BC735-FB54-4CE0-9A08-6DAB88C242D0][Currencies temporal and
   export]] (sprint 02) — predecessor stories in the currency thread.
 - Currency (domain note).

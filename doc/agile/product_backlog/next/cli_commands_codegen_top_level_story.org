@@ -23,6 +23,11 @@ per entity. Per-commission "implement CLI commands" tasks are superseded by this
 and should be closed in favour of it. *Pick up after entities are commissioned* —
 CLI is a horizontal layer, templatized once.
 
+=ores.cli= was retired on 2026-09-23 (story
+[[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]]). The shell's command codegen is the surviving
+path for this work; the CLI facet described here has no remaining
+consumer.
+
 * Why
 
 Like shell/HTTP/Wt, CLI is an entity-facing layer with no codegen and no home,

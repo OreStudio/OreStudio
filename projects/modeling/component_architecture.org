@@ -43,7 +43,6 @@ Current simple components:
 
 | Component | Role |
 |-----------|------|
-| =ores.cli= | CLI argument parsing and command dispatch |
 | =ores.connections= | Connection pool abstraction |
 | =ores.database= | Database access layer (sqlgen, migrations) |
 | =ores.diff= | Structural diff utilities |
@@ -213,7 +212,7 @@ in exactly one sub-component:
 | =repository= | | ✓ | | sqlgen entities, mappers, repositories |
 | =service= | | ✓ | | Business-logic service layer |
 | =app= | | | ✓ | Executable hosting and startup |
-| =config= | | | ✓ | CLI parser and options struct |
+| =config= | | | ✓ | Argument parsing and configuration structs |
 
 * CMake dependency chain
 

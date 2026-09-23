@@ -2761,8 +2761,8 @@ def key_finders(entity: dict[str, Any]) -> list[dict[str, Any]]:
 
     Two things ask for one. ``:service_find_by_code_column:`` is the older
     opt-in and always names its method ``read_latest_by_code``, whatever column
-    it reads -- the name is load-bearing, because hand-written callers in
-    ``ores.cli`` and elsewhere spell it, so it is left exactly as it was. The
+    it reads -- the name is load-bearing, because hand-written callers
+    elsewhere spell it, so it is left exactly as it was. The
     declared key asks for one whenever it is not the storage key, and names its
     method after the column it reads.
 

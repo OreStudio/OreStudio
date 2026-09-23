@@ -57,7 +57,6 @@ layer ordering.
 #+ATTR_HTML: :class hug-leading
 | Surface | Build target | Phases | Patterns | Walkthrough |
 |---------+--------------+--------+----------+-------------|
-| CLI, =ores.cli= | =compass build ores.cli= | list + export, add + delete, recipe docs | [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]] | [[id:662881DC-1371-4DAD-A868-72D8BAE0E919][How do I create CLI commands for a new entity?]] |
 | HTTP, =ores.http.server= | =compass build ores.http.server.lib= | list + save, delete + history, recipe docs | [[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP entity patterns]] | [[id:C9EEAAD1-1E78-4775-A05F-19573E669BD9][How do I create HTTP endpoints for a new entity?]] |
 | Shell, =ores.shell= | =compass build ores.shell= | list + add, history, recipe docs | [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] | [[id:083C1060-F952-4505-B066-FED5684CDD5D][How do I create shell commands for a new entity?]] |
 
@@ -84,7 +83,6 @@ flows coexist.
 
 * Recipes
 
-- [[id:662881DC-1371-4DAD-A868-72D8BAE0E919][How do I create CLI commands for a new entity?]]
 - [[id:C9EEAAD1-1E78-4775-A05F-19573E669BD9][How do I create HTTP endpoints for a new entity?]]
 - [[id:083C1060-F952-4505-B066-FED5684CDD5D][How do I create shell commands for a new entity?]]
 

@@ -83,7 +83,7 @@ Recipes, knowledge, manual, memory, diagrams, search.
 | [[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][compass-doc-run-manual-screenshots]] | Doc Run Manual Screenshots | Turn a manual chapter's [SCREENSHOT NEEDED] placeholders into real, cropped screenshots -- confirm a build... |
 | [[id:0F8DE59C-9CD1-463A-9148-0B452A985C23][compass-doc-show]] | Doc Show | Show the current state of anything — a document, the sprint, the fleet, the journal, services, CI checks, a... |
 | [[id:4A986B6B-1678-453E-8357-C086E78C0698][compass-doc-sync-index]] | Doc Sync Index | Rebuild the compass search index and org-roam database when they are stale. |
-| [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][compass-doc-sync-recipes]] | Doc Sync Recipes | Compare a recipe topic's source-of-truth (CLI parsers, HTTP routes, shell commands, SQL scripts, ...) again... |
+| [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][compass-doc-sync-recipes]] | Doc Sync Recipes | Compare a recipe topic's source-of-truth (HTTP routes, shell commands, SQL scripts, ...) against the recipe... |
 | [[id:00F85A2F-547A-4F11-99EB-A46A7DE5AB1C][compass-doc-update-manual]] | Doc Update Manual | When to update the user manual and how: find the right chapter, update prose, add screenshot placeholders,... |
 
 * Hand-written code (=compass-code-=)

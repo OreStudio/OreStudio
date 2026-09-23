@@ -144,8 +144,6 @@ Additional projections outside the standard refdata component.
 
 | Artefact | Component | Archetype |
 |----------+-----------+-----------|
-| [[proj:projects/ores.cli/include/ores.cli/config/add_currency_options.hpp][add_currency_options.hpp]] | ores.cli | hand-crafted |
-| [[proj:projects/ores.cli/src/config/add_currency_options.cpp][add_currency_options.cpp]] | ores.cli | hand-crafted |
 | [[proj:projects/ores.ore/core/include/ores.ore.core/domain/currency_mapper.hpp][currency_mapper.hpp]] | ores.ore.core | hand-crafted |
 | [[proj:projects/ores.ore/core/src/domain/currency_mapper.cpp][currency_mapper.cpp]] | ores.ore.core | hand-crafted |
 | [[proj:projects/ores.sql/create/dq/dq_currencies_artefact_create.sql][dq_currencies_artefact_create.sql]] | dq | hand-crafted |

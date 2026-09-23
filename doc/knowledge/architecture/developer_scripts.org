@@ -38,7 +38,6 @@ Scripts that validate artefacts against external standards or committed baseline
 | Script | Purpose | Notes |
 |--------+---------+-------|
 | =validate_ore_examples.sh= | Validates every XML file in [[proj:external/ore/examples][=external/ore/examples/=]] against the ORE XSD schema. | Used as a pre-import gate; see the ORE import plan for context. |
-| =ore_domain_roundtrip_check.py= | Compares committed roundtrip outputs in [[proj:assets/test_data/domain_roundtrip][=assets/test_data/domain_roundtrip/=]] against upstream ORE originals; reports per-file and per-entity fidelity for Portfolio and CurrencyConfig document types. | Standalone Python; no shell companion. |
 
 * Documentation generation
 

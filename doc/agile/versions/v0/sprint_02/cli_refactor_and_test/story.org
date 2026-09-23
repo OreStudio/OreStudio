@@ -56,7 +56,7 @@ tests to the parser so future changes are caught.
 
 * See also
 
-- [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] — the CLI component model.
+- =ores.cli= — the CLI component model.
 - [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]] — the testing infrastructure the parser tests use.
 - [[id:562ED395-D245-4E05-B8AE-22F8FF689F59][Add command to dump currencies]] (this sprint) — the first user-
   facing command added on top of the restructured CLI.

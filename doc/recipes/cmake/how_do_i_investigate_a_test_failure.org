@@ -23,7 +23,7 @@ results XML and the per-test logs?
 1. /Scope the investigation/. Ask the user which suite(s) and
    whether they want one specific failure or all failures in the
    suite. Typical suites: =ores.accounts.tests=,
-   =ores.refdata.tests=, =ores.cli.tests=, or the =rat= meta-target
+   =ores.refdata.tests= or the =rat= meta-target
    that runs everything.
 
 2. /Enable logging/. Off by default for performance. Per [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I

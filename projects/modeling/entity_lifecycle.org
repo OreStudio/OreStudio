@@ -9,8 +9,8 @@
 #+created: 2026-05-21
 #+updated: 2026-09-19
 
-A full-stack ORE Studio entity spans five layers: a domain type, a
-SQL schema, and three surface layers (HTTP REST, CLI, shell REPL).
+A full-stack ORE Studio entity spans four layers: a domain type, a
+SQL schema, and two surface layers (HTTP REST, shell REPL).
 All layers are *mandatory* for a regular
 entity — do not skip one without explicit user approval. Use the
 [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][entity-creator]] orchestrator skill which creates a =TaskCreate= task for
@@ -18,8 +18,8 @@ each layer and drives the sub-skills in order.
 
 Codegen is the primary path for every layer that has a profile; the
 mustache templates in =projects/ores.codegen/library/templates/= are
-the ground truth for what each layer generates. Three layers (HTTP,
-CLI, Shell) have no profile yet — see §Codegen gaps below.
+the ground truth for what each layer generates. Two layers (HTTP,
+Shell) have no profile yet — see §Codegen gaps below.
 
 Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
@@ -33,12 +33,10 @@ skinparam componentStyle rectangle
 [domain type\n(ores.*api)] as D
 [SQL schema\n(ores.sql)] as S
 [HTTP endpoints\n(ores.http.server)] as H
-[CLI commands\n(ores.cli)] as C
 [shell commands\n(ores.shell)] as SH
 
 D --> S  : persists via repository
 D --> H  : service → REST routes
-D --> C  : service → CLI parser
 D --> SH : service → REPL command
 @enduml
 #+end_src
@@ -47,7 +45,7 @@ Build all layers in order, which is the argued reading order for this
 cluster as well as the build order. An exposure layer must not be created
 before its domain type and SQL schema are merged: every exposure layer
 projects the domain type, so building one first means guessing at a shape
-that is still moving, and the SQL schema is what fixes that shape. The three
+that is still moving, and the SQL schema is what fixes that shape. The two
 surface layers are independent of each other and may be built in any
 order among themselves, or in parallel.
 
@@ -59,7 +57,6 @@ each row's recipe carries the commands.
 | Domain type | [[id:B1450696-8C51-4CC5-8910-84912A411AB6][compass-code-add-domain-type]] | (this doc §Type mappings) | — |
 | SQL schema | [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][compass-codegen-add-sql-schema]] | [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]] | [[id:479F858E-AA31-4DB4-ABE9-A0ED7CEBF098][How do I create a new entity SQL schema?]] |
 | HTTP endpoints | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | [[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP entity patterns]] | [[id:C9EEAAD1-1E78-4775-A05F-19573E669BD9][How do I create HTTP endpoints for a new entity?]] |
-| CLI commands | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]] | [[id:662881DC-1371-4DAD-A868-72D8BAE0E919][How do I create CLI commands for a new entity?]] |
 | Shell commands | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] | [[id:083C1060-F952-4505-B066-FED5684CDD5D][How do I create shell commands for a new entity?]] |
 
 * Type mappings
@@ -165,12 +162,11 @@ repo root, =*= = component-specific prefix):
 | Layer | Component | Files needed |
 |---|---|---|
 | HTTP endpoints | =ores.http.server= | routes header + implementation |
-| CLI commands | =ores.cli= | options struct + parser header + implementation |
 | Shell commands | =ores.shell= | commands header + implementation |
 
 * Codegen gaps
 
-Three layers have no codegen profile. When the [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][entity-creator]] reaches
+Two layers have no codegen profile. When the [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][entity-creator]] reaches
 one of these layers it must stop and raise a sprint story before
 proceeding.
 

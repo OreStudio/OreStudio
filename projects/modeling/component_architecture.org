@@ -43,7 +43,6 @@ Current simple components:
 
 | Component | Role |
 |-----------|------|
-| =ores.connections= | Connection pool abstraction |
 | =ores.database= | Database access layer (sqlgen, migrations) |
 | =ores.diff= | Structural diff utilities |
 | =ores.fpml= | FpML parsing library |

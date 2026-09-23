@@ -64,16 +64,6 @@ from the [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] transport layer.
 |---------------+----------------------------------------------+--------------------------|
 | [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] | In-process event bus with PostgreSQL backing | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
 
-** ores.connections
-
-Client-side server connection bookmarks with hierarchical organisation and
-credential management. Stores [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] connection parameters — host, port,
-credentials — in an encrypted local SQLite database.
-
-| Sub-component    | Role                                          | Dependencies  |
-|------------------+-----------------------------------------------+---------------|
-| [[id:E75DE282-4FDE-4B18-B23B-692A2F783B61][ores.connections]] | Encrypted [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] connection bookmark store | [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]] |
-
 * See also
 
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the index page with the four-layer architecture overview.

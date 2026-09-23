@@ -121,8 +121,7 @@ Related documents:
 
 Shared cryptographic primitives — scrypt password hashing, AES-256-GCM
 encryption, JWT parsing and validation, OWASP password and email validators.
-Used by ores.iam for credential handling and by ores.connections for bookmark
-encryption.
+Used by ores.iam for credential handling.
 
 | Sub-component | Role                                    | Dependencies |
 |---------------+-----------------------------------------+--------------|

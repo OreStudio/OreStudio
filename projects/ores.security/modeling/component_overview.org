@@ -24,8 +24,7 @@ It covers scrypt password hashing with OWASP-recommended parameters, AES-256-GCM
 symmetric encryption with PBKDF2 key derivation, JWT token parsing/validation,
 and input validation for passwords (OWASP policy: 12+ chars, mixed case, digit,
 special) and email formats. All OpenSSL resources are managed via RAII. It is
-used by =ores.iam= for authentication and by =ores.connections= for credential
-encryption.
+used by =ores.iam= for authentication.
 
 * Inputs
 

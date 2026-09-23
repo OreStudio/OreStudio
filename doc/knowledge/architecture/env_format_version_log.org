@@ -51,6 +51,7 @@ The table is machine-parsed: each data row is =| <integer> | <date> |
 | 20 | 2026-08-05 | Added ORES_ENV_ACTIVITY, tracking a checkout's acknowledged environment activity number against doc/knowledge/architecture/environment_activity_log.org |
 | 21 | 2026-09-19 | Removed ORES_CONTROLLER_SERVICE_WT_PORT; ores.wt.service and the Qt client are gone, so nothing consumes the WT port any more |
 | 22 | 2026-09-19 | Removed ORES_DB_WT_USER, ORES_DB_WT_PASSWORD and the ORES_WT_DB_* block; ores.wt is gone, so nothing uses the Wt database role any more |
+| 23 | 2026-09-23 | Removed ORES_CONNECTIONS_MASTER_PASSWORD; ores.connections is gone, so the connections.db master-password auto-unlock has no store left to unlock |
 
 * See also
 

@@ -1,0 +1,191 @@
+:PROPERTIES:
+:ID: F50D4435-1508-47CD-A75C-EA67D97645EC
+:END:
+#+title: Task: Inventory the reusable ores.web building material
+#+description: [wayfinder:research] What exists in ores.web today, and the exact pattern the three bootstrap journey prototypes use.
+#+type: task
+#+level: s1
+#+filetags: :web_iam_journeys:sprint_25:v0:
+#+owner: marco
+#+branch: feature/iam-screens-from-user-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Question: which existing ores.web artefacts are usable building material
+for hand-crafted journey screens, and which are not? Inventory what
+exists today: the shared entity shell, the generated TypeScript
+messages and column and field metadata, the BFF routes, and the
+hand-written pages including =AccountsPage=. Then record the exact
+pattern the three bootstrap prototypes use -- the file layout of a
+prototype, how a journey declares its steps and fields, how it renders,
+and how it registers a route -- so the new prototypes can follow it.
+Report file paths and measures. Not blocked by anything.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Read at HEAD (=6a55de013b=) and on the three =origin/prototype/*=
+branches on 2026-09-23.
+
+** Three corrections to the brief
+
+1. =AccountsPage.tsx= no longer exists. The hand-written 193-line
+   screen was deleted by =c3027cbcf7= "[web] Delete the hand-written
+   accounts screen" (2026-09-22). The IAM story that describes it is
+   dated 2026-09-20 and is stale.
+2. A journey prototype pattern already lived on mainline and was
+   removed by =fea1f7026c= "[web] Remove the bootstrap journey
+   prototypes from the branch" (2026-09-22). At =fea1f7026c^= the
+   prototype tree is byte-identical to =origin/prototype/new-party-journey=.
+   So the pattern has been on main once, and the renderer survives in
+   history.
+3. No =*_field_groups.ts= file exists anywhere, for any entity. The
+   story's claim that =country_field_groups.ts= is "the only one of its
+   kind" is also stale.
+
+** The state at HEAD: the entity shell won the argument
+
+- 11 of 11 IAM entities have a screen set, a BFF route and a protocol
+  module: account, account_contact_information, account_party,
+  account_type, login_info, permission, role, session, tenant,
+  tenant_status, tenant_type.
+- Routes are derived from declarations, not written by hand:
+  =entity/entityRoutes.tsx= builds list, new, record, edit and history
+  routes from each descriptor.
+- The BFF routes are uniform. =bff/src/generated/iam/<entity>_route.ts=
+  is registered in a loop, and every entity gets the same five shapes.
+  The "hundred entities, hundred route shapes" risk in the story's
+  comment is answered by the factory.
+- Capabilities vary: =account= is list, detail and history only
+  (create, edit and remove are suppressed because the hand-written
+  =account_operations_handler= owns =iam.v1.accounts.*=); =login_info=
+  and =session= are read-only; =account_party= and =permission= have no
+  history.
+- The generated UI metadata carries columns and fields and
+  deliberately carries no grouping. Grouping is "a domain judgement the
+  model does not carry".
+- The generated protocol modules carry the subjects, so a journey can
+  read =iam.v1.accounts.update= and the rest of the wire vocabulary
+  straight from TypeScript.
+
+** The prototype pattern, as built
+
+One directory per prototype:
+=projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/=
+with =journey.tsx=, =parts.tsx=, =stub.ts=, and
+=<Name>Prototype.tsx=.
+
+- =journey.tsx= holds the model and the renderer: =JourneyStep=,
+  =JourneyPage=, =useNewTenant=, =useAdvanceWhenProvisioned=,
+  =newTenantSteps()=.
+- =parts.tsx= holds reusable step bodies: =ProfileChoice=,
+  =DetailsForm=, =ProgressList=, =Handoff=, =FailToggle=.
+- =stub.ts= holds all fake data: profiles, details, and
+  =useSimulatedRun=, a timer-driven =pending/running/done/failed= run
+  with retry.
+- =<Name>Prototype.tsx= assembles one journey and owns the step index.
+
+The model is component composition, not a schema:
+
+#+begin_src tsx
+export interface JourneyStep {
+  id: string;
+  title: string;
+  lead: string;
+  body: ReactNode;
+  next?: { label: string; enabled: boolean; onNext?: () => void };
+  final?: boolean;
+  header?: ReactNode;
+}
+#+end_src
+
+There is no step registry, no serialisable journey description and no
+per-field validation metadata. =final: true= blocks Back past a step.
+A journey embeds another by spreading its steps into its own array,
+which is how first run reuses the new-tenant steps.
+
+Routes are added to =main.tsx= by hand, marked
+={/* PROTOTYPE ONLY: ... */}=, and gated by nothing. The only switch is
+=import.meta.env.PROD= inside =PrototypeSwitcher=, which hides the
+variant cycling. =new-tenant-journey= registers =/iam/tenant/onboard=
+twice, once inside the authenticated shell and once in the public
+shell, "stubbed, so it needs no session".
+
+** Building material for the new journeys
+
+Usable as it stands: =DataTable= (driven by =ColumnMeta[]=),
+=FieldControl= (nine control kinds), =ChangeReasonDialog=,
+=ConfirmDialog=, =FlagEditor= (already fetches image bytes for a chosen
+image, so the photo has a control), =useEntity= and =useLookup= hooks,
+=diff.ts=, the generated column and field metadata, the generated
+protocol subjects, and the BFF entity route factory.
+
+Usable with care: =EntityDetailPage= and =EntityListPage=, whose tab
+and toolbar layout follows =entity_specification.org= and assumes the
+list-detail-history shape a journey may not want.
+
+The prototype renderer itself: =JourneyPage= and =JourneyStep= are a
+good starting point, and they exist on the branches and in history, not
+at HEAD.
+
+** What the design docs do not cover
+
+Neither =ui_design_principles.org= nor =ux_language.org= mentions
+journeys, steps or wizards. =ux_language.org= does require that any
+event-log screen be called *Audit* rather than History, and that every
+persisted entity show the list, detail and history trio. Both rules
+bear directly on the journeys this map designs.

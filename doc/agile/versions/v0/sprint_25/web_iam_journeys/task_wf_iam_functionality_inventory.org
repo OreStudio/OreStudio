@@ -1,0 +1,191 @@
+:PROPERTIES:
+:ID: 50B6E937-068D-40D6-8FE6-DDD0C5B89E0C
+:END:
+#+title: Task: Inventory the IAM functionality a journey can surface
+#+description: [wayfinder:research] Every IAM operation and field a post-setup screen can surface, split by actor, and whether a person photo exists at all.
+#+type: task
+#+level: s1
+#+filetags: :web_iam_journeys:sprint_25:v0:
+#+owner: marco
+#+branch: feature/iam-screens-from-user-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Question: what can a person actually do in IAM after setup, and what
+can they see? Inventory every operation and every field a post-setup
+screen could surface. Split the operations by actor: the member acting
+on its own record, the tenant administrator acting inside its tenant,
+the system administrator acting across tenants, and service-only
+operations. State whether IAM models a person's photo, and in what form
+contact details, login information and the reporting line are stored.
+List every secret field that must never reach a browser. List the NATS
+subjects that carry each operation, so that a journey step with no
+subject is visible as a server-side gap. Not blocked by anything.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Read from the IAM models, the message models, the SQL and the knowledge
+docs on 2026-09-23. Paths are repo-relative.
+
+** The account, and the photo that does exist
+
+=account= is the authoritative identity entity, in four types: =user=,
+=service=, =algorithm= and =llm=. It carries =username= (natural key,
+unique per tenant), =full_name=, =email=, =job_title=,
+=reports_to_account_id= (the reporting line), =default_party_id= and
+=image_id=.
+
+=image_id= is the profile picture: "Profile picture for this account.
+Soft reference to an image owned by ores.assets"
+(projects/ores.iam/modeling/ores.iam.account.org:210-218). The wire
+field is =update_account_request.image_id=, documented "Empty clears
+it" (ores.iam.account_messages.org:146-156). IAM stores the UUID only;
+the bytes live in =ores.assets=. Provisioning already attaches staff
+photos through =attach_staff_photos=
+(projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp:1094-1149).
+So the photo is real and a journey may show it.
+
+** Contact details: one record per account
+
+=account_contact_information= is a 1:1 child with flat typed columns:
+=street_line_1=, =street_line_2=, =city=, =state=, =country_code=,
+=postal_code=, =phone=, =email=, =web_page=. It is not a
+self-referencing hierarchy and not a blob, so the classification doc
+that calls it =self-referencing-hierarchy= is wrong for this entity
+(projects/ores.iam/modeling/ores.iam.account_contact_information.org:18-23).
+
+** Login state: one record per account
+
+=login_info= is a 1:1 current-state child with no version and no audit
+tail, so it cannot carry a History screen: =last_ip=, =last_attempt_ip=,
+=failed_logins=, =locked=, =last_login=, =online=,
+=password_reset_required=.
+
+** Access control
+
+- account to role is many-to-many (=ores_iam_account_roles_tbl=), and
+  the row carries =assigned_by=, =assigned_at=, =change_reason_code=
+  and =change_commentary=.
+- role to permission is many-to-many (=ores_iam_role_permissions_tbl=).
+- permission to module is not a relation and no module entity exists.
+  The component segment of the permission code
+  (=component::resource:action=) plays that part.
+  =ores.iam.module.org= is a codegen catalogue only.
+- There is no activate or deactivate for an account. The nearest states
+  are =login_info.locked= and the bi-temporal =valid_from= and
+  =valid_to=.
+
+** Sessions
+
+=session= is a TimescaleDB hypertable: =client_ip=, =client_identifier=,
+=client_version_major= and =_minor=, =bytes_sent=, =bytes_received=,
+=country_code=, =protocol=, and =end_time= where the empty string means
+active. =session_view= adds =party_id=, =visible_party_ids= and
+=username= with no backing column. Subjects:
+=iam.v1.sessions.active=, =iam.v1.sessions.samples=, and the generated
+CRUD set.
+
+** Tenancy
+
+=tenant= (=code=, =name=, =type=, =description=, =hostname=, =status=);
+=tenant_type= (system, production, evaluation, automation);
+=tenant_status= (bootstrapping, active, suspended, terminated);
+=account_type= (user, service, algorithm, llm). Everything else is
+tenant-scoped by PostgreSQL row-level security.
+
+** Secrets that must never reach the browser
+
+=password_hash=, =password_salt=, =service_password_hash=,
+=totp_secret=, every cleartext =password=, =current_password= and
+=new_password= on the wire, and every JWT.
+
+** Personal data that must not leak across accounts
+
+=login_info.last_ip=, =last_attempt_ip=, =session.client_ip=,
+=country_code=, and every column of =account_contact_information=.
+
+** Operations by actor
+
+| Operation | Actor |
+|---|---|
+| =auth.login=, =auth.logout=, =auth.refresh=, =auth.signup= | member, before sign-in |
+| =accounts.change-password=, =update-email=, =set-default-party=, =select-party=, =switch-party= | member |
+| =accounts.save=, =update=, =delete=, =lock=, =unlock=, =reset-password= | tenant administrator |
+| =roles.assign=, =revoke=, =by-account=, =permissions-by-account=, role CRUD | tenant administrator |
+| =account_parties.*= and =account_contact_informations.*= CRUD | tenant administrator |
+| =login_info.list/get=, =sessions.active=, =.samples=, =.list/get= | tenant administrator, read |
+| =tenants.list/get= and =_versions.*= | tenant administrator, read |
+| =tenants.put= and =.delete=, =.complete-provisioning=, =.provision-acme=, =bootstrap.*=, =system.reset*= | system administrator |
+| =auth.service-login=, =publish-from-dq=, impersonation, =session.end_session= | service only |
+
+** Gaps: a step a journey may want and no subject provides
+
+1. No forgot-password or recovery operation exists anywhere.
+2. No account activate or deactivate. Only =locked=.
+3. No way for an administrator to end another account's session.
+   =logout= ends only the caller's own session.
+4. Session statistics exist only as SQL materialized views and
+   functions. No subject exposes them.
+5. The auth event log (=ores_iam_auth_events_tbl=) has no subject.
+
+** Uncertainty
+
+The permission gate for the lookup-table CRUD (=tenant_types=,
+=tenant_statuses=, =account_types=) and for
+=account_contact_informations= was not traced to a =has_permission=
+call.

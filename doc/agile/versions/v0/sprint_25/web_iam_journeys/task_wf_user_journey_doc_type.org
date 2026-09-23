@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: E918F812-B235-4604-9DF7-6F59517C19F8
+:END:
+#+title: Task: Create the user_journey document type
+#+description: [wayfinder:task] A document type that describes a journey before it is built: sections, template, codegen registration, metadata.
+#+type: task
+#+level: s1
+#+filetags: :web_iam_journeys:sprint_25:v0:
+#+owner: marco
+#+branch: feature/iam-screens-from-user-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Build a =user_journey= document type end to end: the Mustache template, the
+=doc_generate.py= registration, =compass add= acceptance, the type's contract
+page in =doc/meta/=, its entry in the document-types taxonomy and the glossary,
+and the recipe. Done when =compass add user_journey= generates a document that
+carries the required sections.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Built 2026-09-23.
+
+- Template: =projects/ores.codegen/library/templates/doc_user_journey.org.mustache=.
+- Registered in =projects/ores.codegen/src/doc_generate.py=: =TYPE_TO_TEMPLATE=,
+  =PARENTLESS_TYPES=, the =User Journey: = title prefix, and the output layout
+  =<parent-dir>/journey_<slug>.org=.
+- Accepted by =compass add=, and the help text in
+  =projects/ores.compass/src/compass.py= lists it.
+- Contract page: [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]].
+- Taxonomy entry in =doc/meta/document_types.org=; glossary entry
+  [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][User journey]].
+- Recipe: [[id:62D58EB6-9977-411C-8403-E3A12DB4CB3D][New user journey]].
+- Smoke test: =compass add user_journey= generated a document carrying every
+  required section, exit 0.
+
+Two conventions settled while building it:
+
+1. Journeys are grouped by /logical topic/, never by component. A component is
+   an implementation concept; a journey is grouped by what the person is doing.
+   The groups live under =doc/knowledge/journeys/<group>/=.
+2. A PlantUML =salt= diagram must not carry a =title= directive — the
+   combination fails to render. The org =#+caption:= supplies the title.

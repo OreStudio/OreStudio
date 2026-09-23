@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: FB9F3A98-7F57-4462-8120-85B5E61DE6CC
+:END:
+#+title: Task: Pull the skills catalogue story into sprint 26
+#+description: Move Complete the LLM skills catalogue from the product backlog inbox into sprint 26, where sprint 25's close split it for.
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_26:sprint_26:v0:
+#+owner: marco
+#+branch: feature/pull-skills-story-into-sprint-26
+#+pr: 2137
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB732761-11D9-4E2F-AFF3-7646D43B8A36][Open sprint 26]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Complete the LLM skills catalogue is a sprint 26 story, as sprint 25's
+close intended when it split the story out.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CB732761-11D9-4E2F-AFF3-7646D43B8A36][Open sprint 26]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- The story and its 28 tasks sit under =sprint_26/=, tagged for sprint
+  26, with Sprint 26 as the parent.
+- The sprint table lists it, and the inbox index no longer does.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2137][#2137]] | [agile] Pull the skills catalogue story into sprint 26 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | One moved task had its Next and Last touched rewritten, unpadded, unlike its 27 siblings. | =complete_llm_skills_catalogue/task_replace_scheduler_custom_history.org= | Accepted | The move script matched story files by the suffix =story.org=, which =..._history.org= also ends with, so it applied the story's status edits to this task. Restored the original values. |
+| 2 | The journey standard and tasks cite the Qt tree by a local path. | =journey_extraction_standard.org= | Declined | The path is the source the product owner named; every citation also gives the git form, =af67db3062^:projects/ores.qt/...=, which works anywhere. |
+
+* Result
+
+The story moved with =git mv=, so its tasks keep their UUIDs and
+history. The inbox tags became =:sprint_26:=, the parent link now points
+at Sprint 26, and the backlog indexes were regenerated.
+
+It is the only inbox story that came from sprint 25. The other five
+inbox stories are older: four were carried from sprint 24 and one dates
+from sprint 20. They stay in the inbox for a separate decision.
+

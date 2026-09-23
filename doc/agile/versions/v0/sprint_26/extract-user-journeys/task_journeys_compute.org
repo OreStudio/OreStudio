@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 952AE445-1470-40D1-8824-9618DF6A73EF
+:END:
+#+title: Task: Extract the ores.compute user journeys
+#+description: Run the User Journey Extraction Standard for ores.compute, reading its legacy screens in ores.qt/compute.
+#+type: task
+#+level: s1
+#+filetags: :extract-user-journeys:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every journey a person had in ores.compute is documented as a user journey, and every action its legacy Qt screens offered is covered by a journey or recorded as dropped. Order 7 of 13.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- Every item of the [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] passes, with its evidence recorded below.
+- Every Qt action has a disposition: kept, changed or dropped.
+- Every defect found is captured, and every recurring gap is recorded.
+
+* Plan
+
+Work the [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] in its section order and record each item below.
+
+1. Inventory (I01 to I05).
+2. Legacy Qt screens (Q01 to Q05).
+3. Vocabulary and screen rules (V01 to V03).
+4. Journeys (J01 to J08), ending with the catalogue agreed.
+5. Documents (D01 to D05).
+6. Verification and gaps (X01 to X05).
+
+| Item | Result | Evidence |
+|------+--------+----------|
+|      |        |          |
+
+* Notes
+
+- Legacy screens: =ores.qt/compute= at =/home/marco/Development/OreStudio/ores.qt=, or =git show af67db3062^:projects/ores.qt/...=. Survey on 2026-09-23: 14 =.ui= files and 45 headers declaring a window, dialog, wizard, widget, view, panel or page.
+- Starts after [[id:543DE51B-B9D8-4261-9DB1-9B97D4C9F187][Clean ores.compute to the component clean standard]], because the coverage tables check against the generated protocol.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

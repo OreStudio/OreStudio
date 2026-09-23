@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 0D45F522-F878-48CB-87A5-450D0D88AA8F
+:END:
+#+title: Task: Write the user journey extraction standard
+#+description: Generalise the sprint 25 IAM journey work into a checklist every component with a UX can follow, including the legacy ores.qt screens.
+#+type: task
+#+level: s1
+#+filetags: :extract-user-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/pull-skills-story-into-sprint-26
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every component with a UX can extract its journeys the same way the IAM journeys were extracted, with the legacy Qt screens as an added input.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- The [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] lists the steps the IAM journey work took, plus the pass
+  over the legacy Qt screens, each with its evidence.
+- The journeys index links it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] has 31 items in six sections: inventory, legacy Qt screens,
+vocabulary and screen rules, journeys, documents, and verification and
+gaps. It is drawn from the sprint 25 tasks of "Prototype the post-setup
+IAM journeys in ores.web": the functionality inventory, the vocabulary
+and screen rules, the journey catalogue, the user_journey document type
+and the fourteen journey documents with their verification. The legacy
+Qt section is new: the IAM work did not read the Qt screens.
+
+The story scopes it to the thirteen areas that had screens, from the Qt
+tree at =/home/marco/Development/OreStudio/ores.qt=, the same tree as
+=af67db3062^:projects/ores.qt=.
+

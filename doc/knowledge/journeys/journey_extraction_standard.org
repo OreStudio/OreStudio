@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D
+:END:
+#+title: User Journey Extraction Standard
+#+description: The checklist that turns a component's functionality and its legacy ores.qt screens into documented user journeys -- the method the IAM journeys followed in sprint 25, generalised to every component with a UX.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:checklist:ux:qt:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+* Summary
+
+The desktop client (=ores.qt=) was removed in sprint 25, and its screens
+are replaced by [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journeys]] rather than by
+per-entity screens. This checklist extracts the journeys for one
+component. It inventories what the component can do and what the old Qt
+screens let a person do, fixes the vocabulary, names the journeys from
+the person's goal, documents each one with a wireframe and a coverage
+table of the operations it needs, and records every gap it finds. It is
+the method the IAM journeys followed in sprint 25, with one step added:
+the old Qt screens are read, so that nothing a user could do is lost
+without a decision. Only components that had a UX run it.
+
+* Detail
+
+** When to run it
+
+Run it for a component after its codegen clean-up (the
+[[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]) is done, because the
+coverage tables check each operation against the component's generated
+protocol. A component that never had a screen does not run it.
+
+** Where the legacy screens are
+
+The Qt client is deleted from the tree. Read it from either source:
+
+- the checkout at =/home/marco/Development/OreStudio/ores.qt=, with one
+  folder per component (=refdata=, =dq=, =compute= and so on), each with
+  =include/=, =src/= and =ui/=;
+- git history: the tree as it stood before commit =af67db3062= "[build]
+  Remove the ores.qt and ores.wt trees" (=git show af67db3062^:projects/ores.qt/...=).
+
+The =api= folder holds shared widgets and the =application= folder the
+main window, sign-in and navigation. Read them as reference, not as a
+component's own screens.
+
+** How to read the checklist
+
+Each item has an identifier and the evidence that proves it. Record
+each item's result in the component's task. An item that cannot pass is
+recorded with its reason. Work in section order: the inventory comes
+before any journey is named.
+
+** 1. Inventory
+
+| Id  | Item | Evidence |
+|-----+------+----------|
+| I01 | List every operation the component offers, and every field a screen could show. Read the models, the message models, the SQL and the knowledge documents, not the old screens. | Inventory table on the task, with file references |
+| I02 | Split the operations by actor: a member acting on their own records, a tenant administrator inside the tenant, a system administrator across tenants, and service-only operations that no person runs. | Inventory table has an actor column |
+| I03 | Give each operation the NATS subject that carries it. An operation with no subject is a server-side gap, visible before any screen is drawn. | Subject column; gaps marked |
+| I04 | List every secret or sensitive field that must never reach a browser, and check the wire shape for it. A secret on the wire is a defect: capture it at once. | Sensitive-field list; captures filed |
+| I05 | State how owned records are stored (one-to-one children, junctions, current-state tables with no history), because that decides whether a record is a panel, a list or a History view. | Notes on the task |
+
+** 2. Legacy Qt screens
+
+| Id  | Item | Evidence |
+|-----+------+----------|
+| Q01 | List every window, dialog, wizard, tab and menu action in the component's Qt folder, and what each one let a person do. Include the context-menu and toolbar actions, which are easy to miss. | Qt inventory table on the task: file, screen, actions |
+| Q02 | Map each Qt action to the operations of I01. An action with no matching operation was client-side logic or has lost its server support: record which. | Mapping column |
+| Q03 | Record the workflows the Qt screens hid: multi-step sequences, cross-component navigation (for example, opening a party from a trade), bulk actions, imports and exports, and charts. | Notes on the task |
+| Q04 | Give every Qt action a disposition: *kept* (a journey covers it), *changed* (a journey covers it differently, and says how), or *dropped* (with the reason). No action is left without one. | Disposition column |
+| Q05 | Record what the Qt screens got wrong that the journeys must not repeat: entity-shaped screens, duplicated forms, unguarded destructive actions. | Notes on the task |
+
+** 3. Vocabulary and screen rules
+
+| Id  | Item | Evidence |
+|-----+------+----------|
+| V01 | Collect the component's canonical terms from its knowledge documents, the glossary and the user manual. Record where each term is defined. | Term table on the task |
+| V02 | Find terms that collide with project terms (as /journey/ did with the IAM glossary) and settle each collision. | Notes on the task |
+| V03 | Name every term a journey must not invent, and every screen rule that binds it: the entity and component specifications, the UI design principles and the UX language. | Rule list on the task |
+
+** 4. Journeys
+
+| Id  | Item | Evidence |
+|-----+------+----------|
+| J01 | A journey is one person, one goal, carried to completion, with a definite start and end, and a screen a person can be dropped into without context. "Manage parties" is not a journey; "onboard a counterparty" is. | Catalogue review |
+| J02 | Start from the person's goal, never from the entity. An owned record becomes a panel inside a journey, not a screen of its own. A reference lookup is the likely exception. | Catalogue review |
+| J03 | Keep each actor's journeys separate, with separate screens. | Catalogue lists actors apart |
+| J04 | Name each journey by its goal, in the person's words, and keep it small enough to prototype on its own. | Catalogue |
+| J05 | For each journey state who runs it, what triggers it, where it starts and ends, and which operations it reaches. | Catalogue columns |
+| J06 | Group journeys by logical topic, never by component. Reuse an existing group under =doc/knowledge/journeys/= where one fits, and check the existing journeys first so that no journey is written twice. A journey that spans components is written once, in the group a designer would look in. | Catalogue; journeys index |
+| J07 | A journey carries no server state by default. Where it needs resumable state, the state is a [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in =ores.workflow=, and the journey says so. | Catalogue note |
+| J08 | Agree the catalogue with the product owner before any document is written. | Agreement recorded on the task |
+
+** 5. Documents
+
+| Id  | Item | Evidence |
+|-----+------+----------|
+| D01 | Write one =user_journey= document per journey with =compass add user_journey=, under =doc/knowledge/journeys/<group>/=, following the [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][user_journey contract]]. | Documents exist |
+| D02 | Fill every required section: goal, actor and trigger, steps, screens and wireframes, entities composed, operations and messages, what is missing, related journeys, related knowledge. | Contract check |
+| D03 | Draw each screen as a PlantUML =salt= wireframe in ASCII, with no =title= directive (the combination fails to render); the org caption carries the title. Render it and embed the PNG. | =.puml= and =.png= beside the document |
+| D04 | Give each document a coverage table: every step's operation, its subject, and its status (=exists=, =partial= or =missing=). | Coverage table |
+| D05 | Add each new group to the journeys index, and each journey to its group page. | Index and group pages |
+
+** 6. Verification and gaps
+
+| Id  | Item | Evidence |
+|-----+------+----------|
+| X01 | Check every subject a coverage table claims against the component's generated protocol headers. A claimed subject that does not exist is a documentation error. | Check result on the task |
+| X02 | Every wireframe renders, every link resolves, and the pages publish. | =compass lint=; =compass site page= |
+| X03 | Capture every defect the exercise finds (a secret on the wire, a missing permission check, a write that ignores its input) as its own capture. Defects are not design gaps. | Captures filed and linked |
+| X04 | Record the recurring design gaps across the component's journeys: operations that are =missing= or =partial=. Each becomes a capture or a task for the component. | Gap list on the task |
+| X05 | Confirm every Qt action from Q04 is covered by a journey or recorded as dropped. | Q04 table complete |
+
+** What the IAM exercise learned
+
+- The journeys found real server-side defects that no test had caught:
+  secrets on the wire, a password change that ignored the current
+  password, and handlers that skipped their permission checks.
+- A per-entity screen set is not a journey. The list, detail and
+  history primitives survive, but they are composed inside a journey
+  around a goal.
+- Most journeys need no server-side state: they are guided sequences
+  over operations that complete at once.
+- Stale briefs mislead. Read the tree at the current commit before
+  trusting a story's description of it.
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] -- the index the documents join.
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] -- the contract items D01 and D02 follow.
+- [[id:62D58EB6-9977-411C-8403-E3A12DB4CB3D][New user journey]] -- the recipe for =compass add user_journey=.
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] -- the codegen pass that comes first.

@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 28844DEF-E9AD-45B9-A6E0-CFF51CA1A064
+:END:
+#+title: Story: Extract the user journeys that replace the ores.qt screens
+#+description: Second pass of the sprint 26 mission: for every component that had a UX, inventory its functionality and its legacy ores.qt screens and document its user journeys, the way the IAM journeys were done in sprint 25.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every component that had a UX in the removed =ores.qt= client has its
+user journeys documented, and every action its Qt screens offered is
+covered by a journey or recorded as dropped. This is the second pass of
+the sprint 26 mission; the UX is built from these journeys in the third.
+
+The method is the [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]], written from the sprint 25 IAM journey work
+and extended with a pass over the legacy Qt screens. Each component runs
+it after its codegen clean-up story, because the coverage tables check
+each operation against the generated protocol.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | The standard and the component tasks are written. |
+| Waiting on    | Nothing.                               |
+| Next          | Start with ores.scheduler once its clean-up is done. |
+| Last touched  | 2026-09-23                               |
+
+* Acceptance
+
+- The [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] is written.
+- Every component task below is DONE: its journeys are documented, its
+  Qt actions all have a disposition, and its defects and gaps are
+  recorded.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0D45F522-F878-48CB-87A5-450D0D88AA8F][Write the user journey extraction standard]] | DONE | 2026-09-23 | 2026-09-23 | Generalise the sprint 25 IAM journey work into a checklist every component with a UX can follow, including the legacy ores.qt screens. |
+| [[id:6AD3B136-11EC-4480-A6A4-4CBB13725FC4][Extract the ores.scheduler user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.scheduler, reading its legacy screens in ores.qt/scheduler. |
+| [[id:05B371A7-0A30-4032-92D5-05201032A936][Extract the ores.workspace user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.workspace, reading its legacy screens in ores.qt/workspace. |
+| [[id:8EE415F7-0B51-4FA6-A3E0-D5BBAF751E1F][Extract the ores.workflow user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.workflow, reading its legacy screens in ores.qt/workflow. |
+| [[id:78D214D7-84E8-4578-BF92-8A667F520E79][Extract the ores.iam user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.iam, reading its legacy screens in ores.qt/iam. |
+| [[id:CF56CCC7-CB07-4FFD-9A7E-C210BD5E2437][Extract the ores.refdata user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.refdata, reading its legacy screens in ores.qt/refdata. |
+| [[id:B067A8C9-A7B0-4A28-AA6A-A701318D56B4][Extract the ores.analytics user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.analytics, reading its legacy screens in ores.qt/analytics. |
+| [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Extract the ores.compute user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.compute, reading its legacy screens in ores.qt/compute. |
+| [[id:40CBBDAB-2CAE-4840-87DB-D817C5ACF196][Extract the ores.reporting user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.reporting, reading its legacy screens in ores.qt/reporting. |
+| [[id:A200107D-35CA-44EE-9192-A2234A6C2918][Extract the ores.synthetic user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.synthetic, reading its legacy screens in ores.qt/synthetic. |
+| [[id:60413C24-9780-4274-9E45-DB4AB2BFB3E1][Extract the ores.marketdata user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.marketdata, reading its legacy screens in ores.qt/marketdata, ores.qt/mktdata. |
+| [[id:1424617D-B285-401B-915A-BAEC5A0C2006][Extract the ores.dq user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.dq, reading its legacy screens in ores.qt/dq. |
+| [[id:A7F0A526-A486-4D7C-A9AC-5D2C7389E407][Extract the ores.trading user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.trading, reading its legacy screens in ores.qt/trading. |
+| [[id:C08E91B8-0731-4A0A-89ED-6F7AD82E1C63][Extract the application shell user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.qt application shell, reading its legacy screens in ores.qt/application. |
+
+* Scope
+
+Only components that had screens in =ores.qt= run the standard. From
+the Qt tree: =scheduler=, =workspace=, =workflow=, =iam=, =refdata=,
+=analytics=, =compute=, =reporting=, =synthetic=, =marketdata= (with
+=mktdata=), =dq= and =trading=, plus the application shell. =api= holds
+shared widgets and is read with the shell; =headless= has no screens.
+The other components never had a UX.
+
+The order follows the codegen clean-up order, so each component's
+journeys start once its clean-up is done. The application shell runs
+last, because it composes the other journeys.
+
+| # | Component | Qt =.ui= files | Qt window headers | Task |
+|---+-----------+---+---+------|
+| 1 | ores.scheduler | 2 | 9 | [[id:6AD3B136-11EC-4480-A6A4-4CBB13725FC4][Extract the ores.scheduler user journeys]] |
+| 2 | ores.workspace | 2 | 4 | [[id:05B371A7-0A30-4032-92D5-05201032A936][Extract the ores.workspace user journeys]] |
+| 3 | ores.workflow | 0 | 4 | [[id:8EE415F7-0B51-4FA6-A3E0-D5BBAF751E1F][Extract the ores.workflow user journeys]] |
+| 4 | ores.iam | 12 | 33 | [[id:78D214D7-84E8-4578-BF92-8A667F520E79][Extract the ores.iam user journeys]] |
+| 5 | ores.refdata | 61 | 194 | [[id:CF56CCC7-CB07-4FFD-9A7E-C210BD5E2437][Extract the ores.refdata user journeys]] |
+| 6 | ores.analytics | 4 | 12 | [[id:B067A8C9-A7B0-4A28-AA6A-A701318D56B4][Extract the ores.analytics user journeys]] |
+| 7 | ores.compute | 14 | 45 | [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Extract the ores.compute user journeys]] |
+| 8 | ores.reporting | 4 | 12 | [[id:40CBBDAB-2CAE-4840-87DB-D817C5ACF196][Extract the ores.reporting user journeys]] |
+| 9 | ores.synthetic | 8 | 31 | [[id:A200107D-35CA-44EE-9192-A2234A6C2918][Extract the ores.synthetic user journeys]] |
+| 10 | ores.marketdata | 1 | 18 | [[id:60413C24-9780-4274-9E45-DB4AB2BFB3E1][Extract the ores.marketdata user journeys]] |
+| 11 | ores.dq | 27 | 68 | [[id:1424617D-B285-401B-915A-BAEC5A0C2006][Extract the ores.dq user journeys]] |
+| 12 | ores.trading | 17 | 11 | [[id:A7F0A526-A486-4D7C-A9AC-5D2C7389E407][Extract the ores.trading user journeys]] |
+| 13 | ores.qt application shell | 2 | 22 | [[id:C08E91B8-0731-4A0A-89ED-6F7AD82E1C63][Extract the application shell user journeys]] |
+
+* Decisions
+
+- One story, one task per component. Journeys are grouped by topic, not
+  by component, so a task's journeys may land in groups other tasks
+  also use.
+- The Qt screens are evidence, not a design. They are read so that no
+  action a person had is lost without a decision; the journeys still
+  start from the person's goal.
+
+* Out of scope
+
+- The prototypes and the UX build, which is the third pass.
+- The Wt client, which was removed with the Qt client.

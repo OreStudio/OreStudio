@@ -88,4 +88,5 @@ the recipe is [[id:62D58EB6-9977-411C-8403-E3A12DB4CB3D][New user journey]].
 
 * See also
 
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist that extracts a component's journeys, including its legacy =ores.qt= screens.
 - [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note that orders this cluster, and where to read this page in it.

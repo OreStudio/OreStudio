@@ -16,10 +16,16 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/api)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/trading)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/iam)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/refdata)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/compute)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/application)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_tests.mustache
+# To modify, update the template and regenerate.
+set(files
+    "app_commands_tests.cpp"
+    "app_version_commands_tests.cpp"
+    "app_version_platform_commands_tests.cpp"
+    "batch_commands_tests.cpp"
+    "host_commands_tests.cpp"
+    "main.cpp"
+    "result_commands_tests.cpp"
+    "workunit_commands_tests.cpp"
+)

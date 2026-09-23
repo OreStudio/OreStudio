@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-assets:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-assets
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:28A846EC-8222-4941-8B29-F8F2C0CF231A][Clean ores.assets to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ ores.assets passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:28A846EC-8222-4941-8B29-F8F2C0CF231A][Clean ores.assets to the component clean standard]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

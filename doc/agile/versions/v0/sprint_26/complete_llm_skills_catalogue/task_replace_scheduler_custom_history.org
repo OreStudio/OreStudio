@@ -30,8 +30,8 @@ Job definition history comes from the generic history provider and the audit dia
 | Parent story | [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Start the first task. |
-| Last touched | 2026-09-23 |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-12                               |
 
 * Acceptance
 

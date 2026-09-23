@@ -69,7 +69,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | One moved task had its Next and Last touched rewritten, unpadded, unlike its 27 siblings. | =complete_llm_skills_catalogue/task_replace_scheduler_custom_history.org= | Accepted | The move script matched story files by the suffix =story.org=, which =..._history.org= also ends with, so it applied the story's status edits to this task. Restored the original values. |
+| 2 | The journey standard and tasks cite the Qt tree by a local path. | =journey_extraction_standard.org= | Declined | The path is the source the product owner named; every citation also gives the git form, =af67db3062^:projects/ores.qt/...=, which works anywhere. |
 
 * Result
 

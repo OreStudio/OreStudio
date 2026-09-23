@@ -2,7 +2,7 @@
 :ID: 28A846EC-8222-4941-8B29-F8F2C0CF231A
 :END:
 #+title: Story: Clean ores.assets to the component clean standard
-#+description: Bring ores.assets to the Component Clean Standard (Protocol items): tier 2, higher infrastructure.
+#+description: Bring ores.assets to the Component Clean Standard (Entity items): tier 2, higher infrastructure.
 #+type: story
 #+level: s2
 #+filetags: :sprint_26:codegen:clean_standard:v0:
@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-ores.assets meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]: the items marked All and Protocol pass, each item that does not apply is recorded with its reason, and ores.assets joins =COMPONENTS_UNDER_TEST=. Order 18 of 35 in the sprint 26 component clean-up, tier 2 (higher infrastructure).
+ores.assets meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]: the items marked All, Protocol and Entity pass, each item that does not apply is recorded with its reason, and ores.assets joins =COMPONENTS_UNDER_TEST=. Order 18 of 35 in the sprint 26 component clean-up, tier 2 (higher infrastructure). The Entity items apply because assets already carries SQL, repositories and a service for tag, image and image_tag; the story was scaffolded as Protocol-only.
 
 * Status
 
@@ -23,9 +23,9 @@ ores.assets meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
-| Waiting on    | Nothing.                               |
-| Next          | Start the task. |
+| Now           | Baseline and inventory done (B01 to B05); the component is registered for codegen and its root CMakeLists is generated and verified. |
+| Waiting on    | G06, which is red repo-wide and blocks the registry step. |
+| Next          | Model the three wire types one at a time, starting with tag. |
 | Last touched  | 2026-09-23                               |
 
 * Acceptance

@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-ores.assets passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] for a component of kind *Protocol*.
+ores.assets passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] for a component of kind *Entity*.
 
 * Status
 
@@ -35,7 +35,7 @@ ores.assets passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 * Acceptance
 
-- Every checklist item that applies to a component of kind *Protocol* passes, with its evidence recorded on the task.
+- Every checklist item that applies to a component of kind *Entity* passes, with its evidence recorded on the task.
 - Every item that does not apply is recorded as not applicable, with the reason.
 - Every generator defect found is fixed at its source, with a regression test.
 - ores.assets is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.

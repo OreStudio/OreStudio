@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID: 2E4FFE8F-3804-400F-BCB2-6DAA6987A498
 :END:
-#+title: Regenerate or retire the domain round-trip dataset
+#+title: Regenerate or retire the domain round-trip dataset (resolved)
 #+description: assets/test_data/domain_roundtrip/ is the second derived artefact of external/ore/examples/ and it is badly out of step. A fresh v17 round-trip writes 566 files; the committed dataset holds 1474. Regenerating would delete 961 files: 946 are empty Portfolio stubs that an older build wrote for every XML it could not parse, and 15 are orphans for Products/SupportedTrades/, a directory upstream has since removed. It would add 53 outputs for examples the v17 sync introduced, including Products/Example_Trades/Credit_CallableBond.xml, and change 177 more, mostly conventions.xml and curveconfig.xml where the v17 schema moved. The dataset also duplicates assets/test_data/golden_dataset/, which the sprint_17 story said it had replaced; the retire task is marked DONE but golden_dataset is alive and named by 13 files. Decide which of the two is canonical before regenerating either.
 #+type: capture
 #+level: cross
 #+filetags: :ore:testing:coverage:
 #+created: 2026-09-12
-#+updated: 2026-09-12
+#+updated: 2026-09-23
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
@@ -72,6 +72,19 @@ to delete =domain_roundtrip= and the check script with it. If
 =golden_dataset=, and re-point the 12 suites and the example coverage
 test at the new tree. Doing neither leaves a dataset that claims to be
 checked but cannot fail.
+
+* Resolution
+
+Resolved by the =ores.cli= decommission (story
+[[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]]), which deleted the dataset, the checker, and
+the CI workflow: =assets/test_data/domain_roundtrip/=,
+=scripts/ore_domain_roundtrip_check.py=, and
+=.github/workflows/ore_coverage.yml= are all gone.
+
+=assets/test_data/golden_dataset/= is canonical. Thirteen Catch2
+suites read it and fail a build against it, so it is the gated
+round-trip dataset. The question posed here is answered: there is no
+second dataset left to regenerate and nothing to retire.
 
 * References
 

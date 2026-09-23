@@ -50,7 +50,7 @@ the system belongs to exactly one of these layers:
 - [[id:873CD1C6-7636-4F30-B3D4-3BB7FCBF4DBD][Domain Layer]]: the business. Depends on Foundation + Infrastructure but never
   on Application. Reference data, IAM, trading, market data, reporting, data
   quality — the financial domain model that justifies the system's existence.
-- [[id:C9AD7DA5-D00E-4CA9-A978-E74F776E0F17][Application Layer]]: the surfaces. Depends on every layer below. CLI, HTTP
+- [[id:C9AD7DA5-D00E-4CA9-A978-E74F776E0F17][Application Layer]]: the surfaces. Depends on every layer below. HTTP
   servers, the shell REPL, and the compute engine. If a user touches it,
   it lives here.
 - [[id:A3F8B2C1-9D4E-4F7A-B6C5-2E8D1A0F3B9C][Tooling Layer]]: the instruments contributors reach for to build, test, and

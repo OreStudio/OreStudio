@@ -129,7 +129,6 @@ Tags that identify which =ores.*= component a document primarily concerns.
 | =codegen= | =ores.codegen=: the Python/Mustache code generator. |
 | =compass= | =ores.compass=: the developer toolkit CLI. |
 | =trading= | =ores.trading=: trading domain types and lifecycle. |
-| =cli= | =ores.cli=: the command-line interface. |
 | =qt= | Qt-based GUI client. |
 | =shell= | =ores.shell=: the scripted NATS shell. |
 | =http= | HTTP layer or REST API. |

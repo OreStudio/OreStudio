@@ -34,8 +34,8 @@ No workflow builds or tests a pull request. The =pr.yml= workflow gated
 every pull request to =main= until the gate-reduction task deleted it:
 the =classify= job (the path classifier) and =pr-gate= (the sole
 required check, which aggregated classify) went with it, and the
-branch-protection required check was removed. The site and roundtrip
-checks it once ran now run locally (see the fate table below).
+branch-protection required check was removed. The site check it once
+ran now runs locally (see the fate table below).
 
 Five workflows still run on =pull_request=. The first four each fire
 only on their own paths and cover drift and lint alone:
@@ -64,7 +64,7 @@ only thing that catches a broken build before review.
 
 | Check                 | Fate            | Where it runs instead / rationale |
 |-----------------------+-----------------+-----------------------------------|
-| classify, site, roundtrip, cmake-sources-drift, pr-gate | deleted with pr.yml | classify: path classifier, audit trail only — nothing consumed its buckets once the gate shrank. Site: local =compass build --direct site= (same emacs export; ~5-10 min locally) for a full publish, or =compass site page= for the incrementally rebuilt pages; optional CDash submission as experimental. Roundtrip: local =python3 scripts/ore_domain_roundtrip_check.py=. cmake-sources-drift: local =python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check=; the =compass-codegen-sync-cmake-sources= skill wraps it. pr-gate: no branch-protection required check remains. |
+| classify, site, cmake-sources-drift, pr-gate | deleted with pr.yml | classify: path classifier, audit trail only — nothing consumed its buckets once the gate shrank. Site: local =compass build --direct site= (same emacs export; ~5-10 min locally) for a full publish, or =compass site page= for the incrementally rebuilt pages; optional CDash submission as experimental. cmake-sources-drift: local =python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check=; the =compass-codegen-sync-cmake-sources= skill wraps it. pr-gate: no branch-protection required check remains. |
 | codegen-drift          | deleted with pr.yml; restored as =codegen-drift.yml= 2026-09-11 | =codegen-drift.yml= gates a PR on =projects/*/modeling/**= and =projects/ores.codegen/**=. Locally: tangle (=compass build --direct codegen_templates=) then =check_component_drift.py --all= over the shared =COMPONENTS_UNDER_TEST= list in =component_registry.py=; a component not yet at zero drift is measured with =--component <name>=. |
 | doc-lint               | added 2026-09-09 | =doc-lint.yml= gates a PR on =**.org=, =**.mustache=, =build/scripts/generate_skill*.py=, =compass.py=, and itself. Locally: =compass lint= plus the six =build/scripts/= skill-consistency checks. |
 | claude-code-review    | deleted with the local-review task | Local: the =compass-code-review-pr= skill runs before submit (in =compass-pr-raise=); findings go into the task's =* Review= table and are addressed in the round. The on-demand =@claude= trigger (=claude.yml=) stays. |
@@ -73,7 +73,6 @@ only thing that catches a broken build before review.
 | continuous-* (linux/macos/windows) | stays | Every 2/3/12h + tags: full build matrix + ctest, submitted to CDash as continuous. |
 | nightly-linux         | stays        | Daily: full build + =ctest -VV= to CDash Nightly + valgrind dynamic analysis. |
 | nightly-format        | stays        | Daily clang-format drift → auto-fix PR; local =tangle_clang_format= exists. |
-| ore_coverage          | stays        | Coverage on main push. |
 | shell-script-drift / template-drift | stays | Cheap checks on both a PR and a main push; local tangle equivalents exist (=tangle_shell_scripts=, =tangle_codegen_templates=). |
 | codeql-analysis, stale | stays       | Manual security scan; housekeeping bot. |
 
@@ -86,8 +85,8 @@ with one addition (python tooling):
 | Class           | Paths                                                             | Checks the submit-PR skill runs                        |
 |-----------------+-------------------------------------------------------------------+--------------------------------------------------------|
 | docs            | =doc/*=, =assets/*=, =.claude/*=, =*.md=, =*.org=, =projects/*/modeling/*= (org/puml/png), =external/*= vendored | site build; codegen drift when =projects/*/modeling/*= changed; review; misspell |
-| code (C++)      | =projects/ores.*= C++ sources, headers, =*.cmake=, =CMakeLists.txt= | full build + ctest; roundtrip; cmake-sources-drift; codegen-drift; review; misspell; CDash experimental |
-| ci              | =.github/*=, =projects/ores.codegen/library/templates/*=         | site; roundtrip; drift checks; review; misspell         |
+| code (C++)      | =projects/ores.*= C++ sources, headers, =*.cmake=, =CMakeLists.txt= | full build + ctest; cmake-sources-drift; codegen-drift; review; misspell; CDash experimental |
+| ci              | =.github/*=, =projects/ores.codegen/library/templates/*=         | site; drift checks; review; misspell         |
 | python tooling  | =projects/ores.compass/*=, =projects/ores.codegen/*= (non-template) | component test suite; drift checks; review; misspell  |
 | anything else   | any path matching no bucket above                                | code class checks; review; misspell                   |
 

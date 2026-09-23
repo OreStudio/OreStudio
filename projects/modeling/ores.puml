@@ -232,12 +232,6 @@ package "Application Layer" #F2F2F2 {
     account management, auto-login. Dev/ops tool.
     end note
 
-    component [ores.cli] as cli #F7E5FF
-    note right of cli
-    CLI import/export of reference data (JSON/XML/CSV)
-    directly against the database.
-    end note
-
     component [ores.http.core] as httpcore #F7E5FF
     note right of httpcore
     Concrete HTTP route handlers: IAM, assets,
@@ -331,10 +325,6 @@ workflow --> nats
 shell --> nats
 shell --> iam
 shell --> refdata
-
-cli --> database
-cli --> refdata
-cli --> ore
 
 httpcore --> nats
 httpcore --> httpapi

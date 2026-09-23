@@ -66,6 +66,6 @@ validation snags and top-level shell login/logout land there.
 
 * See also
 
-- [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] — the CLI component.
+- =ores.cli= — the CLI component.
 - [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] — the REPL/shell component.
 - [[id:CF13FFB1-4D84-4965-AD65-C38B1D4849AB][CLI refactor and test]] (sprint 02) — predecessor.

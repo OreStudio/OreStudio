@@ -2,7 +2,7 @@
 :ID: C9AD7DA5-D00E-4CA9-A978-E74F776E0F17
 :END:
 #+title: System Model: Application Layer
-#+description: Component inventory for the Application layer: CLI, HTTP servers, shell REPL, compute engine, and Emacs tooling.
+#+description: Component inventory for the Application layer: HTTP servers, shell REPL, compute engine, and Emacs tooling.
 #+type: knowledge
 #+level: cross
 #+filetags: :modeling:architecture:application:system_model:
@@ -11,21 +11,11 @@
 
 This page is part of the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]]. Application is where the system surfaces
 — the layer that composes everything below it into user-facing executables. The
-shell REPL and the CLI are clients of the same domain services over [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]];
+shell REPL is a client of the same domain services over [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]];
 the compute engine is a long-running service. To generate component diagrams,
 use the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]] skill.
 
 * Detail
-
-** ores.cli
-
-Command-line interface — import/export currencies and reference data in multiple
-formats, ORE sample execution, and batch operations. A thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] client
-that drives domain services without a GUI.
-
-| Sub-component | Role                                    | Dependencies |
-|---------------+-----------------------------------------+--------------|
-| [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]]      | CLI batch operator and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] client | All layers   |
 
 ** ores.http
 

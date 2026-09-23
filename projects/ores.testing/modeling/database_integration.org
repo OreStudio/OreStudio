@@ -18,7 +18,7 @@ isolation. Each test suite runs in its own isolated tenant, allowing parallel
 test execution without interference.
 
 #+begin_example
-Test Process A (ores.iam.tests)     Test Process B (ores.cli.tests)
+Test Process A (ores.iam.tests)     Test Process B (ores.shell.tests)
          |                                    |
          v                                    v
     Tenant A                             Tenant B

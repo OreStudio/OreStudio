@@ -40,31 +40,26 @@ struct host_runner_sync_options final {
 };
 
 /**
- * @brief Runs the standard sync host lifecycle shared by ores.cli and
- * ores.shell: parse args -> (if configuration present) init logging -> log
+ * @brief Runs the standard sync host lifecycle for ores.shell: parse args ->
+ * (if configuration present) init logging -> log
  * args/configuration -> optional early exit (for DB-free commands that must
  * not go through the generic failure log) -> construct and run the
  * application -> on exception, log diagnostic information and rethrow.
  *
- * Extracted from what used to be ~90% near-identical lines hand-duplicated
- * across ores.cli/src/app/host.cpp and
- * ores.shell/application/src/app/host.cpp (see
- * task_investigate_cli_shell_host_divergence.org: sync execution is
- * load-bearing for both -- neither belongs on run_host_async's io_context --
- * but their own bodies still shared this much structure with each other).
+ * Extracted from ores.shell/application/src/app/host.cpp: sync execution is
+ * load-bearing for the shell (it does not belong on run_host_async's
+ * io_context).
  *
- * Deliberately does *not* attempt to unify application construction: neither
- * tool's constructor is uniform with the other (ores.cli's takes an output
- * stream + database options, ores.shell's takes NATS/login/script options),
- * so callers supply a run_application callable that owns construction.
+ * Deliberately does *not* attempt to unify application construction: the
+ * shell's constructor takes NATS/login/script options, so callers supply a
+ * run_application callable that owns construction.
  *
  * @tparam Parser Default-constructible; parse(args, std_output, error_output)
  * returns an optional configuration object with a streamable `logging` field
  * usable to construct ores::telemetry::log::lifecycle_manager.
  * @tparam EarlyExit Callable(const cfg&) -> std::optional<int>; returning a
- * value short-circuits before the try/catch below with that exit code (used
- * by ores.cli's DB-free ore_roundtrip branch, which has its own try/catch and
- * output formatting); returning std::nullopt proceeds to run_application.
+ * value short-circuits before the try/catch below with that exit code;
+ * returning std::nullopt proceeds to run_application.
  * @tparam Runner Callable(const cfg&) -> void; constructs and runs the
  * application.
  * @param lg The calling tool's own logger (kept per-tool so log lines carry

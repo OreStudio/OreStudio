@@ -2,7 +2,7 @@
 :ID: B5766B0E-24F0-45C3-B35D-E762BBAB5206
 :END:
 #+title: Doc Sync Recipes
-#+description: Keep recipe documentation in sync with the source it describes — CLI parsers, HTTP routes, shell commands, or any other recipe topic.
+#+description: Keep recipe documentation in sync with the source it describes. The topics are HTTP routes, shell commands, SQL scripts, and any others the repo carries.
 #+type: skill
 #+level: s1
 #+filetags: :llm:skill:skills:claude_code:recipes:documentation:
@@ -12,15 +12,15 @@
 #+begin_export markdown
 ---
 name: compass-doc-sync-recipes
-description: Compare a recipe topic's source-of-truth (CLI parsers, HTTP routes, shell commands, SQL scripts, ...) against the recipes that document it; add missing recipes, retire dead ones, fix drift. Replaces the per-topic recipe-sync skills.
+description: Compare a recipe topic's source-of-truth (HTTP routes, shell commands, SQL scripts, ...) against the recipes that document it; add missing recipes, retire dead ones, fix drift. Replaces the per-topic recipe-sync skills.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
 
 * When to use this skill
 
-When the user asks you to refresh the recipes for a topic — CLI, HTTP,
-shell, SQL, cmake, etc. — because the source has drifted. Symptoms:
+When the user asks you to refresh the recipes for a topic, such as HTTP,
+shell, SQL, or cmake, because the source has drifted. Symptoms:
 
 - The user added commands, routes, or scripts and the recipes do not
   yet describe them.
@@ -38,7 +38,6 @@ location changes.
 
    | Topic    | Source-of-truth                                              | Recipe folder       |
    |----------+--------------------------------------------------------------+---------------------|
-   | =cli=    | [[proj:projects/ores.cli/src/config/entity_parsers][=projects/ores.cli/src/config/entity_parsers/=]]               | [[proj:doc/recipes/cli][=doc/recipes/cli/=]]  |
    | =http=   | =projects/ores.http.core/src/routes/= (and =ores.http.api=)  | [[proj:doc/recipes/http][=doc/recipes/http/=]] |
    | =shell=  | [[proj:projects/ores.shell/src/app/commands][=projects/ores.shell/src/app/commands/=]]                      | [[proj:doc/recipes/shell][=doc/recipes/shell/=]] |
    | =sql=    | =projects/ores.sql/schema/=                                  | [[proj:doc/recipes/sql][=doc/recipes/sql/=]] |

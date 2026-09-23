@@ -1,72 +1,69 @@
 :PROPERTIES:
 :ID: A2CD62D0-9CA2-49DF-8CEE-5D8D8809C0F0
 :END:
-#+title: Task: Add ores.cli iam tenants list command
-#+description: Add a tenants entity to the ores.cli IAM domain so developers can list active tenants (code, name, tenant_id UUID) from the database. Also fix or file the iam --help crash (boost::bad_any_cast) found during country CLI verification.
+#+title: Task: Add shell tenants list command
+#+description: Confirm the shell's tenants list verb (doc/recipes/shell/tenants/) lists active tenants (code, name, tenant_id UUID) so developers can discover them. The verb already exists; this task is the discovery half of the tenant-discovery story.
 #+type: task
 #+level: s1
-#+filetags: :cli:iam:tenant:add_tenant_discovery:
+#+filetags: :shell:iam:tenant:add_tenant_discovery:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
-#+updated: 2026-06-25
+#+updated: 2026-09-23
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:247E026A-540B-4835-A1CD-FD051A12A416][Add tenant discovery to CLI and compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:247E026A-540B-4835-A1CD-FD051A12A416][Add tenant discovery to shell and compass]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Add a =tenants= entity to the =ores.cli iam= domain so that:
+The =ores.shell= already carries a =tenants= resource whose verbs live
+in =doc/recipes/shell/tenants/=. The discovery command is:
 
 #+begin_example
-ores.cli iam tenants list
-ores.cli iam tenants list --format table
-ores.cli iam tenants list --format json
+tenants list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
 #+end_example
 
-…all return the active tenants from =ores_iam_tenants_tbl=, showing
-=code=, =name=, and =tenant_id= (the UUID developers need for
-=ORES_TENANT=).
+…addressed at =iam.v1.tenants.list=. It returns the active tenants from
+the IAM domain over NATS, showing =code=, =name=, and =tenant_id= (the
+UUID developers need for =ORES_TENANT=).
 
-As a secondary goal, diagnose and fix the =ores.cli iam --help= crash
-(=boost::bad_any_cast=) discovered during [[id:1D7A5AA2-3F1F-49F5-855A-EB69AECBEDB8][country CLI verification]]. The
-crash makes the IAM domain difficult to explore and will affect the
-new tenants entity unless fixed.
+This task re-points the discovery half from the retired =ores.cli= to
+the shell and confirms the existing verb meets the story's need; no new
+verb has to be written.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                                |
-| Parent story | [[id:247E026A-540B-4835-A1CD-FD051A12A416][Add tenant discovery to CLI and compass]] |
+| Parent story | [[id:247E026A-540B-4835-A1CD-FD051A12A416][Add tenant discovery to shell and compass]] |
 | Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
-| Last touched | 2026-06-25                             |
+| Last touched | 2026-09-23                             |
 
 * Acceptance
 
-- =ores.cli iam tenants list= returns all active tenants (=valid_to =
-  ores_utility_infinity_timestamp_fn()=).
-- =--format table= and =--format json= both produce correct output.
+- =tenants list= (per =doc/recipes/shell/tenants/tenant.org=) returns
+  the active tenants.
 - Each row includes =code=, =name=, and =tenant_id= (UUID).
-- =ores.cli iam --help= no longer crashes with =boost::bad_any_cast=.
-- A recipe =How do I list tenants via CLI?= is added or the
-  =How do I list tenants?= combined recipe includes a CLI section.
+- A recipe =How do I list tenants?= (shell and compass variants) is
+  added, or the existing =doc/recipes/shell/tenants/= recipes are
+  cross-linked from the story.
 
 * Plan
 
-1. Investigate the =iam --help= crash — likely a mis-registered
-   program-options default value (=boost::any= mismatch); fix at the
-   source.
-2. Add the =tenants= entity following the pattern of existing IAM
-   entities (=accounts=, =roles=, or similar).
-3. Wire the entity's =list= operation with the three standard columns.
-4. Run against the Barclays provisioned DB and capture results.
+1. Confirm the =tenants= resource and its =list= verb in
+   =doc/recipes/shell/tenants/tenant.org=.
+2. Run =tenants list= against a provisioned environment and capture the
+   output columns.
+3. Confirm each tenant's =code=, =name=, and =tenant_id= (UUID) are
+   obtainable for =ORES_TENANT=, and note where the UUID appears if the
+   list table does not carry a =tenant_id= column.
 
 * Notes
 
@@ -88,11 +85,11 @@ WHERE valid_to = ores_utility_infinity_timestamp_fn()
 ORDER BY code;
 #+end_src
 
-The =boost::bad_any_cast= crash on =ores.cli iam --help= was first seen
-during country CLI verification on 2026-06-25. The IAM domain has no
-=tenants= entity yet; =ores.cli iam --help= should list entities but
-instead crashes. Likely the subparser registration references a
-program-options variable with the wrong type.
+=ores.cli= was retired on 2026-09-23. The shell already carries the
+=tenants= verbs under =doc/recipes/shell/tenants/= (see =tenant.org=
+for the =tenants list= shape), so no new verb has to be written. This
+task now only confirms the existing verb meets the discovery need; the
+=boost::bad_any_cast= crash died with =ores.cli=.
 
 * PRs
 

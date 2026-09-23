@@ -66,7 +66,7 @@ public:
      * The tenant code includes the test suite name and timestamp:
      * {test_suite}_{YYYYMMDD}_{HHMMSS}_{pid}_{random}
      *
-     * @param test_suite_name Name of the test suite (e.g., "ores.cli.tests")
+     * @param test_suite_name Name of the test suite (e.g., "ores.shell.tests")
      * @return A unique tenant code string
      */
     static std::string generate_test_tenant_code(const std::string& test_suite_name);

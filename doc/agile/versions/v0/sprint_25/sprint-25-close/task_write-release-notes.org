@@ -92,3 +92,8 @@ The retrospective in sprint.org is the post mortem, as in sprint 24.
 The tag and the draft release follow the merge, with
 =compass release-notes draft --sprint 25 --codename <name>=.
 
+The release is v0.0.25, "Lucira", a fishing village on the Namibe
+coast. The downloads page (=doc/downloads.org=) lists it in its
+Releases table, with the Linux, macOS and Windows package links. The
+tag builds attach those packages; check each link once they finish.
+

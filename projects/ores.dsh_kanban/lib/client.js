@@ -117,7 +117,6 @@ window.__ModuleLoader__.load({
         pr: str(task.pr),
         blockedOn: str(task.blockedOn),
         blockedSince: str(task.blockedSince),
-        owner: str(task.owner),
         environment: str(task.environment),
         created: str(task.created),
         updated: str(task.updated),
@@ -141,7 +140,6 @@ window.__ModuleLoader__.load({
         epic: str(story.epic),
         description: str(story.description),
         environment: str(story.environment),
-        owner: str(story.owner),
         created: str(story.created),
         updated: str(story.updated),
         path: str(story.path),
@@ -493,7 +491,6 @@ window.__ModuleLoader__.load({
           h(Dot, { key: 'dot', state: task.state }),
           h('span', { key: 'title', style: { flex: 1, minWidth: 0, wordBreak: 'break-word' } }, task.title || task.slug),
           task.environment ? h(Chip, { key: 'env' }, task.environment) : null,
-          task.owner ? h('span', { key: 'owner', style: { color: 'var(--dsw-alias-label-tertiary)' } }, task.owner) : null,
           h(Badge, { key: 'badge', state: task.state }),
         ]),
         task.branch ? h('div', {
@@ -575,7 +572,6 @@ window.__ModuleLoader__.load({
         h(MicroLabel, { key: 'label' }, 'story'),
         h('div', { key: 'fields', style: { display: 'grid', gap: '0.15rem', margin: '0.4rem 0 0.6rem' } }, [
           h(KeyValue, { key: 'env', label: 'environment' }, story.environment || '—'),
-          h(KeyValue, { key: 'owner', label: 'owner' }, story.owner || '—'),
           h(KeyValue, { key: 'epic', label: 'epic' }, story.epic || '—'),
           h(KeyValue, { key: 'created', label: 'created' }, isoDay(story.created) || '—'),
           h(KeyValue, { key: 'updated', label: 'updated' }, isoDay(story.updated) || '—'),
@@ -643,14 +639,6 @@ window.__ModuleLoader__.load({
               'data-ores-epic-label': story.epic,
               style: { color: 'var(--dsw-alias-label-tertiary)', fontSize: '0.72rem' },
             }, story.epic)
-            : null,
-          /* An empty owner renders nothing at all: no placeholder on the card face. */
-          story.owner
-            ? h('span', {
-              key: 'owner',
-              'data-ores-owner': story.owner,
-              style: { color: 'var(--dsw-alias-label-tertiary)', fontSize: '0.72rem' },
-            }, story.owner)
             : null,
           current ? h('span', {
             key: 'current',

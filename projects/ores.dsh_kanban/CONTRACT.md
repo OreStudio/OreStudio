@@ -9,7 +9,7 @@ the same commit.
 A DSH web-client plugin, private to ORE Studio. It renders the current sprint as
 a kanban board inside a live session, and it shows the properties the org files
 already carry: the environment working each story and task, the state, the
-branch, the PR, the owner, the epic, and the task progress.
+branch, the PR, the epic, and the task progress.
 
 The board reads the org tree on disk. It is never a mirror, so it cannot go
 stale, and it has nothing to synchronise.
@@ -71,7 +71,6 @@ Only these, from `#+keyword:` lines, the first `:PROPERTIES:` drawer, and the
 | type | `#+type:` |
 | description | `#+description:` |
 | environment | `#+environment:` |
-| owner | `#+owner:` |
 | branch | `#+branch:` on tasks only |
 | pr | `#+pr:` on tasks only |
 | blocked_on, blocked_since | `#+blocked_on:` and `#+blocked_since:` |
@@ -170,7 +169,7 @@ and `cache-control: no-store`. The discriminant is `ok`.
       "title": "Show the current agile work item inside DSH",
       "state": "STARTED", "epic": "tooling",
       "description": "…",
-      "environment": "bright_faraday", "owner": "marco",
+      "environment": "bright_faraday",
       "created": "2026-09-23", "updated": "2026-09-23",
       "path": "doc/agile/versions/v0/sprint_25/dsh_agile_plugin/story.org",
       "progress": { "done": 1, "total": 2, "abandoned": 0 },
@@ -182,7 +181,7 @@ and `cache-control: no-store`. The discriminant is `ok`.
           "title": "Scaffold story: Show the current agile work item inside DSH",
           "state": "DONE", "branch": "feature/dsh-agile-plugin",
           "pr": "2135", "blockedOn": "", "blockedSince": "",
-          "owner": "marco", "environment": "bright_faraday",
+          "environment": "bright_faraday",
           "created": "2026-09-23", "updated": "2026-09-23",
           "scaffold": true,
           "path": "doc/agile/versions/v0/sprint_25/dsh_agile_plugin/task_scaffold_dsh_agile_plugin.org"
@@ -221,7 +220,7 @@ Rules for the payload:
   text anywhere else and not from `#+filetags:`.
 - Every keyword value is trimmed and collapsed, and a keyword the repository
   documents as a single token is cut at the first whitespace. `#+environment:`
-  and `#+owner:` are single-token keywords. That rule exists because
+  is a single-token keyword. That rule exists because
   `doc/agile/versions/v0/sprint_25/close-systemic-codegen-gaps/story.org` carries
   `#+environment: brave_hopper brave_hopper` upstream, and the doubled value must
   not become a filter chip.
@@ -229,7 +228,9 @@ Rules for the payload:
   overrun sprint reports its true day. Sprint 25 runs 2026-08-03 to 2026-08-10,
   so it reports a day greater than `totalDays`. `totalDays` is
   `endDate - startDate + 1`. Both are `null` when a date is missing.
-- `story.environment` and `story.owner` come from the story's own keywords.
+- `story.environment` comes from the story's own keyword. `#+owner:` is not read
+  at all. Ownership sits on tasks and reads the same across the sprint, so it
+  earns no space on a card face or in the detail panel.
 - `story.branches` is the de-duplicated, sorted union of its tasks' `branch`
   values, empty strings dropped. `story.prs` is the same union of its tasks'
   `pr` values, parsed to integers, sorted ascending.
@@ -381,7 +382,7 @@ A full-width, read-only board, in this order:
    header carries the column title and its count, coloured by state. Cards are
    the stories whose state maps to that column and that pass the filters.
 6. **Card face.** The story title, an environment chip in monospace, the epic,
-   the owner, a task progress bar with `done/total`, and `open Nd` age from
+   a task progress bar with `done/total`, and `open Nd` age from
    `created`. A 3px left border in the story's epic colour. A task count line
    such as `2 tasks · 1 done`. The card for `tree.currentStoryId` carries an
    accent outline and a `current` marker, and is scrolled into view when the view
@@ -392,9 +393,9 @@ A full-width, read-only board, in this order:
    for. Both live in the card detail panel, which is where someone who wants them
    is already looking.
 7. **Card detail.** Clicking a card opens a panel on the right of the view: the
-   story's id, state badge, environment, owner, epic, created and updated dates,
+   story's id, state badge, environment, epic, created and updated dates,
    description, branches, and PR list, then every task as a row with a state
-   badge, environment, owner, branch, and PR. Clicking a task row expands
+   badge, environment, branch, and PR. Clicking a task row expands
    `blocked on`, `blocked since`, `created`, `updated`, and its file path.
    `Escape` and a close button dismiss the panel.
 

@@ -710,9 +710,9 @@ try {
   const detail = page.locator('[data-ores-kanban="detail"]').first()
   check('detail', 'the detail panel opens on card click', (await detail.count()) > 0)
   const detailText = await detail.innerText().catch(() => '')
-  check('detail', 'the detail lists id, state, environment, owner, epic and dates',
+  check('detail', 'the detail lists id, state, environment, epic and dates',
     detailText.includes(STORY_ID) && /STARTED/.test(detailText) && /environment/.test(detailText)
-    && /owner/.test(detailText) && /epic/.test(detailText) && /2026-09-23/.test(detailText))
+    && /epic/.test(detailText) && /2026-09-23/.test(detailText))
   check('detail', 'the detail lists the task rows',
     /Build the ORE Studio kanban plugin for DSH/.test(detailText)
     && /Scaffold story: Show the current agile work item inside DSH/.test(detailText))

@@ -85,7 +85,6 @@ function story(overrides = {}) {
     epic: '',
     description: '',
     environment: '',
-    owner: '',
     created: '',
     updated: '',
     path: '',
@@ -105,7 +104,6 @@ function task(overrides = {}) {
     state: 'BACKLOG',
     branch: '',
     pr: '',
-    owner: '',
     environment: '',
     created: '',
     updated: '',
@@ -159,7 +157,6 @@ test('a story carries the literal fields of its own org file', () => {
   assert.equal(parsed.environment, 'bright_faraday')
   assert.equal(parsed.created, '2026-09-23')
   assert.equal(parsed.updated, '2026-09-23')
-  assert.equal(parsed.owner, '')
   assert.equal(
     parsed.description,
     "A DSH plugin that renders the sprint's stories and tasks as a kanban board, read from the org tree, with the work tree properties visible on every card.",
@@ -207,14 +204,13 @@ test('a story with no Status table is UNKNOWN, and UNKNOWN sorts last', () => {
   assert.deepEqual(STATE_IDS.map(columnOrder), [0, 1, 2, 3, 4, 5, 6])
 })
 
-test('a task carries its own branch, pr, owner and environment', () => {
+test('a task carries its own branch, pr and environment', () => {
   const implement = parseTaskDocument(implementText, 'implement_dsh_agile_plugin')
   assert.equal(implement.id, IMPLEMENT_ID)
   assert.equal(implement.title, IMPLEMENT_TITLE)
   assert.equal(implement.type, 'task')
   assert.equal(implement.branch, BRANCH)
   assert.equal(implement.pr, '')
-  assert.equal(implement.owner, 'marco')
   assert.equal(implement.environment, 'bright_faraday')
   assert.equal(implement.blockedOn, '')
   assert.equal(implement.blockedSince, '')
@@ -235,11 +231,9 @@ test('the sprint document carries its own dates and the story themes', () => {
 test('a single-token keyword is cut at its first whitespace', () => {
   const doubled = readFileSync(join(SPRINT_DIR, 'close-systemic-codegen-gaps/story.org'), 'utf8')
   assert.equal(parseStoryDocument(doubled, 'close-systemic-codegen-gaps').environment, 'brave_hopper')
-  const padded =
-    '#+title: Story: X\n#+environment:   brave_hopper   brave_hopper\n#+owner: marco  rossi\n'
+  const padded = '#+title: Story: X\n#+environment:   brave_hopper   brave_hopper\n'
   const parsed = parseStoryDocument(padded, 'x')
   assert.equal(parsed.environment, 'brave_hopper')
-  assert.equal(parsed.owner, 'marco')
   const multi = '#+title: Story: X\n#+description:  two   spaces   collapse\n'
   assert.equal(parseStoryDocument(multi, 'x').description, 'two spaces collapse')
 })
@@ -540,7 +534,6 @@ test('every field the model exposes is populated from the files, not defaulted',
   for (const card of own.tasks) {
     assert.notEqual(card.id, '')
     assert.notEqual(card.title, '')
-    assert.notEqual(card.owner, '')
     assert.notEqual(card.environment, '')
     assert.notEqual(card.created, '')
     assert.notEqual(card.updated, '')

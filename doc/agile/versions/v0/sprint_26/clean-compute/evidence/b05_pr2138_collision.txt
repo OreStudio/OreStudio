@@ -1,0 +1,4 @@
+# PR #2138 collision evidence, captured 2026-09-23T13:27:38Z
+# gh pr view 2138 --json number,title,state,mergeable,mergeStateStatus,reviewDecision,headRefName
+
+{"headRefName":"feature/remove-the-legacy-qt-remnants","mergeStateStatus":"CLEAN","mergeable":"MERGEABLE","number":2138,"reviewDecision":"","state":"OPEN","title":"[codegen] Remove the legacy Qt remnants"}

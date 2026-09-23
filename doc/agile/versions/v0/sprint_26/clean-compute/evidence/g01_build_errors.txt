@@ -4,8 +4,10 @@ Command: cmake --build --preset linux-clang-debug-make --target
 ores.compute.api.lib ores.compute.core.lib ores.compute.service.lib
 ores.compute.wrapper.lib ores.compute.client.lib -j 3
 
-ores.compute.api.lib built. ores.compute.core.lib failed with 13 errors in
-two translation units. The errors group into three root causes.
+ores.compute.api.lib built. ores.compute.core.lib failed. Two translation
+units reported errors: registrar.cpp reported 11, and
+result_history_provider_registrar.cpp re-reported the 2 duplicate-member
+errors, for 13 diagnostics in all. They group into three root causes.
 
 ## Root cause 1: the version facet collides with a real sibling entity
 
@@ -31,8 +33,9 @@ f"list_{singular}_versions" and f"get_{singular}_version_request". For the
 app entity that is app_version_key and list_app_versions_request, which is
 the name of the app_version entity's own protocol.
 
-iam does not expose this because its account entity has no sibling entity
-named account_version. iam models account_version as a message.
+iam does not expose this because it has no entity named account_version, so
+the facet's derived names have no sibling entity to collide with. iam does
+derive and serve account_version types from the facet itself.
 
 ## Root cause 2: the response payload member collides with the envelope result member
 
@@ -41,10 +44,12 @@ named account_version. iam models account_version as a message.
     result_protocol.hpp:167:35: error: duplicate member 'result'
     result_protocol.hpp:166:35: note: previous declaration is here
 
-Source: org_loader.py:3063 to 3065, 3078 to 3080 and 3087 to 3089. Each
-response carries the envelope member _ts_field("result", _RESULT) beside a
-payload member named after the entity singular. For the result entity both
-members are named result.
+Source: org_loader.py:3063 to 3065 (get_response) and 3078 to 3080
+(put_response). Each response carries the envelope member
+_ts_field("result", _RESULT) beside a payload member named after the
+entity singular. For the result entity both members are named result. The
+put_many and delete_many responses at 3087 to 3089 name the payload after
+plural_short, which is "results", so they do not collide.
 
     struct get_result_response {
         ores::utility::domain::result result;

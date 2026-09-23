@@ -57,7 +57,7 @@ record each item's result in the table below.
 
 | Item | Result  | Evidence |
 |------+---------+----------|
-| B01  | Pass    | =evidence/b01_component_drift_baseline.txt= records 88 changed and 34 created files. =evidence/b01_model_drift_baseline.txt= records one known exception, =result.has_change_reason_cache=. |
+| B01  | Pass    | =evidence/b01_component_drift_baseline.txt= records 88 changed and 34 created files. =evidence/b01_model_drift_baseline.txt= records two known exceptions, one of them compute's =result.has_change_reason_cache= and the other =reporting.report_definition.has_workspace_id=. |
 | B02  | Pass    | =evidence/b02_b03_b04_inventory.txt=: nine models. Six entity, one junction, one module and one component overview. The module and the overview carry no variability. |
 | B03  | Partial | Same file: 258 C++ files outside tests, 189 generated and 69 hand-written. Classification in Notes. |
 | B04  | Pass    | Same file: 40 subjects across ten protocol headers. Eleven raw subject literals in hand-written code, seven of them in the three hand-written protocol headers. |
@@ -82,8 +82,9 @@ three root causes.
   names for itself. Source:
   =projects/ores.codegen/src/codegen/org_loader.py=, the
   =has_audit_columns= branch at 3039 to 3043 and the facet at 3121 to
-  3136. iam hides this because its =account= entity has no sibling entity
-  named =account_version=; iam models =account_version= as a message.
+  3136. iam hides this because it has no entity named =account_version=,
+  so the facet's derived names have no sibling entity to collide with;
+  iam derives and serves =account_version= types from the facet itself.
 - *The response payload member collides with the envelope result member.*
   Every response carries =ores::utility::domain::result result= beside a
   payload member named after the entity singular. For the =result= entity

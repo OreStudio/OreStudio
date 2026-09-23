@@ -131,12 +131,7 @@ drop function if exists ores_refdata_validate_tenor_anchor_fn;
 :domain_class:           refdata::domain::tenor_anchor
 :protocol_include:       ores.refdata.api/messaging/tenor_anchor_protocol.hpp
 :collection_name:        anchors
-:item_var:               anchor
 :key_field:              code
-:history_message_type:   get_tenor_anchor_history_request
-:settings_group:         TenorAnchorListWindow
-:window_title:           Tenor Anchors
-:icon:                   Anchor
 :END:
 
 *** Detail fields

@@ -319,16 +319,11 @@ entity versioning" architecture doc, "Multi-level composition".
 :domain_class:            refdata::domain::portfolio
 :protocol_include:        ores.refdata.api/messaging/portfolio_protocol.hpp
 :collection_name:         portfolios
-:item_var:                portfolio
 :key_field:               name
 :save_request_item_field: portfolio
-:history_message_type:    get_portfolio_history_request
 :has_change_reason_cache: true
 :has_export_macro:        true
 :parent_entity_singular:  portfolio
-:settings_group:          PortfolioListWindow
-:window_title:            Portfolios
-:icon:                    Folder
 :END:
 
 *** Detail fields

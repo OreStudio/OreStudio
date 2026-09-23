@@ -2,7 +2,7 @@
 :ID: 5A843D4A-2FF7-4410-8B70-A29FD01622FD
 :END:
 #+title: Feature: has_version_navigation
-#+description: Emit prev/next version navigation controls on the detail dialog and controller.
+#+description: Retired behavioural toggle; emitted the detail dialog's previous and next version controls before the Qt client was removed.
 #+type: feature
 #+level: cross
 #+filetags: :codegen:variability:feature:
@@ -24,7 +24,11 @@ this feature's value links here rather than restating its effect.
 
 * Effect
 
-Emit prev/next version navigation controls on the detail dialog and controller.
+Retired with the Qt client. It emitted the previous and next version
+navigation controls on the detail dialog and its controller. That dialog is
+gone, so setting or clearing this literal no longer changes generated
+behaviour. It stays accepted on entity orgs and on the profiles below as
+documentation only.
 
 * Structural consequence
 

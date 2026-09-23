@@ -147,7 +147,6 @@ std::string(faker::person::fullName())
 :domain_class:           dq::domain::catalog
 :protocol_include:       ores.dq.api/messaging/catalog_protocol.hpp
 :collection_name:        catalogs
-:item_var:               catalog
 :key_field:               name
 :has_uuid_primary_key:   false
 :get_request_class:      dq::messaging::get_catalogs_request
@@ -159,12 +158,6 @@ std::string(faker::person::fullName())
 :delete_request_class:   dq::messaging::delete_catalog_request
 :delete_response_class:  dq::messaging::delete_catalog_response
 :delete_message_type:    delete_catalog_request
-:history_request_class:  dq::messaging::get_catalog_history_request
-:history_response_class: dq::messaging::get_catalog_history_response
-:history_message_type:   get_catalog_history_request
-:settings_group:         CatalogListWindow
-:window_title:           Catalogs
-:icon:                   Table
 :has_change_reason_cache: true
 :has_pagination:         true
 :END:

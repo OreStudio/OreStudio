@@ -251,7 +251,6 @@ them.
 :domain_class:            compute::domain::result
 :protocol_include:        ores.compute.api/messaging/result_protocol.hpp
 :collection_name:         results
-:item_var:                result
 :key_field:               modified_by
 :get_request_class:       compute::messaging::get_results_request
 :get_response_class:      compute::messaging::get_results_response
@@ -262,14 +261,6 @@ them.
 :delete_request_class:    compute::messaging::delete_result_request
 :delete_response_class:   compute::messaging::delete_result_response
 :delete_message_type:     delete_result_request
-:history_request_class:   compute::messaging::get_result_history_request
-:history_response_class:  compute::messaging::get_result_history_response
-:history_message_type:    get_result_history_request
-:settings_group:          ResultListWindow
-:window_title:            Results
-:icon:                    CheckmarkCircle
-:changed_event_class:     compute::eventing::result_changed_event
-:changed_event_include:   ores.compute.api/eventing/result_changed_event.hpp
 :has_change_reason_cache: false
 :END:
 

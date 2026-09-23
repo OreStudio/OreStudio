@@ -207,14 +207,9 @@ crm_enabled_derived_pair_repository::read_latest_all_tenants(context ctx) {
 :domain_class:            refdata::domain::crm_enabled_derived_pair
 :protocol_include:        ores.refdata.api/messaging/crm_enabled_derived_pair_protocol.hpp
 :collection_name:         crm_enabled_derived_pairs
-:item_var:                pair
 :key_field:                id
 :has_export_macro:        true
 :save_request_item_field: data
-:history_message_type:    get_crm_enabled_derived_pair_history_request
-:settings_group:          CrmEnabledDerivedPairListWindow
-:window_title:            CRM Enabled Derived Pairs
-:icon:                    ArrowSync
 :END:
 
 *** Detail fields

@@ -255,15 +255,9 @@ std::nullopt
 ** Presentation
 :PROPERTIES:
 :collection_name:         ois_conventions
-:item_var:                oc
 :key_field:               id
 :delete_request_id_field:   ids
 :save_request_item_field: ois_convention
-:history_response_data_field: history
-:history_message_type:    get_ois_convention_history_request
-:settings_group:          OisConventionListWindow
-:window_title:            OIS Conventions
-:icon:                    Chart
 :END:
 
 *** Detail fields

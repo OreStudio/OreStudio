@@ -115,7 +115,6 @@ drop function if exists ores_trading_validate_party_role_type_fn;
 :domain_class:           trading::domain::party_role_type
 :protocol_include:       ores.trading.api/messaging/party_role_type_protocol.hpp
 :collection_name:        party_role_types
-:item_var:               party_role_type
 :key_field:              code
 :get_request_class:      trading::messaging::get_party_role_types_request
 :get_response_class:     trading::messaging::get_party_role_types_response
@@ -126,12 +125,6 @@ drop function if exists ores_trading_validate_party_role_type_fn;
 :delete_request_class:   trading::messaging::delete_party_role_type_request
 :delete_response_class:  trading::messaging::delete_party_role_type_response
 :delete_message_type:    delete_party_role_type_request
-:history_request_class:  trading::messaging::get_party_role_type_history_request
-:history_response_class: trading::messaging::get_party_role_type_history_response
-:history_message_type:   get_party_role_type_history_request
-:settings_group:         PartyRoleTypeListWindow
-:window_title:           Party Role Types
-:icon:                   PersonAccounts
 :END:
 
 *** Detail fields

@@ -208,7 +208,7 @@ A document's tags should cover the dimensions below where applicable.
 Tags are flat (no hierarchy), but readers should be able to infer the
 dimension from the tag itself.
 
-- /Component/ — which area of the codebase: =trading=, =sql=, =qt=,
+- /Component/ — which area of the codebase: =trading=, =sql=,
   =cli=, =http=, =compute=, =shell=, =codegen=, =modeling=, ...
 - /Domain topic/ — what the content is about: =fx_forward=, =pricing=,
   =reporting=, =observability=, =ci=, =build=, =release=, =security=,

@@ -217,15 +217,9 @@ std::nullopt
 ** Presentation
 :PROPERTIES:
 :collection_name:         zero_conventions
-:item_var:                zc
 :key_field:               id
 :delete_request_id_field:   ids
 :save_request_item_field: zero_convention
-:history_response_data_field: history
-:history_message_type:    get_zero_convention_history_request
-:settings_group:          ZeroConventionListWindow
-:window_title:            Zero Conventions
-:icon:                    Chart
 :END:
 
 *** Detail fields

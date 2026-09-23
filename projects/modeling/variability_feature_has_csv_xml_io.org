@@ -2,7 +2,7 @@
 :ID: 74EB0234-97F3-459C-8806-5A979B9E5A22
 :END:
 #+title: Feature: has_csv_xml_io
-#+description: Emit CSV/XML import/export support: client model, MDI window import dialog.
+#+description: Retired behavioural toggle; emitted CSV/XML import and export before the Qt client was removed.
 #+type: feature
 #+level: cross
 #+filetags: :codegen:variability:feature:
@@ -24,7 +24,13 @@ this feature's value links here rather than restating its effect.
 
 * Effect
 
-Turns on CSV/XML import/export: client model, MDI window import dialog, and the paired =csv_export_class=/=xml_export_class=/=xml_import_class= properties naming the hand-written helper classes.
+Retired with the Qt client. It turned on CSV and XML import and export in the
+generated client model and in the MDI window's import dialog, and it paired
+with the =csv_export_class=, =xml_export_class= and =xml_import_class=
+properties that named hand-written helper classes. Those dialogs and
+properties are gone, so setting or clearing this literal no longer changes
+generated behaviour. It stays accepted on entity orgs and on the profiles
+below as documentation only.
 
 * Structural consequence
 

@@ -4,7 +4,7 @@
 #+title: ORE Studio User Manual
 #+author: Marco Craveiro
 #+options: date:nil <:nil c:nil todo:nil H:7 ^:{} d:nil
-#+description: User manual for ORE Studio, a desktop application for exploring, configuring, and running quantitative finance calculations, backed by a set of headless services and a database.
+#+description: User manual for the retired ORE Studio Qt desktop client, kept as the record of what it did and as the source of the domain material.
 #+type: manual
 #+level: cross
 #+filetags: :knowledge:
@@ -92,6 +92,16 @@
 #+latex: \part{Getting Started}
 #+latex: \bigskip
 #+latex: \noindent\textit{Everything you need to go from a fresh installation to a fully provisioned, operational OreStudio deployment: what the application is, how to connect to a backend, and how to bootstrap the system for first use.}
+
+* Status
+
+This manual documents the Qt desktop client, which was retired. The =ores.qt=
+tree is gone, so the screens, menu paths and dialogs the chapters below describe
+no longer exist.
+
+The chapters are kept as the record of what that client did, and as the source of
+the domain material, which is still current. Read them for the domain rather than
+for the interface. The interface is being rebuilt in =ores.web=.
 
 * Introduction
 :PROPERTIES:

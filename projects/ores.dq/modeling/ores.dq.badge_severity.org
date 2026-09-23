@@ -141,7 +141,6 @@ faker::number::integer(1, 100)
 :domain_class:           dq::domain::badge_severity
 :protocol_include:       ores.dq.api/messaging/badge_severity_protocol.hpp
 :collection_name:        severities
-:item_var:               severity
 :key_field:              code
 :has_uuid_primary_key:   false
 :get_request_class:      dq::messaging::get_badge_severities_request
@@ -153,12 +152,6 @@ faker::number::integer(1, 100)
 :delete_request_class:   dq::messaging::delete_badge_severity_request
 :delete_response_class:  dq::messaging::delete_badge_severity_response
 :delete_message_type:    delete_badge_severity_request
-:history_request_class:  dq::messaging::get_badge_severity_history_request
-:history_response_class: dq::messaging::get_badge_severity_history_response
-:history_message_type:   get_badge_severity_history_request
-:settings_group:         BadgeSeverityListWindow
-:window_title:           Badge Severities
-:icon:                   Star
 :has_change_reason_cache: true
 :END:
 

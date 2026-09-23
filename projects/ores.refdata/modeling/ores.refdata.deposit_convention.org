@@ -193,15 +193,9 @@ std::nullopt
 ** Presentation
 :PROPERTIES:
 :collection_name:         deposit_conventions
-:item_var:                dc
 :key_field:               id
 :delete_request_id_field:   ids
 :save_request_item_field: deposit_convention
-:history_response_data_field: history
-:history_message_type:    get_deposit_convention_history_request
-:settings_group:          DepositConventionListWindow
-:window_title:            Deposit Conventions
-:icon:                    Chart
 :END:
 
 *** Detail fields

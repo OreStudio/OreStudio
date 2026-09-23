@@ -138,7 +138,6 @@ faker::number::integer(1, 100)
 :domain_class:           reporting::domain::concurrency_policy
 :protocol_include:       ores.reporting/messaging/concurrency_policy_protocol.hpp
 :collection_name:        policies
-:item_var:               policy
 :key_field:              code
 :get_request_class:      reporting::messaging::get_concurrency_policies_request
 :get_response_class:     reporting::messaging::get_concurrency_policies_response
@@ -149,12 +148,6 @@ faker::number::integer(1, 100)
 :delete_request_class:   reporting::messaging::delete_concurrency_policy_request
 :delete_response_class:  reporting::messaging::delete_concurrency_policy_response
 :delete_message_type:    delete_concurrency_policy_request
-:history_request_class:  reporting::messaging::get_concurrency_policy_history_request
-:history_response_class: reporting::messaging::get_concurrency_policy_history_response
-:history_message_type:   get_concurrency_policy_history_request
-:settings_group:         ConcurrencyPolicyListWindow
-:window_title:           Concurrency Policies
-:icon:                   LayoutList
 :END:
 
 *** Detail fields

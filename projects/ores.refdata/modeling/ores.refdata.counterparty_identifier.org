@@ -197,13 +197,8 @@ std::string("Test identifier")
 :domain_class:            refdata::domain::counterparty_identifier
 :protocol_include:        ores.refdata.api/messaging/counterparty_identifier_protocol.hpp
 :collection_name:         counterparty_identifiers
-:item_var:                counterpartyIdentifier
 :key_field:               id_value
 :save_request_item_field: data
-:history_message_type:    get_counterparty_identifier_history_request
-:settings_group:          CounterpartyIdentifierListWindow
-:window_title:            Counterparty Identifiers
-:icon:                    Key
 :END:
 
 Note: =counterparty_id= is deliberately not exposed as a Detail field

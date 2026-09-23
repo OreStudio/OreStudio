@@ -101,12 +101,7 @@ std::string(faker::lorem::sentence())
 :domain_class:           refdata::domain::leg_type
 :protocol_include:       ores.refdata.api/messaging/leg_type_protocol.hpp
 :collection_name:        types
-:item_var:               type
 :key_field:              code
-:history_message_type:   get_leg_type_history_request
-:settings_group:         LegTypeListWindow
-:window_title:           Leg Types
-:icon:                   Tag
 :END:
 
 *** Detail fields

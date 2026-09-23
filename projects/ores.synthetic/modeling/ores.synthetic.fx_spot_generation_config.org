@@ -370,7 +370,6 @@ std::nullopt
 :domain_class:            synthetic::domain::fx_spot_generation_config
 :protocol_include:        ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp
 :collection_name:         fx_spot_generation_configs
-:item_var:                fx_spot_generation_config
 :key_field:               id
 :get_request_class:       synthetic::messaging::get_fx_spot_generation_configs_request
 :get_response_class:      synthetic::messaging::get_fx_spot_generation_configs_response
@@ -382,14 +381,6 @@ std::nullopt
 :delete_request_class:    synthetic::messaging::delete_fx_spot_generation_config_request
 :delete_response_class:   synthetic::messaging::delete_fx_spot_generation_config_response
 :delete_message_type:     delete_fx_spot_generation_config_request
-:history_request_class:   synthetic::messaging::get_fx_spot_generation_config_history_request
-:history_response_class:  synthetic::messaging::get_fx_spot_generation_config_history_response
-:history_message_type:    get_fx_spot_generation_config_history_request
-:settings_group:          FxSpotGenerationConfigListWindow
-:window_title:            FX Spot Generation Configs
-:icon:                    Currency
-:changed_event_class:     synthetic::eventing::fx_spot_generation_config_changed_event
-:changed_event_include:   ores.synthetic.api/eventing/fx_spot_generation_config_changed_event.hpp
 :END:
 
 *** Detail fields

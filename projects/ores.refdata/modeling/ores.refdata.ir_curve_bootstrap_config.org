@@ -345,16 +345,11 @@ config that is no longer =FUNDING=, with nothing left to catch it.
 :domain_class:            refdata::domain::ir_curve_bootstrap_config
 :protocol_include:        ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp
 :collection_name:         ir_curve_bootstrap_configs
-:item_var:                config
 :key_field:                id
 :has_uuid_primary_key:    true
 :has_pagination:          true
 :has_export_macro:        true
 :save_request_item_field: data
-:history_message_type:    get_ir_curve_bootstrap_config_history_request
-:settings_group:          IrCurveBootstrapConfigListWindow
-:window_title:            IR Curve Bootstrap Configs
-:icon:                    Chart
 :END:
 
 The generated detail dialog and controller are both disabled outright

@@ -120,7 +120,6 @@ std::nullopt
 :domain_class:           trading::domain::lifecycle_event
 :protocol_include:       ores.trading.api/messaging/lifecycle_event_protocol.hpp
 :collection_name:        lifecycle_events
-:item_var:               lifecycle_event
 :key_field:              code
 :get_request_class:      trading::messaging::get_lifecycle_events_request
 :get_response_class:     trading::messaging::get_lifecycle_events_response
@@ -131,12 +130,6 @@ std::nullopt
 :delete_request_class:   trading::messaging::delete_lifecycle_event_request
 :delete_response_class:  trading::messaging::delete_lifecycle_event_response
 :delete_message_type:    delete_lifecycle_event_request
-:history_request_class:  trading::messaging::get_lifecycle_event_history_request
-:history_response_class: trading::messaging::get_lifecycle_event_history_response
-:history_message_type:   get_lifecycle_event_history_request
-:settings_group:         LifecycleEventListWindow
-:window_title:           Lifecycle Events
-:icon:                   History
 :END:
 
 *** Detail fields

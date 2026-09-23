@@ -303,7 +303,6 @@ and the context-carrying account repository.
 :has_export_macro:        true
 :parent_entity_singular:  account
 :parent_id_field:         account_id
-:parent_id_field_camel:   accountId
 :END:
 
 Note: =account_id= is deliberately not exposed as a Detail field —

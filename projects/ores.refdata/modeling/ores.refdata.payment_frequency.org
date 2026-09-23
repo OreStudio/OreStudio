@@ -224,12 +224,7 @@ drop function if exists ores_refdata_validate_payment_frequency_fn;
 :domain_class:           refdata::domain::payment_frequency
 :protocol_include:       ores.refdata.api/messaging/payment_frequency_protocol.hpp
 :collection_name:        payment_frequencies
-:item_var:               payment_frequency_
 :key_field:              code
-:history_message_type:   get_payment_frequency_history_request
-:settings_group:         PaymentFrequencyListWindow
-:window_title:           Payment Frequencies
-:icon:                   Clock
 :has_export_macro:       true
 :END:
 

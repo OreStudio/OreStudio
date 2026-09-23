@@ -340,33 +340,16 @@ drop function if exists ores_refdata_validate_currency_fn;
 :domain_class:                refdata::domain::currency
 :protocol_include:            ores.refdata.api/messaging/currency_protocol.hpp
 :collection_name:             currencies
-:item_var:                    currency
 :key_field:                   iso_code
 :has_pagination:              true
 :delete_request_id_field:     iso_codes
-:history_message_type:        get_currency_history_request
 :history_request_id_field:    iso_code
-:history_response_data_field: history
-:history_protocol_include:    ores.refdata.api/messaging/currency_protocol.hpp
-:flag_icon_column:            IsoCode
-:flag_inline_widget:          isoCodeEdit
-:flag_accessor:               getCurrencyFlagIcon
-:settings_group:              CurrencyListWindow
-:qt_settings_version:         3
-:window_title:                Currencies
-:icon:                        Currency
 :csv_export_include:          ores.refdata.api/csv/exporter.hpp
 :csv_export_class:            refdata::csv::exporter
-:csv_export_method:           export_currency_config
 :xml_export_include:          ores.ore.core/xml/exporter.hpp
 :xml_export_class:            ore::xml::exporter
-:xml_export_method:           export_currency_config
 :xml_import_include:          ores.ore.core/xml/importer.hpp
 :xml_import_class:            ore::xml::importer
-:xml_import_method:           import_currency_config
-:xml_validate_method:         validate_currency
-:changed_event_class:         refdata::eventing::currency_changed_event
-:changed_event_include:       ores.refdata.api/eventing/currency_changed_event.hpp
 :END:
 
 *** Detail fields

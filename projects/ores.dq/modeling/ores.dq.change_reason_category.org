@@ -128,7 +128,6 @@ std::string(faker::lorem::sentence())
 :domain_class:           dq::domain::change_reason_category
 :protocol_include:       ores.dq.api/messaging/change_reason_category_protocol.hpp
 :collection_name:        categories
-:item_var:               category
 :key_field:               code
 :has_uuid_primary_key:   false
 :get_request_class:      dq::messaging::get_change_reason_categories_request
@@ -140,12 +139,6 @@ std::string(faker::lorem::sentence())
 :delete_request_class:   dq::messaging::delete_change_reason_category_request
 :delete_response_class:  dq::messaging::delete_change_reason_category_response
 :delete_message_type:    delete_change_reason_category_request
-:history_request_class:  dq::messaging::get_change_reason_category_history_request
-:history_response_class: dq::messaging::get_change_reason_category_history_response
-:history_message_type:   get_change_reason_category_history_request
-:settings_group:         ChangeReasonCategoryListWindow
-:window_title:           Change Reason Categories
-:icon:                   Table
 :has_change_reason_cache: true
 :has_pagination:         true
 :END:

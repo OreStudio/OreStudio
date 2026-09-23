@@ -184,12 +184,7 @@ ctx.random_int(1, 30)
 :domain_class:           refdata::domain::tenor
 :protocol_include:       ores.refdata.api/messaging/tenor_protocol.hpp
 :collection_name:        tenors
-:item_var:               tenor
 :key_field:              code
-:history_message_type:   get_tenor_history_request
-:settings_group:         TenorListWindow
-:window_title:           Tenors
-:icon:                   Clock
 :END:
 
 *** Detail fields

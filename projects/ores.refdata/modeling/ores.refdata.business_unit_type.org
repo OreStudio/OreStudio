@@ -243,12 +243,7 @@ $$ language plpgsql;
 :domain_class:            refdata::domain::business_unit_type
 :protocol_include:        ores.refdata.api/messaging/business_unit_type_protocol.hpp
 :collection_name:         business_unit_types
-:item_var:                business_unit_type
 :key_field:               code
-:history_message_type:    get_business_unit_type_history_request
-:settings_group:          BusinessUnitTypeListWindow
-:window_title:            Business Unit Types
-:icon:                    PeopleTeam
 :END:
 
 *** Detail fields

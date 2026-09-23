@@ -133,9 +133,7 @@ std::string("standard")
 :domain_class:           analytics::domain::pricing_model_config
 :protocol_include:       ores.analytics.api/messaging/pricing_model_config_protocol.hpp
 :collection_name:        configs
-:item_var:               config
 :key_field:              name
-:key_widget:             nameEdit
 :get_request_class:      analytics::messaging::get_pricing_model_configs_request
 :get_response_class:     analytics::messaging::get_pricing_model_configs_response
 :get_message_type:       get_pricing_model_configs_request
@@ -145,12 +143,6 @@ std::string("standard")
 :delete_request_class:   analytics::messaging::delete_pricing_model_config_request
 :delete_response_class:  analytics::messaging::delete_pricing_model_config_response
 :delete_message_type:    delete_pricing_model_config_request
-:history_request_class:  analytics::messaging::get_pricing_model_config_history_request
-:history_response_class: analytics::messaging::get_pricing_model_config_history_response
-:history_message_type:   get_pricing_model_config_history_request
-:settings_group:         PricingModelConfigListWindow
-:window_title:           Pricing Model Configurations
-:icon:                   Chart
 :END:
 
 *** Detail fields

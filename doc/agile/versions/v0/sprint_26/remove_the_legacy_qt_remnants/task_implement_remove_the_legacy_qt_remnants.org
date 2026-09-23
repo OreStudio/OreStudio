@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 54AEFA10-CE27-4878-B692-4CD1A109FF84
+:END:
+#+title: Task: Remove the presentation keys no template reads
+#+description: Initial task for: Remove the legacy Qt remnants
+#+type: task
+#+level: s1
+#+filetags: :remove_the_legacy_qt_remnants:sprint_26:v0:
+#+owner: marco
+#+branch: feature/remove-the-legacy-qt-remnants
+#+pr: 2138
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16E56982-F716-4214-AA09-E438C1E46DC2][Remove the legacy Qt remnants]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Nothing in the tree computes, documents or names a Qt concept that no longer exists. The generator produces byte-identical output for every component, and every page that described the Qt layer states it as history or is gone.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:16E56982-F716-4214-AA09-E438C1E46DC2][Remove the legacy Qt remnants]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- No presentation key is written that no template, render path or validator reads.
+- The helpers that existed only to compute unread keys are gone, with their tests.
+- Regenerating a component produces no diff, so the removal is proved output-neutral.
+- Every document that named the Qt layer as live is corrected or marked historical.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2138][#2138]] | [codegen] Remove the legacy Qt remnants |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Delivered and verified, with one named remainder. Six commits on this branch
+remove the Qt residue the retirement left in codegen and in the documentation.
+Every unit was checked against the generator's drift gate before the next began.
+
+What went:
+
+- 46 presentation keys from =core.py=, with the seven guards, five locals and
+  one loop that existed only to build them, and the two helper functions with
+  their tests.
+- 687 Presentation drawer property lines from 104 entity models: the history and
+  changed-event names the loader stopped needing when it took over message
+  naming, and the Qt list-window chrome.
+- The README's Qt6 badge, and the icon inventory's 118 links into the deleted
+  =ores.qt= tree, 40 repointed at the surviving set and 78 marked removed.
+- The =qt= tag and the =qt= component value, both marked rather than deleted, so
+  historical documents keep a defined tag.
+- =has_csv_xml_io= and =has_version_navigation=, marked retired the way
+  =has_pagination= already was.
+
+The proof is unchanged output rather than a read analysis. =iam= regenerates
+byte-identically, and =refdata= produces the same 806 diff headers as trunk
+against its own pre-existing drift, checked after each unit. 522 tests pass,
+model drift is clean, and =compass lint= passes with all six doc-lint gates.
+Component Clean Standard check M09 fell from 656 hits to 94.
+
+Two corrections to my own analysis are recorded in the story, because both made
+the first dead list wrong: a self-defaulting write is not a consumed read, and a
+key pattern without digits hides keys. The drift gate is what caught them.
+
+Still open, and named rather than hidden: about fourteen user manual chapters
+describe Qt screens in their body text, and
+=entity_meta_model_cpp_qt.org= still documents drawer properties this branch
+deleted. Both are prose rewrites that no gate verifies. This task stays STARTED
+for them.

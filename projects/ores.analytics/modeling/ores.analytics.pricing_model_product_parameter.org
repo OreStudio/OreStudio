@@ -164,9 +164,7 @@ std::string("0.03")
 :domain_class:           analytics::domain::pricing_model_product_parameter
 :protocol_include:       ores.analytics.api/messaging/pricing_model_product_parameter_protocol.hpp
 :collection_name:        parameters
-:item_var:               parameter
 :key_field:              parameter_name
-:key_widget:             parameterNameEdit
 :get_request_class:      analytics::messaging::get_pricing_model_product_parameters_request
 :get_response_class:     analytics::messaging::get_pricing_model_product_parameters_response
 :get_message_type:       get_pricing_model_product_parameters_request
@@ -176,12 +174,6 @@ std::string("0.03")
 :delete_request_class:   analytics::messaging::delete_pricing_model_product_parameter_request
 :delete_response_class:  analytics::messaging::delete_pricing_model_product_parameter_response
 :delete_message_type:    delete_pricing_model_product_parameter_request
-:history_request_class:  analytics::messaging::get_pricing_model_product_parameter_history_request
-:history_response_class: analytics::messaging::get_pricing_model_product_parameter_history_response
-:history_message_type:   get_pricing_model_product_parameter_history_request
-:settings_group:         PricingModelProductParameterListWindow
-:window_title:           Pricing Model Product Parameters
-:icon:                   Settings
 :END:
 
 *** Detail fields

@@ -138,7 +138,6 @@ faker::number::integer(1, 100)
 :domain_class:           reporting::domain::report_type
 :protocol_include:       ores.reporting/messaging/report_type_protocol.hpp
 :collection_name:        types
-:item_var:               type
 :key_field:              code
 :get_request_class:      reporting::messaging::get_report_types_request
 :get_response_class:     reporting::messaging::get_report_types_response
@@ -149,12 +148,6 @@ faker::number::integer(1, 100)
 :delete_request_class:   reporting::messaging::delete_report_type_request
 :delete_response_class:  reporting::messaging::delete_report_type_response
 :delete_message_type:    delete_report_type_request
-:history_request_class:  reporting::messaging::get_report_type_history_request
-:history_response_class: reporting::messaging::get_report_type_history_response
-:history_message_type:   get_report_type_history_request
-:settings_group:         ReportTypeListWindow
-:window_title:           Report Types
-:icon:                   FileBarChart
 :END:
 
 *** Detail fields

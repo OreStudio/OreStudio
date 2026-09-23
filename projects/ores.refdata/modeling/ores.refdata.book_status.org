@@ -164,12 +164,7 @@ drop function if exists ores_refdata_validate_book_status_fn;
 :domain_class:           refdata::domain::book_status
 :protocol_include:       ores.refdata.api/messaging/book_status_protocol.hpp
 :collection_name:        statuses
-:item_var:               status
 :key_field:              code
-:history_message_type:   get_book_status_history_request
-:settings_group:         BookStatusListWindow
-:window_title:           Book Statuses
-:icon:                   Tag
 :has_export_macro:       true
 :END:
 

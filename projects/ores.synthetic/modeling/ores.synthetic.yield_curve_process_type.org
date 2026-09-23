@@ -169,10 +169,7 @@ drop function if exists ores_synthetic_validate_yield_curve_process_type_fn;
 :domain_class:           synthetic::domain::yield_curve_process_type
 :protocol_include:       ores.synthetic.api/messaging/yield_curve_process_type_protocol.hpp
 :collection_name:        process_types
-:item_var:               process_type
 :key_field:              code
-:changed_event_class:     synthetic::eventing::yield_curve_process_type_changed_event
-:changed_event_include:   ores.synthetic.api/eventing/yield_curve_process_type_changed_event.hpp
 :get_request_class:      synthetic::messaging::get_yield_curve_process_types_request
 :get_response_class:     synthetic::messaging::get_yield_curve_process_types_response
 :get_message_type:       get_yield_curve_process_types_request
@@ -182,12 +179,6 @@ drop function if exists ores_synthetic_validate_yield_curve_process_type_fn;
 :delete_request_class:   synthetic::messaging::delete_yield_curve_process_type_request
 :delete_response_class:  synthetic::messaging::delete_yield_curve_process_type_response
 :delete_message_type:    delete_yield_curve_process_type_request
-:history_request_class:  synthetic::messaging::get_yield_curve_process_type_history_request
-:history_response_class: synthetic::messaging::get_yield_curve_process_type_history_response
-:history_message_type:   get_yield_curve_process_type_history_request
-:settings_group:         YieldCurveProcessTypeListWindow
-:window_title:           Yield Curve Process Types
-:icon:                   Tag
 :END:
 
 *** Detail fields

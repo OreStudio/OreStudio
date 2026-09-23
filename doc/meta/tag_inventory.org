@@ -130,7 +130,7 @@ Tags that identify which =ores.*= component a document primarily concerns.
 | =compass= | =ores.compass=: the developer toolkit CLI. |
 | =trading= | =ores.trading=: trading domain types and lifecycle. |
 | =cli= | =ores.cli=: the command-line interface. |
-| =qt= | Qt-based GUI client. |
+| =qt= | Retired. The Qt-based GUI client was removed, so the tag survives only on historical documents. |
 | =shell= | =ores.shell=: the scripted NATS shell. |
 | =http= | HTTP layer or REST API. |
 | =nats= | NATS messaging substrate. |

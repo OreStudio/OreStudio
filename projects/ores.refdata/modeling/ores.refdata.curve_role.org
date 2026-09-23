@@ -167,12 +167,7 @@ drop function if exists ores_refdata_validate_curve_role_fn;
 :domain_class:           refdata::domain::curve_role
 :protocol_include:       ores.refdata.api/messaging/curve_role_protocol.hpp
 :collection_name:        roles
-:item_var:               role_
 :key_field:              code
-:history_message_type:   get_curve_role_history_request
-:settings_group:         CurveRoleListWindow
-:window_title:           Curve Roles
-:icon:                   Tag
 :has_export_macro:       true
 :END:
 

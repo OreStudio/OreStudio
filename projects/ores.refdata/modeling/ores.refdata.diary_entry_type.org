@@ -166,12 +166,7 @@ drop function if exists ores_refdata_validate_diary_entry_type_fn;
 :domain_class:           refdata::domain::diary_entry_type
 :protocol_include:       ores.refdata.api/messaging/diary_entry_type_protocol.hpp
 :collection_name:        entry_types
-:item_var:               entry_type
 :key_field:              code
-:history_message_type:   get_diary_entry_type_history_request
-:settings_group:         DiaryEntryTypeListWindow
-:window_title:           Diary Entry Types
-:icon:                   Tag
 :has_export_macro:       true
 :END:
 

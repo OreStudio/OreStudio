@@ -168,7 +168,6 @@ drop function if exists ores_trading_validate_trade_type_fn;
 :domain_class:           trading::domain::trade_type
 :protocol_include:       ores.trading.api/messaging/trade_type_protocol.hpp
 :collection_name:        trade_types
-:item_var:               trade_type
 :key_field:              code
 :get_request_class:      trading::messaging::get_trade_types_request
 :get_response_class:     trading::messaging::get_trade_types_response
@@ -179,12 +178,6 @@ drop function if exists ores_trading_validate_trade_type_fn;
 :delete_request_class:   trading::messaging::delete_trade_type_request
 :delete_response_class:  trading::messaging::delete_trade_type_response
 :delete_message_type:    delete_trade_type_request
-:history_request_class:  trading::messaging::get_trade_type_history_request
-:history_response_class: trading::messaging::get_trade_type_history_response
-:history_message_type:   get_trade_type_history_request
-:settings_group:         TradeTypeListWindow
-:window_title:           Trade Types
-:icon:                   Chart
 :END:
 
 *** Detail fields

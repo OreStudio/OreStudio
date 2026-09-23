@@ -109,7 +109,6 @@ own-tenant scoped.
 :domain_class:            compute::domain::app
 :protocol_include:        ores.compute.api/messaging/app_protocol.hpp
 :collection_name:         apps
-:item_var:                app
 :key_field:               name
 :get_request_class:       compute::messaging::get_apps_request
 :get_response_class:      compute::messaging::get_apps_response
@@ -120,14 +119,6 @@ own-tenant scoped.
 :delete_request_class:    compute::messaging::delete_app_request
 :delete_response_class:   compute::messaging::delete_app_response
 :delete_message_type:     delete_app_request
-:history_request_class:   compute::messaging::get_app_history_request
-:history_response_class:  compute::messaging::get_app_history_response
-:history_message_type:    get_app_history_request
-:settings_group:          AppListWindow
-:window_title:            Compute Apps
-:icon:                    Apps
-:changed_event_class:     compute::eventing::app_changed_event
-:changed_event_include:   ores.compute.api/eventing/app_changed_event.hpp
 :END:
 
 *** Columns

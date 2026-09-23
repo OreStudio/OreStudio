@@ -174,19 +174,12 @@ std::string("quantlib_computed")
 :domain_class:                refdata::domain::calendar_date
 :protocol_include:            ores.refdata.api/messaging/calendar_date_protocol.hpp
 :collection_name:             calendar_dates
-:item_var:                    calendar_date
 :key_field:                   date
-:key_to_string_prefix:        ores::platform::time::datetime::to_iso8601_date(
-:key_to_string_suffix:        )
 :has_pagination:              true
 :has_readonly_paginated_list: true
 :has_parent_scoped_list:      true
 :parent_key_field:            calendar_code
 :parent_key_param:            calendarCode
-:settings_group:              CalendarDateListWindow
-:qt_settings_version:         1
-:window_title:                Browse Holidays
-:icon:                        Table
 :END:
 
 *** Columns

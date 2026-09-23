@@ -305,7 +305,6 @@ codegen-side rule.
 :domain_class:            synthetic::domain::yield_curve_process_parameter_definition
 :protocol_include:        ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp
 :collection_name:         parameter_definitions
-:item_var:                parameter_definition
 :key_field:                parameter_name
 :has_readonly_paginated_list: true
 :get_request_class:       synthetic::messaging::get_yield_curve_process_parameter_definitions_request
@@ -318,12 +317,6 @@ codegen-side rule.
 :delete_request_class:    synthetic::messaging::delete_yield_curve_process_parameter_definition_request
 :delete_response_class:   synthetic::messaging::delete_yield_curve_process_parameter_definition_response
 :delete_message_type:     delete_yield_curve_process_parameter_definition_request
-:history_request_class:   synthetic::messaging::get_yield_curve_process_parameter_definition_history_request
-:history_response_class:  synthetic::messaging::get_yield_curve_process_parameter_definition_history_response
-:history_message_type:    get_yield_curve_process_parameter_definition_history_request
-:settings_group:          YieldCurveProcessParameterDefinitionListWindow
-:window_title:            Yield Curve Process Parameter Definitions
-:icon:                    Tag
 :END:
 
 *** Detail fields

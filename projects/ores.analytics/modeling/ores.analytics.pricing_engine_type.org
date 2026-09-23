@@ -113,7 +113,6 @@ std::string("NONE")
 :domain_class:           analytics::domain::pricing_engine_type
 :protocol_include:       ores.analytics.api/messaging/pricing_engine_type_protocol.hpp
 :collection_name:        types
-:item_var:               type
 :key_field:              code
 :get_request_class:      analytics::messaging::get_pricing_engine_types_request
 :get_response_class:     analytics::messaging::get_pricing_engine_types_response
@@ -124,12 +123,6 @@ std::string("NONE")
 :delete_request_class:   analytics::messaging::delete_pricing_engine_type_request
 :delete_response_class:  analytics::messaging::delete_pricing_engine_type_response
 :delete_message_type:    delete_pricing_engine_type_request
-:history_request_class:  analytics::messaging::get_pricing_engine_type_history_request
-:history_response_class: analytics::messaging::get_pricing_engine_type_history_response
-:history_message_type:   get_pricing_engine_type_history_request
-:settings_group:         PricingEngineTypeListWindow
-:window_title:           Pricing Engine Types
-:icon:                   Tag
 :END:
 
 *** Detail fields

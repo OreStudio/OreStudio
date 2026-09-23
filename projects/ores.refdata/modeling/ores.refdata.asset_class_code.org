@@ -164,12 +164,7 @@ drop function if exists ores_refdata_validate_asset_class_code_fn;
 :domain_class:           refdata::domain::asset_class_code
 :protocol_include:       ores.refdata.api/messaging/asset_class_code_protocol.hpp
 :collection_name:        classes
-:item_var:               class_
 :key_field:              code
-:history_message_type:   get_asset_class_code_history_request
-:settings_group:         AssetClassCodeListWindow
-:window_title:           Asset Class Codes
-:icon:                   Tag
 :has_export_macro:       true
 :END:
 

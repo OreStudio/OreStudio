@@ -127,7 +127,6 @@ std::string(faker::lorem::sentence())
 :domain_class:           dq::domain::data_domain
 :protocol_include:       ores.dq.api/messaging/data_domain_protocol.hpp
 :collection_name:        domains
-:item_var:               domain
 :key_field:               name
 :has_uuid_primary_key:   false
 :get_request_class:      dq::messaging::get_data_domains_request
@@ -139,12 +138,6 @@ std::string(faker::lorem::sentence())
 :delete_request_class:   dq::messaging::delete_data_domain_request
 :delete_response_class:  dq::messaging::delete_data_domain_response
 :delete_message_type:    delete_data_domain_request
-:history_request_class:  dq::messaging::get_data_domain_history_request
-:history_response_class: dq::messaging::get_data_domain_history_response
-:history_message_type:   get_data_domain_history_request
-:settings_group:         DataDomainListWindow
-:window_title:           Data Domains
-:icon:                   Table
 :has_change_reason_cache: true
 :has_pagination:         true
 :END:

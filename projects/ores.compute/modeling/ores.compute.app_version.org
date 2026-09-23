@@ -141,7 +141,6 @@ tenant must see them in reads. Mutations stay own-tenant scoped.
 :domain_class:            compute::domain::app_version
 :protocol_include:        ores.compute.api/messaging/app_version_protocol.hpp
 :collection_name:         app_versions
-:item_var:                app_version
 :key_field:               wrapper_version
 :get_request_class:       compute::messaging::get_app_versions_request
 :get_response_class:      compute::messaging::get_app_versions_response
@@ -152,14 +151,6 @@ tenant must see them in reads. Mutations stay own-tenant scoped.
 :delete_request_class:    compute::messaging::delete_app_version_request
 :delete_response_class:   compute::messaging::delete_app_version_response
 :delete_message_type:     delete_app_version_request
-:history_request_class:   compute::messaging::get_app_version_history_request
-:history_response_class:  compute::messaging::get_app_version_history_response
-:history_message_type:    get_app_version_history_request
-:settings_group:          AppVersionListWindow
-:window_title:            App Versions
-:icon:                    Code
-:changed_event_class:     compute::eventing::app_version_changed_event
-:changed_event_include:   ores.compute.api/eventing/app_version_changed_event.hpp
 :END:
 
 *** Columns

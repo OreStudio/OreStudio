@@ -16,12 +16,16 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "app/application.cpp"
     "app/host.cpp"
     "config/options.cpp"
     "config/parser.cpp"
     "main.cpp"
+    "messaging/event_registrar.cpp"
     "messaging/pricing_engine_type_event_registrar.cpp"
     "messaging/pricing_model_config_event_registrar.cpp"
     "messaging/pricing_model_product_event_registrar.cpp"
@@ -37,6 +41,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/config/parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/pricing_engine_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/pricing_model_config_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/pricing_model_product_event_registrar.hpp"

@@ -4133,6 +4133,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _reject_silent_entity_domain_ts_gap,
             _to_pascal_case,
             _ts_domain_type,
+            apply_ts_domain_alias,
             entity_event_prefix,
             entity_events,
             entity_protocol_messages,
@@ -4190,6 +4191,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # than assuming the entity's own name, which the envelope's result
         # member can already have taken.
         domain_entity['payload_member'] = response_payload_member(domain_entity)
+        # A domain interface whose TypeScript name a shared utility interface
+        # already owns is imported under an alias, and the fields that name it
+        # follow. Read by ts_protocol.ts.mustache's import line.
+        _ts_alias = apply_ts_domain_alias(
+            domain_entity, domain_entity['messages'])
+        if _ts_alias:
+            domain_entity['entity_ts_alias'] = _ts_alias
         # Every read by something other than the storage key. The legacy
         # opt-in contributes one; a model whose declared key is not its storage
         # key contributes one more, so the address a caller holds resolves to a

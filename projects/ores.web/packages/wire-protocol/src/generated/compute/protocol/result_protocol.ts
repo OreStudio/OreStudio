@@ -22,7 +22,7 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-import type { Result } from '../domain/result.js';
+import type { Result as ResultEntity } from '../domain/result.js';
 import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
@@ -57,7 +57,7 @@ export interface ResultRemoval {
 
 export interface ResultLookup {
     key: ResultKey;
-    result: Result | null;
+    result: ResultEntity | null;
 }
 
 export interface ResultsFilter {
@@ -93,7 +93,7 @@ export interface ListResultsRequest {
 
 export interface ListResultsResponse {
     result: Result;
-    results: Result[];
+    results: ResultEntity[];
     total: number;
 }
 
@@ -103,7 +103,7 @@ export interface GetResultRequest {
 
 export interface GetResultResponse {
     result: Result;
-    result_value: Result | null;
+    result_value: ResultEntity | null;
 }
 
 export interface GetManyResultsRequest {
@@ -122,7 +122,7 @@ export interface PutResultRequest {
 
 export interface PutResultResponse {
     result: Result;
-    result_value: Result;
+    result_value: ResultEntity;
 }
 
 export interface PutManyResultsRequest {
@@ -132,7 +132,7 @@ export interface PutManyResultsRequest {
 
 export interface PutManyResultsResponse {
     result: Result;
-    results: Result[];
+    results: ResultEntity[];
 }
 
 export interface DeleteResultRequest {
@@ -164,7 +164,7 @@ export interface ListByWorkunitIdResultsRequest {
 
 export interface ListByWorkunitIdResultsResponse {
     result: Result;
-    results: Result[];
+    results: ResultEntity[];
     total: number;
 }
 
@@ -178,7 +178,7 @@ export interface ListResultVersionsRequest {
 
 export interface ListResultVersionsResponse {
     result: Result;
-    versions: Result[];
+    versions: ResultEntity[];
     total: number;
 }
 
@@ -188,7 +188,7 @@ export interface GetResultVersionRequest {
 
 export interface GetResultVersionResponse {
     result: Result;
-    version: Result;
+    version: ResultEntity;
 }
 
 export const subjects = {

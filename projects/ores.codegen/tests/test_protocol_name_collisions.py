@@ -269,3 +269,24 @@ def test_the_service_assigns_the_payload_member_the_header_declares(tmp_path):
         tmp_path, {"app": _entity_model("app", "apps", "App", "A1")},
         "app", "cpp_service.cpp.mustache", "app_service.cpp")
     assert "response.app = std::move(found.front());" in app
+
+
+def test_a_result_entity_protocol_aliases_the_domain_import(tmp_path):
+    """The domain interface and the envelope interface are both named Result,
+    so two imports of one identifier from two modules were declared."""
+    ts = _render_for(
+        tmp_path, {"result": _entity_model("result", "results", "Result", "B1")},
+        "result", "ts_protocol.ts.mustache", "result_protocol.ts")
+    assert ("import type { Result as ResultEntity } from "
+            "'../domain/result.js';") in ts
+    assert ("import type { Result } from "
+            "'../../../utility/protocol.js';") in ts
+    assert "result: Result;" in ts
+    assert "result_value: ResultEntity | null;" in ts
+
+
+def test_an_ordinary_entity_protocol_keeps_the_plain_domain_import(tmp_path):
+    ts = _render_for(
+        tmp_path, {"app": _entity_model("app", "apps", "App", "A1")},
+        "app", "ts_protocol.ts.mustache", "app_protocol.ts")
+    assert "import type { App } from '../domain/app.js';" in ts

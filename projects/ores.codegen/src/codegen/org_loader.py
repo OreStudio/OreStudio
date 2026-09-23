@@ -2508,6 +2508,36 @@ def ts_domain_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     ]
 
 
+def apply_ts_domain_alias(
+        entity: dict[str, Any],
+        messages: list[dict[str, Any]]) -> str:
+    """Alias the domain interface when a shared utility interface owns its name.
+
+    An entity and a shared utility type can carry the same TypeScript name, as
+    the envelope's ``Result`` and an entity named ``result`` do. The protocol
+    imports both, and two imports of one identifier from two modules is a
+    duplicate identifier. The domain import takes a suffixed alias and the
+    fields that name the entity's own type follow it, so the two stay apart.
+    Every other entity keeps the plain import and stays byte-identical.
+
+    Returns the alias, or an empty string when the name is free.
+    """
+    singular = entity.get("entity_singular", "")
+    component = entity.get("component", "")
+    pascal = _to_pascal_case(singular)
+    taken = {item["name_pascal"] for item in ts_utility_imports(messages)}
+    if pascal not in taken:
+        return ""
+    alias = f"{pascal}Entity"
+    own = f"ores::{component}::domain::{singular}"
+    for message in messages:
+        for field in message.get("fields") or []:
+            if own in (field.get("cpp_type") or "") and field.get("ts_type"):
+                field["ts_type"] = re.sub(
+                    rf"\b{re.escape(pascal)}\b", alias, field["ts_type"])
+    return alias
+
+
 def ts_utility_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """The shared utility interfaces a protocol's fields render, one each.
 

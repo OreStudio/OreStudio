@@ -21,54 +21,60 @@ function git(args, cwd) {
   })
 }
 
-export function environmentOf(root) {
-  const name = String(root).replace(/\/+$/, '').split('/').pop() ?? ''
-  return name.startsWith('ores_dev_') ? name.slice('ores_dev_'.length) : name
-}
-
 function nameOf(root) {
   return String(root).replace(/\/+$/, '').split('/').pop() ?? ''
 }
 
-export async function readWorkTree(root) {
-  const [head, status] = await Promise.all([
-    git(['rev-parse', '--abbrev-ref', 'HEAD'], root),
-    git(['status', '--porcelain'], root),
-  ])
-  const branch = head === null || head.trim() === 'HEAD' ? '' : head.trim()
-  return {
-    root,
-    name: nameOf(root),
-    label: environmentOf(root),
-    branch,
-    detached: head !== null && branch === '',
-    dirty: status !== null && status.trim() !== '',
-  }
+// `label` is the directory name with the ores_dev_ prefix removed, and it is the
+// same token the org files carry in `#+environment:`.
+function labelOf(root) {
+  const name = nameOf(root)
+  return name.startsWith('ores_dev_') ? name.slice('ores_dev_'.length) : name
 }
 
-// The work tree list is repository-wide, so it is read once from the selected
-// tree and answers both the tree control and the fleet rows.
-export async function readWorkTrees(cwd) {
+// The porcelain block already reports each work tree's branch, so listing the
+// repository's trees costs one git call and nothing per tree.
+export async function listWorkTrees(cwd) {
   const list = await git(['worktree', 'list', '--porcelain'], cwd)
   if (list === null) return null
-  const roots = []
+  const trees = []
   for (const block of list.split('\n\n')) {
     const lines = block.split('\n')
-    const path = lines.find((line) => line.startsWith('worktree '))?.slice('worktree '.length)
-    if (!path || lines.includes('bare')) continue
-    roots.push(path)
-  }
-  const trees = []
-  for (let index = 0; index < roots.length; index += CONCURRENCY) {
-    const slice = roots.slice(index, index + CONCURRENCY)
-    trees.push(...(await Promise.all(slice.map((root) => readWorkTree(root)))))
+    const root = lines.find((line) => line.startsWith('worktree '))?.slice('worktree '.length)
+    if (!root || lines.includes('bare')) continue
+    const branch = lines.find((line) => line.startsWith('branch refs/heads/'))
+    trees.push({
+      root,
+      name: nameOf(root),
+      label: labelOf(root),
+      branch: branch ? branch.slice('branch refs/heads/'.length) : '',
+      detached: lines.includes('detached'),
+      dirty: false,
+    })
   }
   return trees
 }
 
+// Only the resolved tree needs its working state read, one call per fact.
+export async function readWorkTree(tree) {
+  const [head, status] = await Promise.all([
+    git(['rev-parse', '--abbrev-ref', 'HEAD'], tree.root),
+    git(['status', '--porcelain'], tree.root),
+  ])
+  // Detached HEAD is what rev-parse prints as HEAD. A failed call prints
+  // nothing, and null must not be reported as a confident false.
+  const printed = head === null ? null : head.trim()
+  return {
+    ...tree,
+    branch: printed === null || printed === 'HEAD' ? '' : printed,
+    detached: printed === 'HEAD',
+    dirty: status !== null && status.trim() !== '',
+  }
+}
+
 // The journal is append-only and long; only the last entry is ever needed, so
 // read the file's tail rather than the whole thing.
-export async function readLastJournal(root) {
+async function readLastJournal(root) {
   const path = join(root, '.journal.org')
   let size
   try {

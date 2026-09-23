@@ -5,7 +5,7 @@
 import { promises as fs } from 'node:fs'
 import { join } from 'node:path'
 import { buildModel, failure, parseSprintDocument } from './agile.js'
-import { readJournals, readWorkTrees } from './git.js'
+import { listWorkTrees, readJournals, readWorkTree } from './git.js'
 
 export const name = 'ores-dsh-kanban'
 
@@ -19,9 +19,15 @@ export function apply(ctx) {
   const log = (message) => console.log('ores-dsh-kanban: ' + message)
 
   // A board costs roughly 550 file reads, and a session refetches on every mount
-  // and every Refresh. The entry expires on the clock alone: a hit older than the
+  // and every Refresh. An entry expires on the clock alone: a hit older than the
   // TTL is a miss, and a miss behaves exactly as an uncached request.
   const cache = new Map()
+
+  const sweep = (now) => {
+    for (const [key, entry] of cache) {
+      if (now - entry.at >= CACHE_TTL_MS) cache.delete(key)
+    }
+  }
 
   const json = (res, value) => {
     const body = JSON.stringify(value)
@@ -39,16 +45,23 @@ export function apply(ctx) {
     }
     try {
       const query = new URL(req.url, 'http://127.0.0.1').searchParams
-      const sessionId = query.get('session') ?? ''
-      const sessionCwd = sessionId ? ctx.sessions?.get(sessionId)?.header?.cwd : undefined
-      const cwd =
-        typeof sessionCwd === 'string' && sessionCwd ? sessionCwd : query.get('cwd') || process.cwd()
-      const hit = cache.get(cwd)
+      const asked = query.get('session') ?? ''
+      const sessionCwd = asked ? ctx.sessions?.get(asked)?.header?.cwd : undefined
+      const fromCwd = query.get('cwd') ?? ''
       const now = Date.now()
-      if (hit && now - hit.at < CACHE_TTL_MS) return json(res, hit.value)
-      const value = await buildState(cwd)
-      if (value.ok) cache.set(cwd, { at: now, value })
-      else cache.delete(cwd)
+      sweep(now)
+
+      // A board is only ever read for a work tree of this repository, so the
+      // cache is keyed by the resolved root and not by whatever cwd was asked
+      // for. Several sessions inside one tree then share one entry.
+      const key = await resolveRoot(fromCwd, sessionCwd)
+      if (key) {
+        const hit = cache.get(key.root)
+        if (hit) return json(res, hit.value)
+      }
+
+      const value = key ? await buildState(key.root, key.source) : await describeMiss(asked)
+      if (value.ok && key) cache.set(key.root, { at: now, value })
       return json(res, value)
     } catch (err) {
       log('state route failed: ' + ((err && err.stack) || err))
@@ -56,18 +69,34 @@ export function apply(ctx) {
     }
   }
 
-  const buildState = async (cwd) => {
-    const versions = join(cwd, AGILE_ROOT)
-    if (!(await isDirectory(versions))) {
-      return failure('not-an-agile-tree', `${AGILE_ROOT} not found under ${cwd}`)
-    }
+  // The ladder: the session's own directory first, then the cwd the client sends,
+  // each accepted only when it is a work tree root of this repository. The
+  // process working directory is never a rung: the shipped unit runs the server
+  // from the user's home, so that would answer for the wrong tree.
+  const resolveRoot = async (fromCwd, sessionCwd) => {
+    const trees = await listWorkTrees(fromCwd || sessionCwd)
+    if (trees === null) return null
+    const at = (path) =>
+      typeof path === 'string' && path !== ''
+        ? trees.find((tree) => path === tree.root || path.startsWith(tree.root + '/')) ?? null
+        : null
+    const session = at(sessionCwd)
+    if (session) return { ...session, source: 'session' }
+    const query = at(fromCwd)
+    if (query) return { ...query, source: 'cwd' }
+    return null
+  }
 
-    const workTrees = await readWorkTrees(cwd)
-    if (workTrees === null) {
-      return failure('git-unavailable', `git worktree list failed under ${cwd}`)
+  const describeMiss = async (asked) => {
+    if (asked) return failure('unknown-session', `session ${asked} is not in a work tree of this repository`)
+    return failure('not-an-agile-tree', 'no session and no cwd resolved to a work tree root')
+  }
+
+  const buildState = async (root, source) => {
+    const versions = join(root, AGILE_ROOT)
+    if (!(await isDirectory(versions))) {
+      return failure('not-an-agile-tree', `${AGILE_ROOT} not found under ${root}`)
     }
-    const root =
-      workTrees.find((tree) => cwd === tree.root || cwd.startsWith(tree.root + '/'))?.root ?? cwd
 
     const sprint = await findSprint(join(root, AGILE_ROOT))
     if (!sprint) {
@@ -76,16 +105,21 @@ export function apply(ctx) {
 
     // One request, one pass: the sprint's documents are read once each here and
     // never re-read downstream.
-    const [sprintText, dirs] = await Promise.all([
+    const [sprintText, dirs, trees] = await Promise.all([
       readText(sprint.path),
       readStoryDirs(sprint.path),
+      listWorkTrees(root),
     ])
     if (sprintText === null) {
       return failure('no-sprint', `${join(AGILE_ROOT, sprint.name, 'sprint.org')} is unreadable`)
     }
+    if (trees === null) return failure('git-unavailable', `git worktree list failed under ${root}`)
+
     const doc = parseSprintDocument(sprintText)
-    const entries = await readJournals(workTrees.map((tree) => tree.root))
-    const withEntries = workTrees.map((tree) => ({ ...tree, entry: entries.get(tree.root) ?? null }))
+    const entries = await readJournals(trees.map((tree) => tree.root))
+    const withEntries = trees.map((tree) => ({ ...tree, entry: entries.get(tree.root) ?? null }))
+    const selected = withEntries.find((tree) => tree.root === root)
+    if (!selected) return failure('not-an-agile-tree', `${root} is not a work tree of this repository`)
 
     return {
       ok: true,
@@ -98,7 +132,8 @@ export function apply(ctx) {
           sprintName: sprint.name,
           sprintPath: `${AGILE_ROOT}/${sprint.version}/${sprint.name}/sprint.org`,
           today: new Date().toISOString().slice(0, 10),
-          tree: withEntries.find((tree) => tree.root === root) ?? null,
+          tree: await readWorkTree(selected),
+          source,
           trees: withEntries,
         },
       }),
@@ -141,20 +176,27 @@ export function apply(ctx) {
   }, 'ores-dsh-kanban: state route')
 }
 
+// The sprint is the newest sprint_NN by directory name, which is the ordering the
+// repository documents. Nothing reads a sprint.org to decide that, and the winner
+// is read once by the caller.
 async function findSprint(versions) {
   if (!(await isDirectory(versions))) return null
   const versionNames = (await readDirNames(versions))
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
-  for (const version of versionNames.sort().reverse()) {
+    .sort()
+    .reverse()
+  for (const version of versionNames) {
     const sprintNames = (await readDirNames(join(versions, version)))
       .filter((entry) => entry.isDirectory() && /^sprint_\d+$/.test(entry.name))
       .map((entry) => entry.name)
-    for (const name of sprintNames.sort().reverse()) {
-      const path = join(versions, version, name, 'sprint.org')
-      const text = await readText(path)
-      if (text === null) continue
-      return { version, name, path, doc: parseSprintDocument(text) }
+      .sort()
+      .reverse()
+    if (sprintNames.length === 0) continue
+    return {
+      version,
+      name: sprintNames[0],
+      path: join(versions, version, sprintNames[0], 'sprint.org'),
     }
   }
   return null

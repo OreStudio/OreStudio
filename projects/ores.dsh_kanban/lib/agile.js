@@ -181,7 +181,6 @@ export function parseStoryDocument(text, dirSlug) {
     created: keyword(doc, 'created'),
     updated: keyword(doc, 'updated'),
     state: normalizeState(doc.fields.get('State')),
-    waiting: doc.fields.get('Waiting on') ?? '',
   }
 }
 
@@ -203,7 +202,6 @@ export function parseTaskDocument(text, fileSlug) {
     created: keyword(doc, 'created'),
     updated: keyword(doc, 'updated'),
     state: normalizeState(doc.fields.get('State')),
-    waiting: doc.fields.get('Waiting on') ?? '',
     scaffold: /^Scaffold story:/i.test(title),
   }
 }
@@ -222,14 +220,15 @@ export function parseSprintDocument(text) {
       collapsed(doc.fields.get('End')) ||
       '',
     state: normalizeState(doc.fields.get('State')),
-    waiting: doc.fields.get('Waiting on') ?? '',
     epics: doc.epics,
   }
 }
 
+// Anchored on purpose: a prose `#+pr:` must not invent a number, because a number
+// becomes a link to a real pull request that has nothing to do with this task.
 export function parsePrNumber(raw) {
-  const digits = /#?\s*(\d+)/.exec(String(raw ?? ''))
-  return digits ? Number(digits[1]) : null
+  const match = /^#?(\d+)$/.exec(String(raw ?? '').trim())
+  return match ? Number(match[1]) : null
 }
 
 export function parsePrNumbers(values) {
@@ -277,6 +276,7 @@ function pickCandidate(candidates, entry) {
   return { storyId: chosen.storyId, taskId: chosen.id }
 }
 
+// The contract's tie-break is the latest `#+updated:` first, then the first path.
 function byUpdatedThenPath(a, b) {
   if (a.updated !== b.updated) return a.updated < b.updated ? 1 : -1
   return a.path < b.path ? -1 : a.path > b.path ? 1 : 0
@@ -331,7 +331,8 @@ export function buildModel(input) {
   }
 
   // The board belongs to the session's work tree and to no other, so `tree` is
-  // never a selection: it is the tree every card above was read from.
+  // never a selection: it is the tree every card above was read from. `source`
+  // records which rung of the resolution ladder produced it.
   const ownTree = options.tree ?? null
   const own = ownTree ? resolveItem(tasks, ownTree.branch, ownTree.entry) : null
   const tree = ownTree
@@ -345,6 +346,7 @@ export function buildModel(input) {
         currentStoryId: own.storyId,
         currentTaskId: own.taskId,
         by: own.by === 'none' && sprint.name ? 'sprint-only' : own.by,
+        source: options.source ?? '',
       }
     : null
 
@@ -371,20 +373,21 @@ export function buildTreeRows(trees, stories, tasks, sessionRoot) {
     // names, so only an id this sprint really holds is reported as an id; the
     // titles the journal carries always describe that work tree's own item.
     const task = resolveWorkItem(byId, storyById, tasks, candidate.branch, entry)
+    // rows carry no dirty and no detached: nothing renders them, and reading each
+    // work tree's working state would cost a git call per tree on every request.
     return {
       label: candidate.label,
       name: candidate.name,
       root: candidate.root,
       branch: candidate.branch,
-      detached: Boolean(candidate.detached),
-      dirty: Boolean(candidate.dirty),
       isSession: sessionRoot !== undefined && candidate.root === sessionRoot,
       currentStoryId: task.story?.id ?? '',
       currentTaskId: task.task?.id ?? entry?.taskId ?? '',
       storyTitle: task.story?.title ?? entry?.storyTitle ?? '',
       taskTitle: task.task?.title ?? entry?.taskTitle ?? '',
       state: task.task?.state ?? normalizeState(entry?.state),
-      pr: task.task?.pr || entry?.pr || '',
+      // The contract types `pr` as a string on every row, whatever the source.
+      pr: String(task.task?.pr || entry?.pr || ''),
     }
   })
   rows.sort((a, b) => (a.label < b.label ? -1 : a.label > b.label ? 1 : 0))

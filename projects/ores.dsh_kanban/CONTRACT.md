@@ -101,9 +101,26 @@ direction only: it is sent last, and only when at least one card is in it.
 GET /plugins/ores-dsh-kanban/state?session=<sessionId>&cwd=<optional absolute path>
 ```
 
-There is no work tree parameter. The board belongs to the session's work tree,
-always, and the host resolves it from the session. That is what keeps the board
-and the session in agreement.
+The board belongs to the session's work tree. Resolve it in this order, and
+report which rung was taken in `tree.source`.
+
+1. The session's own directory, `ctx.sessions.get(sessionId)?.header?.cwd`.
+   Because that field means "the directory the session was created in", accept it
+   only when it resolves to a known work tree root. Report `source: "session"`.
+2. The `cwd` query parameter, accepted only when it resolves to a known work tree
+   root of `git worktree list --porcelain`. Report `source: "cwd"`. The client
+   sends the session's workspace root here, read from the browser session store,
+   so a host session store that has not loaded the session does not blank the
+   board. A path that is not a work tree root of this repository never resolves,
+   which is what makes a caller-supplied path safe.
+3. Otherwise fail. Report `ok: false` with `reason: "unknown-session"` when a
+   `session` was supplied and neither rung resolved, and `not-an-agile-tree` when
+   none was. Never fall back to `process.cwd()`: the shipped unit starts the
+   server with its working directory set to the user's home, so that fallback
+   would silently answer for the wrong tree or fail for every session.
+
+`tree.source` exists so a board read from a fallback can never pass for a board
+read from the session.
 
 Register with `ctx.webServer.register({ kind: 'exact', path: '/plugins/ores-dsh-kanban/state', handler })`
 inside `ctx.effect(...)`. The host plugin declares `export const inject = ['webServer', 'sessions']`.
@@ -116,8 +133,9 @@ Resolve the work tree root from the session:
 const cwd = ctx.sessions.get(sessionId)?.header?.cwd
 ```
 
-When `session` is absent or unknown, fall back to the `cwd` query parameter, then
-to `process.cwd()`. The fallback keeps the route testable with `curl`.
+The ladder above governs what happens when that returns nothing usable. `cwd` is
+not a debugging affordance; it is the rung that keeps the board working when the
+host session store has not loaded the session yet.
 
 Response is always HTTP 200 with `content-type: application/json; charset=utf-8`
 and `cache-control: no-store`. The discriminant is `ok`.
@@ -131,7 +149,7 @@ and `cache-control: no-store`. The discriminant is `ok`.
     "label": "bright_faraday", "branch": "feature/dsh-agile-plugin",
     "detached": false, "dirty": false,
     "currentStoryId": "3085B911-…", "currentTaskId": "8A81CB08-…",
-    "by": "branch"
+    "by": "branch", "source": "session"
   },
   "sprint": {
     "version": "v0", "name": "sprint_25", "title": "Sprint 25",
@@ -176,7 +194,7 @@ and `cache-control: no-store`. The discriminant is `ok`.
     {
       "label": "eager_maxwell", "name": "ores_dev_eager_maxwell",
       "root": "/abs/path", "branch": "feature/retire-web-ui-codegen",
-      "detached": false, "dirty": false, "isSession": false,
+      "isSession": false,
       "currentStoryId": "…", "currentTaskId": "…",
       "storyTitle": "…", "taskTitle": "…", "state": "STARTED", "pr": "2133"
     }
@@ -209,7 +227,7 @@ Rules for the payload:
   not become a filter chip.
 - `sprint.dayOfSprint` is `today - startDate + 1` with no upper clamp, so an
   overrun sprint reports its true day. Sprint 25 runs 2026-08-03 to 2026-08-10,
-  so today it reports a day greater than `totalDays`. `totalDays` is
+  so it reports a day greater than `totalDays`. `totalDays` is
   `endDate - startDate + 1`. Both are `null` when a date is missing.
 - `story.environment` and `story.owner` come from the story's own keywords.
 - `story.branches` is the de-duplicated, sorted union of its tasks' `branch`
@@ -228,10 +246,17 @@ Rules for the payload:
   `currentTaskId`, `storyTitle`, `taskTitle`, `state`, and `pr` describe that
   work tree's own work item, and are `""` when it has none. This data is
   informational. Nothing in it changes what the board shows.
+- Rows of `trees` carry no `dirty` and no `detached`. Nothing renders them, and
+  computing them costs one `git status` per work tree on every request. Both stay
+  on `tree`, which does render them.
 - `tree` is the session's work tree, and it is the one the card data was read
   from. `tree.currentStoryId` and `tree.currentTaskId` are its own work item.
   `tree.by` is `"branch"` when its branch matched a task, `"sprint-only"` when a
-  sprint resolved without one, and `"none"` otherwise.
+  sprint resolved without one, and `"none"` otherwise. `tree.source` is
+  `"session"` or `"cwd"`, naming the rung of the ladder that resolved the tree.
+  `tree.detached` is derived from the branch reading back as `HEAD`, so a git
+  call that could not run yields `branch: ""` and `detached: false`, which the
+  empty branch distinguishes from a real detached checkout.
 - `filters.environments` is the sorted union of every distinct non-empty
   environment across the session's work tree's stories and tasks.
   `filters.epics` is the same for epics.
@@ -262,7 +287,8 @@ Failure shape, still HTTP 200:
 { "ok": false, "reason": "not-an-agile-tree", "message": "doc/agile/versions not found under /abs/path" }
 ```
 
-`reason` is one of `not-an-agile-tree`, `no-sprint`, `git-unavailable`.
+`reason` is one of `not-an-agile-tree`, `no-sprint`, `git-unavailable`,
+`unknown-session`.
 
 ## Follow-up stage, not in this wave
 
@@ -299,6 +325,19 @@ here needs them.
 
 The exported plugin object is `{ name: 'ores-dsh-kanban', inject: ['slots'], apply(ctx) }`.
 Register every seat inside its own `ctx.effect(() => ctx.slots.inject(…), 'label')`.
+
+Every request to the state route carries the session's directory as `cwd`. Read it
+from the browser session store, which is the SESSION's workspace root and not the
+host process's directory:
+
+```js
+const cwd = ctx.get('sessions')?.list?.getSnapshot()?.byId?.[sessionId]?.cwd
+```
+
+That is not optional. It is the rung that keeps the board working when the host
+session store has not loaded the session, and the host accepts it only when it is
+a work tree root of this repository. When it is absent, send no `cwd` at all
+rather than a guess.
 
 ### Seat 1. The always-visible readout
 
@@ -408,6 +447,9 @@ against a second, and remove it when the effect disposes.
 
 ## Verification
 
-Offline. The host half is checked by `node --test test/` and by `curl` against a
-scratch DSH instance. The client half is checked in a real browser against the
-same instance, with screenshots written under `tmp/shots/`.
+Offline. The host half is checked by `node --test test/agile.test.mjs` from the
+`projects/ores.dsh_kanban` directory, and by `curl` against a scratch DSH
+instance. The bare `node --test` form also runs it; `node --test test/` fails on
+the shipped Node 22.22.1 with `Cannot find module '…/test'`. The client half is
+checked in a real browser against the same instance, with screenshots written
+under `tmp/shots/`.

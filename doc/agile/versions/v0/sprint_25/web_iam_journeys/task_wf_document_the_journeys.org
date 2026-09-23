@@ -77,7 +77,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The capture attributes the unguarded reads to =account_operations_handler.hpp=; =list_accounts= and =get_account= are in =account_handler.hpp=, and =login_info_handler.hpp= has the same bug and is not cited | doc/agile/product_backlog/inbox/iam-handlers-skip-permission-checks.org | Accept | Corrected the What and References sections; now cites =account_handler.hpp= (75, 116) and =login_info_handler.hpp= (75, 116). Both verified in source before editing: each file declares =using ...has_permission;= and never calls it. |
+| 2 | =_lint_malformed_links= has no unit test, unlike =_lint_dangling_links= | projects/ores.compass/src/compass.py | Accept | Added =test_malformed_links_reported_and_placeholder_words_ignored=: a too-long and a too-short target are flagged, a well-formed one is not, and the hyphen-less placeholder is left alone. 3 passed. |
+| 3 | A UUID with every hyphen stripped would slip past both checks (minor, not blocking) | projects/ores.compass/src/compass.py | Decline | The hyphen-less case is the documented placeholder path; =[[id:UUID]]= and =[[id:target]]= appear in prose across the meta docs, so treating hyphen-less targets as attempts would fail the corpus. A 32-hex-character id does not occur in the repo. |
 
 * Result
 

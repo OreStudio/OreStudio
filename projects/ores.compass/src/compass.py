@@ -2422,6 +2422,15 @@ _DURABLE_DIRS = ("doc/llm/", "doc/meta/", "doc/knowledge/", "doc/recipes/")
 # Both org id-link forms: [[id:UUID]] and [[id:UUID][description]]. A bare link
 # carries no label, so the description group is optional and may be None.
 _ID_LINK_RE = re.compile(r"\[\[id:([0-9A-Fa-f-]{36})\](?:\[([^\]]*)\])?\]")
+# An id-link whose target looks like a UUID attempt but is not one. The strict
+# regex above cannot see these at all: a target of the wrong length simply does
+# not match, so the link is skipped rather than reported, and nothing fails until
+# org refuses to export the page during a site build. A target with no hyphen is
+# a plain word id ("UUID", "target") used as a placeholder in prose, not an
+# attempt at a UUID, so it is left alone.
+_ID_LINK_LOOSE_RE = re.compile(r"\[\[id:([0-9A-Fa-f-]+)\]")
+_UUID_RE = re.compile(r"^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-"
+                      r"[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$")
 
 
 def _lint_generator_markers(files):
@@ -2518,6 +2527,24 @@ def _lint_dangling_links(files, id_types):
     return out
 
 
+def _lint_malformed_links(files):
+    """[[id:...]] whose target looks like a UUID but is not one.
+
+    Reported separately from a dangling link because the failure is different:
+    a dangling link resolves to nothing but still exports, whereas a malformed
+    one stops the page exporting at all, and only a site build notices.
+    """
+    out = []
+    for rel, text in files:
+        for lineno, line in enumerate(text.splitlines(), 1):
+            for m in _ID_LINK_LOOSE_RE.finditer(line):
+                target = m.group(1)
+                if "-" not in target or _UUID_RE.match(target):
+                    continue
+                out.append((str(rel), lineno, target))
+    return out
+
+
 def _collect_org_types(files):
     """Map every :ID: in the corpus to the #+type: of its document."""
     types = {}
@@ -2592,6 +2619,7 @@ def cmd_lint(argv):
     id_types = _collect_org_types(files)
     links = _lint_durable_links(files, id_types)
     dangling = _lint_dangling_links(files, id_types)
+    malformed = _lint_malformed_links(files)
 
     failed = False
 
@@ -2615,6 +2643,15 @@ def cmd_lint(argv):
               f"script that does not write them:\n", file=sys.stderr)
         for path, lineno, msg in marker_sources:
             print(f"  {path}:{lineno}: {msg}", file=sys.stderr)
+
+    if malformed:
+        failed = True
+        print(f"\u274c  malformed id links: {len(malformed)} link(s) name "
+              f"something that is not a UUID, so the page cannot export:\n",
+              file=sys.stderr)
+        for path, lineno, target in malformed:
+            print(f"  {path}:{lineno}: [[id:{target}]] "
+                  f"({len(target)} chars)", file=sys.stderr)
 
     if dangling:
         failed = True
@@ -3641,7 +3678,7 @@ def cmd_add(argv):
               "         component capture memory investigation product_identity skill\n"
               "         diagram entity_org field_group dataset_overview\n"
               "         facet facet_group technical_space archetype profile\n"
-              "         feature\n"
+              "         feature user_journey\n"
               "  --parent-dir defaults to the current sprint (story) or\n"
               "  version (sprint), doc/llm/skills (skill),\n"
               "  doc/manual/user_guide (manual), doc/llm/memory (memory),\n"

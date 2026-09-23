@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 3085B911-3030-4AB8-976F-0F037D4332E7
+:END:
+#+title: Story: Show the current agile work item inside DSH
+#+description: A DSH plugin that reports the sprint, story, and task this work tree is working on, shows them inside the live DSH session, and lets the user interact with that state.
+#+type: story
+#+level: s2
+#+filetags: :dsh:agile:plugin:tooling:sprint_25:v0:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A DSH plugin, specific to this repository, that shows the agile work item for the current work tree in an interactive panel inside the DSH Web session. The panel keeps the existing agile dashboard's look and answers one question at a glance: which sprint, story, and task is this tree on right now.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-23                               |
+
+* Acceptance
+
+- The plugin loads into the DSH web profile and renders in a live session.
+- The panel names the current sprint, story, and task, derived from the work tree rather than typed by hand.
+- The panel is interactive and uses DSH client UI primitives rather than a separate web server.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8A81CB08-A606-4E30-A717-88B810308137][Scaffold story: Show the current agile work item inside DSH]] | STARTED | 2026-09-23 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:2612E669-545E-4482-8115-E9C1A3278770][Build the DSH agile session panel]] | BACKLOG | | | Initial task for: Show the current agile work item inside DSH |
+
+* Decisions
+
+* Out of scope
+
+-

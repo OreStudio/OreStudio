@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 2612E669-545E-4482-8115-E9C1A3278770
+:END:
+#+title: Task: Build the DSH agile session panel
+#+description: Initial task for: Show the current agile work item inside DSH
+#+type: task
+#+level: s1
+#+filetags: :dsh_agile_plugin:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3085B911-3030-4AB8-976F-0F037D4332E7][Show the current agile work item inside DSH]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A DSH plugin, specific to this repository, that shows the agile work item for the current work tree in an interactive panel inside the DSH Web session. The panel keeps the existing agile dashboard's look and answers one question at a glance: which sprint, story, and task is this tree on right now.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3085B911-3030-4AB8-976F-0F037D4332E7][Show the current agile work item inside DSH]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- The plugin loads into the DSH web profile and renders in a live session.
+- The panel names the current sprint, story, and task, derived from the work tree rather than typed by hand.
+- The panel is interactive and uses DSH client UI primitives rather than a separate web server.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

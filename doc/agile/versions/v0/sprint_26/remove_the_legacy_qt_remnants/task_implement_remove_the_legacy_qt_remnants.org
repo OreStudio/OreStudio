@@ -72,3 +72,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+Delivered and verified, with one named remainder. Six commits on this branch
+remove the Qt residue the retirement left in codegen and in the documentation.
+Every unit was checked against the generator's drift gate before the next began.
+
+What went:
+
+- 46 presentation keys from =core.py=, with the seven guards, five locals and
+  one loop that existed only to build them, and the two helper functions with
+  their tests.
+- 687 Presentation drawer property lines from 104 entity models: the history and
+  changed-event names the loader stopped needing when it took over message
+  naming, and the Qt list-window chrome.
+- The README's Qt6 badge, and the icon inventory's 118 links into the deleted
+  =ores.qt= tree, 40 repointed at the surviving set and 78 marked removed.
+- The =qt= tag and the =qt= component value, both marked rather than deleted, so
+  historical documents keep a defined tag.
+- =has_csv_xml_io= and =has_version_navigation=, marked retired the way
+  =has_pagination= already was.
+
+The proof is unchanged output rather than a read analysis. =iam= regenerates
+byte-identically, and =refdata= produces the same 806 diff headers as trunk
+against its own pre-existing drift, checked after each unit. 522 tests pass,
+model drift is clean, and =compass lint= passes with all six doc-lint gates.
+Component Clean Standard check M09 fell from 656 hits to 94.
+
+Two corrections to my own analysis are recorded in the story, because both made
+the first dead list wrong: a self-defaulting write is not a consumed read, and a
+key pattern without digits hides keys. The drift gate is what caught them.
+
+Still open, and named rather than hidden: about fourteen user manual chapters
+describe Qt screens in their body text, and
+=entity_meta_model_cpp_qt.org= still documents drawer properties this branch
+deleted. Both are prose rewrites that no gate verifies. This task stays STARTED
+for them.

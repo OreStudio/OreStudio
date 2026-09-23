@@ -91,6 +91,35 @@ The next unit has to separate three cases that look alike:
 Take one key, remove it, re-run the drift gate. The gate is the authority,
 because it compares rendered output rather than reading code.
 
+** The first read analysis was wrong, and the way it was wrong matters
+
+The first pass counted a write that reads its own key as a write only, so
+=presentation['has_pagination'] = presentation.get('has_pagination', False)=
+looked unread. It is not a read in any useful sense: it defaults a value that
+nothing consumes. The same shape applies to =item_var=.
+
+The distinction to keep straight is between a *self-default* and a *consumed
+read*. A self-default writes a key from itself and proves nothing. A consumed
+read is another expression, or another key, reading the value.
+
+Both keys are still dead. They differ from the rest of the dead set in where
+they come from: the loader routes them out of the profile namespace, and 104
+entity models declare =item_var= in their Presentation drawer. So their removal
+belongs with the loader and the profiles rather than with this pass, and they
+are left in place here on purpose.
+
+** The related codegen code, and its size
+
+The keys are the visible part. What carries them is larger:
+
+| Layer | Size | File |
+|---|---|---|
+| The generator | 35 keys | =src/codegen/core.py= |
+| Profile flags routed into =presentation= | 12, of which =has_csv_xml_io= and =has_version_navigation= are read by nothing | =src/codegen/org_loader.py= |
+| Profile features declaring those flags | 12 features under =projects/modeling/variability_feature_*.org= | |
+| Entity models with a Presentation drawer | 115 models, 67 distinct drawer properties, of which 33 are referenced by the loader or the generator | =projects/*/modeling/*.org= |
+| Validators reading the dict | =validate_explorer_interface=, =validate_parent_scoped_list= | =src/codegen/core.py= |
+
 * Out of scope
 
 - The name of =projects/ores.codegen/modeling/entity_meta_model_cpp_qt.org=, a

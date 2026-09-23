@@ -3698,37 +3698,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f'{component}.{_subcomponent}' if _subcomponent else component)
             component_include = domain_entity.get(
                 'component_include', _derived_component_include)
-            if 'domain_include' not in presentation and entity_singular and component_include:
-                presentation['domain_include'] = (
-                    f'ores.{component_include}/domain/{entity_singular}.hpp')
-            if 'protocol_include' not in presentation and entity_singular and component_include:
-                presentation['protocol_include'] = (
-                    f'ores.{component_include}/messaging/{entity_singular}_protocol.hpp')
             if 'domain_class' not in presentation and entity_singular and component:
                 presentation['domain_class'] = f'{component}::domain::{entity_singular}'
-            if 'changed_event_class' not in presentation and entity_singular and component:
-                presentation['changed_event_class'] = (
-                    f'{component}::eventing::{entity_singular}_changed_event')
-            if 'changed_event_include' not in presentation and entity_singular and component_include:
-                presentation['changed_event_include'] = (
-                    f'ores.{component_include}/eventing/{entity_singular}_changed_event.hpp')
-            # Cross-plugin export macro: opt-in via has_export_macro, for entities
-            # whose generated Qt classes are constructed from another presentation/* plugin's
-            # shared library (built with -fvisibility=hidden) and therefore need a
-            # dllexport-style annotation to resolve at load time.
-            if presentation.get('has_export_macro') and component:
-                if 'export_macro' not in presentation:
-                    presentation['export_macro'] = f'ORES_QT_{component.upper()}_EXPORT'
-                if 'export_header' not in presentation:
-                    presentation['export_header'] = f'{component.capitalize()}Export.hpp'
             # Mark last item in columns for template iteration
             if 'columns' in presentation:
                 _mark_last_item(presentation['columns'])
-                # Compute has_description_column flag
-                presentation['has_description_column'] = any(
-                    c.get('enum_name') == 'Description'
-                    for c in presentation['columns']
-                )
                 # Columns hidden from the list view by default: any column
                 # explicitly marked hidden_by_default in the org model, plus
                 # Description (a long free-text field, hidden for every
@@ -3744,7 +3718,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                         seen_enum_names.add(c.get('enum_name'))
                 if hidden_columns:
                     _mark_last_item(hidden_columns)
-                presentation['hidden_columns'] = hidden_columns
                 # Cross-reference presentation columns with domain columns to flag optionals:
                 # when the underlying domain column is std::optional<std::string>, the
                 # Qt model needs to unwrap before QString::fromStdString.
@@ -3805,7 +3778,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     any(c.get('is_badge') for c in presentation['columns'])
                     or presentation.get('has_combo_badge_source', False)
                 )
-                presentation['has_date_columns'] = any(c.get('is_date') for c in presentation['columns'])
                 # self_colour columns (e.g. badge_definition's own
                 # background_colour/text_colour) render badge_centered too,
                 # but the column's own value IS the colour — no
@@ -3828,10 +3800,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # doesn't require a BadgeCache, so this is safe to widen
                 # independently of badgeCache_ (which stays gated on
                 # has_badge_columns, since only badge columns need it).
-                presentation['needs_item_delegate'] = (
-                    presentation['has_badge_columns'] or presentation.get('has_any_flag_icon', False)
-                    or presentation['has_self_colour_columns']
-                )
             # has_explorer_api opts a controller into the public
             # openAdd()/openEdit()/openHistory() surface a sibling explorer
             # window (e.g. PortfolioExplorer, OrgExplorer) needs to drive it
@@ -3845,9 +3813,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             )
             if presentation['has_parent_relationship']:
                 parent_pascal = snake_to_pascal(parent_entity_singular)
-                presentation['parent_entity_pascal'] = parent_pascal
-                presentation.setdefault('parent_id_field_camel', f'parent{parent_pascal}Id')
-                presentation.setdefault('parent_id_field', f'parent_{parent_entity_singular}_id')
             # explorer_interface is an optional companion to has_explorer_api:
             # when a cross-component explorer window (e.g. OrgExplorerMdiWindow
             # in ores.presentation.trading) needs to drive this controller's openEdit/
@@ -3858,7 +3823,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # explorers (PortfolioExplorer/OrgExplorer for Book, both in
             # ores.presentation.trading) need no such interface — leave unset.
             validate_explorer_interface(domain_entity)
-            presentation['has_explorer_interface'] = bool(presentation.get('explorer_interface'))
             validate_parent_scoped_list(domain_entity)
             # Add iterator variable reference for templates
             presentation['item_var'] = presentation.get('item_var', 'item')
@@ -4088,9 +4052,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 required_fields[-1]['_is_last'] = True
             if required_dynamic_combo_fields:
                 required_dynamic_combo_fields[-1]['_is_last'] = True
-            presentation['required_fields'] = required_fields
-            presentation['required_dynamic_combo_fields'] = required_dynamic_combo_fields
-            presentation['date_fields'] = date_fields
             key_field_data = next((f for f in detail_fields if f.get('is_key')), None)
             # onCodeChanged() only makes sense (and is only ever connected)
             # for an is_key field that's a QLineEdit -- a combo-widget key
@@ -4098,8 +4059,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # generic onFieldChanged() like any other combo instead. Gate
             # the method's generation so it doesn't sit as unreachable dead
             # code for entities whose key isn't a line_edit.
-            presentation['has_line_edit_key'] = bool(
-                key_field_data and key_field_data.get('is_line_edit'))
             # Every field locked after create (is_key or immutable), each
             # described by its own widget kind.
             locked_fields = [
@@ -4120,7 +4079,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     # createMode is true -- not just after create like
                     # every other locked field. Must match on the field
                     # actually being the entity's own UUID primary key
-                    # column (like key_field_is_uuid below), not merely
+                    # column, not merely
                     # "some is_key field on an entity that happens to
                     # have a UUID primary key" -- otherwise a natural/
                     # business key field (e.g. party's short_code, which
@@ -4135,8 +4094,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 }
                 for f in detail_fields if f['is_locked_after_create']
             ]
-            presentation['locked_fields'] = locked_fields
-            presentation['has_locked_fields'] = bool(locked_fields)
             # Default has_pagination to False if not set
             presentation['has_pagination'] = presentation.get('has_pagination', False)
             # Default has_readonly_paginated_list to False if not set
@@ -4145,9 +4102,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # cannot use the change-reason cache: wire the cache only when the
             # controller is not read-only (the cache plumbing exists for the
             # detail dialogs the read-only profile omits).
-            presentation['wires_change_reason_cache'] = (
-                presentation.get('has_change_reason_cache', False)
-                and not presentation['has_readonly_paginated_list'])
             # Default has_parent_scoped_list to False if not set. Paired
             # with parent_key_field (the protocol request field, e.g.
             # calendar_code) and parent_key_param (the C++ member/
@@ -4160,46 +4114,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # create for a still-full-CRUD entity, not filtering a
             # read-only list's get-request).
             presentation['has_parent_scoped_list'] = presentation.get('has_parent_scoped_list', False)
-            presentation['has_text_edit_fields'] = any(
-                f.get('type') in ('text_edit', 'plain_text_edit') for f in detail_fields
-            )
-            presentation['has_combo_fields'] = any(
-                f.get('type') in ('static_combo', 'dynamic_combo', 'flagged_combo')
-                for f in detail_fields
-            )
-            presentation['has_dynamic_combo_fields'] = any(
-                f.get('type') == 'dynamic_combo' for f in detail_fields
-            )
-            presentation['has_flagged_combo_fields'] = any(
-                f.get('type') == 'flagged_combo' for f in detail_fields
-            )
-            presentation['has_static_combo_fields'] = any(
-                f.get('type') == 'static_combo' for f in detail_fields
-            )
-            presentation['has_colour_fields'] = any(
-                f.get('type') == 'colour' for f in detail_fields
-            )
-            # Deduplicated <customwidgets> entries for any promoted combo
-            # widget class a detail field resolved to above (e.g. every
-            # currency-flag combo needs the same OreCurrencyComboBox
-            # registration once, however many currency fields the entity
-            # has). Computed here, not in org_loader.py: it depends on
-            # combo_widget_class values that is_flagged_combo/is_dynamic_combo
-            # handling above defaults in, which runs after org_loader.py.
-            seen_widget_classes = set()
-            combo_customs = []
-            for f in detail_fields:
-                cls = f.get('combo_widget_class')
-                if not cls or cls in seen_widget_classes:
-                    continue
-                seen_widget_classes.add(cls)
-                combo_customs.append({
-                    'class': cls,
-                    'extends': f.get('combo_widget_extends', 'QComboBox'),
-                    'header': f.get('combo_widget_header', ''),
-                })
-            if combo_customs:
-                presentation['combo_widget_customs'] = combo_customs
             # Whether any static_combo or dynamic_combo detail field renders
             # its items as badges (via the badge system, apply_combo_badges
             # resolves purely off (badge_key, item text) at paint time — it
@@ -4225,49 +4139,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 None
             )
             detail_field_names = {f.get('field') for f in detail_fields}
-            presentation['hidden_party_id_on_create'] = bool(
-                party_id_field and 'party_id' not in detail_field_names
-            )
             # Delete request id field: protocol generates 'ids' for UUID PK and
             # '{pk_column}s' for text PK (matching cpp_protocol.hpp.mustache line 53).
             if presentation.get('has_uuid_primary_key', False):
                 presentation.setdefault('delete_request_id_field', 'ids')
-                presentation['delete_request_id_is_plural'] = (
-                    presentation['delete_request_id_field'] != 'id')
             else:
                 pk_col = domain_entity.get('primary_key', {}).get('column', '')
                 if pk_col and 'delete_request_id_field' not in presentation:
                     presentation['delete_request_id_field'] = f'{pk_col}s'
-                if 'delete_request_id_field' in presentation:
-                    presentation.setdefault('delete_request_id_is_plural', True)
-            # History response data field: most protocols use 'history', but
-            # some older ones (predating that convention) name it after the
-            # entity's plural collection instead (e.g. cds_convention's
-            # get_cds_convention_history_response.cds_conventions) -- those
-            # entities set :history_response_data_field: explicitly in their
-            # model to override this default.
-            presentation.setdefault('history_response_data_field', 'history')
-            # Determine if the Qt key field is a UUID (needs to_string wrapping).
-            # A key field is UUID when has_uuid_primary_key is true AND the key_field
-            # matches the primary key column (i.e. the key field IS the UUID PK, not a
-            # separate natural-key string like unit_code).
-            pk_col_name = domain_entity.get('primary_key', {}).get('column', '')
-            key_field_name = presentation.get('key_field', '')
-            key_field_is_uuid = (
-                presentation.get('has_uuid_primary_key', False) and
-                key_field_name == pk_col_name
-            )
-            presentation['key_field_is_uuid'] = key_field_is_uuid
-            if key_field_is_uuid:
-                presentation['key_to_string_prefix'] = 'boost::uuids::to_string('
-                presentation['key_to_string_suffix'] = ')'
-            else:
-                presentation['key_to_string_prefix'] = ''
-                presentation['key_to_string_suffix'] = ''
-            presentation['metadata_start_row'] = len(detail_fields)
-            presentation['metadata_start_row_plus_1'] = len(detail_fields) + 1
-            presentation['metadata_start_row_plus_2'] = len(detail_fields) + 2
-            presentation['metadata_start_row_plus_3'] = len(detail_fields) + 3
         # Add generator facet name with default (trade uses 'generator', refdata uses 'generators')
         domain_entity.setdefault('generator_facet_name', 'generators')
         domain_entity['generator_facet_name_upper'] = domain_entity['generator_facet_name'].upper()

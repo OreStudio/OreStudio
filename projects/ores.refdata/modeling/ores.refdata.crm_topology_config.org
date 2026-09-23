@@ -193,13 +193,9 @@ crm_topology_config_repository::read_latest_all_tenants(context ctx) {
 :domain_class:            refdata::domain::crm_topology_config
 :protocol_include:        ores.refdata.api/messaging/crm_topology_config_protocol.hpp
 :collection_name:         crm_topology_configs
-:item_var:                config
 :key_field:                name
 :has_export_macro:        true
 :save_request_item_field: data
-:settings_group:          CrmTopologyConfigListWindow
-:window_title:            CRM Topology Configs
-:icon:                    Chart
 :END:
 
 *** Detail fields

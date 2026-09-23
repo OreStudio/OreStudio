@@ -463,14 +463,9 @@ that should decide it. Every other tenant still sees only its own rows.
 :domain_class:           refdata::domain::party
 :protocol_include:       ores.refdata.api/messaging/party_protocol.hpp
 :collection_name:        parties
-:item_var:               party
 :key_field:              short_code
 :save_request_item_field: party
-:settings_group:         PartyListWindow
-:window_title:           Parties
-:icon:                   Organization
 :has_pagination:         true
-:flag_icon_column:       ShortCode
 :END:
 
 *** Detail fields

@@ -322,12 +322,8 @@ std::string("https://example.com")
 :domain_class:            refdata::domain::party_contact_information
 :protocol_include:        ores.refdata.api/messaging/party_contact_information_protocol.hpp
 :collection_name:         party_contact_informations
-:item_var:                partyContactInformation
 :key_field:               contact_type
 :save_request_item_field: data
-:settings_group:          PartyContactInformationListWindow
-:window_title:            Party Contact Information
-:icon:                    PersonAccounts
 :END:
 
 Note: =party_id= is deliberately not exposed as a Detail field -- like

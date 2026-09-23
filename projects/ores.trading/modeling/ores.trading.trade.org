@@ -1386,7 +1386,6 @@ below is the order the wire carries.
 :domain_class:            trading::domain::trade
 :protocol_include:        ores.trading/messaging/trade_protocol.hpp
 :collection_name:         trades
-:item_var:                trade
 :key_field:               external_id
 :has_uuid_primary_key:    true
 :has_pagination:          true
@@ -1400,9 +1399,6 @@ below is the order the wire carries.
 :delete_request_class:    trading::messaging::delete_trade_request
 :delete_response_class:   trading::messaging::delete_trade_response
 :delete_message_type:     delete_trade_request
-:settings_group:          TradeListWindow
-:window_title:            Trades
-:icon:                    DocumentTable
 :END:
 
 *** Detail fields

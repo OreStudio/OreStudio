@@ -321,12 +321,8 @@ std::string("https://example.com")
 :domain_class:            refdata::domain::counterparty_contact_information
 :protocol_include:        ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp
 :collection_name:         counterparty_contact_informations
-:item_var:                counterpartyContactInformation
 :key_field:               contact_type
 :save_request_item_field: data
-:settings_group:          CounterpartyContactInformationListWindow
-:window_title:            Counterparty Contact Information
-:icon:                    PersonAccounts
 :END:
 
 Note: =counterparty_id= is deliberately not exposed as a Detail field

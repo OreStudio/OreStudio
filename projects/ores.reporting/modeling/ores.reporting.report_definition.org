@@ -209,7 +209,6 @@ std::nullopt
 :domain_class:           reporting::domain::report_definition
 :protocol_include:       ores.reporting/messaging/report_definition_protocol.hpp
 :collection_name:        definitions
-:item_var:               definition
 :key_field:              name
 :get_request_class:      reporting::messaging::get_report_definitions_request
 :get_response_class:     reporting::messaging::get_report_definitions_response
@@ -220,9 +219,6 @@ std::nullopt
 :delete_request_class:   reporting::messaging::delete_report_definition_request
 :delete_response_class:  reporting::messaging::delete_report_definition_response
 :delete_message_type:    delete_report_definition_request
-:settings_group:         ReportDefinitionListWindow
-:window_title:           Report Definitions
-:icon:                   FileText
 :END:
 
 *** Detail fields

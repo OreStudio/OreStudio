@@ -165,11 +165,7 @@ faker::number::integer(1, 100)
 :domain_class:           refdata::domain::ledger_feed_type
 :protocol_include:       ores.refdata.api/messaging/ledger_feed_type_protocol.hpp
 :collection_name:        types
-:item_var:               type
 :key_field:              code
-:settings_group:         LedgerFeedTypeListWindow
-:window_title:           Ledger Feed Types
-:icon:                   Tag
 :has_export_macro:       true
 :END:
 

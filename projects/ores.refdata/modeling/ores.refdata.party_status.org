@@ -160,11 +160,7 @@ drop function if exists ores_refdata_validate_party_status_fn;
 :domain_class:           refdata::domain::party_status
 :protocol_include:       ores.refdata.api/messaging/party_status_protocol.hpp
 :collection_name:        statuses
-:item_var:               status
 :key_field:              code
-:settings_group:         PartyStatusListWindow
-:window_title:           Party Statuses
-:icon:                   Flag
 :END:
 
 *** Detail fields

@@ -208,13 +208,9 @@ crm_driver_pair_repository::read_latest_all_tenants(context ctx) {
 :domain_class:            refdata::domain::crm_driver_pair
 :protocol_include:        ores.refdata.api/messaging/crm_driver_pair_protocol.hpp
 :collection_name:         crm_driver_pairs
-:item_var:                pair
 :key_field:                id
 :has_export_macro:        true
 :save_request_item_field: data
-:settings_group:          CrmDriverPairListWindow
-:window_title:            CRM Driver Pairs
-:icon:                    ArrowSync
 :END:
 
 *** Detail fields

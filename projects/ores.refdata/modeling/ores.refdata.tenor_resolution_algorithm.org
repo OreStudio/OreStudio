@@ -162,11 +162,7 @@ drop function if exists ores_refdata_validate_tenor_resolution_algorithm_fn;
 :domain_class:           refdata::domain::tenor_resolution_algorithm
 :protocol_include:       ores.refdata.api/messaging/tenor_resolution_algorithm_protocol.hpp
 :collection_name:        algorithms
-:item_var:               algorithm
 :key_field:              code
-:settings_group:         TenorResolutionAlgorithmListWindow
-:window_title:           Tenor Resolution Algorithms
-:icon:                   Tag
 :has_export_macro:       true
 :END:
 

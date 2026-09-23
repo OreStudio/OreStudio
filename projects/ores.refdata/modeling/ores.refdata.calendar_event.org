@@ -247,13 +247,9 @@ std::string("federalreserve.gov")
 :domain_class:                refdata::domain::calendar_event
 :protocol_include:            ores.refdata.api/messaging/calendar_event_protocol.hpp
 :collection_name:             calendar_events
-:item_var:                    evt
 :key_field:                   id
 :has_export_macro:            true
 :save_request_item_field:     data
-:settings_group:               CalendarEventListWindow
-:window_title:                Calendar Events
-:icon:                         CalendarClock
 :END:
 
 *** Detail fields

@@ -229,13 +229,9 @@ std::nullopt
 ** Presentation
 :PROPERTIES:
 :collection_name:         cds_conventions
-:item_var:                cc
 :key_field:               id
 :delete_request_id_field:   ids
 :save_request_item_field: cds_convention
-:settings_group:          CdsConventionListWindow
-:window_title:            CDS Conventions
-:icon:                    Chart
 :END:
 
 *** Detail fields

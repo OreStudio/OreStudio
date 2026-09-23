@@ -174,7 +174,6 @@ Accumulated work units successfully processed by this host.
 :domain_class:            compute::domain::host
 :protocol_include:        ores.compute.api/messaging/host_protocol.hpp
 :collection_name:         hosts
-:item_var:                host
 :key_field:               external_id
 :get_request_class:       compute::messaging::get_hosts_request
 :get_response_class:      compute::messaging::get_hosts_response
@@ -185,9 +184,6 @@ Accumulated work units successfully processed by this host.
 :delete_request_class:    compute::messaging::delete_host_request
 :delete_response_class:   compute::messaging::delete_host_response
 :delete_message_type:     delete_host_request
-:settings_group:          HostListWindow
-:window_title:            Compute Hosts
-:icon:                    Desktop
 :END:
 
 *** Columns

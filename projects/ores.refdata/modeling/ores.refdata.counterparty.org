@@ -319,14 +319,9 @@ TypeScript twin render it.
 :domain_class:            refdata::domain::counterparty
 :protocol_include:        ores.refdata.api/messaging/counterparty_protocol.hpp
 :collection_name:         counterparties
-:item_var:                counterparty
 :key_field:               short_code
 :save_request_item_field: counterparty
-:settings_group:          CounterpartyListWindow
-:window_title:            Counterparties
-:icon:                    Handshake
 :has_pagination:          true
-:flag_icon_column:        ShortCode
 :END:
 
 *** Detail fields

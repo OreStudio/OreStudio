@@ -149,7 +149,6 @@ std::string("DiscountingSwapEngine")
 :domain_class:           analytics::domain::pricing_model_product
 :protocol_include:       ores.analytics.api/messaging/pricing_model_product_protocol.hpp
 :collection_name:        products
-:item_var:               product
 :key_field:              pricing_engine_type_code
 :get_request_class:      analytics::messaging::get_pricing_model_products_request
 :get_response_class:     analytics::messaging::get_pricing_model_products_response
@@ -160,9 +159,6 @@ std::string("DiscountingSwapEngine")
 :delete_request_class:   analytics::messaging::delete_pricing_model_product_request
 :delete_response_class:  analytics::messaging::delete_pricing_model_product_response
 :delete_message_type:    delete_pricing_model_product_request
-:settings_group:         PricingModelProductListWindow
-:window_title:           Pricing Model Products
-:icon:                   Table
 :END:
 
 *** Detail fields

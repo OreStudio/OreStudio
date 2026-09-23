@@ -193,13 +193,9 @@ std::string("Test exception")
 :domain_class:                refdata::domain::calendar_exception
 :protocol_include:            ores.refdata.api/messaging/calendar_exception_protocol.hpp
 :collection_name:             calendar_exceptions
-:item_var:                    exc
 :key_field:                   id
 :has_export_macro:            true
 :save_request_item_field:     data
-:settings_group:               CalendarExceptionListWindow
-:window_title:                Calendar Exceptions
-:icon:                         CalendarClock
 :END:
 
 *** Detail fields

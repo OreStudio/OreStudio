@@ -162,11 +162,7 @@ drop function if exists ores_refdata_validate_tenor_unit_fn;
 :domain_class:           refdata::domain::tenor_unit
 :protocol_include:       ores.refdata.api/messaging/tenor_unit_protocol.hpp
 :collection_name:        units
-:item_var:               unit
 :key_field:              code
-:settings_group:         TenorUnitListWindow
-:window_title:           Tenor Units
-:icon:                   Tag
 :has_export_macro:       true
 :END:
 

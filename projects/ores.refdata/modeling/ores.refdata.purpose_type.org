@@ -163,11 +163,7 @@ drop function if exists ores_refdata_validate_purpose_type_fn;
 :domain_class:           refdata::domain::purpose_type
 :protocol_include:       ores.refdata.api/messaging/purpose_type_protocol.hpp
 :collection_name:        types
-:item_var:               type
 :key_field:              code
-:settings_group:         PurposeTypeListWindow
-:window_title:           Purpose Types
-:icon:                   Flag
 :END:
 
 *** Columns

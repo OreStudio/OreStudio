@@ -179,7 +179,6 @@ Payload for nats_publish action type.
 :domain_class:           scheduler::domain::job_definition
 :protocol_include:       ores.scheduler/messaging/scheduler_protocol.hpp
 :collection_name:        definitions
-:item_var:               definition
 :key_field:              job_name
 :has_uuid_primary_key:   true
 :get_request_class:      scheduler::messaging::get_job_definitions_request
@@ -191,9 +190,6 @@ Payload for nats_publish action type.
 :delete_request_class:   scheduler::messaging::unschedule_job_request
 :delete_response_class:  scheduler::messaging::unschedule_job_response
 :delete_message_type:    unschedule_job_request
-:settings_group:         JobDefinitionListWindow
-:window_title:           Job Definitions
-:icon:                   CalendarClock
 :END:
 
 *** Detail fields

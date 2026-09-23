@@ -104,7 +104,6 @@ Lifecycle status: open, processing, assimilating, or closed.
 :domain_class:            compute::domain::batch
 :protocol_include:        ores.compute.api/messaging/batch_protocol.hpp
 :collection_name:         batches
-:item_var:                batch
 :key_field:               external_ref
 :get_request_class:       compute::messaging::get_batches_request
 :get_response_class:      compute::messaging::get_batches_response
@@ -115,9 +114,6 @@ Lifecycle status: open, processing, assimilating, or closed.
 :delete_request_class:    compute::messaging::delete_batch_request
 :delete_response_class:   compute::messaging::delete_batch_response
 :delete_message_type:     delete_batch_request
-:settings_group:          BatchListWindow
-:window_title:            Compute Batches
-:icon:                    TextBulletListSquare
 :END:
 
 *** Columns

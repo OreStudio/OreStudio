@@ -160,13 +160,9 @@ drop function if exists ores_refdata_validate_currency_pair_classification_fn;
 :domain_class:           refdata::domain::currency_pair_classification
 :protocol_include:       ores.refdata.api/messaging/protocol.hpp
 :collection_name:        classifications
-:item_var:               classification
 :key_field:              code
 :delete_request_id_field: codes
 :history_request_id_field:    code
-:settings_group:         CurrencyPairClassificationListWindow
-:window_title:           Currency Pair Classifications
-:icon:                   Chart
 :END:
 
 *** Columns

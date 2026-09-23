@@ -296,13 +296,9 @@ std::nullopt
 :domain_class:                refdata::domain::calendar_rule
 :protocol_include:            ores.refdata.api/messaging/calendar_rule_protocol.hpp
 :collection_name:             calendar_rules
-:item_var:                    rule
 :key_field:                   id
 :has_export_macro:            true
 :save_request_item_field:     data
-:settings_group:               CalendarRuleListWindow
-:window_title:                Calendar Rules
-:icon:                         CalendarClock
 :END:
 
 *** Detail fields

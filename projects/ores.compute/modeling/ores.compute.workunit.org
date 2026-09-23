@@ -182,7 +182,6 @@ FK to the validated canonical result; NULL until the Validator accepts a result.
 :domain_class:            compute::domain::workunit
 :protocol_include:        ores.compute.api/messaging/workunit_protocol.hpp
 :collection_name:         workunits
-:item_var:                workunit
 :key_field:               input_uri
 :get_request_class:       compute::messaging::get_workunits_request
 :get_response_class:      compute::messaging::get_workunits_response
@@ -193,9 +192,6 @@ FK to the validated canonical result; NULL until the Validator accepts a result.
 :delete_request_class:    compute::messaging::delete_workunit_request
 :delete_response_class:   compute::messaging::delete_workunit_response
 :delete_message_type:     delete_workunit_request
-:settings_group:          WorkunitListWindow
-:window_title:            Workunits
-:icon:                    FlashFlow
 :END:
 
 *** Columns

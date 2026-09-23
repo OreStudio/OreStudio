@@ -140,7 +140,6 @@ faker::number::integer(1, 100)
 :domain_class:           dq::domain::code_domain
 :protocol_include:       ores.dq.api/messaging/code_domain_protocol.hpp
 :collection_name:        domains
-:item_var:               domain
 :key_field:              code
 :has_uuid_primary_key:   false
 :get_request_class:      dq::messaging::get_code_domains_request
@@ -152,9 +151,6 @@ faker::number::integer(1, 100)
 :delete_request_class:   dq::messaging::delete_code_domain_request
 :delete_response_class:  dq::messaging::delete_code_domain_response
 :delete_message_type:    delete_code_domain_request
-:settings_group:         CodeDomainListWindow
-:window_title:           Code Domains
-:icon:                   Table
 :has_change_reason_cache: true
 :has_pagination:         true
 :END:

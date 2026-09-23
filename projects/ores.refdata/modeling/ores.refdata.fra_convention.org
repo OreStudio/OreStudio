@@ -108,13 +108,9 @@ std::string("EUR-EURIBOR-6M")
 ** Presentation
 :PROPERTIES:
 :collection_name:         fra_conventions
-:item_var:                fc
 :key_field:               id
 :delete_request_id_field:   ids
 :save_request_item_field: fra_convention
-:settings_group:          FraConventionListWindow
-:window_title:            FRA Conventions
-:icon:                    Chart
 :END:
 
 *** Detail fields

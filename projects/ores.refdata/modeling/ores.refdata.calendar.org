@@ -300,13 +300,9 @@ drop function if exists ores_refdata_validate_calendar_fn;
 :domain_class:                refdata::domain::calendar
 :protocol_include:            ores.refdata.api/messaging/calendar_protocol.hpp
 :collection_name:             calendars
-:item_var:                    calendar
 :key_field:                   code
 :delete_request_id_field:     codes
 :history_request_id_field:    code
-:settings_group:              CalendarListWindow
-:window_title:                Calendars
-:icon:                        CalendarClock
 :has_version_navigation:      false
 :has_toolbar:                 true
 :END:

@@ -355,15 +355,11 @@ std::string("WRLD")
 :domain_class:            refdata::domain::book
 :protocol_include:        ores.refdata.api/messaging/book_protocol.hpp
 :collection_name:         books
-:item_var:                book
 :key_field:               name
 :save_request_item_field: book
 :has_change_reason_cache: true
 :has_export_macro:        true
 :parent_entity_singular:  portfolio
-:settings_group:          BookListWindow
-:window_title:            Books
-:icon:                    Book
 :END:
 
 *** Detail fields

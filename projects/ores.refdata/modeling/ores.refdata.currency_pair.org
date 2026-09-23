@@ -208,15 +208,9 @@ drop function if exists ores_refdata_validate_currency_pair_fn;
 :domain_class:           refdata::domain::currency_pair
 :protocol_include:       ores.refdata.api/messaging/protocol.hpp
 :collection_name:        pairs
-:item_var:               pair
 :key_field:              pair_code
 :delete_request_id_field: pair_codes
 :history_request_id_field:    pair_code
-:key_flag_field:              pairCodeEdit
-:key_flag_accessor:           currency_flag_icon_from_pair_code
-:settings_group:         CurrencyPairListWindow
-:window_title:           Currency Pairs
-:icon:                   Currency
 :END:
 
 *** Columns

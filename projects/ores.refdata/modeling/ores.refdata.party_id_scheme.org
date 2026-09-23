@@ -207,11 +207,7 @@ drop function if exists ores_refdata_validate_party_id_scheme_coding_scheme_fn;
 :domain_class:           refdata::domain::party_id_scheme
 :protocol_include:       ores.refdata.api/messaging/party_id_scheme_protocol.hpp
 :collection_name:        schemes
-:item_var:               scheme
 :key_field:              code
-:settings_group:         PartyIdSchemeListWindow
-:window_title:           Party ID Schemes
-:icon:                   Key
 :END:
 
 *** Detail fields

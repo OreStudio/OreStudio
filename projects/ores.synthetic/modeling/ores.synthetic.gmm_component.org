@@ -213,7 +213,6 @@ faker::number::decimal(0.0, 1.0)
 :domain_class:            synthetic::domain::gmm_component
 :protocol_include:        ores.synthetic.api/messaging/gmm_component_protocol.hpp
 :collection_name:         gmm_components
-:item_var:                gmm_component
 :key_field:               id
 :get_request_class:       synthetic::messaging::get_gmm_components_request
 :get_response_class:      synthetic::messaging::get_gmm_components_response
@@ -225,9 +224,6 @@ faker::number::decimal(0.0, 1.0)
 :delete_request_class:    synthetic::messaging::delete_gmm_component_request
 :delete_response_class:   synthetic::messaging::delete_gmm_component_response
 :delete_message_type:     delete_gmm_component_request
-:settings_group:          GmmComponentListWindow
-:window_title:            GMM Components
-:icon:                    Chart
 :END:
 
 *** Detail fields

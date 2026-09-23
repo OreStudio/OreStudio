@@ -157,11 +157,7 @@ std::string("ANCHOR_OFFSET")
 :domain_class:           refdata::domain::tenor_convention
 :protocol_include:       ores.refdata.api/messaging/tenor_convention_protocol.hpp
 :collection_name:        conventions
-:item_var:               convention
 :key_field:              code
-:settings_group:         TenorConventionListWindow
-:window_title:           Tenor Conventions
-:icon:                   Table
 :END:
 
 *** Detail fields

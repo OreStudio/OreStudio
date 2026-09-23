@@ -222,7 +222,6 @@ feed_binding_repository::read_latest_all_tenants(context ctx) {
 :domain_class:            ores::marketdata::domain::feed_binding
 :protocol_include:        ores.marketdata.api/messaging/feed_binding_protocol.hpp
 :collection_name:         feed_bindings
-:item_var:                feed_binding
 :key_field:               ore_key
 :has_uuid_primary_key:    true
 :get_request_class:       marketdata::messaging::get_feed_bindings_request
@@ -235,9 +234,6 @@ feed_binding_repository::read_latest_all_tenants(context ctx) {
 :delete_request_class:    marketdata::messaging::delete_feed_binding_request
 :delete_response_class:   marketdata::messaging::delete_feed_binding_response
 :delete_message_type:     delete_feed_binding_request
-:settings_group:          FeedBindingListWindow
-:window_title:            Feed Bindings
-:icon:                    ServerLink
 :has_change_reason_cache: true
 :END:
 

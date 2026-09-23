@@ -205,13 +205,9 @@ drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
 :domain_class:                refdata::domain::business_centre
 :protocol_include:             ores.refdata.api/messaging/business_centre_protocol.hpp
 :collection_name:             business_centres
-:item_var:                    business_centre
 :key_field:                   code
 :delete_request_id_field:     codes
 :history_request_id_field:    code
-:settings_group:               BusinessCentreListWindow
-:window_title:                 Business Centres
-:icon:                          BuildingBank
 :END:
 
 *** Detail fields

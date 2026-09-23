@@ -249,11 +249,7 @@ drop function if exists ores_refdata_validate_instrument_code_fn;
 :domain_class:           refdata::domain::instrument_code
 :protocol_include:       ores.refdata.api/messaging/instrument_code_protocol.hpp
 :collection_name:        codes
-:item_var:               code_
 :key_field:              code
-:settings_group:         InstrumentCodeListWindow
-:window_title:           Instrument Codes
-:icon:                   Tag
 :has_export_macro:       true
 :END:
 

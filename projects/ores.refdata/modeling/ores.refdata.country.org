@@ -215,14 +215,7 @@ drop function if exists ores_refdata_validate_country_fn;
 :PROPERTIES:
 :domain_class:                refdata::domain::country
 :collection_name:             countries
-:item_var:                    country
 :key_field:                   alpha2_code
-:flag_icon_column:            Alpha2Code
-:flag_inline_widget:          codeEdit
-:flag_accessor:               getCountryFlagIcon
-:settings_group:              CountryListWindow
-:window_title:                Countries
-:icon:                        Globe
 :END:
 
 *** Detail fields

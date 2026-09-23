@@ -286,14 +286,10 @@ not part of the natural key -- (=party_id=, =unit_name=) is. Using
 :domain_class:            refdata::domain::business_unit
 :protocol_include:        ores.refdata.api/messaging/business_unit_protocol.hpp
 :collection_name:         business_units
-:item_var:                business_unit
 :key_field:               unit_code
 :has_explorer_api:        true
 :explorer_interface:      IBusinessUnitBrowser
 :save_request_item_field: business_unit
-:settings_group:          BusinessUnitListWindow
-:window_title:            Business Units
-:icon:                    Building
 :END:
 
 *** Detail fields

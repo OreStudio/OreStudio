@@ -169,7 +169,6 @@ Lifecycle status: active or archived.
 :domain_class:            workspace::domain::workspace
 :protocol_include:        ores.workspace.api/messaging/workspace_protocol.hpp
 :collection_name:         workspaces
-:item_var:                workspace
 :key_field:               name
 :has_uuid_primary_key:    true
 :has_pagination:          false
@@ -184,9 +183,6 @@ Lifecycle status: active or archived.
 :delete_response_class:   workspace::messaging::archive_workspace_response
 :delete_message_type:     archive_workspace_request
 :delete_request_id_field: id
-:settings_group:          WorkspaceListWindow
-:window_title:            Workspaces
-:icon:                    Database
 :END:
 
 *** Detail fields

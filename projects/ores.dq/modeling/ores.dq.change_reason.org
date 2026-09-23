@@ -223,7 +223,6 @@ faker::number::integer(1, 100)
 :domain_class:           dq::domain::change_reason
 :protocol_include:       ores.dq.api/messaging/change_reason_protocol.hpp
 :collection_name:        reasons
-:item_var:               reason
 :key_field:               code
 :has_uuid_primary_key:   false
 :get_request_class:      dq::messaging::get_change_reasons_request
@@ -235,9 +234,6 @@ faker::number::integer(1, 100)
 :delete_request_class:   dq::messaging::delete_change_reason_request
 :delete_response_class:  dq::messaging::delete_change_reason_response
 :delete_message_type:    delete_change_reason_request
-:settings_group:         ChangeReasonListWindow
-:window_title:           Change Reasons
-:icon:                   Table
 :has_change_reason_cache: true
 :has_pagination:         true
 :END:

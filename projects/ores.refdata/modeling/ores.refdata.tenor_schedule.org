@@ -252,11 +252,7 @@ drop function if exists ores_refdata_validate_tenor_schedule_fn;
 :domain_class:           refdata::domain::tenor_schedule
 :protocol_include:       ores.refdata.api/messaging/tenor_schedule_protocol.hpp
 :collection_name:        schedules
-:item_var:               schedule
 :key_field:              code
-:settings_group:         TenorScheduleListWindow
-:window_title:           Tenor Schedules
-:icon:                   CalendarClock
 :has_export_macro:       true
 :END:
 

@@ -326,6 +326,7 @@ Each type's contract lives on its own page:
 - [[id:8C6D8D83-C78F-4A18-A481-A8398058BE84][decision]]
 - [[id:CE9E4F7C-D14B-46C4-AD3D-39881C466914][retrospective, release_note, audit_report]]
 - [[id:1366553A-4E0F-496F-91DD-19171C003631][investigation]]
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][user_journey]]
 - [[id:973591F1-F2B5-40FF-9B2D-A198D4BB4903][meta]]
 - =test_scenario= — a manual test checklist tied to a task, verified in
   the Qt QA Validation Runner and rewritten in place with results on

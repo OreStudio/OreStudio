@@ -1,0 +1,108 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+#+title: {{title}}
+#+description: {{description}}
+#+type: user_journey
+#+level: cross
+#+filetags: {{filetags}}
+#+created: {{date}}
+#+updated: {{date}}
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: {{description}}
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+(One or two sentences, in the person's own words: what are they trying to
+achieve, and what tells them they have finished?)
+
+* Actor and trigger
+
+(Who runs this journey. What brings them here. Where it starts and where it
+ends. Say which actor it is: the member acting on their own record, or a tenant
+administrator acting inside their tenant.)
+
+* Steps
+
+(The ordered steps. For each step, say what the person does and what the system
+does in reply. A step that needs the server to finish something later is called
+out, because it decides whether the journey carries state.)
+
+* Screens and wireframes
+
+(Sketch each screen with PlantUML, export it to PNG beside this file, then embed
+it here. See
+[[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]].
+A journey is one screen composed around a goal, not one screen per entity, so a
+wireframe shows the panels together rather than each field set alone.)
+
+#+begin_example
+#+caption: One sentence saying what the wireframe shows.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/<group>/wireframe_<name>.png]]
+#+end_example
+
+* Prototype
+
+(Where a clickable prototype exists, link it here. A prototype lives on a
+throwaway =prototype/<name>= branch and is never merged; the branch is kept as
+the record. Delete this section when the journey has no prototype.)
+
+- Branch :: =prototype/<name>=
+- Route :: =/<route>=
+- Source :: =projects/ores.web/packages/web/src/pages/prototype/<dir>/=
+
+* Entities composed
+
+(The entity models whose fields this journey shows, and the panel or section each
+one contributes. Link each model so the journey and the model stay in step.)
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+|        |                     |       |
+
+* Operations and messages
+
+(Every operation the journey needs, in step order, with the NATS subject that
+carries it and whether the server provides it today.)
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+|      |           |         |        |
+
+Status is one of =exists=, =partial=, or =missing=. Say which in the last
+column, and link the message model that defines the subject.
+
+* What is missing
+
+(Every operation, field or message this journey needs that the server does not
+provide. Each entry is a candidate for the gap log. Name the subject that would
+have to be added, and say what the screen must do until it exists.)
+
+* Related journeys
+
+(The journeys a person should be able to reach from this screen, and why they
+would. This section is not documentation decoration: each entry becomes a link
+on the screen, so a person can move between related screens without going back
+to a menu. Name the link and say where it leads.)
+
+- [[id:<journey-id>][<Journey name>]] — why a person would go there from here.
+
+* Related knowledge
+
+(The knowledge documents this journey depends on: vocabulary, conventions, and
+the domain topics it touches.)
+
+* See also
+
+(Related journeys in the same group, the entity models above, and any task that
+implements a missing operation.)

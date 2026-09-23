@@ -317,6 +317,27 @@ compass add investigation \
   --tags "msvc,cpp,reflect_cpp,investigation"
 #+end_src
 
+** New user journey
+:PROPERTIES:
+:ID: 62D58EB6-9977-411C-8403-E3A12DB4CB3D
+:END:
+
+[[id:F44766FA-1E9C-416F-849A-E131101B2ECA][User journeys]] live in [[proj:doc/knowledge/journeys][=doc/knowledge/journeys/=]], one subfolder per
+logical group of journeys. Pass the group folder as =--parent-dir=; the group
+hub is expected to be =<group>.org= inside it.
+
+#+begin_src sh :results verbatim
+compass add user_journey \
+  --slug present_myself \
+  --parent-dir doc/knowledge/journeys/profile \
+  --title "Present myself" \
+  --description "A member shows who they are: photo, name, job title and reporting line." \
+  --tags "user_journey,security"
+#+end_src
+
+This writes =doc/knowledge/journeys/profile/journey_present_myself.org=. Wire it
+into the group hub's journey table.
+
 ** New capture
 :PROPERTIES:
 :ID: 978E0A8F-197C-48DA-A405-457E0AEE91D9

@@ -54,6 +54,7 @@ intentional: the tag makes the type grep-visible across the full file tree.
 | =story= | Agile story: goal, acceptance criteria, tasks. |
 | =task= | Agile task: concrete unit of work within a story. |
 | =template= | Codegen Mustache template file (literate source). |
+| =user_journey= | User journey: what one person is trying to do, written before it is built. |
 | =version= | Version document: roadmap and release record at S4. |
 
 * Version tags

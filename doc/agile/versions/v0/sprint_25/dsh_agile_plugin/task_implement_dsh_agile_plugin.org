@@ -31,7 +31,7 @@ highlighted, and one control filters the board to a single environment.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3085B911-3030-4AB8-976F-0F037D4332E7][Show the current agile work item inside DSH]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

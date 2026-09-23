@@ -38,7 +38,7 @@ do not edit by hand.
 | [[id:528F99DD-FEE9-4007-A526-181DFAB21F5F][ores.plantuml]] | 1 | The PlantUML technical space: diagram generation (ER diagrams from the SQL schema). |
 | [[id:3A0C1132-EE6A-46FF-85F6-1D12C79EA426][ores.shell]] | 1 | The shell technical space: POSIX shell scripts that orchestrate service provisioning and environment setup. |
 | [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]] | 3 | The SQL technical space: bi-temporal schema, triggers, populate scripts, service-registry SQL. |
-| [[id:1E93BE86-58BF-40FB-BB93-132D639BDC87][ores.ts]] | 2 | The TypeScript technical space: the wire payloads, the per-entity domain interfaces and the presentation metadata the TypeScript UI consumes, projected from the same org models that drive the C++ headers. |
+| [[id:1E93BE86-58BF-40FB-BB93-132D639BDC87][ores.ts]] | 2 | The TypeScript technical space: the wire payloads and the per-entity domain interfaces the client speaks, projected from the same org models that drive the C++ headers. |
 
 * See also
 

@@ -20,7 +20,6 @@
 #+html: <a href="https://www.gnu.org/software/gcc/gcc-15"><img alt="GCC Version" src="https://img.shields.io/badge/GCC-15-blue.svg"/></a>
 #+html: <a href="https://releases.llvm.org/19.1.0/tools/clang/docs/ReleaseNotes.html"><img alt="Clang Version" src="https://img.shields.io/badge/CLANG-19-blue.svg"/></a>
 #+html: <a href="https://visualstudio.microsoft.com/vs/whatsnew/"><img alt="MSVC Version" src="https://img.shields.io/badge/MSVC-2022-blue.svg"/></a>
-#+html: <a href="https://doc.qt.io/qt-6/"><img alt="Qt6" src="https://img.shields.io/badge/Qt-6-blue"/></a>
 #+html: <a href="https://orestudio.github.io/OreStudio/doxygen/html/index.html"><img alt="Doxygen" src="https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/doxygen_badge.svg"/></a>
 #+html: <a href="https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_25/sprint.html"><img alt="Agile Sprint" src="https://img.shields.io/badge/Sprint-25-blue.svg"/></a>
 #+html: <a href="https://www.gnu.org/software/emacs/"><img alt="GNU Emacs" src="https://img.shields.io/static/v1?logo=gnuemacs&logoColor=fafafa&label=Made%20with&message=GNU%20Emacs&color=7F5AB6&style=flat"/></a>

@@ -142,6 +142,24 @@ way =has_pagination= is, rather than deleted, so that a model or a profile still
 declaring one does not begin failing model drift for a reason that has nothing
 to do with Qt.
 
+** The documentation unit
+
+Corrected here. The README's Qt6 badge is gone, so the project no longer
+advertises a dependency it does not have. The icon inventory's 118 links into
+the deleted =ores.qt= tree are either repointed at the surviving icon set, 40 of
+them, or marked as removed, 78. The user manual carries a status note saying it
+documents the retired client and that its chapters are the record and the domain
+source. The =qt= tag is marked retired rather than deleted, so historical
+documents keep a defined tag. =qt= left the component vocabulary, because no
+such component exists to file work under.
+
+Naming what is left rather than hiding it. About fourteen user manual chapters
+still describe Qt screens in their body text, and
+=projects/ores.codegen/modeling/entity_meta_model_cpp_qt.org= still documents
+drawer properties this branch deleted. Both are prose rewrites rather than
+mechanical edits, and no gate verifies them, so neither is attempted in this
+pass. The manual note makes both survivable for a reader in the meantime.
+
 * Out of scope
 
 - The name of =projects/ores.codegen/modeling/entity_meta_model_cpp_qt.org=, a

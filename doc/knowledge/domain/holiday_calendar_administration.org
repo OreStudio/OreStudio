@@ -112,7 +112,7 @@ while remaining Gregorian underneath. This is a presentation-layer
 concern — the stored dates stay Gregorian, and a locale-aware
 formatter handles the display conversion — and has no bearing on the
 =calendar= entity's schema; it is recorded here only so the concept is
-not lost, should a future Qt screen need to support it.
+not lost, should a screen ever need to support it.
 
 * See also
 

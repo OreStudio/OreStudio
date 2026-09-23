@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 6893E1EC-9F09-4185-897B-B7818473B3D9
+:END:
+#+title: Story: Make compass site page the site check
+#+description: The skills and recipes send agents to the full site build, which takes minutes, as the routine check. compass site page publishes the changed pages and stops on a broken link in seconds; make it the check, and keep the full build for the first build in a checkout.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+An agent that checks documentation changes waits seconds, not minutes:
+the skills and recipes run =compass site page=, and the full site build
+is only for the first build in a checkout.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23                               |
+
+* Acceptance
+
+- No skill or recipe runs the full site build as a routine check.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4EC3D6F1-8B8F-4A94-961C-AA7789D3D6D4][Use compass site page in the skills and recipes]] | DONE | 2026-09-23 | 2026-09-23 | Replace the full site build with compass site page wherever a skill or recipe runs it as a check. |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+The skills and recipes that run a site check now run compass site page.
+The full build is documented for the first build in a checkout only.

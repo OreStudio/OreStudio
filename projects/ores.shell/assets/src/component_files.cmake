@@ -16,12 +16,18 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/api)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/trading)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/iam)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/synthetic)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/refdata)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/assets)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/compute)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/application)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
+set(files
+    "app/commands/assets/image_commands.cpp"
+    "app/commands/assets/image_tag_commands.cpp"
+    "app/commands/assets/tag_commands.cpp"
+)
+
+# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/assets/image_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/assets/image_tag_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/assets/tag_commands.hpp"
+)

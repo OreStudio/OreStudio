@@ -34,8 +34,9 @@ POPULATE = (
 # one rather than a surprise in a gate. This list is the bare project name,
 # because a component's handlers are found under projects/ores.<name>, and it
 # is deliberately separate from the shared component_registry list, which
-# carries catalogue slugs.
-REGISTRY = ("refdata", "compute", "assets")
+# carries catalogue slugs. analytics joined with its clean-standard pass, whose
+# W02 item this check proves; compute and assets joined with theirs.
+REGISTRY = ("refdata", "analytics", "compute", "assets")
 
 # has_permission takes the request context first, so the code is the string
 # literal argument. A helper that passes the code through a variable is not

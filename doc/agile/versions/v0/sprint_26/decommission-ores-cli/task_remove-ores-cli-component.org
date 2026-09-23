@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 22EDB3D2-10F7-4FBB-960B-2AD6AD9945D5
+:END:
+#+title: Task: Delete the ores.cli component and its round-trip chain
+#+description: Task for: Decommission ores.cli
+#+type: task
+#+level: s1
+#+filetags: :decommission-ores-cli:sprint_26:v0:
+#+owner: marco
+#+branch: feature/decommission-ores-cli
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Delete projects/ores.cli/, the domain round-trip dataset and checker, the CLI recipes, and every hard-gate reference, so the tree configures and builds without ores.cli.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- projects/ores.cli/, doc/recipes/cli/, assets/test_data/domain_roundtrip/, scripts/ore_domain_roundtrip_check.py, and the ore_coverage workflow are gone.
+- A reference sweep over live paths returns no ores.cli hit.
+- The tree configures and builds, and compass lint passes with no dangling id link.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

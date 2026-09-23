@@ -227,7 +227,7 @@ matching =Part:= divider row:
 
 #+begin_src sh :results verbatim
 ./compass.sh build --direct manual
-./compass.sh build --direct site
+./compass.sh site page
 #+end_src
 
 A clean manual build ("Manual PDF build succeeded.") confirms the

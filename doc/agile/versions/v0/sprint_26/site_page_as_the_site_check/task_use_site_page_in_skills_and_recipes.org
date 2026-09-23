@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 4EC3D6F1-8B8F-4A94-961C-AA7789D3D6D4
+:END:
+#+title: Task: Use compass site page in the skills and recipes
+#+description: Replace the full site build with compass site page wherever a skill or recipe runs it as a check.
+#+type: task
+#+level: s1
+#+filetags: :site_page_as_the_site_check:sprint_26:v0:
+#+owner: marco
+#+branch: feature/open-sprint-26
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6893E1EC-9F09-4185-897B-B7818473B3D9][Make compass site page the site check]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No skill or recipe runs the full site build as a routine check. They run
+=compass site page=, which publishes the changed pages and stops on a
+broken link in seconds. The full build stays documented for the first
+build in a checkout.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6893E1EC-9F09-4185-897B-B7818473B3D9][Make compass site page the site check]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- compass-pr-raise names =compass site page= as the site check for the
+  docs and ci classes.
+- compass-skill-delete and the entity-documentation recipe verify with
+  =compass site page=.
+- The deploy and serve recipes say when each command applies.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Changed: compass-pr-raise (the class table, the check list and the
+evidence example), compass-skill-delete (the graph check), the
+entity-documentation recipe, the deploy and serve recipes, and the
+recipe row in =doc/developer.org=.
+
+Kept: the places that document the full build itself. These are the
+CMake target tables, the build-the-system recipe, the org-artefacts
+recipe, the runbook, and the compass messages that ask for a full build
+when no site output exists yet, which =compass site page= needs.
+

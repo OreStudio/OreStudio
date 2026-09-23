@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: CB732761-11D9-4E2F-AFF3-7646D43B8A36
+:END:
+#+title: Story: Open sprint 26
+#+description: Scaffold sprint 26, set its mission, wire the version manifest and the agile index, and close sprint 25.
+#+type: story
+#+level: s2
+#+filetags: :open_sprint_26:sprint_26:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Sprint 26 exists as a proper agile artefact, with its mission set and
+wired into the version manifest and the agile index, and sprint 25 is
+closed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23                               |
+
+* Acceptance
+
+- Sprint 26 has its mission and is the current sprint in the version
+  manifest and the agile index.
+- Sprint 25 is DONE and points to Sprint 26.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:98441E1A-3359-46C0-8131-31D95A6067EF][Open sprint 26]] | DONE | 2026-09-23 | 2026-09-23 | Scaffold sprint 26, set its mission, wire the version manifest and the agile index, and close sprint 25. |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+Sprint 26 is open with its mission, and sprint 25 is closed. No stories
+carried over. The version bump and the vcpkg update are left for a
+separate change.
+

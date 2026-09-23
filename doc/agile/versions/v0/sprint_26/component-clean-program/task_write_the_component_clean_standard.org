@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 68323879-BCCF-48D2-9C53-52FD003FA9DC
+:END:
+#+title: Task: Write the component clean standard and the per-component stories
+#+description: Extract the checklist from the sprint 25 ores.iam and ores.refdata work, survey every component, and scaffold one ordered story per component.
+#+type: task
+#+level: s1
+#+filetags: :component-clean-program:sprint_26:v0:
+#+owner: marco
+#+branch: feature/open-sprint-26
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:640F2DD7-5FE1-44B0-B7D5-5316334B95E5][Bring every component to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The sprint 26 codegen pass has one written standard and one ordered
+story per component, so that the work can be done, and automated, the
+same way for every component.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:640F2DD7-5FE1-44B0-B7D5-5316334B95E5][Bring every component to the component clean standard]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- The [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] lists every step the ores.iam and ores.refdata work
+  took, with the check that proves each one.
+- Every C++ component has a story in sprint 26, in dependency order,
+  with its survey snapshot and known issues.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] has 42 items in eight sections: baseline and inventory,
+models, protocol, generation, wiring and data, shell, structure and
+hygiene, and verification. They come from:
+
+- the acceptance and results of the sprint 25 tasks "Adopt the canonical
+  protocol in ores.iam", "Adopt the canonical protocol in ores.refdata",
+  "Verify every IAM surface against the specification", and the
+  protocol coverage tasks (IAM and refdata coverage, declared messages,
+  seeded handler permissions, atomic junction batch save, junction write
+  suppression);
+- the commits of PRs #2104, #2110, #2112 to #2115, #2118, #2120, #2124
+  and #2126;
+- the compass-codegen-fix-drift method, the registry definition in
+  =component_registry.py=, and the check scripts under
+  =projects/ores.codegen/scripts/=.
+
+TypeScript items are left out, because the TypeScript UI is retired.
+
+The survey found that only =ores.iam= is in =COMPONENTS_UNDER_TEST=.
+=ores.refdata= was removed from it by a branch, and =ores.dq= and
+=ores.trading= were bound in sprint 25 but not regenerated since the
+generated marker landed, so almost none of their files carry it.
+
+35 component stories are scaffolded in four tiers (11 foundation
+infrastructure, 11 higher infrastructure, 10 domain, 3 clients
+and test support). Tier 1 is in strict dependency order; above it the
+components link each other in cycles, so the order there is the best
+the links allow,
+each with one task whose plan follows the standard's sections. Each
+story carries its survey snapshot and the known issues for that
+component.
+

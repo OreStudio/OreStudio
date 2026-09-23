@@ -459,6 +459,8 @@ Every check ends in one of three states:
 
 * See also
 
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] — the full clean-up checklist; this
+  audit is its item H01.
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — ground truth for component shape, the
   sub-component catalogue, facet placement, and scaffold profiles.
 - [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] — the naming rules and the component-only

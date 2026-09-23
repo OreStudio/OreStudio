@@ -2,12 +2,12 @@
 :ID: 6930472B-222C-4621-AB37-CFEE3070A8BD
 :END:
 #+title: How do I deploy the site?
-#+description: Build the ORE Studio website locally: `compass site page` to rebuild the pages you have just edited in about a second, and `compass build --direct site` for a full publish.
+#+description: Build the ORE Studio website locally: `compass site page` to publish and check the pages you have changed, in seconds, and `compass build --direct site` only for the first full build in a checkout.
 #+type: recipe
 #+level: cross
 #+filetags: :cmake:build:site:website:emacs:compass:recipe:
 #+created: 2026-05-18
-#+updated: 2026-08-27
+#+updated: 2026-09-23
 
 For the build script that does the work ([[proj:projects/ores.lisp/src/ores-build-site.el][=projects/ores.lisp/src/ores-build-site.el=]]) and the
 output location, see [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
@@ -18,13 +18,15 @@ How do I build the ORE Studio website locally?
 
 * Answer
 
-There are two commands, and which you want depends on whether you are
-editing documents or preparing to commit.
+There are two commands. Use =compass site page= for every check,
+including the one before a commit. Use the full build only once per
+checkout, to write the caches that =site page= reuses.
 
-** While editing: rebuild what you changed
+** Every check: publish what you changed
 
 =compass site page= publishes every page whose source is newer than its
-published HTML, in about a second each:
+published HTML, in about a second each. It stops on a broken link in
+any page it publishes, so it is also the check to run before a commit:
 
 #+begin_src sh :results verbatim
 ./compass.sh site page
@@ -47,7 +49,7 @@ nothing has been added, renamed or deleted:
 ./compass.sh site page --no-index
 #+end_src
 
-** Before committing: publish everything
+** First build in a checkout: publish everything
 
 #+begin_src sh :results verbatim
 ./compass.sh build --direct site
@@ -60,9 +62,12 @@ identifier map, syncs the org-roam database, and publishes every =.org=
 file in the repository (excluding =.packages=, =vcpkg=, =build=) to
 HTML. Output lands at =build/output/site/=.
 
-This is the run that proves the published site holds together, since it
-is the only one that reads every file. It takes minutes rather than
-seconds, which is why the fast path above exists.
+It reads every file and takes minutes rather than seconds. Run it once
+in a new checkout, or when the publish cache is gone, so that
+=compass site page= has caches to reuse. It is not the routine check:
+=compass site page= checks the pages a change touches, and the
+=build-site.yml= workflow publishes the whole site on every push to
+=main=.
 
 In a full environment the equivalent =deploy_site= CMake target runs the
 same script; for the raw CMake build (presets, targets, =cmake --build=

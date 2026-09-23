@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :cmake:build:site:website:recipe:
 #+created: 2026-05-21
-#+updated: 2026-08-04
+#+updated: 2026-09-23
 
 Build with =compass build --direct site=, then serve with =compass site
 start= (systemd-managed, background) or =compass site serve= (foreground,
@@ -71,8 +71,9 @@ and picks up new files immediately.
 
 While editing documents, =compass site page= rebuilds the pages you
 have changed in about four seconds each, which is the loop to use when
-reviewing your own writing in the browser. Run the full
-=compass build --direct site= before committing. See
+reviewing your own writing in the browser, and the check to run before
+committing. The full =compass build --direct site= is for the first
+build in a checkout. See
 [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] for which to use when.
 
 =compass site serve= (no =start=/=stop=/=status=) is the older,

@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 98441E1A-3359-46C0-8131-31D95A6067EF
+:END:
+#+title: Task: Open sprint 26
+#+description: Scaffold sprint 26, set its mission, wire the version manifest and the agile index, and close sprint 25.
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_26:sprint_26:v0:
+#+owner: marco
+#+branch: feature/open-sprint-26
+#+pr: 2136
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB732761-11D9-4E2F-AFF3-7646D43B8A36][Open sprint 26]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Sprint 26 exists as an agile artefact with its mission, it is the
+current sprint in the version manifest and the agile index, and sprint
+25 is closed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CB732761-11D9-4E2F-AFF3-7646D43B8A36][Open sprint 26]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- =sprint_26/sprint.org= has its mission and links Sprint 25 as
+  Previous.
+- The version manifest lists Sprint 26, and the agile index names it
+  as the current sprint.
+- Sprint 25 is DONE and points to Sprint 26.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2136][#2136]] | [agile] Open sprint 26 and plan the per-component codegen pass |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Sprint 26 is scaffolded with the mission "For each module, sync codegen
+and clear its drift, then analyse the user journeys, then build the
+UX." The version manifest lists it from 2026-09-23 and records Sprint
+25's end on the same day; the agile index names it as the current
+sprint. Sprint 25 is DONE.
+
+No stories moved from sprint 25: its close left none open. The story
+"Complete the LLM skills catalogue" waits in the product backlog inbox
+for sprint 26 planning. The version bump to 0.0.26 and the vcpkg
+update are not part of this task.
+

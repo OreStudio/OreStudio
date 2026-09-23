@@ -61,11 +61,11 @@ subsumes an old one.
    rm -rf .claude/skills/<name>
    #+end_src
 
-6. /Verify the graph/: build the site locally and confirm no broken
+6. /Verify the graph/: publish the changed pages and confirm no broken
    id-links:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh build --direct site
+   ./projects/ores.compass/compass.sh site page
    #+end_src
 
 * Recipes

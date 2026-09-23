@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 94270E62-3F0F-42BB-B421-735A1D9966CC
+:END:
+#+title: Story: Clean ores.http to the component clean standard
+#+description: Bring ores.http to the Component Clean Standard (Protocol items): tier 2, higher infrastructure.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:codegen:clean_standard:v0:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ores.http meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]: the items marked All and Protocol pass, each item that does not apply is recorded with its reason, and ores.http joins =COMPONENTS_UNDER_TEST=. Order 19 of 35 in the sprint 26 component clean-up, tier 2 (higher infrastructure).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started. |
+| Waiting on    | Nothing.                               |
+| Next          | Start the task. |
+| Last touched  | 2026-09-23                               |
+
+* Acceptance
+
+- Every checklist item that applies to a component of kind *Protocol* passes, with its evidence recorded on the task.
+- Every item that does not apply is recorded as not applicable, with the reason.
+- Every generator defect found is fixed at its source, with a regression test.
+- ores.http is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6B2C0AA5-94BB-4F07-9585-C4374295C983][Bring ores.http to the clean standard]] | BACKLOG | | | Work ores.http through the Component Clean Standard in order and record each item. |
+
+* Notes
+
+- Survey on 2026-09-23: 0 entity, junction or operation models; 45 C++ files outside tests, 0 of them generated (0%); 3 messaging headers, 3 of them hand-written.
+- The HTTP server. Its own protocol headers are hand-written; its routes follow the protocols of the components it serves (P05).
+
+* Decisions
+
+* Out of scope
+
+-

@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: E308D5DD-1F14-4209-BB6F-C25EBABEEE35
+:END:
+#+title: Task: Bring ores.ore to the clean standard
+#+description: Work ores.ore through the Component Clean Standard in order and record each item.
+#+type: task
+#+level: s1
+#+filetags: :clean-ore:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:873B0E5C-BDDE-40DE-9729-F0278D0F8EC2][Clean ores.ore to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.ore passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] for a component of kind *Entity*.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:873B0E5C-BDDE-40DE-9729-F0278D0F8EC2][Clean ores.ore to the component clean standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- Every checklist item that applies to a component of kind *Entity* passes, with its evidence recorded on the task.
+- Every item that does not apply is recorded as not applicable, with the reason.
+- Every generator defect found is fixed at its source, with a regression test.
+- ores.ore is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
+
+* Plan
+
+Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order, one entity at a time, and
+record each item's result in the table below.
+
+1. Baseline and inventory (B01 to B05). Record the baseline before any
+   edit.
+2. Models (M01 to M10).
+3. Protocol (P01 to P06).
+4. Generation (G01 to G06).
+5. Wiring and data (W01 to W04).
+6. Shell (S01, S02).
+7. Structure and hygiene (H01 to H03).
+8. Verification (V01 to V06), ending with the registry entry.
+
+| Item | Result | Evidence |
+|------+--------+----------|
+|      |        |          |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

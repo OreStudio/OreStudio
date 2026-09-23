@@ -139,3 +139,34 @@ jobs:
       - name: Check the shell recipe inventory lists every recipe
         run: |
           python3 projects/ores.codegen/scripts/regenerate_shell_recipe_inventory.py --check
+
+  # The codegen unit suite. The gates above prove the tree matches the
+  # models; none of them says whether the code that reads the models, and
+  # the code that checks them, still behave. A check that stops finding
+  # anything passes every tree, which is why test_populate_references.py
+  # is already run this way in populate-reference-drift.yml. This job runs
+  # the whole suite instead of one module: the generator, the loader and
+  # every check script. Linux only, like every other job here.
+  tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Install codegen dependencies
+        run: |
+          pip install --quiet -r projects/ores.codegen/requirements.txt
+      # Two tests drive the regeneration path, which runs clang-format over
+      # its C++ output. The formatter warns and does nothing when it is
+      # absent, so this is not strictly required, but the suite should
+      # exercise the same path the drift job does.
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+      - name: Run the codegen suite
+        run: |
+          python3 -m pytest projects/ores.codegen/tests -q

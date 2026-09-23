@@ -40,7 +40,7 @@ from the domain index and published with the site.
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
 | Parent story | [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] |
-| Now          | Closed as superseded.                  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. The page comes from another worktree. |
 | Last touched | 2026-09-11                               |
@@ -108,3 +108,5 @@ on branch =feature/document-structures-and-deal-composition=.
 
 If that branch does not land, revive this task: the source is still outside
 the repo, and the story still needs a citable page.
+
+Status at close: Closed as superseded.

@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :eventing:resilience:sprint_25:v0:
 #+created: 2026-08-25
-#+updated: 2026-08-25
+#+updated: 2026-09-23
 #+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,12 +21,12 @@ The eventing chain (postgres_listener_service, postgres_event_source, event_bus,
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-08-25                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23 |
 
 * Acceptance
 
@@ -47,3 +47,7 @@ The eventing chain (postgres_listener_service, postgres_event_source, event_bus,
 * Out of scope
 
 - Test-side tolerances and re-drive logic in the eventing integration tests: already delivered by the flake hotfix (AE32C594-8E9B-4C58-B3D2-B93BB7C219E1).
+
+* Result
+
+Closed at sprint 25 close. Every task is done.

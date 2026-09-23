@@ -1,0 +1,346 @@
+:PROPERTIES:
+:ID: 1887CE40-5C81-4EB3-AD84-0CF65C2DB39F
+:END:
+#+title: Task: Health review 2 — sprint 25 close analysis
+#+description: System 2 health review 2 of sprint 25: close analysis of goal alignment, load, PR velocity, story and task balance, and focus.
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_25:v0:
+#+owner: marco
+#+branch: feature/health-review-2
+#+pr: 2134
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:187B03E4-D468-445A-B970-A048ED3FC430][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a System 2 health review of sprint 25 at close (day 52). Cover
+goal alignment, sprint load, PR velocity, story and task balance, focus
+and velocity. Write the full analysis into =* Result= and add a summary
+row to the =* Health Review= table in sprint.org.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:187B03E4-D468-445A-B970-A048ED3FC430][Sprint health review — System 2 analysis]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- Full analysis under =* Result= covers all six dimensions.
+- Summary row added to the =* Health Review= table in sprint.org.
+
+* Plan
+
+1. Read sprint.org and the previous health review.
+2. Get story and task state from =compass sprint status= and
+   =compass sprint audit=.
+3. Get commit and PR data from git and GitHub for 2026-08-03 onward.
+4. Get the age of unmerged branches from each worktree.
+5. Analyse each dimension. Write the findings into =* Result=.
+6. Add the summary row to sprint.org.
+
+* Notes
+
+Data sources, all read on 2026-09-23 at =origin/main= =ff7937cd22=:
+
+- =git log --since=2026-08-03 origin/main= for commits per day.
+- =gh pr list --state merged --search "merged:>=2026-08-03"= for PRs.
+- =compass sprint status= and =compass sprint audit= for story state.
+- =git -C <worktree>= for unmerged work in each worktree.
+
+This review records findings only. The bookkeeping fixes it lists are
+work for the sprint close, not for this task.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2134][#2134]] | [agile] Close sprint 25: health review, story reset, release notes |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The PR count here (319) does not visibly tie out with the release notes (316). | =task_health_review_2.org= | Accepted | Added a reconciliation under PR velocity: different windows, 319 - 5 + 2 = 316. |
+| 2 | The downloads row labels a =.zip= link "DEB". | =doc/downloads.org= | Declined | Every existing row uses the same label for the same artefact; changing the convention is out of scope here. |
+
+* Result
+
+** Review on 2026-09-23 (day 52 of 7)
+
+Concerns written down before the data was read:
+
+- The sprint was planned for 7 days and is now on day 52. Is this one
+  sprint, or two or three sprints in one document?
+- The mission names drift and IR curves. The recent merges are about
+  ores.web, TypeScript and the removal of Qt. Did the mission stop
+  being true?
+- 31 STARTED stories will make this sprint close look like a carry-over,
+  not a finish.
+
+The data confirms all three concerns.
+
+*** Goal alignment
+
+Sprint mission: "Resolve sprint drift on as many components as possible
+and progress IR curves work."
+
+| Goal | Coverage | Stories (DONE/STARTED/BACKLOG) | Verdict |
+|------+----------+--------------------------------+---------|
+| Resolve drift | Strong | 11 / 5 / 4 | GREEN |
+| Progress IR curves | Weak after 2026-08-12 | 2 / 4 / 0 | AMBER |
+| No mapped goal | Large | See below | RED |
+
+Drift. The program story ([[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]]) is DONE. Five
+components are drift-free and closed: dq, iam, trading, synthetic and
+compute. The redundant-properties pass is also DONE. analytics and reporting
+have all tasks DONE, but their stories are still STARTED. marketdata
+is in flight. database, scheduler, workflow and workspace are in
+BACKLOG. The codegen template fixes, the systemic gap fixes and the
+has_parent_id fix also serve this goal. This goal is well served.
+
+IR curves. The FOMC short end (DONE) and the oresmd quote-type coverage
+(DONE) shipped by 2026-08-11. After that date, the IR stories moved
+slowly:
+
+- [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]]: 5/8 tasks,
+  carried from sprint 24. The engine, the official curve republish
+  (#1879) and the lineage shipped. The open tasks are Qt UI tasks.
+- [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data]]: 11/20 tasks, carried from sprint 24.
+- [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]]: 3/11 tasks. Five of its
+  BACKLOG tasks have a merged PR (#1932). The real progress is higher
+  than the file shows.
+- [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]]: 6/6 tasks DONE, story still STARTED.
+
+The headline deliverable (a bootstrapped curve that is republished as
+an official stream) shipped before sprint 25 started. In sprint 25 the
+IR goal got the FOMC short end, six new process engines with no wiring,
+and bookkeeping that lagged behind the work.
+
+No mapped goal. From 2026-09-19, the work moved to a new direction:
+[[id:6C5EE3F6-0DE6-48C2-9325-21D818C7FD6B][Retire Qt]], [[id:BAAFD7B2-A37F-4ED8-A9F2-E2A997E3D488][Integrate ores.web]], [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype bootstrap in ores.web]],
+[[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][IAM entities in the web client]], [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][IAM journeys]],
+[[id:97EDFED1-5706-4A07-8921-69AE367811FF][canonical NATS entity protocol]] and the two TypeScript protocol
+stories. This is a large, strategic change: the product lost its
+desktop client. It is good work, but sprint 25's mission does not
+mention it. The skills catalogue (21/51 tasks), the trade entry
+prototype and the ORE v17 update also have no mapped goal.
+
+Challenge: some of the web work uses codegen, so it is possible to say
+that it "serves drift". That mapping is wishful. The web pivot is a
+different goal. It needs its own sprint mission.
+
+*** Sprint load
+
+| Metric | Value | Target | Status |
+|--------+-------+--------+--------|
+| Commits since 2026-08-03 | 2855 | ≤ 1000 | RED |
+| Days elapsed | 52 | 7 | RED |
+| Commits/day (average) | 55 | — | — |
+| Commits, days 1–10 (08-03 to 08-12) | 1225 | ≤ 1000 | AMBER |
+| Commits, days 11–32 (08-13 to 09-03) | 169 | — | lull |
+| Commits, days 33–52 (09-04 to 09-23) | 1461 | ≤ 1000 | RED |
+
+The average hides the shape of the sprint. There are three phases:
+
+1. Days 1–10: a normal, heavy sprint. 1225 commits. This phase alone
+   is slightly over the target.
+2. Days 11–32: a lull of 22 days with 169 commits. On 8 of these days
+   there were 0 commits, and on 7 days there were 1 to 8.
+3. Days 33–52: a second heavy phase with 1461 commits. This phase
+   alone is over the target.
+
+Phases 1 and 3 are each a full sprint. The sprint did not close at the
+lull, so the second phase went into the same document. This is the
+root cause of most other findings in this review.
+
+*** PR velocity
+
+| Metric | Value | Notes |
+|--------+-------+-------|
+| PRs merged | 319 | 288 human, 31 bot |
+| Target | 100–120 | For 7 days |
+| PRs/day | 6.1 | Average over 52 days |
+| PRs, ISO week 32 (08-03 to 08-09) | 123 | Normal sprint pace |
+| PRs, weeks 34–35 (08-17 to 08-30) | 8 | Lull |
+| PRs, weeks 36–39 (08-31 to 09-23) | 135 | Second phase |
+| Cycle time, median | 1.9 h | Open to merge |
+| Cycle time, p90 | 9.8 h | — |
+| Open PRs | 1 | #2132, the nightly format bot |
+| Unmerged branch, merry_newton | 6 commits | Last commit 2026-08-25, 1608 behind main |
+| Unmerged branch, solid_dirac | 3 commits | Last commit 2026-09-19 |
+
+The release notes count 316 PRs; this review counts 319. Both are
+right for their window. The 319 is every PR merged on or after
+2026-08-03, read before #2132 and #2133 merged. The release notes count
+PRs merged into main after the v0.0.24 tag (2026-08-03 16:05): that
+excludes #1810 to #1813, merged earlier that day for the sprint 24
+close, and #2084, merged into a feature branch, and it includes #2132
+and #2133. 319 - 5 + 2 = 316.
+
+PRs merge fast. The median cycle time is under 2 hours, and there is
+no queue of open PRs. The total is 319 against a target of 100–120,
+so the verdict is RED. The cause is the sprint length, not the merge
+process.
+
+WIP signal. merry_newton has 6 unmerged commits on
+=feature/identity-core-series-and-bindings=. They are 29 days old and
+1608 commits behind main. They belong to [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity]]
+(2/9 tasks). A rebase of this branch will be expensive. Decide at
+close: rebase it, or abandon it and record why.
+
+*** Story and task balance
+
+| Story | State | Tasks | Age (days) | Notes |
+|-------+-------+-------+------------+-------|
+| Refactor ores.codegen C++ generation | STARTED | 11/22 | 116 | Since 2026-05-30. Sprawling. |
+| Unify the LLM skills catalogue | STARTED | 21/51 | — | No start date. Sprawling. |
+| Redesign ores.trading on data-oriented principles | STARTED | 12/20 | — | No start date. Sprawling. |
+| IR Rates synthetic data | STARTED | 11/20 | — | Carried from sprint 24. Sprawling. |
+| Acme Corporation follow-ups | STARTED | 10/11 | 51 | One task left. |
+| Collapse NATS config passthrough | STARTED | 6/9 | 50 | — |
+| Port trading instruments to codegen | STARTED | 3/4 | 49 | Its open task has a merged PR (#2035). |
+| Documentation improvements | STARTED | 7/10 | 50 | Open-ended by design. |
+| Add new stochastic processes | STARTED | 3/11 | 43 | 5 BACKLOG tasks have a merged PR. |
+| Adopt oresmd as native identity | STARTED | 2/9 | 43 | Stale branch on merry_newton. |
+| IR curve bootstrapping | STARTED | 5/8 | — | Carried from sprint 24. |
+| Update ORE to v17 | STARTED | 4/6 | — | No start date. |
+| Asset-class-agnostic Market Simulator client | BACKLOG | none | — | Not decomposed. The UI it describes was removed with Qt. |
+| Sized, realistic trade populations | BLOCKED | 1/2 | 16 | Sits in the Hotfixes table, but it is not a hotfix. |
+
+| Metric | Value |
+|--------+-------|
+| Stories in sprint | 102 |
+| DONE | 63 (39 product, 24 hotfix) |
+| STARTED | 31 |
+| BLOCKED | 1 |
+| BACKLOG | 7 |
+| DONE / (STARTED + BLOCKED + BACKLOG) | 63 / 39 = 1.62 |
+| STARTED with every task DONE | 8 |
+| BACKLOG with every task DONE | 2 |
+| Stories without tasks | 1 |
+
+The ratio is GREEN. The story files are not. =compass sprint audit=
+reports 99 findings:
+
+- 10 stories have every task DONE but are not closed: Absorb PR checks
+  locally, analytics bind, reporting bind, eventing flake hotfix,
+  harden eventing chain, feed lifecycle harmonization, generate every
+  protocol message as TypeScript, IR curve follow-ups, the provisioning
+  bundle hotfix and verify compute-grid flows from the UI.
+- 12 open tasks have all their PRs merged.
+- 11 rows in the sprint table do not agree with the story file.
+- 1 DONE story (Compass QoL follow-ups) has 3 BACKLOG tasks.
+- The other findings are closed documents with a =Now= that is not
+  "Nothing.".
+
+Sprawling stories. Four stories are over the sprawl threshold. Apply
+the split test to each one at close. Read its =* Acceptance= and
+compare each open task to it. Do not close a story only because most
+tasks are DONE.
+
+- Refactor ores.codegen C++ generation: open for 116 days and over
+  three sprints. The drift program now does most of its work. It is
+  probably a close-and-split candidate.
+- Unify the LLM skills catalogue: 30 open tasks. It is probably two
+  stories: the part that shipped (the =compass-= namespace), and a
+  remainder.
+- Redesign ores.trading and IR Rates synthetic data: check against
+  acceptance. They possibly carry forward.
+
+Challenge: the Market Simulator client story describes a Qt window
+(=MarketSimulatorWindow=, =IrCurveEditor=). Qt is gone. This story is
+not only undecomposed. Its premise is out of date. Move it back to the
+product backlog, or abandon it.
+
+*** Focus signal
+
+| Metric | Value | Verdict |
+|--------+-------+---------|
+| STARTED stories | 31 | RED |
+| STARTED, after closing the 8 finished ones | 23 | RED |
+| Worktrees that own STARTED stories | 7 | — |
+| Distinct themes in flight | 8+ | RED |
+
+Themes in flight: codegen drift, TypeScript and ores.web, NATS
+protocol, IR curves and quant, market data identity, trading data
+model, CI and eventing hardening, skills and documentation, and the
+ORE v17 update.
+
+The mid-sprint review found 7 STARTED stories and rated focus AMBER.
+The count is now 31. Part of the cause is bookkeeping: 8 STARTED
+stories have every task DONE, and 12 open tasks have merged PRs. The
+real WIP is smaller than 31, but the documents do not show its size.
+That is a focus problem too.
+
+*** Velocity
+
+| Metric | Value | Notes |
+|--------+-------+-------|
+| Stories DONE | 63 | 1.2 per day over 52 days |
+| Product stories DONE | 39 | — |
+| Hotfix stories DONE | 24 | 38% of DONE stories |
+| Hotfixes for Windows or MSVC | 11 | The largest single cause |
+| Continuous Windows red | 2026-09-04 to 2026-09-17 | 13 days |
+| Continuous Linux gcc red | 2026-09-11 to 2026-09-15 | After -Wall and -Wextra landed |
+| PRs merged | 319 | — |
+
+Delivery is high. 39 product stories closed, and some are large: the
+removal of Qt, ores.web, six drift-free components, oresmd coverage,
+and the FOMC short end. But 24 hotfixes is a warning. Most came from
+code that compiled on Linux clang and failed on MSVC, gcc or macOS.
+The local-checks story ([[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally]]) has every task
+DONE. Check at close whether its checks include MSVC and gcc. If not,
+file a capture for a cross-compiler check before merge.
+
+The =* Achievements= section in sprint.org is empty. The =* Captures=
+section is empty. The release notes will have to come from the PR list
+only.
+
+*** Overall verdict
+
+| Dimension | Verdict |
+|-----------+---------|
+| Goal alignment | AMBER. Drift is strongly served. IR curves stalled after day 10. A web-client pivot with no mapped goal. |
+| Sprint load | RED. 2855 commits over 52 days. Two full sprints and a 22-day lull. |
+| PR velocity | RED on total (319). Merge flow is healthy: 1.9 h median, no queue. One stale branch (merry_newton, 29 days). |
+| Story and task balance | AMBER. Ratio 1.62, but 10 closeable stories, 4 sprawling stories and 99 audit findings. |
+| Focus signal | RED. 31 STARTED stories over 8+ themes. |
+| Velocity | AMBER. 63 stories DONE, 24 of them hotfixes. |
+| *Overall* | *RED* |
+
+Sprint 25 delivered a lot of work. But it ran as two sprints in one
+document: a drift and IR sprint in August, a 22-day lull, and a web and
+TypeScript sprint in September. The mission stayed the same through
+all three phases. Because the sprint did not close at the lull, the
+load, PR and focus numbers are all RED, and the documents show 31
+STARTED stories where the real WIP is much smaller. The most important
+concern is that the documents no longer describe the work. The one fix
+that helps most is a full bookkeeping pass before the close: close the
+10 finished stories, apply the split test to the 4 sprawling stories,
+decide on the merry_newton branch, and give sprint 26 a mission that
+names the web-client direction. After that, keep to a 7-day close, so
+that a lull ends a sprint instead of stretching it.

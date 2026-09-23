@@ -28,7 +28,7 @@ green Windows build by making the include explicit.
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Fix shipped in PR #1967; Windows CI verifies on merge. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Merge PR #1967.                        |
 | Last touched  | 2026-08-11                               |
@@ -61,3 +61,7 @@ green Windows build by making the include explicit.
 * Out of scope
 
 -
+
+* Result
+
+Status at close: Fix shipped in PR #1967; Windows CI verifies on merge.

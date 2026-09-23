@@ -54,7 +54,7 @@ Per-field migration:
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Carried from  | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] (unfinished at close) |
-| Now           | 5 of 6 tasks DONE; XML round-trip descoped to [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd]] story. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
 | Last touched  | 2026-08-07                               |
@@ -277,3 +277,7 @@ found in production code, not just in a design document.
 
 - [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] — the design story this is follow-on work from.
 - [[id:4985176A-6A64-4F11-91D6-DC01003B5F2E][Dual-curve discount+projection model]] — the still-BACKLOG task whose data model should agree with =oresmd='s =role= field on one representation.
+
+* Result
+
+Status at close: 5 of 6 tasks DONE; XML round-trip descoped to [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd]] story.

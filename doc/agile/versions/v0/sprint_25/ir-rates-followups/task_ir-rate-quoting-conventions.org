@@ -50,7 +50,7 @@ genuine reference-data question, not a UI-only concern.
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
-| Now          | Superseded before implementation started. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing -- see the superseding story.  |
 | Last touched | 2026-07-22                               |
@@ -113,3 +113,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Status at close: Superseded before implementation started.

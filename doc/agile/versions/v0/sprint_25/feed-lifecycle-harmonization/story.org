@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :synthetic:marketdata:feeds:shell:refactor:sprint_25:v0:
 #+created: 2026-08-11
-#+updated: 2026-08-11
+#+updated: 2026-09-23
 #+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -30,12 +30,12 @@ registration — the lifecycle machinery is not touched again.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Tasks decomposed (8); the seam task is the entry point. |
-| Waiting on    | Nothing.                               |
-| Next          | Start task: feed producer seam.         |
-| Last touched  | 2026-08-11                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23 |
 
 * Acceptance
 
@@ -244,3 +244,7 @@ is the clear setup the codebase never had: config table + producer + one registr
 - The FOMC bootstrap segment (task [[id:3E8D81D7-35D1-420F-9A0C-CE45D51C5C0E][FOMC bootstrap segment]])
   is blocked on this story's folder-cascade and control-plane tasks, but its content is
   not part of this story.
+
+* Result
+
+Closed at sprint 25 close. Every task is done.

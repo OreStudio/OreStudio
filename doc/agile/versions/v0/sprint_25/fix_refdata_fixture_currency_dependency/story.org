@@ -23,7 +23,7 @@ No refdata fixture depends on synthetic state another test may or may not have w
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Complete.                              |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-09-11                               |
@@ -63,3 +63,7 @@ the opposite, and that false invariant is what hid the flake.
 * Out of scope
 
 -
+
+* Result
+
+Status at close: Complete.

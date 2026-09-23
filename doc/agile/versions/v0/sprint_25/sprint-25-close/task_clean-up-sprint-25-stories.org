@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 826C9671-AE0D-48CD-B8E6-666DF92DB4AF
+:END:
+#+title: Task: Clean up the sprint 25 stories for close
+#+description: Close every finished story, abandon the superseded and half-finished ones, split the skills catalogue story, and file one capture for the IR work.
+#+type: task
+#+level: s1
+#+filetags: :sprint-25-close:sprint_25:v0:
+#+owner: marco
+#+branch: feature/health-review-2
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:ABB0BD89-E149-4E8C-9EA0-5B3514DFE4C0][Sprint 25 closure: story cleanup and reset for sprint 26]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Leave sprint 25 with no half-finished stories. Sprint 26 takes one
+approach: for each module, sync codegen and clear its drift, then
+analyse user journeys, then build the UX. Every story from the earlier
+approaches closes, so that sprint 26 starts from clean stories.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:ABB0BD89-E149-4E8C-9EA0-5B3514DFE4C0][Sprint 25 closure: story cleanup and reset for sprint 26]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- Every sprint 25 story except this closure story is DONE or ABANDONED.
+- Each closed story and each abandoned task records why in its Result.
+- The skills catalogue story closes with the tasks that shipped. Its
+  open tasks move to a new story in the product backlog inbox.
+- One capture holds the remaining IR work.
+- =compass sprint audit= reports no findings.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The site build failed on an unresolved link: the dispatcher task's row carried a lowercase UUID. | =doc/agile/product_backlog/inbox/complete_llm_skills_catalogue/story.org= | Accepted | Fixed to the task's uppercase =:ID:=. =compass task move= wrote the lowercase form on the path where the source story had no row for the task. |
+| 2 | =misspell-fixer= exits 1 on the changed files. | =doc/agile/versions/v0/sprint_25/**= | Declined | The two hits quote the upstream identifier =LOAD_PROFILE_1_EXPLICT= in review tables that already decline the correction. No hit is in text this branch wrote. |
+
+* Result
+
+Final state: 79 stories DONE, 23 ABANDONED, and this closure story
+STARTED. =compass sprint audit= reports no state-sync violations.
+
+- *DONE, 14 stories.* Every task done or the acceptance met: Acme
+  follow-ups, IR curve bootstrapping, market series classification,
+  compute grid shell, documentation improvements, the analytics and
+  reporting binds, the eventing flake hotfix, eventing hardening, feed
+  lifecycle, TypeScript protocol coverage, IR curve follow-ups, local
+  PR checks and the provisioning bundle hotfix.
+- *ABANDONED, 23 stories.* Codegen approaches (12): the C++ refactor,
+  five per-module drift stories, the instrument port, shell command
+  codegen, protocol codegen, the JSON-to-org migration, the trading
+  redesign and the canonical NATS protocol. Web and journeys (3). Qt
+  premise (2). IR (2). Half-finished (4): ORE v17, NATS config
+  passthrough, trade populations, and oresmd native identity.
+- *Merged work.* 13 open tasks closed DONE because their PRs merged,
+  including five IR engines from #1932.
+- *Skills.* Unify the LLM skills catalogue is renamed Lay the
+  foundation of the LLM skills catalogue and closes DONE with its 21
+  shipped tasks. Its 28 open tasks moved with =compass task move= to
+  Complete the LLM skills catalogue in the product backlog inbox.
+- *IR.* The deferred capture Refactor the IR rates implementation
+  before more IR features land lists the known implementation problems
+  and the open features.
+- *Hygiene.* 69 closed documents had a stale Now. The text moved into
+  their Result. The sprint table got the missing rows, and the
+  Holding company row now says DONE.
+

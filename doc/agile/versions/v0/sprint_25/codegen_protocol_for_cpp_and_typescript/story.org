@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :codegen:protocol:typescript:iam:sprint_25:v0:
 #+created: 2026-09-18
-#+updated: 2026-09-18
+#+updated: 2026-09-23
 #+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -25,12 +25,12 @@ The story then adds a TypeScript target space. The same org renders TypeScript i
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | ABANDONED |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Both phases are built, verified and committed; the PR is open. |
-| Waiting on    | CI and the merge.                      |
-| Next          | Merge, then remove ores.qt and ores.wt and their codegen facets. The coverage gap below then resumes. |
-| Last touched  | 2026-09-18                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23 |
 
 * Acceptance
 
@@ -45,9 +45,9 @@ The story then adds a TypeScript target space. The same org renders TypeScript i
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:314A293B-452A-4BB6-B7FA-88B0DD8E0AE2][Scaffold story: Generate protocol messages from one model into C++ and TypeScript]] | STARTED | 2026-09-18 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:033C4C69-A8D2-45C4-B351-5A3059B02E04][Add the ores.codegen.operation model type and port the IAM protocol headers]] | STARTED | 2026-09-18 | | Phase 1: add the operation model type to ores.codegen and port the eleven hand-written IAM protocol headers to org with zero byte differences. |
-| [[id:C3490D64-F68E-4E46-A325-F8163F3073EE][Task: Generate the protocol as TypeScript for the UI]] | STARTED | 2026-09-18 | | Phase 2: add the TypeScript target space and generate the IAM protocol messages as TypeScript modules. |
+| [[id:314A293B-452A-4BB6-B7FA-88B0DD8E0AE2][Scaffold story: Generate protocol messages from one model into C++ and TypeScript]] | DONE | 2026-09-18 | 2026-09-23 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:033C4C69-A8D2-45C4-B351-5A3059B02E04][Add the ores.codegen.operation model type and port the IAM protocol headers]] | DONE | 2026-09-18 | 2026-09-23 | Phase 1: add the operation model type to ores.codegen and port the eleven hand-written IAM protocol headers to org with zero byte differences. |
+| [[id:C3490D64-F68E-4E46-A325-F8163F3073EE][Task: Generate the protocol as TypeScript for the UI]] | DONE | 2026-09-18 | 2026-09-23 | Phase 2: add the TypeScript target space and generate the IAM protocol messages as TypeScript modules. |
 
 * Decisions
 
@@ -140,3 +140,7 @@ models first, the same job this story did for the eleven protocol headers.
 - Qt UI code. The story generates the TypeScript the UI consumes; the UI migration is
   separate work.
 - The HTTP and shell transport shapes.
+
+* Result
+
+Abandoned at sprint 25 close. Sprint 26 replaces the codegen approaches tried so far with one method: for each module, sync codegen and clear its drift. Sprint 26 opens new, clean stories for each module. This story is not carried forward.

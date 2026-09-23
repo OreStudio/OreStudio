@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-18
-#+updated: 2026-09-18
+#+updated: 2026-09-23
 #+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -27,12 +27,12 @@ gains the plan for the two phases. No code, template or model file changes.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:FA160AE1-CB9A-410F-A8B0-31FBF2247962][Generate protocol messages from one model into C++ and TypeScript]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-18                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-23 |
 
 * Acceptance
 
@@ -73,3 +73,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed at sprint 25 close. Its work merged in PR #2104.

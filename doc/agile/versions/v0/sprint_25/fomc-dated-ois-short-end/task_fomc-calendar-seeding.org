@@ -28,7 +28,7 @@ Seed a real 2025-2027 window of FOMC meeting dates as calendar_event rows (diary
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
-| Now          | 24 calendar_event rows seeded (2025/2026/2027, 8 per year), dated the second day of each published two-day range, source federalreserve.gov; SQL schema validation passes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Loop step: re-run allium plan; the calendar_event and schedule obligations become mappable. |
 | Last touched | 2026-08-10                               |
@@ -108,3 +108,5 @@ Dates transcribed from the Fed's published meeting calendar: 2025
 (28 Jan, 18 Mar, 29 Apr, 17 Jun, 29 Jul, 16 Sep, 28 Oct, 9 Dec -- the
 same dates the D2 tests resolve against), 2027 (27 Jan, 17 Mar, 28
 Apr, 9 Jun, 28 Jul, 15 Sep, 27 Oct, 8 Dec).
+
+Status at close: 24 calendar_event rows seeded (2025/2026/2027, 8 per year), dated the second day of each published two-day range, source federalreserve.gov; SQL schema validation passes.

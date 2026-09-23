@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-09
-#+updated: 2026-09-08
+#+updated: 2026-09-23
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -96,12 +96,12 @@ and the first trading drift run re-emitted all 36.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
-| Now          | Gap (a) probed and decided 2026-09-08: the trade-style shape does not cover the bond domain; codegen must grow mid-group support. Probe org and evidence in Notes. Bond's conversion is superseded (2026-09-09): the data-oriented redesign converts it in the atomised shape; commodity, credit, scripted stay here. |
-| Waiting on   | The gap-(a) codegen change (group-composition key in the domain template) before commodity/credit conversion; trading drift reconciliation before any conversion can verify zero-diff. |
-| Next         | Probe gap (b) with scripted's column-name mapping and gap (c) with composite's service methods; then scope the (a) and (d) codegen changes. |
-| Last touched | 2026-09-08                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-23 |
 
 * Acceptance
 
@@ -278,3 +278,5 @@ via its "Verifies task" field.
 | 3 | No trailing =* See also= section | doc/agile/versions/v0/sprint_25/port-trading-instruments-to-codegen/ores.trading.bond_instrument.org | Fixed | Added, linking the task and the vanilla_swap archetype. |
 
 * Result
+
+Closed at sprint 25 close. Its work merged in PR #2035.

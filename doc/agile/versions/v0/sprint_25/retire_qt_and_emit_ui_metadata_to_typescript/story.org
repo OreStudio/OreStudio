@@ -23,7 +23,7 @@ The Qt client leaves the repository. Its metadata does not. The entity models ke
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | PR 1 is merged. PR 2 deleted the ores.qt and ores.wt.service trees and the Qt vocabulary that described them. |
+| Now           | Nothing. |
 | Waiting on    | The PR 2 review.                       |
 | Next          | Watch the CI jobs on PR 2, then merge.  |
 | Last touched  | 2026-09-19                               |
@@ -65,3 +65,7 @@ The Qt client leaves the repository. Its metadata does not. The entity models ke
   uses now that the Qt templates are gone.
 - The Qt prose that survives in the model bodies, the Qt recipes, the
   Qt skills and the product-backlog triage. PR 2 carries them.
+
+* Result
+
+Status at close: PR 1 is merged. PR 2 deleted the ores.qt and ores.wt.service trees and the Qt vocabulary that described them.

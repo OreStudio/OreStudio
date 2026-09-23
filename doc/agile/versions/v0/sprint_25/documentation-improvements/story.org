@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_25:v0:
 #+created: 2026-08-04
-#+updated: 2026-08-11
+#+updated: 2026-09-23
 #+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -24,12 +24,12 @@ come up rather than scoping the whole story up front.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-08-11                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23 |
 
 * Acceptance
 
@@ -42,9 +42,9 @@ come up rather than scoping the whole story up front.
 | [[id:F5DC0C0A-F1AB-46EA-B1BD-9C6264E81626][Scaffold story: Documentation improvements]] | DONE | 2026-08-04 | 2026-08-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:6CE97DF4-4AC4-42A9-9B8C-D3DCD77FA515][Add an image carousel to the website homepage]] | DONE | | 2026-08-04 | Initial task for: Documentation improvements |
 | [[id:65AFA471-36B7-468C-AAF9-3BE7BF6C5BA1][Add systemd unit for site start/stop]] | DONE | 2026-08-04 | 2026-08-04 | Manage the local site-preview server (compass site serve) as a systemd unit, with proper start/stop commands, instead of ad hoc background processes. |
-| [[id:49BE469F-4191-4DD3-91AE-E7AF04A3354A][Recapture dedicated carousel screenshots]] | BACKLOG | | | The carousel's first pass reuses old release screenshots (v0.0.24, v0.0.12, v0.0.15, v0.0.20) as stand-ins for org chart, reference data, compute, and shell -- none purpose-built for the carousel. Capture fresh, dedicated composite screenshots (several windows open, current UI/theme) for each carousel topic. |
-| [[id:51654120-B8CD-4F6F-8B8E-7DC0350E22C3][Consolidate site top navigation]] | BACKLOG | | | The site-wide nav (Project/Modeling/Developer/Resources dropdowns) fragments the user journey per external review. Group developer technical specs and model definitions under a unified Docs dropdown. Site-wide change (every page, not just the homepage) via ores-build-site.el's site-html-preamble -- deserves its own scoped task/PR, not bolted onto the carousel work. |
-| [[id:00289422-24F1-4124-B3D1-1261B52ABCE7][Add a quickstart CLI snippet to the homepage]] | BACKLOG | | | A short terminal install/quickstart command block on the homepage for fast developer onboarding, per external review. Scope: what the snippet actually shows (git clone + build? a hosted install script?) needs deciding before implementation. |
+| [[id:49BE469F-4191-4DD3-91AE-E7AF04A3354A][Recapture dedicated carousel screenshots]] | ABANDONED | | 2026-09-23 | The carousel's first pass reuses old release screenshots (v0.0.24, v0.0.12, v0.0.15, v0.0.20) as stand-ins for org chart, reference data, compute, and shell -- none purpose-built for the carousel. Capture fresh, dedicated composite screenshots (several windows open, current UI/theme) for each carousel topic. |
+| [[id:51654120-B8CD-4F6F-8B8E-7DC0350E22C3][Consolidate site top navigation]] | ABANDONED | | 2026-09-23 | The site-wide nav (Project/Modeling/Developer/Resources dropdowns) fragments the user journey per external review. Group developer technical specs and model definitions under a unified Docs dropdown. Site-wide change (every page, not just the homepage) via ores-build-site.el's site-html-preamble -- deserves its own scoped task/PR, not bolted onto the carousel work. |
+| [[id:00289422-24F1-4124-B3D1-1261B52ABCE7][Add a quickstart CLI snippet to the homepage]] | ABANDONED | | 2026-09-23 | A short terminal install/quickstart command block on the homepage for fast developer onboarding, per external review. Scope: what the snippet actually shows (git clone + build? a hosted install script?) needs deciding before implementation. |
 | [[id:CBE53221-9F38-4C94-8AE5-AA86867965C8][Add compass-code-review-comments skill]] | DONE | 2026-08-11 | 2026-08-11 | New Claude Code skill that reviews and cleans code comments, wired into CLAUDE.md so it applies to all code we create or edit. |
 | [[id:374CFD96-B8B0-4812-9870-FF91168EE828][Document Skew Stickiness Ratio knowledge page]] | DONE | | 2026-08-25 | Add a knowledge page on how implied volatility surfaces move when spot moves: sticky strike vs sticky delta, the Skew Stickiness Ratio (SSR) that measures ATM-vol response against the ATM skew, and its effect on delta and gamma. |
 | [[id:A572C320-A132-477B-9170-6CB5A0466D2D][Expand the Random Walk knowledge page]] | DONE | | 2026-09-10 | Fold the stationarity, unit-root and first-passage material into the Random Walk knowledge page, with the source attributed. |
@@ -55,3 +55,7 @@ come up rather than scoping the whole story up front.
 * Out of scope
 
 -
+
+* Result
+
+Closed at sprint 25 close. This story was open-ended; the done tasks are what shipped.

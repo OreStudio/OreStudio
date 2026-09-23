@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 76233168-3C44-4606-B6F9-518179F7D6A2
+:END:
+#+title: Task: Write sprint 25 release notes
+#+description: Generate the sprint 25 release notes from the merged PR data, fill the summary blurbs, render the charts and export the markdown for the draft GitHub release.
+#+type: task
+#+level: s1
+#+filetags: :sprint-25-close:sprint_25:v0:
+#+owner: marco
+#+branch: feature/health-review-2
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:ABB0BD89-E149-4E8C-9EA0-5B3514DFE4C0][Sprint 25 closure: story cleanup and reset for sprint 26]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Sprint 25 has release notes that describe what shipped, what was
+abandoned at close and why, and a post mortem. The notes ship as the
+body of the v0.0.25 draft GitHub release.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:ABB0BD89-E149-4E8C-9EA0-5B3514DFE4C0][Sprint 25 closure: story cleanup and reset for sprint 26]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- =release_notes.org= has no placeholder left, and every claim matches
+  the story files.
+- The four charts cover the whole sprint, 2026-08-03 to 2026-09-23.
+- =release_notes.md= is exported, and the sprint's Retrospective and
+  Status table link the notes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The generator listed every story, abandoned ones included, under Key
+Improvements, and it took the sprint duration from the oldest carried
+story. The body was rewritten by hand in the sprint 24 format: summary,
+highlights, improvements by theme, the abandoned stories grouped with
+their reason, a post mortem, and the next-sprint line.
+
+=compass release-notes charts= read the planned end date (2026-08-10)
+from the stale index, even after =#+end_date= changed to 2026-09-23.
+The charts were rendered with =compass sprint charts --sprint 25
+--end-date 2026-09-23= instead. They count 200 merged PRs from git
+history; GitHub reports 316, which the notes use.
+
+The retrospective in sprint.org is the post mortem, as in sprint 24.
+The tag and the draft release follow the merge, with
+=compass release-notes draft --sprint 25 --codename <name>=.
+
+The release is v0.0.25, "Lucira", a fishing village on the Namibe
+coast. The downloads page (=doc/downloads.org=) lists it in its
+Releases table, with the Linux, macOS and Windows package links. The
+tag builds attach those packages; check each link once they finish.
+

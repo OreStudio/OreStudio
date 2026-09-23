@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :codegen:drift:tooling:sprint_25:v0:
 #+created: 2026-08-04
-#+updated: 2026-09-07
+#+updated: 2026-09-23
 #+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,12 +21,12 @@ Bring ores.reporting to the state the compass-codegen-fix-drift skill defines: e
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | The bind task is DONE and the drift gate holds. All tasks in this story are DONE. |
-| Waiting on    | The merge, then the post-merge live system test. |
-| Next          | Merge the PR, then run the live system test. Close the story after that. |
-| Last touched  | 2026-09-17                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23 |
 
 * Acceptance
 
@@ -100,3 +100,7 @@ Bring ores.reporting to the state the compass-codegen-fix-drift skill defines: e
 - The four nullable scalars outside ores.reporting with no C++ default
   (=ores.compute=, =ores.trading=). Fixing them changes generated output for
   those components and breaks their drift gates. Recorded in the bind task.
+
+* Result
+
+Closed at sprint 25 close. Every task is done.

@@ -23,7 +23,7 @@ Bring ores.synthetic to the state the compass-codegen-fix-drift skill defines: e
 |---------------+----------------------------------------|
 | State         | DONE |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Story closed: the post-merge live system test passed and the tpl/ppv table-display defect it caught is fixed. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                   |
 | Last touched  | 2026-09-08                               |
@@ -47,3 +47,7 @@ Bring ores.synthetic to the state the compass-codegen-fix-drift skill defines: e
 * Out of scope
 
 -
+
+* Result
+
+Status at close: Story closed: the post-merge live system test passed and the tpl/ppv table-display defect it caught is fixed.

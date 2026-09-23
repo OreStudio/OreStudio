@@ -40,7 +40,7 @@ implementation.
 |---------------+----------------------------------------|
 | State         | DONE                                  |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Nothing. All unprivileged workstreams (WS-7, WS-1, WS-5 unpriv, WS-4) merged; WS-3 and WS-2 both discovered already implemented (predate this story, Sprint 24 PR #1806); the client-migration and controller-decommission investigation tasks closed (abandoned/done). |
+| Now           | Nothing. |
 | Waiting on    | Someone with root, for WS-5's root half -- left as a follow-up, not blocking this story's close. |
 | Next          | Nothing under this story. WS-5 (root half) and the deliberate-OOM acceptance test, if picked up, belong to a new story; WS-6 stays deferred. |
 | Last touched  | 2026-08-05                               |
@@ -83,3 +83,7 @@ implementation.
   =-j3= build bursts on an idle machine are never penalised.
 - PID 1 ownership (WS-6) -- deferred; only pursued if the unit count
   keeps causing problems after the other workstreams land.
+
+* Result
+
+Status at close: Nothing. All unprivileged workstreams (WS-7, WS-1, WS-5 unpriv, WS-4) merged; WS-3 and WS-2 both discovered already implemented (predate this story, Sprint 24 PR #1806); the client-migration and controller-decommission investigation tasks closed (abandoned/done).

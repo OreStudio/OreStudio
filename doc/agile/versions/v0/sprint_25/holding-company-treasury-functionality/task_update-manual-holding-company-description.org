@@ -32,7 +32,7 @@ the holding party looks and behaves differently from Acme UK/US/HK.
 |--------------+----------------------------------------|
 | State        | DONE                                    |
 | Parent story | [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] |
-| Now          | New chapter section written and wired in; site + PDF build verified. Screenshots pending -- follow-up when back at a machine with X access. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                |
 | Next         | None -- task closed. Screenshots are a separate, small follow-up, not a blocker. |
 | Last touched | 2026-08-07                              |
@@ -174,3 +174,5 @@ incomplete, and the follow-up capture/wiring steps are recorded in
 this task's Notes for whenever X access is available again. This was
 the last remaining task in the holding-company-treasury-functionality
 story -- the story itself is now fully closed alongside this task.
+
+Status at close: New chapter section written and wired in; site + PDF build verified. Screenshots pending -- follow-up when back at a machine with X access.

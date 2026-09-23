@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
-#+updated: 2026-08-05
+#+updated: 2026-09-23
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ No ORES_CONTROLLER_SERVICE_* environment variable exists anywhere once the contr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED |
 | Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:26ABA6BB-85F6-4AE8-8592-A1292FEDBB3D][Decommission the legacy controller SQL schema]] -- rename only makes sense once the rest of the controller-named surface is gone. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-05                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-23 |
 
 * Acceptance
 
@@ -69,3 +69,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned at sprint 25 close, as part of the reset to one approach for sprint 26. The work is not in the sprint 26 plan. The done tasks stay as the record of what shipped.

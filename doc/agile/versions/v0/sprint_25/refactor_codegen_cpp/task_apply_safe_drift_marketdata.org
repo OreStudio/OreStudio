@@ -40,7 +40,7 @@ refdata-cpp pilot pattern.
 |--------------+----------------------------------------|
 | State        | ABANDONED                             |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Superseded before implementation started. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-08-04                               |
@@ -87,3 +87,5 @@ baseline: ores.marketdata]] story, which applies the fuller
 ores.refdata-pilot bar (profile binding + zero-diff regen + CI drift-check
 extension). This task's known finding (market_fixing untracked-file drift)
 carried forward into that story's task.
+
+Status at close: Superseded before implementation started.

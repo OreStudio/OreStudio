@@ -40,7 +40,7 @@ is resolved here and distilled back into the shared skeleton.
 |--------------+----------------------------------------|
 | State        | DONE                                  |
 | Parent story | [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] |
-| Now          | Batch committed (fb897f374b); full preset build and ctest green (one ores.database reconnect flake under a concurrent suite, green on re-run). |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Rates batch (task_shell-trading-rates-instrument-verbs). |
 | Last touched | 2026-09-07                               |
@@ -138,3 +138,4 @@ every conditional NULL exactly as the CHECKs demand. A closing
 ddl-user sweep found all nine probe rows soft-closed out of the live
 view and the leftover fx probe row removed.
 
+Status at close: Batch committed (fb897f374b); full preset build and ctest green (one ores.database reconnect flake under a concurrent suite, green on re-run).

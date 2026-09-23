@@ -28,7 +28,7 @@ Build the v1.8.17.0 engine into one self-contained tarball that carries its own 
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]] |
-| Now          | The v1.8.17.0 tarball is built, self-tested against TA002, and committed beside the v1.8.16.0 one. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. The v1.8.17.0 tag is provisional; the package rebuilds once upstream tags. |
 | Next         | None.                                  |
 | Last touched | 2026-09-12                               |
@@ -87,6 +87,8 @@ columns the engine emits beyond the reference: =EffectiveFloorVolatility=,
 =EffectiveCapVolatility=, =Amount(Base)= and =DiscountFactor(Base)=.
 So the two engines agree on the sample within =rtol=1e-6=, and the extra
 columns are pre-existing rather than new in v17.
+
+Status at close: The v1.8.17.0 tarball is built, self-tested against TA002, and committed beside the v1.8.16.0 one.
 
 * Test Scenarios
 

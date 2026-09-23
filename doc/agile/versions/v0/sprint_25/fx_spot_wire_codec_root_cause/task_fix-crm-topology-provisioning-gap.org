@@ -32,7 +32,7 @@ marketdata.reference_vintage_2016_02_05 bundle already produces.
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:E3786E5B-1039-4256-A61B-BFBF34465578][Find root cause of FX Spot Monitor wire-codec decode mismatch]] |
-| Now          | Original premise (a provisioning bundle gap) was already fixed on main. Live investigation found and fixed two real bugs instead; the larger holding-company gap those bugs exposed is now its own story. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing -- task complete.              |
 | Last touched | 2026-08-04                             |
@@ -131,3 +131,5 @@ fixed on main before this task started. The deeper finding --
 Acme's holding company has no CRM/treasury footprint at all, which
 may not match what a real holding company needs -- is scoped as its
 own story: [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]].
+
+Status at close: Original premise (a provisioning bundle gap) was already fixed on main. Live investigation found and fixed two real bugs instead; the larger holding-company gap those bugs exposed is now its own story.

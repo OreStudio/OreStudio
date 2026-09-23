@@ -28,7 +28,7 @@ Implement the decided event-store model from the FOMC analysis (story * Decision
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
-| Now          | calendar_event + diary_entry_type modelled (uuid-surrogate-lookup / simple-lookup profiles), codegen'd, SQL wired; vocabulary, US.FOMC row and USD link seeded. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | D2 (unified tenor resolution): the two red SCHEDULE_STEP tests are this task's contract. |
 | Last touched | 2026-08-10                               |
@@ -67,6 +67,8 @@ Done. The store exists end to end: models, generated C++/SQL, seeded
 reference data. Holidays untouched. D4 seeds the FOMC meeting dates
 onto the store; D2 consumes =central_bank_meeting= events via the
 =US.FOMC= calendar's FOMC_MEETING schedule.
+
+Status at close: calendar_event + diary_entry_type modelled (uuid-surrogate-lookup / simple-lookup profiles), codegen'd, SQL wired; vocabulary, US.FOMC row and USD link seeded.
 
 * Test Scenarios
 

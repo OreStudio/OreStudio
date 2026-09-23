@@ -28,7 +28,7 @@ The flagship trade entity is where the codegen-ready skeleton must absorb the ha
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] |
-| Now          | Batch committed (59c1b3bf46, b34edbea50); full preset build, ctest 71/71 and the roundtrip, cmake-sources and codegen drift checks green. Live matrix green for all four families.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                  |
 | Last touched | 2026-09-08                               |
@@ -161,3 +161,5 @@ Closing battery green: full preset build exit 0; ctest 71/71 passed
 (908 s); roundtrip check exit 0 (pre-existing partial-fidelity
 baseline, no outputs touched); shell cmake-sources drift clean; codegen
 drift clean (=--all=); working tree clean after drift regeneration.
+
+Status at close: Batch committed (59c1b3bf46, b34edbea50); full preset build, ctest 71/71 and the roundtrip, cmake-sources and codegen drift checks green. Live matrix green for all four families.

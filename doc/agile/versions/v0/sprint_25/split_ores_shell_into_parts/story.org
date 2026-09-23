@@ -28,7 +28,7 @@ result builds and tests as before.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Done. The split, the generated root and the audit are complete, the build and both suites are green, and the PR is going up. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Merge, then start the per-domain adapter parts. |
 | Last touched  | 2026-09-16                               |
@@ -71,3 +71,7 @@ result builds and tests as before.
 - The per-domain adapter parts (=ores.shell.trading= and its siblings). This
   story only makes the split that lets them exist.
 - The shell-command codegen facet, which the next wave picks up.
+
+* Result
+
+Status at close: Done. The split, the generated root and the audit are complete, the build and both suites are green, and the PR is going up.

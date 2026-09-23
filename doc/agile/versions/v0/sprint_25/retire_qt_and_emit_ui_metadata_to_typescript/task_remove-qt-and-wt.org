@@ -28,7 +28,7 @@ Delete the ores.qt and ores.wt.service trees and every reference that names them
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:6C5EE3F6-0DE6-48C2-9325-21D818C7FD6B][Retire Qt and emit the UI metadata to TypeScript]] |
-| Now          | The cut and the local review are complete; the class checks pass. |
+| Now          | Nothing. |
 | Waiting on   | The PR review.                         |
 | Next         | Raise the PR, then watch the CI jobs.  |
 | Last touched | 2026-09-19                             |
@@ -235,3 +235,5 @@ Validators run against the committed tree, all clean:
 - The compass test suite: 166 passed, 1 skipped.
 - =compass lint=: exit 0.
 - The domain roundtrip check: exit 0.
+
+Status at close: The cut and the local review are complete; the class checks pass.

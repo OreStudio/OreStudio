@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-21
-#+updated: 2026-09-22
+#+updated: 2026-09-23
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -33,12 +33,12 @@ destructive. What is left is the UI, which is why the story scopes this task to
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | Clocked on. The branch is cut from main at the merge of the conversion PR (#2120). |
-| Waiting on   | Nothing.                               |
-| Next         | Read what =ores.web= actually ships -- the BFF route descriptors, the entity registry and the screens -- and establish which IAM entities and operations it covers before exercising anything. |
-| Last touched | 2026-09-22                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-23 |
 
 * Acceptance
 
@@ -80,3 +80,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed at sprint 25 close. Its work merged in PR #2126.

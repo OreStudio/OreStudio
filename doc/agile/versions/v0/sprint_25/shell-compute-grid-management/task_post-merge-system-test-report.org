@@ -40,7 +40,7 @@ generated.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
-| Now          | Report written. Findings F1/F4/F5 closed by PRs #2016/#2015; F2 and F3 await their own fix PRs. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | The follow-ups the report records: the UI-gap story, the F2/F3 fix PRs, the GitHub Actions hotfix. |
 | Last touched | 2026-09-06                               |
@@ -219,3 +219,5 @@ failed on the fresh one.
   OSs. The fix is a hotfix in flight, and an occasional GitHub Actions
   health check joins the program flow so a red main is noticed between
   merge cycles.
+
+Status at close: Report written. Findings F1/F4/F5 closed by PRs #2016/#2015; F2 and F3 await their own fix PRs.

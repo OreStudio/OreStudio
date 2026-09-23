@@ -30,7 +30,7 @@ be restored from HEAD.
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Decommissioned before implementation started. |
+| Now          | Nothing. |
 | Waiting on   | [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift to refdata-cpp (pilot)]] |
 | Next         | Start once refdata pattern is merged.  |
 | Last touched | 2026-05-31                             |
@@ -82,3 +82,5 @@ ad hoc tasks) since there is no live component left to bring to zero drift.
 The stale `controller-cpp` row in
 =projects/ores.codegen/library/component_catalogue.org= should be removed
 as a follow-up cleanup (out of scope here; flagging only).
+
+Status at close: Decommissioned before implementation started.

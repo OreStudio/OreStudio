@@ -28,7 +28,7 @@ Implement the unified tenor resolution model from the FOMC analysis (story * Dec
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
-| Now          | tenor_schedules modelled and codegen'd; SCHEDULE_STEP walk implemented in tenor_resolution.cpp; RATES_SPOT_FOMC + 1F..8F and CREDIT_CDS_IMM migration seeded; all three suites green. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | D4 (calendar seeding): the 2025-2027 meeting dates land on the calendar_event store. |
 | Last touched | 2026-08-10                               |
@@ -129,3 +129,5 @@ three suites are green:
 - =tenor_convention_resolution.org= profile moved into the =* Flags=
   drawer, restoring the tenant_id column to entity, SQL and
   repository.
+
+Status at close: tenor_schedules modelled and codegen'd; SCHEDULE_STEP walk implemented in tenor_resolution.cpp; RATES_SPOT_FOMC + 1F..8F and CREDIT_CDS_IMM migration seeded; all three suites green.

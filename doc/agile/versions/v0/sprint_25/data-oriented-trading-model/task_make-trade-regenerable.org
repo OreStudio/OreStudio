@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-17
-#+updated: 2026-09-17
+#+updated: 2026-09-23
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Regenerating the trade entity produces output byte-identical to the checked-in t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Two of five gap classes closed: the SQL schema and the N-way domain composition. |
-| Waiting on   | Nothing.                               |
-| Next         | The service layer and the Qt estate, in a second PR. |
-| Last touched | 2026-09-17                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-23 |
 
 * Acceptance
 
@@ -80,3 +80,5 @@ non-blocking observations.
 | 5 | Not raised: a column in no group vanishes from the struct | =org_loader.py= | Added | The worst of the three silent losses, since it costs a field on the wire rather than a compile error. Guarded and tested. |
 
 * Result
+
+Closed at sprint 25 close. Its work merged in PR #2091.

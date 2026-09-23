@@ -38,7 +38,7 @@ between them.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] |
-| Now          | Resolved. The catalogue is in =* Result=. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |
 | Last touched | 2026-09-11                               |
@@ -158,3 +158,5 @@ treat it as dead code.
 =external/ore/examples/Products/Example_Trades= holds 132 trades across
 all eight families. The four archetypes above take their fixtures from
 there.
+
+Status at close: Resolved. The catalogue is in =* Result=.

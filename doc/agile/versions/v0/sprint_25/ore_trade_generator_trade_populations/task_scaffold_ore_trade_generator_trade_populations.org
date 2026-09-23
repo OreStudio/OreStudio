@@ -29,7 +29,7 @@ the next person can act on it without rebuilding the reasoning.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][Generate realistic trade populations for Acme using ORE's TradeGenerator]] |
-| Now          | Merged.                                |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-09-07                               |
@@ -124,3 +124,5 @@ loader left 588,000 rows in the development database because its cleanup used
 =DELETE=, which an =ON DELETE= rule rewrites into a validity close on these
 bitemporal tables; the rows were removed and the cleanup now suspends the rules
 and verifies both the rows and the rules afterwards.
+
+Status at close: Merged.

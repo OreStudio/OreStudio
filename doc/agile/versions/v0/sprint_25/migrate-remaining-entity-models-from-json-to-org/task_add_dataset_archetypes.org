@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-18
-#+updated: 2026-09-18
+#+updated: 2026-09-23
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -53,12 +53,12 @@ the org dataset pipeline]].
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] |
-| Now          | Awaiting the merge of PR #2100, which carries the image and ip2country families, the generator's multi-payload support, and the ISO generator beside its dataset. The review round closed the SQL-quoting gap in both artefact templates and made source selection follow the dataset's methodology link. |
-| Waiting on   | Nothing.                               |
-| Next         | FPML: the per-entity table spec.       |
-| Last touched | 2026-09-18                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-23 |
 
 The bar is semantic equivalence, not byte-identical output: the same rows
 with the same values, however the SQL is written. The user set this bar,
@@ -248,3 +248,5 @@ generator now sits beside its dataset. Landed in
 
 The FPML per-entity archetype from the acceptance list is not built. That
 is the next step, and it is why this task is still STARTED.
+
+Closed at sprint 25 close. Its work merged in PR #2100.

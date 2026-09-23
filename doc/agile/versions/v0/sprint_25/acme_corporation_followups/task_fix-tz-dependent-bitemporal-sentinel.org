@@ -56,7 +56,7 @@ it a large, independent change.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
-| Now          | A, B, C all done and verified on the live DB: the sentinel function folds to the same instant in every session; the repository query returns the current row with =sel_match = t= and count = detail in the UTC sessions the app uses (fix B), and in NY/Tokyo sessions it returns a safe empty with the =valid_to= filter retained in EXPLAIN (never the wrong-row drop F16 demonstrated); the stale =online= flag for =019fee78-…= is cleared. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Raise the PR, run CI, merge.           |
 | Last touched | 2026-08-11                               |
@@ -182,3 +182,5 @@ sentinel, so the query correctly returns nothing — the fix removes
 the wrong-row drop, not the naive literal itself (migration to
 ='infinity'::timestamptz= is the deferred B2 cure for stray
 sessions).
+
+Status at close: A, B, C all done and verified on the live DB: the sentinel function folds to the same instant in every session; the repository query returns the current row with =sel_match = t= and count = detail in the UTC sessions the app uses (fix B), and in NY/Tokyo sessions it returns a safe empty with the =valid_to= filter retained in EXPLAIN (never the wrong-row drop F16 demonstrated); the stale =online= flag for =019fee78-…= is cleared.

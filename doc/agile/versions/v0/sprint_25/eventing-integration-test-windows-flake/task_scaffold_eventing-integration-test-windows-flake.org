@@ -29,7 +29,7 @@ sprint Hotfixes wiring, and the PR raising the fix.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:AE32C594-8E9B-4C58-B3D2-B93BB7C219E1][Hotfix: eventing integration test flakes on Windows CI]] |
-| Now          |                                       |
+| Now          | Nothing. |
 | Waiting on   |                                       |
 | Next         |                                       |
 | Last touched | 2026-08-25                               |

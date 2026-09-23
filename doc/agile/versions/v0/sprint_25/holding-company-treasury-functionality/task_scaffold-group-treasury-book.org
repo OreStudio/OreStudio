@@ -32,7 +32,7 @@ already gets its book/portfolio tree, via the =acme_group= DQ bundle.
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] |
-| Now          | Group Treasury business unit/portfolio/books scaffolded and verified live via provisioning. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | None -- task closed.                   |
 | Last touched | 2026-08-06                             |
@@ -188,3 +188,5 @@ registrations for =acme_group=, letting the publish workflow race
 and leave every new row's =owner_unit_id= null) that the office
 bundles had already worked around but =acme_group= never needed to
 until this task added cross-referencing datasets to it.
+
+Status at close: Group Treasury business unit/portfolio/books scaffolded and verified live via provisioning.

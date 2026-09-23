@@ -34,7 +34,7 @@ composite root.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:A52DCD72-BEF4-4655-9987-A3103B288576][Split ores.shell into composable parts]] |
-| Now          | Done. Both parts build, the sweep is green and the consumers are fixed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next          | Close and raise the PR.                |
 | Last touched | 2026-09-16                               |
@@ -120,3 +120,4 @@ the part-generation trap, whose fix belongs to the command codegen wave, and
 stale paths in live backlog items, which are a grooming decision. The
 =* Review= table above carries the decision and the evidence for each.
 
+Status at close: Done. Both parts build, the sweep is green and the consumers are fixed.

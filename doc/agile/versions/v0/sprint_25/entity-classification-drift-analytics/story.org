@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :codegen:drift:tooling:sprint_25:v0:
 #+created: 2026-08-04
-#+updated: 2026-09-17
+#+updated: 2026-09-23
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,12 +21,12 @@ Bring ores.analytics to the state the compass-codegen-fix-drift skill defines: e
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | The bind task is closed. The story waits on the post-merge live system test. |
-| Waiting on    | Nothing.                               |
-| Next          | Run the live system test after the bind merges. |
-| Last touched  | 2026-09-17                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23 |
 
 * Acceptance
 
@@ -53,3 +53,7 @@ Bring ores.analytics to the state the compass-codegen-fix-drift skill defines: e
 * Out of scope
 
 -
+
+* Result
+
+Closed at sprint 25 close. Every task is done.

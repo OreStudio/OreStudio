@@ -28,7 +28,7 @@ Every refdata fixture that writes a generated book or portfolio seeds the curren
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:D0695476-CC9F-4F3C-8752-36321D163C1C][refdata fixtures depend on a currency row no fixture writes]] |
-| Now          | Complete.                              |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-09-11                               |
@@ -114,3 +114,5 @@ Evidence:
 - The full ctest suite passed: 71 of 71 tests, 909.53 seconds.
 - The codegen drift check for refdata reports no drift beyond this
   change set. The other 63 refdata entities regenerate byte-identical.
+
+Status at close: Complete.

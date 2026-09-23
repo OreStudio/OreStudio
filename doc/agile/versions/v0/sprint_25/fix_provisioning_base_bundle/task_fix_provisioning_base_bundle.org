@@ -28,7 +28,7 @@ Restore provisioning end-to-end
 |--------------+----------------------------------------|
 | State        | DONE                                  |
 | Parent story | [[id:149FB6E6-F13E-4886-94C3-A3E2A79521BD][Hotfix: provision tenant publishes party-scoped bundle without party_id]] |
-| Now          | Merged.                                |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Verify provisioning end-to-end.        |
 | Last touched | 2026-08-09                               |
@@ -83,3 +83,5 @@ flow publishes as its Step 1. It seeds every reference-data table
 synthetic generation needs without requiring =party_id=.
 
 One file changed: =provision_commands.cpp= (+33/-44).
+
+Status at close: Merged.

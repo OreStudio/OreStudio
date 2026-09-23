@@ -28,7 +28,7 @@ ores.refdata speaks the canonical protocol end to end, the way ores.iam does.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | Nothing. The web half is its own task, [[id:0388AB16-48B0-494B-8373-8ABF695C76E2][Adopt the canonical protocol in the refdata web layer]]. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched | 2026-09-22                               |
@@ -229,6 +229,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Status at close: Nothing. The web half is its own task, [[id:0388AB16-48B0-494B-8373-8ABF695C76E2][Adopt the canonical protocol in the refdata web layer]].
 
 * Result
 

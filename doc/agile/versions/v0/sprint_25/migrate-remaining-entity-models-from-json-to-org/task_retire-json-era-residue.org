@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-18
-#+updated: 2026-09-18
+#+updated: 2026-09-23
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Retire the residue the JSON-to-org migration left behind: delete the dead migrat
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | ABANDONED |
 | Parent story | [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] |
-| Now          | Implementation complete, uncommitted until the work commit lands. |
-| Waiting on   | Nothing.                               |
-| Next          | Commit, then raise the PR.            |
-| Last touched | 2026-09-18                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next          | Nothing. |
+| Last touched | 2026-09-23 |
 
 * Acceptance
 
@@ -95,3 +95,5 @@ Left alone on purpose: the four uncalled =generate_*.sh= scripts still
 name =generator.py=. They call a file that does not exist. The
 =decommission_codegen_bash_scripts= capture in the backlog already owns
 them, so they are not this task's work.
+
+Abandoned at sprint 25 close. Sprint 26 replaces the codegen approaches tried so far with one method: for each module, sync codegen and clear its drift. Sprint 26 opens new, clean stories for each module. This story is not carried forward.

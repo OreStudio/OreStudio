@@ -31,7 +31,7 @@ re-deciding it ad hoc.
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] |
-| Now          | Design complete -- see Plan below.     |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing -- task complete.              |
 | Last touched | 2026-08-04                             |
@@ -182,3 +182,5 @@ for the remaining tasks to implement against:
    RLS-gated topology config already controls what it's authorized
    to see; this doesn't leak anything new, it just lets an
    already-authorized engine actually receive the data.
+
+Status at close: Design complete -- see Plan below.

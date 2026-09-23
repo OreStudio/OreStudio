@@ -29,7 +29,7 @@ sprint Stories wiring, and the scaffold PR.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:639008BB-03A6-4675-AF2F-90A4A699729C][Harden the eventing chain against transient notification loss]] |
-| Now          |                                       |
+| Now          | Nothing. |
 | Waiting on   |                                       |
 | Next         |                                       |
 | Last touched | 2026-08-25                               |

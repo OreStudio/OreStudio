@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@tanstack/react-query": "5.103.1",
-    "@tanstack/react-table": "9.2.4",
     "@ores/contracts": "*",
     "@ores/wire-protocol": "*",
     "react": "19.3.0",

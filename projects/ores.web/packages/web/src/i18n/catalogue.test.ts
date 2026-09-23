@@ -23,39 +23,42 @@ import { describe, expect, it } from 'vitest';
 import { enFlat } from './locales/en.js';
 import { frFlat } from './locales/fr.js';
 import { ptFlat } from './locales/pt.js';
-import { generatedMessageKeys } from '../entity/generatedEntities.js';
+import { createTranslator } from './translate.js';
+import type { Language } from './languages.js';
 
 /**
  * The catalogue's own contract, asserted rather than inferred.
  *
  * Each translation checks itself against English when it is imported, so
- * importing these is the test: a translation that lost a key, or gained one
- * for a message that was renamed, throws here rather than in front of somebody
- * reading the interface. What this file adds is the part the import cannot
- * state: that the exemption for generated words is neither empty nor total,
- * and that the words it exempts are really there in English.
+ * importing these is most of the test: a translation that lost a key, or gained
+ * one for a message that was renamed, throws there rather than in front of
+ * somebody reading the interface. What this file adds is the part an import
+ * cannot state: that no language is left without a catalogue, and that English
+ * is the source the others fall back to rather than a peer of them.
  */
+const TRANSLATED: Readonly<Record<Exclude<Language, 'en'>, Record<string, string>>> = {
+  fr: frFlat,
+  pt: ptFlat,
+};
+
 describe('the catalogue', () => {
-  it('has an English message for every generated key', () => {
-    expect(generatedMessageKeys.length).toBeGreaterThan(0);
-    const missing = generatedMessageKeys.filter((key) => !(key in enFlat));
-    expect(missing).toEqual([]);
+  it('agrees with English on the key set, in every language', () => {
+    const english = Object.keys(enFlat).sort();
+    expect(english.length).toBeGreaterThan(0);
+    for (const [language, flat] of Object.entries(TRANSLATED)) {
+      expect({ language, keys: Object.keys(flat).sort() }).toEqual({
+        language,
+        keys: english,
+      });
+    }
   });
 
-  it('exempts the generated words from translation, and only those', () => {
-    // A hand-written message is never exempt: it is a sentence somebody chose
-    // and somebody has to translate.
-    const exempt = new Set(generatedMessageKeys);
-    expect(exempt.has('entity.save')).toBe(false);
-    expect(exempt.has('country.fldAlpha2Code')).toBe(true);
-  });
-
-  it('falls back to English for a generated word a translation lacks', () => {
-    const untranslated = generatedMessageKeys.filter(
-      (key) => !(key in frFlat) || !(key in ptFlat),
-    );
-    // The exemption is what lets these exist; what matters is that the English
-    // they fall back to is present, which the case above checks.
-    expect(untranslated.length).toBeGreaterThan(0);
+  it('is sourced in English, which a translation falls back to', () => {
+    // A translation that carries one message, deliberately: every other key has
+    // to come from English, and the message it does carry has to win.
+    const partial: Record<string, string> = { 'app.name': 'ORE Studio (fr)' };
+    const translator = createTranslator('fr', enFlat, partial);
+    expect(translator.t('app.name')).toBe('ORE Studio (fr)');
+    expect(translator.t('landing.signUp')).toBe('Sign up');
   });
 });

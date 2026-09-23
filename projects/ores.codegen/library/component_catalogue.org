@@ -27,6 +27,7 @@ separate per-address component entries are needed.
 | marketdata | projects/ores.marketdata/modeling | |
 | ore | projects/ores.ore/modeling | |
 | history | projects/ores.history/modeling | |
+| assets-cpp | projects/ores.assets/modeling | |
 | analytics-cpp | projects/ores.analytics/modeling | |
 | compute-cpp | projects/ores.compute/modeling | |
 | controller-cpp | projects/ores.controller/modeling | |

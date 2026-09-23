@@ -2447,8 +2447,15 @@ def _ts_message(
     response_type: str | None = None,
     subject: str | None = None,
     fields: list[dict[str, Any]] | None = None,
+    verb: str | None = None,
 ) -> dict[str, Any]:
-    """One derived protocol message: the shape both twins render from."""
+    """One derived protocol message: the shape both twins render from.
+
+    ``verb`` states what an operation asks for when its name does not, which
+    is any operation on a sub-resource: an entity whose plural ends in
+    ``_versions`` names its own list the way the versions sub-resource names
+    its own, so the name alone cannot tell the two apart.
+    """
     message: dict[str, Any] = {
         "name": name,
         "name_pascal": _to_pascal_case(name),
@@ -2461,6 +2468,8 @@ def _ts_message(
         # the operation model that states it.
         "derived": True,
     }
+    if verb:
+        message["verb"] = verb
     if response_type:
         message["response_type"] = response_type
     if subject:
@@ -2939,6 +2948,7 @@ def paged_list_messages(
     filter_field: dict[str, Any] | None,
     collection: str,
     collection_type: str,
+    verb: str | None = None,
 ) -> list[dict[str, Any]]:
     """The request and response pair every paged list shares.
 
@@ -2946,7 +2956,8 @@ def paged_list_messages(
     covers -- nothing for an unscoped list, the relation for a scoped one, the
     key for a versions list. Offset, limit and total are unconditional in the
     specification, so they are stated here once instead of per entity, and the
-    filter comes last, after the page it narrows.
+    filter comes last, after the page it narrows. ``verb`` is passed through
+    for a list whose name does not state which sub-resource it reads.
     """
     fields = list(leading) + [
         _ts_field("offset", "std::uint32_t", default="0"),
@@ -2957,7 +2968,7 @@ def paged_list_messages(
         fields.append(filter_field)
     return [
         _ts_message(f"{name}_request", response_type=f"{name}_response",
-                    subject=subject, fields=fields),
+                    subject=subject, fields=fields, verb=verb),
         _ts_message(f"{name}_response", fields=[
             _ts_field("result", _RESULT),
             _ts_field(collection, f"std::vector<{collection_type}>"),
@@ -2990,6 +3001,18 @@ def sibling_entity_singulars(model_path: Any) -> frozenset[str]:
     if not model_path:
         return frozenset()
     return _entity_singulars_in(str(Path(model_path).resolve().parent))
+
+
+def response_payload_member(entity: dict[str, Any]) -> str:
+    """The member a response carries its payload in, named after the entity.
+
+    The envelope states its outcome in a member named ``result``, so an entity
+    of that name gives its payload a suffixed member rather than sharing the
+    one the envelope already uses. The protocol header, the service body and
+    the TypeScript twin all read this, so the three cannot disagree.
+    """
+    singular = entity.get("entity_singular", "")
+    return "result_value" if singular == "result" else singular
 
 
 def entity_protocol_messages(
@@ -3032,7 +3055,7 @@ def entity_protocol_messages(
     key = f"{singular}_key"
     facet_stem = (
         plural if f"{singular}_version" in (sibling_singulars or ()) else singular)
-    payload_member = "result_value" if singular == "result" else singular
+    payload_member = response_payload_member(entity)
     key_columns = frozenset(
         _column_name(column)
         for column in (entity.get("primary_key") or {}).get("columns") or [])
@@ -3166,11 +3189,12 @@ def entity_protocol_messages(
             versions_subject(component, plural, "list"),
             [_ts_field("key", key)],
             _ts_field("filter", f"std::optional<{facet_stem}_versions_filter>"),
-            "versions", domain_type)
+            "versions", domain_type, verb="list_versions")
         messages += [
             _ts_message(f"get_{facet_stem}_version_request",
                         response_type=f"get_{facet_stem}_version_response",
                         subject=versions_subject(component, plural, "get"),
+                        verb="get_version",
                         fields=[_ts_field("key", f"{facet_stem}_version_key")]),
             _ts_message(f"get_{facet_stem}_version_response", fields=[
                 _ts_field("result", _RESULT),
@@ -3286,9 +3310,10 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
             and not message["name"].endswith(_WRITE_ONLY_RECORD_SUFFIXES)]
 
 
-# Which verb a derived request states, from the request's own name. A versions
-# list is a list and a single version is a get, but each answers a different
-# sub-resource and so takes a different body, so the suffix is read first.
+# Which verb a derived request states, from the request's own name. A request
+# that answers a sub-resource states its verb where it is built instead, because
+# its name cannot carry it: an entity whose plural ends in "_versions" names its
+# own list the way the versions sub-resource names its own.
 _OPERATION_PREFIXES = (
     ("list_by_", "list_scoped"),
     ("put_many_", "put_many"),
@@ -3303,10 +3328,6 @@ _OPERATION_PREFIXES = (
 
 def _operation_verb(name: str) -> str:
     """The verb one derived request states, or an empty string if none."""
-    if name.endswith("_versions_request"):
-        return "list_versions"
-    if name.endswith("_version_request"):
-        return "get_version"
     for prefix, verb in _OPERATION_PREFIXES:
         if name.startswith(prefix):
             return verb
@@ -3332,7 +3353,7 @@ def protocol_operations(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
         fields = message.get("fields") or []
         names = [field.get("name") for field in fields]
         leading_type = fields[0].get("cpp_type", "") if fields else ""
-        verb = _operation_verb(message["name"])
+        verb = message.get("verb") or _operation_verb(message["name"])
         operations.append({
             "method": message["name"][:-len("_request")],
             "request": message["name"],

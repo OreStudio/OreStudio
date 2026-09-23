@@ -113,18 +113,23 @@ def _write_models(tmp_path, models):
             body, encoding="utf-8")
 
 
-def _protocol_for(tmp_path, models, singular):
-    """Render one entity's C++ protocol header, with its siblings beside it."""
+def _render_for(tmp_path, models, singular, template, output_name):
+    """Render one entity's facet, with its siblings written beside its model."""
     _write_models(tmp_path, models)
     out = tmp_path / "out"
     out.mkdir(exist_ok=True)
-    name = f"{singular}_protocol.hpp"
     generate_from_model(
         str(tmp_path / f"ores.testcomp.{singular}.org"),
         DATA_DIR, TEMPLATES_DIR, out,
         is_processing_batch=True,
-        target_template="cpp_protocol.hpp.mustache", target_output=name)
-    return (out / name).read_text(encoding="utf-8")
+        target_template=template, target_output=output_name)
+    return (out / output_name).read_text(encoding="utf-8")
+
+
+def _protocol_for(tmp_path, models, singular):
+    """Render one entity's C++ protocol header."""
+    return _render_for(tmp_path, models, singular,
+                       "cpp_protocol.hpp.mustache", f"{singular}_protocol.hpp")
 
 
 def _struct_names(header):
@@ -206,6 +211,33 @@ def test_the_renamed_facet_still_states_the_versions_verbs():
         "list_apps_versions", "get_apps_version"}
 
 
+def test_a_version_named_entity_lists_its_own_rows_as_a_plain_list():
+    """The versions sub-resource and an entity named <X>_version name their
+    lists the same way, so the verb is stated where each is built. Reading it
+    back off the name made the entity's own list render the version body,
+    which does not compile: the request has no key and the response has no
+    versions member."""
+    operations = {operation["method"]: operation["verb"] for operation in
+                  protocol_operations(entity_protocol_messages(
+                      _enriched("app_version", "app_versions")))}
+    assert operations["list_app_versions"] == "list"
+    assert operations["get_app_version"] == "get"
+    assert operations["put_app_version"] == "put"
+    assert operations["delete_app_version"] == "delete"
+    assert operations["list_app_version_versions"] == "list_versions"
+    assert operations["get_app_version_version"] == "get_version"
+
+
+def test_the_app_facet_still_states_the_versions_verbs():
+    operations = {operation["method"]: operation["verb"] for operation in
+                  protocol_operations(entity_protocol_messages(
+                      _enriched("app", "apps"),
+                      frozenset({"app", "app_version"})))}
+    assert operations["list_apps_versions"] == "list_versions"
+    assert operations["get_apps_version"] == "get_version"
+    assert operations["list_apps"] == "list"
+
+
 def test_a_result_entity_response_has_no_duplicate_member(tmp_path):
     header = _protocol_for(
         tmp_path, {"result": _entity_model("result", "results", "Result", "B1")},
@@ -223,3 +255,17 @@ def test_an_ordinary_entity_keeps_its_own_payload_member_name(tmp_path):
         tmp_path, {"app": _entity_model("app", "apps", "App", "A1")}, "app")
     assert "    ores::utility::domain::result result;\n" \
            "    std::optional<ores::testcomp::domain::app> app;\n" in header
+
+
+def test_the_service_assigns_the_payload_member_the_header_declares(tmp_path):
+    """The service body named the payload after the entity, so a result entity
+    assigned a domain value into the envelope's result member."""
+    result = _render_for(
+        tmp_path, {"result": _entity_model("result", "results", "Result", "B1")},
+        "result", "cpp_service.cpp.mustache", "result_service.cpp")
+    assert "response.result_value = std::move(found.front());" in result
+    assert "response.result_value = std::move(written.front());" in result
+    app = _render_for(
+        tmp_path, {"app": _entity_model("app", "apps", "App", "A1")},
+        "app", "cpp_service.cpp.mustache", "app_service.cpp")
+    assert "response.app = std::move(found.front());" in app

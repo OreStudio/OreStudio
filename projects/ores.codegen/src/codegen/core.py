@@ -4144,6 +4144,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_shell_plan,
             operations_by_verb,
             protocol_operations,
+            response_payload_member,
             shell_menu_name,
             shell_recipe_document,
             sibling_entity_singulars,
@@ -4184,6 +4185,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # derived names.
         domain_entity['messages'] = entity_protocol_messages(
             domain_entity, sibling_entity_singulars(model_path))
+        # The member the service body assigns the payload to. The protocol
+        # header names it, so the service reads it from the same place rather
+        # than assuming the entity's own name, which the envelope's result
+        # member can already have taken.
+        domain_entity['payload_member'] = response_payload_member(domain_entity)
         # Every read by something other than the storage key. The legacy
         # opt-in contributes one; a model whose declared key is not its storage
         # key contributes one more, so the address a caller holds resolves to a

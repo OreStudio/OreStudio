@@ -73,7 +73,8 @@ messages between them, and the risk module is the first consumer.
 
 * See also
 
-- [[id:E75DE282-4FDE-4B18-B23B-692A2F783B61][ores.connections]] — the connection-management primitives the cobalt
-  server consumes.
+- ores.connections — the connection-management primitives the cobalt
+  server consumes. Removed in sprint 26; nothing consumed it once the
+  Qt client retired.
 - [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] — the messaging substrate the comms library builds on.
 - 25812E6F-7AD1-36E4-697B-EEC8015C4F1F — destination of the network surface in sprint 03.

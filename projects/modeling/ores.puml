@@ -276,7 +276,6 @@ testing --> platform
 assets --> database
 assets --> nats
 httpapi --> logging
-connections --> security
 storage --> platform
 
 ' ─────────────────────────────────────────────────────────────────────────────

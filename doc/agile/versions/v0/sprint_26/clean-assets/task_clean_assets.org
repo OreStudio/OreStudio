@@ -28,9 +28,9 @@ ores.assets passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:28A846EC-8222-4941-8B29-F8F2C0CF231A][Clean ores.assets to the component clean standard]] |
-| Now          | Baseline and inventory done (B01 to B05). The component is registered for codegen and its root CMakeLists is generated and verified. |
-| Waiting on   | G06, which is red repo-wide and blocks the registry step. |
-| Next         | Model the three wire types one at a time, starting with tag. |
+| Now          | Baseline, inventory, scaffold and the three models are done. G06 is resolved tree-wide. The generation is previewed at 32 files changed and 63 created, and is deliberately not applied yet so the branch stays buildable. |
+| Waiting on   | Nothing external. The next unit is the generation apply plus the consumer migration it forces, which must land together. |
+| Next         | Apply the generation and migrate the stale hand-written service, registrar, publish-from-dq handler, protocol header, core generators and old domain tests in the same unit, then build and test. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -64,7 +64,12 @@ record each item's result in the table below.
 | B05 | No open capture and no in-flight branch for assets. The only =feature/clean-*= branches are analytics and compute, both at main tip with no work. | =git branch --list "feature/clean-*"= |
 | — | Component kind corrected: assets has SQL tables, repositories and a service for tag, image and image_tag, so the Entity items apply as well as All and Protocol. The story's Protocol label understates the work. | =projects/ores.sql/create/assets/= |
 | — | Scaffold done: =assets-cpp= registered in the catalogue, the component given a composite model declaring its three parts, and the hand-written root =CMakeLists.txt= replaced by the generated one. Regeneration is byte-identical and idempotent. | commits =e0311e6996=..=f10c821606= |
-| G06 | Exception: =regenerate_cmake_component_files.py --all --check= reports 151 stale files across nearly every component, including =iam= and =refdata=, which this branch never touched. Pre-existing and repo-wide, so it cannot pass for assets until the tree-wide sync runs. Blocks V05 and V06. | =.audit/clean-assets/A2_cmake_source_lists.txt= |
+| G06 | Resolved tree-wide. The 151 stale files needed only the three-line generated marker these lists missed because they were scaffolded before the marker landed. =--all --check= now exits 0, and G03 moves with it. | commit =dc71f2bf2e=; =.audit/clean-assets/A4_cmake_sources_sync.txt= |
+| M01, M02 | Three models on the current org format, each bound to a matched profile: =tag= and =image= to =uuid-identified-lookup=, =image_tag= to =tenant-scoped-junction=. Both entities carry a natural key, so the surrogate profile would have been a forced bind. | =projects/ores.assets/modeling/ores.assets.{tag,image,image_tag}.org= |
+| M03 to M08 | No model restates a feature its profile fixes. =image.data= is modelled as canonical =text= because the surface stores SVG markup in a text column and the mapper base64-encodes a byte vector into it; text is the honest spelling and the base64 hop disappears. Junctions name their singular and their key columns' real types. | survey; =projects/ores.assets/core/src/repository/image_mapper.cpp= |
+| M06, P01, P04 | Model source now exists for all four subjects. The generated canonical protocol introduces =assets.v1.tags.*= and =assets.v1.image_tags.*= and replaces the hand-written =assets_protocol.hpp=, which today covers images only and carries a hand-written =image_info= wire type. | =.audit/clean-assets/A6_all_models_dryrun.txt= |
+| G01 | Previewed, not applied: the generation would change 32 hand-written files and create 63. Applying it demands a consumer migration across the component and the shell in the same unit, because the stale =assets_service=, =registrar=, =publish_from_dq_handler=, =assets_protocol.hpp=, the core generators and the old domain tests stop compiling. Left as an in-flight draft so the branch stays buildable. | commit =9763c95466=; =.audit/clean-assets/A7_apply_generation.txt= |
+| V05 | Every gate green on this branch except the component drift for assets itself, which is the expected in-flight state: four read-only gates pass, =check_component_drift.py --all= (the CI gate, iam) passes, and G06 passes tree-wide. assets stays outside =COMPONENTS_UNDER_TEST=, which is the project's own record of a component not yet clean. | =.audit/clean-assets/A8_all_gate.txt= |
 
 * Notes
 

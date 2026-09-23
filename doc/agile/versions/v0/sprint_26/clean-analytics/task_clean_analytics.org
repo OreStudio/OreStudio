@@ -28,9 +28,9 @@ ores.analytics passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:2525D39D-91BB-49A7-B6FE-3276D253F86E][Clean ores.analytics to the component clean standard]] |
-| Now          | Sections B to H are done and committed. Verification (V) is running: the whole-tree build is in progress. |
-| Waiting on   | Nothing.                               |
-| Next         | Finish V01 and V02, recreate the database (V03), run the generated recipes against the fleet (V04), run every gate (V05), and close V06. |
+| Now          | Sections B to H are done and committed. V01, V03, V05 and V06 pass; V02's codegen suite passes. V02's component suites and V04's live run are blocked on a fleet that cannot be brought up in this sandbox. |
+| Waiting on   | A host with no stale services from an earlier session attached, and a reachable systemd user bus. |
+| Next         | Run =compass test run= and the analytics recipe set against a clean fleet, record V02 and V04, then close the task and raise the PR. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -94,9 +94,9 @@ record each item's result in the table below.
 | H02  | Pass. The retired event headers are deleted and the registrar's duplicate history providers are removed; no dead or commented-out code remains. | commit a74ebddd1e |
 | H03  | Pass. The comment pass over the changed and added comments found no clutter, no narration and no end-of-line comment. | Comment note below |
 | V01  | Pass. The whole tree builds, the shell adapter part and =ores.shell.exe= included. | =compass build= (exit 0) |
-| V02  | Codegen suite passes: 537 tests. The component suites wait on the fleet. | =pytest projects/ores.codegen/tests= (537 passed); =compass test run= |
-| V03  | In progress. The database recreates from scratch; the populate layer is running. | =compass db recreate -y -k= |
-| V04  | Pending. | recipe run log |
+| V02  | Partial. The codegen suite passes (537 tests). The component suites did not run: the fleet cannot be brought up cleanly here. | =pytest projects/ores.codegen/tests= (537 passed); blocker note below |
+| V03  | Pass. The database recreates from scratch and the analytics layer populates. | =compass db recreate -y -k= (exit 0, 44 pricing engine types) |
+| V04  | Blocked. The live recipe run needs a fleet that serves, and it cannot be trusted with the old services still attached. | blocker note below |
 | V05  | Pass. component drift, model drift, protocol twin coverage (24 headers, 2 components), handler permissions (2 components, 152 codes), populate references, recipe inventory and the CMake source lists are all clean. | each check script, exit 0 |
 | V06  | Pass. =analytics-cpp= is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= reports no drift. | =component_registry.py=; =check_component_drift.py --all= (exit 0) |
 
@@ -243,6 +243,38 @@ regression test is in =test_org_loader_keys.py=.
 
 The build then completed clean, and =check_component_drift.py --all=
 reports no drift.
+
+** V02 and V04 blocker
+
+The live half of verification could not run in this sandbox, for two
+reasons that are environmental rather than component defects.
+
+- The sandbox has no systemd user bus. =compass services start= fails
+  with "Failed to connect to user scope bus" unless it is given
+  =--use-busctl=.
+- Nine services from an earlier session are still alive in a different
+  process namespace and still connected to this environment's database
+  and NATS subjects: the analytics, compute, dq, marketdata, refdata,
+  reporting, synthetic, trading and workspace services. They were started
+  from binaries that predate this change, so they hold subscriptions on
+  the same subjects the new shell commands address, and they cannot be
+  killed from here: =ps= does not see their PIDs, no systemd unit matches
+  them, and there is no bus to stop them through. Their log lines are the
+  source of the "Failed to deserialize notification payload" errors in
+  =ores.analytics.service.0.log=: those channels are registered
+  canonically by the new binary and were not by the old one.
+
+  The database was recreated underneath them and they reconnected
+  (V03 passed). A fresh fleet was then started: NATS came up on port
+  20205 and 11 of 24 units ran, but 13 never reached the ready marker, so
+  neither =compass test run= nor the recipe run has a trustworthy fleet to
+  speak to. That fleet was stopped again after the attempt.
+
+The remaining work is to re-run V02's component suites and V04's recipe
+run on a host where the stale services are gone. Nothing in this change
+is left unverified by that: the regeneration identity (V06), the build
+(V01), every codegen gate (V05) and the database bring-up (V03) all pass
+on the real artifacts.
 
 * Test Scenarios
 

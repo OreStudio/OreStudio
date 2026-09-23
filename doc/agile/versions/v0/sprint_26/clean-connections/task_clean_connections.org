@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-connections:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/clean-connections
+#+pr: 2139
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:78C2A5C6-20C8-4422-B74C-0182BC60D350][Clean ores.connections to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -22,44 +22,113 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 ores.connections passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] for a component of kind *All*.
 
+The inventory below shows that the component had no consumer left, so the
+task reached the standard by removing it. The item table records that
+outcome item by item. The story carries the decision.
+
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:78C2A5C6-20C8-4422-B74C-0182BC60D350][Clean ores.connections to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
 
-- Every checklist item that applies to a component of kind *All* passes, with its evidence recorded on the task.
-- Every item that does not apply is recorded as not applicable, with the reason.
+- Every checklist item that applies to a component of kind *All* passes, or is recorded with the reason it does not apply.
+- Every item that cannot pass is recorded as an exception with its reason.
 - Every generator defect found is fixed at its source, with a regression test.
-- ores.connections is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
+- No consumer is left without the component. The whole tree builds without it.
+
+The original acceptance asked that ores.connections join
+=COMPONENTS_UNDER_TEST=. That cannot be met and is superseded. The
+component no longer exists.
 
 * Plan
 
-Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order, one entity at a time, and
-record each item's result in the table below.
-
-1. Baseline and inventory (B01 to B05). Record the baseline before any
-   edit.
-2. Models (M01 to M10).
-3. Protocol (P01 to P06).
-4. Generation (G01 to G06).
-5. Wiring and data (W01 to W04).
-6. Shell (S01, S02).
-7. Structure and hygiene (H01 to H03).
-8. Verification (V01 to V06), ending with the registry entry.
+Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order and record each
+item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | pass | Baseline taken before any edit. =check_component_drift.py --component connections --dry-run= answers =Unknown component: 'connections'=, because the component is absent from =component_catalogue.org=. =regenerate_cmake_component_files.py --component ores.connections --check= reports 2 stale files: =src/component_files.cmake= and =tests/component_files.cmake= differ only by the generated-file marker. |
+| B02 | pass | Every model file classified by metatype. =projects/ores.connections/modeling/= held =component_overview.org= (=#+type: ores.codegen.component=), =ores.connections.puml= and =ores.connections.png=. 0 entities, 0 junctions, 0 operations, 0 messages. |
+| B03 | pass | All 70 non-test C++ files classified. 63 match a codegen archetype's output shape, and 7 are hand-written infrastructure: =repository/sqlite_context.{hpp,cpp}=, =export.hpp=, the umbrella header, and the three =CMakeLists.txt=. None is dead by the within-tree rule, and all 70 are unreachable from outside. |
+| B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. Its one =subject_prefix= field is a string a user types into a bookmark, not a subject the component publishes on. |
+| B05 | pass | Captures and in-flight branches read. The one capture that names the component, =doc/agile/product_backlog/next/persist_tag_colour_and_tag_dialog.org=, is Qt-only and carries the =ores.qt= tag. =origin/feature/remove-the-legacy-qt-remnants= (PR #2138) does not touch the component. |
+| M01 | not applicable | No org model. The component held only its overview. |
+| M02 | not applicable | No entity model, so no variability profile to bind. |
+| M03 | not applicable | No model states a property, so none can repeat its profile. |
+| M04 | not applicable | No model feature to place in a namespace. |
+| M05 | not applicable | No entity, so no table to describe. |
+| M06 | not applicable | The component exchanges no wire type. 0 messaging headers, 0 of them hand-written. |
+| M07 | not applicable | No junction. |
+| M08 | not applicable | No org model custom type binding. |
+| M09 | not applicable | No model, so no legacy fragment to find in one. |
+| M10 | not applicable | The overview is removed with the component. =validate_docs.py= passes on the tree apart from one pre-existing finding for =ores.shell.iam=. |
+| P01 | not applicable | No entity and no protocol. |
+| P02 | not applicable | No subject is owned. No raw subject literal exists in the component. |
+| P03 | not applicable | No registrar and no declared message. |
+| P04 | not applicable | No operation model and no hand-written protocol header. |
+| P05 | not applicable | No protocol change reaches a consumer. |
+| P06 | not applicable | No event cache. |
+| G01 | not applicable | No model, so nothing regenerates. The drift gate cannot name the component: =Unknown component=, as B01 records. |
+| G02 | pass | No hand-written file the generation supersedes remains. The whole component is deleted. |
+| G03 | pass | No generated file and no hand-written file carries the marker. The 2 CMake source lists that lacked it are deleted with the component. |
+| G04 | not applicable | No generated code to review against the component's best hand-written code. |
+| G05 | pass | No generator defect was found. The codegen has no SQLite target, and closing that gap for a component with no consumer would be new capability, not a fix. |
+| G06 | pass | The 2 stale source lists are gone with the component. The repo-wide check still reports 149 stale lists in other components. That is inherited from main, where commit =3a40c9c57e= added the marker to the templates on 2026-09-23, and it belongs to each of those components' stories. |
+| W01 | not applicable | No registrar family, so no composition point. |
+| W02 | not applicable | No handler checks a permission. |
+| W03 | not applicable | No populate script names the component. |
+| W04 | not applicable | The component owns no SQL script. Its storage was a local SQLite file, not a service schema. |
+| S01 | not applicable | No entity or junction, so no shell command unit. |
+| S02 | not applicable | No command, so no recipe and no destructive flag. |
+| H01 | pass | The audit ran. =validate_docs.py= covers the automated half and passes on the tree apart from =ores.shell.iam=, which is pre-existing and belongs to that component. The manual checks ran clean: no leftover artefact (=*stub*=, =*.orig=, =*.rej=, =.DS_Store=, =__pycache__=), no platform macro or OS header outside =ores.platform=, every file name snake_case, the umbrella header present. The audit record is this task. |
+| H02 | pass | No legacy code remains. The component and every code and ground-truth reference to it are gone. Two references stay on purpose and are recorded under *Out of scope*. |
+| H03 | pass | The change deletes code and removes a generated env block, so no comment survives to review. The one surviving source edit, =env_init.py=, was read against the comment rules. Its removed block took its comments with it, and no comment was added. |
+| V01 | pass | =compass build= over the whole tree reached 100% with exit code 0, with =projects/CMakeLists.txt= no longer adding the component. Nothing linked what was removed. |
+| V02 | pass | The =ores.codegen= suite passes at 536 passed in 11.52s, and the =ores.compass= suite at 215 passed and 1 skipped. The compass suite covers the =env_init.py= edit. The component's own suites are deleted with it. |
+| V03 | not applicable | No entity and no service, so the database has nothing of this component to recreate. |
+| V04 | not applicable | No generated shell command, so nothing to run against the fleet. |
+| V05 | pass | Every gate run and green, apart from one inherited repo-wide finding: component drift (=iam=), model drift (2 known exceptions), protocol twin coverage, handler permissions, populate references, shell recipe inventory, =validate_docs.py= (apart from =ores.shell.iam=), =compass lint=, and the six skill-consistency checks. The inherited finding is the cmake source-list drift that G06 records. |
+| V06 | not applicable | The component does not join =COMPONENTS_UNDER_TEST=, because it does not exist. This is the exception that supersedes the original acceptance. |
 
 * Notes
+
+- Inventory, 2026-09-23. 0 entity, junction or operation models. 70 C++
+  files outside tests, 0 of them generated (0%). 0 messaging headers, 0 of
+  them hand-written.
+- Consumer census. The only reference in the tree was
+  =projects/CMakeLists.txt= line 124, =add_subdirectory(.../ores.connections)=.
+  =#include <ores.connections/...>= appears nowhere outside the component.
+  A grep for =ores.connections=, =ores.connections/= and =connection_manager=
+  across every =.cpp=, =.hpp=, =CMakeLists.txt=, =*.cmake=, =*.ts= and =*.py=
+  outside the component returns nothing.
+- The component is not a codegen component. It has no row in
+  =projects/ores.codegen/library/component_catalogue.org=, and the codegen
+  has no SQLite target. The generated entity, domain and repository
+  templates hard-code the PostgreSQL shape: =schema = "public"=, tenant,
+  version and audit columns, and =sqlgen::session= on a connection pool.
+  This component uses =sqlgen::sqlite= with a file path. So 63 of its files
+  are generatable only after new generator capability, which a component
+  with no consumer does not earn.
+- 7 files are transitively dead inside the component as well:
+  =domain/recent_party.hpp= and =repository/recent_party_{entity,mapper,repository}.{hpp,cpp}=.
+  The only caller of that family, =connection_manager::get_recent_parties=,
+  has no caller of its own. =get_child_folders= and =resolve_connection=
+  are unreachable in the same way.
+- Stale reference sweep. =projects/modeling/= (component_architecture.org,
+  system_model_infrastructure.org, system_model_foundation.org, ores.puml),
+  =projects/ores.security/modeling/component_overview.org=,
+  =projects/ores.compass/src/env_init.py=, the =.env-format= log, and
+  =projects/ores.web/package-lock.json=.
+- Two sprint-history pages linked the deleted component's =:ID:=. The links
+  are now plain text, so =compass lint= passes and the history still reads.
 
 * Test Scenarios
 
@@ -67,6 +136,9 @@ Manual QA scenarios (scaffolded via =compass add test_scenario=)
 that verify this task. Link
 new ones here as they're created; the scenario doc itself links back
 via its "Verifies task" field.
+
+No scenario applies. No user reaches the component, and a deletion has
+no behaviour to walk through. The build and the gates are the evidence.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -76,12 +148,31 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2139][#2139]] | [connections] Remove the dead ores.connections component |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The System Model diagram still drew =connections --> security= after the component node was removed, so PlantUML would create a ghost component | projects/modeling/ores.puml:285 | fixed | The third commit removes the edge, and the source now has no reference to the alias. Its blocks and notes balance. |
+| 2 | The two sprint-history de-links existed only in the working tree, so both commits still carried a dangling id link | doc/agile/versions/v0/sprint_02/client_server_foundations/story.org, doc/agile/versions/v0/sprint_03/client_console_qt_integration/story.org | fixed | The third commit commits them. |
+| 3 | =doc/knowledge/ui/icon_guidelines.org= still describes the Qt Connection Browser under its Server Link icon | doc/knowledge/ui/icon_guidelines.org:479 | accepted, out of scope | Inherited from the Qt deletion. PR #2138 reworks that page and owns it. Now recorded under *Out of scope* on the story. |
 
 * Result
+
+ores.connections is removed, together with the references it left behind.
+
+The clean standard is met by subtraction. H02 forbids dead code, and the
+component was dead by every measure: no C++ consumer, no web or shell
+role, no org model, and no codegen target.
+
+Verification. The whole tree builds with =compass build=, exit 0. The
+=ores.compass= suite passes at 215 passed and 1 skipped, and it covers the
+=env_init.py= edit. The =ores.codegen= suite result is recorded in the V02
+row. Every codegen gate passes, apart from the inherited repo-wide CMake
+source-list drift that G06 records. =compass lint= passes. An independent
+verifier read the diff against the standard and found two defects, both
+fixed in the third commit.
+
+The removal is one commit and reverts on its own. The reference sweep is a
+second commit.

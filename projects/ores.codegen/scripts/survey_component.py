@@ -20,7 +20,10 @@ component with no catalogue entry yet, ores.assets being the one in
 flight, has no resolved directory and is read through --project, whose
 modeling directory is <project>/modeling by definition. Files under
 <project>/*/modeling/ are the sub-component overviews and protocol
-references, never codegen models, and are not counted.
+references, never codegen models, so B02 does not count them. B04 still
+reads them: a sub-component protocol reference names subjects without
+declaring them, and reporting those separately is the point of the B04
+cross-reference.
 
 B03 splits every C++ file under the project into generated and
 hand-written by the AUTO-GENERATED FILE marker, then classifies each

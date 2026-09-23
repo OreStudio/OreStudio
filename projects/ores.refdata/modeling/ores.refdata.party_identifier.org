@@ -200,7 +200,6 @@ std::string("Test identifier")
 :item_var:                partyIdentifier
 :key_field:               id_value
 :save_request_item_field: data
-:history_message_type:    get_party_identifier_history_request
 :settings_group:          PartyIdentifierListWindow
 :window_title:            Party Identifiers
 :icon:                    Key

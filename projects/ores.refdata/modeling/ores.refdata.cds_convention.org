@@ -233,8 +233,6 @@ std::nullopt
 :key_field:               id
 :delete_request_id_field:   ids
 :save_request_item_field: cds_convention
-:history_response_data_field: history
-:history_message_type:    get_cds_convention_history_request
 :settings_group:          CdsConventionListWindow
 :window_title:            CDS Conventions
 :icon:                    Chart

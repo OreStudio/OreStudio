@@ -102,7 +102,6 @@ std::string(faker::lorem::sentence())
 :collection_name:        types
 :item_var:               type
 :key_field:              code
-:history_message_type:   get_floating_index_type_history_request
 :settings_group:         FloatingIndexTypeListWindow
 :window_title:           Floating Index Types
 :icon:                   Tag

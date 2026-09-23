@@ -164,7 +164,6 @@ drop function if exists ores_refdata_validate_tenor_resolution_algorithm_fn;
 :collection_name:        algorithms
 :item_var:               algorithm
 :key_field:              code
-:history_message_type:   get_tenor_resolution_algorithm_history_request
 :settings_group:         TenorResolutionAlgorithmListWindow
 :window_title:           Tenor Resolution Algorithms
 :icon:                   Tag

@@ -160,9 +160,7 @@ drop function if exists ores_refdata_validate_currency_market_tier_fn;
 :item_var:               type
 :key_field:              code
 :delete_request_id_field: codes
-:history_message_type:        get_currency_market_tier_history_request
 :history_request_id_field:    code
-:history_response_data_field: history
 :settings_group:         CurrencyMarketTierListWindow
 :window_title:           Currency Market Tiers
 :icon:                   Chart

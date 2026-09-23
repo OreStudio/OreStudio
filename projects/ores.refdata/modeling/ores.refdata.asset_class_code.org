@@ -166,7 +166,6 @@ drop function if exists ores_refdata_validate_asset_class_code_fn;
 :collection_name:        classes
 :item_var:               class_
 :key_field:              code
-:history_message_type:   get_asset_class_code_history_request
 :settings_group:         AssetClassCodeListWindow
 :window_title:           Asset Class Codes
 :icon:                   Tag

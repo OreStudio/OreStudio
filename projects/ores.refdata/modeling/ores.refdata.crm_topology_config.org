@@ -197,7 +197,6 @@ crm_topology_config_repository::read_latest_all_tenants(context ctx) {
 :key_field:                name
 :has_export_macro:        true
 :save_request_item_field: data
-:history_message_type:    get_crm_topology_config_history_request
 :settings_group:          CrmTopologyConfigListWindow
 :window_title:            CRM Topology Configs
 :icon:                    Chart

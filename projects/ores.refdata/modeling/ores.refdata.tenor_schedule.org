@@ -254,7 +254,6 @@ drop function if exists ores_refdata_validate_tenor_schedule_fn;
 :collection_name:        schedules
 :item_var:               schedule
 :key_field:              code
-:history_message_type:   get_tenor_schedule_history_request
 :settings_group:         TenorScheduleListWindow
 :window_title:           Tenor Schedules
 :icon:                   CalendarClock

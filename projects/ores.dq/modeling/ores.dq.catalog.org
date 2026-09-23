@@ -159,9 +159,6 @@ std::string(faker::person::fullName())
 :delete_request_class:   dq::messaging::delete_catalog_request
 :delete_response_class:  dq::messaging::delete_catalog_response
 :delete_message_type:    delete_catalog_request
-:history_request_class:  dq::messaging::get_catalog_history_request
-:history_response_class: dq::messaging::get_catalog_history_response
-:history_message_type:   get_catalog_history_request
 :settings_group:         CatalogListWindow
 :window_title:           Catalogs
 :icon:                   Table

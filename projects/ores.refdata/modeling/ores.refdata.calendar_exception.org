@@ -197,12 +197,9 @@ std::string("Test exception")
 :key_field:                   id
 :has_export_macro:            true
 :save_request_item_field:     data
-:history_message_type:        get_calendar_exception_history_request
 :settings_group:               CalendarExceptionListWindow
 :window_title:                Calendar Exceptions
 :icon:                         CalendarClock
-:changed_event_class:         refdata::eventing::calendar_exception_changed_event
-:changed_event_include:       ores.refdata.api/eventing/calendar_exception_changed_event.hpp
 :END:
 
 *** Detail fields

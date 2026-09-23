@@ -140,8 +140,6 @@ Number of business days from fixing to value date (usually 0 or 1).
 :key_field:               id
 :delete_request_id_field:   ids
 :save_request_item_field: overnight_index_convention
-:history_response_data_field: history
-:history_message_type:    get_overnight_index_convention_history_request
 :settings_group:          OvernightIndexConventionListWindow
 :window_title:            Overnight Index Conventions
 :icon:                    Chart

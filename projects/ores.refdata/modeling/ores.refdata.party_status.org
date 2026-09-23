@@ -162,7 +162,6 @@ drop function if exists ores_refdata_validate_party_status_fn;
 :collection_name:        statuses
 :item_var:               status
 :key_field:              code
-:history_message_type:   get_party_status_history_request
 :settings_group:         PartyStatusListWindow
 :window_title:           Party Statuses
 :icon:                   Flag

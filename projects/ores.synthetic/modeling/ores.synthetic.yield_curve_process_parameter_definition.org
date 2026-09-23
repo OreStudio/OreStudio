@@ -318,9 +318,6 @@ codegen-side rule.
 :delete_request_class:    synthetic::messaging::delete_yield_curve_process_parameter_definition_request
 :delete_response_class:   synthetic::messaging::delete_yield_curve_process_parameter_definition_response
 :delete_message_type:     delete_yield_curve_process_parameter_definition_request
-:history_request_class:   synthetic::messaging::get_yield_curve_process_parameter_definition_history_request
-:history_response_class:  synthetic::messaging::get_yield_curve_process_parameter_definition_history_response
-:history_message_type:    get_yield_curve_process_parameter_definition_history_request
 :settings_group:          YieldCurveProcessParameterDefinitionListWindow
 :window_title:            Yield Curve Process Parameter Definitions
 :icon:                    Tag

@@ -103,7 +103,6 @@ std::string(faker::lorem::sentence())
 :collection_name:        types
 :item_var:               type
 :key_field:              code
-:history_message_type:   get_leg_type_history_request
 :settings_group:         LegTypeListWindow
 :window_title:           Leg Types
 :icon:                   Tag

@@ -212,7 +212,6 @@ crm_driver_pair_repository::read_latest_all_tenants(context ctx) {
 :key_field:                id
 :has_export_macro:        true
 :save_request_item_field: data
-:history_message_type:    get_crm_driver_pair_history_request
 :settings_group:          CrmDriverPairListWindow
 :window_title:            CRM Driver Pairs
 :icon:                    ArrowSync

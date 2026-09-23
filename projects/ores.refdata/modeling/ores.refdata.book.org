@@ -358,7 +358,6 @@ std::string("WRLD")
 :item_var:                book
 :key_field:               name
 :save_request_item_field: book
-:history_message_type:    get_book_history_request
 :has_change_reason_cache: true
 :has_export_macro:        true
 :parent_entity_singular:  portfolio

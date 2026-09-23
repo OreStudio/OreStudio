@@ -211,13 +211,9 @@ drop function if exists ores_refdata_validate_currency_pair_fn;
 :item_var:               pair
 :key_field:              pair_code
 :delete_request_id_field: pair_codes
-:history_message_type:        get_currency_pair_history_request
 :history_request_id_field:    pair_code
-:history_response_data_field: history
 :key_flag_field:              pairCodeEdit
 :key_flag_accessor:           currency_flag_icon_from_pair_code
-:key_flag_accessor_is_free_fn: true
-:key_flag_is_pair:             true
 :settings_group:         CurrencyPairListWindow
 :window_title:           Currency Pairs
 :icon:                   Currency

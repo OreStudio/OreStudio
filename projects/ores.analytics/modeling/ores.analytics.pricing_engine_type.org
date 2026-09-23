@@ -124,9 +124,6 @@ std::string("NONE")
 :delete_request_class:   analytics::messaging::delete_pricing_engine_type_request
 :delete_response_class:  analytics::messaging::delete_pricing_engine_type_response
 :delete_message_type:    delete_pricing_engine_type_request
-:history_request_class:  analytics::messaging::get_pricing_engine_type_history_request
-:history_response_class: analytics::messaging::get_pricing_engine_type_history_response
-:history_message_type:   get_pricing_engine_type_history_request
 :settings_group:         PricingEngineTypeListWindow
 :window_title:           Pricing Engine Types
 :icon:                   Tag

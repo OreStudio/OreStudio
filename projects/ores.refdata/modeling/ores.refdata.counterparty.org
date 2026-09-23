@@ -322,7 +322,6 @@ TypeScript twin render it.
 :item_var:                counterparty
 :key_field:               short_code
 :save_request_item_field: counterparty
-:history_message_type:    get_counterparty_history_request
 :settings_group:          CounterpartyListWindow
 :window_title:            Counterparties
 :icon:                    Handshake

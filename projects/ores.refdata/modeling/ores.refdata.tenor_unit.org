@@ -164,7 +164,6 @@ drop function if exists ores_refdata_validate_tenor_unit_fn;
 :collection_name:        units
 :item_var:               unit
 :key_field:              code
-:history_message_type:   get_tenor_unit_history_request
 :settings_group:         TenorUnitListWindow
 :window_title:           Tenor Units
 :icon:                   Tag

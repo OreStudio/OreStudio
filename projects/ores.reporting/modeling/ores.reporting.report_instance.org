@@ -227,7 +227,6 @@ std::nullopt
 :collection_name:        instances
 :item_var:               instance
 :key_field:              name
-:key_widget:             nameEdit
 :get_request_class:      reporting::messaging::get_report_instances_request
 :get_response_class:     reporting::messaging::get_report_instances_response
 :get_message_type:       get_report_instances_request
@@ -237,11 +236,7 @@ std::nullopt
 :delete_request_class:   reporting::messaging::delete_report_instance_request
 :delete_response_class:  reporting::messaging::delete_report_instance_response
 :delete_message_type:    delete_report_instance_request
-:history_request_class:  reporting::messaging::get_report_instance_history_request
-:history_response_class: reporting::messaging::get_report_instance_history_response
-:history_message_type:   get_report_instance_history_request
 :parent_entity_singular:  report_definition
-:parent_id_field_camel:   definitionId
 :parent_id_field:         definition_id
 :settings_group:         ReportInstanceListWindow
 :window_title:           Report Instances

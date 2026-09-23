@@ -246,14 +246,9 @@ std::string("IRS")
 :delete_request_class:    synthetic::messaging::delete_ir_curve_template_entry_request
 :delete_response_class:   synthetic::messaging::delete_ir_curve_template_entry_response
 :delete_message_type:     delete_ir_curve_template_entry_request
-:history_request_class:   synthetic::messaging::get_ir_curve_template_entry_history_request
-:history_response_class:  synthetic::messaging::get_ir_curve_template_entry_history_response
-:history_message_type:    get_ir_curve_template_entry_history_request
 :settings_group:          IrCurveTemplateEntryListWindow
 :window_title:            IR Curve Template Entries
 :icon:                    Table
-:changed_event_class:     synthetic::eventing::ir_curve_template_entry_changed_event
-:changed_event_include:   ores.synthetic.api/eventing/ir_curve_template_entry_changed_event.hpp
 :END:
 
 *** Detail fields

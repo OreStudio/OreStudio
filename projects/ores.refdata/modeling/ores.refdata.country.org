@@ -220,12 +220,9 @@ drop function if exists ores_refdata_validate_country_fn;
 :flag_icon_column:            Alpha2Code
 :flag_inline_widget:          codeEdit
 :flag_accessor:               getCountryFlagIcon
-:history_message_type:        get_country_history_request
 :settings_group:              CountryListWindow
 :window_title:                Countries
 :icon:                        Globe
-:changed_event_class:         refdata::eventing::country_changed_event
-:changed_event_include:       ores.refdata.api/eventing/country_changed_event.hpp
 :END:
 
 *** Detail fields

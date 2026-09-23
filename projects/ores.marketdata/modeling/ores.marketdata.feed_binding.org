@@ -235,9 +235,6 @@ feed_binding_repository::read_latest_all_tenants(context ctx) {
 :delete_request_class:    marketdata::messaging::delete_feed_binding_request
 :delete_response_class:   marketdata::messaging::delete_feed_binding_response
 :delete_message_type:     delete_feed_binding_request
-:history_request_class:   marketdata::messaging::get_feed_binding_history_request
-:history_response_class:  marketdata::messaging::get_feed_binding_history_response
-:history_message_type:    get_feed_binding_history_request
 :settings_group:          FeedBindingListWindow
 :window_title:            Feed Bindings
 :icon:                    ServerLink

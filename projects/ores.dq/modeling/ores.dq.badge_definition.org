@@ -219,9 +219,6 @@ faker::number::integer(1, 100)
 :delete_request_class:   dq::messaging::delete_badge_definition_request
 :delete_response_class:  dq::messaging::delete_badge_definition_response
 :delete_message_type:    delete_badge_definition_request
-:history_request_class:  dq::messaging::get_badge_definition_history_request
-:history_response_class: dq::messaging::get_badge_definition_history_response
-:history_message_type:   get_badge_definition_history_request
 :settings_group:         BadgeDefinitionListWindow
 :window_title:           Badge Definitions
 :icon:                   Tag

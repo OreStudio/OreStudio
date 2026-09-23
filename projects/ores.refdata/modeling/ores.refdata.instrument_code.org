@@ -251,7 +251,6 @@ drop function if exists ores_refdata_validate_instrument_code_fn;
 :collection_name:        codes
 :item_var:               code_
 :key_field:              code
-:history_message_type:   get_instrument_code_history_request
 :settings_group:         InstrumentCodeListWindow
 :window_title:           Instrument Codes
 :icon:                   Tag

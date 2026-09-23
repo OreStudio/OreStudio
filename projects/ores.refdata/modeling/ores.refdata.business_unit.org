@@ -291,7 +291,6 @@ not part of the natural key -- (=party_id=, =unit_name=) is. Using
 :has_explorer_api:        true
 :explorer_interface:      IBusinessUnitBrowser
 :save_request_item_field: business_unit
-:history_message_type:    get_business_unit_history_request
 :settings_group:          BusinessUnitListWindow
 :window_title:            Business Units
 :icon:                    Building

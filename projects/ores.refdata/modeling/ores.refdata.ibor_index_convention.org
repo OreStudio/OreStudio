@@ -166,8 +166,6 @@ false
 :key_field:               id
 :delete_request_id_field:   ids
 :save_request_item_field: ibor_index_convention
-:history_response_data_field: history
-:history_message_type:    get_ibor_index_convention_history_request
 :settings_group:          IborIndexConventionListWindow
 :window_title:            IBOR Index Conventions
 :icon:                    Chart

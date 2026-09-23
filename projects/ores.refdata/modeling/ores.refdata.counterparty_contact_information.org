@@ -324,7 +324,6 @@ std::string("https://example.com")
 :item_var:                counterpartyContactInformation
 :key_field:               contact_type
 :save_request_item_field: data
-:history_message_type:    get_counterparty_contact_information_history_request
 :settings_group:          CounterpartyContactInformationListWindow
 :window_title:            Counterparty Contact Information
 :icon:                    PersonAccounts

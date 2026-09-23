@@ -133,7 +133,6 @@ drop function if exists ores_refdata_validate_tenor_anchor_fn;
 :collection_name:        anchors
 :item_var:               anchor
 :key_field:              code
-:history_message_type:   get_tenor_anchor_history_request
 :settings_group:         TenorAnchorListWindow
 :window_title:           Tenor Anchors
 :icon:                   Anchor

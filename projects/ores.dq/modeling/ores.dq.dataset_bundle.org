@@ -156,9 +156,6 @@ std::string(faker::lorem::sentence())
 :delete_request_class:   dq::messaging::delete_dataset_bundle_request
 :delete_response_class:  dq::messaging::delete_dataset_bundle_response
 :delete_message_type:    delete_dataset_bundle_request
-:history_request_class:  dq::messaging::get_dataset_bundle_history_request
-:history_response_class: dq::messaging::get_dataset_bundle_history_response
-:history_message_type:   get_dataset_bundle_history_request
 :settings_group:         DatasetBundleListWindow
 :window_title:           Dataset Bundles
 :icon:                   Folder

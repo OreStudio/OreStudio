@@ -303,16 +303,11 @@ drop function if exists ores_refdata_validate_calendar_fn;
 :item_var:                    calendar
 :key_field:                   code
 :delete_request_id_field:     codes
-:history_message_type:        get_calendar_history_request
 :history_request_id_field:    code
-:history_response_data_field: history
 :settings_group:              CalendarListWindow
-:qt_settings_version:         1
 :window_title:                Calendars
 :icon:                        CalendarClock
 :has_version_navigation:      false
-:changed_event_class:         refdata::eventing::calendar_changed_event
-:changed_event_include:       ores.refdata.api/eventing/calendar_changed_event.hpp
 :has_toolbar:                 true
 :END:
 

@@ -208,10 +208,7 @@ drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
 :item_var:                    business_centre
 :key_field:                   code
 :delete_request_id_field:     codes
-:delete_request_id_is_plural: true
-:history_message_type:        get_business_centre_history_request
 :history_request_id_field:    code
-:history_response_data_field: history
 :settings_group:               BusinessCentreListWindow
 :window_title:                 Business Centres
 :icon:                          BuildingBank

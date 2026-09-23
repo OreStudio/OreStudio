@@ -1400,9 +1400,6 @@ below is the order the wire carries.
 :delete_request_class:    trading::messaging::delete_trade_request
 :delete_response_class:   trading::messaging::delete_trade_response
 :delete_message_type:     delete_trade_request
-:history_request_class:   trading::messaging::get_trade_history_request
-:history_response_class:  trading::messaging::get_trade_history_response
-:history_message_type:    get_trade_history_request
 :settings_group:          TradeListWindow
 :window_title:            Trades
 :icon:                    DocumentTable

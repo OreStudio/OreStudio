@@ -235,9 +235,6 @@ faker::number::integer(1, 100)
 :delete_request_class:   dq::messaging::delete_change_reason_request
 :delete_response_class:  dq::messaging::delete_change_reason_response
 :delete_message_type:    delete_change_reason_request
-:history_request_class:  dq::messaging::get_change_reason_history_request
-:history_response_class: dq::messaging::get_change_reason_history_response
-:history_message_type:   get_change_reason_history_request
 :settings_group:         ChangeReasonListWindow
 :window_title:           Change Reasons
 :icon:                   Table

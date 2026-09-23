@@ -165,7 +165,6 @@ drop function if exists ores_refdata_validate_purpose_type_fn;
 :collection_name:        types
 :item_var:               type
 :key_field:              code
-:history_message_type:   get_purpose_type_history_request
 :settings_group:         PurposeTypeListWindow
 :window_title:           Purpose Types
 :icon:                   Flag

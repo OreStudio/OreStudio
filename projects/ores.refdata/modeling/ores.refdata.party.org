@@ -466,7 +466,6 @@ that should decide it. Every other tenant still sees only its own rows.
 :item_var:               party
 :key_field:              short_code
 :save_request_item_field: party
-:history_message_type:   get_party_history_request
 :settings_group:         PartyListWindow
 :window_title:           Parties
 :icon:                   Organization

@@ -162,10 +162,7 @@ drop function if exists ores_refdata_validate_contact_type_fn;
 :item_var:                    type
 :key_field:                   code
 :delete_request_id_field:     codes
-:delete_request_id_is_plural: true
-:history_message_type:        get_contact_type_history_request
 :history_request_id_field:    code
-:history_response_data_field: history
 :settings_group:              ContactTypeListWindow
 :window_title:                Contact Types
 :icon:                        PersonAccounts

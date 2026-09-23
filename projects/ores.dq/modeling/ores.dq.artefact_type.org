@@ -218,9 +218,6 @@ faker::number::integer(1, 100)
 :delete_request_class:   dq::messaging::delete_artefact_type_request
 :delete_response_class:  dq::messaging::delete_artefact_type_response
 :delete_message_type:    delete_artefact_type_request
-:history_request_class:  dq::messaging::get_artefact_type_history_request
-:history_response_class: dq::messaging::get_artefact_type_history_response
-:history_message_type:   get_artefact_type_history_request
 :settings_group:         ArtefactTypeListWindow
 :window_title:           Artefact Types
 :icon:                   Table

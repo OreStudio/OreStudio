@@ -149,9 +149,6 @@ faker::number::integer(1, 100)
 :delete_request_class:   reporting::messaging::delete_report_type_request
 :delete_response_class:  reporting::messaging::delete_report_type_response
 :delete_message_type:    delete_report_type_request
-:history_request_class:  reporting::messaging::get_report_type_history_request
-:history_response_class: reporting::messaging::get_report_type_history_response
-:history_message_type:   get_report_type_history_request
 :settings_group:         ReportTypeListWindow
 :window_title:           Report Types
 :icon:                   FileBarChart

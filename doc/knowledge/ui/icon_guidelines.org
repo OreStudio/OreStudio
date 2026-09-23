@@ -59,7 +59,7 @@ Icons representing user-initiated operations.
 
 Create new items, add to lists, insert content.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_add_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_add_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: "New" buttons, add to list, create actions.
@@ -68,7 +68,7 @@ Create new items, add to lists, insert content.
 
 Copy an item, creating a duplicate with the same content.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_copy_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_copy_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: "Copy" toolbar buttons and context menu actions that create a
@@ -78,7 +78,7 @@ gets the original name suffixed with " (copy)".
 *** Delete
 Remove items, clear content, destructive actions.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_delete_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_delete_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Delete buttons, remove from list. Use filled variant sparingly to
@@ -87,7 +87,7 @@ indicate destructive nature.
 *** Delete Dismiss
 Purge data, clear all, destructive bulk action with finality.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_delete_dismiss_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_delete_dismiss_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Purge database actions, clear all data, bulk delete operations.
@@ -97,7 +97,7 @@ with no undo. Always require confirmation before use.
 *** Edit
 Modify existing content, enter edit mode.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_edit_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_edit_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Edit buttons, modify actions, pencil metaphor.
@@ -105,7 +105,7 @@ Modify existing content, enter edit mode.
 *** Save
 Persist changes, commit data.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_save_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_save_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Save buttons, apply changes.
@@ -113,7 +113,7 @@ Persist changes, commit data.
 *** Checkmark
 Confirm action, indicate completion, accept.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_checkmark_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_checkmark_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Confirmation buttons, success indicators, selected state in lists.
@@ -121,7 +121,7 @@ Confirm action, indicate completion, accept.
 *** Dismiss
 Close dialogs, cancel operations, clear notifications.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_dismiss_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_dismiss_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Close buttons, cancel actions, clear/dismiss.
@@ -129,7 +129,7 @@ Close dialogs, cancel operations, clear notifications.
 *** Star
 Favorite, bookmark, rate.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_star_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_star_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Regular for "not favorited", filled for "favorited" state.
@@ -147,7 +147,7 @@ Interactive command shell, console, REPL.
 *** Wand
 Generate synthetic data, auto-fill, magic create.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_wand_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_wand_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Generate buttons, auto-fill actions, create synthetic/test data.
@@ -155,7 +155,7 @@ Generate synthetic data, auto-fill, magic create.
 *** Record
 Start recording, capture session.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_record_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_record_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Recording controls. Filled indicates actively recording.
@@ -163,7 +163,7 @@ Start recording, capture session.
 *** Publish
 Deploy data to production, upload, send to target system.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_upload_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_upload_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Publish buttons, deploy actions, upload data to production tables.
@@ -196,7 +196,7 @@ Icons for directional movement and navigation controls.
 *** Arrow Left
 Navigate back, move left.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_left_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_left_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Back navigation, left scroll controls.
@@ -228,7 +228,7 @@ Step to next item in sequence.
 *** Arrow Download
 Download content, export data.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_download_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_download_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Download buttons, export actions.
@@ -284,7 +284,7 @@ Export ORE data.
 *** Arrow Sync
 Synchronize data, refresh with server.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_sync_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_sync_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Sync buttons, bidirectional refresh.
@@ -312,7 +312,7 @@ Rotate clockwise, redo action.
 *** Arrow Rotate Counterclockwise
 Undo action, rotate counterclockwise.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Undo buttons, counterclockwise rotation, revert changes.
@@ -324,7 +324,7 @@ Icons communicating system state and user feedback.
 *** Info
 Informational message, help content, details.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_info_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_info_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Info tooltips, help buttons, informational banners.
@@ -332,7 +332,7 @@ Informational message, help content, details.
 *** Warning
 Caution, potential issue, requires attention.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_warning_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_warning_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Warning messages, caution indicators. Pair with amber/yellow color.
@@ -340,7 +340,7 @@ Caution, potential issue, requires attention.
 *** Error Circle
 Error state, failed operation, critical issue.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_error_circle_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_error_circle_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Error messages, validation failures, blocked states. Pair with red color.
@@ -348,7 +348,7 @@ Error state, failed operation, critical issue.
 *** Question
 Help, unknown state, requires clarification.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_question_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_question_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Help buttons, FAQ links, contextual help triggers.
@@ -360,7 +360,7 @@ Icons representing people and account management.
 *** Person
 Single user, current user, profile.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_person_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_person_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: User profile, account menu, single user reference.
@@ -368,7 +368,7 @@ Single user, current user, profile.
 *** Person Add
 Invite user, create account, add team member.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_person_add_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_person_add_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Invite buttons, add user actions, registration.
@@ -376,7 +376,7 @@ Invite user, create account, add team member.
 *** Person Accounts
 Multiple users, team, user management.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_person_accounts_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_person_accounts_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Team views, user management, multi-user contexts.
@@ -401,7 +401,7 @@ Icons for authentication and authorization concepts.
 *** Lock Closed
 Secured, protected, authentication required.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_lock_closed_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_lock_closed_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Locked content, secure areas, login required indicators.
@@ -409,7 +409,7 @@ Secured, protected, authentication required.
 *** Lock Open
 Unlocked, accessible, public.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_lock_open_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_lock_open_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Unlocked state, public content, access granted.
@@ -417,7 +417,7 @@ Unlocked, accessible, public.
 *** Password Reset (48px)
 Reset credentials, forgot password flow.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_password_reset_48_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_password_reset_48_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Password reset screens, credential recovery flows. Large size for
@@ -426,7 +426,7 @@ feature prominence.
 *** Key Multiple
 Change master password, manage encryption keys.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_key_multiple_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_key_multiple_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Change master password actions, encryption key management, password
@@ -449,7 +449,7 @@ Icons indicating connectivity and network state.
 *** Plug Connected
 Connected to server, online, link established.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_plug_connected_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_plug_connected_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Connection status indicators showing active connection.
@@ -457,7 +457,7 @@ Connected to server, online, link established.
 *** Plug Disconnected
 Disconnected, offline, no connection.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_plug_disconnected_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_plug_disconnected_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Disconnected state, offline mode, connection lost.
@@ -465,7 +465,7 @@ Disconnected, offline, no connection.
 *** Plug Connected Checkmark
 Connection verified, authenticated connection.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_plug_connected_checkmark_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_plug_connected_checkmark_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Verified connection, authenticated session, secure link confirmed.
@@ -473,7 +473,7 @@ Connection verified, authenticated connection.
 *** Server Link
 Server connection bookmark, saved connection, connection browser.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_server_link_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_server_link_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Connection browser window, saved server connections, bookmark management.
@@ -486,7 +486,7 @@ Icons for file system and document operations.
 *** Folder
 Directory, container, file group.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_folder_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_folder_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Folder navigation, directory listings.
@@ -502,7 +502,7 @@ Open folder, expanded directory, selected container.
 *** Document Table
 Tabular data, spreadsheet, structured document.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_document_table_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_document_table_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Table views, data documents, spreadsheet-like content.
@@ -639,7 +639,7 @@ Distinct from the histogram icon used for data analytics. Solar fallback:
 *** Database
 Data storage, datasets, data dimensions.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_database_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_database_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Dataset views, data dimensions (Origin, Nature, Treatment), data assets.
@@ -647,7 +647,7 @@ Data storage, datasets, data dimensions.
 *** Code
 Coding schemes, classification systems, identifier schemes.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_code_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_code_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Coding scheme management (LEI, ISIN, etc.), classification systems.
@@ -655,7 +655,7 @@ Coding schemes, classification systems, identifier schemes.
 *** Book
 Methodologies, documentation, reference materials.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_book_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_book_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Methodology views, data processing documentation, reference guides.
@@ -671,7 +671,7 @@ Numeric data, ID reference, sequence.
 *** Currency Dollar Euro
 Financial data, multi-currency, monetary values.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_currency_dollar_euro_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_currency_dollar_euro_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Currency fields, financial data, monetary transactions.
@@ -732,7 +732,7 @@ Icons for temporal concepts.
 *** Clock (16px)
 Time, schedule, duration.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_clock_16_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_clock_16_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: Time fields, timestamps, schedule indicators.
@@ -740,7 +740,7 @@ Time, schedule, duration.
 *** History
 Activity history, past actions, audit trail.
 
-- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_history_20_regular.svg][None]]
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_history_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
 *Usage*: History views, recent items, activity logs.
@@ -749,7 +749,7 @@ Activity history, past actions, audit trail.
 
 Scheduler, scheduled jobs, cron tasks.
 
--   Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_calendar_clock_20_regular.svg][None]]
+-   Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_calendar_clock_20_regular.svg]]
 -   Filled: None (removed with the Qt client)
 
 *Usage*: Scheduler menu entries, job definition list window title, any UI

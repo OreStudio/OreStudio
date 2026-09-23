@@ -3869,9 +3869,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 presentation['detail_fields'] = fields
             # Compute per-field flags for template iteration
             detail_fields = presentation['detail_fields']
-            required_fields = []
-            required_dynamic_combo_fields = []
-            date_fields = []
             domain_col_types = {
                 c.get('name'): c.get('cpp_type', '')
                 for c in domain_entity.get('columns', [])
@@ -4002,8 +3999,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     f['is_line_edit']
                     and field_cpp == 'std::chrono::year_month_day'
                 )
-                if f['is_date']:
-                    date_fields.append({'field': f['field'], 'widget': f['widget']})
                 # Default spin box range (overridable via model)
                 if f['is_spin_box']:
                     f.setdefault('spin_min', -1 if f['is_nullable_int'] else 0)
@@ -4030,70 +4025,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f['label_widget'] = 'label' + snake_to_pascal(f.get('field', ''))
                 # Derive field_pascal for generated method names (e.g. base_currency -> BaseCurrency)
                 f['field_pascal'] = snake_to_pascal(f.get('field', ''))
-                if f.get('is_required') and f.get('is_line_edit'):
-                    required_fields.append({
-                        'field': f['field'],
-                        'widget': f['widget'],
-                        '_is_last': False,
-                    })
-                # static_combo/dynamic_combo/flagged_combo are all QComboBox-backed
-                # (currentIndex() >= 0), not QLineEdit-backed (.text()) -- a
-                # required static_combo field misclassified here would generate a
-                # ui_->{{widget}}->text() call that doesn't compile against QComboBox.
-                if f.get('is_required') and (f.get('is_dynamic_combo') or
-                                              f.get('is_flagged_combo') or
-                                              f.get('is_static_combo')):
-                    required_dynamic_combo_fields.append({
-                        'field': f['field'],
-                        'widget': f['widget'],
-                        '_is_last': False,
-                    })
-            if required_fields:
-                required_fields[-1]['_is_last'] = True
-            if required_dynamic_combo_fields:
-                required_dynamic_combo_fields[-1]['_is_last'] = True
-            key_field_data = next((f for f in detail_fields if f.get('is_key')), None)
-            # onCodeChanged() only makes sense (and is only ever connected)
-            # for an is_key field that's a QLineEdit -- a combo-widget key
-            # (e.g. currency_pair_convention's pair_code) wires to the
-            # generic onFieldChanged() like any other combo instead. Gate
-            # the method's generation so it doesn't sit as unreachable dead
-            # code for entities whose key isn't a line_edit.
-            # Every field locked after create (is_key or immutable), each
-            # described by its own widget kind.
-            locked_fields = [
-                {
-                    'widget': f['widget'],
-                    'is_line_edit': f['is_line_edit'],
-                    'is_text_edit': f['is_text_edit'],
-                    'is_static_combo': f['is_static_combo'],
-                    'is_dynamic_combo': f['is_dynamic_combo'],
-                    'is_flagged_combo': f['is_flagged_combo'],
-                    'is_check_box': f['is_check_box'],
-                    'is_colour': f['is_colour'],
-                    # The primary key's own line_edit is never
-                    # user-editable when the entity has a UUID primary
-                    # key: setCreateMode() auto-generates it
-                    # (has_uuid_primary_key's random_generator() block
-                    # below), so it must stay read-only even while
-                    # createMode is true -- not just after create like
-                    # every other locked field. Must match on the field
-                    # actually being the entity's own UUID primary key
-                    # column, not merely
-                    # "some is_key field on an entity that happens to
-                    # have a UUID primary key" -- otherwise a natural/
-                    # business key field (e.g. party's short_code, which
-                    # is user-entered, not generated) on an entity that
-                    # separately has a UUID id gets wrongly locked for
-                    # the entire lifetime of the Create dialog instead of
-                    # just after create.
-                    'is_auto_generated_key': (
-                        f['is_key'] and presentation.get('has_uuid_primary_key', False) and
-                        f.get('field') == domain_entity.get('primary_key', {}).get('column', '')
-                    ),
-                }
-                for f in detail_fields if f['is_locked_after_create']
-            ]
             # Default has_pagination to False if not set
             presentation['has_pagination'] = presentation.get('has_pagination', False)
             # Default has_readonly_paginated_list to False if not set

@@ -1,0 +1,90 @@
+# Regeneration build, ores.compute, 2026-09-23
+
+Command: cmake --build --preset linux-clang-debug-make --target
+ores.compute.api.lib ores.compute.core.lib ores.compute.service.lib
+ores.compute.wrapper.lib ores.compute.client.lib -j 3
+
+ores.compute.api.lib built. ores.compute.core.lib failed with 13 errors in
+two translation units. The errors group into three root causes.
+
+## Root cause 1: the version facet collides with a real sibling entity
+
+The regenerated app_protocol.hpp carries the version-history facet of the
+app entity, and app_version_protocol.hpp carries the protocol of the
+app_version entity. Both derive the same type names.
+
+    app_version_protocol.hpp:38:8: error: redefinition of 'app_version_key'
+    app_protocol.hpp:72:8: note: previous definition is here
+    app_version_protocol.hpp:85:8: error: redefinition of 'list_app_versions_request'
+    app_protocol.hpp:214:8: note: previous definition is here
+    app_version_protocol.hpp:100:8: error: redefinition of 'list_app_versions_response'
+    app_protocol.hpp:231:8: note: previous definition is here
+    app_version_protocol.hpp:106:8: error: redefinition of 'get_app_version_request'
+    app_protocol.hpp:237:8: note: previous definition is here
+    app_version_protocol.hpp:119:8: error: redefinition of 'get_app_version_response'
+    app_protocol.hpp:250:8: note: previous definition is here
+
+Source: projects/ores.codegen/src/codegen/org_loader.py:3039 to 3043 and
+3121 to 3136. For every entity with audit columns the loader derives
+f"{singular}_version_key", f"{singular}_versions_filter",
+f"list_{singular}_versions" and f"get_{singular}_version_request". For the
+app entity that is app_version_key and list_app_versions_request, which is
+the name of the app_version entity's own protocol.
+
+iam does not expose this because its account entity has no sibling entity
+named account_version. iam models account_version as a message.
+
+## Root cause 2: the response payload member collides with the envelope result member
+
+    result_protocol.hpp:130:50: error: duplicate member 'result'
+    result_protocol.hpp:129:35: note: previous declaration is here
+    result_protocol.hpp:167:35: error: duplicate member 'result'
+    result_protocol.hpp:166:35: note: previous declaration is here
+
+Source: org_loader.py:3063 to 3065, 3078 to 3080 and 3087 to 3089. Each
+response carries the envelope member _ts_field("result", _RESULT) beside a
+payload member named after the entity singular. For the result entity both
+members are named result.
+
+    struct get_result_response {
+        ores::utility::domain::result result;
+        std::optional<ores::compute::domain::result> result;
+    };
+
+## Root cause 3: hand-written handlers call the retired generated service API
+
+The hand-written legacy handlers were written against the pre-drift service
+signatures. The regenerated services take a request object or a uuid.
+
+    result_submit_handler.hpp:81: no matching member function for call to 'get_result'
+      candidate: messaging::get_result_response get_result(const messaging::get_result_request&)
+      candidate: std::optional<domain::result> get_result(const boost::uuids::uuid&)
+    work_handler.hpp:144: no matching member function for call to 'get_workunit'
+      candidate: messaging::get_workunit_response get_workunit(const messaging::get_workunit_request&)
+      candidate: std::optional<domain::workunit> get_workunit(const boost::uuids::uuid&)
+    work_handler.hpp:179: no matching member function for call to 'get_host'
+      candidate: messaging::get_host_response get_host(const messaging::get_host_request&)
+      candidate: std::optional<domain::host> get_host(const boost::uuids::uuid&)
+    work_handler.hpp:234: no matching member function for call to 'get_host'
+      (same pair as above)
+
+These four files are among the hand-written protocol headers and handlers
+that M06 and P04 turn into models:
+platform_protocol.hpp, telemetry_protocol.hpp, work_protocol.hpp,
+platform_handler.hpp, telemetry_handler.hpp, work_handler.hpp,
+report_submit_handler.hpp, result_submit_handler.hpp, registrar.hpp.
+
+## What this establishes
+
+Regeneration is not inert. It realises the canonical protocol, and the
+canonical protocol exposes two shared-codegen naming defects that only a
+build finds. Fixing them belongs at the source, in org_loader.py, each with
+a regression test in the codegen suite, before compute can be regenerated
+and pass G01.
+
+## Control
+
+check_component_drift.py --component iam-cpp --dry-run reports no drift, so
+the shared codegen is self-consistent for the component already under test.
+The two defects are triggered by compute's model names, not by the
+regeneration itself. Raw output in g01_iam_drift_control.txt.

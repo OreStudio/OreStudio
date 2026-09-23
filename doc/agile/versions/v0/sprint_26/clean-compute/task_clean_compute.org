@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-compute:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-compute
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:543DE51B-B9D8-4261-9DB1-9B97D4C9F187][Clean ores.compute to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ ores.compute passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:543DE51B-B9D8-4261-9DB1-9B97D4C9F187][Clean ores.compute to the component clean standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Section 1 recorded. Regeneration probed and its two generator defects located. |
+| Waiting on   | The two org_loader.py fixes, which unblock G01. |
+| Next         | Fix the two naming defects at source with codegen regression tests, then regenerate and build. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -55,11 +55,101 @@ record each item's result in the table below.
 7. Structure and hygiene (H01 to H03).
 8. Verification (V01 to V06), ending with the registry entry.
 
-| Item | Result | Evidence |
-|------+--------+----------|
-|      |        |          |
+| Item | Result  | Evidence |
+|------+---------+----------|
+| B01  | Pass    | =evidence/b01_component_drift_baseline.txt= records 88 changed and 34 created files. =evidence/b01_model_drift_baseline.txt= records one known exception, =result.has_change_reason_cache=. |
+| B02  | Pass    | =evidence/b02_b03_b04_inventory.txt=: nine models. Six entity, one junction, one module and one component overview. The module and the overview carry no variability. |
+| B03  | Partial | Same file: 258 C++ files outside tests, 189 generated and 69 hand-written. Classification in Notes. |
+| B04  | Pass    | Same file: 40 subjects across ten protocol headers. Eleven raw subject literals in hand-written code, seven of them in the three hand-written protocol headers. |
+| B05  | Pass    | Nothing blocks the work. PR #2138 already edits six compute models for M09, so this branch rebases onto it. No other in-flight branch touches =projects/ores.compute=. |
+| G01  | Blocked | Regeneration realises the canonical protocol and the tree no longer builds. 13 errors in =ores.compute.core.lib=. =evidence/g01_build_errors.txt=, =evidence/g01_regeneration_run1.txt=. |
+| G05  | Blocked | Two shared-codegen naming defects, both in =org_loader.py=, cause the failures. Neither can be fixed in generated output. Details in Notes. |
+
+Items not listed are not yet worked. Sections 2 to 8 are open.
 
 * Notes
+
+** Regeneration probe, G01 and G05
+
+The component's whole generated tree drifted from its models, so the first
+move was to regenerate it and build. =ores.compute.api.lib= built. The
+build then failed in =ores.compute.core.lib= with 13 errors. They have
+three root causes.
+
+- *The version facet collides with a real sibling entity.* The loader
+  derives =app_version_key= and =list_app_versions_request= for the =app=
+  entity's version history, and the =app_version= entity derives the same
+  names for itself. Source:
+  =projects/ores.codegen/src/codegen/org_loader.py=, the
+  =has_audit_columns= branch at 3039 to 3043 and the facet at 3121 to
+  3136. iam hides this because its =account= entity has no sibling entity
+  named =account_version=; iam models =account_version= as a message.
+- *The response payload member collides with the envelope result member.*
+  Every response carries =ores::utility::domain::result result= beside a
+  payload member named after the entity singular. For the =result= entity
+  both members are named =result=. Source: =org_loader.py= 3063 to 3065
+  and 3078 to 3089.
+- *The hand-written legacy handlers call the retired service API.*
+  =result_submit_handler.hpp= and =work_handler.hpp= call
+  =get_result=, =get_workunit= and =get_host= with a string, and the
+  regenerated services take a request object or a uuid. These are the
+  M06 and P04 files.
+
+=check_component_drift.py --component iam-cpp --dry-run= reports no drift,
+so the shared codegen is self-consistent for the component already under
+test. The defects are triggered by compute's model names, not by the
+regeneration. Control output in =evidence/g01_iam_drift_control.txt=.
+
+The regeneration was reverted, because a commit that does not build is not
+a verifiable unit and the whole regeneration is one command to reproduce.
+The branch is green at the baseline commit.
+
+** B03 classification of the 69 hand-written C++ files
+
+- *Generatable, still hand-written*: the three protocol headers
+  (=platform_protocol.hpp=, =telemetry_protocol.hpp=,
+  =work_protocol.hpp=) and their six handlers (=platform_handler.hpp=,
+  =telemetry_handler.hpp=, =work_handler.hpp=,
+  =report_submit_handler.hpp=, =result_submit_handler.hpp=,
+  =registrar.hpp=). M06 and P04 turn these into models.
+- *Generatable domain left hand-written*: =compute_platform.hpp=,
+  =grid_sample.hpp=, =node_sample.hpp=, their entities and their
+  repositories, plus =workflow_batch_link_entity.hpp= and
+  =workflow_batch_link_repository.hpp=. M05 decides entity or message
+  for each.
+- *Infrastructure that stays hand-written*: the =export.hpp= files, the
+  component umbrella headers, every =config/= options and parser pair,
+  the service and wrapper =application=, =host=, =main.cpp=,
+  =archiver=, =http_client=, =log_publisher=, =compute_grid_poller=,
+  =batch_workflow_bridge=, =workunit_dispatcher=,
+  =compute_telemetry_repository= and =package_publisher=.
+- *Dead*: none found yet. Generation replaces no hand-written compute
+  file, because the component has never been regenerated.
+
+** The shell component tree is generated but unwired
+
+Regeneration creates =projects/ores.shell/compute/= with seven command
+units, their tests and seven recipes. It creates no =CMakeLists.txt=,
+no =modeling/= directory and no =tests/main.cpp=, and
+=projects/ores.shell/CMakeLists.txt= does not list =compute= at all.
+Every other shell component (=iam=, =refdata=, =trading=) has that
+scaffold. So the generated units cannot compile today. S01 and V01
+cannot pass until the scaffold exists.
+
+** A hand-written shell command family duplicates the generated units
+
+=projects/ores.shell/application/*/commands/compute_commands.hpp= and
+=.cpp= hand-write a =compute= command family that lists apps, app
+versions, platforms, hosts, batches, workunits and results, publishes a
+package and downloads bundles. The generated units supersede the list
+commands. S01 deletes the hand-written half and keeps only what no
+entity verb covers.
+
+** The shell command units drive the retired Qt flows
+
+=compute_commands.hpp= describes itself as the non-interactive
+equivalent of the retired Qt compute screens. P05 and H02 decide whether
+the remaining verbs belong in the shell at all.
 
 * Test Scenarios
 

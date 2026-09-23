@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 653E5D7E-13BC-4588-B5BC-40752F49D823
+:END:
+#+title: IAM handlers skip their permission checks
+#+description: Role assignment and the account and login reads check no permission, though the permission codes exist.
+#+type: capture
+#+level: cross
+#+filetags: :security:iam:authorization:bug:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Several IAM message handlers never call =has_permission=, even though the
+permission code they should check exists and is seeded. The most serious is role
+assignment: =iam.v1.roles.assign= and =iam.v1.roles.assign-by-name= grant any
+role to any account with no permission check at all, while
+=iam.v1.roles.revoke= directly beside it does check =iam::roles:revoke=. Any
+authenticated account can make itself a =TenantAdmin=.
+
+* Why
+
+Found on 2026-09-23 while documenting the IAM user journeys
+([[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]): the access, directory
+and tenancy groups each ran into it independently.
+
+The sites, all verified in source:
+
+1. *Role assignment is unguarded.*
+   =projects/ores.iam/core/include/ores.iam.core/messaging/authorization_handler.hpp:66=
+   is =assign=: decode, validate the caller, call =svc.assign_role(...)=, reply.
+   No =has_permission=. =assign_by_name= at line 218 is the same. =revoke= at
+   line 94 checks =perms::roles_revoke= at line 113. The asymmetry is the bug:
+   taking a role away is guarded, handing one out is not. Nothing needs to be
+   added to the permission catalogue; =iam::roles:assign= is already seeded.
+2. *The account and login reads are unguarded.*
+   =account_operations_handler.hpp= checks =has_permission= for create, delete,
+   lock, unlock, reset_password and update — at lines 250, 306, 336, 371, 406 and
+   494 — but not for =list= or =get=. =iam::accounts:read= and
+   =iam::login_info:read= exist in =permission_codes.hpp= and are seeded, and no
+   handler consults them. Any signed-in account can read every account in the
+   tenant and every account's sign-in state.
+3. The two combine with a third defect. The account wire shape carries
+   =password_hash=, =password_salt= and =totp_secret=
+   ([[id:2662D094-99B0-4C18-88DF-C36A304CA806][Account secrets reach the browser in the accounts wire shape]]).
+   Because the reads are ungated, any authenticated account can list the tenant
+   and receive every account's password hash and TOTP seed. The privilege
+   escalation in item 1 turns that into full compromise of any account.
+
+This is one root cause with several sites: a handler that forgets the guard its
+neighbours have. Fixing only =assign= leaves the reads open, and fixing only the
+reads leaves the escalation.
+
+Suggested shape of the fix: make the guard structural rather than remembered —
+either a shared wrapper every handler passes through, or a test that asserts each
+declared read or write subject has a matching =has_permission= call. The repo
+favours the second kind of check elsewhere, and it is the one that cannot be
+forgotten twice.
+
+* References
+
+- =projects/ores.iam/core/include/ores.iam.core/messaging/authorization_handler.hpp= — =assign= (66), =revoke= (94), =assign_by_name= (218).
+- =projects/ores.iam/core/include/ores.iam.core/messaging/account_operations_handler.hpp= — the six guarded writes and the two unguarded reads.
+- =projects/ores.iam/api/include/ores.iam.api/domain/permission_codes.hpp= — the codes that exist but go unchecked.
+
+* See also
+
+- [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Journey: Change someone's access]]
+- [[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][Journey: See who has access]]
+- [[id:2662D094-99B0-4C18-88DF-C36A304CA806][Account secrets reach the browser in the accounts wire shape]]
+- [[id:E87A316A-A387-4D0B-8221-9716F8A6AF07][Change-password ignores the current password]]

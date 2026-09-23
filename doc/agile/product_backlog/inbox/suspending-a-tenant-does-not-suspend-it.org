@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 0A586E9E-F9A9-4FB5-B113-FCB199E39E16
+:END:
+#+title: Suspending a tenant does not suspend it
+#+description: Nothing on the sign-in path reads tenant status, so a suspended tenant still admits its accounts.
+#+type: capture
+#+level: cross
+#+filetags: :security:iam:tenancy:bug:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A tenant can carry the status =suspended=, and nothing anywhere reads that
+status on the sign-in path. A suspended tenant's accounts keep signing in.
+
+* Why
+
+Found on 2026-09-23 while documenting
+[[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][User Journey: Retire or reset a tenant]].
+
+Evidence:
+
+- The status values are seeded in
+  =projects/ores.sql/create/iam/iam_tenant_statuses_create.sql=:
+  =bootstrapping=, =active=, =suspended= and =terminated=. The type is modelled
+  at =projects/ores.iam/modeling/ores.iam.tenant_status.org=.
+- Searching =projects/ores.iam/= and =projects/ores.sql/create/iam/= for
+  =suspended= returns only three files: the status type, the model, and the
+  table that seeds the rows. No handler, no query and no guard reads the value.
+- Nothing in
+  =projects/ores.iam/core/include/ores.iam.core/messaging/auth_handler.hpp= or
+  =account_operations_handler.hpp= mentions =suspended=, =tenant_status= or
+  ='terminated'=.
+- There is no suspend operation to set it either: the permission
+  =iam::tenants:suspend= is seeded and unused, and no lifecycle function
+  implements suspension.
+
+So suspension is a label with no effect today. Two things are missing, and both
+are needed before the status means anything:
+
+1. A way to set it. The candidate is =iam.v1.tenants.suspend=, which should
+   refuse the system tenant exactly as the other lifecycle functions do — see
+   [[id:97E6AD78-87F1-4443-B06F-712F24AB11D4][Delete can terminate the system tenant]].
+2. A check that enforces it where it matters. The sign-in path must refuse an
+   account whose tenant is not active, and say why, so the person is not left
+   guessing whether their password was wrong.
+
+A related consequence worth fixing in the same wave: locking an account does not
+end its open sessions, and neither would suspending a tenant. Ending them is a
+separate change.
+
+* References
+
+- =projects/ores.sql/create/iam/iam_tenant_statuses_create.sql= — the seeded statuses.
+- =projects/ores.iam/modeling/ores.iam.tenant_status.org= — the model.
+- =projects/ores.iam/core/include/ores.iam.core/messaging/auth_handler.hpp= — where the check belongs.
+
+* See also
+
+- [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][User Journey: Retire or reset a tenant]]
+- [[id:97E6AD78-87F1-4443-B06F-712F24AB11D4][Delete can terminate the system tenant]]

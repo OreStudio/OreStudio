@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: BEBB4056-11B2-4CA8-BBC8-EE322B45AE6D
+:END:
+#+title: Task: Scaffold story: Remove the legacy Qt remnants
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :remove_the_legacy_qt_remnants:sprint_26:v0:
+#+owner: marco
+#+branch: feature/remove-the-legacy-qt-remnants
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16E56982-F716-4214-AA09-E438C1E46DC2][Remove the legacy Qt remnants]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story for the Qt remnant removal, its tasks, and its place in the Sprint 26
+=* Stories= table.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:16E56982-F716-4214-AA09-E438C1E46DC2][Remove the legacy Qt remnants]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done. The story exists, is wired into the Sprint 26 =* Stories= table, and
+carries the implement task.
+
+The scaffold lands with the work rather than in a pull request of its own,
+because the story is one change and scaffolding alone delivers nothing.

@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 16E56982-F716-4214-AA09-E438C1E46DC2
+:END:
+#+title: Story: Remove the legacy Qt remnants
+#+description: Remove the weight the Qt retirement left behind: the presentation keys no template or render path reads, the helpers that exist only to compute them, and the pages that still describe a Qt layer as live.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Nothing in the tree computes, documents or names a Qt concept that no longer exists. The generator produces byte-identical output for every component, and every page that described the Qt layer states it as history or is gone.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-23                               |
+
+* Acceptance
+
+- No presentation key is written that no template, render path or validator reads.
+- The helpers that existed only to compute unread keys are gone, with their tests.
+- Regenerating a component produces no diff, so the removal is proved output-neutral.
+- Every document that named the Qt layer as live is corrected or marked historical.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BEBB4056-11B2-4CA8-BBC8-EE322B45AE6D][Scaffold story: Remove the legacy Qt remnants]] | DONE | 2026-09-23 | 2026-09-23 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:54AEFA10-CE27-4878-B692-4CD1A109FF84][Remove the presentation keys no template reads]] | STARTED | 2026-09-23 | | Initial task for: Remove the legacy Qt remnants |
+
+* Decisions
+
+** The first unit takes only the Qt-named keys
+
+Removed in the first pass, because each is Qt-specific in name and purpose and
+each is written to the =presentation= dict that no template, render path or
+validator reads:
+
+- =qt_settings_version=, a QSettings concept.
+- =key_widget=, the key field's Qt widget class, for the deleted =setCreateMode=.
+- =has_as_of_combo_fields= and its helper, which gated a =datetime.hpp= include
+  and the =setX()/setReadOnly()= re-populate calls in the Qt detail-dialog
+  template.
+- =view_groups= and its helper =compute_view_groups=, which grouped detail fields
+  into Qt detail-dialog tabs.
+- =has_uuid_detail_fields= and =has_date_detail_fields=.
+
+Both helpers went with their only caller, along with =test_view_groups.py= and
+=test_as_of_combo_fields.py=.
+
+** The removal is proved output-neutral, not argued
+
+=presentation= is never put into the render data. The generator's own drift gate
+regenerates a component and compares, so it answers the question directly:
+=iam= is byte-identical after the removal, and =refdata=, the largest component,
+produces the same 806 diff headers before and after against its own pre-existing
+drift. Nothing that reaches a template changed.
+
+** What is left, and what the next unit must decide
+
+The =presentation= dict carries 54 keys. 44 are written and read by nothing. The
+first pass took the Qt-named handful. The rest are Qt-era too
+(=needs_item_delegate=, =metadata_start_row=, =export_macro=, =hidden_columns=,
+=changed_event_class=, =flag_icon_column=, =has_dynamic_combo_fields=, and so
+on), but some are read by other keys inside the same block, and a few are read
+by validators rather than templates.
+
+The next unit has to separate three cases that look alike:
+
+1. Keys nothing reads, which go.
+2. Keys read only by another unread key, which go together.
+3. Keys read by a validator, such as =has_parent_scoped_list= through
+   =validate_parent_scoped_list=. A validator fails fast on a bad model, so
+   removing the key means removing the guard, and the guard may still earn its
+   place. Decide these one at a time.
+
+Take one key, remove it, re-run the drift gate. The gate is the authority,
+because it compares rendered output rather than reading code.
+
+* Out of scope
+
+- The name of =projects/ores.codegen/modeling/entity_meta_model_cpp_qt.org=, a
+  Qt-named page that now documents the Presentation drawer.
+- =doc/analysis= and =doc/plans=, which hold most of the Qt references in the
+  tree. They read as history. Confirm that before touching them.

@@ -594,85 +594,6 @@ def snake_to_pascal(snake_str):
     return ''.join(word.capitalize() for word in snake_str.split('_'))
 
 
-def compute_view_groups(detail_fields):
-    """Group a fully-enriched Qt detail_fields list by their optional
-    view_group cell into Qt detail-dialog tabs (see
-    codegen_input_org_schema.org), preserving first-appearance order both
-    within a group and across groups.
-
-    Fields with no view_group all land in one implicit "General" group; in
-    that case (no entity field ever set view_group) the single group
-    reproduces the exact legacy single-tab widget names/title -- including
-    the group box's "Basic Information" title, distinct from the tab's own
-    "General" title -- byte-for-byte, so adding view_group support has zero
-    effect on any entity that doesn't use it. This is the mechanism behind
-    the backward-compatibility guarantee: adding view_group values to one
-    entity's model cannot change any other entity's generated .ui.
-
-    Each returned group dict also gets a '_group_row_index' set on every one
-    of its own detail_fields entries (0-based within that group, for the
-    per-tab QFormLayout's row= attribute -- distinct from the field's own
-    global '_row_index', which numbers it within the whole flat list and is
-    used elsewhere, e.g. the history dialog's single flat form).
-
-    Grouping identity uses the same normalized key as the derived Qt widget
-    names (lowercase, non-alnum stripped), not the raw view_group string --
-    two rows differing only by case or incidental whitespace (e.g.
-    "Rounding" vs "rounding ") must fold into the same tab, or they'd
-    silently derive identical widget names for two distinct groups, and
-    uic would reject the generated .ui as a duplicate-widget name. The
-    first-seen raw string is kept as the display title.
-    """
-    uses_view_group = any(f.get('view_group') for f in detail_fields)
-    groups: dict[str, list] = {}
-    display_names: dict[str, str] = {}
-    for f in detail_fields:
-        group_name = f.get('view_group') or 'General'
-        group_key = re.sub(r'[^0-9a-zA-Z]+', '_', group_name).strip('_').lower() or 'general'
-        if group_key not in groups:
-            groups[group_key] = []
-            display_names[group_key] = group_name
-        groups[group_key].append(f)
-
-    view_groups = []
-    for group_key, group_fields in groups.items():
-        group_name = display_names[group_key]
-        for gi, f in enumerate(group_fields):
-            f['_group_row_index'] = gi
-        if not uses_view_group:
-            view_groups.append({
-                'name': group_name,
-                'detail_fields': group_fields,
-                'tab_widget_name': 'generalTab',
-                'tab_layout_name': 'generalLayout',
-                'group_box_name': 'basicInfoGroup',
-                'group_box_title': 'Basic Information',
-                'form_layout_name': 'formLayout',
-                'spacer_name': 'verticalSpacer',
-            })
-            continue
-        group_pascal = snake_to_pascal(group_key)
-        group_camel = group_pascal[0].lower() + group_pascal[1:] if group_pascal else 'general'
-        view_groups.append({
-            'name': group_name,
-            'detail_fields': group_fields,
-            'tab_widget_name': group_camel + 'Tab',
-            'tab_layout_name': group_camel + 'Layout',
-            'group_box_name': group_camel + 'Group',
-            'group_box_title': group_name,
-            'form_layout_name': group_camel + 'FormLayout',
-            # Distinct per tab -- uic flattens every named widget into one
-            # Ui_* member namespace regardless of nesting, so reusing
-            # "verticalSpacer" across tabs would collide.
-            'spacer_name': group_camel + 'Spacer',
-        })
-
-    view_groups[0]['_is_first'] = True
-    for vg in view_groups[1:]:
-        vg['_is_first'] = False
-    return view_groups
-
-
 def _component_path_vars(entity):
     """Derive the component/subcomponent path placeholders
     (``component_dir``, ``component_include``, ``component_core``, ...)
@@ -1442,28 +1363,6 @@ def validate_explorer_interface(domain_entity):
             f"presentation.has_explorer_api")
 
 
-def has_as_of_combo_fields(detail_fields):
-    """
-    Whether any dynamic_combo detail field declares combo_as_of_fetch_fn --
-    an `_at_timepoint(ClientManager*, QString)` sibling of its normal
-    combo_fetch_fn, so a read-only/historical view of this entity resolves
-    that combo's options as-of the entity's own recorded_at, not against
-    the current (possibly since-renamed or deleted) lookup list. See the
-    As-of lookup resolution codegen facet story.
-
-    Args:
-        detail_fields (list[dict]): the presentation.detail_fields list; not
-            mutated.
-
-    Returns:
-        bool: gates the datetime.hpp include and the
-            setX()/setReadOnly() re-populate calls in the Qt detail-dialog
-            template.
-    """
-    return any(
-        f.get('combo_as_of_fetch_fn') for f in detail_fields
-        if f.get('type') == 'dynamic_combo'
-    )
 def validate_parent_scoped_list(domain_entity):
     """
     Validate the presentation.has_parent_scoped_list knob: scopes a
@@ -3823,7 +3722,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 if 'export_header' not in presentation:
                     presentation['export_header'] = f'{component.capitalize()}Export.hpp'
             # Mark last item in columns for template iteration
-            presentation.setdefault('qt_settings_version', 1)
             if 'columns' in presentation:
                 _mark_last_item(presentation['columns'])
                 # Compute has_description_column flag
@@ -4193,9 +4091,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             presentation['required_fields'] = required_fields
             presentation['required_dynamic_combo_fields'] = required_dynamic_combo_fields
             presentation['date_fields'] = date_fields
-            # Expose the key field's widget name for setCreateMode
             key_field_data = next((f for f in detail_fields if f.get('is_key')), None)
-            presentation['key_widget'] = key_field_data['widget'] if key_field_data else 'codeEdit'
             # onCodeChanged() only makes sense (and is only ever connected)
             # for an is_key field that's a QLineEdit -- a combo-widget key
             # (e.g. currency_pair_convention's pair_code) wires to the
@@ -4204,11 +4100,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # code for entities whose key isn't a line_edit.
             presentation['has_line_edit_key'] = bool(
                 key_field_data and key_field_data.get('is_line_edit'))
-            # Every field locked after create (is_key or immutable):
-            # setCreateMode() disables each by its own widget kind
-            # (setReadOnly for a text field, setEnabled(false) for a
-            # combo) rather than assuming every locked field is the
-            # single QLineEdit key_widget above.
+            # Every field locked after create (is_key or immutable), each
+            # described by its own widget kind.
             locked_fields = [
                 {
                     'widget': f['widget'],
@@ -4317,14 +4210,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f.get('badge_key') for f in detail_fields
                 if f.get('type') in ('static_combo', 'dynamic_combo')
             )
-            # Gates the datetime.hpp include and the setX()/setReadOnly()
-            # re-populate calls below -- see has_as_of_combo_fields's own
-            # docstring for what combo_as_of_fetch_fn is for.
-            presentation['has_as_of_combo_fields'] = has_as_of_combo_fields(detail_fields)
-            presentation['has_uuid_detail_fields'] = any(
-                f.get('is_uuid') or f.get('is_optional_uuid') for f in detail_fields
-            )
-            presentation['has_date_detail_fields'] = any(f.get('is_date') for f in detail_fields)
             # A `party_id` natural key that is *not* exposed as a Detail
             # field is implicit-from-session by convention (see book/
             # portfolio) -- setCreateMode must still populate it from the
@@ -4383,13 +4268,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             presentation['metadata_start_row_plus_1'] = len(detail_fields) + 1
             presentation['metadata_start_row_plus_2'] = len(detail_fields) + 2
             presentation['metadata_start_row_plus_3'] = len(detail_fields) + 3
-            # Group detail_fields by their optional view_group cell into Qt
-            # detail-dialog tabs (see codegen_input_org_schema.org). Computed
-            # here, after detail_fields is fully finalized (both the
-            # org-provided and auto-generated-above cases), not in
-            # org_loader.py, so it uses the same fully-enriched field dicts
-            # the .ui template already renders per-field widgets from.
-            presentation['view_groups'] = compute_view_groups(detail_fields)
         # Add generator facet name with default (trade uses 'generator', refdata uses 'generators')
         domain_entity.setdefault('generator_facet_name', 'generators')
         domain_entity['generator_facet_name_upper'] = domain_entity['generator_facet_name'].upper()

@@ -91,7 +91,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-|       |       |       |     |             |
+| [[id:16E56982-F716-4214-AA09-E438C1E46DC2][Remove the legacy Qt remnants]] | BACKLOG | | | Remove the weight the Qt retirement left behind: the presentation keys no template or render path reads, the helpers that exist only to compute them, and the pages that still describe a Qt layer as live. |
 
 * Achievements
 

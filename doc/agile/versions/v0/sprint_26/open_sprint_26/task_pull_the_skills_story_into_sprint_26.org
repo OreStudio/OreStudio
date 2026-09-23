@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_26:sprint_26:v0:
 #+owner: marco
 #+branch: feature/pull-skills-story-into-sprint-26
-#+pr:
+#+pr: 2137
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -63,7 +63,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2137][#2137]] | [agile] Pull the skills catalogue story into sprint 26 |
 
 * Review
 

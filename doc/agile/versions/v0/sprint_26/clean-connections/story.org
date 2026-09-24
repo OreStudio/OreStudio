@@ -8,7 +8,7 @@
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -17,36 +17,116 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 ores.connections meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]: the items marked All pass, each item that does not apply is recorded with its reason, and ores.connections joins =COMPONENTS_UNDER_TEST=. Order 10 of 35 in the sprint 26 component clean-up, tier 1 (foundation infrastructure).
 
+The inventory found no consumer left, so ores.connections reaches the
+standard by removal. The item table is on the task. This page records the
+decision.
+
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-23                               |
 
 * Acceptance
 
-- Every checklist item that applies to a component of kind *All* passes, with its evidence recorded on the task.
-- Every item that does not apply is recorded as not applicable, with the reason.
+- Every checklist item that applies to a component of kind *All* passes, or is recorded with the reason it does not apply.
+- Every item that cannot pass is recorded as an exception with its reason.
 - Every generator defect found is fixed at its source, with a regression test.
-- ores.connections is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
+- No consumer is left without the component, and the tree builds without it.
+
+The original acceptance asked that ores.connections join
+=COMPONENTS_UNDER_TEST= and that =check_component_drift.py --all= pass with
+it listed. Both are superseded, because the component is removed. The
+registry item is recorded as the accepted exception on the task.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:55557D31-95AF-4E53-BE85-255014DC6DD8][Bring ores.connections to the clean standard]] | BACKLOG | | | Work ores.connections through the Component Clean Standard in order and record each item. |
+| [[id:55557D31-95AF-4E53-BE85-255014DC6DD8][Bring ores.connections to the clean standard]] | DONE | 2026-09-23 | 2026-09-23 | Work ores.connections through the Component Clean Standard in order and record each item. |
 
 * Notes
 
 - Survey on 2026-09-23: 0 entity, junction or operation models; 70 C++ files outside tests, 0 of them generated (0%); 0 messaging headers, 0 of them hand-written.
+- Consumer census on 2026-09-23: the only reference in the tree was
+  =projects/CMakeLists.txt=, =add_subdirectory(.../ores.connections)=.
+  Nothing linked the library.
 
 * Decisions
 
+- *Retire the component instead of cleaning it.* The inventory settled
+  this. ores.connections had no consumer: =projects/CMakeLists.txt= built
+  it and nothing linked it. Its only user was the Connection Browser in
+  =ores.qt=, which sprint 25 deleted, and that task recorded the state
+  already: "ores.connections has no consumer left." The web client does not
+  want a per-user store either. [[id:7F1B2C44-9A3E-4D58-B6E1-2C7A5D9E4F80][The connections store was removed, and why]]
+  records that =ores.web= built one and then deleted it, because it fused
+  where the application points with who the user is. The environment is now
+  declared in =config/environments.json= and chosen with =--env=.
+  ores.connections is the C++ half of the design that decision retired.
+- *The standard applies by subtraction.* H02 forbids dead code, so removing
+  the component leaves nothing unclean. Keeping it could not reach the
+  standard. It has no org models, no row in =component_catalogue.org=, and
+  the codegen has no SQLite target, so the Model, Protocol and Wiring items
+  have no exception to record, only work that does not exist.
+- *The registry item is the accepted exception.* V06 asks a clean component
+  to join =COMPONENTS_UNDER_TEST=. A removed component cannot join. The
+  task records the item as not applicable and the acceptance above is
+  superseded.
+- *The programme has a gap for model-less components.* Only
+  =check_component_drift.py= and =check_protocol_twin_coverage.py= read
+  =COMPONENTS_UNDER_TEST=, and both admit model-bearing catalogue entries
+  only. ores.connections is the first model-less tier-1 component this
+  programme has attempted, so the other nine (platform, logging, utility,
+  orgmode, diff, storage, security, database, nats) will meet the same V06
+  question. The programme should answer it once, and this story records it
+  rather than inventing a private rule.
+
 * Out of scope
 
--
+- The retired Qt client's manual chapter. =doc/manual/user_guide/chapter_connecting.org=
+  still describes =connections.db= and gives =ores.qt= paths for it. That
+  is deliberate. PR #2138, now merged, makes the whole manual the record
+  of the retired client and its chapters the domain source, so the chapter
+  is history rather than a live reference.
+- The two sprint-history pages that name the component. Their links to the
+  deleted =:ID:= became plain text, so the history reads and =compass lint=
+  passes. The pages stay.
+- =doc/agile/product_backlog/next/persist_tag_colour_and_tag_dialog.org= is
+  Qt-only and carries the =ores.qt= tag. Its premise, colouring the Qt
+  Connection Browser's tags, went with that client, so it belongs to a
+  backlog review rather than to this story.
+- =doc/agile/product_backlog/next/fix_component_doc_drift.org= names the
+  component in its =affected components at time of writing= snapshot. That
+  snapshot also names =ores.controller= and =ores.wt.service=, which
+  =projects/= no longer holds. It is stale for reasons beyond this story,
+  so trimming one name would leave it equally wrong and imply the list is
+  kept current. The backlog review owns it.
+- Repo-wide CMake source-list drift. 149 =component_files.cmake= files in
+  other components lack the generated-file marker that commit =3a40c9c57e=
+  added to the templates on 2026-09-23. That is each of those components'
+  own G06 item under this programme.
+- =projects/modeling/ores.png= is already stale against its own source. A
+  render of HEAD's =ores.puml= before this change gives 630699 bytes against
+  the committed 710319, so regenerating it churns the whole image for
+  reasons that predate this branch.
+- =ores.shell.iam= has no =.puml= in its =modeling/=, which
+  =validate_docs.py= reports. That is ores.shell's H01 item.
+- The local =.env= still holds =ORES_CONNECTIONS_MASTER_PASSWORD=. The file
+  is gitignored, and =compass env configure= drops the variable now that
+  =env_init.py= stopped writing it.
+
+* Result
+
+ores.connections is removed, and the references it left behind are removed
+with it. Six files were transitively dead inside the component as well,
+because =get_recent_parties=, =get_child_folders= and =resolve_connection=
+had no caller of their own.
+
+The removal is one commit and reverts on its own. The reference sweep is a
+second commit.

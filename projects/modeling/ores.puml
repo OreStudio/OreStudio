@@ -127,13 +127,6 @@ package "Infrastructure Layer" #F2F2F2 {
     router, OpenAPI registry.
     end note
 
-    component [ores.connections] as connections #F7E5FF
-    note right of connections
-    Server connection bookmarks: hierarchical
-    folders, tags, AES-256-GCM credentials,
-    SQLite persistence.
-    end note
-
     component [ores.storage] as storage #F7E5FF
     note right of storage
     File storage: local paths, HTTP-based
@@ -283,7 +276,6 @@ testing --> platform
 assets --> database
 assets --> nats
 httpapi --> logging
-connections --> security
 storage --> platform
 
 ' ─────────────────────────────────────────────────────────────────────────────

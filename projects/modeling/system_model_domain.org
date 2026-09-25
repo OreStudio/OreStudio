@@ -2,7 +2,7 @@
 :ID: 873CD1C6-7636-4F30-B3D4-3BB7FCBF4DBD
 :END:
 #+title: System Model: Domain Layer
-#+description: Component inventory for the Domain layer: reference data, IAM, data quality, FpML, ORE import/export, trading, market data, analytics, and workflow.
+#+description: Component inventory for the Domain layer: reference data, IAM, data quality, ORE import/export, trading, market data, analytics, and workflow.
 #+type: knowledge
 #+level: cross
 #+filetags: :modeling:architecture:domain:system_model:
@@ -79,27 +79,12 @@ Related documents:
 
 - [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data Quality]] — DQ-6 governance model, provenance design, and the publish-from-dq pattern.
 
-** ores.fpml
-
-FpML processing infrastructure — parsing, validating, and serialising financial
-product XML. The FpML schema defines every instrument family; ores.fpml
-translates between FpML XML and ORE Studio internal types.
-
-| Sub-component | Role                                        | Dependencies |
-|---------------+---------------------------------------------+--------------|
-| [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]]     | FpML XML parsing, validation, serialisation | [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]] |
-
-Related documents:
-
-- [[id:FCC3BBA5-DFA3-17F4-69B3-B7958C05B1F8][Financial Products Markup Language]] — the FpML standard and how ORE Studio uses it.
-- [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]] — how FpML coding schemes are mapped to ores.refdata entities.
-
 ** ores.ore
 
 | Sub-component    | Role                                    | Dependencies                           |
 |------------------+-----------------------------------------+----------------------------------------|
 | [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]]     | Shared ORE types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                      |
-| [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]]    | ORE XML parsing, domain type conversion | [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]] |
+| [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]]    | ORE XML parsing, domain type conversion | [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
 | [[id:EF8FD20D-0B9C-4379-8BBD-B4FCF2F5F0C7][ores.ore.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint               | [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]               |
 
 ORE XML import/export — converts between [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine]] XML format and

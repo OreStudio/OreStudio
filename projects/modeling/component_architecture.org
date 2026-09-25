@@ -45,7 +45,6 @@ Current simple components:
 |-----------|------|
 | =ores.database= | Database access layer (sqlgen, migrations) |
 | =ores.diff= | Structural diff utilities |
-| =ores.fpml= | FpML parsing library |
 | =ores.geo= | Geographic utilities (IP-to-country, etc.) |
 | =ores.logging= | Boost.Log setup and logger factory |
 | =ores.nats= | NATS client wrapper |

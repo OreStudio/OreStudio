@@ -139,13 +139,11 @@ JavaScript is manually authored. No codegen coverage.
 
 ** XML / FPML Technical Space
 
-Component: [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]].
-
-FPML (Financial Products Markup Language) data lives as XML in =ores.fpml=.
-These files are input data to the system — they feed the automated populate
-codegen route (the =ores.codegen= parser reads FPML XML and derives SQL
-populate scripts). The XML artefacts themselves are not generated; they are
-sourced from the FPML standard and maintained manually.
+FPML (Financial Products Markup Language) data lives as XML under
+=external/fpml/=. These files are input data to the system — they feed the
+automated populate codegen route (the =ores.codegen= parser reads FPML XML and
+derives SQL populate scripts). The XML artefacts themselves are not generated;
+they are sourced from the FPML standard and maintained manually.
 
 * See also
 

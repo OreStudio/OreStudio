@@ -159,12 +159,6 @@ package "Domain Layer" #F2F2F2 {
     publish-from-DQ pattern. dq.v1.>
     end note
 
-    component [ores.fpml] as fpml #F7E5FF
-    note right of fpml
-    FpML processing for OTC derivative trade
-    representations. Early development.
-    end note
-
     component [ores.ore] as ore #F7E5FF
     note right of ore
     ORE XML import/export: converts between ORE
@@ -290,13 +284,11 @@ iam --> security
 iam --> variability
 dq --> database
 dq --> nats
-fpml --> logging
 ore --> refdata
 ore --> logging
 trading --> database
 trading --> nats
 trading --> refdata
-trading --> fpml
 trading --> dq
 marketdata --> database
 marketdata --> nats

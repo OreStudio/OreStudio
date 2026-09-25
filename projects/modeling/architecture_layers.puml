@@ -26,7 +26,7 @@ skinparam rectangleFontSize 13
 title ORE Studio — Four-Layer Architecture
 
 rectangle "**Application Layer**\n\nQt desktop · CLI · HTTP servers\nWt web frontend · Compute engine\nOrchestration controller" as APP #D6EAF8
-rectangle "**Domain Layer**\n\nIAM · Reference data · Trading\nMarket data · Analytics · Reporting\nWorkflow · Scheduler · DQ · ORE · FpML" as DOM #D5F5E3
+rectangle "**Domain Layer**\n\nIAM · Reference data · Trading\nMarket data · Analytics · Reporting\nWorkflow · Scheduler · DQ · ORE" as DOM #D5F5E3
 rectangle "**Infrastructure Layer**\n\nores.nats (messaging backbone)\nService runner · Test isolation\nEvent bus · Connection bookmarks" as INFRA #FEF9E7
 rectangle "**Foundation Layer**\n\nUtility · Platform · Logging\nTelemetry · Database · Security\nVariability · Geo · SQL · Codegen" as FOUND #F5EEF8
 

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 35E3F6F9-C31C-46C1-91A6-1CFD21F634D7
+:END:
+#+title: The CMake archetype emits a Qt-era comment into every compon…
+#+description: The CMake archetype emits a Qt-era comment into every component's source list. Template projects/ores.codegen/library/templates/ores.cmake.component.files_src.org line 54 writes '# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.' above set(HEADERS ...). AUTOMOC is never enabled anywhere in ORE Studio's own build and the Qt client is gone, so the comment is a Qt remnant in a shared template and ~85 checked-in component_files.cmake files carry it. Commit 86306c9494 introduced it with the archetype. Removing it is a one-line edit to the org template plus a re-tangle with 'compass build --direct tangle_codegen_templates', but it makes every regenerated component_files.cmake stale again, so it must be sequenced against the repo-wide generated-marker sweep. Found while working the Clean ores.fpml story; it belongs to the Remove the legacy Qt remnants story.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

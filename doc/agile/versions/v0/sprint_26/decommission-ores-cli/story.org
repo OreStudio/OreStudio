@@ -47,7 +47,7 @@ supported command surface.
 |------+-------+-------+-----+-------------|
 | [[id:22EDB3D2-10F7-4FBB-960B-2AD6AD9945D5][Delete the ores.cli component and its round-trip chain]] | DONE | 2026-09-23 | 2026-09-23 | Task for: Decommission ores.cli |
 | [[id:BC0854B0-E6FD-4935-B326-7FDC654A80CB][Retire the orphaned ORE directory round-trip export]] | BACKLOG | | | ores::ore::xml::exporter::roundtrip lost its only caller when ores.cli was deleted. The directory-level round-trip has no test coverage and no consumer. Decide whether to delete the method and its options model or keep it as library API. |
-| [[id:1D5FFEA8-BAE4-4122-8A8D-30058906A5C4][Mop up the CLI references the decommission left]] | STARTED | 2026-09-26 | | Task for: Decommission ores.cli |
+| [[id:1D5FFEA8-BAE4-4122-8A8D-30058906A5C4][Mop up the CLI references the decommission left]] | DONE | 2026-09-26 | 2026-09-26 | Task for: Decommission ores.cli |
 
 * Decisions
 

@@ -26,11 +26,11 @@ Resolve the backlog and paperwork drift the ores.cli decommission left: the capt
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -42,9 +42,13 @@ Resolve the backlog and paperwork drift the ores.cli decommission left: the capt
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two passes.
+
+1. Backlog coherence. File the two captures whose premise the
+   retirement removed to =discarded/= with their rationale, then fix
+   every remaining item that named =ores.cli= as a live target.
+2. Paperwork. Record the merge on the decommission story and its task,
+   regenerate the derived indexes, and run the gates.
 
 * Notes
 
@@ -72,3 +76,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done on 2026-09-26 on branch =feature/mop-up-ores-cli=.
+
+Filed to =discarded/= with a rationale:
+
+- =cli_commands_codegen_top_level_story.org=, void because the CLI
+  command layer it would have templatized no longer exists.
+- =extract_sync_host_envelope_cli_shell.org=, already delivered as the
+  sprint 25 sync host envelope story and moot now that =ores.shell= is
+  the only console tool.
+
+Corrected the backlog items that still named =ores.cli= as a live
+target: the codegen layer capture, the service-options table, the
+component-doc-drift list, the trading boilerplate scope, the shell
+codegen story, the repository-method-set history, and the Windows
+installer example. Also fixed two =st('ores.cli%')= psql usage examples
+to ='system'=, and one deferred diagram label.
+
+Paperwork: the decommission story records the merge and points at this
+task, and the decommission task carries a Delivery section.
+
+Verified: =compass lint= exits 0 with no dangling id link, all six
+skill gates pass, and =misspell-fixer= reports nothing to replace over
+the changed files.

@@ -36,7 +36,7 @@ Acceptance criteria:
   =ores.trading.core= with a single =trading_ref_type_entity= base struct, and
   type-alias or inherit per type.
 
-Scope: =ores.cli= and =ores.trading.core= only. The Qt UI layer (Controllers,
+Scope: =ores.trading.core= only. The Qt UI layer (Controllers,
 MdiWindows, DetailDialogs, HistoryDialogs, ClientModels) follows the same
 per-type pattern as all other entity types in =ores.qt= and is out of scope for
 this story.

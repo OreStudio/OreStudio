@@ -100,7 +100,7 @@ E. /Consolidate the vcpkg runtime DLL closure into a single =bin/= copy./
    applocal closure, copy the vcpkg DLLs /once/ into the install =bin/=
    directory and let Windows' default DLL search resolve them for every
    exe in that directory. Typically achieved by running =applocal.ps1= on a
-   single "seed" target (e.g. =ores.qt= or =ores.cli=) and dropping it from
+   single "seed" target (e.g. =ores.iam.service=) and dropping it from
    the others via =set_property(TARGET <svc>.exe PROPERTY VS_USER_PROPS ...)=
    or by replacing the bundled POST_BUILD step with a manual
    =install(FILES $<TARGET_RUNTIME_DLLS:ores.qt.exe>)= at CPack time. Biggest

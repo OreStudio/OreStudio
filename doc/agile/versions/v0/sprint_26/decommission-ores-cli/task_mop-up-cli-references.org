@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 1D5FFEA8-BAE4-4122-8A8D-30058906A5C4
+:END:
+#+title: Task: Mop up the CLI references the decommission left
+#+description: Task for: Decommission ores.cli
+#+type: task
+#+level: s1
+#+filetags: :decommission-ores-cli:sprint_26:v0:
+#+owner: marco
+#+branch: feature/mop-up-ores-cli
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Resolve the backlog and paperwork drift the ores.cli decommission left: the captures whose premise the retirement removed, the backlog items that still name ores.cli as a live target, and the story status that still reads as pending review.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- Every capture that named ores.cli as a live target is re-pointed, re-scoped, or discarded with its rationale.
+- No tracked document outside historical archives and dated plans names ores.cli as a live component.
+- The decommission story records the merge.
+- compass lint and the six skill gates pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

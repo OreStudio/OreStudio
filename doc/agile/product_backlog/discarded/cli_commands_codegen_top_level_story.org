@@ -2,14 +2,14 @@
 :ID: 469958E3-B249-4D4C-95A9-E7CDB703F0C0
 :END:
 #+title: CLI commands — top-level commissioning story
-#+description: ores.cli entity commands have no codegen profile and are hand-written per entity. Tackle CLI command commissioning once across entities — establish the pattern, templatize into a codegen facet, roll out — mirroring the shell/HTTP/Wt top-level stories.
+#+description: Discarded. ores.cli retired on 2026-09-23, so the CLI command layer this would have templatized no longer exists. The shell's command codegen is the surviving path.
 #+type: capture
 #+level: cross
-#+filetags: :ores.cli:codegen:refdata:
+#+filetags: :codegen:refdata:discarded:
 #+created: 2026-07-03
-#+updated: 2026-07-11
+#+updated: 2026-09-26
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog. The idea is ruled out rather than deferred, and the file stays as the record of why.
 
 * What
 
@@ -23,10 +23,13 @@ per entity. Per-commission "implement CLI commands" tasks are superseded by this
 and should be closed in favour of it. *Pick up after entities are commissioned* —
 CLI is a horizontal layer, templatized once.
 
+* Why discarded
+
 =ores.cli= was retired on 2026-09-23 (story
-[[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]]). The shell's command codegen is the surviving
-path for this work; the CLI facet described here has no remaining
-consumer.
+[[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]]), and the
+65 CLI recipes went with it. There is no CLI command layer left to
+templatize, so this capture cannot be done. The shell's command codegen
+is the surviving path for the entity-facing console surface.
 
 * Why
 
@@ -38,7 +41,7 @@ CLI surface.
 * References
 
 - Codegen gap: =.claude/skills/compass-codegen-add-surface-entity/SKILL.md= ("Codegen gap").
-- Hand-written CLI command units under =projects/ores.cli/=.
+- The shell sibling that survives: [[id:8BCD0D1C-AAFB-4FAA-A0E3-022FC6EF93C2][Shell entity commands — top-level commissioning story]].
 
 * See also
 

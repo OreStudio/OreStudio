@@ -157,8 +157,8 @@ end;
 $$ language plpgsql security definer;
 
 -- Set tenant context by code pattern (for interactive psql sessions)
--- Usage: SELECT * FROM ores_iam_set_tenant_fn('ores.cli%');
--- Short alias: SELECT * FROM st('ores.cli%');
+-- Usage: SELECT * FROM ores_iam_set_tenant_fn('system');
+-- Short alias: SELECT * FROM st('system');
 -- Returns the tenant that was set, or raises an error if no match or multiple matches
 create or replace function ores_iam_set_tenant_fn(
     p_code_pattern text
@@ -204,7 +204,7 @@ end;
 $$ language plpgsql;
 
 -- Short alias for ores_iam_set_tenant_fn (convenience for interactive use)
--- Usage: SELECT * FROM st('ores.cli%');
+-- Usage: SELECT * FROM st('system');
 create or replace function st(p_code_pattern text)
 returns table (
     tenant_id uuid,

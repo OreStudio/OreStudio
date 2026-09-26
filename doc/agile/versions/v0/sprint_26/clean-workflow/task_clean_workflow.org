@@ -244,22 +244,50 @@ start a workflow, record a completed step, ask for a step result, and read the
 three summary projections -- is the operation conversation, and it is what the
 operation model has to express.
 
-One layering observation to settle while modelling: =workflow_protocol.hpp=
-declares =provision_parties_request= and =provision_party_workflow_request=,
-which are refdata's business, and =ores.refdata= already has its own
-=provision_parties_workflow.hpp=. Whether the engine should declare the
-messages of the workflows it runs, or whether each commissioning component
-declares its own and the engine handles an opaque envelope, decides the shape
-of the operation model. It is the one genuine design question this component
-raises.
+One layering question to settle while modelling, and reading both files rather
+than counting references changes it. They are not duplicates and they do not
+collide: =ores.refdata='s header is a *definition*, not a message set. It holds
+=register_provision_parties_workflow(registry)=, which builds the three steps
+with their commands and compensations, and it includes the engine's
+=workflow_protocol.hpp= to do it, so it consumes
+=provision_party_workflow_request= rather than declaring it. The engine's header
+is the only declaration of that message, so P03 has no duplicate subject to
+remove here.
+
+What remains is ownership, and the tree answers it unevenly. The engine both
+declares a commissioned workflow's payload and serves it through
+=workflow_handler.cpp=, while four other components -- =ores.dq=, =ores.ore=,
+=ores.refdata= and =ores.reporting= -- register their own definitions against the
+engine's registry. =provision_parties= reads as the pilot workflow that the
+engine was shaped around.
+
+That leaves two coherent designs and the standard does not choose between them:
+
+1. The engine owns the messages of the workflows it runs. Cheap, and it is what
+   the tree does today. It costs the engine domain knowledge of refdata's party
+   fields.
+2. Every commissioner owns its workflow's payload beside its own definition, and
+   the engine carries an opaque envelope. Cleaner layering, and it matches how
+   the other four components already register their definitions. It moves a wire
+   type across a component boundary and changes the engine's handler.
+
+Recorded for a decision rather than taken unilaterally, because the cost is real
+either way. Everything the engine owns on its own account -- start, step
+completion, step result, and the three query projections -- is unaffected by the
+answer and is modelled either way.
 
 The subjects follow the same story. Seven =nats_subject= constants exist --
 =workflow.v1.parties.provision=, =workflow.v1.instances.list=,
 =workflow.v1.instances.steps=, =workflow.v1.definitions.list=,
-=workflow.v1.start=, and the two on the event and step-result types -- all
-declared once, none spelled as a literal in code. Modelling them moves them
-into the models, which is what P02 asks for and what makes P03's inventory
-checkable.
+=workflow.v1.start=, and the two on the event and step-result types -- each
+declared once. Modelling them moves them into the models, which is what P02 asks
+for and what makes P03's inventory checkable.
+
+One bare literal does survive, and P02 should catch it. =ores.refdata='s
+=provision_parties_workflow.hpp= sets
+=s.command_subject = "refdata.v1.parties.put"= rather than referencing a
+generated constant. It is the only one on this path: inside =ores.workflow= the
+registrar references =::nats_subject= throughout.
 
 * Test Scenarios
 

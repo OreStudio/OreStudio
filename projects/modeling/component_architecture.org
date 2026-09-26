@@ -228,8 +228,7 @@ example: =xml= for the importer, exporter and round trip; =market= for the ORE
 market data readers and the series key registry; =scanner= for the directory
 walk; =planner= for the import plan and its choices; and =hierarchy= for the
 portfolio and book node builder. Each name says what the facet holds, and five
-facets in one part is the signal that the part is doing five jobs — see
-[[id:6EA32258-F1DC-45D2-8913-202E845CD969][what ores.ore should own]].
+facets in one part is the signal that the part is doing five jobs.
 
 * CMake dependency chain
 

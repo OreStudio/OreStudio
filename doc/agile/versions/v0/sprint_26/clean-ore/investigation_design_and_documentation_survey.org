@@ -4,12 +4,14 @@
 #+title: Investigation: ores.ore design and documentation survey
 #+description: What ores.ore is made of, where its structure deviates from the component architecture, how its three generators divide the tree, which documents are stale, and the decision to move the round trip off the exporter.
 #+type: investigation
-#+level: cross
-#+filetags: :ore:architecture:codegen:xsdcpp:clean-standard:
+#+level: s1
+#+filetags: :clean-ore:sprint_26:v0:
 #+created: 2026-09-26
 #+updated: 2026-09-26
 
-This page documents a formal historical record of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into what =ores.ore= is made of, where its structure deviates from the component architecture, how its three generators divide the tree, which documents are stale, and the decision to move the round trip off the exporter. It is the baseline for the [[id:E308D5DD-1F14-4209-BB6F-C25EBABEEE35][Bring ores.ore to the clean standard]] task.
+A point-in-time record of what =ores.ore= was made of on 2026-09-26: where its structure deviated from the component architecture, how its three generators divided the tree, which documents were stale, and the decision to move the round trip off the exporter. It is the baseline for the [[id:E308D5DD-1F14-4209-BB6F-C25EBABEEE35][Bring ores.ore to the clean standard]] task.
+
+It is a snapshot, not a description of the component. Most of what it found has since been fixed, so it is the wrong place to learn what =ores.ore= is designed to do: read the component models for that, and read this for why they look the way they do.
 
 * Context
 

@@ -24,14 +24,14 @@ ores.ore passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | STARTED                              |
+| Field        | Value |
+|--------------+-------|
+| State        | DONE |
 | Parent story | [[id:873B0E5C-BDDE-40DE-9729-F0278D0F8EC2][Clean ores.ore to the component clean standard]] |
-| Now          | Complete. All 42 items pass or are recorded with their reason: P03, W01, S01 and D13 closed by removing the series key shape surface, and V06 registers the component so every gate covers it from now on. Twelve findings are recorded, three of them defects, and two of those are fixed. |
-| Waiting on   | Nothing. The clean standard is complete; every item either passes or is recorded with its reason, and V06 registers the component so the gates cover it permanently. What remains open is not a clean-standard matter: [[id:6EA32258-F1DC-45D2-8913-202E845CD969][what ores.ore should own]] records where the entity and the import saga should live, and the task records two defects -- the import dropping two document kinds it can read, and the empty api and service test suites. |
-| Next         | Bring =ores.marketdata= to a regenerable state, then move the entity in one clean step. Move the shell's export step onto a protocol, which both remaining options need. Fix the import so it carries the calendar adjustment and conventions documents it can already read. |
-| Last touched | 2026-09-26                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-26 |
 
 - Every checklist item that applies to a component of kind *Entity* passes, with its evidence recorded on the task.
 - Every item that does not apply is recorded as not applicable, with the reason.
@@ -86,6 +86,13 @@ record each item's result in the table below.
 | V02 (partial) | The codegen suite passes at 530 tests. =ores.ore.core.tests= passes at 429801 assertions in 537 cases with the fleet up; the same suite fails one case with the fleet down, =write_series_key_shape_publishes_an_event=, which needs NATS. The api and service suites run no tests. | =pytest projects/ores.codegen/tests/=; =ores.ore.core.tests= |
 | V03 (database half) | Passes. The database recreates from scratch, schema version 0.0.25. The fleet starts 22 of 23 units; =ores.web.service= does not come ready, which is outside this component. | =compass db recreate -y -k=; =compass services start= |
 
+* Companion documents
+
+Two point-in-time records sit beside this task, both written while working it. They are snapshots of what the component looked like and what was decided, not descriptions of it:
+
+- [[id:794EC06A-86D6-499B-9166-5B24EBAAF0CD][ores.ore design and documentation survey]] — the component census, the structural deviations, and the stale document cluster.
+- [[id:6EA32258-F1DC-45D2-8913-202E845CD969][what ores.ore should own]] — which jobs are ORE representation work, who consumes each, and where the rest should live.
+
 * Notes
 
 * Test Scenarios
@@ -112,3 +119,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The clean standard is complete. Every one of the 42 items passes or is recorded
+with its reason, and =ore= is in =COMPONENTS_UNDER_TEST= so the gates cover the
+component from now on. The task table above carries each item's evidence.
+
+What the pass changed beyond the checklist. The round trip left the exporter
+for =xml/roundtrip.{hpp,cpp}=. The bindings were regenerated from the current
+schema. The import protocol was hand-written and had no TypeScript twin, so the
+web client could not speak it; two operation models own it now. The series key
+shape entity's surface served nobody, so it is gone. Three generator defects
+were fixed at source with regression tests.
+
+What stays open, and why it is not a standard item:
+
+- [[id:6EA32258-F1DC-45D2-8913-202E845CD969][What ores.ore should own]] records where the entity and the import saga
+  should live. The move is not free: adding one model to =ores.marketdata=
+  materialises 135 files of that component's un-regenerated backlog, about
+  thirty of them the entity's. Bring that component to a regenerable state
+  first, then move the entity in one clean step.
+- The import uses two of the importer's four entry points, so a directory
+  carrying =calendaradjustments.xml= or =conventions.xml= imports without
+  error and without those documents, reporting nothing. The round trip calls
+  all four, which is why the gap stayed invisible.
+- =ores.ore.api.tests= and =ores.ore.service.tests= run zero tests.
+- The shell still calls =exporter::export_portfolio= directly, where a client
+  should speak the protocol.

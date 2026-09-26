@@ -4,12 +4,14 @@
 #+title: Investigation: what ores.ore should own
 #+description: The four jobs ores.ore does today, measured; the three external use cases in detail; and the options for narrowing the component to an ORE representation library.
 #+type: investigation
-#+level: cross
-#+filetags: :ore:architecture:scope:clean-standard:
+#+level: s1
+#+filetags: :clean-ore:sprint_26:v0:
 #+created: 2026-09-26
 #+updated: 2026-09-26
 
-This page answers a question the [[id:794EC06A-86D6-499B-9166-5B24EBAAF0CD][design and documentation survey]] raised but could not settle. The question is not how to tidy =ores.ore=; it is what =ores.ore= is for.
+A point-in-time record, written on 2026-09-26, of a question the [[id:794EC06A-86D6-499B-9166-5B24EBAAF0CD][design and documentation survey]] raised but could not settle. The question is not how to tidy =ores.ore=; it is what =ores.ore= is for.
+
+The measurements below are of the component as it stood that day, and one of the four jobs it counts has since been cut back. Read it for the reasoning about scope and ownership; read the component models for what the component is.
 
 * The stated intent
 

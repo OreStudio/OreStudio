@@ -81,7 +81,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:45455A9E-2DED-4101-8CF4-A520D7C3D364][Clean ores.synthetic to the component clean standard]] | BACKLOG | | | Bring ores.synthetic to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] | BACKLOG | | | Bring ores.marketdata to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] | BACKLOG | | | Bring ores.dq to the Component Clean Standard (Entity items): tier 3, domain component. |
-| [[id:873B0E5C-BDDE-40DE-9729-F0278D0F8EC2][Clean ores.ore to the component clean standard]] | BACKLOG | | | Bring ores.ore to the Component Clean Standard (Entity items): tier 3, domain component. |
+| [[id:873B0E5C-BDDE-40DE-9729-F0278D0F8EC2][Clean ores.ore to the component clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Bring ores.ore to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] | BACKLOG | | | Bring ores.trading to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:2EF0EF31-6FED-48C7-BA6F-7006D29EFE60][Clean ores.testing to the component clean standard]] | BACKLOG | | | Bring ores.testing to the Component Clean Standard (All items): tier 4, client or test support. |
 | [[id:534EAFC1-37CC-4A0D-A508-C10272612F23][Clean ores.cli to the component clean standard]] | ABANDONED | | | Bring ores.cli to the Component Clean Standard (All items): tier 4, client or test support. |

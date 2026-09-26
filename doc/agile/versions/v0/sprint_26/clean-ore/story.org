@@ -19,14 +19,14 @@ ores.ore meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean St
 
 * Status
 
-| Field         | Value                                  |
-|---------------+----------------------------------------|
-| State         | STARTED                              |
+| Field         | Value |
+|----------------+-------|
+| State         | DONE |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
-| Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Not a standard item: bring =ores.marketdata= to a regenerable state, then move the series key shape entity to it. |
+| Last touched  | 2026-09-26 |
 
 * Acceptance
 
@@ -40,6 +40,17 @@ ores.ore meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean St
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:E308D5DD-1F14-4209-BB6F-C25EBABEEE35][Bring ores.ore to the clean standard]] | STARTED | 2026-09-26 | | Work ores.ore through the Component Clean Standard in order and record each item. |
+
+* Investigations
+
+Two point-in-time records, written while working the task. They say what the
+component looked like and what was decided on the day; they are not the
+description of the component. Read the component models for that.
+
+| Investigation | Question it answered |
+|---------------+----------------------|
+| [[id:794EC06A-86D6-499B-9166-5B24EBAAF0CD][ores.ore design and documentation survey]] | What is the component made of, where does its structure deviate from the component architecture, and which documents were stale? |
+| [[id:6EA32258-F1DC-45D2-8913-202E845CD969][what ores.ore should own]] | Which of the jobs the component does are ORE representation work, who actually consumes each, and where should the rest live? |
 
 * Notes
 

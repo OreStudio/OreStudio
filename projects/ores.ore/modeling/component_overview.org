@@ -47,4 +47,5 @@ documentation survey linked below.
 
 * See also
 
-- [[id:794EC06A-86D6-499B-9166-5B24EBAAF0CD][Investigation: ores.ore design and documentation survey]] — what the component is made of, its structural deviations, and the state of its documentation.
+- [[id:2DB7C1A3-3191-4D6E-8355-B8BE30BB7809][xsdcpp]] — the out-of-band generator that produces the XML bindings.
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] — the standard this component is measured against.

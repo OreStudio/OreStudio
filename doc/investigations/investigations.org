@@ -18,10 +18,3 @@ and resolution.
 - [[id:551FC710-7E3C-484B-AB52-7F2C8DAF3B6F][Investigation: Temporal command coherence: fleet, journal, timeline]] —
   the 2×2 subject×time grid behind compass's temporal commands and the
   event-stream model unifying them.
-- [[id:794EC06A-86D6-499B-9166-5B24EBAAF0CD][Investigation: ores.ore design and documentation survey]] — the
-  component's three generators, its structural deviations from the
-  component architecture, the stale document cluster, and the round trip
-  moved off the exporter.
-- [[id:6EA32258-F1DC-45D2-8913-202E845CD969][Investigation: what ores.ore should own]] — the four jobs the
-  component does, measured; the three external use cases; and the options
-  for narrowing it to an ORE representation library.

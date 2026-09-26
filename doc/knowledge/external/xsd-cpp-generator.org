@@ -97,4 +97,3 @@ Expect a large diff and verify it with the suites, not by reading it.
 
 - =projects/ores.codegen/scripts/xsdcpp_generate_ore.sh=, the wrapper.
 - =external/ore/xsd/README.md= and =external/ore/methodology.txt=, the schema sync and the surrounding pipeline.
-- [[id:794EC06A-86D6-499B-9166-5B24EBAAF0CD][Investigation: ores.ore design and documentation survey]] — why this dependency needed recording.

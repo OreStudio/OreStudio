@@ -2,7 +2,11 @@ ores.scheduler regeneration record
 ==================================
 
 Command: check_component_drift.py --component scheduler-cpp
-Run after: the model resync, and after each of the three generator fixes.
+Run after: the model resync, and after each of the three generator fixes this
+regeneration depends on. The pass went on to find two more generator defects,
+both after this run and both recorded in G05: the quoted-scalar-default guard
+and the jsonb sample value. Neither changes this component's regenerated
+output, so this run still describes the tree.
 Mode: in place (the authoritative check). The first run was a dry run, kept
 as b01_component_drift_dry_run.txt, and is the baseline this run is measured
 against.

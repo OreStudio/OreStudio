@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/synthetic/market_data_generation_config_commands.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
 #include <sstream>
@@ -69,8 +70,24 @@ TEST_CASE("market_data_generation_config_commands_registers_every_derived_verb",
 
     market_data_generation_config_commands::register_commands(root_menu, session);
 
+    // The menu's completion list is the only public view of its children, so
+    // a verb that is missing from it was never registered.
+    const auto completions = root_menu.GetCompletions("market_data_generation_configs ");
+    for (const auto& verb : {
+             std::string{"market_data_generation_configs list"},
+             std::string{"market_data_generation_configs get"},
+             std::string{"market_data_generation_configs get-many"},
+             std::string{"market_data_generation_configs add"},
+             std::string{"market_data_generation_configs set"},
+             std::string{"market_data_generation_configs put-many"},
+             std::string{"market_data_generation_configs delete"},
+             std::string{"market_data_generation_configs delete-many"},
+             std::string{"market_data_generation_configs versions"},
+             std::string{"market_data_generation_configs version"},
+         })
+        CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
+
     BOOST_LOG_SEV(lg, debug) << "Registered 10 command(s).";
-    CHECK(true);
 }
 
 TEST_CASE("market_data_generation_config_commands_process_list_requires_a_session", tags) {
@@ -112,6 +129,12 @@ TEST_CASE("market_data_generation_config_commands_process_get_reports_the_expect
     market_data_generation_config_commands::process_get(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -154,6 +177,12 @@ TEST_CASE("market_data_generation_config_commands_process_add_reports_the_expect
     market_data_generation_config_commands::process_add(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -182,6 +211,12 @@ TEST_CASE("market_data_generation_config_commands_process_set_reports_the_expect
     market_data_generation_config_commands::process_set(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -225,6 +260,12 @@ TEST_CASE("market_data_generation_config_commands_process_delete_reports_the_exp
     market_data_generation_config_commands::process_delete(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -268,6 +309,12 @@ TEST_CASE("market_data_generation_config_commands_process_versions_reports_the_e
     market_data_generation_config_commands::process_versions(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -297,5 +344,11 @@ TEST_CASE("market_data_generation_config_commands_process_version_reports_the_ex
     market_data_generation_config_commands::process_version(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }

@@ -40,7 +40,8 @@ telemetry_context telemetry_context::create_root(std::shared_ptr<resource> res) 
     span_context ctx;
     ctx.trace = g_trace_gen();
     ctx.span = g_span_gen();
-    ctx.trace_flags = 0x01; // sampled
+    // The root context is sampled, so the spans it starts are recorded.
+    ctx.trace_flags = 0x01;
 
     return telemetry_context(ctx, std::move(res));
 }

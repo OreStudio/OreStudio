@@ -89,9 +89,8 @@ struct jsz_account_detail {
 
 // nats-server tags account_details `omitempty` in its Go struct, so the
 // field is absent from the JSON entirely when there are no JetStream
-// accounts/streams to report (e.g. right after NATS starts).  It must be
-// optional (as the old `streams` field was) or parsing fails every poll
-// cycle in that state.
+// accounts/streams to report (e.g. right after NATS starts). It must be
+// optional or parsing fails every poll cycle in that state.
 struct jsz_response {
     std::optional<std::vector<jsz_account_detail>> account_details;
 };
@@ -119,7 +118,8 @@ nats_poller::nats_poller(const std::string& monitor_url,
         monitor_port_ = static_cast<unsigned short>(std::stoi(port_str));
     } else {
         monitor_host_ = authority;
-        monitor_port_ = 8222; // NATS default monitoring port
+        // NATS serves its monitoring endpoint on 8222 unless told otherwise.
+        monitor_port_ = 8222;
     }
 }
 

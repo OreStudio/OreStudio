@@ -213,6 +213,35 @@ standard now holds 49 items. The findings behind the new items:
   story performed was sound; what the verifier failed was the record's own
   claims about it.
 
+** What the ores.scheduler pass learned
+
+=ores.scheduler= is the first component of kind *Entity* to run the standard,
+and the first whose model defines one entity while the rest of the component
+stays hand-written. What it added:
+
+- A source that needs a clock, a database and a message bus at once is not
+  untestable; it is welded. Extract the decision into a unit that takes the
+  clock as an argument, test it against fixed instants, and record the I/O that
+  remains. The scheduler loop's two rules -- is this job due, and when is the
+  next minute boundary -- moved into =schedule_decision.cpp=, which holds no
+  timer and opens no connection, and the loop was left with one recorded reason
+  instead of being the coverage gap.
+- A class no test can link is a finding, not an internal detail. The one
+  hand-written repository class without the core export macro was the one class
+  with no test, and its generated siblings all carry that macro. Where a
+  hand-written twin of a generated artefact differs from it, the difference is
+  the defect.
+- A cited figure is evidence, so a stale one is a defect. An evidence file kept
+  the core suite at the count it held before the hand-written cases were added,
+  while the record row beside it carried the current count. Re-measure every
+  number at the head the record names, and re-measure the set together.
+- A private constructor is an invariant, not an obstacle. The cron expression
+  admits no unvalidated instance, so its test enters through =from_string= and
+  asserts the parse, rather than reaching past the guard or befriending it.
+- Model prose is the generated documentation. An instruction to the generator
+  written into a model arrives in the generated header as the entity
+  description, so a model states facts and a task states instructions.
+
 * See also
 
 - [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][Component Architecture Audit]] -- the structural checklist item H01 runs.

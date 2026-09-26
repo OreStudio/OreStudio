@@ -25,12 +25,14 @@
 #include "ores.scheduler.api/domain/job_status.hpp"
 #include "ores.scheduler.core/repository/job_definition_repository.hpp"
 #include "ores.scheduler.core/repository/job_instance_repository.hpp"
+#include "ores.scheduler.core/service/schedule_decision.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
 #include <stdexcept>
 
 namespace ores::scheduler::service {
@@ -179,15 +181,11 @@ boost::asio::awaitable<void> scheduler_loop::tick(boost::asio::io_context& ioc) 
     const auto now = std::chrono::system_clock::now();
 
     for (const auto& job : jobs_) {
-        if (!job.is_active)
-            continue;
+        const auto it = last_run_.find(job.id);
+        const std::optional<std::chrono::system_clock::time_point> last =
+            (it != last_run_.end()) ? std::optional(it->second) : std::nullopt;
 
-        // Determine the time point to compute next_occurrence from.
-        auto it = last_run_.find(job.id);
-        const auto after = (it != last_run_.end()) ? it->second : (now - std::chrono::minutes(1));
-
-        const auto next = job.schedule_expression.next_occurrence(after);
-        if (next <= now) {
+        if (is_due(job, last, now)) {
             // Spawn the job in a detached coroutine so it doesn't block the tick.
             boost::asio::co_spawn(
                 ioc,
@@ -205,15 +203,10 @@ boost::asio::awaitable<void> scheduler_loop::run(boost::asio::io_context& ioc) {
     load_jobs();
 
     while (true) {
-        // Compute the duration until the next minute boundary.
         const auto now = std::chrono::system_clock::now();
-        const auto now_t = std::chrono::system_clock::to_time_t(now);
-        const auto next_min_t = ((now_t / 60) + 1) * 60;
-        const auto next_min = std::chrono::system_clock::from_time_t(next_min_t);
-        const auto wait_duration = next_min - now;
 
         boost::asio::steady_timer timer(ioc);
-        timer.expires_after(wait_duration);
+        timer.expires_after(next_minute_boundary(now) - now);
 
         boost::system::error_code ec;
         co_await timer.async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));

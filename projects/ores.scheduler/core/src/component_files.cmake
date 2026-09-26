@@ -32,6 +32,7 @@ set(files
     "service/job_definition_service.cpp"
     "service/mq_action_handler.cpp"
     "service/nats_publish_action_handler.cpp"
+    "service/schedule_decision.cpp"
     "service/scheduler_loop.cpp"
     "service/sql_action_handler.cpp"
 )
@@ -57,6 +58,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/service/job_definition_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/service/mq_action_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/service/nats_publish_action_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/service/schedule_decision.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/service/scheduler_loop.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/service/sql_action_handler.hpp"
 )

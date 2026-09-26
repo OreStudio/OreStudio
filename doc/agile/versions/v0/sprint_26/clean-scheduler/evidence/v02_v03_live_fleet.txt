@@ -53,15 +53,26 @@ V02, the suites with the fleet up
     codegen suite                         608 passed, 0 failed
     ores.scheduler.api.tests              All tests passed (33 assertions in 6 test cases)
     ores.scheduler.service.tests          All tests passed (26 assertions in 10 test cases)
-    ores.scheduler.core.tests             All tests passed (7 assertions in 1 test case)
+    ores.scheduler.core.tests             All tests passed (84 assertions in 22 test cases)
 
-The core suite is the generated eventing integration test, and it now passes:
-it writes a job definition through the repository, waits for the row's
-pg_notify to reach the event bus and be published on NATS, then asserts the
-history provider returns two versions, that the version's commentary is the one
-the test wrote, that a deleted definition is gone, and that its history count
-matches the versions it saw. Before this round it failed at the NATS connect
-because the fleet was down, and, once the fleet was up, at the insert.
+An earlier revision of this file recorded the core suite as "7 assertions in 1
+test case", which was true when the suite held only the generated eventing
+integration test and was left behind when the hand-written cases were added.
+The three figures above were re-measured together at commit 9e1e262bdc.
+
+The core suite's 22 cases are the generated eventing integration test, three
+cases for the hand-written job-instance repository, three for the job-instance
+mapper, four for the schedule decisions the loop delegates to, three for the SQL
+action handler, four for the NATS-publish handler, and four for the
+message-queue handler.
+
+The generated eventing integration test now passes: it writes a job definition
+through the repository, waits for the row's pg_notify to reach the event bus and
+be published on NATS, then asserts the history provider returns two versions,
+that the version's commentary is the one the test wrote, that a deleted
+definition is gone, and that its history count matches the versions it saw.
+Before this round it failed at the NATS connect because the fleet was down, and,
+once the fleet was up, at the insert.
 
 The defect the live run found
 -----------------------------

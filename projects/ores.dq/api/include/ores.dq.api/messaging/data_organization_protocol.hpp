@@ -23,7 +23,6 @@
 #include "ores.dq.api/domain/methodology.hpp"
 #include "ores.dq.api/domain/nature_dimension.hpp"
 #include "ores.dq.api/domain/origin_dimension.hpp"
-#include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.dq.api/domain/treatment_dimension.hpp"
 #include <string>
 #include <string_view>
@@ -80,61 +79,6 @@ struct get_methodology_history_response {
     bool success = false;
     std::string message;
     std::vector<ores::dq::domain::methodology> history;
-};
-
-// =============================================================================
-// Subject Area Protocol
-// =============================================================================
-
-struct subject_area_key {
-    std::string name;
-    std::string domain_name;
-};
-
-struct get_subject_areas_request {
-    using response_type = struct get_subject_areas_response;
-    static constexpr std::string_view nats_subject = "dq.v1.subject-areas.list";
-    int offset = 0;
-    int limit = 100;
-};
-
-struct get_subject_areas_response {
-    std::vector<ores::dq::domain::subject_area> subject_areas;
-    int total_available_count = 0;
-};
-
-struct save_subject_area_request {
-    using response_type = struct save_subject_area_response;
-    static constexpr std::string_view nats_subject = "dq.v1.subject-areas.save";
-    ores::dq::domain::subject_area data;
-};
-
-struct save_subject_area_response {
-    bool success = false;
-    std::string message;
-};
-
-struct delete_subject_area_request {
-    using response_type = struct delete_subject_area_response;
-    static constexpr std::string_view nats_subject = "dq.v1.subject-areas.delete";
-    std::vector<subject_area_key> keys;
-};
-
-struct delete_subject_area_response {
-    bool success = false;
-    std::string message;
-};
-
-struct get_subject_area_history_request {
-    using response_type = struct get_subject_area_history_response;
-    static constexpr std::string_view nats_subject = "dq.v1.subject-areas.history";
-    subject_area_key key;
-};
-
-struct get_subject_area_history_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::dq::domain::subject_area> history;
 };
 
 // =============================================================================

@@ -22,10 +22,8 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/dataset_dependency.hpp"
-#include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/dataset_dependency_repository.hpp"
-#include "ores.dq.core/repository/subject_area_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <optional>
 #include <string>
@@ -79,72 +77,9 @@ public:
     std::vector<domain::dataset_dependency>
     list_dataset_dependencies_by_dataset(const std::string& dataset_code);
 
-    // ========================================================================
-    // Subject Area Management
-    // ========================================================================
-
-    /**
-     * @brief Lists all subject areas.
-     */
-    std::vector<domain::subject_area> list_subject_areas();
-
-    /**
-     * @brief Lists subject areas with pagination.
-     */
-    std::vector<domain::subject_area> list_subject_areas(std::uint32_t offset, std::uint32_t limit);
-
-    /**
-     * @brief Lists subject areas for a specific domain.
-     */
-    std::vector<domain::subject_area> list_subject_areas_by_domain(const std::string& domain_name);
-
-    /**
-     * @brief Gets the total count of active subject areas.
-     */
-    std::uint32_t get_subject_area_count();
-
-    /**
-     * @brief Finds a subject area by its composite key.
-     */
-    std::optional<domain::subject_area> find_subject_area(const std::string& name,
-                                                          const std::string& domain_name);
-
-    /**
-     * @brief Saves a subject area (creates or updates).
-     *
-     * @param subject_area The subject area to save
-     */
-    void save_subject_area(const domain::subject_area& subject_area);
-
-    /**
-     * @brief Saves multiple subject areas (creates or updates).
-     *
-     * @param subject_areas The subject areas to save
-     */
-    void save_subject_areas(const std::vector<domain::subject_area>& subject_areas);
-
-    /**
-     * @brief Removes a subject area.
-     *
-     * @param name The name of the subject area to remove
-     * @param domain_name The domain name of the subject area
-     */
-    void remove_subject_area(const std::string& name, const std::string& domain_name);
-
-    /**
-     * @brief Gets the version history for a subject area.
-     *
-     * @param name The subject area name
-     * @param domain_name The domain name
-     * @return Vector of all versions, newest first
-     */
-    std::vector<domain::subject_area> get_subject_area_history(const std::string& name,
-                                                               const std::string& domain_name);
-
 private:
     context ctx_;
     repository::dataset_dependency_repository dataset_dependency_repo_;
-    repository::subject_area_repository subject_area_repo_;
 };
 
 }

@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_registrar.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.core/messaging/subject_area_registrar.hpp"
 #include "ores.dq.api/messaging/subject_area_protocol.hpp"
 #include "ores.dq.core/messaging/subject_area_handler.hpp"
@@ -34,19 +39,41 @@ register_subject_area_handlers(ores::nats::service::client& nats,
                                std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<subject_area_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_subject_areas_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_subject_area_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_subject_area_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->remove(std::move(msg));
+        list_subject_areas_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_subject_areas(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_subject_area_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->history(std::move(msg));
+        get_subject_area_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_subject_area(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_subject_areas_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_many_subject_areas(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_subject_area_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_subject_area(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_subject_areas_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_many_subject_areas(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_subject_area_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->delete_subject_area(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_subject_areas_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->delete_many_subject_areas(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        list_subject_area_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_subject_area_versions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_subject_area_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_subject_area_version(std::move(msg));
         }));
     return subs;
 }

@@ -62,6 +62,7 @@ target_link_libraries(${lib_target_name}
         ores.shell.synthetic.lib
         ores.shell.assets.lib
         ores.shell.refdata.lib
+        ores.shell.dq.lib
         ores.shell.compute.lib
         ores.shell.analytics.lib
         ores.shell.workflow.lib

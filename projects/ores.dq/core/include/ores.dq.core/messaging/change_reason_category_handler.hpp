@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_handler.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_MESSAGING_CHANGE_REASON_CATEGORY_HANDLER_HPP
 #define ORES_DQ_CORE_MESSAGING_CHANGE_REASON_CATEGORY_HANDLER_HPP
 
@@ -59,7 +64,16 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.change_reason_categories.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_change_reason_categories(ores::nats::message msg) {
         BOOST_LOG_SEV(change_reason_category_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -67,30 +81,131 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::change_reason_category_service svc(req_ctx);
-        get_change_reason_categories_response resp;
-        if (auto req = decode<get_change_reason_categories_request>(msg)) {
-            try {
-                resp.categories = svc.list_categories(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_categories());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(change_reason_category_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
+        auto req = decode<list_change_reason_categories_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(change_reason_category_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(change_reason_category_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        service::change_reason_category_service svc(req_ctx);
+        try {
+            auto response = svc.list_change_reason_categories(*req);
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_change_reason_categories_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.change_reason_categories.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_change_reason_category(ores::nats::message msg) {
+        BOOST_LOG_SEV(change_reason_category_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_change_reason_category_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::change_reason_category_service svc(req_ctx);
+        try {
+            auto response = svc.get_change_reason_category(*req);
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_change_reason_category_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.change_reason_categories.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_change_reason_categories(ores::nats::message msg) {
+        BOOST_LOG_SEV(change_reason_category_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_change_reason_categories_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::change_reason_category_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_change_reason_categories(*req);
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_change_reason_categories_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.change_reason_categories.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_change_reason_category(ores::nats::message msg) {
         BOOST_LOG_SEV(change_reason_category_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -102,28 +217,43 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::change_reason_category_service svc(req_ctx);
-        if (auto req = decode<save_change_reason_category_request>(msg)) {
-            try {
-                svc.save_category(req->data);
-                BOOST_LOG_SEV(change_reason_category_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, save_change_reason_category_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(change_reason_category_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      save_change_reason_category_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_change_reason_category_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(change_reason_category_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::change_reason_category_service svc(req_ctx);
+        try {
+            auto response = svc.put_change_reason_category(*req);
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_change_reason_category_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.change_reason_categories.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_change_reason_categories(ores::nats::message msg) {
         BOOST_LOG_SEV(change_reason_category_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -131,32 +261,47 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::change_reason_category_service svc(req_ctx);
-        if (auto req = decode<get_change_reason_category_history_request>(msg)) {
-            try {
-                auto hist = svc.get_category_history(req->code);
-                BOOST_LOG_SEV(change_reason_category_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_change_reason_category_history_response{.history = std::move(hist),
-                                                                  .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(change_reason_category_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      get_change_reason_category_history_response{.success = false,
-                                                                  .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "dq::change_reason_categories:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_change_reason_categories_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(change_reason_category_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::change_reason_category_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_change_reason_categories(*req);
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_many_change_reason_categories_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.change_reason_categories.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_change_reason_category(ores::nats::message msg) {
         BOOST_LOG_SEV(change_reason_category_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -168,25 +313,166 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::change_reason_category_service svc(req_ctx);
-        if (auto req = decode<delete_change_reason_category_request>(msg)) {
-            try {
-                svc.delete_categories(req->codes);
-                BOOST_LOG_SEV(change_reason_category_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, delete_change_reason_category_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(change_reason_category_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(
-                    nats_,
-                    msg,
-                    delete_change_reason_category_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_change_reason_category_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(change_reason_category_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::change_reason_category_service svc(req_ctx);
+        try {
+            auto response = svc.delete_change_reason_category(*req);
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_change_reason_category_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.change_reason_categories.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_change_reason_categories(ores::nats::message msg) {
+        BOOST_LOG_SEV(change_reason_category_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::change_reason_categories:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_change_reason_categories_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::change_reason_category_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_change_reason_categories(*req);
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_many_change_reason_categories_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.change_reason_categories_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_change_reason_category_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(change_reason_category_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_change_reason_category_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::change_reason_category_service svc(req_ctx);
+        try {
+            auto response = svc.list_change_reason_category_versions(*req);
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_change_reason_category_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.change_reason_categories_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_change_reason_category_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(change_reason_category_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_change_reason_category_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::change_reason_category_service svc(req_ctx);
+        try {
+            auto response = svc.get_change_reason_category_version(*req);
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(change_reason_category_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_change_reason_category_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

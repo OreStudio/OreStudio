@@ -17,14 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.core/repository/subject_area_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/subject_area_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/subject_area_entity.hpp"
 #include "ores.dq.core/repository/subject_area_mapper.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <set>
 #include <sqlgen/postgres.hpp>
 #include <stdexcept>
+#include <tuple>
 
 namespace ores::dq::repository {
 
@@ -37,17 +45,74 @@ std::string subject_area_repository::sql() {
     return generate_create_table_sql<subject_area_entity>(lg());
 }
 
+ores::utility::domain::precondition
+subject_area_repository::replace_claim(context ctx, const domain::subject_area& v) {
+    const auto current = read_latest(ctx, v.name, v.domain_name);
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
+
+domain::subject_area subject_area_repository::apply_claim(
+    context ctx, const domain::subject_area& v, const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, v.name, v.domain_name);
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
+
 void subject_area_repository::write(context ctx, const domain::subject_area& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing subject area. " << "name: " << v.name
-                               << " domain_name: " << v.domain_name;
-    execute_write_query(
-        ctx, subject_area_mapper::map(v), lg(), "Writing subject area to database.");
+    write(ctx, v, replace_claim(ctx, v));
 }
 
 void subject_area_repository::write(context ctx, const std::vector<domain::subject_area>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing subject areas. Count: " << v.size();
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void subject_area_repository::write(context ctx,
+                                    const domain::subject_area& v,
+                                    const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing subject area. " << "name: " << v.name
+                               << " domain_name: " << v.domain_name;
+    const auto t = apply_claim(ctx, v, claim);
     execute_write_query(
-        ctx, subject_area_mapper::map(v), lg(), "Writing subject areas to database.");
+        ctx, subject_area_mapper::map(t), lg(), "Writing subject area to database.");
+}
+
+void subject_area_repository::write(
+    context ctx,
+    const std::vector<domain::subject_area>& v,
+    const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing subject areas. Count: " << v.size();
+    std::vector<domain::subject_area> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(
+        ctx, subject_area_mapper::map(batch), lg(), "Writing subject areas to database.");
 }
 
 std::vector<domain::subject_area> subject_area_repository::read_latest(context ctx) {
@@ -118,18 +183,44 @@ std::optional<domain::subject_area> subject_area_repository::read_at_version(
     return entities.front();
 }
 
+subject_area_repository::remove_status
+subject_area_repository::remove(context ctx,
+                                const std::string& name,
+                                const std::string& domain_name,
+                                std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing subject area. " << "name: " << name
+                               << " domain_name: " << domain_name;
+    const auto current = read_latest(ctx, name, domain_name);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<subject_area_entity> |
+        where("tenant_id"_c == tid && "name"_c == name && "domain_name"_c == domain_name &&
+              "valid_to"_c == max.value() && "version"_c == expected);
+
+    execute_delete_query(ctx, query, lg(), "Removing subject area from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, name, domain_name).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
 void subject_area_repository::remove(context ctx,
                                      const std::string& name,
                                      const std::string& domain_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing subject area. " << "name: " << name
-                               << " domain_name: " << domain_name;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<subject_area_entity> |
-                       where("tenant_id"_c == tid && "name"_c == name &&
-                             "domain_name"_c == domain_name && "valid_to"_c == max.value());
-
-    execute_delete_query(ctx, query, lg(), "Removing subject area from database.");
+    static_cast<void>(remove(ctx, name, domain_name, std::nullopt));
 }
 
 std::vector<domain::subject_area>
@@ -166,6 +257,40 @@ std::uint32_t subject_area_repository::get_total_area_count(context ctx) {
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active subject area count: " << count;
     return count;
+}
+
+std::vector<domain::subject_area>
+subject_area_repository::read_latest(context ctx,
+                                     const std::vector<std::string>& names,
+                                     const std::vector<std::string>& domain_names) {
+    if (names.empty() || domain_names.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<subject_area_entity>> |
+                       where("name"_c.in(names) && "domain_name"_c.in(domain_names) &&
+                             "valid_to"_c == max.value());
+    auto result = execute_read_query<subject_area_entity, domain::subject_area>(
+        ctx,
+        query,
+        [](const auto& entities) { return subject_area_mapper::map(entities); },
+        lg(),
+        "Reading latest subject areas by ids.");
+    // Compound key: the query above is a per-column .in() cross-product
+    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // exact requested key-tuples here.
+    if (domain_names.size() != names.size())
+        throw std::invalid_argument(
+            "subject_area_repository::read_latest: key column vectors must be the same length");
+    std::set<std::tuple<std::string, std::string>> requested;
+    for (std::size_t i = 0; i < names.size(); ++i)
+        requested.emplace(names[i], domain_names[i]);
+    std::vector<domain::subject_area> filtered;
+    filtered.reserve(result.size());
+    for (auto& item : result) {
+        if (requested.contains(std::make_tuple(item.name, item.domain_name)))
+            filtered.push_back(std::move(item));
+    }
+    return filtered;
 }
 
 void subject_area_repository::remove(context ctx,

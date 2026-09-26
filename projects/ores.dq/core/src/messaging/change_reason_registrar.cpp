@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_registrar.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.core/messaging/change_reason_registrar.hpp"
 #include "ores.dq.api/messaging/change_reason_protocol.hpp"
 #include "ores.dq.core/messaging/change_reason_handler.hpp"
@@ -34,19 +39,41 @@ register_change_reason_handlers(ores::nats::service::client& nats,
                                 std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<change_reason_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_change_reasons_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_change_reason_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_change_reason_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->remove(std::move(msg));
+        list_change_reasons_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_change_reasons(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_change_reason_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->history(std::move(msg));
+        get_change_reason_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_change_reason(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_change_reasons_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_many_change_reasons(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_change_reason_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_change_reason(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_change_reasons_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_many_change_reasons(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_change_reason_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->delete_change_reason(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_change_reasons_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_many_change_reasons(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_change_reason_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_change_reason_versions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_change_reason_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_change_reason_version(std::move(msg));
         }));
     return subs;
 }

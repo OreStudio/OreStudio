@@ -1,0 +1,95 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.shell.dq Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace shell #F2F2F2 {
+        namespace app #F2F2F2 {
+            namespace commands #F2F2F2 {
+                class dq_commands {
+                    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+                }
+                class artefact_type_commands {
+                    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+                }
+                class badge_definition_commands {
+                    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+                }
+                class badge_mapping_commands {
+                    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+                }
+                class catalog_commands {
+                    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+                }
+                class change_reason_commands {
+                    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+                }
+                class change_reason_category_commands {
+                    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+                }
+                class code_domain_commands {
+                    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+                }
+                class data_domain_commands {
+                    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+                }
+                class dataset_bundle_commands {
+                    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+                }
+                class dataset_bundle_member_commands {
+                    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+                }
+                class lei_entity_commands {
+                    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+                }
+                class lei_relationship_commands {
+                    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+                }
+                class report_definition_commands {
+                    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+                }
+                class synthetic_fx_spot_config_commands {
+                    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+                }
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' One unit per entity, and one hand-written aggregator that lists them. The
+' units include the dq protocol headers and reach the service over the bus, so
+' the part links the api library and not the core.
+
+class ores::shell::app::commands::dq_commands #ECECEC {
+    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+}
+note right of "ores::shell::app::commands::dq_commands"
+The hand-written list of units. No facet emits it, so it is the
+one file in the part that a regeneration never writes.
+end note
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.shell.dq.puml"
+' End:
+@enduml

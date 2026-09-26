@@ -175,8 +175,9 @@ standard now holds 47 items. The findings behind the new items:
 - A generator defect can make the obvious fix destructive. Refreshing
   =ores.platform='s diagram deletes correct content, because the parser
   loses brace sync on a one-line =enum class=. Seven components hold a
-  one-line =enum class=, so the defect reaches all of them. Run the
-  generator's dry run and read its diff before accepting a refresh.
+  one-line =enum class= in a header, which is what the parser reads, so
+  the defect reaches all seven. Run the generator's dry run and read its
+  diff before accepting a refresh.
 - The same defect recurs across components. 147 =component_files.cmake=
   files are stale for one reason: the marker template landed in commit
   =3a40c9c57e= and no component regenerated. Where a defect has one cause,

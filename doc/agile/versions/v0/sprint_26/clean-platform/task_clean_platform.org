@@ -59,7 +59,7 @@ record each item's result in the table below.
 |------+--------+----------|
 | B01 | pass | Baseline before any edit. `check_component_drift.py --component platform --dry-run` reports a component it cannot name, because there is no catalogue row. `regenerate_cmake_component_files.py --component ores.platform --check` reports 2 stale files, `src/component_files.cmake` and `tests/component_files.cmake`, each missing the generated marker. |
 | B02 | pass | 0 entity, junction, operation and message models. `modeling/` holds `component_overview.org`, `ores.platform.puml` and `ores.platform.png`. |
-| B03 | pass | 32 production C++ files classified, 23 headers and 9 sources, plus 7 files under `tests/`. Five public artefacts have no consumer anywhere: `unreachable.hpp`, `attributes.hpp`, `process::get_hostname()`, `file::open_c_file()` and `datetime::is_valid_iso8601_date()`. `network_info.cpp` duplicates the MAC enumeration in two near-identical functions. Three of the nine source files have no test. |
+| B03 | pass | 32 production C++ files classified at baseline, 23 headers and 9 sources, plus 7 files under `tests/`. The deletions leave 30, which is 21 headers and 9 sources. Five public artefacts have no consumer anywhere: `unreachable.hpp`, `attributes.hpp`, `process::get_hostname()`, `file::open_c_file()` and `datetime::is_valid_iso8601_date()`. `network_info.cpp` duplicates the MAC enumeration in two near-identical functions. Three of the nine source files have no test. |
 | B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. |
 | B05 | pass | The only live capture naming the component is this story. No in-flight branch touches it. |
 | M01 to M08 | not applicable | No org model, so there is no format to migrate, no profile to bind, no feature namespace, no table, no wire type, no junction, no custom type binding and no model fragment. |
@@ -78,7 +78,7 @@ record each item's result in the table below.
 | H02 | pass | No dead code and no duplicate implementation remains. The five dead public artefacts are deleted, the MAC enumerators have collapsed to one, and the four `file` members with no consumer are gone. |
 | H03 | pass | The five end-of-line comments are gone or moved above their code, the six narration comments are deleted, and the stale `k_timestamp_format` claim is corrected. |
 | V01 | pass | `./compass.sh build` reaches 100 percent with exit code 0, run after the last source edit. |
-| V02 | pass | `ores.platform.tests` passes at 224 assertions in 102 test cases, up from 201 in 88, with no vacuous case left. Three previously untested source files now have tests. |
+| V02 | pass | `ores.platform.tests` passes at 224 assertions in 102 test cases. Before this work the same suite reported 201 assertions in 88 test cases, both figures read from its own output, and no vacuous case is left. Three previously untested source files now have tests. |
 | V03, V04 | not applicable | No entity, no SQL and no generated shell command. |
 | V05 | pass | Every gate run and green. `regenerate_cmake_component_files.py --component ores.platform --check` reports none stale. `validate_docs.py` reports only the pre-existing `ores.shell.iam` finding. `./compass.sh lint` passes. The codegen suite passes at 530 tests, which is the 522 baseline plus the eight new regression cases. `clang-format --dry-run --Werror` is clean on every changed and added C++ file. |
 | V06 | not applicable | No catalogue row and no models, so the component cannot join `COMPONENTS_UNDER_TEST`. Recorded as the programme gap, not a defect of this component. |
@@ -88,11 +88,12 @@ record each item's result in the table below.
 Survey, 2026-09-25, at trunk `5de59e3fb8`. Run by an agent that did not
 write the component, against the clean standard.
 
-- Scale. 32 production C++ files in 23 headers and 9 sources, with 7 files
-  under `tests/`. 88 test cases, 201 assertions, and 458 files outside the
-  component include it. The largest surface is
-  time, where `ores.platform/time/datetime.hpp` has 400 includers, 397 of
-  them outside the component.
+- Scale, at baseline. 32 production C++ files in 23 headers and 9 sources,
+  with 7 files under `tests/`. 88 test cases and 201 assertions. 458 C++
+  files outside the component reference `ores.platform/`, and 383 of them
+  include `ores.platform/time/datetime.hpp`, which makes time the largest
+  surface by a wide margin. The deletions leave 30 production files, 21
+  headers and 9 sources.
 - Suites pass. `ores.platform.tests` runs green from the last build, 201
   assertions in 88 test cases.
 - What is already clean. No leftover artefact, no commented-out code, no
@@ -121,7 +122,7 @@ Work items, in the order they land.
    `real_environment_provider.cpp` and `executable.cpp`. The environment
    facet already ships the test seam its own suite never uses.
 8. Add tests for untested public API on covered files, starting with
-   `datetime::to_db_string`, which 41 external files call.
+   `datetime::to_db_string`, which 32 C++ files outside the component call.
 9. Remove the vacuous tests and checks. Five `f == f` stability checks,
    two `has_value()` cases with no else, and three assert-nothing cases.
 10. Hygiene. Move the five end-of-line comments above their code, drop the
@@ -181,21 +182,25 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | The refreshed diagram still showed a `format` member that `datetime` never declares, because the parser read a wrapped parameter list as a field | build/scripts/generate_component_puml.py | fixed | A second parser defect. Fixed with a balance guard and a regression test that fails both of its cases against the unfixed parser. |
-| 2 | Four test files were not clang-format clean, and the nightly format job would have rewritten them | projects/ores.platform/tests/net_network_info_tests.cpp, time_datetime_tests.cpp, environment_environment_tests.cpp, process_executable_tests.cpp | fixed | Formatted, and `clang-format --dry-run --Werror` is now clean on every changed and added C++ file. |
+| 2 | Four of the five changed test files were not clang-format clean, and the nightly format job would have rewritten them | projects/ores.platform/tests/net_network_info_tests.cpp, time_datetime_tests.cpp, environment_environment_tests.cpp, process_executable_tests.cpp | fixed | Formatted, and `clang-format --dry-run --Werror` is now clean on every changed and added C++ file. |
 | 3 | `real_environment_provider` had no export macro, so the library gave it no external linkage under `-fvisibility=hidden` and no test binary could reach it | projects/ores.platform/include/ores.platform/environment/real_environment_provider.hpp | fixed, kept | A production fix, not a test convenience. Its siblings all carry the macro, and without it the class is unusable from a consumer on Windows. |
+| 4 | The record carried six statements the tree does not support | doc/agile/versions/v0/sprint_26/clean-platform/task_clean_platform.org, story.org, doc/knowledge/architecture/component_clean_standard.org | fixed | Found by the independent verifier and reproduced by me before correcting. The baseline and current file counts are now separate; the base assertion figure is attributed to the suite's own earlier output; the external-reference numbers name their metric, which is C++ files; the one-line enum count says "in a header", which is what the parser reads; the deleted `file` members are seven across four names, not eight; and the format finding says four of the five changed test files. The `to_db_string` figure became the 32 C++ callers, because nine of the 41 references are templates and docs. |
+| 5 | The bookkeeping commit that `compass pr record` created carries no `Story-ID:`, `Task-ID:`, `Environment:` or `Co-Authored-By:` trailer | commit 0398bf4613 | recorded, not fixed | The tool generates that commit. Rewriting a pushed commit to fix a message is a force-push this story should not perform while it is under review, so the gap is recorded. It belongs to `compass pr record`, which should emit the trailers every hand-written commit carries. |
 
 * Result
 
 ores.platform meets the standard for the items that apply to a model-free
 component. Thirteen work items landed across five commits.
 
-The component lost five dead public artefacts, eight `file` members with
-no consumer, and about a hundred lines of duplicated MAC enumeration. It
-gained tests for three source files that had none, a test for
-`to_db_string` that 41 external files depend on, and an assertion count
-that rose from 201 to 224 with no vacuous case left. Two diagram parser
-defects are fixed at their source with regression tests, one of which had
-made a refresh delete correct content, and it reached seven components.
+The component lost five dead public artefacts, seven `file` members with
+no consumer across four names, and about a hundred lines of duplicated MAC
+enumeration. It gained tests for three source files that had none, a test
+for `to_db_string` that 32 C++ files outside the component call, and an assertion
+count that rose from 201 to 224 with no vacuous case left. Two diagram
+parser defects are fixed at their source with regression tests. The first
+had made a refresh delete correct content in the seven components that
+declare a one-line `enum class` in a header, which is what the generator
+reads.
 
 Two items stay out of scope, both programme-level. The other 145 stale
 `component_files.cmake` files are one sweep. The registry cannot admit a

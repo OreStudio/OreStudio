@@ -45,19 +45,20 @@ ores.platform meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 - Survey on 2026-09-23: 0 entity, junction or operation models; 32 C++ files outside tests, 0 of them generated (0%); 0 messaging headers, 0 of them hand-written.
 - Survey on 2026-09-25, by an agent that did not write the component. 32
-  production C++ files in 23 headers and 9 sources, 7 files under `tests/`,
-  88 test cases, 201 assertions, and 458 files outside the component
-  include it. Both suites pass. Five public artefacts have no consumer, two
-  MAC enumerators duplicate each other, three of the nine source files have
-  no test, ten test cases are vacuous, and the overview is stale. The full
-  findings and the work list are on the task.
+  production C++ files at baseline in 23 headers and 9 sources, 7 files
+  under `tests/`, 88 test cases and 201 assertions. 458 C++ files outside
+  the component reference `ores.platform/`. Both suites pass. Five public
+  artefacts have no consumer, two MAC enumerators duplicate each other,
+  three of the nine source files have no test, ten test cases are vacuous,
+  and the overview is stale. The full findings and the work list are on the
+  task. The deletions leave 30 production files, 21 headers and 9 sources.
 - The diagram cannot be refreshed until its generator is fixed.
   `build/scripts/generate_component_puml.py` loses brace sync on a
   one-line `enum class`, so a refresh deletes the `time_unit` members and
   the whole `relative_time_formatter` class. A dry run reproduces it.
 - The component is widely reachable. The largest surface is time, where
-  `ores.platform/time/datetime.hpp` has 400 includers, 397 outside the
-  component.
+  383 C++ files outside the component include
+  `ores.platform/time/datetime.hpp`.
 
 * Decisions
 
@@ -84,5 +85,6 @@ ores.platform meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
   cannot join `COMPONENTS_UNDER_TEST`. That needs one programme decision,
   and six components now share it.
 - The generator fix reaches seven components, because seven contain a
-  one-line `enum class`. It is fixed here because platform's diagram
+  one-line `enum class` in a header, which is what the parser reads. Two
+  more declare one in a source file the parser never reads. It is fixed here because platform's diagram
   depends on it, and the regression test goes in the codegen suite.

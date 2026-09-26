@@ -37,17 +37,120 @@ namespace ores #F2F2F2 {
         class scoped_database_helper {
             -helper_ : database_helper
         }
+        class scoped_environment_override {
+            -fake_ : ores::platform::environment::fake_environment_provider
+            -previous_ : ores::platform::environment::environment_provider*
+            -stripped_ : vector<string>
+            -saved_ : unordered_map<string, optional<string>>
+        }
         class test_database_manager {
         }
         class test_timeout_listener {
             -test_start_time_ : chrono::steady_clock::time_point
             -current_test_name_ : string
+            -test_running_ : atomic<bool>
             -watchdog_thread_ : thread
+            -timeout_ : chrono::seconds
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The API the automated pass cannot see: it reads data members only, so a class
+' whose content is methods arrives as an empty box. Declare each class by its
+' fully-qualified name here and PlantUML merges the methods into the box above.
+' Do not re-open the namespace block to do it: a class declared in two namespace
+' blocks renders, but every edge that touches it kills the image pass.
+
+class ores::testing::database_helper {
+    +database_helper()
+    +seed_rbac() : void
+    +set_tenant_context() : void
+    +context() : database::context&
+    +tenant_id() : utility::uuid::tenant_id
+    +db_user() : string
+    +set_party(party_id : boost::uuids::uuid) : void
+}
+
+class ores::testing::database_lifecycle_listener {
+    +register_pre_run_sweep_table(table_name : string) : void {static}
+    +testRunStarting(testRunInfo : TestRunInfo) : void
+    +testRunEnded(testRunStats : TestRunStats) : void
+}
+
+class ores::testing::logging_listener {
+    +set_test_module_name(module_name : string) : void {static}
+    +extract_suite_name(testInfo : TestCaseInfo) : string {static}
+    +extract_module_name() : string {static}
+    +testRunStarting(testRunInfo : TestRunInfo) : void
+    +testRunEnded(testRunStats : TestRunStats) : void
+    +testCaseStarting(testInfo : TestCaseInfo) : void
+    +testCaseEnded(testCaseStats : TestCaseStats) : void
+    +assertionEnded(assertionStats : AssertionStats) : void
+    +sectionStarting(sectionInfo : SectionInfo) : void
+    +sectionEnded(sectionStats : SectionStats) : void
+}
+
+class ores::testing::project_root {
+    +get() : filesystem::path {static}
+    +resolve(relative_path : filesystem::path) : filesystem::path {static}
+}
+
+class ores::testing::scoped_database_helper {
+    +scoped_database_helper(seed_rbac : bool)
+    +seed_rbac() : void
+    +context() : database::context&
+    +tenant_id() : utility::uuid::tenant_id
+    +db_user() : string
+    +set_party(party_id : boost::uuids::uuid) : void
+}
+
+class ores::testing::scoped_environment_override {
+    +scoped_environment_override(values : unordered_map<string, string>, stripped_keys : vector<string>)
+    +fake() : fake_environment_provider&
+}
+
+class ores::testing::test_database_manager {
+    +make_context() : database::context {static}
+    +make_database_options() : database::database_options {static}
+    +generate_test_tenant_code(test_suite_name : string) : string {static}
+    +provision_test_tenant(ctx : database::context&, tenant_code : string, description : string) : string {static}
+    +terminate_test_tenant(ctx : database::context&, tenant_id : string) : void {static}
+    +close_orphaned_synthetic_rows(ctx : database::context&, table_names : vector<string>) : void {static}
+    +set_test_tenant_id_env(tenant_id : string) : void {static}
+    +get_test_tenant_id_env() : string {static}
+}
+
+class ores::testing::test_timeout_listener {
+    +testCaseStarting(testInfo : TestCaseInfo) : void
+    +testCaseEnded(testCaseStats : TestCaseStats) : void
+}
+
+' The Catch2 listener contract, which the automated pass does not draw.
+class CatchEventListenerBase <<Catch2>> {
+}
+
+ores::testing::logging_listener --|> CatchEventListenerBase
+ores::testing::database_lifecycle_listener --|> CatchEventListenerBase
+ores::testing::test_timeout_listener --|> CatchEventListenerBase
+
+' Relationships the automated pass cannot see: it reads data members only.
+ores::testing::scoped_database_helper *-- ores::testing::database_helper
+ores::testing::database_helper ..> ores::testing::test_database_manager : make_context
+ores::testing::database_lifecycle_listener ..> ores::testing::test_database_manager : tenant lifecycle
+ores::testing::logging_listener ..> ores::testing::test_database_manager : tenant id
+
+note as OresTestingFreeFunctions
+    Entry points that are not types:
+    make_generation_context(database_helper& [, seed]) : generation_context
+    make_generation_context(scoped_database_helper& [, seed]) : generation_context
+    make_nats_options() : nats_options
+    sql_values_rows(sql : string, path : string) : vector<vector<string>>
+    seed_classification_rules() : const vector<series_classification_rule>&
+    seed_shapes() : const vector<series_key_shape>&
+    seed_registry() : const series_key_registry&
+end note
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.testing.puml"

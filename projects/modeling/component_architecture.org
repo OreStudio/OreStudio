@@ -52,7 +52,7 @@ Current simple components:
 | =ores.security= | Authentication and authorisation primitives |
 | =ores.service= | Shared service-layer helpers (handler_helpers, request_context) |
 | =ores.storage= | Object storage client |
-| =ores.testing= | Test helpers and fixtures |
+| =ores.testing= | Per-test tenant isolation and Catch2 fixtures |
 | =ores.utility= | General-purpose utilities (UUID, time, string) |
 
 ** Composite component

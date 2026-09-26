@@ -7,7 +7,24 @@
 #+level: cross
 #+filetags: :knowledge:ore:model_configuration:domain:
 #+created: 2024-06-15
-#+updated: 2026-05-21
+#+updated: 2026-09-26
+
+*Status: partly implemented. The analysis holds; the proposal is now work in progress.*
+
+Layers 1 and 5 landed in =ores.analytics.api=:
+=pricing_model_config=, =pricing_model_product=,
+=pricing_model_product_parameter=, and =pricing_engine_type=. Layers 2 (smile
+surface), 3 (Greeks), and 4 (general valuation) are still open, and so is the
+database schema and the temporal versioning.
+
+Two statements in the body below are out of date:
+
+- The round-trip check no longer runs from =ores.cli=, which was decommissioned.
+  The import-then-export composition lives in =ores.ore.core= as
+  =xml::roundtrip()= in =xml/roundtrip.hpp=, tested by
+  =core/tests/xml_exporter_directory_roundtrip_tests.cpp=.
+- "UI integration" now means =ores.web= for reading and =ores.shell= for
+  operating. The Qt client was deleted in commit =af67db3062= (2026-09-19).
 
 This document analyses the model configuration files used by [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open
 Source Risk Engine (ORE)]] and proposes how to represent them as

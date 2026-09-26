@@ -16,25 +16,19 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "domain/series_key_shape_json_io.cpp"
-    "domain/series_key_shape_table.cpp"
-    "domain/series_key_shape_table_io.cpp"
-    "generators/series_key_shape_generator.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/domain/series_key_shape.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/domain/series_key_shape_json_io.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/domain/series_key_shape_table.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/domain/series_key_shape_table_io.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/eventing/series_key_shape_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/export.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/generators/series_key_shape_generator.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/messaging/ore_import_engine_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/messaging/ore_import_protocol.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/messaging/series_key_shape_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/net/ore_storage.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/ores.ore.api.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/workflow/ore_import_workflow.hpp"

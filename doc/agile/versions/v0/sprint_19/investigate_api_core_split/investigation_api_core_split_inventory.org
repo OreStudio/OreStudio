@@ -4,15 +4,18 @@
 #+title: Investigation: API/core split inventory
 #+description: Inventory of what all 17 api+core split components keep in each sub-component and what their apis link; identifies ores.dq.api as the only api linking the database layer, traces the cause to a backwards-compatibility shim, and recommends the refactor.
 #+type: investigation
-#+level: cross
-#+filetags: :architecture:components:cpp:
+#+level: s1
+#+filetags: :investigate_api_core_split:sprint_19:v0:
 #+created: 2026-06-04
 #+updated: 2026-06-04
 
-This page documents a formal historical record of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into
-the api/core split across components: what each sub-component
-contains, what each =api= links, where the lightweight-api contract
-has eroded, and why.
+A point-in-time record, written on 2026-06-04, of the api/core split across components: what each
+sub-component contained that day, what each =api= linked, where the lightweight-api contract had
+eroded, and why.
+
+It is a snapshot, not the rule. For what the split is meant to be, read
+[[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]]; read this for the state of the tree when the
+question was asked and for how the =ores.dq.api= case was traced.
 
 * Context
 

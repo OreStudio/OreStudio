@@ -4,12 +4,13 @@
 #+title: ores.ore.core
 #+name: ore.core
 #+full_name: ores.ore.core
-#+description: ORE XML import/export — currency configuration and ORE-format data exchange for the risk engine.
+#+description: The ORE document engine — XSD-generated XML bindings, instrument mappers, the importer, exporter and round trip, the market data readers, and the import planner and scanner.
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :ore:core:component:
 #+created: 2026-05-19
-#+updated: 2026-05-19
+#+updated: 2026-09-26
+#+brief: ORE document engine
 
 * Diagram
 
@@ -19,39 +20,70 @@
 
 * Summary
 
-=ores.ore.core= provides ORE (Open Source Risk Engine) integration for ORE
-Studio. It imports and exports data in ORE's native XML formats: parsing
-currency configurations from ORE's =currencyconfig.xsd= into internal domain
-objects and exporting them back. It also supplies domain hierarchy, market
-data, and log parsing utilities used when invoking ORE risk runs.
+=ores.ore.core= is the engine that moves ORE documents in and out of the
+ORES domain model. It holds the =xsdcpp=-generated bindings for ORE's whole
+XML vocabulary, twelve hand-written mappers between those bindings and the
+=ores.trading= and =ores.refdata= domain types, the importer, the exporter
+and the directory round trip, readers for ORE's market data text formats,
+the import planner and directory scanner, and the generated series key
+shape entity with its repository.
+
+The XSD bindings are the largest part of the component by far and are
+produced by a generator outside the build. See
+[[id:2DB7C1A3-3191-4D6E-8355-B8BE30BB7809][xsdcpp]] before regenerating them.
 
 * Inputs
 
-- ORE XML files (=currencyconfig.xml= and similar) read from disk or received
-  via NATS.
-- Internal domain objects (currencies, market data) to be serialised to ORE
-  XML for submission to the risk engine.
+- ORE XML documents read from disk: portfolios, currency configurations,
+  calendar adjustments and conventions.
+- ORE market data text files (=-market*.txt=, =fixings*.txt=) and the
+  =oresmd= series keys they carry.
+- The series key shape reference rows, from which the key registry is
+  built at construction.
+- ORES trading and reference data objects to serialise back to ORE XML.
 
 * Outputs
 
-- Parsed =CurrencyConfig= and =CurrencyElement= domain objects.
-- ORE XML output files written for ingestion by the ORE risk engine.
+- Trading domain objects: trades with their instruments and envelopes,
+  plus mapped conventions and FX conventions.
+- Reference data objects: currencies, calendar adjustments, portfolios
+  and books.
+- Regenerated ORE XML documents, mirrored by the round trip.
+- The series key shape entity, through the generated repository.
 
 * Entry points
 
-- =include/ores.ore.core/domain/= — ORE XML domain types and mappers.
-- =include/ores.ore.core/hierarchy/= — ORE output hierarchy parsing.
-- =include/ores.ore.core/market/= — market data utilities.
-- =include/ores.ore.core/log/= — ORE log parsing utilities.
+- =include/ores.ore.core/domain/= — the =xsdcpp= bindings and the mappers.
+- =include/ores.ore.core/xml/= — the importer, the exporter and the round trip.
+- =include/ores.ore.core/market/= — the ORE market data readers, the series
+  key registry and the FX quote convention checker.
+- =include/ores.ore.core/scanner/= — the directory walk that classifies ORE
+  files by root element.
+- =include/ores.ore.core/planner/= — the import plan and its choices.
+- =include/ores.ore.core/hierarchy/= — the portfolio and book node builder.
+- =include/ores.ore.core/repository/= — the generated series key shape
+  entity and its repository.
+- =include/ores.ore.core/log/= — the ORE engine log line parser.
 
 * Dependencies
 
-- =ores.ore.api= — shared domain types and NATS protocol schemas.
-- =ores.refdata.api= — currency domain types (mapped to/from ORE format).
-- =pugixml= — XML parsing.
-- =nats.c= — NATS messaging client.
+- =ores.ore.api= — the shared contract, linked publicly.
+- =ores.database= — the database context, linked publicly.
+- =ores.refdata.api= and =ores.trading.api= — the domain types the mappers
+  target, linked publicly.
+- =ores.dq.api=, =ores.history.core=, =ores.logging=, =ores.platform=,
+  =ores.utility= and Boost — linked privately.
+
+XML parsing is the generated binding code, not a library: the component
+links neither =pugixml= nor =nats.c=.
 
 * See also
 
-- [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]] — protocol types and domain entities.
-- [[id:EF8FD20D-0B9C-4379-8BBD-B4FCF2F5F0C7][ores.ore.service]] — NATS service entrypoint.
+- [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]] — the shared contract and the entity protocol.
+- [[id:EF8FD20D-0B9C-4379-8BBD-B4FCF2F5F0C7][ores.ore.service]] — the runnable host.
+- [[id:5F280C8C-8C50-40A2-8C84-C85B8821D33E][ores.ore]] — the composite this part belongs to.
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — the market data files this part reads.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market data architecture]] — where the readers sit in the wider flow.
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE model configuration]] — the configuration files this part parses.
+- [[id:7302A9A4-8B64-4C92-8582-49FB5A2219A2][How do I round trip an ORE document through the database?]] — the live path for the same documents.
+- [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] — the upstream engine.

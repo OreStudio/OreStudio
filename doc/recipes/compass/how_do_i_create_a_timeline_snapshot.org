@@ -7,11 +7,10 @@
 #+level: cross
 #+filetags: :compass:timeline:agile:recipe:
 #+created: 2026-06-10
-#+updated: 2026-06-10
+#+updated: 2026-09-26
 
-Relies on =compass timeline snapshot= (in [[id:551FC710-7E3C-484B-AB52-7F2C8DAF3B6F][the temporal command
-coherence investigation]]), which mines =origin/main= and the GitHub PR
-record for the given window and writes a structured org file to the
+Relies on =compass timeline snapshot=, which mines =origin/main= and the
+GitHub PR record for the given window and writes a structured org file to the
 current sprint's =timeline/= folder.
 
 * Question

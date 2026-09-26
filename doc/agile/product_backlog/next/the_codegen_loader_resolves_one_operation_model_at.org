@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C80EC09A-9F01-495D-B60A-BEA11CC33E50
+:END:
+#+title: An operation model cannot reference a sibling model's message in TypeScript
+#+description: The codegen loader resolves one operation model at a time, so a message declared in one operation model cannot be referenced from a second model in the same component. The C++ side compiles only because the model's Includes block names the sibling header by hand; the TypeScript projection has no equivalent and emits the bare PascalCase name, so tsc fails with TS2304 'Cannot find name'. Hit while modelling the ORE import protocol as a client-facing and an engine-facing model that shared ore_import_item_error; resolved by merging them into one model, which is also the better shape since they share a payload. The general fix is a component-wide message registry so the TS template can emit 'import type { X } from "./sibling_protocol.js"', and a check that every generated .ts resolves every referenced interface.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:typescript:protocol:operation_model:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

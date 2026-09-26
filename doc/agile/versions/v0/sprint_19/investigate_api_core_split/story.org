@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :architecture:components:cpp:investigation:sprint_19:v0:
 #+created: 2026-06-04
-#+updated: 2026-06-05
+#+updated: 2026-09-26
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -63,6 +63,14 @@ stories will extend the cleanup to all of them.
   only, or at worst depend on other apis.
 - Follow-up refactor tasks (or stories, if the pattern is systemic)
   are filed for the offending components, DQ first.
+
+* Investigations
+
+One point-in-time record, written while working the task. It says what the tree looked like and what was decided on the day; it is not the description of the contract. Read [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] for that.
+
+| Investigation | Question it answered |
+|---------------+----------------------|
+| [[id:D16238D8-3F4A-4F45-97BC-4F6618601313][API/core split inventory]] | What does every split component keep in =api= versus =core=, what does each =api= link, and where has the lightweight-api contract eroded? |
 
 * Tasks
 

@@ -4,8 +4,8 @@
 #+title: Investigation: MSVC C1202 and rfl complexity
 #+description: Complete technical record of the MSVC C1202 / Clang nesting limit problem caused by reflect-cpp, covering root cause, every approach tried, why each succeeded or failed, and the correct way forward.
 #+type: investigation
-#+level: cross
-#+filetags: :msvc:clang:cpp:reflect_cpp:investigation:
+#+level: s1
+#+filetags: :rfl_complexity_resolution:sprint_18:v0:
 #+created: 2026-05-23
 #+updated: 2026-06-04
 

@@ -23,6 +23,28 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace ore #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class series_key_shape <<struct>> {
+                +version : int
+                +series_type : string
+                +qualifier_depth : int
+                +has_point_dimension : bool
+                +default_point : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+        }
+        namespace eventing #F2F2F2 {
+            class series_key_shape_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +series_types : vector<string>
+                +tenant_id : string
+            }
+        }
         namespace messaging #F2F2F2 {
             class ore_import_execute_request <<struct>> {
                 +request_id : string
@@ -65,6 +87,118 @@ namespace ores #F2F2F2 {
                 +correlation_id : string
                 +workflow_instance_id : string
             }
+            class series_key_shape_key <<struct>> {
+                +series_type : string
+            }
+            class series_key_shape_write <<struct>> {
+                +series_type : string
+                +qualifier_depth : int
+                +has_point_dimension : bool
+                +default_point : string
+                +description : string
+            }
+            class series_key_shape_change <<struct>> {
+                +write : series_key_shape_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class series_key_shape_removal <<struct>> {
+                +key : series_key_shape_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class series_key_shape_lookup <<struct>> {
+                +key : series_key_shape_key
+                +series_key_shape : optional<ores::ore::domain::series_key_shape>
+            }
+            class series_key_shape_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : series_key_shape_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class series_key_shape_version_key <<struct>> {
+                +series_key_shape : series_key_shape_key
+                +version : uint32_t
+            }
+            class series_key_shape_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_series_key_shapes_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_series_key_shapes_response <<struct>> {
+                +result : ores::utility::domain::result
+                +shapes : vector<ores::ore::domain::series_key_shape>
+                +total : uint64_t
+            }
+            class get_series_key_shape_request <<struct>> {
+                +key : series_key_shape_key
+            }
+            class get_series_key_shape_response <<struct>> {
+                +result : ores::utility::domain::result
+                +series_key_shape : optional<ores::ore::domain::series_key_shape>
+            }
+            class get_many_series_key_shapes_request <<struct>> {
+                +keys : vector<series_key_shape_key>
+            }
+            class get_many_series_key_shapes_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<series_key_shape_lookup>
+            }
+            class put_series_key_shape_request <<struct>> {
+                +change : series_key_shape_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_series_key_shape_response <<struct>> {
+                +result : ores::utility::domain::result
+                +series_key_shape : ores::ore::domain::series_key_shape
+            }
+            class put_many_series_key_shapes_request <<struct>> {
+                +changes : vector<series_key_shape_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_series_key_shapes_response <<struct>> {
+                +result : ores::utility::domain::result
+                +shapes : vector<ores::ore::domain::series_key_shape>
+            }
+            class delete_series_key_shape_request <<struct>> {
+                +removal : series_key_shape_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_series_key_shape_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_series_key_shapes_request <<struct>> {
+                +removals : vector<series_key_shape_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_series_key_shapes_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_series_key_shape_versions_request <<struct>> {
+                +key : series_key_shape_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<series_key_shape_versions_filter>
+            }
+            class list_series_key_shape_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::ore::domain::series_key_shape>
+                +total : uint64_t
+            }
+            class get_series_key_shape_version_request <<struct>> {
+                +key : series_key_shape_version_key
+            }
+            class get_series_key_shape_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::ore::domain::series_key_shape
+            }
         }
         namespace net #F2F2F2 {
             class ore_storage <<struct>> {
@@ -74,6 +208,56 @@ namespace ores #F2F2F2 {
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' --- What the part contracts to ---
+'
+' Every messaging type is a flat struct carrying a request, a response, or a
+' shared payload. Each request names its reply through `using response_type`
+' and carries `static constexpr std::string_view nats_subject`, so the subject
+' and the reply type travel with the request and no caller spells either one.
+'
+' The part publishes twelve subjects in two families:
+'
+'   ore.v1.series_key_shapes.*            the canonical entity protocol
+'   ore.v1.series_key_shapes_versions.*   the point-in-time reads
+'   workflow.v1.ore.import                the import workflow trigger
+'   ore.v1.ore.import.{execute,rollback}  the import saga steps
+'
+' The saga subjects double the component name. The entity family reads
+' ore.v1.series_key_shapes.list; the saga reads ore.v1.ore.import.execute,
+' which says "ore" twice.
+
+ores::ore::messaging::list_series_key_shapes_request --> ores::ore::messaging::list_series_key_shapes_response : response_type
+ores::ore::messaging::get_series_key_shape_request --> ores::ore::messaging::get_series_key_shape_response : response_type
+ores::ore::messaging::put_series_key_shape_request --> ores::ore::messaging::put_series_key_shape_response : response_type
+ores::ore::messaging::delete_series_key_shape_request --> ores::ore::messaging::delete_series_key_shape_response : response_type
+ores::ore::messaging::list_series_key_shape_versions_request --> ores::ore::messaging::list_series_key_shape_versions_response : response_type
+ores::ore::messaging::ore_import_request --> ores::ore::messaging::ore_import_response : response_type
+ores::ore::messaging::ore_import_execute_request --> ores::ore::messaging::ore_import_execute_result : response_type
+
+' The entity, its change payloads and its events are four views of one row.
+ores::ore::messaging::series_key_shape_write ..> ores::ore::domain::series_key_shape : carries
+ores::ore::messaging::series_key_shape_change ..> ores::ore::domain::series_key_shape : carries
+ores::ore::messaging::list_series_key_shapes_response ..> ores::ore::domain::series_key_shape : returns
+ores::ore::eventing::series_key_shape_changed_event ..> ores::ore::messaging::series_key_shape_change : carries
+
+' --- What the automated pass cannot see ---
+'
+' Three things in this part have no class to hang off, so they are absent from
+' the picture above and from every picture the generator will produce:
+'
+'   include/ores.ore.api/workflow/ore_import_workflow.hpp
+'       register_ore_import_workflow(registry). ores.workflow.core calls it
+'       from its registrar, which is the one place another component reaches
+'       into this part.
+'   include/ores.ore.api/generators/series_key_shape_generator.hpp
+'       generate_synthetic_series_key_shape(s), the sample rows the entity
+'       integration test uses.
+'   include/ores.ore.api/export.hpp
+'       the visibility macros; the part builds a shared library.
+'
+' The .cpp files under src/ build ores.ore.api.lib, so the part is not
+' header-only even though the diagram shows only declarations.
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.ore.api.puml"

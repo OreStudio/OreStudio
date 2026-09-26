@@ -70,7 +70,8 @@ repository, service, and messaging headers under
 =projects/ores.sql/create/trading/=. It builds on prior analysis:
 the codegen gap investigation (task [[id:2548EE95-7C62-4C48-BA11-2146604B2082][2548EE95]]), the bond probe
 org [[id:BE4698B1-56B1-4686-AD68-C16D4611A1FD][BE4698B1]], the C1202 complexity investigation
-(file:doc/investigations/msvc_c1202_rfl_complexity.org), the Sep-8
+([[id:D75F4921-B431-4E78-99AB-62A47F761D1D][MSVC C1202 and rfl complexity]],
+now in the sprint 18 =rfl_complexity_resolution= story), the Sep-8
 drift oracle it produced, the temporal and composite versioning design
 [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][BA159E88]], and the Sep-6 entity classification and drift baseline
 work (sprint 25 story =entity-classification-drift-rollout=). The
@@ -318,10 +319,10 @@ commodity, composite, credit, scripted and trade domain headers into
 nested group layers (for example, a bond's =terms= and =details= under
 its economic core). The org grammar models only flat members plus the
 identity/audit pair, so these families could not be bound. The C1202
-investigation (file:doc/investigations/msvc_c1202_rfl_complexity.org)
-shows why the tree shape is not cosmetic: MSVC limits
-=rfl::Literal= to nine fields, so plain nested sub-structs of at most
-nine members are the mandated decomposition. The bond probe
+rule in [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]
+shows why the tree shape is not cosmetic: MSVC caps a reflected literal
+at nine effective fields, so plain nested sub-structs of at most nine
+members are the mandated decomposition. The bond probe
 [[id:BE4698B1-56B1-4686-AD68-C16D4611A1FD][BE4698B1]] regenerated a bond org in the current grammar and diffed it
 against the tree: regeneration flattens the three mid-groups into one
 fat row, drops =security_id= (a domain-only member that does not
@@ -818,7 +819,7 @@ handcrafted (PRs 5-6) and move to codegen as the grammar absorbs them
 - [[id:AE72D444-02B1-4428-B56C-062B849ED568][compass-code-review-data-model]] — the review skill.
 - [[id:2548EE95-7C62-4C48-BA11-2146604B2082][2548EE95]] — the codegen-gap investigation and Sep-8 drift oracle.
 - [[id:BE4698B1-56B1-4686-AD68-C16D4611A1FD][Bond probe org]] — the regeneration probe against the bond tree stack.
-- file:doc/investigations/msvc_c1202_rfl_complexity.org — the C1202 field-count ceiling and layout rationale.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the C1202 ceiling and the decomposition rule it forces.
 - [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal composite entity versioning]] — the refdata versioning design this target diverges from for trading (per-table spines, temporal joins).
 - [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] — the program story this analysis feeds.
 - [[id:40DA4D49-C608-4AC0-9F69-B7D3DF75E3C7][Analyse the ores.trading data model]] — the task that produced this page.

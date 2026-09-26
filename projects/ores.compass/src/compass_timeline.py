@@ -1,7 +1,7 @@
 """compass timeline — the everyone × past quadrant of the temporal grid.
 
-Three behaviours (see the temporal command coherence investigation,
-551FC710-7E3C-484B-AB52-7F2C8DAF3B6F):
+Three behaviours over one grid: subject (me | everyone) against time
+(now | past). See the ores.compass component overview for the grid.
 
 - generate: mine the *consistent substrate* — the agile documents'
   git history on origin/main plus the GitHub PR record — for events in

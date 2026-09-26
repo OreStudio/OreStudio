@@ -210,9 +210,11 @@ def derive_ancestor_slugs(doc_type, parent_dir):
     Relies on the path convention versions/<version>/<sprint>/<story>/.
     """
     pd = Path(parent_dir)
-    if doc_type in ("task", "test_scenario"):
-        # test_scenario lives alongside its verifying task, directly in
-        # the story folder — same ancestor shape as task.
+    if doc_type in ("task", "test_scenario", "investigation"):
+        # All three are flat files in the story folder that commissioned
+        # them, so all three carry the same ancestor tags: test_scenario
+        # sits alongside its verifying task, and an investigation is the
+        # record of a question that story asked.
         return [pd.name, pd.parent.name, pd.parent.parent.name]
     if doc_type == "story":
         return [pd.name, pd.parent.name]
@@ -758,6 +760,10 @@ def main(argv=None):
     # - task:      <parent-dir>/task_<slug>.org   (prefix groups tasks under
     #              "t" so they sort below story.org and stand apart from any
     #              future siblings in the story folder)
+    # - investigation: <parent-dir>/investigation_<slug>.org  (flat file in the
+    #              story folder that commissioned it, prefixed like task and
+    #              test_scenario so the three sort apart. An investigation is
+    #              a point-in-time record, so it is not a fixed folder.)
     # - skill:     <parent-dir>/<slug>/SKILL.org  (Claude Code skill folder)
     # - entity_org:    <parent-dir>/ores.<component>.<slug>.org
     # - field_group:   <parent-dir>/ores.<component>.<slug>_field_group.org
@@ -771,6 +777,13 @@ def main(argv=None):
     if args.type == "task":
         # Don't double-prefix if the caller already passed task_<slug>.
         leaf = args.slug if args.slug.startswith("task_") else f"task_{args.slug}"
+        out_dir = parent_dir
+        out_file = out_dir / f"{leaf}.org"
+    elif args.type == "investigation":
+        # Same prefix-and-place-in-the-story-folder convention as task and
+        # test_scenario. There is no default parent: an investigation belongs
+        # to the story that asked the question.
+        leaf = args.slug if args.slug.startswith("investigation_") else f"investigation_{args.slug}"
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"
     elif args.type == "test_scenario":
@@ -828,7 +841,7 @@ def main(argv=None):
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"
     elif args.type in ("component", "recipe", "knowledge", "manual", "product_identity",
-                       "capture", "memory", "investigation"):
+                       "capture", "memory"):
         # Captures live at agile/product_backlog/<bucket>/<slug>.org. The
         # caller passes --parent-dir as that bucket directory; we validate
         # the bucket name only loosely (audit can tighten later).

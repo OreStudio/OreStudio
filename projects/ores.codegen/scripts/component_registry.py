@@ -33,4 +33,13 @@ Usage: imported by the check scripts, never run.
 # component's infrastructure, and the task records why generation does not
 # supersede each:
 # doc/agile/versions/v0/sprint_26/clean-compute/task_clean_compute.org.
-COMPONENTS_UNDER_TEST = ("iam", "compute-cpp")
+#
+# ore joins it at the end of its clean-standard pass. The same three claims
+# hold: regeneration is byte-identical across every facet, every one of its
+# protocol headers has a TypeScript twin, and its seeds are complete.
+# Registering it is what makes the gates permanent for the component rather
+# than a check somebody remembers to run. ores.marketdata and every other
+# component that is not yet regenerable stays out for the reason refdata does:
+# an un-regenerated component's whole backlog rides along with any model
+# change to it.
+COMPONENTS_UNDER_TEST = ("iam", "compute-cpp", "ore")

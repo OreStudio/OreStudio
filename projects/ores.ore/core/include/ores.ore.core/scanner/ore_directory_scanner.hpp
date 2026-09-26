@@ -33,10 +33,17 @@ namespace ores::ore::scanner {
 /**
  * @brief Scans an ORE directory tree and classifies files by type.
  *
+ * A file is classified by its XML root element, not by its name, so a
+ * portfolio is any .xml whose root is <Portfolio> whatever the file is
+ * called. Only .xml files are considered, and any file under an excluded
+ * directory is ignored.
+ *
  * Classifies files as:
- * - currency_files:  filename == "currencyconfig.xml"
- * - portfolio_files: filename starts with "portfolio" and ends with ".xml"
- * - ignored_files:   everything else, and files under excluded directories
+ * - currency_files:  root element <CurrencyConfig>
+ * - portfolio_files: root element <Portfolio>
+ * - ignored_files:   everything else, including files under excluded
+ *                    directories and the calendar adjustment and
+ *                    conventions documents, which the import does not carry
  */
 class ORES_ORE_CORE_EXPORT ore_directory_scanner {
 private:

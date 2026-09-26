@@ -61,4 +61,23 @@ in xsdcpp's own source if it's still broken on a fresh build.
 
 * See also
 
--
+- [[id:2DB7C1A3-3191-4D6E-8355-B8BE30BB7809][xsdcpp]] — the tool, its pin, and how the bindings are generated.
+
+* Why discarded
+
+Fixed, and the regeneration has been done. The local checkout now carries
+a two-pass group and substitution-group resolver in =src/Reader.cpp=, and
+the binary built with it resolves the full 23-file import chain. The
+bindings were regenerated on 2026-09-26: =domain.cpp= went from 108,655
+lines to 40,095, =domain.hpp= from 13,507 to 16,266, the wrapper
+re-applied all 166 export annotations, every non-database ORE suite passed
+at 429,702 assertions in 516 cases, and the whole tree built.
+
+Two things this capture got wrong in hindsight, worth recording. Its paths
+predate the regrouping of =ores.ore= into api, core and service, so the
+files it names no longer exist. And its own hypothesis was right: the
+local build did predate the fix.
+
+The durable fix is the pin: the tool is a sibling checkout that no
+dependency file names, so its version is now recorded in the knowledge
+page above rather than in a backlog item.

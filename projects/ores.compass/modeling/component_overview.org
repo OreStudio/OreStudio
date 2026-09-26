@@ -9,7 +9,7 @@
 #+level: cross
 #+filetags: :compass:tooling:python:docs:agile:
 #+created: 2026-05-24
-#+updated: 2026-05-28
+#+updated: 2026-09-26
 
 * Diagram
 
@@ -123,8 +123,7 @@ not an accident:
 Other temporal commands are projections: =where=/=status= and =sprint
 audit= are sprint-scoped now-views; =sprint charts= aggregates the
 consistent substrate. New temporal features should be placed on this grid
-— and assigned a substrate — rather than added beside it. See the
-[[id:551FC710-7E3C-484B-AB52-7F2C8DAF3B6F][temporal command coherence investigation]] for the full analysis.
+— and assigned a substrate — rather than added beside it.
 
 * Commands
 

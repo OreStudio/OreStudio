@@ -44,6 +44,14 @@
  * that claims a point dimension and also carries a default point is
  * contradictory and is rejected, both by the reader and by the check
  * constraint below.
+ *
+ * The table carries an entity, a repository and its SQL, and nothing
+ * else. It is a reference table that reads like configuration: one seeded
+ * row per series type ORE defines. Nothing sends its subjects, serves its
+ * handlers or drives its commands, so every facet that would build a
+ * surface for them is disabled, and the repository the component keeps is
+ * the whole of its use of this entity. ores.marketdata, the one real
+ * consumer, reads it through that repository, in process.
  */
 
 create table if not exists "ores_ore_series_key_shapes_tbl" (
@@ -104,7 +112,17 @@ begin
     for update;
 
     if found then
-        if NEW.version != 0 and NEW.version != current_version then
+        -- The write states what it believes about the row, and the store is
+        -- what decides. Version zero means one thing: no current row exists.
+        -- So a create that collides with a live row is refused here, for every
+        -- client, rather than by a check each client has to remember.
+        if NEW.version = 0 then
+            if not ores_utility_version_replace_allowed_fn() then
+                raise exception
+                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
+                    using errcode = '23505';
+            end if;
+        elsif NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
                 NEW.version, current_version
                 using errcode = 'P0002';

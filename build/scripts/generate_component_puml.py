@@ -509,15 +509,19 @@ def generate_puml(project_name: str, all_types: dict[tuple[str, ...], list[TypeI
 # File handling (sentinel-aware merge)
 # ---------------------------------------------------------------------------
 
-def merge_with_existing(new_auto: str, existing_path: Path) -> str:
+def merge_with_existing(new_auto: str, existing_path: Path) -> Optional[str]:
     """
     Replace the auto-generated section (before sentinel) in the existing file
     while preserving everything after the sentinel.
+
+    Return ``None`` when the existing file carries no sentinel. Such a file is
+    hand-authored, or predates the sentinel, and the generator has no safe way
+    to tell its manual body from a section it may overwrite. Replacing it would
+    destroy the body, so the caller refuses instead.
     """
     existing = existing_path.read_text(encoding='utf-8')
     if SENTINEL not in existing:
-        # No sentinel: replace entire file
-        return new_auto
+        return None
 
     after = existing.split(SENTINEL, 1)[1]
     # new_auto already ends with sentinel + newline; append the preserved tail
@@ -529,12 +533,42 @@ def merge_with_existing(new_auto: str, existing_path: Path) -> str:
 # Project discovery and processing
 # ---------------------------------------------------------------------------
 
+def _project_dir(project_name: str) -> Optional[Path]:
+    """
+    Resolve a component name to its directory.
+
+    A component directory carries the first two segments of the name, so
+    ores.ore is projects/ores.ore. A composite part adds a directory per
+    remaining segment, so ores.ore.core is projects/ores.ore/core. A name
+    with one segment is a directory of its own.
+    """
+    parts = project_name.split(".")
+    if len(parts) <= 1:
+        candidate = PROJECTS_ROOT / project_name
+    else:
+        candidate = PROJECTS_ROOT / ".".join(parts[:2])
+        for segment in parts[2:]:
+            candidate = candidate / segment
+    return candidate if candidate.is_dir() else None
+
+
 def find_all_projects() -> list[str]:
-    """Return all project names that have an include/ directory."""
+    """Return every component name the generator can diagram.
+
+    A simple component is a directory with include/. A composite's parts
+    are nested one level below it, so a walk that only looked at
+    projects/* never saw ores.ore.core at projects/ores.ore/core.
+    """
     projects = []
     for p in sorted(PROJECTS_ROOT.iterdir()):
-        if p.is_dir() and (p / "include").is_dir():
+        if not p.is_dir():
+            continue
+        if (p / "include").is_dir():
             projects.append(p.name)
+            continue
+        for part in sorted(p.iterdir()):
+            if part.is_dir() and (part / "include").is_dir():
+                projects.append(f"{p.name}.{part.name}")
     return projects
 
 
@@ -545,7 +579,9 @@ def _find_include_dir(project_name: str) -> Optional[Path]:
     Fallback: any direct subdirectory of include/ (for projects whose header
     root is not named after the project)
     """
-    project_root = PROJECTS_ROOT / project_name
+    project_root = _project_dir(project_name)
+    if project_root is None:
+        return None
     primary = project_root / "include" / project_name
     if primary.is_dir():
         return primary
@@ -563,7 +599,8 @@ def process_project(project_name: str, dry_run: bool) -> bool:
     Returns True if changes were made (or would be made).
     """
     include_dir = _find_include_dir(project_name)
-    if include_dir is None:
+    project_root = _project_dir(project_name)
+    if include_dir is None or project_root is None:
         print(f"  [WARN] No include/ directory found for {project_name}", file=sys.stderr)
         return False
 
@@ -587,11 +624,17 @@ def process_project(project_name: str, dry_run: bool) -> bool:
 
     new_auto = generate_puml(project_name, dict(all_types))
 
-    modeling_dir = PROJECTS_ROOT / project_name / "modeling"
+    modeling_dir = project_root / "modeling"
     out_path = modeling_dir / f"{project_name}.puml"
 
     if out_path.exists():
-        final_content = merge_with_existing(new_auto, out_path)
+        merged = merge_with_existing(new_auto, out_path)
+        if merged is None:
+            print(f"  {project_name}: SKIPPED {out_path} -- no manual sentinel, "
+                  f"so the file is not generator-managed and overwriting it "
+                  f"would destroy hand-authored content", file=sys.stderr)
+            return False
+        final_content = merged
     else:
         final_content = new_auto
 

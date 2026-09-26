@@ -2,11 +2,40 @@
 :ID: AF6A4F45-1AFB-46C6-8955-D88F67F9DA91
 :END:
 #+title: ORE Domain Roundtrip Check (Thing 3)
-#+STATUS: COMPLETE
+#+STATUS: SUPERSEDED
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+note: Type bridge section updated 2026-05-06 — import/export cleanup (PR #728)
 #+      unified instrument carriers; trade_import_item and trade_export_item now
 #+      both use trade_instrument, so the bridge is a trivial struct copy.
+
+*Status: superseded. Kept as the historical record.*
+
+This plan proposed a Python fidelity harness, not the round-trip itself. The
+harness ran inside =ores.cli=, which was decommissioned
+([[id:873B0E5C-BDDE-40DE-9729-F0278D0F8EC2][Clean ores.cli]]), so every artefact
+this page names is gone:
+
+| Named here | Today |
+|------------|-------|
+| =projects/ores.cli/= | deleted |
+| =scripts/ore_domain_roundtrip_check.py= | deleted |
+| =assets/test_data/domain_roundtrip/= (1474 files) | deleted |
+| =.github/workflows/ore_coverage.yml= | deleted |
+
+The plan's last step — delete =assets/test_data/golden_dataset/= because the
+round-trip outputs supersede it — was not taken, and must not be. The
+decommissioning kept =golden_dataset/=, which 13 Catch2 suites still read, and
+dropped the round-trip outputs instead.
+
+The design intent survived the harness. The import-then-export composition now
+lives in =projects/ores.ore/core/= as a free function:
+=xml::roundtrip(in, out) -> roundtrip_summary= in =xml/roundtrip.hpp=. It
+composes the importer and the exporter and reports the documents it could not
+carry. Its own test,
+=core/tests/xml_exporter_directory_roundtrip_tests.cpp=, is the regression net
+the Python diff used to be, and it ratchets the exact gap set of
+[[id:67277DBB-5ABD-4C36-934B-E97144E8910B][ORE export drops required elements
+from 17 example documents]].
 
 * Overview
 

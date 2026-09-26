@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :ore:risk:upstream:knowledge:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-09-26
 
 The [[https://www.opensourcerisk.org/][Open Source Risk Engine]] (ORE) is a C++ library for pricing and
 risk analytics maintained by [[https://acadia.inc/][Acadia]]. It builds on [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]] and
@@ -36,8 +36,8 @@ ORE Studio:
 - Imports ORE XML inputs (trade definitions, market data, model
   configuration, conventions, fixings, calendars, …) into a
   persistent database.
-- Drives ORE execution via configuration the user assembled in the
-  GUI.
+- Drives ORE execution via configuration the user assembled in ORE
+  Studio.
 - Renders ORE outputs (NPV, XVA, sensitivities, scenarios) back to
   the user.
 

@@ -44,8 +44,8 @@ namespace ores::ore::domain {
  * Performs a partial mapping from the ORE XSD portfolio/trade structure to the
  * ORES trading domain. Fields that require external context to resolve (e.g.
  * book_id, counterparty_id, portfolio_id) are left as nil UUIDs and must be
- * populated by the calling code (typically a mapping dialog or import
- * configuration).
+ * populated by the calling code (typically the import configuration or a
+ * mapping step).
  *
  * Fields mapped directly:
  * - trade.id -> external_id

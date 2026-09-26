@@ -35,6 +35,16 @@ Permanently resolve the compilation failures in =ores.qt.api= on Windows (MSVC C
 - Global compiler flags for Clang (=-fbracket-depth=) are increased.
 - No regressions in trade listing or detail retrieval functionality.
 
+* Investigations
+
+One point-in-time record, written while working the task. It says what the
+problem looked like and what was tried on the day; it is not the description of
+the design.
+
+| Investigation | Question it answered |
+|---------------+----------------------|
+| [[id:D75F4921-B431-4E78-99AB-62A47F761D1D][MSVC C1202 and rfl complexity]] | Why does the MSVC and Clang nesting limit fire on reflect-cpp, which approaches work, and which one is correct? |
+
 * Tasks
 
 | Task | State | Start | End | Description |

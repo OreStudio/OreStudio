@@ -27,25 +27,10 @@
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
-#include <filesystem>
 #include <string>
 #include <vector>
 
 namespace ores::ore::xml {
-
-struct roundtrip_summary {
-    int total_xml_files = 0;
-    int skipped = 0;
-    int output_files_written = 0;
-    int trades_mapped = 0;
-    int trades_passthrough = 0;
-    int currency_files = 0;
-    int calendar_files = 0;
-    int convention_files = 0;
-    long long import_ms = 0; ///< wall time inside importer calls
-    long long export_ms = 0; ///< wall time inside exporter calls
-    long long total_ms = 0;  ///< wall time for the full roundtrip
-};
 
 /**
  * @brief Exports domain objects to their ORE XML representation.
@@ -77,16 +62,6 @@ public:
      */
     static std::string
     export_portfolio(const std::vector<trading::messaging::trade_export_item>& items);
-
-    /**
-     * @brief Walks input_dir recursively, roundtrips every supported ORE XML
-     * through the import→export pipeline, and writes mirrored outputs under
-     * output_dir. Detects Portfolio, CurrencyConfig, CalendarAdjustments, and
-     * Conventions files by inspecting the first 4 KiB of each file.
-     * No DB or network access; purely file-level.
-     */
-    static roundtrip_summary roundtrip(const std::filesystem::path& input_dir,
-                                       const std::filesystem::path& output_dir);
 };
 
 }

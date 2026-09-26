@@ -32,6 +32,12 @@ namespace ores #F2F2F2 {
             }
             class composite_instrument_mapper {
             }
+            class mapped_fx <<struct>> {
+                +pair : refdata::domain::currency_pair
+                +convention : refdata::domain::currency_pair_convention
+                +spot_days : int
+                +advance_calendars : vector<string>
+            }
             class mapped_conventions <<struct>> {
                 +zero : vector<refdata::domain::zero_convention>
                 +deposit : vector<refdata::domain::deposit_convention>
@@ -40,7 +46,7 @@ namespace ores #F2F2F2 {
                 +fra : vector<refdata::domain::fra_convention>
                 +ibor_index : vector<refdata::domain::ibor_index_convention>
                 +overnight_index : vector<refdata::domain::overnight_index_convention>
-                +fx : vector<refdata::domain::fx_convention>
+                +fx : vector<mapped_fx>
                 +cds : vector<refdata::domain::cds_convention>
             }
             class conventions_mapper {
@@ -87,6 +93,31 @@ namespace ores #F2F2F2 {
                 +value : string
                 +qualifier : string
             }
+            enum fx_quote_status {
+                unknown_pair
+                unchanged
+                key_swapped
+            }
+            class fx_quote_check_result <<struct>> {
+                +base_currency : string
+                +quote_currency : string
+                +status : fx_quote_status
+            }
+            class fx_quote_convention_checker {
+                -known_pairs_ : set<currency_pair>
+            }
+            enum duplicate_policy {
+                warn
+                error
+            }
+            class parse_issue <<struct>> {
+                +line_no : int
+                +message : string
+            }
+            class parse_report <<struct>> {
+                +warnings : vector<parse_issue>
+                +errors : vector<parse_issue>
+            }
             class market_datum <<struct>> {
                 +date : chrono::year_month_day
                 +key : string
@@ -101,6 +132,16 @@ namespace ores #F2F2F2 {
                 +metric : string
                 +qualifier : string
                 +point_id : optional<string>
+            }
+            class series_key_registry {
+                -by_type_ : unordered_map<string, domain::series_key_shape>
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class series_key_shape_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
         }
         namespace planner #F2F2F2 {
@@ -157,6 +198,29 @@ namespace ores #F2F2F2 {
                 +message : string
             }
         }
+        namespace repository #F2F2F2 {
+            class series_key_shape_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +series_type : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +qualifier_depth : int
+                +has_point_dimension : bool
+                +default_point : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class series_key_shape_mapper {
+            }
+            class series_key_shape_repository {
+            }
+        }
         namespace scanner #F2F2F2 {
             class ore_directory_scanner {
                 -root_ : filesystem::path
@@ -169,35 +233,127 @@ namespace ores #F2F2F2 {
                 +ignored_files : vector<filesystem::path>
             }
         }
+        namespace service #F2F2F2 {
+            class series_key_shape_service {
+                -ctx_ : context
+                -repo_ : repository::series_key_shape_repository
+            }
+        }
         namespace xml #F2F2F2 {
+            enum document_kind {
+                portfolio
+                currency_config
+                calendar_adjustments
+                conventions
+            }
+            class exporter {
+            }
+            class trade_import_item <<struct>> {
+                +trade : trading::domain::trade
+                +source_file : filesystem::path
+                +instrument : trading::domain::trade_instrument
+            }
+            class importer {
+            }
             class roundtrip_summary <<struct>> {
                 +total_xml_files : int
-                +skipped : int
+                +unsupported : int
+                +failed : int
                 +output_files_written : int
                 +trades_mapped : int
                 +trades_passthrough : int
                 +currency_files : int
                 +calendar_files : int
                 +convention_files : int
+                +failures : vector<string>
                 +import_ms : long long
                 +export_ms : long long
                 +total_ms : long long
-            }
-            class exporter {
-            }
-            class trade_import_item <<struct>> {
-                +trade : trading::domain::trade
-                +ore_counterparty_name : string
-                +source_file : filesystem::path
-                +instrument : trading::domain::trade_instrument
-            }
-            class importer {
             }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' --- The document engine ---
+'
+' Most of the public surface is free functions over plain structs, which the
+' automated pass cannot show: load_data, parse_market_data, parse_fixings,
+' parse_ore_log and roundtrip. Only the mappers, the importer, the exporter,
+' the planner, the scanner and the generated entity stack are classes.
+
+' trade_mapper dispatches one ORE trade to the instrument mapper that owns its
+' asset class. Each instrument mapper carries a forward_* and a reverse_* pair
+' per trade type it handles.
+ores::ore::domain::trade_mapper ..> ores::ore::domain::swap_instrument_mapper : dispatches
+ores::ore::domain::trade_mapper ..> ores::ore::domain::fx_instrument_mapper : dispatches
+ores::ore::domain::trade_mapper ..> ores::ore::domain::credit_instrument_mapper : dispatches
+ores::ore::domain::trade_mapper ..> ores::ore::domain::bond_instrument_mapper : dispatches
+ores::ore::domain::trade_mapper ..> ores::ore::domain::equity_instrument_mapper : dispatches
+ores::ore::domain::trade_mapper ..> ores::ore::domain::commodity_instrument_mapper : dispatches
+ores::ore::domain::trade_mapper ..> ores::ore::domain::scripted_instrument_mapper : dispatches
+ores::ore::domain::trade_mapper ..> ores::ore::domain::composite_instrument_mapper : dispatches
+
+' The importer reads four document kinds; the exporter writes all four. The
+' exporter reaches the instrument mappers as well as the document mappers,
+' because it serialises any trade the importer produced.
+ores::ore::xml::importer --> ores::ore::domain::trade_mapper : uses
+ores::ore::xml::importer --> ores::ore::domain::conventions_mapper : uses
+ores::ore::xml::importer --> ores::ore::domain::currency_mapper : uses
+ores::ore::xml::importer --> ores::ore::domain::calendar_adjustment_mapper : uses
+ores::ore::xml::exporter --> ores::ore::domain::trade_mapper : uses
+ores::ore::xml::exporter --> ores::ore::domain::conventions_mapper : uses
+ores::ore::xml::exporter --> ores::ore::domain::currency_mapper : uses
+ores::ore::xml::exporter --> ores::ore::domain::calendar_adjustment_mapper : uses
+
+' roundtrip is a free function, so it has no class to hang off. It composes
+' the importer and the exporter over one directory and owns neither; it is the
+' only thing in the component that writes to disk.
+note right of "ores::ore::xml::roundtrip_summary"
+    Produced by xml::roundtrip(in, out), a free function that composes
+    the importer and the exporter. It walks a directory, re-exports
+    what it read, and records every document it could not carry. The
+    count is split into unsupported kinds, which the importer does not
+    handle, and failed kinds, whose re-read did not match; each failure
+    keeps its path and its message.
+end note
+
+' --- The import planner ---
+'
+' The planner decides what an import will do before anything is written. It
+' builds the portfolio and book hierarchy from what the scan found, and reads
+' trades through the importer rather than the scanner, so that a file it
+' cannot parse is reported rather than silently skipped.
+ores::ore::planner::ore_import_planner --> ores::ore::hierarchy::ore_hierarchy_builder : uses
+ores::ore::planner::ore_import_planner --> ores::ore::xml::importer : uses
+
+' --- The classifier split ---
+'
+' Both classifiers ask one root-element reader. Parsing the root element is
+' what keeps them honest: a substring match over the first bytes misses a
+' root element that carries attributes, matches a keyword inside a comment,
+' and can rewrite a curve configuration as an empty conventions document.
+ores::ore::scanner::ore_directory_scanner ..> ores::ore::xml::document_kind : classifies by
+
+' --- The market facet ---
+
+' The parsers are free functions, so they have no class to hang off:
+' parse_market_data and parse_fixings both take an istream, return
+' market_datum, and report each problem through parse_report. Both resolve
+' every key through the registry, which is built once from the entity rows.
+note right of "ores::ore::market::series_key_registry"
+    Built once at construction from the series key shape rows. Every
+    market data key is decomposed and resolved through it, so an
+    unknown key becomes a parse issue rather than an exception.
+end note
+
+' --- The generated entity stack ---
+
+ores::ore::service::series_key_shape_service o-- ores::ore::repository::series_key_shape_repository : owns
+ores::ore::repository::series_key_shape_repository ..> ores::ore::repository::series_key_shape_mapper : uses
+ores::ore::repository::series_key_shape_mapper --> ores::ore::repository::series_key_shape_entity : maps
+ores::ore::messaging::series_key_shape_handler ..> ores::ore::service::series_key_shape_service : uses
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.ore.core.puml"

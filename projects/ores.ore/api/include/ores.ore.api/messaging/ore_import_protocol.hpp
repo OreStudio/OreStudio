@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_ORE_API_MESSAGING_ORE_IMPORT_PROTOCOL_HPP
 #define ORES_ORE_API_MESSAGING_ORE_IMPORT_PROTOCOL_HPP
 
@@ -29,51 +34,119 @@ namespace ores::ore::messaging {
 /**
  * @brief Error for a single item within an ORE import.
  *
- * Carries the exact source file and item identifier so the client can
- * present the user with a precise failure location (e.g. "trades.xml /
- * trade-0042").
+ * Carries the exact source file and item identifier so the caller can present
+ * a precise failure location, such as "trades.xml / trade-0042".
  */
 struct ore_import_item_error {
-    std::string source_file; ///< Relative path within the unpacked ORE directory
-    std::string item_id;     ///< Trade ID, ISO code, series key, etc.
-    std::string message;     ///< Human-readable error from the downstream service
+    std::string source_file;
+    std::string item_id;
+    std::string message;
 };
 
 /**
- * @brief Request to import an ORE directory that has been uploaded to storage.
+ * @brief Request to import an ORE directory already uploaded to storage.
  *
- * The client uploads the packed ORE directory tarball to
- * "ore-imports/{request_id}.tar.gz" before sending this message.
+ * The caller uploads the packed directory to the ore-imports bucket as
+ * {request_id}.tar.gz before sending this message.
  */
 struct ore_import_request {
     using response_type = struct ore_import_response;
     static constexpr std::string_view nats_subject = "workflow.v1.ore.import";
-
-    std::string request_id;          ///< UUID; also the storage key root
-    std::string import_choices_json; ///< JSON-serialised import_choices
-    std::string correlation_id;      ///< Propagated from the Qt client for log correlation
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** UUID; also the storage key root. */
+    std::string request_id;
+    std::string import_choices_json;
+    std::string correlation_id;
 };
 
 /**
  * @brief Response for an ore_import_request.
  *
- * On partial failure (some trades rejected), @p success is still true and
- * @p item_errors is non-empty.  A false @p success means the saga itself
- * failed (infrastructure error, compensation triggered).
+ * On partial failure success is still true and item_errors is non-empty; a
+ * false success means the saga itself failed and compensation ran.
  */
 struct ore_import_response {
     bool success = false;
     std::string message;
     std::vector<ore_import_item_error> item_errors;
-    std::string correlation_id; ///< Echoed back for display and log lookup
     /**
-     * @brief Workflow instance UUID, non-empty when the import was dispatched
-     *        asynchronously via the workflow engine.
-     *
-     * When set, the import is running in the background and item_errors is
-     * always empty in this response.  Use this ID to query workflow status.
+     * Set when the import was dispatched asynchronously through the workflow
+     * engine. The import then runs in the background, item_errors is empty in
+     * this response, and this id queries the workflow's status.
      */
+    std::string correlation_id;
     std::string workflow_instance_id;
+};
+
+/**
+ * @brief Workflow step command: execute the full ORE import.
+ *
+ * Published by the workflow engine when the ore_import_workflow starts. The
+ * handler fetches the packed tarball, scans, plans and saves every item, then
+ * calls publish_step_completion.
+ */
+struct ore_import_execute_request {
+    static constexpr std::string_view nats_subject = "ore.v1.ore.import.execute";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string request_id;
+    std::string import_choices_json;
+    std::string correlation_id;
+    /** The caller's JWT, so the handler can delegate the caller's identity downstream. */
+    std::string bearer_token;
+};
+
+/**
+ * @brief The step's stored response.
+ *
+ * Carries everything compensation needs -- the identifiers of every entity
+ * the step saved -- alongside the caller-facing item_errors list.
+ */
+struct ore_import_execute_result {
+    bool success = false;
+    std::string message;
+    std::string correlation_id;
+    std::vector<ore_import_item_error> item_errors;
+    std::vector<std::string> saved_currency_iso_codes;
+    std::vector<std::string> saved_portfolio_ids;
+    std::vector<std::string> saved_book_ids;
+    std::vector<std::string> saved_trade_ids;
+};
+
+/**
+ * @brief Workflow compensation command: roll back a completed ORE import.
+ *
+ * Published by the workflow engine when step 0's compensation is triggered.
+ * The handler deletes every saved entity in reverse order and calls
+ * publish_step_completion.
+ */
+struct ore_import_rollback_request {
+    static constexpr std::string_view nats_subject = "ore.v1.ore.import.rollback";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string correlation_id;
+    /** The caller's JWT, so the handler can delegate the caller's identity downstream. */
+    std::string bearer_token;
+    std::vector<std::string> saved_currency_iso_codes;
+    std::vector<std::string> saved_portfolio_ids;
+    std::vector<std::string> saved_book_ids;
+    std::vector<std::string> saved_trade_ids;
 };
 
 }

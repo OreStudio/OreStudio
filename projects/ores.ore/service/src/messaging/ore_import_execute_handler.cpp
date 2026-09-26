@@ -19,7 +19,7 @@
  */
 #include "ores.ore.service/messaging/ore_import_execute_handler.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
-#include "ores.ore.api/messaging/ore_import_engine_protocol.hpp"
+#include "ores.ore.api/messaging/ore_import_protocol.hpp"
 #include "ores.ore.api/net/ore_storage.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.ore.core/planner/ore_import_planner.hpp"

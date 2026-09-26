@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ID: 794EC06A-86D6-499B-9166-5B24EBAAF0CD
+:END:
+#+title: Investigation: ores.ore design and documentation survey
+#+description: What ores.ore is made of, where its structure deviates from the component architecture, how its three generators divide the tree, which documents are stale, and the decision to move the round trip off the exporter.
+#+type: investigation
+#+level: s1
+#+filetags: :clean-ore:sprint_26:v0:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+A point-in-time record of what =ores.ore= was made of on 2026-09-26: where its structure deviated from the component architecture, how its three generators divided the tree, which documents were stale, and the decision to move the round trip off the exporter. It is the baseline for the [[id:E308D5DD-1F14-4209-BB6F-C25EBABEEE35][Bring ores.ore to the clean standard]] task.
+
+It is a snapshot, not a description of the component. Most of what it found has since been fixed, so it is the wrong place to learn what =ores.ore= is designed to do: read the component models for that, and read this for why they look the way they do.
+
+* Context
+
+The sprint 26 program brings every C++ component to the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]. =ores.ore= is order 31 of 35. Two extra questions were asked before the pass starts:
+
+1. The round trip is a method on the exporter. It should be a unit that uses both the importer and the exporter, and it should be cleaner.
+2. Does the component's design and documentation hang together at all?
+3. =xsdcpp=, the tool that generates the ORE XML bindings, is now available at =/home/marco/Vault/Development/xsdcpp=. Nothing in the repository records that, and its absence was blocking regeneration.
+
+* Methodology
+
+Four read-only explorations ran in parallel, each on one angle: structure and layering; the import, export and round-trip seam; generation, models and xsdcpp; and documentation against the tree. They read code, CMake, models and documents, and ran only side-effect-free commands.
+
+First-hand work in the same session:
+
+- The [[id:E308D5DD-1F14-4209-BB6F-C25EBABEEE35][clean task]]'s B01 baseline: =check_component_drift.py --component ore --dry-run=, which writes nothing.
+- Applying that generation, building the tree, and confirming the dry run reports no drift.
+- Moving the round trip to =xml/roundtrip.{hpp,cpp}= and verifying it: the target builds, the two directory cases pass, and =ores.ore.core.tests "[xml]"= is green at 10057 assertions in 353 test cases.
+
+The component's catalogue slug is =ore=, not =ores.ore.core=. Any instruction worded with the dotted name fails: the gate answers =Unknown component: 'ores.ore.core'=.
+
+* Paths taken
+
+**The B01 baseline, and what it found.** The dry run reported 13 files to change and 5 to create, all for =series_key_shape=: the domain header, protocol, handler, repository, service, registrar, eventing tests, the service event registrar, two SQL scripts, the TypeScript protocol, plus a missing eventing header, a missing shell command unit, a missing recipe and a missing shell test. Applying it gave 18 files and 2830 insertions. Cause: the codegen templates changed on 2026-09-23, after the model's last edit on 2026-09-18, and the component was never regenerated. The tree now reports =No drift=.
+
+**The round trip, four placements considered.**
+
+- /Leave it on the exporter./ Rejected: the exporter is a value-in, string-out transform class, and the round trip is the only thing in the component that writes to disk. It also made the exporter's translation unit include the importer.
+- /A free function in the xml facet that composes both./ **Chosen.** One new pair of files, =roundtrip_summary= moved out of =exporter.hpp=, the one caller updated, the exporter reduced to four pure transforms.
+- /Generalise =scanner::ore_directory_scanner= and share one classifier./ Better, but larger: the scanner is on the production import path and classifies by a 512-byte substring scan, which is the weaker rule that once rewrote a curve configuration as an empty conventions document. Recorded as follow-up, not done here.
+- /Make the composition unit one document, taking content rather than a path./ The cleanest end state, since the importer's minimum unit is a path while =domain::load_data= already takes content. Recorded as follow-up; it needs importer overloads.
+
+**A tolerance question was settled empirically.** The new test asserts the set of documents that fail to re-read for equality, so it fails both when a new document breaks and when a fixed one is not removed from the list. An independent verifier confirmed it is not vacuous by injecting a wrong name and watching it fail.
+
+* Conclusions
+
+/Status at 2026-09-26./ Findings 1 (the root group model), 3 (the xsdcpp pin and
+regeneration), 4 (the facet vocabulary), 5 (the unwired surface) and 7 (the round
+trip off the exporter) are closed. Findings 2, 6 (the documentation cluster, now
+down to the journeys) and 9 are open. Finding 5 was closed by removing the
+surface rather than by wiring it: the entity served nobody, so P03's remedy
+applied and W01 and D13 went with it. Finding 2 is the largest remaining risk
+and it is the one the others wait on: it is a decision about what the component
+owns, not a defect to fix, and
+[[id:6EA32258-F1DC-45D2-8913-202E845CD969][what ores.ore should own]] now
+carries the measurement and the options.
+
+**1. The mechanical shape passes; the substantive shape does not.** Three correctly-named parts, the full simple layout in each, api to core to service with no cycle, no core linking a service, no api linking a database or repository. But the split is a rename rather than a design: =core/= is the pre-existing simple component =ores.ore= wearing a =core= label (renamed in =ce3fb736ed=, moved in =164255805d=). It holds 136 of 179 files and 96% of the lines. The root CMakeLists registers core before api, the only one of 21 composites that does, and commit =10216d4721= says so on purpose.
+
+**2. Three generators divide the tree, and the marker test misleads here.**
+
+| Producer | Files | Lines | Share of C++ bytes |
+|----------+-------+-------+--------------------|
+| xsdcpp (out of band) | 3 | 122,518 | 78% |
+| ores.codegen (mustache) | 30 | ~4,000 | 2.3% |
+| hand-written | 149, of which 3 are xsdcpp | the rest | ~20% |
+
+The =AUTO-GENERATED FILE= marker is not a reliable classifier in this component. It misses the largest generated artefact entirely, because xsdcpp emits no marker, and it over-flags scaffolding that a template would produce but has never regenerated.
+
+**3. xsdcpp is a hard, unwritten dependency, and its output is stale against its own schema.** The tool is not vendored, not in =vcpkg.json=, not in CMake and not on =PATH=; the wrapper scripts hard-fail without it. The committed =domain.hpp= and =domain.cpp= were generated from a schema that the vendored =external/ore/xsd/= has since superseded: the local xsdcpp checkout carries the fix for the group-resolution bug that was blocking regeneration, and that bug is still recorded as blocked in the backlog. Regeneration overwrites 4.8 MB wholesale, silently drops the =ORES_ORE_CORE_EXPORT= annotations (restored by a reapply script) and would drop the in-repo hand-patch to =domain_xsd.hpp=.
+
+**4. Seven facet names sit outside every signed-off catalogue**, five of them appearing nowhere else in the repository: =hierarchy=, =market=, =planner=, =scanner=, =xml=, plus =net= and =workflow= which have precedent elsewhere. **Resolved 2026-09-26:** the census that checked the precedent found the catalogue itself was incomplete — =presentation= is used by twelve components, =client= is named as a sub-component in the page's own prose, and neither was in the facet table. The table now carries all twelve established facets plus a *Local facets* rule that names this component's five as the worked example.
+
+**5. The wiring behind the generated surface does not exist.** Three of the four registrar families are declared, defined, compiled and called from nowhere, so the regenerated entity protocol is served by nothing. The freshly generated 710-line shell command unit landed in =projects/ores.shell/ore/=, a directory with no =CMakeLists.txt=, absent from the shell's =#+parts:=. The tree builds because the newest artefact is outside the build and the newest handlers are outside the registrar. A diff, the drift check and a typecheck all miss both.
+
+**6. The documentation is stale in a pattern, and the gate cannot see it.** Everything last touched on 2026-06-02 or earlier is stale: the three part overviews, all four diagrams. Everything touched on 2026-09-11 or later is current: the round-trip recipe, the journey standard, the clean standard, the entity model. =validate_docs.py= is green for =ores.ore= because a composite whose parts carry overviews has its root =modeling/= skipped, and because it checks only the presence of headings, one id link target and one =.puml= file. It reads no summary, no dependency name, no diagram content.
+
+Specific documentation findings, in severity order:
+
+- No root =modeling/component_overview.org=, so no =#+component_kind: composite= and no =#+parts:=. The root CMakeLists is hand-written and unregenerable, the group diagram target is orphaned, and =ores.ore= is the only C++ component like this. Already filed as task =9747E4C5-734E-4F75-AD8B-CEB4C9089B76=; do not re-file. **Resolved 2026-09-26:** the root group model exists, the root CMakeLists is generated, and the part order in it is api, core, service.
+- All four diagrams are stale. =ores.ore.core.puml= omits around twenty classes across six facets; =ores.ore.api.puml= documents the retired operation protocol instead of the canonical entity protocol; =ores.ore.core.png= predates its own =.puml= source; the group diagram hides 8 of the entity's 13 columns and its legend calls generated code hand-written. **Resolved 2026-09-26:** all four diagrams are current. The parts were regenerated; api went 22 to 35 classes and core 22 to 42. The group data model is hand-authored, so it was fixed by hand: it now carries all thirteen of the entity's columns rather than five, uses the =<<struct>> <<orm>> #99CB99= form the conventions require, and its legend no longer calls the generated table hand-written.
+- The core overview's summary describes currency-config plumbing while the code is a full ORE document engine. Its Outputs name a =CurrencyElement= type that exists nowhere. Its Dependencies claim =pugixml= and =nats.c=, neither of which the part links. **Resolved 2026-09-26:** the core overview was rewritten against the code.
+- The api overview calls the part header-only; it builds a shared library. **Resolved 2026-09-26:** the api overview now says the part builds a shared library.
+- The core overview has no =#+brief:=, and 13 of 31 overviews repo-wide lack one. **Resolved 2026-09-26:** the core overview carries a =#+brief:=.
+- No overview links the knowledge documents that give the component depth, though those documents exist. **Resolved 2026-09-26:** each part overview links the knowledge documents.
+- Pages that described =ores.ore= and no longer do. Six now carry a status banner that says what changed: =doc/analysis/ore_xsd_schema_gaps.md= (a January snapshot, superseded and kept as the historical record), =doc/knowledge/domain/ore_model_configuration.org= (Layers 1 and 5 landed in =ores.analytics.api=, Layers 2 to 4 open), the two Qt architecture pages (the Qt client was deleted in =af67db3062=; the analysis and the nine-step plan are void), =doc/plans/2026-04-03-server-side-ore-import.org= (all four server-side phases landed; the Qt phase is void), and =doc/plans/2026-05-05-ore-domain-roundtrip.org= (its Python harness died with =ores.cli=; the composition moved to =ores.ore.core/xml/roundtrip.hpp=). Two more were corrected in place rather than bannered: =doc/knowledge/architecture/market_data_architecture.org= now names =ores.shell= and =ores.web= where it named Qt plugins, and =doc/knowledge/external/open_source_risk_engine.org= no longer says the user assembles configuration "in the GUI".
+- No user journey covers ORE import, export or round trip, though the extraction standard requires one for every component that had a UX and =ores.ore= had three Qt surfaces.
+- The live round-trip recipe names a shell source path that moved and misstates how the scanner classifies files. **Resolved 2026-09-26:** the path gained its =application/= segment, and the recipe now says the scanner classifies by XML root element rather than by filename.
+
+**9. The import carries two of the four document kinds the importer supports, and says nothing about the other two.** The importer exposes four entry points: =import_currency_config=, =import_portfolio_with_context=, =import_calendar_adjustments= and =import_conventions=. The round trip calls all four. The production import path calls two. =ore_directory_scanner= asks =xml::detect_document_kind=, recognises all four kinds, and then files the calendar adjustment and conventions documents under =ignored_files=; =scan_result= has no field for them, so =ore_import_planner= never sees them and the saga never imports them. A directory holding =calendaradjustments.xml= or =conventions.xml= imports without error and without those documents, and nothing in the run reports the loss. The two entry points are otherwise reachable only from the round trip, which is how a gap in the import stayed invisible: the fidelity test covered them and the import did not.
+
+**10. The shell script library is generated but mostly not committed.** =compass build --direct tangle_shell_scripts= reports 935 scripts and leaves 722 of them untracked, so 223 are in git and the rest are invisible to everyone but the machine that tangled them. The recipe for each resource points at a =.ores= file under =projects/ores.shell/scripts/library/=, and for most resources that file is not in the repository. Not an =ores.ore= defect; recorded because the pass ran the tangle to verify the round-trip recipe and found it.
+
+**7. The round trip is now off the exporter.** =xml/roundtrip.{hpp,cpp}= owns the walk and composes the importer and the exporter. The exporter is four pure transforms and no longer includes the importer. The summary separates =unsupported= from =failed= and keeps each failure's path and message. The walk's behaviour is unchanged, so the 17-document fidelity gap it exposes is untouched; it is a mapper defect tracked as capture =67277DBB-5ABD-4C36-934B-E97144E8910B=.
+
+**8. What the component actually is, and who reaches into it.** =ores.ore.core= is the original component and the one other components link. An include census over =ores.marketdata=, =ores.compute=, =ores.shell= and =ores.web= finds fourteen =ores.ore.core= includes against three =ores.ore.api= ones:
+
+| Reached from outside | Header | Includes |
+|----------------------|--------|----------|
+| market | =market/series_key_registry.hpp= | 3 |
+| market | =market/fx_quote_convention_checker.hpp= | 3 |
+| market | =market/market_data_parser.hpp= | 2 |
+| market | =market/fixing.hpp= | 1 |
+| entity repository | =repository/series_key_shape_repository.hpp= | 2 |
+| xml | =xml/exporter.hpp= | 1 |
+| planner | =planner/import_choices.hpp= | 1 |
+| log | =log/ore_log_parser.hpp= | 1 |
+
+The api carries one generated entity's stack and the two import protocols. The contracts other components actually consume sit in core.
+
+The repo's convention is written down in
+[[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]]: the api
+holds domain types and protocol schemas shared by client and server, the core
+holds the service logic, the handlers and the registrar, and the service is the
+executable. On that convention, thirteen of the fourteen includes are layering
+violations, and the shell's use of the planner and the exporter is the clearest,
+because the shell is a client and clients speak the protocol.
+
+Two things complicate the mechanical fix. The reachable material is *behaviour*
+-- parsers, a key registry, a log reader -- while the api is defined as types and
+protocol schemas, so moving it there trades one violation for another. And
+=ores.ore= is an integration component, not a domain service: ORE's XML
+vocabulary is a shared concern other components have a real reason to borrow,
+which is not true of, say, =ores.iam=.
+
+So there are two candidate resolutions. (a) Move the reachable material into the
+api and widen the api's definition to admit pure transforms. (b) Keep
+=ores.ore.core= as a deliberate shared library and record why, accepting the
+asymmetry with every other component. Option (b) is what the component does
+today; what is missing is the record. Either way the shell's direct use of
+=planner/import_choices.hpp= and =xml/exporter.hpp= should move onto the
+protocol, because that half has no library justification.
+
+* Recommendations
+
+Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order, with these decisions taken first because later items depend on them:
+
+1. **Write the root group model** (=modeling/component_overview.org= with =#+component_kind: composite= and =#+parts: api core service=), delete the orphaned =modeling/CMakeLists.txt= or register the directory, and fix the part order in the root CMakeLists while the model is authoritative. This makes the root CMakeLists generated and settles M10.
+2. **Decide the api/core boundary.** Either move the shared contract material the three consumers reach into the api, or record why =ores.ore.core= is a library other components link. **Narrowed and now recorded rather than open.** The unwired entity surface is gone, so the api is the entity type plus the import contract and nothing else. What remains is the library half: thirteen includes from =ores.marketdata=, =ores.compute= and =ores.shell= reach =ores.ore.core=. [[id:6EA32258-F1DC-45D2-8913-202E845CD969][What ores.ore should own]] recommends keeping =ores.ore.core= as a deliberate shared library and records why, because the reachable material is behaviour the api is not defined to hold, and because moving the entity to =ores.marketdata= would pull 135 files of that component's un-regenerated backlog into the same branch.
+3. **Split the two classifiers.** Hoist one root-element classifier and point both the round trip and =scanner::ore_directory_scanner= at it. The scanner's substring rule has already caused silent destruction once.
+4. **Record the xsdcpp dependency.** Vendor or pin the tool, document the invocation and the export-macro reapply step, re-run the generation against the current schema, and close the blocked backlog item. Treat the schema and the generated output as one unit from then on.
+5. **Give the tag and facet vocabulary a home.** Either sign off =hierarchy=, =market=, =planner=, =scanner=, =xml=, =net= and =workflow= in the facet table, or move the material. An unnamed facet is a finding in its own right. **Resolved 2026-09-26 at the source:** the census found the catalogue was incomplete independently of this component (=presentation= is used by twelve components and was absent; =client= is described as a sub-component in the page's own prose), so [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] now carries all twelve established facets and a *Local facets* rule, with =ores.ore.core='s five names as the worked example.
+6. **Wire the registrars or record why not**, and decide whether =ores.shell/ore= and its generated command unit belong in the build. **Closed 2026-09-26 by removal.** The four registrar families served a reference table nobody edits, so the protocol, the handler, the sub-registrar, the history provider registrar and the event registrar are gone, and the shell unit that was never in the build is deleted with the directory it lived in. The component now declares six subjects and serves all six.
+7. **Refresh the documentation once the types stop moving**: the four diagrams (regenerate then do the manual pass are done; the sentinel-and-below manual pass is not), the three part overviews (done), the knowledge links (done), and the stale pages (done — see finding 6).
+8. **Then** work M, P, G, W, S, H and V in order, recording each item's evidence in the task table. **Done, and the component is registered so the gates stay on it.** M01 to M10, G01, G03, G06, H01 to H03, S02, V01, the database half of V03 and the core half of V02 all pass. M06 and P04 were the substantive find in this group: the import protocol was hand-written, so it had no TypeScript twin and the web client could not speak it. Two operation models now own it, and the first composite to use the operation facet exposed an include-guard collision in the template, which is fixed with a regression test. Every codegen gate passes, and =ore= is registered in =COMPONENTS_UNDER_TEST=, so they cover the component from now on. The clean standard is complete. What stays open is not a standard item: where the entity and the import saga should live, and the two defects the pass found and recorded rather than fixed.
+
+* See also
+
+- [[id:873B0E5C-BDDE-40DE-9729-F0278D0F8EC2][Clean ores.ore to the component clean standard]] — the story this survey serves.
+- [[id:E308D5DD-1F14-4209-BB6F-C25EBABEEE35][Bring ores.ore to the clean standard]] — the task carrying the checklist record.
+- [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][Component Architecture Audit]] — the manual checklist H01 invokes.
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] — the 42 items.
+- =projects/ores.codegen/scripts/xsdcpp_generate_ore.sh= and =external/ore/xsd/README.md= — the second generator and its schema input.

@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_tests.mustache
+# To modify, update the template and regenerate.
 set(files
     "domain_currency_mapper_tests.cpp"
     "domain_trade_mapper_tests.cpp"
@@ -28,7 +31,6 @@ set(files
     "market_series_key_registry_tests.cpp"
     "planner_import_planner_tests.cpp"
     "scanner_directory_scanner_tests.cpp"
-    "series_key_shape_eventing_integration_tests.cpp"
     "xml_bond_fact_mapper_roundtrip_tests.cpp"
     "xml_bond_golden_roundtrip_tests.cpp"
     "xml_bond_mapper_roundtrip_tests.cpp"

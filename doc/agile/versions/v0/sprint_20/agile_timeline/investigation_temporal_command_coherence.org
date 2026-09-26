@@ -4,10 +4,10 @@
 #+title: Investigation: Temporal command coherence: fleet, journal, timeline
 #+description: End-to-end analysis of the compass commands that answer what happened, what is happening and what was I doing — fleet, journal, where, sprint audit/charts, review pending and the planned timeline — and a coherent model unifying them.
 #+type: investigation
-#+level: cross
-#+filetags: :compass:agile:timeline:temporality:analysis:
+#+level: s1
+#+filetags: :agile_timeline:sprint_20:v0:
 #+created: 2026-06-07
-#+updated: 2026-06-07
+#+updated: 2026-09-26
 
 This page documents a formal historical record of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into the compass commands that answer "what happened", "what is happening" and "what was I doing" — and a coherent model unifying them.
 

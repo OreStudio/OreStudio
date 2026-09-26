@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 2DB7C1A3-3191-4D6E-8355-B8BE30BB7809
+:END:
+#+title: xsdcpp: the ORE XML binding generator
+#+description: What xsdcpp is, where the checkout lives, its pinned version, how the ORE bindings are generated from external/ore/xsd, and what regeneration overwrites.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:xsdcpp:ore:external:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+* Summary
+
+=xsdcpp= compiles an XSD schema into C++ data types plus a validating XML
+parser that needs no runtime library. It produces the 122,000 lines of ORE
+document bindings under =projects/ores.ore/core/=, which are 78% of that
+component's C++ by bytes and are the only reason the component can read
+ORE XML at all. The tool is not vendored, not in =vcpkg.json=, not in CMake
+and not on =PATH=; it is a sibling checkout, and the wrapper script fails
+without it. Regeneration overwrites its output wholesale and silently
+drops this project's export annotations, which a follow-up script
+restores.
+
+* Detail
+
+** What it is
+
+XSDCPP generates three files from one schema:
+
+| File | Contents |
+|------+----------|
+| =domain.hpp= | one struct per =complexType=, one enum per enumeration, plus the free =load_file=, =load_data=, =save_file= and =save_data= declarations for each root element |
+| =domain.cpp= | the parser and serialiser those functions are built from |
+| =domain_xsd.hpp= | the =xsd::= support namespace: =xsd::string=, =xsd::optional<T>=, =xsd::vector<T>=
+
+It validates presence and cardinality, not element order, and it does not
+validate attribute patterns or ranges. It deliberately does not handle
+non-UTF-8 encodings.
+
+** Where it lives, and the pin
+
+The tool is a separate checkout, not a build dependency:
+
+| Field | Value |
+|-------+-------|
+| Path | =/home/marco/Vault/Development/xsdcpp= |
+| Binary | =build/src/xsdcpp= |
+| Version | =xsdcpp 1.0.3= |
+| Checkout commit | =51b1de5= (2026-04-09) |
+| Local modification | an uncommitted two-pass group and substitution-group resolver fix in =src/Reader.cpp=, which the built binary carries |
+
+The local modification matters. Without it, =input.xsd= fails with
+=could not find group 'oreTradeData'=, which is why regeneration was
+blocked for months. The backlog capture that says so is stale: the fix is
+present in the binary, and the bindings were regenerated with it on
+2026-09-26.
+
+Nothing in the repository records the pin. This page is the record. If the
+checkout moves, update the table.
+
+** Generating the bindings
+
+#+begin_src sh
+PATH="/home/marco/Vault/Development/xsdcpp/build/src:$PATH" \
+    ./projects/ores.codegen/scripts/xsdcpp_generate_ore.sh
+#+end_src
+
+The script drives =xsdcpp_generate.sh= with
+=--xsd external/ore/xsd/input.xsd --project ores.ore --namespace ores::ore
+--name domain --include-prefix ores.ore.core/domain=, then:
+
+1. Re-inserts =#include "ores.ore.core/export.hpp"=, which xsdcpp does not
+   emit and the shared-library convention needs.
+2. Runs =scripts/reapply_export_macros.py= against a pre-regeneration copy
+   to restore the 166 =ORES_ORE_CORE_EXPORT= annotations.
+
+The =--reset-goldens= flag deletes =assets/test_data/golden_dataset/Products=.
+Do not use it: nothing recreates that tree except
+=xml_example_coverage_tests.cpp= under =ORES_BOOTSTRAP_GOLDENS=, so the
+golden suites would fail on missing files rather than on a difference.
+
+** When to run it
+
+Run it whenever =external/ore/xsd/= changes, even if only =examples/= moved.
+=external/ore/tools/update_ore_samples.sh= syncs the schemas and the
+examples together and records the engine commit in =external/ore/xsd/manifest.json=.
+The bindings and the schema must land in step.
+
+** What a run changes
+
+The output is a code-shape artefact, not a fixture: the 2026-09-26 run
+took =domain.cpp= from 108,655 lines to 40,095 and grew =domain.hpp= from
+13,507 to 16,266, with the ORE round-trip suites still green byte for byte.
+Expect a large diff and verify it with the suites, not by reading it.
+
+* See also
+
+- =projects/ores.codegen/scripts/xsdcpp_generate_ore.sh=, the wrapper.
+- =external/ore/xsd/README.md= and =external/ore/methodology.txt=, the schema sync and the surrounding pipeline.

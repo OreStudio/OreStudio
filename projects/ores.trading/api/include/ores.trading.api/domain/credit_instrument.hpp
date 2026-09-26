@@ -31,7 +31,7 @@ namespace ores::trading::domain {
  * @brief Economic terms of a credit instrument.
  *
  * Extracted as a plain nested sub-struct to keep each rfl::Literal below the
- * MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ * MSVC C1202 threshold. See the decomposition section of doc/knowledge/architecture/data_oriented_design.org.
  */
 struct credit_terms final {
     /**
@@ -81,7 +81,7 @@ struct credit_terms final {
  * @brief Schedule and date conventions of a credit instrument.
  *
  * Extracted as a plain nested sub-struct to keep each rfl::Literal below the
- * MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ * MSVC C1202 threshold. See the decomposition section of doc/knowledge/architecture/data_oriented_design.org.
  */
 struct credit_schedule final {
     /**
@@ -114,7 +114,7 @@ struct credit_schedule final {
  * @brief Index identification for CDSIndex-style credit instruments.
  *
  * Extracted as a plain nested sub-struct to keep each rfl::Literal below the
- * MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ * MSVC C1202 threshold. See the decomposition section of doc/knowledge/architecture/data_oriented_design.org.
  */
 struct credit_index final {
     /**
@@ -134,7 +134,7 @@ struct credit_index final {
  * @brief Optionality of CreditDefaultSwapOption-style credit instruments.
  *
  * Extracted as a plain nested sub-struct to keep each rfl::Literal below the
- * MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ * MSVC C1202 threshold. See the decomposition section of doc/knowledge/architecture/data_oriented_design.org.
  */
 struct credit_option final {
     /**
@@ -158,7 +158,7 @@ struct credit_option final {
  * @brief Tranche attachment/detachment for CBO and SyntheticCDO instruments.
  *
  * Extracted as a plain nested sub-struct to keep each rfl::Literal below the
- * MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ * MSVC C1202 threshold. See the decomposition section of doc/knowledge/architecture/data_oriented_design.org.
  */
 struct credit_tranche final {
     /**

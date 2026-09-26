@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:templates:agile:recipe:
 #+created: 2026-05-18
-#+updated: 2026-06-06
+#+updated: 2026-09-26
 
 For the contract every generated document follows (frontmatter, sections, TODO
 vocabulary), see [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]]. For background on the generator itself, see
@@ -305,17 +305,26 @@ compass add product_identity \
 :ID: 75F4921B-43D1-4E78-99AB-62A47F761D1D
 :END:
 
-[[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][Investigation reports]] live in [[proj:doc/investigations][=doc/investigations/=]]. They are formal records
-of technical research or debugging sessions.
+[[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][Investigation reports]] live in
+/the folder of the story that commissioned them/, as
+=investigation_<slug>.org=, at level =s1=. Pass that story's folder as
+=--parent-dir=; there is no default, because an investigation belongs to a
+story rather than to a fixed directory.
 
 #+begin_src sh :results verbatim
 compass add investigation \
   --slug msvc_c1202_rfl_complexity \
-  --parent-dir doc/investigations \
+  --parent-dir doc/agile/versions/v0/sprint_18/rfl_complexity_resolution \
   --title "MSVC C1202 and rfl complexity" \
   --description "Root cause analysis of recursive template depth limits in reflect-cpp." \
   --tags "msvc,cpp,reflect_cpp,investigation"
 #+end_src
+
+Then add it to the story's =* Investigations= section. Before you cite it from
+code, a recipe, a model or a knowledge page, read
+[[id:1366553A-4E0F-496F-91DD-19171C003631][Document type: investigation]]: the
+durable half of what it concludes goes to the page that owns the subject, and
+those surfaces cite that page.
 
 ** New user journey
 :PROPERTIES:

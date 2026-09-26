@@ -2,7 +2,7 @@
 :ID: 4086A9C8-E7BB-43E4-B183-FF606B2B17E7
 :END:
 #+title: ores.doc.knowledge.investigation
-#+description: Investigation doc with the =Investigation:= title prefix and findings skeleton.
+#+description: Investigation doc, scoped to the story that commissioned it: =Investigation:= title prefix, findings skeleton, and a snapshot framing.
 #+type: archetype
 #+facet: ores.doc.knowledge
 #+level: cross
@@ -29,12 +29,14 @@ The full template source. Edit here and re-tangle with
 ,#+title: {{title}}
 ,#+description: {{description}}
 ,#+type: investigation
-,#+level: cross
+,#+level: s1
 ,#+filetags: {{filetags}}
 ,#+created: {{date}}
 ,#+updated: {{date}}
 
-This page documents a formal historical record of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into {{description}}.
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into {{description}}.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
 
 ,* Context
 

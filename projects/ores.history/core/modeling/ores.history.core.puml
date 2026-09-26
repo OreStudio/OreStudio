@@ -41,7 +41,7 @@ namespace ores #F2F2F2 {
     }
 }
 
-note right of ores::history::messaging::history_handler
+note right of "ores::history::messaging::history_handler"
   register_history_handlers(nats, registry, queue_group, ctx, verifier)
   subscribes the single history.v1.get subject to a
   history_handler backed by the caller-owned registry.

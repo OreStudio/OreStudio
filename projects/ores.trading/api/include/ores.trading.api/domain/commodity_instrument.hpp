@@ -31,7 +31,7 @@ namespace ores::trading::domain {
  * @brief Core economic terms common to commodity products.
  *
  * Extracted as a plain nested sub-struct to keep each rfl::Literal below
- * the MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ * the MSVC C1202 threshold. See the decomposition section of doc/knowledge/architecture/data_oriented_design.org.
  */
 struct commodity_terms final {
     /**
@@ -84,7 +84,7 @@ struct commodity_terms final {
  * @brief Vanilla option terms for commodity option products.
  *
  * Extracted as a plain nested sub-struct to keep each rfl::Literal below
- * the MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ * the MSVC C1202 threshold. See the decomposition section of doc/knowledge/architecture/data_oriented_design.org.
  */
 struct commodity_option final {
     /**
@@ -112,7 +112,7 @@ struct commodity_option final {
  * @brief Averaging and spread pricing terms for commodity products.
  *
  * Extracted as a plain nested sub-struct to keep each rfl::Literal below
- * the MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ * the MSVC C1202 threshold. See the decomposition section of doc/knowledge/architecture/data_oriented_design.org.
  */
 struct commodity_pricing final {
     /**
@@ -150,7 +150,7 @@ struct commodity_pricing final {
  * @brief Exotic and barrier terms for structured commodity products.
  *
  * Extracted as a plain nested sub-struct to keep each rfl::Literal below
- * the MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ * the MSVC C1202 threshold. See the decomposition section of doc/knowledge/architecture/data_oriented_design.org.
  */
 struct commodity_exotic final {
     /**

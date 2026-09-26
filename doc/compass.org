@@ -194,8 +194,6 @@ contributor or LLM agent.
   [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]] and visual mockups.
 - [[proj:doc/analysis][=analysis/=]] ([[id:E5DE23FF-8FE6-4B90-BD5A-F19F26D05737][Analysis]]) — older one-off analyses from before v2. Some still
   useful as background context; not actively maintained.
-- [[proj:doc/investigations][=investigations/=]] ([[id:249FEDB9-7010-4124-A593-A01160E4B56E][Investigations]]) — targeted deep-dive investigations into
-  specific technical problems.
 
 ** Reserved folders
 

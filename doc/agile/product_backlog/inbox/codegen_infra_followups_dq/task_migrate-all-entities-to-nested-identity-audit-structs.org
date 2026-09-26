@@ -24,9 +24,9 @@ Force every codegen-generated domain entity onto the same shape:
 identity (version/tenant_id/workspace_id/primary key) and audit
 (modified_by/performed_by/change_reason_code/change_commentary/
 recorded_at) columns folded into nested =identity=/=audit= sub-structs
-(the C1202 pattern — see
-=doc/investigations/msvc_c1202_rfl_complexity.org=), not left flat on
-the entity struct.
+(the C1202 pattern — see the decomposition section of
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE
+Studio]]), not left flat on the entity struct.
 
 Today both shapes are correctly supported (flat: most of
 =ores.refdata=; nested: trading instrument entities) — every facet

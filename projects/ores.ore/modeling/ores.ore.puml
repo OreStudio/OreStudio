@@ -23,7 +23,8 @@ set namespaceSeparator ::
 
 legend right
   <<orm>>: a persisted table, generated from the entity model.
-  Everything else is hand-written in ores.ore.core.
+  The temporal columns are versioned: a row is never updated in
+  place, and valid_from/valid_to carry the interval it held for.
   The registry holds one shape per series type, and is
   built from the table at the start of an import.
 endlegend
@@ -31,12 +32,20 @@ endlegend
 namespace ores #F2F2F2 {
     namespace ore #F2F2F2 {
         namespace domain #F2F2F2 {
-            class series_key_shape <<orm>> {
+            class series_key_shape <<struct>> <<orm>> #99CB99 {
+                +version : int
+                +tenant_id : tenant_id
                 +series_type : string <<pk>>
                 +qualifier_depth : int
                 +has_point_dimension : bool
                 +default_point : string
                 +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : timestamp
+                +valid_to : timestamp
             }
         }
         namespace market #F2F2F2 {

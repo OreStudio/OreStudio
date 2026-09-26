@@ -22,8 +22,8 @@
  * Template: cpp_protocol.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_MESSAGING_SESSION_SAMPLES_PROTOCOL_HPP
-#define ORES_IAM_MESSAGING_SESSION_SAMPLES_PROTOCOL_HPP
+#ifndef ORES_IAM_API_MESSAGING_SESSION_SAMPLES_PROTOCOL_HPP
+#define ORES_IAM_API_MESSAGING_SESSION_SAMPLES_PROTOCOL_HPP
 
 #include <cstdint>
 #include <string>

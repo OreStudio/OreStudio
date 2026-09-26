@@ -21,7 +21,7 @@
 #include "ores.nats/domain/correlation.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.ore.api/messaging/ore_import_engine_protocol.hpp"
+#include "ores.ore.api/messaging/ore_import_protocol.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"

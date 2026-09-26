@@ -62,7 +62,7 @@ one defect the survey missed was found by the rewritten test.
 | B02 | pass | 0 entity, junction, operation, message, field-group and module models. =projects/ores.geo/modeling/= holds =component_overview.org= (=#+type: ores.codegen.component=), =ores.geo.puml= and =ores.geo.png=. |
 | B03 | pass | 5 production C++ files classified: 4 headers (=export.hpp=, =ores.geo.hpp=, =service/geolocation_service.hpp=, =service/ores.geo.service.hpp=) and one 74-line source, =service/geolocation_service.cpp=. =tests/= holds =geolocation_service_tests.cpp= and =main.cpp=. All are hand-written infrastructure; none matches a codegen archetype's output and none is dead. The two umbrella headers are included by nobody and are kept as the component and facet namespace documentation, which the codegen convention generates for every component. |
 | B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. |
-| B05 | pass | Two live captures name the component. =geo_location_tests_fail_for_some_ip_addresses.org= records the test defect this task confirms and closes. The other is this task's own story. No in-flight branch touches the component. |
+| B05 | pass | Two live captures under =doc/agile/product_backlog/next/= name the component. =geo_location_tests_fail_for_some_ip_addresses.org= records the test defect this task confirms and closes. =fix_component_doc_drift.org= names it in an affected-components snapshot that is stale for geo, since =validate_docs.sh= now passes for every component. No in-flight branch touches the component. |
 | M01 | not applicable | No org entity model. |
 | M02 | not applicable | No entity model, so no variability profile to bind. |
 | M03 | not applicable | No model states a property. |
@@ -95,10 +95,10 @@ one defect the survey missed was found by the rewritten test.
 | H02 | fail, fixed | A dead =database_not_available= enum value and an unused =<optional>= include are removed; the enum stays out of the regenerated diagram. The two umbrella headers are kept and their MaxMind text is corrected. The unused PUBLIC =ores.geo.lib= link in =projects/ores.iam/core/src/CMakeLists.txt= is removed, since =ores.iam= uses no geo symbol and =ores.http.core= links the library itself. |
 | H03 | fail, fixed | The service header named =geolocation_import.sql=, and the file on disk is =ip2country_import.sql=. That script cannot run either: it omits the =NOT NULL= =tenant_id=. The comment now states the real data path, that the dq ip2country publish path is the only writer. |
 | V01 | pass | =compass build= over the whole tree reached 100% with exit code 0. |
-| V02 | fail, fixed | The five original cases could not fail: three wrapped their assertion in =if (!result.has_value())=, and two asserted on a plain struct. They are replaced with four cases that call the public API and assert literal values: a seeded range returns its country code, an unparseable string returns =invalid_address=, a private address returns =address_not_found=, and an uncovered address returns =address_not_found=. The seeded case then found a production defect: =ores_geo_inet_to_bigint_fn= read the =inet_send= header bytes rather than the address, so it returned 35651588 for every IPv4 address and no lookup could ever match a range. It is fixed at source in =projects/ores.sql/create/geo/geo_ip2country_create.sql=, which now uses the inet difference operator. The suite passes 8 assertions in 4 test cases, and the seeded case fails again if the conversion regresses. The =ores.codegen= suite passes at 530, and the =ores.compass= suite at 230 passed and 1 skipped. |
+| V02 | fail, fixed | The five original cases could not fail: three wrapped their assertion in =if (!result.has_value())=, and two asserted on a plain struct. They are replaced with four cases that call the public API and assert literal values: a seeded range returns its country code, an unparseable string returns =invalid_address=, a private address returns =address_not_found=, and an uncovered address returns =address_not_found=. The seeded case then found a production defect: =ores_geo_inet_to_bigint_fn= read the =inet_send= header bytes rather than the address, so it returned 35651588 for every IPv4 address and no lookup could ever match a range. It is fixed at source in =projects/ores.sql/create/geo/geo_ip2country_create.sql=, which now uses the inet difference operator. The suite passes 8 assertions in 4 test cases, and the seeded case fails again if the conversion regresses. The =ores.codegen= suite passes at 550, and the =ores.compass= suite at 230 passed and 1 skipped, both re-measured after the final rebase. |
 | V03 | not applicable | No entity and no service. The database was still recreated from scratch to deploy the SQL fix, and it succeeded, which is the fix's own from-scratch proof. |
 | V04 | not applicable | No generated shell command. |
-| V05 | pass | Every gate run and green: component drift (=iam=), model drift (2 known exceptions), protocol twin coverage, handler permissions, populate references, shell recipe inventory, =regenerate_cmake_component_files.py --component ores.geo=, =validate_docs.sh= (apart from the pre-existing =ores.shell.iam= finding), =compass lint=, and the six checks of =.github/workflows/doc-lint.yml=. |
+| V05 | pass | Every gate run and green: component drift (=iam=), model drift (2 known exceptions), protocol twin coverage, handler permissions, populate references, shell recipe inventory, =regenerate_cmake_component_files.py --component ores.geo=, =validate_docs.sh= (all 40 components pass), =compass lint=, and the six checks of =.github/workflows/doc-lint.yml=. |
 | V06 | not applicable | No catalogue row and no models, so the component cannot join =COMPONENTS_UNDER_TEST=. Recorded as the programme gap the ores.connections and ores.orgmode stories already describe. |
 
 * Notes
@@ -178,7 +178,11 @@ fix. The build, the component suite and the gates are the evidence.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The test builds its seed and clear SQL by string concatenation | ores.geo/tests/geolocation_service_tests.cpp | dismissed | =execute_raw_command= takes a raw string, every input is a compile-time constant or a harness-generated UUID, and the surrounding test code uses the same pattern. There is no injection path today. |
+| 2 | The =ores.geo= row on the Foundation layer page is not column-aligned with the rest of the table | projects/modeling/system_model_foundation.org | dismissed | Cosmetic. Org reflows alignment on the next edit, =compass lint= passes, and the table's other rows are unaligned. |
+| 3 | The recorded codegen suite count, 530, is stale | task_clean_geo.org | fixed | Real. Re-measured after the final rebase: 550 passed. |
+| 4 | B05 misidentifies the second capture as this task's own story | task_clean_geo.org | fixed | Real. The two captures under =doc/agile/product_backlog/next/= that name the component are =geo_location_tests_fail_for_some_ip_addresses.org= and =fix_component_doc_drift.org=. |
+| 5 | The branch was not rebased onto trunk, so the verdict's base did not match the PR's | feature/clean-geo | fixed | Real. Rebased onto trunk before landing, and the record was re-measured on the rebased tree. |
 
 * Result
 
@@ -199,7 +203,7 @@ source, and the seeded test fails again if it regresses.
 
 Verification. The whole tree builds with =compass build=, exit 0. The
 =ores.geo= suite passes 8 assertions in 4 test cases, the =ores.codegen= suite
-530, and the =ores.compass= suite 230 with 1 skipped. The database recreates
+550, and the =ores.compass= suite 230 with 1 skipped. The database recreates
 from scratch, which is the SQL fix's own proof. Every codegen gate passes.
 
 The one exception is V06. ores.geo does not join =COMPONENTS_UNDER_TEST=

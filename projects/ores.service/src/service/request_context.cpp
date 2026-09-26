@@ -32,14 +32,23 @@ namespace ores::service::service {
 namespace {
 
 using namespace ores::logging;
-inline static std::string_view logger_name = "ores.service.service.request_context";
-static auto& lg() {
-    static auto instance = make_logger(logger_name);
+
+auto& lg() {
+    static auto instance = make_logger("ores.service.service.request_context");
     return instance;
 }
 
-} // namespace
-
+/**
+ * @brief Builds a database context from the claims of a raw JWT Bearer token.
+ *
+ * The claims name the tenant, and optionally the active party with the list of
+ * parties it may see. A token whose tenant is absent or unparseable is
+ * rejected as unauthorized; a token carrying a malformed party UUID falls back
+ * to tenant scope rather than failing the request, because the party is an
+ * optional narrowing of a context the tenant already authorises.
+ *
+ * @return The scoped context, or the error the caller answers with.
+ */
 std::expected<ores::database::context, ores::service::error_code>
 make_context_from_jwt(const ores::database::context& base_ctx,
                       const std::string& token,
@@ -80,6 +89,8 @@ make_context_from_jwt(const ores::database::context& base_ctx,
             .with_roles(claims->roles);
     }
 }
+
+} // namespace
 
 std::expected<ores::database::context, ores::service::error_code>
 make_request_context(const ores::database::context& base_ctx,
@@ -129,7 +140,6 @@ make_request_context(const ores::database::context& base_ctx,
             base_ctx, val.substr(ores::nats::headers::bearer_prefix.size()), *verifier));
     }
 
-    // Fall through to the standard Authorization header.
     const auto it = msg.headers.find(std::string(ores::nats::headers::authorization));
     if (it == msg.headers.end())
         return std::unexpected(ores::service::error_code::unauthorized);

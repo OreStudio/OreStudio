@@ -20,8 +20,6 @@
 #ifndef ORES_SERVICE_SERVICE_EXIT_CODES_HPP
 #define ORES_SERVICE_SERVICE_EXIT_CODES_HPP
 
-#include <string_view>
-
 namespace ores::service::service {
 
 /**
@@ -40,61 +38,6 @@ enum class exit_code : int {
     startup_timeout = 5,        ///< Timed out waiting for a dependency
     auth_error = 6,             ///< Authentication or authorisation failure
 };
-
-/**
- * @brief Returns a short human-readable name for the exit code.
- *
- * Intended for use in log messages and service_event records so operators
- * can read the reason without looking up integer constants.
- */
-inline constexpr std::string_view exit_code_name(exit_code code) noexcept {
-    switch (code) {
-        case exit_code::ok:
-            return "ok";
-        case exit_code::general_error:
-            return "general_error";
-        case exit_code::config_error:
-            return "config_error";
-        case exit_code::db_connection_failed:
-            return "db_connection_failed";
-        case exit_code::nats_connection_failed:
-            return "nats_connection_failed";
-        case exit_code::startup_timeout:
-            return "startup_timeout";
-        case exit_code::auth_error:
-            return "auth_error";
-        default:
-            return "unknown";
-    }
-}
-
-/**
- * @brief Converts a raw int exit code to the enum.
- *
- * Values not in the enum map to @c exit_code::general_error so the
- * controller always gets a valid enum regardless of what the child process
- * returned.
- */
-inline constexpr exit_code to_exit_code(int raw) noexcept {
-    switch (raw) {
-        case 0:
-            return exit_code::ok;
-        case 1:
-            return exit_code::general_error;
-        case 2:
-            return exit_code::config_error;
-        case 3:
-            return exit_code::db_connection_failed;
-        case 4:
-            return exit_code::nats_connection_failed;
-        case 5:
-            return exit_code::startup_timeout;
-        case 6:
-            return exit_code::auth_error;
-        default:
-            return exit_code::general_error;
-    }
-}
 
 }
 

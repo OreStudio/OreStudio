@@ -22,7 +22,7 @@
 
 #include "ores.service/export.hpp"
 
-namespace ores::service {
+namespace ores::service::service {
 
 /**
  * @brief Tells systemd this process is ready, if running under it.

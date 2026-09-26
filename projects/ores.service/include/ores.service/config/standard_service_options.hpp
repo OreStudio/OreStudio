@@ -47,8 +47,11 @@ struct standard_options final {
  * composition-and-parsing boilerplate that used to be hand-duplicated
  * across each service's own config/parser.cpp.
  *
- * Also the single call site for
- * ores::nats::config::nats_configuration::register_shared_domain().
+ * make_options_description() also registers the NATS shared config domain.
+ * The two tools that build their own parsers instead of using this class,
+ * ores.http.server and ores.compute.wrapper, call
+ * ores::nats::config::nats_configuration::register_shared_domain()
+ * themselves, so this is the main call site rather than the only one.
  */
 class ORES_SERVICE_EXPORT standard_service_options final {
 public:

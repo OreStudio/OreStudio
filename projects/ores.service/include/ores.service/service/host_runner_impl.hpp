@@ -27,6 +27,48 @@
 
 namespace ores::service::service {
 
+namespace detail {
+
+/**
+ * @brief Logs the run before the application starts.
+ */
+template <typename Config>
+void log_host_command(ores::logging::logger_t& lg,
+                      const std::vector<std::string>& args,
+                      const Config& cfg,
+                      const host_runner_options& opts) {
+    using namespace ores::logging;
+
+    if (opts.on_before_log)
+        opts.on_before_log();
+
+    BOOST_LOG_SEV(lg, info) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg, debug) << "Configuration: " << cfg;
+}
+
+/**
+ * @brief Logs a failure from the application and leaves the rethrow to the caller.
+ *
+ * A boost::exception carries diagnostics that what() alone loses, so it is
+ * logged in full.
+ */
+inline void log_host_failure(ores::logging::logger_t& lg,
+                            const std::exception& e,
+                            std::string_view failure_message) {
+    using namespace ores::logging;
+
+    const auto* const be(dynamic_cast<const boost::exception* const>(&e));
+    if (be != nullptr) {
+        using boost::diagnostic_information;
+        BOOST_LOG_SEV(lg, error) << "Error: " << diagnostic_information(*be);
+    } else {
+        BOOST_LOG_SEV(lg, error) << "Error: " << e.what();
+    }
+    BOOST_LOG_SEV(lg, error) << failure_message;
+}
+
+}
+
 template <typename Parser, typename Application>
 boost::asio::awaitable<int> run_host_async(const std::vector<std::string>& args,
                                            std::ostream& std_output,
@@ -46,11 +88,7 @@ boost::asio::awaitable<int> run_host_async(const std::vector<std::string>& args,
     const auto& cfg(*ocfg);
     lifecycle_manager lm(cfg.logging);
 
-    if (opts.on_before_log)
-        opts.on_before_log();
-
-    BOOST_LOG_SEV(lg, info) << "Command line arguments: " << args;
-    BOOST_LOG_SEV(lg, debug) << "Configuration: " << cfg;
+    detail::log_host_command(lg, args, cfg, opts);
 
     try {
         Application app;
@@ -61,14 +99,45 @@ boost::asio::awaitable<int> run_host_async(const std::vector<std::string>& args,
 
         co_return EXIT_SUCCESS;
     } catch (const std::exception& e) {
-        const auto* const be(dynamic_cast<const boost::exception* const>(&e));
-        if (be != nullptr) {
-            using boost::diagnostic_information;
-            BOOST_LOG_SEV(lg, error) << "Error: " << diagnostic_information(*be);
-        } else {
-            BOOST_LOG_SEV(lg, error) << "Error: " << e.what();
-        }
-        BOOST_LOG_SEV(lg, error) << opts.failure_message;
+        detail::log_host_failure(lg, e, opts.failure_message);
+        throw;
+    }
+}
+
+template <typename Parser, typename EarlyExit, typename Runner>
+int run_host_sync(const std::vector<std::string>& args,
+                  std::ostream& std_output,
+                  std::ostream& error_output,
+                  ores::logging::logger_t& lg,
+                  EarlyExit early_exit,
+                  Runner run_application,
+                  host_runner_options opts) {
+    using namespace ores::logging;
+    using ores::telemetry::log::lifecycle_manager;
+
+    Parser p;
+    const auto ocfg(p.parse(args, std_output, error_output));
+
+    if (!ocfg)
+        return EXIT_SUCCESS;
+
+    const auto& cfg(*ocfg);
+    lifecycle_manager lm(cfg.logging);
+
+    detail::log_host_command(lg, args, cfg, opts);
+
+    if (const auto exit_code = early_exit(cfg))
+        return *exit_code;
+
+    try {
+        run_application(cfg);
+
+        if (opts.on_success)
+            opts.on_success();
+
+        return EXIT_SUCCESS;
+    } catch (const std::exception& e) {
+        detail::log_host_failure(lg, e, opts.failure_message);
         throw;
     }
 }

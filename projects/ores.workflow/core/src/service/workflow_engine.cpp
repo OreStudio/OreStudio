@@ -73,11 +73,12 @@ void workflow_engine::publish_command(const domain::workflow_step& step,
 
     const auto data = std::as_bytes(std::span{step.command_json.data(), step.command_json.size()});
 
+    using namespace ores::workflow::messaging;
     nats_.publish(step.command_subject,
                   data,
-                  {{"X-Workflow-Step-Id", step_id_str},
-                   {"X-Workflow-Instance-Id", inst_id_str},
-                   {"X-Tenant-Id", tenant_id_str}});
+                  {{std::string(step_id_header), step_id_str},
+                   {std::string(instance_id_header), inst_id_str},
+                   {std::string(tenant_id_header), tenant_id_str}});
 }
 
 void workflow_engine::publish_status_event(const boost::uuids::uuid& instance_id,

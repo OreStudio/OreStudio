@@ -26,6 +26,10 @@ namespace ores #F2F2F2 {
         namespace service #F2F2F2 {
             namespace app #F2F2F2 {
                 class application {
+                    +operator : application&
+                }
+                class application_exception {
+                    -message_ : string
                 }
                 class host {
                 }
@@ -38,12 +42,311 @@ namespace ores #F2F2F2 {
                 }
                 class parser {
                 }
+                class parser_exception {
+                    -message_ : string
+                }
+            }
+            namespace messaging #F2F2F2 {
+                class event_registrar {
+                }
             }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass reads the public headers under service/include/, so the
+' six types it draws are the process shell. Everything the service actually
+' does -- the feed control plane, the event registrars and the feed controller
+' -- lives in private headers under src/ that the pass never reads, and the
+' shell's own boxes arrive empty because their content is methods.
+'
+' Redeclaring a class with its fully-qualified name merges the members into
+' the box the automated pass already drew. No namespace block is reopened:
+' this PlantUML version crashes when a namespace that already holds classes is
+' declared a second time.
+
+class ores::synthetic::service::app::application {
+    +application()
+    +run(io_ctx : io_context&, cfg : config::options) : awaitable<void>
+    {static} -make_context(db_opts : database_options) : database::context
+}
+note right of "ores::synthetic::service::app::application"
+The composition root, and the whole of the service's startup
+order: open NATS, build the authenticated service-to-service
+client, make the DB context, start the entity-change event
+pipeline, ensure the two JetStream streams, construct the
+feed_controller, run the boot-time auto-start walk, then hand
+the handler-registration lambdas to ores.service's run()
+before shutting the controller and the event source down.
+end note
+
+class ores::synthetic::service::app::host {
+    {static} +execute(args : vector<string>, std_output : ostream&, error_output : ostream&, io_ctx : io_context&) : awaitable<int>
+}
+note right of "ores::synthetic::service::app::host"
+The console workflow. The automated pass drew this box empty
+because every member is a static method.
+end note
+
+class ores::synthetic::service::config::parser {
+    +parse(arguments : vector<string>, info : ostream&, error : ostream&) : optional<options>
+}
+note right of "ores::synthetic::service::config::parser"
+Returns an empty optional rather than throwing when the
+command line asks for help or fails to parse, so the caller
+decides the exit code. Logging is unavailable here by
+design: the logger starts only after the parse succeeds, so
+a parse error is reported on the error stream instead.
+end note
+
+class ores::synthetic::service::messaging::event_registrar {
+    {static} +register_event_mappings(event_source : postgres_event_source&, event_bus : event_bus&, nats : nats::client&) : vector<subscription>
+}
+note right of "ores::synthetic::service::messaging::event_registrar"
+The one hand-maintained line-per-entity call site in the
+component. It composes the nine generated per-entity
+registrars and takes ownership of the subscriptions they
+return, so they outlive the call.
+end note
+
+' The nine generated per-entity event registrars. A free function cannot be
+' drawn as a class, so each is redeclared here; together they are what the
+' event_registrar above composes.
+
+class ores::synthetic::service::messaging::register_folder_event_mapping {
+    {static} +register_folder_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : nats::client&) : subscription
+}
+note top of "ores::synthetic::service::messaging::register_folder_event_mapping"
+Free function, one per entity, and the reason the box here
+is hand-drawn: the automated pass reads types, not free
+functions. Each registers the entity's Postgres NOTIFY
+channel on the event source and subscribes the event bus,
+so a committed row change becomes a NATS publish. The other
+eight are named register_<entity>_event_mapping and carry
+the same three arguments.
+end note
+note bottom of "ores::synthetic::service::messaging::register_folder_event_mapping"
+The nine channels, one per synthetic table:
+ores_synthetic_folders, _fx_spot_generation_configs,
+_gmm_components, _ir_curve_generation_configs,
+_ir_curve_generation_config_process_parameter_values,
+_ir_curve_template_entries, _market_data_generation_configs,
+_yield_curve_process_parameter_definitions and
+_yield_curve_process_types. A row change on any of them
+reaches NATS; no other synthetic table publishes an event.
+end note
+
+' The feed control plane: the controller, its handlers, and the private
+' handlers the service registrars subscribe.
+
+class ores::synthetic::service::feed_controller {
+    +feed_controller(nats : nats::client&, auth_nats : nats_client&)
+    +~feed_controller()
+    +start(ore_key : string, source_name : string, means : vector<double>, stdevs : vector<double>, weights : vector<double>, initial_price : double, ticks_per_hour : double, process_type : string, vintage_source : string, vintage_date : string, error_detail : string*, caller_bearer_token : string, binding_mode : binding_mode, out_conflicting_source_name : string*) : start_result
+    +start(feed : shared_ptr<IFeed>) : start_result
+    +add(feed : shared_ptr<IFeed>, binding_mode : binding_mode, out_conflicting_source_name : string*) : bool
+    +add(feed : shared_ptr<IFeed>, out_conflicting_source_name : string*) : bool
+    +stop(key : string) : size_t
+    +shutdown()
+    +running_count() : size_t
+    +list(kind : string) : vector<string>
+    +validate(ore_key : string, vintage_source : string, vintage_date : string, error_detail : string&, caller_bearer_token : string, resolved_price : double*) : bool
+    +running_source_name_for_conflict_key(conflict_key : string) : optional<string>
+    -ensure_feed_binding(ore_key : string, source_name : string, caller_bearer_token : string)
+    -vintage_data_available(ore_key : string, vintage_source : string, vintage_date : string, error_detail : string&, caller_bearer_token : string, resolved_price : double*) : bool
+    -find_conflict(feed : IFeed&, excluding_source_name : string) : optional<string>
+    -start_running(feed : shared_ptr<IFeed>, binding_mode : binding_mode)
+    -status_loop()
+    -log_status()
+}
+note right of "ores::synthetic::service::feed_controller"
+One controller serves every asset class: feeds_ is keyed by
+source_name, and every feed enters through the IFeed
+interface, so the per-kind producers differ only in what
+they publish. At most one feed runs per (qualifier, role)
+pair -- feeds_conflict -- and a second one is refused by
+name, never by stopping the first.
+end note
+note bottom of "ores::synthetic::service::feed_controller"
+Three ways in, and the differences matter. add() is the
+config-driven path (boot auto-start, the folder cascade):
+the caller already built the feed, so no vintage check and
+no binding creation happen here. start(IFeed) is the
+on-demand path and distinguishes already_running from
+qualifier_conflict. start(ore_key, ...) is the
+client-supplied-params path: the only one that checks
+vintage availability and auto-creates a feed_binding, and
+it is FX-only. A sandboxed feed publishes on
+synthetic.v1.sandbox.tick.<source> and never creates a
+binding, so it is structurally unreachable from the
+bound-feed ingest loop. One tick thread per feed, plus one
+status thread that logs publish counts every minute.
+end note
+
+class ores::synthetic::service::feed_config_handler {
+    +feed_config_handler(nats : nats::client&, auth_nats : nats_client&, ctrl : shared_ptr<feed_controller>, ctx : database::context, verifier : optional<jwt_authenticator>)
+    +start(msg : nats::message)
+    +stop(msg : nats::message)
+    +list(msg : nats::message)
+    -start_fx(req_ctx : database::context&, msg : nats::message&, cfg : fx_spot_generation_config&)
+    -start_ir(req_ctx : database::context&, msg : nats::message&, cfg : ir_curve_generation_config&)
+    -reply_start_outcome(msg : nats::message&, resp : start_feed_response&, feed : shared_ptr<fx_spot_feed>)
+    -authenticated_context(verb : string_view, msg : nats::message&) : optional<database::context>
+}
+note right of "ores::synthetic::service::feed_config_handler"
+Serves synthetic.v1.feed_configs.start / .stop / .list --
+one handler for every asset class, replacing the per-kind
+handlers that came before it. The client sends a config_id
+and nothing else: the handler probes the FX repository and
+then the IR repository to discover the kind, because the
+market_data_generation_config container carries no kind
+discriminator. Missing, disabled and vintage-missing all
+answer with one message shape regardless of kind. start()
+reads the container and the GMM components for FX, the
+template entries and parameter values for IR, builds the
+refdata context, then hands the feed to the factory and the
+controller. stop() is idempotent: zero stopped means it was
+already stopped.
+end note
+
+class ores::synthetic::service::folder_feed_control_handler {
+    +folder_feed_control_handler(nats : nats::client&, ctrl : shared_ptr<feed_controller>, auth_nats : nats_client&, ctx : database::context, verifier : optional<jwt_authenticator>)
+    +start(msg : nats::message)
+    +stop(msg : nats::message)
+    -resolve_subtree(ctx : database::context&, folder_id : uuid&) : set<uuid>
+    -parse_folder_id(s : string&, out : uuid&) : bool
+    -authenticated_context(verb : string_view, msg : nats::message&) : optional<database::context>
+}
+note right of "ores::synthetic::service::folder_feed_control_handler"
+Serves marketdata.v1.market_feed_configs.start_folder and
+.stop_folder. The single place that turns "start everything
+under this folder" into a sequence of producer starts: it
+resolves the folder subtree once and fans out over every
+config row beneath it, of every asset class, through the
+same factory and controller -- so Qt, ores.shell and a wt
+workflow step all get one behaviour from one request. The
+folder and feed rows are tenant and party scoped under RLS,
+so a valid JWT is required and the queries run in the
+caller's own context. The parameter definitions catalogue is
+read under the system tenant; everything else under the
+caller's.
+end note
+
+class ores::synthetic::service::vintage_validity_handler {
+    +vintage_validity_handler(nats : nats::client&, ctrl : shared_ptr<feed_controller>, ctx : database::context, verifier : optional<jwt_authenticator>)
+    +list(msg : nats::message)
+}
+note right of "ores::synthetic::service::vintage_validity_handler"
+Serves marketdata.v1.market_feed_configs.vintage_validity.
+It computes every FX feed's vintage availability live, at
+read time, through feed_controller::validate -- there is no
+stored column and no trigger, so the answer is correct even
+straight after an import that added observation rows and no
+feed rows. A feed whose price_source is not "vintage" comes
+back applicable=false and is not checked.
+end note
+
+class ores::synthetic::service::simulate_handler {
+    +simulate_handler(nats : nats::client&, ctx : database::context, verifier : optional<jwt_authenticator>)
+    +simulate(msg : nats::message)
+}
+note right of "ores::synthetic::service::simulate_handler"
+Serves synthetic.v1.fx_spot.simulate. Builds the real GMM
+price process and steps it to answer a whole batch of sample
+paths at once. Nothing is persisted and nothing is
+published: it is a dry run so a caller can see the configured
+behaviour before starting a feed.
+end note
+
+class ores::synthetic::service::ir_curve_preview_handler {
+    +ir_curve_preview_handler(nats : nats::client&, ctx : database::context, verifier : optional<jwt_authenticator>)
+    +simulate_paths(msg : nats::message)
+    +preview_shape(msg : nats::message)
+}
+note right of "ores::synthetic::service::ir_curve_preview_handler"
+The curve-editor dry runs. simulate_paths is the IR
+equivalent of simulate_handler and draws short-rate paths.
+preview_shape has no FX equivalent, because FX has one scalar
+spot where a curve has a tenor grid: it resolves the request's
+Curve Template entries through the shared resolver and prices
+each one at one process state, so the editor can draw the
+shape those entries imply. Both are stateless -- nothing is
+persisted or published -- and both clamp their inputs to the
+protocol's own maxima.
+end note
+
+class ores::synthetic::service::registrar {
+    {static} +register_handlers(nats : nats::client&, auth_nats : nats_client&, ctrl : shared_ptr<feed_controller>, ctx : database::context, verifier : optional<jwt_authenticator>) : vector<subscription>
+}
+note right of "ores::synthetic::service::registrar"
+The control-plane registrar, distinct from
+ores.synthetic.core's entity registrar. It subscribes nine
+subjects, all on the ores.synthetic.service queue:
+synthetic.v1.feed_configs.start/.stop/.list,
+synthetic.v1.fx_spot.simulate,
+synthetic.v1.ir_curve.simulate_paths,
+synthetic.v1.ir_curve.preview_shape,
+marketdata.v1.market_feed_configs.start_folder/.stop_folder
+and marketdata.v1.market_feed_configs.vintage_validity. Each
+lambda constructs its handler per message.
+end note
+
+' Relationships the automated pass cannot infer.
+
+ores::synthetic::service::app::host ..> ores::synthetic::service::config::parser : parses the command line with
+ores::synthetic::service::app::host ..> ores::synthetic::service::app::application : runs
+ores::synthetic::service::app::application ..> ores::synthetic::service::messaging::event_registrar : starts the event pipeline with
+ores::synthetic::service::app::application ..> ores::synthetic::service::registrar : registers the control plane with
+ores::synthetic::service::app::application ..> ores::synthetic::service::feed_controller : owns
+ores::synthetic::service::app::application ..> ores::synthetic::service::app::application_exception : throws
+ores::synthetic::service::config::parser ..> ores::synthetic::service::config::parser_exception : throws
+
+ores::synthetic::service::messaging::event_registrar ..> ores::synthetic::service::messaging::register_folder_event_mapping : composes
+
+' The nine event registrars are one sentence repeated: the folder instance is
+' drawn and the other eight take the same three arguments.
+ores::synthetic::service::messaging::register_folder_event_mapping ..> ores::eventing::service::postgres_event_source : listens on the entity channel
+ores::synthetic::service::messaging::register_folder_event_mapping ..> ores::eventing::service::event_bus : subscribes
+ores::synthetic::service::messaging::register_folder_event_mapping ..> ores::nats::service::client : republishes to
+
+ores::synthetic::service::registrar ..> ores::synthetic::service::feed_config_handler : subscribes
+ores::synthetic::service::registrar ..> ores::synthetic::service::folder_feed_control_handler : subscribes
+ores::synthetic::service::registrar ..> ores::synthetic::service::vintage_validity_handler : subscribes
+ores::synthetic::service::registrar ..> ores::synthetic::service::simulate_handler : subscribes
+ores::synthetic::service::registrar ..> ores::synthetic::service::ir_curve_preview_handler : subscribes
+
+ores::synthetic::service::feed_config_handler ..> ores::synthetic::service::feed_controller : starts and stops feeds through
+ores::synthetic::service::feed_config_handler ..> ores::synthetic::api::feeds::feed_factory : builds every feed through
+ores::synthetic::service::folder_feed_control_handler ..> ores::synthetic::service::feed_controller : adds every feed beneath the folder
+ores::synthetic::service::folder_feed_control_handler ..> ores::synthetic::repository::folder_repository : resolves the subtree with
+ores::synthetic::service::folder_feed_control_handler ..> ores::synthetic::api::feeds::feed_factory : builds every feed through
+ores::synthetic::service::vintage_validity_handler ..> ores::synthetic::service::feed_controller : asks for the live check
+ores::synthetic::service::ir_curve_preview_handler ..> ores::synthetic::api::feeds::ir_curve_template_resolver : resolves entries and prices them with
+ores::synthetic::service::simulate_handler ..> ores::analytics::quant::service::process_factory : builds the GMM process with
+
+ores::synthetic::service::app::application ..> ores::nats::service::client : owns the connection
+ores::synthetic::service::app::application ..> ores::database::context : makes
+ores::synthetic::service::app::application ..> ores::synthetic::messaging::registrar : registers the entity handlers with
+
+note bottom of "ores::synthetic::service::feed_controller"
+The edges the automated pass draws in this component are
+none: it reads data members, and the service's own headers
+hold almost none. The one line above that names an edge the
+code does not support would be a reader's guess, not the
+pass's -- so nothing here contradicts the automated pass.
+end note
+
+note bottom of "ores::synthetic::service::app::application"
+The run() coroutine is the component's start-up contract,
+and the order in it is load-bearing: the JetStream streams
+must exist before the first feed publishes (js_publish to a
+subject with no matching stream throws), the controller must
+exist before the registrar's lambdas capture it, and the
+controller must be shut down after the NATS I/O loop stops
+so no handler callback races the shutdown.
+end note
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.synthetic.service.puml"

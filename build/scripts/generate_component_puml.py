@@ -385,8 +385,15 @@ def parse_header(path: Path) -> dict[tuple[str, ...], list[TypeInfo]]:
                 i += 1
                 continue
 
-            # Skip lines with function parameters (methods/constructors)
-            if _FUNC_RE.search(stripped):
+            # A parenthesis means a method, unless it belongs to a field's
+            # initialiser: `uuid tenant_id = tenant_id::system();` is a field,
+            # and skipping it hid tenant_id from every generated entity box and
+            # any member whose initialiser calls something. A parenthesis
+            # before the `=` (or with no `=` at all) is a signature.
+            first_paren = stripped.find('(')
+            if first_paren != -1 and not (
+                    stripped.find('=') != -1
+                    and stripped.find('=') < first_paren):
                 i += 1
                 continue
 

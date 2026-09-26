@@ -24,12 +24,66 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace synthetic #F2F2F2 {
         namespace domain #F2F2F2 {
+            enum binding_mode {
+            }
+            class curve_template_validation_result <<struct>> {
+                +valid : bool
+                +message : string
+            }
+            class curve_template_entry_ref <<struct>> {
+                +sequence_index : int
+                +start_tenor_code : string
+                +end_tenor_code : string
+                +instrument_code : string
+            }
+            class folder <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +parent_id : optional<boost::uuids::uuid>
+                +name : string
+                +kind : string
+                +collection_id : optional<boost::uuids::uuid>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class fx_spot_generation_config <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +config_id : boost::uuids::uuid
+                +base_currency_code : string
+                +quote_currency_code : string
+                +source_name : string
+                +ore_key : string
+                +price_source : string
+                +gmm_initial_price : double
+                +ticks_per_hour : int
+                +process_type : string
+                +enabled : bool
+                +auto_start : bool
+                +vintage_source : string
+                +vintage_date : string
+                +folder_id : optional<boost::uuids::uuid>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
             class generated_organisation <<struct>> {
                 +seed : uint64_t
                 +parties : vector<refdata::domain::party>
                 +party_contacts : vector<refdata::domain::party_contact_information>
                 +party_identifiers : vector<refdata::domain::party_identifier>
                 +counterparties : vector<refdata::domain::counterparty>
+                +counterparty_contacts : vector<refdata::domain::counterparty_contact_information>
+                +counterparty_identifiers : vector<refdata::domain::counterparty_identifier>
                 +party_counterparties : vector<refdata::domain::party_counterparty>
                 +business_unit_types : vector<refdata::domain::business_unit_type>
                 +business_units : vector<refdata::domain::business_unit>
@@ -49,8 +103,100 @@ namespace ores #F2F2F2 {
                 +dataset_count : size_t
                 +dependencies : vector<string>
             }
+            class gmm_component <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +fx_spot_config_id : boost::uuids::uuid
+                +component_index : int
+                +description : string
+                +mean : double
+                +stdev : double
+                +weight : double
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class ir_curve_generation_config <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +config_id : boost::uuids::uuid
+                +currency_code : string
+                +index_family : string
+                +tenor : string
+                +role : string
+                +process_type : string
+                +ticks_per_hour : int
+                +enabled : bool
+                +auto_start : bool
+                +price_source : string
+                +vintage_source : string
+                +vintage_date : string
+                +description : string
+                +fixed_leg_payment_frequency_code : string
+                +source_name : string
+                +folder_id : optional<boost::uuids::uuid>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class ir_curve_generation_config_process_parameter_value <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +config_id : boost::uuids::uuid
+                +parameter_definition_id : boost::uuids::uuid
+                +parameter_value : double
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class ir_curve_template_entry <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +ir_curve_config_id : boost::uuids::uuid
+                +sequence_index : int
+                +start_tenor_code : string
+                +end_tenor_code : string
+                +instrument_code : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class market_data_generation_config <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +party_id : optional<boost::uuids::uuid>
+                +scope : domain::scope
+                +binding_mode : domain::binding_mode
+                +name : string
+                +description : string
+                +enabled : bool
+                +dataset_id : optional<boost::uuids::uuid>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
             class organisation_generation_options <<struct>> {
                 +seed : optional<uint64_t>
+                +modified_by : string
+                +tenant_id : string
                 +country : string
                 +party_count : size_t
                 +party_max_depth : size_t
@@ -66,6 +212,8 @@ namespace ores #F2F2F2 {
                 +contacts_per_counterparty : size_t
                 +generate_identifiers : bool
             }
+            enum scope {
+            }
             class synthetic_catalog <<struct>> {
                 +seed : uint64_t
                 +accounts : vector<iam::domain::account>
@@ -78,8 +226,370 @@ namespace ores #F2F2F2 {
                 +datasets : vector<dq::domain::dataset>
                 +dependencies : vector<string>
             }
+            class yield_curve_process_parameter_definition <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +process_type_code : string
+                +parameter_name : string
+                +display_name : string
+                +symbol : optional<string>
+                +short_label : string
+                +description : string
+                +data_type : string
+                +default_value : double
+                +min_value : optional<double>
+                +max_value : optional<double>
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class yield_curve_process_type <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+        }
+        namespace feed #F2F2F2 {
+            class feed_build_context <<struct>> {
+                +nats : ores::nats::service::client&
+                +auth_nats : ores::nats::service::nats_client&
+                +caller_bearer_token : string
+            }
+            class fx_spot_feed_build_input <<struct>> {
+                +config : ores::synthetic::domain::fx_spot_generation_config
+                +components : vector<ores::synthetic::domain::gmm_component>
+            }
+            class ir_curve_feed_build_input <<struct>> {
+                +config : ores::synthetic::domain::ir_curve_generation_config
+                +entries : vector<ores::synthetic::domain::ir_curve_template_entry>
+                +values : vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>
+                +definitions : vector<ores::synthetic::domain::yield_curve_process_parameter_definition>
+                +refctx : ir_curve_refdata_context
+            }
+            class feed_factory {
+                -builders_ : map<string, builder>
+            }
+            class fx_spot_feed {
+                -nats_ : ores::nats::service::client&
+                -ore_key_ : string
+                -source_name_ : string
+                -qualifier_ : string
+                -process_ : unique_ptr<ores::analytics::quant::domain::IStochasticProcess>
+                -ticks_per_hour_ : double
+                -nats_subject_ : string
+                -stop_flag_ : atomic<bool>
+                -publish_count_ : atomic<uint64_t>
+            }
+            class vintage_data_missing_error {
+            }
+            class ir_curve_feed {
+                -nats_ : ores::nats::service::client&
+                -tenant_id_ : ores::utility::uuid::tenant_id
+                -party_id_ : boost::uuids::uuid
+                -source_name_ : string
+                -nats_subject_ : string
+                -series_type_ : string
+                -metric_ : string
+                -qualifier_ : string
+                -role_ : string
+                -process_ : unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess>
+                -ticks_per_hour_ : double
+                -entries_ : vector<ir_curve_resolved_entry>
+                -stop_flag_ : atomic<bool>
+                -publish_count_ : atomic<uint64_t>
+            }
+            class ir_curve_schedule_step <<struct>> {
+                +ticks_ahead : size_t
+                +accrual_fraction : double
+            }
+            class ir_curve_resolved_entry <<struct>> {
+                +sequence_index : int
+                +point_id : string
+                +curve_role : string
+                +ticks_ahead_start : size_t
+                +ticks_ahead_end : size_t
+                +year_fraction : double
+                +fixed_leg_schedule : vector<ir_curve_schedule_step>
+            }
+            class ir_curve_refdata_context <<struct>> {
+                +tenors_by_code : map<string, ores::refdata::domain::tenor>
+                +instrument_codes_by_code : map<string, ores::refdata::domain::instrument_code>
+                +payment_frequencies_by_code : map<string, ores::refdata::domain::payment_frequency>
+                +convention : ores::refdata::domain::tenor_convention
+                +resolutions_by_tenor : map<string, ores::refdata::domain::tenor_convention_resolution>
+                +horizon : chrono::year_month_day
+                +spot : chrono::year_month_day
+                +schedule_dates : optional<vector<chrono::year_month_day>>
+            }
         }
         namespace messaging #F2F2F2 {
+            class start_feed_request <<struct>> {
+                +config_id : string
+            }
+            class start_feed_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class stop_feed_request <<struct>> {
+                +config_id : string
+                +source_name : string
+            }
+            class stop_feed_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class list_feeds_request <<struct>> {
+            }
+            class list_feeds_response <<struct>> {
+                +success : bool
+                +running_source_names : vector<string>
+            }
+            class folder_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class folder_write <<struct>> {
+                +id : boost::uuids::uuid
+                +parent_id : optional<boost::uuids::uuid>
+                +name : string
+                +kind : string
+                +collection_id : optional<boost::uuids::uuid>
+            }
+            class folder_change <<struct>> {
+                +write : folder_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class folder_removal <<struct>> {
+                +key : folder_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class folder_lookup <<struct>> {
+                +key : folder_key
+                +folder : optional<ores::synthetic::domain::folder>
+            }
+            class folder_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : folder_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class folder_version_key <<struct>> {
+                +folder : folder_key
+                +version : uint32_t
+            }
+            class folder_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_folders_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_folders_response <<struct>> {
+                +result : ores::utility::domain::result
+                +folders : vector<ores::synthetic::domain::folder>
+                +total : uint64_t
+            }
+            class get_folder_request <<struct>> {
+                +key : folder_key
+            }
+            class get_folder_response <<struct>> {
+                +result : ores::utility::domain::result
+                +folder : optional<ores::synthetic::domain::folder>
+            }
+            class get_many_folders_request <<struct>> {
+                +keys : vector<folder_key>
+            }
+            class get_many_folders_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<folder_lookup>
+            }
+            class put_folder_request <<struct>> {
+                +change : folder_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_folder_response <<struct>> {
+                +result : ores::utility::domain::result
+                +folder : ores::synthetic::domain::folder
+            }
+            class put_many_folders_request <<struct>> {
+                +changes : vector<folder_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_folders_response <<struct>> {
+                +result : ores::utility::domain::result
+                +folders : vector<ores::synthetic::domain::folder>
+            }
+            class delete_folder_request <<struct>> {
+                +removal : folder_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_folder_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_folders_request <<struct>> {
+                +removals : vector<folder_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_folders_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_folder_versions_request <<struct>> {
+                +key : folder_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<folder_versions_filter>
+            }
+            class list_folder_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::synthetic::domain::folder>
+                +total : uint64_t
+            }
+            class get_folder_version_request <<struct>> {
+                +key : folder_version_key
+            }
+            class get_folder_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::synthetic::domain::folder
+            }
+            class fx_spot_generation_config_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class fx_spot_generation_config_write <<struct>> {
+                +id : boost::uuids::uuid
+                +config_id : boost::uuids::uuid
+                +base_currency_code : string
+                +quote_currency_code : string
+                +source_name : string
+                +ore_key : string
+                +price_source : string
+                +gmm_initial_price : double
+                +ticks_per_hour : int
+                +process_type : string
+                +enabled : bool
+                +auto_start : bool
+                +vintage_source : string
+                +vintage_date : string
+                +folder_id : optional<boost::uuids::uuid>
+            }
+            class fx_spot_generation_config_change <<struct>> {
+                +write : fx_spot_generation_config_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class fx_spot_generation_config_removal <<struct>> {
+                +key : fx_spot_generation_config_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class fx_spot_generation_config_lookup <<struct>> {
+                +key : fx_spot_generation_config_key
+                +fx_spot_generation_config : optional<ores::synthetic::domain::fx_spot_generation_config>
+            }
+            class fx_spot_generation_config_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : fx_spot_generation_config_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class fx_spot_generation_config_version_key <<struct>> {
+                +fx_spot_generation_config : fx_spot_generation_config_key
+                +version : uint32_t
+            }
+            class fx_spot_generation_config_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_fx_spot_generation_configs_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_fx_spot_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +fx_spot_generation_configs : vector<ores::synthetic::domain::fx_spot_generation_config>
+                +total : uint64_t
+            }
+            class get_fx_spot_generation_config_request <<struct>> {
+                +key : fx_spot_generation_config_key
+            }
+            class get_fx_spot_generation_config_response <<struct>> {
+                +result : ores::utility::domain::result
+                +fx_spot_generation_config : optional<ores::synthetic::domain::fx_spot_generation_config>
+            }
+            class get_many_fx_spot_generation_configs_request <<struct>> {
+                +keys : vector<fx_spot_generation_config_key>
+            }
+            class get_many_fx_spot_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<fx_spot_generation_config_lookup>
+            }
+            class put_fx_spot_generation_config_request <<struct>> {
+                +change : fx_spot_generation_config_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_fx_spot_generation_config_response <<struct>> {
+                +result : ores::utility::domain::result
+                +fx_spot_generation_config : ores::synthetic::domain::fx_spot_generation_config
+            }
+            class put_many_fx_spot_generation_configs_request <<struct>> {
+                +changes : vector<fx_spot_generation_config_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_fx_spot_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +fx_spot_generation_configs : vector<ores::synthetic::domain::fx_spot_generation_config>
+            }
+            class delete_fx_spot_generation_config_request <<struct>> {
+                +removal : fx_spot_generation_config_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_fx_spot_generation_config_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_fx_spot_generation_configs_request <<struct>> {
+                +removals : vector<fx_spot_generation_config_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_fx_spot_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_fx_spot_generation_config_versions_request <<struct>> {
+                +key : fx_spot_generation_config_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<fx_spot_generation_config_versions_filter>
+            }
+            class list_fx_spot_generation_config_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::synthetic::domain::fx_spot_generation_config>
+                +total : uint64_t
+            }
+            class get_fx_spot_generation_config_version_request <<struct>> {
+                +key : fx_spot_generation_config_version_key
+            }
+            class get_fx_spot_generation_config_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::synthetic::domain::fx_spot_generation_config
+            }
             class generate_organisation_request <<struct>> {
                 +country : string
                 +party_count : uint32_t
@@ -110,11 +620,1320 @@ namespace ores #F2F2F2 {
                 +contacts_count : int
                 +identifiers_count : int
             }
+            class gmm_component_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class gmm_component_write <<struct>> {
+                +id : boost::uuids::uuid
+                +fx_spot_config_id : boost::uuids::uuid
+                +component_index : int
+                +description : string
+                +mean : double
+                +stdev : double
+                +weight : double
+            }
+            class gmm_component_change <<struct>> {
+                +write : gmm_component_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class gmm_component_removal <<struct>> {
+                +key : gmm_component_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class gmm_component_lookup <<struct>> {
+                +key : gmm_component_key
+                +gmm_component : optional<ores::synthetic::domain::gmm_component>
+            }
+            class gmm_component_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : gmm_component_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class gmm_component_version_key <<struct>> {
+                +gmm_component : gmm_component_key
+                +version : uint32_t
+            }
+            class gmm_component_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_gmm_components_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_gmm_components_response <<struct>> {
+                +result : ores::utility::domain::result
+                +gmm_components : vector<ores::synthetic::domain::gmm_component>
+                +total : uint64_t
+            }
+            class get_gmm_component_request <<struct>> {
+                +key : gmm_component_key
+            }
+            class get_gmm_component_response <<struct>> {
+                +result : ores::utility::domain::result
+                +gmm_component : optional<ores::synthetic::domain::gmm_component>
+            }
+            class get_many_gmm_components_request <<struct>> {
+                +keys : vector<gmm_component_key>
+            }
+            class get_many_gmm_components_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<gmm_component_lookup>
+            }
+            class put_gmm_component_request <<struct>> {
+                +change : gmm_component_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_gmm_component_response <<struct>> {
+                +result : ores::utility::domain::result
+                +gmm_component : ores::synthetic::domain::gmm_component
+            }
+            class put_many_gmm_components_request <<struct>> {
+                +changes : vector<gmm_component_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_gmm_components_response <<struct>> {
+                +result : ores::utility::domain::result
+                +gmm_components : vector<ores::synthetic::domain::gmm_component>
+            }
+            class delete_gmm_component_request <<struct>> {
+                +removal : gmm_component_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_gmm_component_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_gmm_components_request <<struct>> {
+                +removals : vector<gmm_component_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_gmm_components_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_gmm_component_versions_request <<struct>> {
+                +key : gmm_component_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<gmm_component_versions_filter>
+            }
+            class list_gmm_component_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::synthetic::domain::gmm_component>
+                +total : uint64_t
+            }
+            class get_gmm_component_version_request <<struct>> {
+                +key : gmm_component_version_key
+            }
+            class get_gmm_component_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::synthetic::domain::gmm_component
+            }
+            class ir_curve_generation_config_process_parameter_value_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class ir_curve_generation_config_process_parameter_value_write <<struct>> {
+                +id : boost::uuids::uuid
+                +config_id : boost::uuids::uuid
+                +parameter_definition_id : boost::uuids::uuid
+                +parameter_value : double
+            }
+            class ir_curve_generation_config_process_parameter_value_change <<struct>> {
+                +write : ir_curve_generation_config_process_parameter_value_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class ir_curve_generation_config_process_parameter_value_removal <<struct>> {
+                +key : ir_curve_generation_config_process_parameter_value_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class ir_curve_generation_config_process_parameter_value_lookup <<struct>> {
+                +key : ir_curve_generation_config_process_parameter_value_key
+            }
+            class ir_curve_generation_config_process_parameter_value_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : ir_curve_generation_config_process_parameter_value_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class ir_curve_generation_config_process_parameter_value_version_key <<struct>> {
+                +version : uint32_t
+            }
+            class ir_curve_generation_config_process_parameter_value_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_ir_curve_generation_config_process_parameter_values_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_ir_curve_generation_config_process_parameter_values_response <<struct>> {
+                +result : ores::utility::domain::result
+                +total : uint64_t
+            }
+            class get_ir_curve_generation_config_process_parameter_value_request <<struct>> {
+                +key : ir_curve_generation_config_process_parameter_value_key
+            }
+            class get_ir_curve_generation_config_process_parameter_value_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class get_many_ir_curve_generation_config_process_parameter_values_request <<struct>> {
+                +get_many_ir_curve_generation_config_process_parameter_values_response : struct
+                +keys : vector<ir_curve_generation_config_process_parameter_value_key>
+            }
+            class get_many_ir_curve_generation_config_process_parameter_values_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<ir_curve_generation_config_process_parameter_value_lookup>
+            }
+            class put_ir_curve_generation_config_process_parameter_value_request <<struct>> {
+                +change : ir_curve_generation_config_process_parameter_value_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_ir_curve_generation_config_process_parameter_value_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class put_many_ir_curve_generation_config_process_parameter_values_request <<struct>> {
+                +put_many_ir_curve_generation_config_process_parameter_values_response : struct
+                +changes : vector<ir_curve_generation_config_process_parameter_value_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_ir_curve_generation_config_process_parameter_values_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_ir_curve_generation_config_process_parameter_value_request <<struct>> {
+                +removal : ir_curve_generation_config_process_parameter_value_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_ir_curve_generation_config_process_parameter_value_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_ir_curve_generation_config_process_parameter_values_request <<struct>> {
+                +delete_many_ir_curve_generation_config_process_parameter_values_response : struct
+                +removals : vector<ir_curve_generation_config_process_parameter_value_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_ir_curve_generation_config_process_parameter_values_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_ir_curve_generation_config_process_parameter_value_versions_request <<struct>> {
+                +list_ir_curve_generation_config_process_parameter_value_versions_response : struct
+                +key : ir_curve_generation_config_process_parameter_value_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<ir_curve_generation_config_process_parameter_value_versions_filter>
+            }
+            class list_ir_curve_generation_config_process_parameter_value_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +total : uint64_t
+            }
+            class get_ir_curve_generation_config_process_parameter_value_version_request <<struct>> {
+                +get_ir_curve_generation_config_process_parameter_value_version_response : struct
+                +key : ir_curve_generation_config_process_parameter_value_version_key
+            }
+            class get_ir_curve_generation_config_process_parameter_value_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::synthetic::domain::ir_curve_generation_config_process_parameter_value
+            }
+            class ir_curve_generation_config_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class ir_curve_generation_config_write <<struct>> {
+                +id : boost::uuids::uuid
+                +config_id : boost::uuids::uuid
+                +currency_code : string
+                +index_family : string
+                +tenor : string
+                +role : string
+                +process_type : string
+                +ticks_per_hour : int
+                +enabled : bool
+                +auto_start : bool
+                +price_source : string
+                +vintage_source : string
+                +vintage_date : string
+                +description : string
+                +fixed_leg_payment_frequency_code : string
+                +source_name : string
+                +folder_id : optional<boost::uuids::uuid>
+            }
+            class ir_curve_generation_config_change <<struct>> {
+                +write : ir_curve_generation_config_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class ir_curve_generation_config_removal <<struct>> {
+                +key : ir_curve_generation_config_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class ir_curve_generation_config_lookup <<struct>> {
+                +key : ir_curve_generation_config_key
+                +ir_curve_generation_config : optional<ores::synthetic::domain::ir_curve_generation_config>
+            }
+            class ir_curve_generation_config_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : ir_curve_generation_config_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class ir_curve_generation_config_version_key <<struct>> {
+                +ir_curve_generation_config : ir_curve_generation_config_key
+                +version : uint32_t
+            }
+            class ir_curve_generation_config_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_ir_curve_generation_configs_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_ir_curve_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +ir_curve_generation_configs : vector<ores::synthetic::domain::ir_curve_generation_config>
+                +total : uint64_t
+            }
+            class get_ir_curve_generation_config_request <<struct>> {
+                +key : ir_curve_generation_config_key
+            }
+            class get_ir_curve_generation_config_response <<struct>> {
+                +result : ores::utility::domain::result
+                +ir_curve_generation_config : optional<ores::synthetic::domain::ir_curve_generation_config>
+            }
+            class get_many_ir_curve_generation_configs_request <<struct>> {
+                +keys : vector<ir_curve_generation_config_key>
+            }
+            class get_many_ir_curve_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<ir_curve_generation_config_lookup>
+            }
+            class put_ir_curve_generation_config_request <<struct>> {
+                +change : ir_curve_generation_config_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_ir_curve_generation_config_response <<struct>> {
+                +result : ores::utility::domain::result
+                +ir_curve_generation_config : ores::synthetic::domain::ir_curve_generation_config
+            }
+            class put_many_ir_curve_generation_configs_request <<struct>> {
+                +changes : vector<ir_curve_generation_config_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_ir_curve_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +ir_curve_generation_configs : vector<ores::synthetic::domain::ir_curve_generation_config>
+            }
+            class delete_ir_curve_generation_config_request <<struct>> {
+                +removal : ir_curve_generation_config_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_ir_curve_generation_config_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_ir_curve_generation_configs_request <<struct>> {
+                +removals : vector<ir_curve_generation_config_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_ir_curve_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_ir_curve_generation_config_versions_request <<struct>> {
+                +key : ir_curve_generation_config_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<ir_curve_generation_config_versions_filter>
+            }
+            class list_ir_curve_generation_config_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::synthetic::domain::ir_curve_generation_config>
+                +total : uint64_t
+            }
+            class get_ir_curve_generation_config_version_request <<struct>> {
+                +key : ir_curve_generation_config_version_key
+            }
+            class get_ir_curve_generation_config_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::synthetic::domain::ir_curve_generation_config
+            }
+            class ir_curve_template_entry_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class ir_curve_template_entry_write <<struct>> {
+                +id : boost::uuids::uuid
+                +ir_curve_config_id : boost::uuids::uuid
+                +sequence_index : int
+                +start_tenor_code : string
+                +end_tenor_code : string
+                +instrument_code : string
+            }
+            class ir_curve_template_entry_change <<struct>> {
+                +write : ir_curve_template_entry_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class ir_curve_template_entry_removal <<struct>> {
+                +key : ir_curve_template_entry_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class ir_curve_template_entry_lookup <<struct>> {
+                +key : ir_curve_template_entry_key
+                +ir_curve_template_entry : optional<ores::synthetic::domain::ir_curve_template_entry>
+            }
+            class ir_curve_template_entry_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : ir_curve_template_entry_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class ir_curve_template_entry_version_key <<struct>> {
+                +ir_curve_template_entry : ir_curve_template_entry_key
+                +version : uint32_t
+            }
+            class ir_curve_template_entry_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_ir_curve_template_entries_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_ir_curve_template_entries_response <<struct>> {
+                +result : ores::utility::domain::result
+                +ir_curve_template_entries : vector<ores::synthetic::domain::ir_curve_template_entry>
+                +total : uint64_t
+            }
+            class get_ir_curve_template_entry_request <<struct>> {
+                +key : ir_curve_template_entry_key
+            }
+            class get_ir_curve_template_entry_response <<struct>> {
+                +result : ores::utility::domain::result
+                +ir_curve_template_entry : optional<ores::synthetic::domain::ir_curve_template_entry>
+            }
+            class get_many_ir_curve_template_entries_request <<struct>> {
+                +keys : vector<ir_curve_template_entry_key>
+            }
+            class get_many_ir_curve_template_entries_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<ir_curve_template_entry_lookup>
+            }
+            class put_ir_curve_template_entry_request <<struct>> {
+                +change : ir_curve_template_entry_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_ir_curve_template_entry_response <<struct>> {
+                +result : ores::utility::domain::result
+                +ir_curve_template_entry : ores::synthetic::domain::ir_curve_template_entry
+            }
+            class put_many_ir_curve_template_entries_request <<struct>> {
+                +changes : vector<ir_curve_template_entry_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_ir_curve_template_entries_response <<struct>> {
+                +result : ores::utility::domain::result
+                +ir_curve_template_entries : vector<ores::synthetic::domain::ir_curve_template_entry>
+            }
+            class delete_ir_curve_template_entry_request <<struct>> {
+                +removal : ir_curve_template_entry_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_ir_curve_template_entry_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_ir_curve_template_entries_request <<struct>> {
+                +removals : vector<ir_curve_template_entry_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_ir_curve_template_entries_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_ir_curve_template_entry_versions_request <<struct>> {
+                +key : ir_curve_template_entry_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<ir_curve_template_entry_versions_filter>
+            }
+            class list_ir_curve_template_entry_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::synthetic::domain::ir_curve_template_entry>
+                +total : uint64_t
+            }
+            class get_ir_curve_template_entry_version_request <<struct>> {
+                +key : ir_curve_template_entry_version_key
+            }
+            class get_ir_curve_template_entry_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::synthetic::domain::ir_curve_template_entry
+            }
+            class market_data_generation_config_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class market_data_generation_config_write <<struct>> {
+                +id : boost::uuids::uuid
+                +scope : domain::scope
+                +binding_mode : domain::binding_mode
+                +name : string
+                +description : string
+                +enabled : bool
+                +dataset_id : optional<boost::uuids::uuid>
+            }
+            class market_data_generation_config_change <<struct>> {
+                +write : market_data_generation_config_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class market_data_generation_config_removal <<struct>> {
+                +key : market_data_generation_config_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class market_data_generation_config_lookup <<struct>> {
+                +key : market_data_generation_config_key
+            }
+            class market_data_generation_config_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : market_data_generation_config_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class market_data_generation_config_version_key <<struct>> {
+                +market_data_generation_config : market_data_generation_config_key
+                +version : uint32_t
+            }
+            class market_data_generation_config_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_market_data_generation_configs_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_market_data_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +total : uint64_t
+            }
+            class get_market_data_generation_config_request <<struct>> {
+                +key : market_data_generation_config_key
+            }
+            class get_market_data_generation_config_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class get_many_market_data_generation_configs_request <<struct>> {
+                +keys : vector<market_data_generation_config_key>
+            }
+            class get_many_market_data_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<market_data_generation_config_lookup>
+            }
+            class put_market_data_generation_config_request <<struct>> {
+                +change : market_data_generation_config_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_market_data_generation_config_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_data_generation_config : ores::synthetic::domain::market_data_generation_config
+            }
+            class put_many_market_data_generation_configs_request <<struct>> {
+                +changes : vector<market_data_generation_config_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_market_data_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_market_data_generation_config_request <<struct>> {
+                +removal : market_data_generation_config_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_market_data_generation_config_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_market_data_generation_configs_request <<struct>> {
+                +removals : vector<market_data_generation_config_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_market_data_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_market_data_generation_config_versions_request <<struct>> {
+                +key : market_data_generation_config_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<market_data_generation_config_versions_filter>
+            }
+            class list_market_data_generation_config_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::synthetic::domain::market_data_generation_config>
+                +total : uint64_t
+            }
+            class get_market_data_generation_config_version_request <<struct>> {
+                +key : market_data_generation_config_version_key
+            }
+            class get_market_data_generation_config_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::synthetic::domain::market_data_generation_config
+            }
+            class preview_ir_curve_template_row <<struct>> {
+                +sequence_index : int
+                +start_tenor_code : string
+                +end_tenor_code : string
+                +instrument_code : string
+            }
+            class preview_ir_curve_shape_request <<struct>> {
+                +process_type : string
+                +parameters : vector<parameter_spec>
+                +fixed_leg_payment_frequency_code : string
+                +entries : vector<preview_ir_curve_template_row>
+            }
+            class preview_ir_curve_shape_point <<struct>> {
+                +sequence_index : int
+                +start_tenor_code : string
+                +end_tenor_code : string
+                +rate : double
+            }
+            class preview_ir_curve_shape_response <<struct>> {
+                +success : bool
+                +message : string
+                +points : vector<preview_ir_curve_shape_point>
+            }
+            class simulate_fx_spot_paths_request <<struct>> {
+                +gmm_means : vector<double>
+                +gmm_stdevs : vector<double>
+                +gmm_weights : vector<double>
+                +process_type : string
+                +initial_price : double
+                +num_ticks : int
+                +num_paths : int
+                +seed : uint32_t
+            }
+            class simulate_fx_spot_paths_response <<struct>> {
+                +success : bool
+                +message : string
+                +paths : vector<vector<double>>
+            }
+            class parameter_spec <<struct>> {
+                +parameter_name : string
+                +parameter_value : double
+            }
+            class simulate_ir_curve_paths_request <<struct>> {
+                +process_type : string
+                +parameters : vector<parameter_spec>
+                +num_ticks : int
+                +num_paths : int
+                +seed : uint32_t
+            }
+            class simulate_ir_curve_paths_response <<struct>> {
+                +success : bool
+                +message : string
+                +paths : vector<vector<double>>
+            }
+            class yield_curve_process_parameter_definition_key <<struct>> {
+                +parameter_name : string
+            }
+            class yield_curve_process_parameter_definition_write <<struct>> {
+                +id : boost::uuids::uuid
+                +process_type_code : string
+                +parameter_name : string
+                +display_name : string
+                +symbol : optional<string>
+                +short_label : string
+                +description : string
+                +data_type : string
+                +default_value : double
+                +min_value : optional<double>
+                +max_value : optional<double>
+                +display_order : int
+            }
+            class yield_curve_process_parameter_definition_change <<struct>> {
+                +write : yield_curve_process_parameter_definition_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class yield_curve_process_parameter_definition_removal <<struct>> {
+                +key : yield_curve_process_parameter_definition_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class yield_curve_process_parameter_definition_lookup <<struct>> {
+                +key : yield_curve_process_parameter_definition_key
+            }
+            class yield_curve_process_parameter_definition_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : yield_curve_process_parameter_definition_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class yield_curve_process_parameter_definition_version_key <<struct>> {
+                +yield_curve_process_parameter_definition : yield_curve_process_parameter_definition_key
+                +version : uint32_t
+            }
+            class yield_curve_process_parameter_definition_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_yield_curve_process_parameter_definitions_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_yield_curve_process_parameter_definitions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +total : uint64_t
+            }
+            class get_yield_curve_process_parameter_definition_request <<struct>> {
+                +key : yield_curve_process_parameter_definition_key
+            }
+            class get_yield_curve_process_parameter_definition_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class get_many_yield_curve_process_parameter_definitions_request <<struct>> {
+                +keys : vector<yield_curve_process_parameter_definition_key>
+            }
+            class get_many_yield_curve_process_parameter_definitions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<yield_curve_process_parameter_definition_lookup>
+            }
+            class put_yield_curve_process_parameter_definition_request <<struct>> {
+                +change : yield_curve_process_parameter_definition_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_yield_curve_process_parameter_definition_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class put_many_yield_curve_process_parameter_definitions_request <<struct>> {
+                +changes : vector<yield_curve_process_parameter_definition_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_yield_curve_process_parameter_definitions_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_yield_curve_process_parameter_definition_request <<struct>> {
+                +removal : yield_curve_process_parameter_definition_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_yield_curve_process_parameter_definition_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_yield_curve_process_parameter_definitions_request <<struct>> {
+                +removals : vector<yield_curve_process_parameter_definition_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_yield_curve_process_parameter_definitions_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_yield_curve_process_parameter_definition_versions_request <<struct>> {
+                +key : yield_curve_process_parameter_definition_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<yield_curve_process_parameter_definition_versions_filter>
+            }
+            class list_yield_curve_process_parameter_definition_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::synthetic::domain::yield_curve_process_parameter_definition>
+                +total : uint64_t
+            }
+            class get_yield_curve_process_parameter_definition_version_request <<struct>> {
+                +key : yield_curve_process_parameter_definition_version_key
+            }
+            class get_yield_curve_process_parameter_definition_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::synthetic::domain::yield_curve_process_parameter_definition
+            }
+            class yield_curve_process_type_key <<struct>> {
+                +code : string
+            }
+            class yield_curve_process_type_write <<struct>> {
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+            }
+            class yield_curve_process_type_change <<struct>> {
+                +write : yield_curve_process_type_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class yield_curve_process_type_removal <<struct>> {
+                +key : yield_curve_process_type_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class yield_curve_process_type_lookup <<struct>> {
+                +key : yield_curve_process_type_key
+                +yield_curve_process_type : optional<ores::synthetic::domain::yield_curve_process_type>
+            }
+            class yield_curve_process_type_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : yield_curve_process_type_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class yield_curve_process_type_version_key <<struct>> {
+                +yield_curve_process_type : yield_curve_process_type_key
+                +version : uint32_t
+            }
+            class yield_curve_process_type_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_yield_curve_process_types_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_yield_curve_process_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +process_types : vector<ores::synthetic::domain::yield_curve_process_type>
+                +total : uint64_t
+            }
+            class get_yield_curve_process_type_request <<struct>> {
+                +key : yield_curve_process_type_key
+            }
+            class get_yield_curve_process_type_response <<struct>> {
+                +result : ores::utility::domain::result
+                +yield_curve_process_type : optional<ores::synthetic::domain::yield_curve_process_type>
+            }
+            class get_many_yield_curve_process_types_request <<struct>> {
+                +keys : vector<yield_curve_process_type_key>
+            }
+            class get_many_yield_curve_process_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<yield_curve_process_type_lookup>
+            }
+            class put_yield_curve_process_type_request <<struct>> {
+                +change : yield_curve_process_type_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_yield_curve_process_type_response <<struct>> {
+                +result : ores::utility::domain::result
+                +yield_curve_process_type : ores::synthetic::domain::yield_curve_process_type
+            }
+            class put_many_yield_curve_process_types_request <<struct>> {
+                +changes : vector<yield_curve_process_type_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_yield_curve_process_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +process_types : vector<ores::synthetic::domain::yield_curve_process_type>
+            }
+            class delete_yield_curve_process_type_request <<struct>> {
+                +removal : yield_curve_process_type_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_yield_curve_process_type_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_yield_curve_process_types_request <<struct>> {
+                +removals : vector<yield_curve_process_type_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_yield_curve_process_types_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_yield_curve_process_type_versions_request <<struct>> {
+                +key : yield_curve_process_type_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<yield_curve_process_type_versions_filter>
+            }
+            class list_yield_curve_process_type_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::synthetic::domain::yield_curve_process_type>
+                +total : uint64_t
+            }
+            class get_yield_curve_process_type_version_request <<struct>> {
+                +key : yield_curve_process_type_version_key
+            }
+            class get_yield_curve_process_type_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::synthetic::domain::yield_curve_process_type
+            }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass reads data members and nothing else. A class whose
+' behaviour lives in methods arrives as a box holding only its private state,
+' a facet of free functions does not arrive at all, and static and using
+' members are skipped. The blocks below fill those boxes and draw the
+' relationships the automated pass cannot see.
+'
+' They use fully-qualified class names rather than a reopened namespace block,
+' because this PlantUML version crashes when a namespace that already holds
+' classes is declared a second time. Redeclaring a class merges its members
+' into the box the automated pass already drew, so a refresh keeps both.
+
+note top of "ores::synthetic::domain::folder"
+The automated pass drops three things. It drops every method. It drops a
+static or using member. It drops a declaration that wraps onto a second
+line. A fourth defect -- it dropped any member whose initialiser or trailing
+comment carried a parenthesis, which caught tenant_id on all nine generated
+entities and the spot and year-fraction members of the feed context -- is
+fixed at source in this pass, so those members now arrive from the automated
+pass too and the redeclarations below merge with them. The wrapped members,
+such as fx_spot_feed_build_input.binding_mode and the EAV optionals, are
+restored by hand.
+end note
+
+note right of "ores::synthetic::domain::folder"
+Generic self-referencing hierarchy node, one root folder per party. The
+Market Simulator tree is drawn from these rows rather than parsed out of a
+feed's source_name. kind is "root", "collection", "asset_class", or
+"instrument_type"; collection_id is set only on "collection" rows.
+end note
+
+enum ores::synthetic::domain::binding_mode {
+    bound
+    sandboxed
+    {static} +to_string(m : binding_mode) : string_view
+    {static} +from_string(sv : string_view) : optional<binding_mode>
+    {static} +parse_token(sv : string_view, m : binding_mode) : optional<binding_mode>
+}
+note right of "ores::synthetic::domain::binding_mode"
+Hand-written enum. The two values match the SQL check constraint and the JSON
+wire form, so the enum, the table, and the wire cannot drift. to_string,
+from_string, parse_token, and operator<< sit in the same header; from_string
+returns nullopt rather than throwing on an unrecognised token. binding_mode is
+orthogonal to scope: scope sets the sharing radius, binding_mode decides
+whether the generated data is authoritative for real feed consumers.
+end note
+
+enum ores::synthetic::domain::scope {
+    system
+    tenant
+    party
+}
+
+class ores::synthetic::domain::curve_template_validation {
+    {static} +validate_curve_template(entries : vector<curve_template_entry_ref>, tenors : vector<tenor>, convention : tenor_convention, resolutions : vector<tenor_convention_resolution>, horizon : date, spot : date) : curve_template_validation_result
+}
+note right of "ores::synthetic::domain::curve_template_validation"
+Free function, hand-written. It rejects a Curve Template when two entries'
+resolved tenor periods genuinely overlap: an interval instrument (an FRA,
+start_tenor_code other than SPOT) must not overlap another interval's period,
+and must not contain another entry's maturity. Point instruments (deposits and
+swaps, start_tenor_code SPOT) contribute only their maturity, so two of them
+never collide by construction. Touching endpoints are legal, because a
+bootstrappable strip is built from back-to-back periods. It never throws: a
+failed tenor resolution comes back as the message in
+curve_template_validation_result.
+end note
+
+class ores::synthetic::domain::yield_curve_process_parameter_mapping {
+    {static} +map_parameters_to_yield_curve_process(process_type : string, definitions : vector<yield_curve_process_parameter_definition>, values : vector<ir_curve_generation_config_process_parameter_value>, seed : uint32_t, dt : double) : unique_ptr<IYieldCurveProcess>
+}
+note top of "ores::synthetic::domain::yield_curve_process_parameter_mapping"
+Free function, hand-written. It joins a config's {parameter_definition_id,
+value} rows onto the system-tenant definitions catalogue and constructs the
+matching ores.analytics.quant process. It throws std::invalid_argument on an
+unknown process type, an unknown or foreign definition id, a repeated
+parameter, a missing required parameter, an undeclared parameter, or a value
+outside the definition's [min_value, max_value]. That range check is why the
+catalogue's bounds are load-bearing and not display metadata.
+end note
+
+class ores::synthetic::domain::entity_type_of {
+    {static} +entity_type_of(v : folder) : string_view
+    {static} +entity_type_of(v : fx_spot_generation_config) : string_view
+    {static} +entity_type_of(v : gmm_component) : string_view
+    {static} +entity_type_of(v : ir_curve_generation_config) : string_view
+    {static} +entity_type_of(v : ir_curve_generation_config_process_parameter_value) : string_view
+    {static} +entity_type_of(v : ir_curve_template_entry) : string_view
+    {static} +entity_type_of(v : market_data_generation_config) : string_view
+    {static} +entity_type_of(v : yield_curve_process_parameter_definition) : string_view
+    {static} +entity_type_of(v : yield_curve_process_type) : string_view
+}
+note top of "ores::synthetic::domain::entity_type_of"
+Nine free overloads, one per generated entity, each returning the entity's
+dispatch key (for example "ores.synthetic.folder"). They live in the entity's
+own header. Every call site spells entity_type_of(value), so the key is the
+single source of truth for the generic history-diff request and for the action
+registries.
+end note
+note bottom of "ores::synthetic::domain::entity_type_of"
+Every generated entity also has a convert_to_table(vector<T>) overload and an
+ostream operator<<, emitted into its own *_table.hpp and *_json_io.hpp. They
+are uniform boilerplate and are not drawn.
+end note
+
+note right of "ores::synthetic::domain::synthetic_catalog"
+Hand-written, not generated: one coherent DQ catalogue plus its IAM accounts,
+built by catalog_generator_service in ores.synthetic.core from
+generation_options. The per-entity types around it are codegen output; this
+container and generated_organisation are hand-written because they model a
+cross-entity whole, not one table.
+end note
+
+note right of "ores::synthetic::domain::generated_organisation"
+Hand-written, not generated: the party, counterparty, business-unit,
+portfolio, and book forest, built by organisation_generator_service from
+organisation_generation_options. Every vector is ordered parent-first so the
+rows insert under their foreign keys. The seed member makes the whole
+structure reproducible.
+end note
+
+class ores::synthetic::feed::fx_spot_feed {
+    +fx_spot_feed(nats : client&, ore_key : string, source_name : string, nats_subject : string, process : unique_ptr<IStochasticProcess>, ticks_per_hour : double)
+    +ore_key() : string
+    +source_name() : const string&
+    +qualifier() : const string&
+    +role() : const string&
+    +kind() : string_view
+    +conflict_key() : string
+    +start() : void
+    +stop() : void
+    +publish_count() : uint64_t
+}
+note right of "ores::synthetic::feed::fx_spot_feed"
+Implements ores.marketdata's IFeed. start() runs the tick loop on the calling
+thread, so the caller owns a dedicated std::thread. Each tick steps the
+stochastic process, builds one fx_spot_tick, and publishes it to the NATS
+subject. The feed writes no market data: ores.marketdata.service's ingest loop
+subscribes and persists. qualifier() is derived from ore_key at construction,
+so a key that does not parse yields an empty qualifier.
+end note
+
+class ores::synthetic::feed::ir_curve_feed {
+    +ir_curve_feed(nats : client&, tenant_id : tenant_id, party_id : uuid, source_name : string, nats_subject : string, series_type : string, metric : string, qualifier : string, role : string, process : unique_ptr<IYieldCurveProcess>, ticks_per_hour : double, entries : vector<ir_curve_resolved_entry>)
+    +start() : void
+    +stop() : void
+    +publish_count() : uint64_t
+    +kind() : string_view
+    +source_name() : const string&
+    +qualifier() : const string&
+    +role() : const string&
+    +conflict_key() : string
+}
+note right of "ores::synthetic::feed::ir_curve_feed"
+Implements IFeed. One short-rate step fans out to N tenor ticks: every
+resolved entry's rate comes from the same state's discount_factor() through
+price_ir_curve_entry(), so the batch is by construction a slice of one
+internally consistent curve. It publishes N individual messages that share one
+datetime, not one aggregate payload. conflict_key() combines qualifier and
+role, so a discount curve and a projection curve for the same
+currency/index/tenor run side by side.
+end note
+
+class ores::synthetic::feed::feed_factory {
+    +register_kind(kind : string, b : builder) : void
+    +make(kind : string, ctx : feed_build_context, input : feed_build_input) : shared_ptr<IFeed>
+    +kinds() : vector<string>
+}
+note top of "ores::synthetic::feed::feed_factory"
+The factory seam. Control-plane and lifecycle code ask for a producer by kind
+and never name a concrete producer class. make() throws std::invalid_argument
+for an unregistered kind or for a build input that is not that kind's variant
+member. A new asset class is a config table, a producer behind IFeed, and one
+registration in make_default_feed_factory().
+end note
+
+class ores::synthetic::feed::vintage_data_missing_error {
+    +vintage_data_missing_error(detail : string)
+}
+
+class ores::synthetic::feed::fx_spot_feed_build_input <<struct>> {
+    +binding_mode : ores::synthetic::domain::binding_mode
+}
+class ores::synthetic::feed::ir_curve_resolved_entry <<struct>> {
+    +year_fraction : double
+}
+class ores::synthetic::feed::ir_curve_refdata_context <<struct>> {
+    +spot : chrono::year_month_day
+}
+
+class ores::synthetic::feed::ir_curve_template_resolver {
+    {static} +ir_curve_feed_dt : double
+    {static} +ir_curve_qualifier(cfg : ir_curve_generation_config) : string
+    {static} +ir_curve_tenor_convention_code(qualifier : string) : string
+    {static} +resolve(entries : vector<ir_curve_template_entry>, ctx : ir_curve_refdata_context, fixed_leg_payment_frequency_code : string) : vector<ir_curve_resolved_entry>
+    {static} +build_ir_curve_refdata_context(ctx : database::context, tenor_convention_code : string) : optional<ir_curve_refdata_context>
+    {static} +price_ir_curve_entry(process : IYieldCurveProcess&, entry : ir_curve_resolved_entry) : double
+}
+note top of "ores::synthetic::feed::ir_curve_template_resolver"
+Free functions in ir_curve_template_resolver.hpp, hand-written. resolve()
+turns raw (tenor code, instrument code) template rows into tick counts, year
+fractions, and fixed-leg schedules. Its conventions are deliberate Phase-1
+simplifications: one tick is one calendar day, spot equals the horizon (T+0),
+and year fractions are Actual/365. The refdata context is built once at feed
+construction and never touched by the tick loop: resolve once, tick many.
+price_ir_curve_entry() is shared by the feed's tick loop and by the stateless
+shape-preview handler, so the two can never disagree on a rate.
+end note
+
+class ores::synthetic::feed::synthetic_producer_subject {
+    {static} +synthetic_producer_subject(source_name : string, binding_mode : binding_mode) : string
+}
+note top of "ores::synthetic::feed::synthetic_producer_subject"
+Free function. It scrubs source_name into a safe NATS token and returns the
+unified subject synthetic.v1.tick.<kind>.<source>. A sandboxed binding instead
+publishes under synthetic.v1.sandbox.tick.<source>, which the ingest loop's
+bound-feed subscription never matches, so a sandboxed feed is structurally
+unreachable from the bound-feed resolution path.
+end note
+
+class ores::synthetic::feed::make_fx_spot_feed {
+    {static} +make_fx_spot_feed(nats : client&, auth_nats : nats_client&, cfg : fx_spot_generation_config, components : vector<gmm_component>, binding_mode : binding_mode, caller_bearer_token : string) : shared_ptr<fx_spot_feed>
+}
+note top of "ores::synthetic::feed::make_fx_spot_feed"
+Free function. It builds an fx_spot_feed from a persisted config and its
+gmm_component rows, ready to start() on its own thread. A config with
+price_source "vintage" resolves its initial price from a real
+market_observation instead of the stored gmm_initial_price; "fixed" uses the
+stored value as-is. The process starts from random_device, so two builds of
+the same config differ.
+end note
+
+class ores::synthetic::feed::make_ir_curve_feed {
+    {static} +make_ir_curve_feed(nats : client&, auth_nats : nats_client&, cfg : ir_curve_generation_config, entries : vector<ir_curve_template_entry>, values : vector<ir_curve_generation_config_process_parameter_value>, definitions : vector<yield_curve_process_parameter_definition>, refctx : ir_curve_refdata_context, caller_bearer_token : string) : shared_ptr<ir_curve_feed>
+}
+note top of "ores::synthetic::feed::make_ir_curve_feed"
+Free function. Shared by auto-start and the on-demand start path, so the two
+cannot drift. It resolves the template through resolve(), materialises the
+process through map_parameters_to_yield_curve_process(), and looks the initial
+rate up through auth_nats delegated with the caller's bearer token, so the
+lookup runs in the caller's own tenant and party context (market_observation
+is tenant-scoped under RLS). An empty token falls back to the service
+account's own identity, as auto-start requires.
+end note
+
+class ores::synthetic::feed::select_vintage_anchor_entry {
+    {static} +select_vintage_anchor_entry(resolved : vector<ir_curve_resolved_entry>) : const ir_curve_resolved_entry*
+}
+note top of "ores::synthetic::feed::select_vintage_anchor_entry"
+Free function. It picks the DEPOSIT entry with the smallest ticks_ahead_end,
+the closest thing to an overnight rate, and returns nullptr when the template
+has none. It is split out of make_ir_curve_feed so the selection is testable
+without a live market-data client.
+end note
+
+class ores::synthetic::feed::make_default_feed_factory {
+    {static} +make_default_feed_factory() : feed_factory
+}
+
+class ores::synthetic::generators::folder_generator {
+    {static} +generate_synthetic_folder(ctx : generation_context&) : domain::folder
+    {static} +generate_synthetic_folders(n : size_t, ctx : generation_context&) : vector<domain::folder>
+}
+class ores::synthetic::generators::fx_spot_generation_config_generator {
+    {static} +generate_synthetic_fx_spot_generation_config(ctx : generation_context&) : domain::fx_spot_generation_config
+    {static} +generate_synthetic_fx_spot_generation_configs(n : size_t, ctx : generation_context&) : vector<domain::fx_spot_generation_config>
+}
+class ores::synthetic::generators::gmm_component_generator {
+    {static} +generate_synthetic_gmm_component(ctx : generation_context&) : domain::gmm_component
+    {static} +generate_synthetic_gmm_components(n : size_t, ctx : generation_context&) : vector<domain::gmm_component>
+}
+class ores::synthetic::generators::ir_curve_generation_config_generator {
+    {static} +generate_synthetic_ir_curve_generation_config(ctx : generation_context&) : domain::ir_curve_generation_config
+    {static} +generate_synthetic_ir_curve_generation_configs(n : size_t, ctx : generation_context&) : vector<domain::ir_curve_generation_config>
+}
+class ores::synthetic::generators::ir_curve_generation_config_process_parameter_value_generator {
+    {static} +generate_synthetic_ir_curve_generation_config_process_parameter_value(ctx : generation_context&) : domain::ir_curve_generation_config_process_parameter_value
+    {static} +generate_synthetic_ir_curve_generation_config_process_parameter_values(n : size_t, ctx : generation_context&) : vector<domain::ir_curve_generation_config_process_parameter_value>
+}
+class ores::synthetic::generators::ir_curve_template_entry_generator {
+    {static} +generate_synthetic_ir_curve_template_entry(ctx : generation_context&) : domain::ir_curve_template_entry
+    {static} +generate_synthetic_ir_curve_template_entries(n : size_t, ctx : generation_context&) : vector<domain::ir_curve_template_entry>
+}
+class ores::synthetic::generators::market_data_generation_config_generator {
+    {static} +generate_synthetic_market_data_generation_config(ctx : generation_context&) : domain::market_data_generation_config
+    {static} +generate_synthetic_market_data_generation_configs(n : size_t, ctx : generation_context&) : vector<domain::market_data_generation_config>
+}
+class ores::synthetic::generators::yield_curve_process_parameter_definition_generator {
+    {static} +generate_synthetic_yield_curve_process_parameter_definition(ctx : generation_context&) : domain::yield_curve_process_parameter_definition
+    {static} +generate_synthetic_yield_curve_process_parameter_definitions(n : size_t, ctx : generation_context&) : vector<domain::yield_curve_process_parameter_definition>
+}
+class ores::synthetic::generators::yield_curve_process_type_generator {
+    {static} +generate_synthetic_yield_curve_process_type(ctx : generation_context&) : domain::yield_curve_process_type
+    {static} +generate_synthetic_yield_curve_process_types(n : size_t, ctx : generation_context&) : vector<domain::yield_curve_process_type>
+}
+note top of "ores::synthetic::generators::folder_generator"
+Free functions, codegen output: each entity has this pair (one, and N), from
+the same template as the entity struct. All randomness comes from
+ores.utility's generation_context, so the same seed rebuilds the same rows.
+The automated pass draws no part of this namespace, because the namespace
+holds no types.
+end note
+
+class ores::synthetic::messaging::start_feed_request <<struct>> {
+    {static} +nats_subject : string_view
+}
+class ores::synthetic::messaging::stop_feed_request <<struct>> {
+    {static} +nats_subject : string_view
+}
+class ores::synthetic::messaging::list_feeds_request <<struct>> {
+    {static} +nats_subject : string_view
+}
+class ores::synthetic::messaging::preview_ir_curve_shape_request <<struct>> {
+    {static} +nats_subject : string_view
+    {static} +max_entries : int
+}
+class ores::synthetic::messaging::simulate_fx_spot_paths_request <<struct>> {
+    {static} +nats_subject : string_view
+    {static} +max_num_ticks : int
+    {static} +max_num_paths : int
+}
+class ores::synthetic::messaging::simulate_ir_curve_paths_request <<struct>> {
+    {static} +nats_subject : string_view
+    {static} +max_num_ticks : int
+    {static} +max_num_paths : int
+}
+class ores::synthetic::messaging::generate_organisation_request <<struct>> {
+    {static} +nats_subject : string_view
+}
+class ores::synthetic::messaging::list_folders_request <<struct>> {
+    {static} +nats_subject : string_view
+    {static} +requires_session : bool
+}
+note right of "ores::synthetic::messaging::list_folders_request"
+Every request struct carries a using response_type and a static nats_subject;
+the automated pass skips both, because it skips using and static lines. The
+per-entity families have nine requests each: list, get, get_many, put,
+put_many, delete, delete_many, list_versions, get_version. Each of the nine
+also declares static requires_session, because an operation that produces a
+session cannot present one. Subjects read synthetic.v1.<resource>.<verb>, and
+versions use synthetic.v1.<resource>_versions.<verb>.
+end note
+note bottom of "ores::synthetic::messaging::get_many_ir_curve_generation_config_process_parameter_values_request"
+The five "<name> : struct" rows in this request family are an artifact of the
+automated pass, not data members. They come from a using response_type
+declaration that wraps onto its continuation line, which then reads as a
+field. The code declares no such member. The affected boxes are the get_many,
+put_many, delete_many, list_versions, and get_version requests for
+ir_curve_generation_config_process_parameter_value.
+end note
+note right of "ores::synthetic::messaging::list_feeds_request"
+Feed control is kind-agnostic: one start, stop, and list shape for every asset
+class, keyed by config_id. The server resolves the config, its children, and
+the refdata context from that id and builds the feed through the producer
+factory, so a client never names a source_name and never supplies producer
+parameters.
+end note
+note right of "ores::synthetic::messaging::preview_ir_curve_shape_request"
+Stateless dry run. It derives a rate per template row from the process's
+current state, with no ticking and nothing persisted or published, so an
+editor can show the curve a save would produce.
+preview_ir_curve_template_row is deliberately not the persisted
+ir_curve_template_entry: a row being edited has no id, party, or tenant yet.
+The handler shares price_ir_curve_entry() with the live feed.
+end note
+note right of "ores::synthetic::messaging::simulate_ir_curve_paths_request"
+Stateless dry run, the IR analogue of simulate_fx_spot_paths_request. It
+builds the real short-rate process and returns the whole batch in one
+response. parameter_spec is the wire-shaped analogue of one
+{parameter_definition_id, value} row: the editor carries the parameter name
+itself, and the handler re-materialises the catalogue entry on the fly.
+end note
+note right of "ores::synthetic::messaging::generate_organisation_request"
+The one request whose response carries counts rather than rows. It returns the
+seed actually used, so a later request with that seed reproduces the same
+organisation exactly.
+end note
+
+class ores::eventing::domain::entity_event_traits {
+    {static} +entity_event_traits<ores::synthetic::messaging::folder_event>
+    {static} +entity_event_traits<ores::synthetic::messaging::fx_spot_generation_config_event>
+    {static} +entity_event_traits<ores::synthetic::messaging::gmm_component_event>
+    {static} +entity_event_traits<ores::synthetic::messaging::ir_curve_generation_config_event>
+    {static} +entity_event_traits<ores::synthetic::messaging::ir_curve_generation_config_process_parameter_value_event>
+    {static} +entity_event_traits<ores::synthetic::messaging::ir_curve_template_entry_event>
+    {static} +entity_event_traits<ores::synthetic::messaging::market_data_generation_config_event>
+    {static} +entity_event_traits<ores::synthetic::messaging::yield_curve_process_parameter_definition_event>
+    {static} +entity_event_traits<ores::synthetic::messaging::yield_curve_process_type_event>
+}
+note right of "ores::eventing::domain::entity_event_traits"
+Template specialisations in ores.synthetic's eventing headers, one per event
+struct. The automated pass skips template declarations, so none of the nine
+appears. Each states its subject_prefix and converts a generic
+entity_event_notification into the entity's own event: the notification
+carries the key as raw JSON, and only the entity knows which columns its key
+record holds. Each entity's changes are announced on three subjects, one per
+action, so the traits state the prefix and the action completes it. The event
+structs themselves are declared in the messaging headers.
+end note
+
+' --- relationships the automated pass cannot infer -------------------------
+
+' domain
+ores::synthetic::domain::curve_template_entry_ref ..> ores::synthetic::domain::ir_curve_template_entry : reduced form of
+ores::synthetic::domain::curve_template_validation ..> ores::synthetic::domain::curve_template_entry_ref : validates
+ores::synthetic::domain::curve_template_validation ..> ores::synthetic::domain::curve_template_validation_result : returns
+ores::synthetic::domain::folder o-- ores::synthetic::domain::folder : parent_id
+ores::synthetic::domain::folder ..> ores::synthetic::domain::market_data_generation_config : collection row mirrors
+ores::synthetic::domain::fx_spot_generation_config ..> ores::synthetic::domain::market_data_generation_config : typed sub-config of
+ores::synthetic::domain::ir_curve_generation_config ..> ores::synthetic::domain::market_data_generation_config : typed sub-config of
+ores::synthetic::domain::fx_spot_generation_config ..> ores::synthetic::domain::folder : filed under
+ores::synthetic::domain::ir_curve_generation_config ..> ores::synthetic::domain::folder : filed under
+ores::synthetic::domain::gmm_component ..> ores::synthetic::domain::fx_spot_generation_config : mixture component of
+ores::synthetic::domain::ir_curve_template_entry ..> ores::synthetic::domain::ir_curve_generation_config : grid row of
+ores::synthetic::domain::ir_curve_generation_config_process_parameter_value ..> ores::synthetic::domain::ir_curve_generation_config : parameter row of
+ores::synthetic::domain::ir_curve_generation_config_process_parameter_value ..> ores::synthetic::domain::yield_curve_process_parameter_definition : value for
+ores::synthetic::domain::ir_curve_generation_config ..> ores::synthetic::domain::yield_curve_process_type : selects engine
+ores::synthetic::domain::yield_curve_process_parameter_definition ..> ores::synthetic::domain::yield_curve_process_type : parameter vocabulary of
+ores::synthetic::domain::synthetic_catalog ..> ores::synthetic::domain::generation_options : generated from
+ores::synthetic::domain::generated_organisation ..> ores::synthetic::domain::organisation_generation_options : generated from
+
+' feeds
+ores::synthetic::feed::make_fx_spot_feed ..> ores::synthetic::feed::fx_spot_feed : builds
+ores::synthetic::feed::make_fx_spot_feed ..> ores::synthetic::feed::vintage_data_missing_error : throws
+ores::synthetic::feed::make_ir_curve_feed ..> ores::synthetic::feed::ir_curve_feed : builds
+ores::synthetic::feed::make_ir_curve_feed ..> ores::synthetic::feed::ir_curve_template_resolver : resolves entries through
+ores::synthetic::feed::make_ir_curve_feed ..> ores::synthetic::feed::vintage_data_missing_error : throws
+ores::synthetic::feed::make_ir_curve_feed ..> ores::synthetic::feed::select_vintage_anchor_entry : anchors the vintage lookup with
+ores::synthetic::feed::make_default_feed_factory ..> ores::synthetic::feed::feed_factory : returns
+ores::synthetic::feed::feed_factory ..> ores::synthetic::feed::fx_spot_feed : builds
+ores::synthetic::feed::feed_factory ..> ores::synthetic::feed::ir_curve_feed : builds
+ores::synthetic::feed::fx_spot_feed ..> ores::synthetic::feed::synthetic_producer_subject : publishes on the derived subject
+ores::synthetic::feed::ir_curve_feed ..> ores::synthetic::feed::synthetic_producer_subject : publishes on the derived subject
+ores::synthetic::feed::ir_curve_feed o-- ores::synthetic::feed::ir_curve_resolved_entry : entries
+ores::synthetic::feed::ir_curve_resolved_entry o-- ores::synthetic::feed::ir_curve_schedule_step : fixed_leg_schedule
+ores::synthetic::feed::ir_curve_template_resolver ..> ores::synthetic::feed::ir_curve_refdata_context : reads
+ores::synthetic::feed::ir_curve_template_resolver ..> ores::synthetic::feed::ir_curve_resolved_entry : produces
+ores::synthetic::feed::ir_curve_template_resolver ..> ores::synthetic::domain::ir_curve_template_entry : consumes
+ores::synthetic::feed::select_vintage_anchor_entry ..> ores::synthetic::feed::ir_curve_resolved_entry : picks the deposit anchor from
+
+' messaging
+ores::synthetic::messaging::start_feed_request ..> ores::synthetic::feed::feed_factory : starts a feed through
+ores::synthetic::messaging::preview_ir_curve_shape_request ..> ores::synthetic::messaging::preview_ir_curve_template_row : poses unsaved rows
+ores::synthetic::messaging::preview_ir_curve_shape_request ..> ores::synthetic::messaging::parameter_spec : carries
+ores::synthetic::messaging::preview_ir_curve_template_row ..> ores::synthetic::domain::ir_curve_template_entry : unsaved analogue of
+ores::synthetic::messaging::simulate_ir_curve_paths_request ..> ores::synthetic::messaging::parameter_spec : carries
+ores::synthetic::messaging::parameter_spec ..> ores::synthetic::domain::ir_curve_generation_config_process_parameter_value : wire analogue of
+ores::synthetic::messaging::generate_organisation_request ..> ores::synthetic::domain::organisation_generation_options : fills
+ores::synthetic::messaging::generate_organisation_response ..> ores::synthetic::domain::generated_organisation : summarises
+
+' eventing
+ores::eventing::domain::entity_event_traits ..> ores::synthetic::messaging::folder_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::synthetic::messaging::fx_spot_generation_config_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::synthetic::messaging::gmm_component_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::synthetic::messaging::ir_curve_generation_config_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::synthetic::messaging::ir_curve_generation_config_process_parameter_value_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::synthetic::messaging::ir_curve_template_entry_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::synthetic::messaging::market_data_generation_config_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::synthetic::messaging::yield_curve_process_parameter_definition_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::synthetic::messaging::yield_curve_process_type_event : converts notifications into
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.synthetic.api.puml"

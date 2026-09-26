@@ -84,7 +84,7 @@ record each item's result in the table below.
 | W04 | The database recreates from scratch with the generated table, its three triggers and both row-level security policies, and the eleven settings land. Two defects only this check could find: the seed upsert and set functions inserted without the row's =id=, which the generated table requires; and the party default the generated trigger does not carry is a hand-written trigger of its own. | =.audit/clean-variability/db_recreate.log=; commit =ac9f81a1c6= |
 | S01 | The four hand-written command units are deleted and the generated unit replaces them: ten commands, one per verb, with its own test. The shell application links the new shell part. | =projects/ores.shell/variability/=; =ores.shell.variability.tests= |
 | S02 | The five recipes under =doc/recipes/shell/variability/= and the scripts tangled from them ran =add-flag=, =delete-flag=, =flag-history= and =list-flags= — commands the shell has not had since the feature-flag surface became system settings. All five are deleted, the settings recipe is tangled in their place, and the inventory lists it. The inventory gate is green. | =doc/recipes/shell/system_settings/system_setting.org=; =.audit/clean-variability/A3_recipe_inventory_check.txt= |
-| H01 | Partial, with the reason. The three part diagrams were stale, still drawing the superseded hand-written classes, and are refreshed from the code; the shell part gained the diagram it never had, and every rendered image was read rather than merely regenerated. The gap: the automated pass reads data members and not methods, so a class whose content is methods arrives without them, and PlantUML will not attach members declared in the manual section below the sentinel to a class inside a nested namespace — it draws a second, empty namespace instead. Every class is present; the API of the method-only ones is not drawn. The merged precedent has the same shape and an empty manual section. | =projects/ores.variability/{api,core,service}/modeling/*.puml= and their =.png=; =.audit/clean-variability/A3_validate_docs.txt= |
+| H01 | Accepted exception, with the reason. The three part diagrams were stale, still drawing the superseded hand-written classes, and are refreshed from the code; the shell part gained the diagram it never had, and every rendered image was read rather than merely regenerated. The gap: the automated pass reads data members and not methods, so a class whose content is methods arrives without them, and PlantUML will not attach members declared in the manual section below the sentinel to a class inside a nested namespace — it draws a second, empty namespace instead. Every class is present; the API of the method-only ones is not drawn. The merged precedent has the same shape and an empty manual section. | =projects/ores.variability/{api,core,service}/modeling/*.puml= and their =.png=; =.audit/clean-variability/A3_validate_docs.txt= |
 | H02 | No legacy code remains. The retired feature-flag surface is gone from the models, the shell commands, the recipes and the namespace header; the dead accessors the census found are deleted; the hand-written duplicates of generated artefacts are deleted; and the dead =ores.variability.core= link in =ores.assets=, which no source referenced, is removed. | =.audit/clean-variability/B06_symbol_census.txt=; commit =c965d5bb8a= |
 | H04 | Not applicable, with the reason. The component carries no hand-rolled per-platform shim: it has no platform-conditional code, and the only preprocessor conditions in its sources are include guards. | =grep -rn "#if" projects/ores.variability= |
 | V01 | The whole tree builds, with the component's tests and every consumer. This is the only check that sees every consumer, and it is what found the generator expressions that mixed =std::string= with faker-cxx's =std::string_view=, and the four libraries the generated code needs that the component did not link. One target still fails after the rebase onto main, and it is not this component's: =ores.workflow.core.tests= does not compile on main, because its eventing integration tests include the event publisher and link no eventing library, and because two of its generated symbols are missing. The =feature/clean-workflow= branch in another environment owns that work, so it is recorded rather than fixed here. | =.audit/clean-variability/build_all.log=; =.audit/clean-variability/build_after_rebase.log= |
@@ -92,11 +92,59 @@ record each item's result in the table below.
 | V03 | The database recreates from scratch and the schema is correct: the generated primary key =(tenant_id, id, valid_from, valid_to)=, all three triggers, both policies, and the eleven seeded settings under one party. | =.audit/clean-variability/db_recreate.log=; =pg_policies= and =pg_trigger= queries |
 | V04 | Every generated shell recipe runs against the live fleet and answers: ten of ten, =ANSWERED=. The sweep signs in, replays each recipe in its own shell process and classifies the transcript, so a command that names a verb the shell does not know is a wiring defect and anything else is the command answering. The answers are substantive, not merely non-crashing: =system_settings list --limit 1= returns the specification's =result= envelope with =outcome: ok=, one setting with every field populated, and =total: 11=, which is the seeded count. The fleet is 23 of 24 services; the one that failed is =ores.web.service=, which is not this component's. | =.audit/clean-variability/v04/recipes.tsv= and its per-recipe logs; =projects/ores.codegen/scripts/check_shell_recipes.py= |
 | V05 | Every codegen gate is green with the component added: component drift, model drift, protocol twin coverage, handler permissions, populate references and the recipe inventory. The CMake source-list gate is the one exception, red repo-wide on main with 94 stale lists belonging to other components, as recorded under G06. | =projects/ores.codegen/scripts/component_registry.py=; =.audit/clean-variability/A3_*.txt= |
-| V06 | Not done, deliberately. The component is not listed in =COMPONENTS_UNDER_TEST=, because the standard keeps a component out until every item passes or its exception is accepted, and three items here are open: V04, H01 and V08. Listing it was tried and reverted. The entry has been added, run against, and removed again; the comment in the registry records exactly what the three open items are and that the entry goes back once V04 is verified or a human accepts them. Every gate that can run was run against the component and is green, so the work is verified; what is missing is the standing claim, and that is a human's to make. | =projects/ores.codegen/scripts/component_registry.py= |
+| V06 | Done. =variability-cpp= is listed in =COMPONENTS_UNDER_TEST=, and the two items it does not pass are recorded as accepted exceptions in the same registry: H01 and V08, each with its reason and who accepted it. The registry was all-or-nothing when this task began, so listing it here first required changing what listing means, which is recorded under "Partial checks" below. | =projects/ores.codegen/scripts/component_registry.py=; =projects/ores.codegen/scripts/check_registry_exceptions.py= |
 | V07 | No vacuous test. The component's suites assert literal values: the api suite compares a rendered table and a JSON round-trip against their expected text, the service suite asserts parsed option values, and the generated eventing test asserts the event's key, action and version. The repository suite the generation superseded was deleted rather than left passing against nothing. | =projects/ores.variability/{api,service,core}/tests/= |
-| V08 | Every source file has a test that exercises it, or is recorded with the reason it does not. Recorded as an open item: the in-process facade added here (=system_settings_service=) has no unit test of its own; its behaviour is covered end to end by the iam and http suites and by the eventing integration test, but not directly. | =projects/ores.variability/core/src/service/system_settings_service.cpp= |
+| V08 | Accepted exception. Every source file has a test that exercises it, or is recorded with the reason it does not. the in-process facade added here (=system_settings_service=) has no unit test of its own; its behaviour is covered end to end by the iam and http suites and by the eventing integration test, but not directly. | =projects/ores.variability/core/src/service/system_settings_service.cpp= |
 
 * Notes
+
+** Partial checks
+
+Listing a component in =COMPONENTS_UNDER_TEST= was all or nothing. A component
+was listed when every checklist item passed and otherwise no gate checked it, so
+one item that cannot be verified where the work is done -- a check that needs a
+live fleet, a tool that cannot draw what the item asks for -- cost the component
+every other gate as well. The standard said the component "stays out of the
+registry until the exception is resolved or accepted", and there was nowhere to
+record an acceptance, so the sentence could only be obeyed by waiting.
+
+The registry now records the gap. =COMPONENTS_UNDER_TEST= still lists the
+components the gates check; =ACCEPTED_EXCEPTIONS= names, per component, each
+item it does not pass with its reason and the person who accepted it. An item is
+never simply omitted:
+=projects/ores.codegen/scripts/check_registry_exceptions.py= reads the
+checklist's own item list from the standard and refuses an exception that names
+an item the standard does not define, states no reason, names nobody or carries
+no date, and refuses one recorded against a component the gates do not check. It
+runs as its own job in =codegen-drift.yml=, and seven tests in
+=projects/ores.codegen/tests/test_component_registry.py= cover it.
+
+Deriving the item list rather than repeating it caught H05, which main added
+while this task was in flight: the registry needed no change to accept it.
+
+This component is listed with two accepted exceptions, H01 and V08. V04 was the
+third until the fleet was brought up, which is what an exception is for: it is
+not a way to skip work, it is a way to keep the gates running while the work
+that cannot be done here is recorded for whoever can do it.
+
+** Two gaps main carries, which this branch does not fix
+
+The rebase brought 120 commits, and two of them left the tree short of what the
+standard asks, in components this task does not own. Both are recorded rather
+than fixed, because =feature/clean-workflow= is in flight in another environment
+and the work is that task's:
+
+- =ores.workflow.core.tests= does not build. Its eventing integration tests
+  include =ores.eventing.core/service/entity_event_publisher.hpp= and its test
+  =CMakeLists.txt= links no eventing library, and two of its generated symbols
+  are missing. CI does not build that target, which is why main looks green.
+- =ores.shell.workflow= has no =modeling/= directory at all, so
+  =validate_docs.sh= fails on it for a missing overview and a missing diagram.
+  Its sibling parts, =ores.shell.analytics= and =ores.shell.variability=, both
+  have one. =validate_docs.sh= is not a CI job, so this is not caught either.
+
+With those two set aside the tree builds and the documentation validator is
+green: neither gap names =ores.variability=.
 
 ** Rendering a draft model before it lands
 

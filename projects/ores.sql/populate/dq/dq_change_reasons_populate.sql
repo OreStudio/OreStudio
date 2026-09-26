@@ -100,6 +100,17 @@ BEGIN
     );
 
     PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.update',
+        'Existing record changed during normal operations',
+        'system',
+        false,  -- not for new
+        true,   -- applies to amend
+        false,  -- not for delete
+        false,  -- no commentary required
+        15      -- display order
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.external_data_import',
         'External data import (requires data lineage)',
         'system',

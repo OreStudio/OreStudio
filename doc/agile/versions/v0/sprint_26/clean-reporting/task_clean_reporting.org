@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-reporting:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-reporting
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ ores.reporting passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -57,9 +57,19 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01  | Baseline recorded 2026-09-26: 54 files would change and 20 would be created, 74 in total. | =.audit/reporting/B01-drift-dryrun.txt= |
+| B03  | Survey in progress. 48 hand-written C++ files carry no generated marker. | =grep -L "AUTO-GENERATED FILE"= over =projects/ores.reporting= |
+| B06  | Open. =report_definition_template= and its JSON I/O are hand-written domain types. Their consumer census is not yet run. | =grep= over =projects/= |
+| M09  | Open. A =* Presentation= drawer with a =widget= column survives in all four lookup models; the clean components no longer carry it. | =ores.reporting.report_type.org:155= and three siblings |
+| M10  | Open. The root =component_overview.org= carries only Summary, Sub-components and Entity modules. It lacks the six sections H05 requires, and it has no =Diagram= section. The three part overviews are complete. | =projects/ores.reporting/modeling/component_overview.org= |
+| V03  | Open. The component is not in =COMPONENTS_UNDER_TEST=, so no codegen gate covers it. | =component_registry.py:148= |
 
 * Notes
+
+The scheduler-trigger and report-FSM findings live on the sibling task
+[[id:92B0C404-B477-4284-942D-FC9C4A8CD807][Make the scheduler-triggered report execution correct]]. That task found
+the trigger path dead, which is why V03 and V04 of this task cannot pass
+until it is fixed.
 
 * Test Scenarios
 

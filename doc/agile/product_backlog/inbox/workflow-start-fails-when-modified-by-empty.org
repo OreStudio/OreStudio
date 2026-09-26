@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: C9A76A2E-E780-4457-8E60-096B96780398
+:END:
+#+title: No workflow can start once the system has an account
+#+description: The workflow engine never sets modified_by on the instance or its first step, so the shared audit trigger rejects the insert with 23502 as soon as the tenant has a user account. Every workflow start fails; a caller such as iam's tenant provisioning then polls for an instance that will never exist and reports a bare NATS timeout.
+#+type: capture
+#+level: cross
+#+filetags: :workflow:iam:sql:bug:provenance:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores.workflow='s engine builds its =workflow_instance= and its first
+=workflow_step= without setting =modified_by=, and the generated repository
+writes what it is given. Every table's insert trigger routes that field
+through =ores_iam_validate_account_username_fn()=, which rejects an empty
+value with =23502= once the tenant holds a non-service account:
+
+#+begin_example
+Failed to create workflow instance 971da194-0fe1-4e37-a415-c70d947b7d9c:
+Repository error: Executing INSERT failed: ERROR:  modified_by cannot be null
+or empty. Application code must set this field explicitly.
+#+end_example
+
+The fix is one field on two entities, the same two the generators already
+set: =r.modified_by= alongside =r.performed_by=. =performed_by= needs no
+application value -- the trigger stamps it from the current service.
+
+* Why
+
+A workflow that cannot start is a silent failure with a misleading symptom.
+The engine logs the failure and publishes a status event, but a caller that
+dispatches and then waits cannot tell it apart from a slow service: iam's
+=internal_request_client::wait_for_workflow_instance()= polls
+=workflow.v1.instances.steps= every 500ms, treats "Workflow instance not
+found" as transient -- the code comments expect a busy workflow service to go
+unresponsive for a whole run -- and keeps polling until its 1500-second
+deadline. The client's own request timeout fires first, so the operator sees
+=NATS request timed out= and never the reason. The iam tenant provisioning
+recipe reproduces this in one command: =tenant_provisioning
+provision-acme-tenant=.
+
+Why it survived: the resolver defaults an empty =modified_by= to
+=current_user= while the tenant has no user accounts, so a bare or
+pre-bootstrap database accepts the insert. The defect therefore appears only
+once an administrator exists -- the normal state of any real system, and
+never the state a fresh test database is in.
+
+Both workflow tables are affected: =workflow_workflow_instances_tbl= and
+=workflow_workflow_steps_tbl= carry =modified_by text not null= and the same
+trigger.
+
+* References
+
+- Found on 2026-09-26 chasing a V04 timeout on [[id:DDAB54CA-B987-433B-AACD-87B0B8A32D2A][Bring ores.iam to the clean standard]]; the full trace, the live polls and the database counts are on that task's V04 row.
+- =projects/ores.workflow/core/src/service/workflow_engine.cpp= — =on_start_workflow()=, where the instance and step are constructed.
+- =projects/ores.sql/create/iam/iam_tenant_functions_create.sql= — =ores_iam_validate_account_username_fn()=, the bootstrap branch and the =23502= raise.
+- =projects/ores.iam/core/src/service/internal_request_client.cpp= — the wait that cannot distinguish a failed start from a slow service.
+
+* See also
+
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] — W01 is the same shape of defect one layer up: a family that exists but is never composed, and no gate that can see it.

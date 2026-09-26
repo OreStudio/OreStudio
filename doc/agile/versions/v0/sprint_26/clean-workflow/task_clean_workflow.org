@@ -839,6 +839,24 @@ the question to answer before touching this file: either the cascade moves into
 the model and the generator emits it, or the constraint stays and W04's fix keeps
 a hand-written file on purpose.
 
+The cascade question is now settled by a count. =on delete cascade= appears exactly
+once in the whole of =projects/ores.sql/create/=, and it is this hand-written
+constraint. No generated script emits one, =ores.compute= has none, and the
+generator has no support for expressing it. So the cascade is not a stale
+duplicate of something generated; it is a behaviour only this file provides.
+
+That makes W04 an item with two recorded exceptions rather than a clean pass. The
+partial index cannot be modelled because no model declares a predicate, and the
+cascade cannot be modelled because the generator has no cascade concept. Both are
+legitimate reasons to keep a hand-written SQL file, and the standard says an item
+that cannot pass is recorded as an exception with its reason rather than forced.
+
+What follows for the reconciliation: =workflow_create.sql= points at the generated
+plural table scripts and their notify triggers, the two hand-written singular table
+scripts are deleted, and =workflow_constraints_create.sql= stays, reduced to the
+partial index and the cascade. It is the only hand-written SQL file this component
+needs, and it needs it for two things the generator cannot say.
+
 Recorded rather than acted on. The four indexes were safe to move because their
 absence would have been caught by a query plan; a missing cascade is caught by
 data loss.

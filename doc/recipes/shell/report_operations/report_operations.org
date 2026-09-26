@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :recipe:shell:report_operations:
 
-This file documents declared operations at the shell. Its one command is =ores-shell> report_operations trigger-report-instance=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+This file documents declared operations at the shell, one section per command. Every command is a subcommand of =report_operations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
 
 * Commands
 
@@ -30,5 +30,47 @@ It is addressed at =reporting.v1.ops.trigger_report_instance=.
 #+name: report_operations-trigger-report-instance
 #+begin_src ores-shell :tangle report_operations-trigger-report-instance.ores :exports none
 report_operations trigger-report-instance 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =schedule-report-definitions=
+:PROPERTIES:
+:ID: 790F561C-58C8-51D2-9BB3-DA4331F7253F
+:END:
+
+Sends =schedule_report_definitions_request= and prints =schedule_report_definitions_response=, so the shape is the protocol's and the meaning is the service's. It reads =ids=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations schedule-report-definitions <ids>
+#+end_example
+
+It is addressed at =reporting.v1.report-definitions.schedule=.
+
+#+name: report_operations-schedule-report-definitions
+#+begin_src ores-shell :tangle report_operations-schedule-report-definitions.ores :exports none
+report_operations schedule-report-definitions __none__
+#+end_src
+
+** =unschedule-report-definitions=
+:PROPERTIES:
+:ID: E1B165B0-EF6C-5375-B639-9C8CD8B16491
+:END:
+
+Sends =unschedule_report_definitions_request= and prints =unschedule_report_definitions_response=, so the shape is the protocol's and the meaning is the service's. It reads =ids=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations unschedule-report-definitions <ids>
+#+end_example
+
+It is addressed at =reporting.v1.report-definitions.unschedule=.
+
+#+name: report_operations-unschedule-report-definitions
+#+begin_src ores-shell :tangle report_operations-unschedule-report-definitions.ores :exports none
+report_operations unschedule-report-definitions __none__
 #+end_src
 

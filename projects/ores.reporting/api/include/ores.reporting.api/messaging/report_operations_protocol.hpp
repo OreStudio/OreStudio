@@ -28,6 +28,8 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <string>
+#include <vector>
 
 namespace ores::reporting::messaging {
 
@@ -48,6 +50,46 @@ struct trigger_report_instance_request {
 
 struct trigger_report_instance_response {
     ores::utility::domain::result result;
+};
+
+struct schedule_report_definitions_request {
+    using response_type = struct schedule_report_definitions_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.report-definitions.schedule";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<std::string> ids;
+};
+
+struct schedule_report_definitions_response {
+    bool success = false;
+    std::string message;
+    int scheduled_count = 0;
+    std::vector<std::string> failed_ids;
+};
+
+struct unschedule_report_definitions_request {
+    using response_type = struct unschedule_report_definitions_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.report-definitions.unschedule";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<std::string> ids;
+};
+
+struct unschedule_report_definitions_response {
+    bool success = false;
+    std::string message;
+    int unscheduled_count = 0;
+    std::vector<std::string> failed_ids;
 };
 
 }

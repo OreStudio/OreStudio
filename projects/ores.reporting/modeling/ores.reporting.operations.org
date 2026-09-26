@@ -34,6 +34,8 @@ service account, and the permission check reads that account's roles.
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <string>
+#include <vector>
 #+end_src
 
 * Messages
@@ -80,6 +82,81 @@ instance's =trigger_run_id=. Zero when a caller triggers a report by hand.
 
 Outcome of the operation, in the same shape every entity operation answers
 with, so a caller reads one result convention across the component.
+
+** schedule_report_definitions_request
+:PROPERTIES:
+:subject: reporting.v1.report-definitions.schedule
+:response: schedule_report_definitions_response
+:END:
+
+*** ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The report definitions to schedule. Each gets a scheduler job, so it fires
+without anyone asking again.
+
+** schedule_report_definitions_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** scheduled_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** failed_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** unschedule_report_definitions_request
+:PROPERTIES:
+:subject: reporting.v1.report-definitions.unschedule
+:response: unschedule_report_definitions_response
+:END:
+
+*** ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The report definitions to stop firing.
+
+** unschedule_report_definitions_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** unscheduled_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** failed_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
 
 * See also
 

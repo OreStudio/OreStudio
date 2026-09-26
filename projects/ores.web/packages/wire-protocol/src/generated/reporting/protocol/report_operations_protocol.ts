@@ -34,8 +34,32 @@ export interface TriggerReportInstanceResponse {
     result: Result;
 }
 
+export interface ScheduleReportDefinitionsRequest {
+    ids: string[];
+}
+
+export interface ScheduleReportDefinitionsResponse {
+    success: boolean;
+    message: string;
+    scheduled_count: number;
+    failed_ids: string[];
+}
+
+export interface UnscheduleReportDefinitionsRequest {
+    ids: string[];
+}
+
+export interface UnscheduleReportDefinitionsResponse {
+    success: boolean;
+    message: string;
+    unscheduled_count: number;
+    failed_ids: string[];
+}
+
 export const subjects = {
     trigger_report_instance_request: "reporting.v1.ops.trigger_report_instance",
+    schedule_report_definitions_request: "reporting.v1.report-definitions.schedule",
+    unschedule_report_definitions_request: "reporting.v1.report-definitions.unschedule",
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -44,4 +68,6 @@ export const subjects = {
  */
 export const requiresSession = {
     trigger_report_instance_request: true,
+    schedule_report_definitions_request: true,
+    unschedule_report_definitions_request: true,
 } as const;

@@ -25,7 +25,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.reporting.api/messaging/report_scheduling_protocol.hpp"
+#include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"

@@ -68,6 +68,20 @@ public:
     static void process_trigger_report_instance(std::ostream& out,
                                                 ores::nats::service::nats_client& session,
                                                 const std::vector<std::string>& args);
+
+    /**
+     * @brief schedule-report-definitions <ids>
+     */
+    static void process_schedule_report_definitions(std::ostream& out,
+                                                    ores::nats::service::nats_client& session,
+                                                    const std::vector<std::string>& args);
+
+    /**
+     * @brief unschedule-report-definitions <ids>
+     */
+    static void process_unschedule_report_definitions(std::ostream& out,
+                                                      ores::nats::service::nats_client& session,
+                                                      const std::vector<std::string>& args);
 };
 
 }

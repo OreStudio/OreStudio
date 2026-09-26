@@ -23,30 +23,46 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace scheduler #F2F2F2 {
-        namespace builder #F2F2F2 {
-            class job_definition_builder {
-                -name_ : string
-                -description_ : string
-                -command_ : string
-                -error_ : string
-                -tenant_id_ : optional<boost::uuids::uuid>
-                -party_id_ : optional<boost::uuids::uuid>
-                -modified_by_ : string
-            }
-        }
         namespace messaging #F2F2F2 {
+            class job_definition_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<jwt::jwt_authenticator>
+                +list_job_definitions(msg)
+                +get_job_definition(msg)
+                +get_many_job_definitions(msg)
+                +put_job_definition(msg)
+                +put_many_job_definitions(msg)
+                +delete_job_definition(msg)
+                +delete_many_job_definitions(msg)
+                +list_job_definition_versions(msg)
+                +get_job_definition_version(msg)
+            }
+            class job_definition_registrar <<free functions>> {
+                +register_job_definition_handlers(nats, ctx, verifier) : subscriptions
+            }
+            class job_definition_history_provider_registrar <<free functions>> {
+                +register_job_definition_history_provider(registry)
+            }
             class job_instance_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
-                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                -verifier_ : optional<jwt::jwt_authenticator>
+                +list(msg)
             }
-            class registrar {
-                +verifier : optional<ores::security::jwt::jwt_authenticator>
+            class registrar <<free functions>> {
+                +register_handlers(nats, ctx, verifier) : subscriptions
             }
             class scheduler_status_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
-                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                -verifier_ : optional<jwt::jwt_authenticator>
+                +status(msg)
+            }
+        }
+        namespace presentation #F2F2F2 {
+            class job_definition_history_field_mapper <<free functions>> {
+                +render(v) : vector<field>
             }
         }
         namespace repository #F2F2F2 {
@@ -56,42 +72,65 @@ namespace ores #F2F2F2 {
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : optional<string>
                 +version : int
-                +party_id : optional<string>
                 +job_name : string
-                +description : optional<string>
+                +party_id : optional<string>
+                +description : string
                 +command : string
                 +schedule_expression : string
                 +action_type : string
+                +action_payload : string
                 +is_active : bool
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class job_definition_mapper {
+                {static} +map(entity) : domain::job_definition
+                {static} +map(v) : job_definition_entity
             }
             class job_definition_repository {
+                +sql() : string
+                +write(ctx, v, claim)
+                +write(ctx, vs, claims)
+                +read_latest(ctx, offset, limit) : vector<domain::job_definition>
+                +read_latest(ctx, id)
+                +read_all(ctx, id)
+                +read_at_version(ctx, key, version)
+                +read_latest_by_job_name(ctx, name)
+                +remove(ctx, id, claim) : remove_status
+                +remove(ctx, ids)
+                +get_total_definition_count(ctx)
+                +read_all_active(ctx)
             }
             class job_instance_entity <<struct>> {
-                +id : optional<string>
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<int64_t>
                 +tenant_id : optional<string>
                 +party_id : optional<string>
-                +job_definition_id : optional<string>
-                +action_type : optional<string>
-                +status : optional<string>
-                +triggered_at : optional<string>
-                +started_at : optional<string>
-                +completed_at : optional<string>
-                +duration_ms : optional<string>
-                +error_message : optional<string>
+                +job_definition_id : string
+                +action_type : string
+                +status : string
+                +triggered_at : db_timestamp
+                +started_at : db_timestamp
+                +completed_at : optional<db_timestamp>
+                +duration_ms : optional<int64_t>
+                +error_message : string
             }
             class job_instance_mapper {
+                {static} +map(entity) : domain::job_instance
+                {static} +map(v) : job_instance_entity
             }
             class job_instance_repository {
-                +error : domain::job_status status, const string&
-                +limit : const boost::uuids::uuid& job_definition_id, size_t
+                -logger_name : string_view
+                +write_started(ctx, inst) : int64_t
+                +write_completed(ctx, id, at, status, error)
+                +read_latest(ctx, job_definition_id, limit) : vector<domain::job_instance>
+                +read_all_latest(ctx, limit) : vector<domain::job_instance>
+                +last_run_at(ctx, job_definition_id) : optional<system_clock::time_point>
             }
         }
         namespace service #F2F2F2 {
@@ -101,49 +140,157 @@ namespace ores #F2F2F2 {
                 +inst_id : int64_t
             }
             class action_handler {
+                +action_type() : string_view
+                +execute(ctx) : awaitable<expected<void, string>>
             }
             class cron_scheduler {
-                +limit : size_t
                 -ctx_ : context
                 -repo_ : repository::job_definition_repository
                 -inst_repo_ : repository::job_instance_repository
+                +schedule(def)
+                +unschedule(id, modified_by, reason, commentary)
+                +get_all_definitions() : vector<domain::job_definition>
+                +get_job_history(id, limit) : vector<domain::job_instance>
             }
             class job_definition_service {
                 -ctx_ : context
                 -repo_ : repository::job_definition_repository
+                +list_job_definitions(request) : response
+                +get_job_definition(request) : response
+                +get_many_job_definitions(request) : response
+                +put_job_definition(request) : response
+                +put_many_job_definitions(request) : response
+                +delete_job_definition(request) : response
+                +delete_many_job_definitions(request) : response
+                +list_job_definition_versions(request) : response
+                +get_job_definition_version(request) : response
+                +get_definition_history(id) : vector<domain::job_definition>
             }
             class mq_action_handler {
+                +action_type() : string_view
+                +execute(ctx) : awaitable<expected<void, string>>
             }
             class nats_publish_action_handler {
                 -nats_ : ores::nats::service::client&
+                +action_type() : string_view
+                +execute(ctx) : awaitable<expected<void, string>>
             }
             class scheduler_loop {
+                +job_instance_events_subject : string_view
                 -nats_ : ores::nats::service::client&
                 -system_ctx_ : database::context
                 -handlers_ : vector<unique_ptr<action_handler>>
                 -jobs_ : vector<domain::job_definition>
-                -last_run_ : map<boost::uuids::uuid, chrono::system_clock::time_point>
+                -last_run_ : map<boost::uuids::uuid, system_clock::time_point>
+                -needs_reload_ : atomic<bool>
+                +run(ioc) : awaitable<void>
+                +reload()
+                +tick(ioc) : awaitable<void>
+                +fire_job(job) : awaitable<void>
+                +load_jobs()
+                +publish_instance_event(change_type, job, inst_id)
             }
             class sql_action_handler {
-            }
-        }
-    }
-}
-namespace rfl #F2F2F2 {
-    namespace ores #F2F2F2 {
-        namespace scheduler #F2F2F2 {
-            namespace messaging #F2F2F2 {
-                class job_definition_handler {
-                    -nats_ : ores::nats::service::client&
-                    -ctx_ : ores::database::context
-                    -verifier_ : optional<ores::security::jwt::jwt_authenticator>
-                }
+                +action_type() : string_view
+                +execute(ctx) : awaitable<expected<void, string>>
             }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' ---------------------------------------------------------------------------
+' Relationships, which the automated pass cannot see: it reads data members,
+' and every dependency below is a call or an interface, not a member.
+' ---------------------------------------------------------------------------
+
+ores::scheduler::messaging::registrar ..> ores::scheduler::messaging::job_definition_registrar : composes
+ores::scheduler::messaging::registrar ..> ores::scheduler::messaging::job_definition_history_provider_registrar : composes
+ores::scheduler::messaging::registrar --> ores::scheduler::messaging::job_instance_handler : subscribes
+ores::scheduler::messaging::registrar --> ores::scheduler::messaging::scheduler_status_handler : subscribes
+
+ores::scheduler::messaging::job_definition_handler --> ores::scheduler::service::job_definition_service : serves
+ores::scheduler::messaging::job_instance_handler --> ores::scheduler::repository::job_instance_repository : reads
+ores::scheduler::messaging::job_instance_handler --> ores::scheduler::repository::job_definition_repository : reads names
+ores::scheduler::messaging::scheduler_status_handler --> ores::scheduler::repository::job_definition_repository : reads
+ores::scheduler::messaging::scheduler_status_handler --> ores::scheduler::repository::job_instance_repository : reads last run
+
+ores::scheduler::service::job_definition_service --> ores::scheduler::repository::job_definition_repository : uses
+ores::scheduler::service::job_definition_service --> ores::scheduler::presentation::job_definition_history_field_mapper : renders
+ores::scheduler::messaging::job_definition_history_provider_registrar ..> ores::scheduler::service::job_definition_service : reads history
+
+ores::scheduler::repository::job_definition_repository ..> ores::scheduler::repository::job_definition_mapper : maps
+ores::scheduler::repository::job_definition_repository ..> ores::scheduler::repository::job_definition_entity : queries
+ores::scheduler::repository::job_instance_repository ..> ores::scheduler::repository::job_instance_mapper : maps
+ores::scheduler::repository::job_instance_repository ..> ores::scheduler::repository::job_instance_entity : queries
+
+ores::scheduler::service::scheduler_loop o-- ores::scheduler::service::action_handler : fires
+ores::scheduler::service::scheduler_loop --> ores::scheduler::repository::job_definition_repository : read_all_active
+ores::scheduler::service::scheduler_loop --> ores::scheduler::repository::job_instance_repository : records
+ores::scheduler::service::cron_scheduler --> ores::scheduler::repository::job_definition_repository : uses
+ores::scheduler::service::cron_scheduler --> ores::scheduler::repository::job_instance_repository : uses
+
+ores::scheduler::service::action_handler <|-- ores::scheduler::service::sql_action_handler
+ores::scheduler::service::action_handler <|-- ores::scheduler::service::mq_action_handler
+ores::scheduler::service::action_handler <|-- ores::scheduler::service::nats_publish_action_handler
+ores::scheduler::service::sql_action_handler ..> ores::scheduler::service::action_context : receives
+ores::scheduler::service::mq_action_handler ..> ores::scheduler::service::action_context : receives
+ores::scheduler::service::nats_publish_action_handler ..> ores::scheduler::service::action_context : receives
+
+' ---------------------------------------------------------------------------
+' Notes. The facts a reader of the skeleton cannot recover.
+' ---------------------------------------------------------------------------
+
+note top of job_definition_handler
+  Generated from the entity model, with the repository,
+  mapper, entity, service and history provider beside
+  it. The handler proves the request, checks
+  scheduler::job_definitions:write or :delete, and
+  reports what the service decided through the response
+  result.
+end note
+
+note top of job_definition_repository
+  Generated. read_latest_by_job_name comes from the
+  model's natural key, and read_all_active is the one
+  paste block: the scheduler loop fires system jobs as
+  well as tenant ones, so it cannot read through the
+  tenant-scoped set.
+end note
+
+note top of job_instance_repository
+  Hand-written. The component's one entity with no model
+  yet, so its repository, mapper and entity stay
+  hand-written until that unit lands.
+end note
+
+note top of registrar
+  The component's composition point. It is hand-written
+  because it composes three generated families -- the
+  entity sub-registrar, the history provider and the
+  service-side event mapping -- with two hand-written
+  view handlers.
+end note
+
+note top of action_handler
+  One interface, three implementations. The loop holds
+  them as unique_ptr and picks the one whose action_type
+  the job states, so adding an action type adds an
+  implementation and no branch.
+end note
+
+note top of scheduler_loop
+  Reads every active job across every tenant, fires each
+  due one, records a job instance per execution and
+  publishes scheduler.v1.job-instance-events. Nothing in
+  the tree subscribes to that subject today.
+end note
+
+note bottom of cron_scheduler
+  Marking a job inactive writes is_active = false on the
+  current row rather than creating a bitemporal version.
+end note
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.scheduler.core.puml"

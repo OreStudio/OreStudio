@@ -94,7 +94,7 @@ record each item's result in the table below.
 | H02 | Nine dead generated event headers and the superseded hand-written shell command units are deleted; the remaining findings are recorded in the audit reports. | commit 4d2dd48559 |
 | H03 | Pass. No commented-out code, no TODO or FIXME, no hand-edited comment in a generated file. | leg_d_tests_naming.md |
 | V01 | Pass. The whole tree builds, including the three synthetic libraries, their three test executables, the ores.shell.synthetic part, the shell application and the ores.iam consumer. | =compass build= |
-| V02 | Pass, with no exception. All four suites pass against a database recreated from scratch: =ores.synthetic.api.tests=, =ores.synthetic.core.tests= (67 cases), =ores.synthetic.service.tests= and =ores.shell.synthetic.tests=, and the codegen suite passes with 524 tests. The value eventing test is re-enabled: it seeds a VASICEK definition through a =parent_seed= block, and the table's party policy now lets a session with no party restriction read its own row back. The organisation publisher seed stays idempotent. | =ctest -R synthetic= (4/4 passed); build/audit_synthetic/ctest_green.txt; build/audit_synthetic/value_row_rls_diagnosis.md |
+| V02 | Pass, with no exception. All four suites pass against a database recreated from scratch, on the trunk after the rebase onto =origin/main= and a whole-tree build: =ores.synthetic.api.tests=, =ores.synthetic.core.tests= (67 cases), =ores.synthetic.service.tests= and =ores.shell.synthetic.tests=, and the codegen suite passes with 532 tests. The value eventing test is re-enabled: it seeds a VASICEK definition through a =parent_seed= block, and the table's party policy now lets a session with no party restriction read its own row back. The organisation publisher seed stays idempotent. | =ctest -R synthetic= (4/4 passed); build/audit_synthetic/ctest_green.txt; build/audit_synthetic/value_row_rls_diagnosis.md |
 | V03 | Pass. The database recreates from scratch and seeds cleanly (run three times on this branch), and the fleet starts and serves. =ores.web.service= does not come ready because Node is not installed in this environment; every C++ service does. | =compass db recreate -y -k=; =compass services start --use-busctl= |
 | V04 | PENDING. The generated shell commands need an authenticated live fleet. | |
 | V05 | Pass, with one pre-existing repo-wide exception. Model drift, protocol twin coverage, handler permissions, populate references, the shell recipe inventory and the synthetic CMake source lists are all green. =validate_docs.sh= reports one violation, =MISSING_PUML ores.shell.iam=, which is already absent on =origin/main= and belongs to another component. | Each check script; =validate_docs.sh= |
@@ -116,6 +116,10 @@ record each item's result in the table below.
 - The database recreates from scratch and the fleet serves. All four
   synthetic ctest suites pass against it, and =check_component_drift.py
   --all= reports no drift with synthetic registered.
+- Final verification runs on the trunk at =origin/main= 640d760090, after a
+  rebase with no conflicts and a whole-tree build. The rebase raised the
+  =ORES_ENV_VERSION= to 24, so =compass env configure= was re-run before the
+  database recreate.
 - The regime error-handling question (61 throw sites in this component)
   belongs to the house-wide capture, not to this pass.
 - One generator defect found by the build is fixed at source: the eventing

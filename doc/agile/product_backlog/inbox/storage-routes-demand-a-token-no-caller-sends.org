@@ -59,3 +59,62 @@ back over HTTP with an explicit bearer token.
 Without this, every consumer verb that moves bytes over HTTP fails, so the
 migration cannot be verified end to end.
 
+* Round 12 status
+
+=ores.storage.core= carries a token now (=http_client= per operation,
+=storage_transfer= once), and the shell's three compute sites pass
+=session.auth().jwt=. =compute publish-package= still answers 401 because it does
+not go through those: =ores.compute.client= holds its own =storage_transfer
+transfer_=, built by =package_publisher(std::string http_base_url)= from
+=projects/ores.compute/client/src/client/package_publisher.cpp:28=, and the shell
+builds that publisher with no token.
+
+Two edits finish this path: give =package_publisher= a =bearer_token= parameter
+that it forwards to =transfer_=, and pass =session.auth().jwt= where the shell
+constructs the publisher. The remaining shell sites (=compute_commands.cpp= 740
+and 799, =ore_commands.cpp= 191) and the services follow the same pattern;
+=ore_commands::process_upload= takes no session yet, so it needs one threaded in.
+
+* Round 13: the token now travels, and the route refuses it
+
+=package_publisher= takes a bearer and the shell passes =session.auth().jwt=, so
+the header reaches the server. The http server log shows the change:
+
+#+begin_example
+22:57:54 [WARN] Missing authorization token for /api/v1/storage/{bucket}/{key}
+22:59:44 [WARN] Invalid token for /api/v1/storage/{bucket}/{key}: Invalid token
+22:59:44 [WARN] JWT verification failed: wrong algorithm
+#+end_example
+
+So the client plumbing is done and the remaining defect is *which* token the
+shell holds. The same route accepts a token from =POST /api/v1/auth/login= --
+curl with it answers 200, and that token is HS256, as is the server's own
+authenticator (=configured with HS256, issuer: ores, audience: ores-api=). The
+shell's session token is also HS256 but fails verification, and the verifier that
+logs the failure is the RS256 one. Next: find what =session.set_auth= stores in
+this environment (the login helpers exchange the single-use login token for a
+party-scoped access token, and a freshly bootstrapped admin may have no party),
+and whether the shell should send the login token or the access token.
+
+* Round 14: the two sides use different algorithms
+
+Printing the token the shell sends settles it. Its header is
+=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9= -- =RS256=, with =issuer= and =audience=
+unset in the claims -- while the token =POST /api/v1/auth/login= returns for the
+same account is =HS256= and the storage route answers it 200. The http server
+logs its own authenticator as =configured with HS256, issuer: ores, audience:
+ores-api=, and the failure it then logs for the shell is =wrong algorithm=.
+
+So the shell holds the party-scoped RS256 session token the NATS path issues,
+the http server verifies HS256 tokens, and the storage route refuses the shell's
+token on the algorithm alone. The client side is finished: the header travels,
+the key is the protocol key, and the only thing between =compute publish-package=
+and a stored object is which algorithm the http server accepts.
+
+The fix is on the server side of that boundary: make the http server verify the
+tokens the services issue (RS256 through IAM's JWKS, as =ores.ore.service= already
+does with =JWT authenticator configured with RS256 verifier=), or state
+deliberately that HTTP callers must use an HS256 token and give the shell one.
+Recording it here rather than choosing, because it changes the deployment's
+authentication contract.
+

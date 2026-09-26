@@ -106,6 +106,25 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part eleven: the FSM pair is wired, and one generator defect stops it
+
+Run on 2026-09-26. The FSM migration was carried to the point where it is a complete change apart from one thing, and that thing is a **generator defect**, not a gap in the plan.
+
+**The migration as it stands.** The four hand-written files are deleted: =fsm_protocol.hpp= (the umbrella the per-entity generated protocols replace), =fsm_handler.hpp= and =fsm_service.{hpp,cpp}=. The registrar composes =register_fsm_state_handlers= and =register_fsm_transition_handlers= in place of its two hand-written subscribes. Both shell units are wired into the =dq_commands= aggregate, the two =component_files.cmake= lists are regenerated, and the generated repositories replaced the hand-written ones in place. The two tables were verified identical to their hand-written originals in part ten.
+
+**The defect.** =cpp_history_field_mapper.cpp.mustache= renders a uuid column unconditionally as =boost::uuids::to_string(v.x)=. =fsm_transition.from_state_id= is a nullable uuid, so the generated mapper does not compile:
+
+#+begin_example
+fsm_transition_history_field_mapper.cpp:39:81: error: no viable conversion from
+'const std::optional<boost::uuids::uuid>' to 'const uuid'
+#+end_example
+
+The template already handles nullability for **strings** -- the same mapper emits =v.guard_function.value_or(std::string{})= for a nullable text column -- so the omission is specific to uuids. Two sites need a nullable branch: the natural-key loop at ={{#is_uuid}}= (line 33) and the column loop at ={{#render_is_uuid}}= (line 58). The fix is at source in the template, with a regression test, because the defect is not specific to this entity: any modelled entity with a nullable uuid and a history surface hits it.
+
+**A recurring mistake worth encoding.** Replacing a registrar block by anchoring on the payload line leaves the block's closing =}));= behind, and the result is a syntax error far from the edit that reads as something else entirely. It happened for subject_area and again for the FSM block, at =registrar.cpp= in both cases. Two occurrences makes it a property of the edit rather than a slip: the anchor has to be the **closing** line, not the last payload line. A small script that swaps a block by matching its first and last lines together would remove the class of error, and is a better home for this than another sentence of prose.
+
+**Evidence.** No source change: the wired migration and the verified models are in =git stash= ("wip: dq fsm pair WIRED (umbrellas deleted, registrar rewired, shell wired) - blocked on history-field-mapper template..."), the working tree is clean and =check_component_drift.py --component dq= reports no drift on =main=.
+
 * Step 8 part ten: the FSM pair's tables are reproducible, and all three vocabulary pieces work
 
 Run on 2026-09-26. Models for =fsm_state= and =fsm_transition= were written and **both tables verified positively**, not by absence of a complaint: columns identical, constraints and checks identical, and the index set identical including its =where= clauses.

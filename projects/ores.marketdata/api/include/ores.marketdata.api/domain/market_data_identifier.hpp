@@ -200,6 +200,18 @@ struct security_market_data_identifier final {
 };
 
 /**
+ * @brief A fully-resolved oresmd identifier for a shape profile (asset_class=shape_profile).
+ */
+struct shape_profile_market_data_identifier final {
+    std::string profile_id;
+    instrument_type type = instrument_type::quote;
+    std::optional<domain::shape_profile_quote_type> quote_type;
+    std::optional<std::string> point;
+
+    bool operator==(const shape_profile_market_data_identifier&) const = default;
+};
+
+/**
  * @brief Tagged union of the seven per-asset-class identifier structs.
  *
  * Deliberately *not* a common base class with virtual dispatch: the URI's `asset_class`
@@ -215,7 +227,8 @@ using market_data_identifier = std::variant<fx_market_data_identifier,
                                             commodity_market_data_identifier,
                                             inflation_market_data_identifier,
                                             correlation_market_data_identifier,
-                                            security_market_data_identifier>;
+                                            security_market_data_identifier,
+                                            shape_profile_market_data_identifier>;
 
 }
 

@@ -300,6 +300,18 @@ TEST_CASE("{{description}}", tags) {
 }
 
 {{/security_projections}}
+{{#shape_profile_projections}}
+TEST_CASE("{{description}}", tags) {
+    const auto id = parse("{{{uri}}}");
+{{#nullopt}}
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+{{/nullopt}}
+{{^nullopt}}
+    REQUIRE(oresmd_projections::to_quote_key(id) == "{{expected}}");
+{{/nullopt}}
+}
+
+{{/shape_profile_projections}}
 TEST_CASE("commodity_cpr_quote_key", tags) {
     const auto id = parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CPR/RATE/WTI/USD/5Y");

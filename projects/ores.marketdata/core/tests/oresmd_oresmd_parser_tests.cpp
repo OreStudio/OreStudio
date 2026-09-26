@@ -1154,6 +1154,34 @@ TEST_CASE("round_trip_security_recovery_rate", tags) {
              oresmd_projections::to_curve_key(original).has_value()));
 }
 
+TEST_CASE("round_trip_shape_profile_factor", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://shape_profile/"
+            "pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0,sec"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_shape_profile_factor_dst", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://shape_profile/"
+            "pjm_wh_rt_pk_15min?type=quote&quote=shape_factor&point=2021-03-01,10800,sec,dst"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
 TEST_CASE("parse_inflation_zc_swap", tags) {
     const auto id =
         oresmd_parser::parse(uri("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"));
@@ -1300,6 +1328,21 @@ TEST_CASE("reject_security_uri_with_ir_only_metric", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(uri(
                           "oresmd://security/security_1?type=quote&quote=bond_price&metric=price")),
                       oresmd_exception);
+}
+
+TEST_CASE("reject_shape_profile_uri_with_ccy", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(
+            uri("oresmd://shape_profile/"
+                "pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0,sec&ccy=usd")),
+        oresmd_exception);
+}
+
+TEST_CASE("reject_shape_profile_uri_with_ir_only_metric", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(
+            uri("oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&metric=rate")),
+        oresmd_exception);
 }
 
 TEST_CASE("reject_unrecognised_scheme", tags) {

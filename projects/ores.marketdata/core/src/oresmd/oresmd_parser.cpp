@@ -601,6 +601,37 @@ market_data_identifier parse_security(const boost::urls::url_view& u, const quer
     return id;
 }
 
+market_data_identifier parse_shape_profile(const boost::urls::url_view& u, const query_params& qp) {
+    reject_if_present("shape_profile", "ccy", qp.ccy);
+    reject_if_present("shape_profile", "index", qp.index);
+    reject_if_present("shape_profile", "tenor", qp.tenor);
+    reject_if_present("shape_profile", "second_tenor", qp.second_tenor);
+    reject_if_present("shape_profile", "second_ccy", qp.second_ccy);
+    reject_if_present("shape_profile", "second_factor", qp.second_factor);
+    reject_if_present("shape_profile", "curve_id", qp.curve_id);
+    reject_if_present("shape_profile", "settle", qp.settle);
+    reject_if_present("shape_profile", "day_count", qp.day_count);
+    reject_if_present("shape_profile", "shift", qp.shift);
+    reject_if_present("shape_profile", "strip", qp.strip);
+    reject_if_present("shape_profile", "role", qp.role);
+    reject_if_present("shape_profile", "metric", qp.metric);
+    shape_profile_market_data_identifier id;
+    id.profile_id = to_upper(first_segment(u));
+    id.type = parse_type(qp);
+    if (qp.quote) {
+        // A quote type names a volatility surface as well as a quote: CAPFLOOR
+        // arrives as type=vol with quote=capfloor. Anything else that carries a
+        // quote key is a genuine input error.
+        if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                "oresmd://shape_profile/... 'quote' is only meaningful when type=quote."));
+        id.quote_type = parse_enum<shape_profile_quote_type>("quote", *qp.quote);
+    }
+    if (qp.point)
+        id.point = to_lower(*qp.point);
+    return id;
+}
+
 void append_if(boost::urls::url& u, std::string_view key, const std::optional<std::string>& v) {
     if (v)
         u.params().append({key, *v});
@@ -683,6 +714,8 @@ market_data_identifier oresmd_parser::parse(const domain::oresmd_uri& uri) {
         return parse_correlation(u, qp);
     if (asset_token == "security")
         return parse_security(u, qp);
+    if (asset_token == "shape_profile")
+        return parse_shape_profile(u, qp);
 
     BOOST_THROW_EXCEPTION(
         oresmd_exception(std::format("Unrecognised oresmd asset class: {}", asset_token)));
@@ -802,6 +835,12 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.segments().push_back(to_lower(id.security_id));
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
+            } else if constexpr (std::is_same_v<T, shape_profile_market_data_identifier>) {
+                u.set_host("shape_profile");
+                u.segments().push_back(to_lower(id.profile_id));
+                u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
+                append_enum_if(u, "quote", id.quote_type);
+                append_if(u, "point", id.point);
             }
         },
         identifier);

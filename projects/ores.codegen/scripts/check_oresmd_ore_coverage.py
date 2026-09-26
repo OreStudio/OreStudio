@@ -74,11 +74,6 @@ UNREPRESENTED: dict[str, str] = {
         "to-rating. Needs a rating asset class whose coordinate is a rating "
         "pair, which no existing asset class carries."
     ),
-    "SHAPE_PROFILE": (
-        "Shape factor profiles, keyed by profile name, date, second-of-day "
-        "and a period code. Needs a profile asset class with a time-of-day "
-        "coordinate."
-    ),
 }
 
 # Quote types oresmd models whose shape does not match the keys ORE writes.

@@ -35,3 +35,4 @@ interleaved as in the hand-crafted files), which differs from both.
 | inflation_quote_type.org | inflation | 6 | 6 |
 | correlation_quote_type.org | correlation | 7 | 5 |
 | security_quote_type.org | security | 8 | 8 |
+| shape_profile_quote_type.org | shape_profile | 9 | 9 |

@@ -176,6 +176,18 @@ market_data_identifier resolve_security(const security_market_data_requirement& 
     return id;
 }
 
+market_data_identifier resolve_shape_profile(const shape_profile_market_data_requirement& req,
+                                             const market_data_identifier& defaults) {
+    const auto* d = std::get_if<shape_profile_market_data_identifier>(&defaults);
+    shape_profile_market_data_identifier id;
+    id.profile_id =
+        pick_mandatory_string(req.profile_id, d ? d->profile_id : std::string{}, "profile_id");
+    id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
+    id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
+    id.point = pick_optional(req.point, d ? d->point : std::nullopt);
+    return id;
+}
+
 }
 
 namespace ores::marketdata::core {
@@ -202,6 +214,8 @@ oresmd_resolver::resolve(const domain::market_data_requirement& requirement,
                 return resolve_correlation(req, defaults);
             else if constexpr (std::is_same_v<T, security_market_data_requirement>)
                 return resolve_security(req, defaults);
+            else if constexpr (std::is_same_v<T, shape_profile_market_data_requirement>)
+                return resolve_shape_profile(req, defaults);
         },
         requirement);
 }

@@ -548,6 +548,27 @@ TEST_CASE("security_recovery_rate_quote_key_matches_the_corpus", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "RECOVERY_RATE/RATE/SECURITY_1");
 }
 
+TEST_CASE("shape_profile_factor_quote_key_matches_the_corpus", tags) {
+    const auto id = parse(
+        "oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0,sec");
+    REQUIRE(oresmd_projections::to_quote_key(id) ==
+            "SHAPE_PROFILE/SHAPE_FACTOR/PJM_WH_RT_PK/2021-03-01/0/SEC");
+}
+
+TEST_CASE("shape_profile_factor_dst_quote_key_matches_the_corpus", tags) {
+    const auto id =
+        parse("oresmd://shape_profile/"
+              "pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-01-01,7200,sec,dst");
+    REQUIRE(oresmd_projections::to_quote_key(id) ==
+            "SHAPE_PROFILE/SHAPE_FACTOR/PJM_WH_RT_PK/2021-01-01/7200/SEC/DST");
+}
+
+TEST_CASE("shape_profile_factor_rejects_a_point_that_is_not_a_coordinate", tags) {
+    const auto id = parse(
+        "oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0");
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+}
+
 TEST_CASE("commodity_cpr_quote_key", tags) {
     const auto id = parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CPR/RATE/WTI/USD/5Y");

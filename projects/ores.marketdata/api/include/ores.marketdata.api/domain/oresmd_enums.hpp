@@ -57,12 +57,13 @@ enum class curve_role {
  * implies metric=rate, quote=mm_future implies metric=price).
  */
 enum class metric {
-    rate,             ///< A rate quote (e.g. MM/RATE, FRA/RATE, IR_SWAP/RATE, ZERO/RATE).
-    price,            ///< A price quote (e.g. MM_FUTURE/PRICE, OI_FUTURE/PRICE).
-    basis_spread,     ///< A basis spread quote (e.g. BASIS_SWAP/BASIS_SPREAD).
-    ratio,            ///< A ratio quote (e.g. BMA_SWAP/RATIO).
-    yield_spread,     ///< A yield spread quote (e.g. ZERO/YIELD_SPREAD).
-    conversion_factor ///< A conversion factor quote (e.g. BOND/CONVERSION_FACTOR).
+    rate,              ///< A rate quote (e.g. MM/RATE, FRA/RATE, IR_SWAP/RATE, ZERO/RATE).
+    price,             ///< A price quote (e.g. MM_FUTURE/PRICE, OI_FUTURE/PRICE).
+    basis_spread,      ///< A basis spread quote (e.g. BASIS_SWAP/BASIS_SPREAD).
+    ratio,             ///< A ratio quote (e.g. BMA_SWAP/RATIO).
+    yield_spread,      ///< A yield spread quote (e.g. ZERO/YIELD_SPREAD).
+    conversion_factor, ///< A conversion factor quote (e.g. BOND/CONVERSION_FACTOR).
+    shape_factor       ///< A shape factor quote (e.g. SHAPE_PROFILE/SHAPE_FACTOR).
 };
 
 /**
@@ -211,6 +212,15 @@ enum class security_quote_type {
     bond_conversion_factor, ///< BOND/CONVERSION_FACTOR (bond futures conversion factor).
     recovery_rate ///< RECOVERY_RATE/RATE (recovery assumption named by a security rather than by an
                   ///< entity and a seniority).
+};
+
+/**
+ * @brief The `quote` query key for shape profiles. Shape-profile-only; only meaningful
+ * when `type=quote`.
+ */
+enum class shape_profile_quote_type {
+    shape_factor ///< SHAPE_PROFILE/SHAPE_FACTOR/PROFILE/DATE/SECOND/PERIOD, plus the DST flag the
+                 ///< corpus writes as a seventh segment.
 };
 
 /**

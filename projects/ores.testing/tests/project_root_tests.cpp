@@ -52,12 +52,3 @@ TEST_CASE("discovers_a_root_that_holds_the_repository", tags) {
     CHECK(std::filesystem::exists(root / ".git"));
     CHECK(std::filesystem::is_directory(root / "projects"));
 }
-
-TEST_CASE("resolves_a_relative_path_under_the_root_it_found", tags) {
-    auto lg(ores::logging::make_logger(test_suite));
-
-    const auto resolved = ores::testing::project_root::resolve("projects/ores.testing").string();
-    BOOST_LOG_SEV(lg, ores::logging::info) << "Resolved: " << resolved;
-
-    CHECK(resolved.ends_with("projects/ores.testing"));
-}

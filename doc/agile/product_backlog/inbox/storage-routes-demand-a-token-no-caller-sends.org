@@ -26,3 +26,36 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 * See also
 
 -
+
+* Evidence
+
+=compute publish-package ORE 1.8.17.0 x64-linux --file
+build/output/linux-clang-debug-make/publish/vendor-packages/ore-1.8.17.0-x64-linux.tar.gz=
+builds the right address and the route refuses it:
+
+#+begin_example
+PUT http://localhost:21000/api/v1/storage/ores/compute/packages/ORE-1.8.17.0/ORE-1.8.17.0-x64-linux.tar.gz
+  -> HTTP 401
+#+end_example
+
+The bus interface is not affected: =objects put-objects ores
+compute/packages/<id>/ore-1.8.17.0-x64-linux.tar.gz= answered its size, get
+returned the bytes, and list reported the object, and the same object then read
+back over HTTP with an explicit bearer token.
+
+* Where the fix goes
+
+- =ores.storage.core/net/http_client.hpp=: the static =get=, =put= and
+  =put_returning_body= (and any download-to-string twin) gain a bearer parameter,
+  sent as =Authorization: Bearer <token>=.
+- =ores.storage.core/net/storage_transfer.hpp=: pass it through =upload=,
+  =upload_returning_response=, =download=, =pack_and_upload=, =fetch_and_unpack=,
+  =upload_blob= and =download_blob=.
+- Callers: the shell's storage sites (=compute_commands.cpp= 465, 740 and 799,
+  =ore_commands.cpp= 191) from the session it logged in with, and the services
+  (the ore report-package handler, the market-data export) from their service
+  token.
+
+Without this, every consumer verb that moves bytes over HTTP fails, so the
+migration cannot be verified end to end.
+

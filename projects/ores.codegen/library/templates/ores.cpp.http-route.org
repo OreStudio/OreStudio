@@ -24,8 +24,10 @@ declaring the unit class and its handlers, a source holding the route table
 and the handler bodies, and the test file that pins the table. The unit owns
 one route per verb the entity derives — a put becomes two, because a create
 and a replace are one verb stating two different claims — and registers that
-set on the router and the OpenAPI registry. The templates are opt-in and
-disabled by default.
+set on the router and the OpenAPI registry. Three more archetypes render an
+=operation= model, whose declared messages replace the derived verb set, and
+each becomes one route addressed by the subject it already states. The
+templates are opt-in and disabled by default.
 
 * The ores.cpp.http-route facet
 
@@ -126,13 +128,32 @@ arrive as query parameters.
 | [[id:182DD2AF-9543-4722-B8CA-1A98FABFDF85][ores.cpp.http-route.route_header]] | HTTP route unit header: the unit class, its registration entry point and one handler per derived verb. |
 | [[id:9946AA4E-5C08-4DF4-9D0F-D544D977B264][ores.cpp.http-route.route_implementation]] | HTTP route unit implementation: the route table, the parameter readers and the handler bodies for one entity. |
 | [[id:A1A5750C-705A-43DD-B333-BA545EB3216A][ores.cpp.http-route.route_tests]] | HTTP route unit tests: the registered method and pattern of every derived route, and the auth flag each operation states. |
+| [[id:CCFCDAC3-DAA3-433E-9A51-924FC00992AF][ores.cpp.http-route.operation_header]] | HTTP route unit header for an operation model: the unit class and one handler per declared message. |
+| [[id:5CCD5E44-6BD9-4068-8928-0C1E6EAE015C][ores.cpp.http-route.operation_implementation]] | HTTP route unit implementation for an operation model: the route table and one handler per declared message. |
+| [[id:2E06E8BC-851D-4389-8CFA-FC1A8D2FACD0][ores.cpp.http-route.operation_tests]] | HTTP route unit tests for an operation model: the registered method and pattern of every declared message, and the auth flag each states. |
 
-The facet's =#+model_types:= also admits an =operation= model, whose declared
-messages are what the shell renders for it. The operation archetypes are not
-part of this stage: an operation model that opts in resolves to the facet and
-renders nothing, and the unit it needs lands with the operation work. No
-=ores.assets= model is an operation model, so nothing in this stage is
-affected.
+* The operation archetypes
+
+An =operation= model states its whole protocol rather than deriving a verb
+set, so it reaches the facet through three archetypes that render what it
+declares: one route per message that carries a =:subject:= and a =:response:=,
+which is the same addressable set the shell projects into commands. A message
+with no response has nothing for a route to return and a payload struct has no
+subject to address, so neither becomes a route.
+
+The route states the address the protocol already agreed on. The subject
+=iam.v1.accounts.lock= reaches =/api/v1/iam/accounts/lock=: the path is the
+subject transliterated, so the URL and the subject cannot disagree and a
+message the model renames moves its route in the same commit. A declared
+operation states no verb, so every route is a =POST= whose body is the
+canonical request.
+
+Security is the same one declaration the entity archetypes make: the message's
+own =:auth:= property decides =.auth_required()= or =.auth_optional()=, and
+the caller's token travels through =nats_client::with_delegation=, so the
+service's permission check governs. Login, signup and bootstrap declare
+=:auth: none= in their models and are therefore public by the model's own
+statement.
 
 * See also
 

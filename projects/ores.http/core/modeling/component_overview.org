@@ -20,10 +20,10 @@
 * Summary
 
 =ores.http.core= implements the concrete HTTP route handlers for the ORE Studio
-REST API. It registers routes for each domain it still owns in process: IAM
-(login, session), storage, and variability (configuration). The domain
-components served through generated NATS-forwarding route units live in their
-own adapter parts under =projects/ores.http/= — =ores.http.assets= and
+REST API. It registers routes for each domain it still owns in process:
+storage and variability (configuration). The domain components served through
+generated NATS-forwarding route units live in their own adapter parts under
+=projects/ores.http/= — =ores.http.iam=, =ores.http.assets= and
 =ores.http.refdata=. Each route handler translates the incoming HTTP request
 into NATS calls to the appropriate domain service and returns the NATS
 response as an HTTP response.
@@ -41,7 +41,6 @@ response as an HTTP response.
 
 * Entry points
 
-- =include/ores.http.core/routes/iam_routes.hpp= — IAM endpoint handlers.
 - =include/ores.http.core/routes/variability_routes.hpp= — config handlers.
 - =include/ores.http.core/routes/storage_routes.hpp= — storage handlers.
 

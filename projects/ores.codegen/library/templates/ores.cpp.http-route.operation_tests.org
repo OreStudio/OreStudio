@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: 2E06E8BC-851D-4389-8CFA-FC1A8D2FACD0
+:END:
+#+title: ores.cpp.http-route.operation_tests
+#+description: HTTP route unit tests for an operation model: the registered method and pattern of every declared message, and the auth flag each states.
+#+type: archetype
+#+output: projects/ores.http/{component}/tests/{entity}_routes_tests.cpp
+#+facet: ores.cpp.http-route
+#+model_types: operation
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The test file for one operation model's HTTP route unit. Every case stops at
+the router, so the file needs no server, no NATS connection and no database.
+It links against Catch2 and the part's own library.
+
+Each case pins one thing the unit promises. Every declared message that carries
+a subject and a response appears in the router's route list, which is the only
+public view of what the unit registered. The count matches the projection, so a
+route that stopped being registered fails rather than passing as a smaller set.
+Each route carries the authentication flag its own message states, so a route
+that needs a session cannot be registered without one and a route the model
+declares public is not made unreachable.
+
+* Mustache incantations
+
+The expectations are built from ={{http_route.routes}}=, one entry per declared
+route, each carrying the method, the path and the auth flag the projection
+decided.
+
+Every case name starts with ={{entity_singular}}_routes=. A component's test
+files link into one binary, so without the prefix two models in the same
+component declare each case name twice. Catch2 rejects the duplicate, and
+=ctest= does not always surface the rejection, so the prefix is what keeps the
+component's suite both startable and honest.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_http_route_operation_tests.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_http_route_operation_tests.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.http-route.operation_tests.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#operation}}
+#include "ores.http/routes/{{component}}/{{entity_singular}}_routes.hpp"
+#include "ores.http.api/net/router.hpp"
+#include "ores.http.api/openapi/endpoint_registry.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include <algorithm>
+#include <catch2/catch_test_macros.hpp>
+#include <memory>
+#include <string>
+#include <string_view>
+
+using namespace ores::logging;
+using ores::http::domain::http_method;
+using ores::http::net::router;
+using ores::http::openapi::endpoint_registry;
+using ores::http::routes::{{component}}::{{entity_singular}}_routes;
+using ores::nats::service::nats_client;
+
+namespace {
+
+const std::string_view test_suite("ores.http.{{component}}.tests");
+const std::string tags("[routes]");
+
+/// One route the unit must register, as the projection states it.
+struct expected_route {
+    http_method method;
+    std::string pattern;
+    bool requires_auth;
+};
+
+/// A router holding the unit's routes, registered against a bare client.
+///
+/// Registration touches no transport: the client is only what each route
+/// forwards on, so an unconnected one is enough to read the route table.
+std::shared_ptr<router> registered_routes(nats_client& session) {
+    auto table = std::make_shared<router>();
+    auto registry = std::make_shared<endpoint_registry>();
+    {{entity_singular}}_routes::register_routes(table, registry, session);
+    return table;
+}
+
+}
+
+TEST_CASE("{{entity_singular}}_routes_registers_every_declared_operation", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    const auto table = registered_routes(session);
+    const auto& routes = table->routes();
+
+    REQUIRE(routes.size() == {{http_route.route_count}});
+
+    // The router's own list is the only public view of what was registered,
+    // so a route that is missing from it was never registered.
+    for (const auto& expected : {
+{{#http_route.routes}}
+             expected_route{http_method::{{method}}, std::string{"{{pattern}}"},
+{{#requires_session}}
+                            true},
+{{/requires_session}}
+{{^requires_session}}
+                            false},
+{{/requires_session}}
+{{/http_route.routes}}
+         }) {
+        const auto found = std::find_if(routes.begin(), routes.end(),
+                                        [&](const auto& route) {
+                                            return route.method == expected.method &&
+                                                   route.pattern == expected.pattern;
+                                        });
+        CHECK(found != routes.end());
+    }
+
+    BOOST_LOG_SEV(lg, debug) << "Registered {{http_route.route_count}} route(s).";
+}
+
+TEST_CASE("{{entity_singular}}_routes_requires_a_session_where_the_message_does", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    const auto table = registered_routes(session);
+    const auto& routes = table->routes();
+
+    // The flag is the message's own stated requirement. A route that needs a
+    // session cannot be registered without one, and one the model declares
+    // public is not made unreachable by a flag it never asked for.
+    for (const auto& expected : {
+{{#http_route.routes}}
+         expected_route{http_method::{{method}}, std::string{"{{pattern}}"},
+{{#requires_session}}
+                        true},
+{{/requires_session}}
+{{^requires_session}}
+                        false},
+{{/requires_session}}
+{{/http_route.routes}}
+         }) {
+        const auto found = std::find_if(routes.begin(), routes.end(),
+                                        [&](const auto& route) {
+                                            return route.method == expected.method &&
+                                                   route.pattern == expected.pattern;
+                                        });
+        REQUIRE(found != routes.end());
+        CHECK(found->requires_auth == expected.requires_auth);
+        // The builder refuses a route that states no position, so every
+        // registered route must carry the declaration as well as the value.
+        CHECK(found->auth_declared);
+    }
+
+    BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of {{http_route.route_count}} route(s).";
+}
+{{/operation}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:1EBDA080-07F6-496D-AA4A-72899E65641C][ores.cpp.http-route]].
+- Sibling archetypes: [[id:CCFCDAC3-DAA3-433E-9A51-924FC00992AF][ores.cpp.http-route.operation_header]] and [[id:5CCD5E44-6BD9-4068-8928-0C1E6EAE015C][ores.cpp.http-route.operation_implementation]].
+- [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] — the facet whose operation archetypes these mirror.

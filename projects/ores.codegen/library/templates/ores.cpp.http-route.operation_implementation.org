@@ -1,0 +1,192 @@
+:PROPERTIES:
+:ID: 5CCD5E44-6BD9-4068-8928-0C1E6EAE015C
+:END:
+#+title: ores.cpp.http-route.operation_implementation
+#+description: HTTP route unit implementation for an operation model: the route table and one handler body per declared message.
+#+type: archetype
+#+output: projects/ores.http/{component}/src/routes/{component}/{entity}_routes.cpp
+#+facet: ores.cpp.http-route
+#+model_types: operation
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The route table and the handler bodies behind the declarations of the sibling
+=ores.cpp.http-route.operation_header= archetype. One handler per declared
+message, plus the registration that puts each route on the router and the
+OpenAPI registry.
+
+* Mustache incantations
+
+Three constructs carry weight here.
+
+- ={{method}}= is the route builder the operation calls. A declared operation
+  states no verb, so it is always =post=: the canonical request is the whole
+  of what the route sends, and a body needs a method that carries one.
+- ={{#has_fields}}= selects the handler body by whether the request declares a
+  field. A message with fields parses the JSON body; a message with none
+  constructs the request, so a bare status probe does not fail on an empty
+  body.
+- ={{#requires_session}}= emits =.auth_required()= and ={{^requires_session}}=
+  emits =.auth_optional()=, so the route states exactly one of the two and the
+  message's own =:auth:= property alone decides which.
+
+*One enforcement point.* =forward()= takes the caller's token from the HTTP
+request, hands it to =nats_client::with_delegation=, and sends the request on
+the subject the message states. The service's generated handler validates that
+token and checks the operation's permission. The gateway maps the answer,
+including the error the service names, and never decides access itself.
+
+*Addressing.* The path is the message's own NATS subject transliterated:
+=iam.v1.accounts.lock= reaches =/api/v1/iam/accounts/lock=. The subject is the
+address the protocol already agreed on, so the URL cannot disagree with it, and
+a message the model renames moves its route in the same commit.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_http_route_operation_implementation.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_http_route_operation_implementation.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.http-route.operation_implementation.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#operation}}
+#include "ores.http/routes/{{component}}/{{entity_singular}}_routes.hpp"
+#include "ores.{{component}}.{{subcomponent}}/messaging/{{entity_singular}}_protocol.hpp"
+#include "ores.nats/domain/headers.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/service/session_expired_error.hpp"
+#include "ores.nats/service/timeouts.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <exception>
+#include <memory>
+#include <rfl/json.hpp>
+#include <string>
+#include <utility>
+
+namespace ores::http::routes::{{component}} {
+
+using namespace logging;
+using ores::http::domain::http_request;
+using ores::http::domain::http_response;
+using ores::nats::service::nats_client;
+namespace messaging = {{namespace}};
+
+namespace {
+
+/**
+ * @brief The HTTP response a service error names.
+ *
+ * The service answers a refused caller with a status in its reply header
+ * rather than a body, so the gateway reads that status and maps it. An error
+ * it does not know is the caller's to see as unauthorised, which is what the
+ * service means by any code it does not spell out here.
+ */
+http_response error_response(const std::string& error) {
+    if (error == "forbidden") {
+        return http_response::forbidden(error);
+    }
+    if (error == "bad_request") {
+        return http_response::bad_request(error);
+    }
+    return http_response::unauthorized(error);
+}
+
+/**
+ * @brief Forward one canonical request and map the reply to a response.
+ *
+ * The caller's own bearer token is taken from the HTTP request and delegated
+ * on the NATS call, so the service validates that caller and its own
+ * permission check governs. The gateway authorises nobody and decides
+ * nothing; it states the subject the request already carries.
+ */
+template <typename Request>
+boost::asio::awaitable<http_response>
+forward(const http_request& req, nats_client& session, const Request& msg) {
+    auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
+    try {
+        const auto reply = delegated.authenticated_request(
+            msg.nats_subject, ores::nats::default_wire_codec().encode(msg),
+            ores::nats::service::default_request_timeout);
+        if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
+            it != reply.headers.end()) {
+            co_return error_response(it->second);
+        }
+        const auto decoded =
+            ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
+        if (!decoded) {
+            co_return http_response::internal_error(std::string("Failed to decode response: ") +
+                                                    decoded.error().what());
+        }
+        co_return http_response::json(rfl::json::write(*decoded));
+    } catch (const ores::nats::service::session_expired_error& e) {
+        co_return http_response::unauthorized(e.what());
+    } catch (const std::exception& e) {
+        co_return http_response::internal_error(e.what());
+    }
+}
+
+} // namespace
+{{#http_route.routes}}
+
+boost::asio::awaitable<http_response>
+{{entity_singular}}_routes::handle_{{identifier}}(const http_request& req, nats_client& session) {
+    using request_type = messaging::{{request}};
+    try {
+{{#has_fields}}
+        const auto parsed = rfl::json::read<request_type>(req.body);
+        if (!parsed) {
+            co_return http_response::bad_request("Invalid request body");
+        }
+        co_return co_await forward(req, session, *parsed);
+{{/has_fields}}
+{{^has_fields}}
+        co_return co_await forward(req, session, request_type{});
+{{/has_fields}}
+    } catch (const std::exception& e) {
+        co_return http_response::bad_request(e.what());
+    }
+}
+{{/http_route.routes}}
+
+void {{entity_singular}}_routes::register_routes(
+    std::shared_ptr<ores::http::net::router> router,
+    std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
+    nats_client& session) {
+    BOOST_LOG_SEV(lg(), info) << "Registering {{entity_singular}} routes";
+{{#http_route.routes}}
+
+    auto {{identifier}}_route = router->{{method}}("{{pattern}}")
+                                    .summary("{{summary}}")
+                                    .description("{{description}}")
+                                    .tags({"{{component}}"})
+{{#requires_session}}
+                                    .auth_required()
+{{/requires_session}}
+{{^requires_session}}
+                                    .auth_optional()
+{{/requires_session}}
+                                    .body<messaging::{{request}}>()
+                                    .response<messaging::{{response_type}}>()
+                                    .handler([&session](const http_request& req) {
+                                        return handle_{{identifier}}(req, session);
+                                    });
+    router->add_route({{identifier}}_route.build());
+    registry->register_route({{identifier}}_route.build());
+{{/http_route.routes}}
+
+    BOOST_LOG_SEV(lg(), info) << "{{entity_singular}} routes registered: "
+                              << {{http_route.route_count}} << " endpoint(s)";
+}
+
+}
+{{/operation}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:1EBDA080-07F6-496D-AA4A-72899E65641C][ores.cpp.http-route]].
+- Sibling archetypes: [[id:CCFCDAC3-DAA3-433E-9A51-924FC00992AF][ores.cpp.http-route.operation_header]] and [[id:2E06E8BC-851D-4389-8CFA-FC1A8D2FACD0][ores.cpp.http-route.operation_tests]].
+- [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] — the facet whose operation archetypes these mirror.

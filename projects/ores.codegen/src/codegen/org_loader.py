@@ -4634,6 +4634,74 @@ def entity_http_route_plan(entity: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# The version segment of the canonical NATS subject grammar a declared
+# operation is addressed by: ``<component>.v<version>.<resource>.<action>``.
+# The derived subjects an entity states are the same grammar with a hole for
+# the owning component; a declared operation states it whole, so the HTTP
+# route can read the address the protocol already agreed on rather than
+# inventing a second one.
+_SUBJECT_VERSION_RE = re.compile(r"^v\d+$")
+
+
+def operation_http_route_plan(operation: dict[str, Any]) -> dict[str, Any]:
+    """The HTTP routes an operation model's declared messages become.
+
+    An entity projects the verbs it derives; an operation model declares the
+    messages it answers, so its routes are one per addressable declared
+    message -- the same set the shell projects into commands. A message with
+    no subject is a payload struct and a message with no response answers
+    with nothing to carry, so neither becomes a route.
+
+    The route addresses the operation by the subject the protocol already
+    states, transliterated into a path: ``iam.v1.accounts.lock`` becomes
+    ``/api/v1/iam/accounts/lock``. There is no verb to derive -- a declared
+    operation's meaning is the service's -- so every route is a POST and the
+    canonical request travels as the body. The gateway invents no addressing
+    and decides nothing the model has not stated.
+
+    ``requires_session`` is read from the message's own ``:auth:`` property,
+    which is the same fact the protocol header states, so a route that
+    produces the session (login, signup, bootstrap) is public by the model's
+    declaration rather than by a default.
+    """
+    routes: list[dict[str, Any]] = []
+    for command in operation.get("shell_commands") or []:
+        subject = command.get("subject", "")
+        segments = subject.split(".")
+        if len(segments) < 3 or not _SUBJECT_VERSION_RE.match(segments[1]):
+            raise ValueError(
+                f"{operation.get('entity_singular', '?')}: message "
+                f"{command.get('request', '?')} states subject {subject!r}, "
+                "which is not the canonical "
+                "<component>.v<version>.<resource>[.<action>] grammar; an "
+                "HTTP route cannot be derived from it")
+        component, version, resource = segments[0], segments[1], segments[2]
+        action = "/".join(segments[3:])
+        pattern = f"/api/{version}/{component}/{resource}"
+        if action:
+            pattern = f"{pattern}/{action}"
+        command_name = command["command"]
+        routes.append({
+            "command": command_name,
+            "identifier": command["identifier"],
+            # A declared operation states no verb, so the method is the one
+            # that carries a body: the canonical request.
+            "method": "post",
+            "method_upper": "POST",
+            "pattern": pattern,
+            "summary": command_name.replace("-", " ").capitalize(),
+            "description": f"Forwards to the {subject} operation.",
+            "subject": subject,
+            "request": command["request"],
+            "response_type": command["response_type"],
+            "requires_session": not command.get("public", False),
+            # A message with no field takes an empty body, so the handler
+            # constructs it rather than parsing an absent one.
+            "has_fields": bool(command.get("positionals") or command.get("flags")),
+        })
+    return {"routes": routes, "route_count": len(routes)}
+
+
 # The value a generated script sends for a field. A generator cannot invent a
 # real id, and a recipe that sent nothing would fail before it left the client:
 # a uuid the shell cannot parse, or an arity the command refuses, proves only

@@ -24,18 +24,16 @@
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
-#include "ores.geo/service/geolocation_service.hpp"
 #include "ores.http.api/net/http_server.hpp"
-#include "ores.http.core/routes/iam_routes.hpp"
 #include "ores.http.core/routes/storage_routes.hpp"
 #include "ores.http.core/routes/variability_routes.hpp"
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.http/routes/assets/assets_routes.hpp"
+#include "ores.http/routes/iam/iam_routes.hpp"
 #include "ores.http/routes/refdata/refdata_routes.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
-#include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -91,8 +89,6 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
         ctx, database::service::tenant_context::system_tenant_id);
     system_flags->refresh();
     auto sessions = std::make_shared<iam::service::auth_session_service>();
-    auto auth_service = std::make_shared<iam::service::authorization_service>(ctx);
-    auto geo_service = std::make_shared<geo::service::geolocation_service>(ctx);
 
     BOOST_LOG_SEV(lg(), info) << "Initializing event bus...";
     eventing::service::event_bus event_bus;
@@ -157,9 +153,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
             });
     router->add_route(api_info_builder.build());
 
-    routes::iam_routes iam(
-        ctx, system_flags, sessions, auth_service, server.get_authenticator(), geo_service);
-    iam.register_routes(router, registry);
+    ores::http::routes::iam::iam_routes::register_routes(router, registry, service_nats);
 
     routes::variability_routes variability(ctx, system_flags, sessions);
     variability.register_routes(router, registry);

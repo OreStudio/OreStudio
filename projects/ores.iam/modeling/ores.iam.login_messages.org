@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 72596DEE-01BE-40A5-B084-4C38DB212191
+:ores.cpp.http-route.enabled: true
 :END:
 #+title: ores.iam.login_messages
 #+description: Codegen operation model for the login protocol, rendered to C++ and TypeScript from one source.

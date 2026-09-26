@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 137AABDF-7F6F-403D-BA9C-471BCF8FB910
+:END:
+#+title: ores.http.iam
+#+description: The HTTP gateway's identity-and-access adapter part. Holds the generated route units that project the iam domain onto the REST surface.
+#+type: ores.codegen.component
+#+component_kind: adapter
+#+level: cross
+#+filetags: :http:rest:iam:component:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+name: iam
+#+full_name: ores.http.iam
+#+brief: HTTP iam route units
+
+* Summary
+
+=ores.http.iam= is the adapter part that projects the identity-and-access
+domain onto the HTTP server's REST surface. It holds the generated route units
+for the iam models that opt in: the entities the gateway reads (account, role,
+permission, session, login_info) and the operation models whose declared
+messages the gateway serves (account_operations, authorization, login, signup,
+bootstrap, session_operations).
+
+iam's models opt in through the =:ores.cpp.http-route.enabled:= property in
+their own model drawer, so a model that needs no route can leave the facet
+off. The units speak the canonical protocol over NATS and hold no service,
+repository or database context: the iam service stays the only place that
+decides, and the caller's own token travels with every forwarded request.
+
+The part declares =#+component_kind: adapter=. Its =CMakeLists.txt= files are
+hand-authored, because the link libraries belong to the HTTP surface rather
+than to the domain, and codegen writes only the two =component_files.cmake=
+lists. A regeneration therefore never writes over the build.
+
+The units are output of the =ores.cpp.http-route= facet, which is opt-in per
+model. An entity model renders one route per derived verb; an operation model
+renders one route per declared message, addressed by the subject it states.
+The facet writes here because the part is named after the domain the units
+project, which is the fractal naming rule in
+[[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]].
+
+* Inputs
+
+- HTTP requests on the =/api/v1/iam/...= paths the units register.
+- The caller's bearer token, forwarded to the service on every NATS request.
+- The connected NATS client the hand-written per-component aggregator passes
+  to =register_routes=.
+- The iam models under =projects/ores.iam/modeling/= whose drawers opt in to
+  the =ores.cpp.http-route= facet.
+
+* Outputs
+
+- One route unit per opted-in model, at
+  =src/routes/iam/<unit>_routes.cpp= and
+  =include/ores.http/routes/iam/<unit>_routes.hpp=.
+- The routes and their OpenAPI schemas, registered on the router and the
+  endpoint registry.
+- NATS request messages to the iam service, one per route.
+
+* Entry points
+
+- =include/ores.http/routes/iam/= -- the generated unit headers.
+- =src/routes/iam/= -- the generated unit implementations.
+- =iam_routes= -- the hand-written aggregator the host calls to install the
+  units in turn.
+
+* Dependencies
+
+- =ores.http.api= -- the router, the route builder, the OpenAPI registry and
+  the request/response types.
+- =ores.nats= -- NATS transport for service calls.
+- =ores.iam.api= -- the canonical protocol messages the units send.
+- =ores.utility= -- the rfl reflectors and the wire support types.
+- =ores.logging= -- logger factory.
+
+* See also
+
+- [[id:A8B318BC-8653-4D33-A58C-60793E3596D5][ores.http.server]] -- the process that hosts these routes.
+- [[id:1EBDA080-07F6-496D-AA4A-72899E65641C][ores.cpp.http-route]] -- the facet that emits the units.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] -- the composite and adapter kinds.
+- [[id:0F1A8E3B-2C4D-4E5F-9A6B-7C8D9E0F1A2B][ores.iam]] -- the domain this part projects.

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
+:ores.cpp.http-route.enabled: true
 :ID: 4B98E2D0-8FE3-4321-8CFD-90A4C13422EA
 :END:
 #+title: ores.iam.bootstrap_messages

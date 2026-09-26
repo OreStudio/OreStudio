@@ -24,20 +24,6 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace http_server #F2F2F2 {
         namespace routes #F2F2F2 {
-            class auth_result <<struct>> {
-                +account_id : boost::uuids::uuid
-                +is_admin : bool
-            }
-            class iam_routes {
-                -ctx_ : database::context
-                -account_service_ : iam::service::account_operations_service
-                -session_repo_ : iam::repository::session_repository
-                -system_flags_ : shared_ptr<variability::service::system_settings_service>
-                -sessions_ : shared_ptr<iam::service::auth_session_service>
-                -auth_service_ : shared_ptr<iam::service::authorization_service>
-                -authenticator_ : shared_ptr<ores::security::jwt::jwt_authenticator>
-                -geo_service_ : shared_ptr<geo::service::geolocation_service>
-            }
             class storage_routes {
                 -storage_dir_ : string
             }

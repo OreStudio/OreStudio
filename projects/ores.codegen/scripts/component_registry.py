@@ -72,4 +72,11 @@ Usage: imported by the check scripts, never run.
 # or as not applicable. Two of its own tests were deleted rather than
 # strengthened because the id generator takes the system clock, and four stats
 # reads are kept with a capture naming the consumer that should reach them.
-COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "ore", "telemetry-cpp", "workflow-cpp")
+# variability joins it at the end of its clean-standard pass. Its regeneration is
+# byte-identical on a committed tree, every one of its protocol headers has a
+# TypeScript twin, the database recreates from scratch with its generated table,
+# triggers and policies, the eleven seeded settings land, and its four test
+# suites pass with the fleet's NATS up. What remains hand-written is recorded
+# with its reason on the task:
+# doc/agile/versions/v0/sprint_26/clean-variability/task_clean_variability.org.
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "ore", "telemetry-cpp", "workflow-cpp", "variability-cpp")

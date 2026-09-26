@@ -368,8 +368,11 @@ row is updated as each PR lands.
 - *D1, the rates wire.* The nine consolidated rates families ship as
   generated per-family protocols. The hand consolidation is deleted:
   the per-family sections of =instrument_protocol.hpp=,
-  =rates_instrument_handler.hpp= and =registrar_rates.cpp=. The subject
-  names do not change, so no consumer changes. The alternative, making
+  =rates_instrument_handler.hpp=, and =registrar_rates.cpp= is rewritten
+  to call the nine generated registrar functions. The generated protocol
+  renames two verbs per family, =save= to =put= and =history= to
+  =_versions.list=, so the nine hand-written shell units and the ORE
+  import handler migrate in the same PR. The alternative, making
   consolidation a model decision, needs generator work and is recorded
   as a later option rather than taken here. Reason: the generator
   already emits the per-family shape, and leaving both shapes in place

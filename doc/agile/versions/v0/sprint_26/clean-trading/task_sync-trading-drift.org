@@ -129,9 +129,57 @@ would subscribe the same subjects twice.
 
 The work: let the nine per-family files be created, then delete the
 per-family sections of =instrument_protocol.hpp=, delete
-=rates_instrument_handler.hpp= and =registrar_rates.cpp=, and wire the
-generated registrars at the same composition point. The subject names
-do not change, so no consumer changes for this step.
+=rates_instrument_handler.hpp=, and rewrite =registrar_rates.cpp= to
+call the nine generated registrar functions, exactly as
+=registrar_equity.cpp= calls the equity ones. The family master stays,
+because it is the composition point: =registrar.cpp= calls
+=detail::register_rates_handlers=, and the other families keep the same
+shape.
+
+** Where the work stands after the first regeneration
+
+The component was regenerated at 39f99acef3: 1636 files changed, 115
+were created, and the run reports untracked files because none of the
+creates is committed yet. That report is expected, not a defect.
+
+The D1 edits are applied on the working tree, uncommitted:
+
+- =instrument_protocol.hpp= keeps the four families that have no model
+  (=commodity=, =composite= with its legs, =credit=, =scripted=), 34
+  structs, and loses the nine rates families and the 17 now-unused
+  domain includes.
+- =rates_instrument_handler.hpp= is deleted.
+- =registrar_rates.cpp= is rewritten to call the nine generated
+  =register_<family>_instrument_handlers= functions.
+
+** The consumer migration the wire rename forces
+
+The generated canonical protocol does not keep the consolidated struct
+names or subjects. Per family, the mapping is:
+
+| Consolidated | Generated | Subject |
+|--------------+-----------+---------|
+| =get_<family>_instruments_request/response= | =list_<family>_instruments_request/response= | =trading.v1.<family>_instruments.list=, unchanged |
+| =save_<family>_instrument_request/response= | =put_<family>_instrument_request/response= | =...save= becomes =...put= |
+| =delete_<family>_instrument_request/response= | unchanged | unchanged |
+| =get_<family>_instrument_history_request/response= | =list_<family>_instrument_versions_request/response= | =...history= becomes =..._versions.list= |
+
+The families are fra, vanilla swap, cap floor, swaption, balance
+guaranteed swap, callable swap, knock out swap, inflation swap and rpa.
+The request and response fields differ from the consolidated ones as
+well, so each call site is read against the generated struct rather
+than renamed mechanically.
+
+The call sites are the nine hand-written shell units under
+=projects/ores.shell/application/src/app/commands/trading/= and
+=projects/ores.ore/service/src/messaging/ore_import_execute_handler.cpp=.
+The shell units also carry the subject strings as literals, so the
+migration replaces them with the generated constants, which is item P02.
+
+Still to do after the migration: regenerate the CMake source lists,
+because =rates_instrument_handler.hpp= is gone; build the whole tree;
+run the four suites; then run the dry run twice for idempotence.
+
 
 ** 3. Regenerate
 

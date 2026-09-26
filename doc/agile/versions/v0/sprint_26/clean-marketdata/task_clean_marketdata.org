@@ -90,7 +90,7 @@ record each item's result in the table below.
 | V06 | Not yet | The registry entry is PR 6. |
 | V07 | Fail | Vacuous tests found in the client CRM suite, which is the dead stack. Deferred with H02. |
 | V08 | Fail | 65 generated and 16 hand-written sources have no test that reaches them, including =market_data_client.cpp=, which =ores.synthetic= consumes from four files. |
-| Oresmd coverage | Recorded | 43 ORE series types: 30 represented, 13 recorded with a reason, 11 represented in a shape the corpus contradicts. Gate: =projects/ores.codegen/scripts/check_oresmd_ore_coverage.py=. |
+| Oresmd coverage | In progress | 43 ORE series types: 30 represented, 13 recorded with a reason. Of the 30, 21 match the corpus shapes and 9 do not yet. FRA, IMM_FRA and MM's short form are fixed in this pass; the remainder is enumerated with its reason in =check_oresmd_ore_coverage.py=. |
 
 * Notes
 
@@ -121,10 +121,23 @@ the registry.
 ORE's shape table defines 43 series types. oresmd declares 29 of them, so
 14 are unrepresented; measured against the committed corpus at
 =external/ore/examples/=, those 14 are 48.8% of the key lines. The larger
-problem is the other direction: 11 of the 29 declared types cannot express
-the keys ORE actually writes. =BASIS_SWAP= projects 0 of 5,049 lines,
-=FRA= 0 of 1,678, =ZERO= 0 of 498, and =MM_FUTURE= and =OI_FUTURE= key on a
-contract month and an exchange the model has no field for.
+problem is the other direction: 9 of the 29 declared types still cannot
+express the keys ORE actually writes.
+
+The shape table and the oresmd models contradicted each other, and the
+shape table was right. =ores_series_key_shapes_populate.sql= states every
+shape correctly -- it was corrected from the corpus -- and the oresmd
+models were never brought into line. FRA and IMM_FRA were declared with an
+index where ORE writes =ccy/start/length=, so all 2,273 of their corpus
+lines projected nothing; MM's index-less form, 94% of its lines, was
+rejected for want of an index the producer never wrote. All three now
+project and round-trip.
+
+What remains needs the identifier grammar extended rather than a shape
+corrected: BASIS_SWAP and the two cross-currency swaps carry two tenors
+and sometimes two currencies, ZERO carries a day count, the futures carry
+a contract month and an exchange, CORRELATION carries two operands on a
+strike surface, and CPR has no currency at all.
 
 Two live defects fall out of the same walk. The IR 6-segment path discards
 the settlement segment and rebuilds it as a hardcoded ="2D"=, so the 1,338

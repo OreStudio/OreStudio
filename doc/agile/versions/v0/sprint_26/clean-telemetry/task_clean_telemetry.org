@@ -45,19 +45,31 @@ ores.telemetry passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order, one entity at a time, and
 record each item's result in the table below.
 
-1. Baseline and inventory (B01 to B05). Record the baseline before any
+The standard's table holds 49 items, though its own prose still says 47. This
+component is of kind *Protocol*: it serves and sends NATS messages, and it
+has no entity, junction or operation model at its baseline. The *All* items
+are the work, and the Protocol items are too. The Entity items are recorded
+as not applicable with their reason, and so are the Shell items, which follow
+from them.
+
+1. Baseline and inventory (B01 to B06). Record the baseline before any
    edit.
 2. Models (M01 to M10).
 3. Protocol (P01 to P06).
-4. Generation (G01 to G06).
+4. Generation (G01 to G08).
 5. Wiring and data (W01 to W04).
 6. Shell (S01, S02).
-7. Structure and hygiene (H01 to H03).
-8. Verification (V01 to V06), ending with the registry entry.
+7. Structure and hygiene (H01 to H05).
+8. Verification (V01 to V08), ending with the registry entry.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01  | Pass   | Baseline before any edit. =check_component_drift.py --component telemetry= reports a component the codegen cannot name, because the component has no catalogue row. =check_model_drift.py= reports only the one known reporting exception. The three parts' =component_files.cmake= lists are all stale. Evidence in =evidence/b01_baseline.txt=. |
+| B02  | Pass   | 0 entity, junction, operation, message, field-group and module models. The three part overviews are component models, and =core/modeling/ores.telemetry.protocol.org= declares no =#+type:= at all, so the loader does not read it as a model. The component has no root =modeling/= directory: every other composite keeps its models and its root overview in one. Evidence in =evidence/b02_models.txt=. |
+| B03  | Pass   | 89 hand-written C++ files, none generated, classified: 42 generatable, 36 infrastructure, 11 dead. Per part, core is 33/20/9, database 6/2/1 and service 3/14/1. The dead set is the file-JSONL exporter sub-tree, =macros.hpp=, =application_exception.hpp=, a database sink helper and an example. Evidence in =evidence/b03_handwritten_inventory.tsv=. |
+| B04  | Pass   | Six subjects, each declared once in one of three hand-written protocol headers, and all six served by =service/src/messaging/registrar.cpp=. No raw subject literal sits outside a protocol header. One subject is sent by =ores.compute='s wrapper and one by =ores.service='s heartbeat publisher. Evidence in =evidence/b04_subjects.txt=. |
+| B05  | Pass   | No branch in flight on origin touches the component. Four captures in the backlog name it, and none asks for a change that collides with this task. The =instrument_components_with_telemetry_context= capture names the intended consumer of the tracing API that B06 finds test-only. Evidence in =evidence/b05_captures_and_branches.txt=. |
+| B06  | Pass   | Symbol census over every public header: 138 symbols, of which 71 have a production consumer, 30 are reached only from a test and 37 from nothing. The test-only set is the distributed-tracing API, whose intended consumer the capture at B05 names. The unreached set is the file-JSONL exporters, =macros.hpp= and =application_exception.hpp=. Evidence in =evidence/b06_symbol_census.tsv=. |
 
 * Notes
 

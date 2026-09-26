@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -9,23 +9,23 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_HPP
-#define ORES_REFDATA_CORE_HPP
+#ifndef ORES_REFDATA_CLIENT_HPP
+#define ORES_REFDATA_CLIENT_HPP
 
 /**
- * @brief Reference data persistence and services.
+ * @brief Consumer-side reference data helpers.
  *
- * Holds the ORM entities, mappers and repositories with their temporal
- * versioning, the services that apply a change intent to them, and the NATS
- * handlers, registrars and history providers that put them on the wire.
+ * Convention-aware formatting of currency pair rates, and the tenant-scoped
+ * cache of currency pair conventions a client keeps between calls.
  */
-namespace ores::refdata {}
+namespace ores::refdata::client {}
 
 #endif

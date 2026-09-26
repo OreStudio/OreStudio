@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-26
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2464A2A7-8744-4F0C-A2E4-6A1D11DF30EA][Clean ores.utility to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -148,7 +148,7 @@ Twelve items were planned. Each one is recorded here with its outcome.
 | 1. Decide the six sub-trees as a group | done. All six deleted, with their tests, on the B06 test-only rule. Recorded above. |
 | 2. Delete the `ores::comms::messaging` reflector specialisations | done. Both go, with the forward declarations that existed only for them. `ores.comms` does not exist. |
 | 3. Deal with the eleven umbrella headers | done. All eleven deleted. The facet inventory they duplicated lives on the rewritten component overview. |
-| 4. Rewrite `component_overview.org` | done, including the false dependency claim, the non-existent `datetime/` facet, the geo facet with no code, and all fourteen facets. |
+| 4. Rewrite `component_overview.org` | done, including the false dependency claim, the non-existent `datetime/` facet, the geo facet with no code, and all thirteen facets. |
 | 5. Fix the same claims in `ores.utility.hpp` | done by deletion. The file was a stub with no consumer. |
 | 6. Test the live untested files | done. `gzip` had no direct test in the component and now has 7 cases; `ores.nats` covered it indirectly before this pass. Two new suites cover the generation facet and the faker datetime helpers. |
 | 7. Strengthen the tautological assertions | done. The TOTP test left with `faker/totp`. `tree_builder_tests.cpp` compared two production runs to each other; that case is replaced by one that pins the tree shape for a known seed and one that proves the seed selects the shape. |
@@ -275,15 +275,21 @@ via its "Verifies task" field.
 | 7 | The component was described as having fourteen facets | task_clean_utility.org | fixed | Thirteen facet directories exist. The survey's fourteen counted `concurrency`, which this pass deletes, so the number referred to a tree that no longer exists. |
 | 8 | The deletions section said thirteen files and 1526 lines left with the sub-trees and their tests | task_clean_utility.org | fixed | The table's thirteen sub-tree files are 947 lines; the sixteen files with their three tests are 1526. Both partitions are now stated. |
 | 9 | The file count said fourteen test files while the survey counted fifteen files under `tests/` | task_clean_utility.org | fixed | Both frames are right: fourteen suites plus `main.cpp`. The row now says so. |
-| 10 | "gzip had zero coverage anywhere in the repo", and the Result called the new cases the first test gzip has had anywhere | task_clean_utility.org, story.org, commit ed8e2ac27d, PR #2155 body | corrected, with one message left standing | The verifier found `projects/ores.nats/tests/domain_compression_tests.cpp`, eight cases present before this branch, which drives `ores.nats`'s compression wrapper and so exercises `gzip_compress` and `gzip_decompress` indirectly. The task, the story and the PR body now claim only that there was no direct test in the component. The pushed commit message repeats the old claim and stands, like the two platform messages before it. |
+| 10 | "gzip had zero coverage anywhere in the repo", and the Result called the new cases the first test gzip has had anywhere | task_clean_utility.org, story.org, commit 8a0701b908, PR #2155 body | corrected, with one message left standing | The verifier found `projects/ores.nats/tests/domain_compression_tests.cpp`, eight cases present before this branch, which drives `ores.nats`'s compression wrapper and so exercises `gzip_compress` and `gzip_decompress` indirectly. The task, the story and the PR body now claim only that there was no direct test in the component. The pushed commit message repeats the old claim and stands, like the two platform messages before it. It is `ed8e2ac27d` before the rebase and `8a0701b908` after, with a byte-identical message. |
 | 11 | The deletions table said the reader and writer "each half includes only the other" | task_clean_utility.org | fixed | Neither includes the other; each is included only by its own `.cpp`. |
 | 12 | Three documents still named artefacts this branch deletes: the retry-strategy backoff capture, the geo task's stale-claim list, and a closed sprint 24 task | product_backlog/next/root_cause_wt_service_glibc_crash.org, clean-geo/task_clean_geo.org, sprint_24 task_generalise_account_images.org | two fixed, one left as history | The two live documents are corrected and now say what was deleted and what replaced it. The sprint 24 task is closed and its sentence describes the tree as it was then, so it is left as written. |
 | 13 | The diagram drew a box named `streaming::parsers`, which is not a file in the component | projects/ores.utility/modeling/ores.utility.puml | fixed | It becomes two boxes named for the files that hold the specialisations, `streaming::uuid_parser` and `streaming::tenant_id_parser`, and each note now says it stands for the `rfl::Parser` specialisation in that file rather than for a type. The render was read again. |
+| 14 | The corrections for rows 5 to 9 were applied everywhere except two places inside this task: the Result still said `rfl` reaches 857, and the work-items row still said "all fourteen facets" | task_clean_utility.org | fixed | Found by the verifier's confirmation round, which re-read the task rather than trusting the previous round's summary. Both now carry the measured figure. The lesson is the one the platform task recorded: after correcting a figure, grep for every occurrence rather than fixing the ones you remember. |
+| 15 | The commit count in the Result was six `[utility]` commits, and the correction commit for rows 5 to 13 is itself tagged `[utility]`, making seven | task_clean_utility.org | fixed | The Result now says seven and names what the seventh is. It is the same defect that was caught when the count was eight, and it recurs for the same reason: the count depends on how the correcting commit is tagged, so the sentence now says which commit is which instead of leaving the reader to count. |
+| 16 | The replacement sentence in the retry-strategy capture named `process_supervisor.cpp`, which exists nowhere in the repository, and the capture's other reference named a controller populate script that is also gone | doc/agile/product_backlog/next/root_cause_wt_service_glibc_crash.org | fixed by retiring the capture | The controller binary and `projects/ores.controller/` were removed in sprint 24 (PR #1806), which the sprint 25 investigation confirmed, and `ores.wt.service` is part of the legacy presentation the sprint 26 pass removes. The capture is superseded rather than repairable, so it moves to the discarded bucket with the decommissioning recorded and the glibc `RLIMIT_RTPRIO` finding kept, because that part is about the environment and not about Wt. |
+| 17 | The task and the story had an empty `#+environment:` while every generated commit carries `Environment: merry_newton` | task_clean_utility.org, story.org | fixed | Both now carry `merry_newton`, matching the traceability the commits assert. The verifier notes that the sibling clean tasks are split on this, so it looks like a programme habit rather than a defect of this component. |
 
 * Result
 
 ores.utility meets the standard for the items that apply to a model-free
-component. Twelve work items landed across six `[utility]` commits.
+component. Twelve work items landed across seven `[utility]` commits: the
+six that carry the work, and the seventh carrying the corrections from the
+first verification round.
 
 The component lost 27 files and 1872 lines: six sub-trees whose only
 consumer was their own test, and eleven umbrella stubs that held nothing
@@ -295,8 +301,8 @@ the component. Its test suite went from 476 assertions in 141 test cases to
 assert something. One generator defect is fixed at its source.
 
 The component keeps its place as the foundation library. Every facet that
-survives reaches at least one file outside the component, and the facet
-with the widest reach, `rfl`, reaches 857 of them.
+survives reaches at least one C++ file outside the component, and the facet
+with the widest reach, `rfl`, reaches 856 of them.
 
 Three items stay out of scope. The M06 exception for
 `domain/protocol.hpp` is recorded with its reason. Three misplaced

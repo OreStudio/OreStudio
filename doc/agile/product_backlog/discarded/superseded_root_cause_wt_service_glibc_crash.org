@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 3039A4C3-C4F2-4C9E-B97B-852351246AD1
+:END:
+#+title: SUPERSEDED -- Root-cause ores.wt.service's intermittent glibc pthread crash
+#+description: RETIRED, not fixed: ores.wt.service and the controller that supervised it were decommissioned, so the crash this capture is about can no longer occur. Kept for the glibc RLIMIT_RTPRIO finding, which may still matter to any service that sets thread priorities.
+#+type: capture
+#+level: cross
+#+filetags: :controller:wt:glibc:crash:tech-debt:
+#+created: 2026-07-15
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores.wt.service='s Wt httpd crashed intermittently on startup with a fatal
+glibc assertion:
+
+#+begin_example
+Fatal glibc error: tpp.c:83 (__pthread_tpp_change_priority): assertion
+failed: new_prio == -1 || (new_prio >= fifo_min_prio && new_prio <= fifo_max_prio)
+#+end_example
+
+This fires inside glibc's priority-protected mutex code
+(=PTHREAD_PRIO_PROTECT= and =INHERIT=). Nothing in ORE Studio sets thread
+priorities, so the call came from Wt's compiled httpd or a Boost internal
+it depends on. The =bright_faraday= environment where this was diagnosed
+had =ulimit -r= (real-time priority) at =0=, both soft and hard, which is
+the condition that trips this assertion.
+
+* Why it is retired rather than fixed
+
+The service it is about is gone. The controller binary and
+=projects/ores.controller/= were removed in sprint 24 (PR #1806), which
+the sprint 25 investigation confirmed, and =ores.wt.service= is part of the
+legacy presentation that the sprint 26 pass removes. There is no crash loop
+left to root-cause and no service left to re-enable. The hotfix this
+capture leaned on, =enabled = 0= in the controller service-definitions
+SQL, went with the controller.
+
+The finding is kept because it is about the environment rather than about
+Wt: a process that asks for real-time or priority-protected scheduling
+under =RLIMIT_RTPRIO = 0= trips this glibc assertion. If a live service ever
+reports it, the cause is here.
+
+* References
+
+- =doc/agile/versions/v0/sprint_25/systemd-resource-management-and-isolation/task_investigate_decommission_controller_tables.org= — the task that confirmed the controller code was already fully gone, and what happened to its tables.
+- =doc/agile/versions/v0/sprint_26/remove_the_legacy_qt_remnants/story.org= — the pass that removes the legacy presentation, of which =ores.wt.service= is part.
+
+* See also
+
+-

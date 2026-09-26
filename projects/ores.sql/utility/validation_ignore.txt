@@ -123,6 +123,8 @@ TENANT_002 ores_iam_sessions_tbl
 TENANT_002 ores_iam_session_samples_tbl
 TENANT_002 ores_iam_auth_events_tbl
 TENANT_002 ores_telemetry_logs_tbl
+TENANT_002 ores_compute_grid_samples_tbl
+TENANT_002 ores_compute_node_samples_tbl
 
 # =============================================================================
 # Database info table - single-row system metadata, not tenant-specific.
@@ -297,8 +299,6 @@ RLS_001 ores_telemetry_nats_stream_samples_tbl
 
 # Compute sample tables — time-series metrics from the BOINC compute grid.
 # Not accessed by application users; no RLS needed.
-RLS_001 ores_compute_grid_samples_tbl
-RLS_001 ores_compute_node_samples_tbl
 
 # Trading type/enum tables — lookup codes seeded at startup; system-wide.
 # floating_index_types/leg_types moved to ores.refdata and now have real

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :sprint_26:v0:codegen:read-only-entity-profile-and-database-composite:
 #+owner: marco
-#+branch:
+#+branch: feature/read-only-entity-profile
 #+pr:
 #+blocked_on:
 #+blocked_since:

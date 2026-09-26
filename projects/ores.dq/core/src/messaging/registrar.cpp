@@ -65,6 +65,7 @@
 #include "ores.dq.core/messaging/lei_entity_registrar.hpp"
 #include "ores.dq.core/messaging/lei_relationship_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/lei_relationship_registrar.hpp"
+#include "ores.dq.core/messaging/nature_dimension_registrar.hpp"
 #include "ores.dq.core/messaging/publication_handler.hpp"
 #include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.dq.core/messaging/report_definition_history_provider_registrar.hpp"
@@ -213,25 +214,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     auto dim = std::make_shared<dimension_handler>(nats, ctx, verifier);
 
-    subs.push_back(nats.queue_subscribe(
-        get_nature_dimensions_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
-            dim->list_nature_dimensions(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_nature_dimension_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
-            dim->save_nature_dimension(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_nature_dimension_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
-            dim->delete_nature_dimensions(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_nature_dimension_history_request::nats_subject,
-        queue_group,
-        [dim](ores::nats::message msg) { dim->nature_dimension_history(std::move(msg)); }));
+    {
+        auto nature_dimension_subs = register_nature_dimension_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(nature_dimension_subs.begin()),
+                    std::make_move_iterator(nature_dimension_subs.end()));
+    }
 
     subs.push_back(nats.queue_subscribe(
         get_origin_dimensions_request::nats_subject, queue_group, [dim](ores::nats::message msg) {

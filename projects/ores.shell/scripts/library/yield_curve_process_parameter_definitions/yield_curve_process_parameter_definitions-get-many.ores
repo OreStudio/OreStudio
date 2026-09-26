@@ -1,0 +1,6 @@
+# =get-many=
+#
+# GENERATED from doc/recipes/shell/yield_curve_process_parameter_definitions/yield_curve_process_parameter_definition.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+yield_curve_process_parameter_definitions get-many __none__

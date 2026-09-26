@@ -50,14 +50,14 @@ TEST_CASE("write_single_nature_dimension", tags) {
     database_helper h;
 
     generation_context ctx;
-    nature_dimension_repository repo(h.context());
+    nature_dimension_repository repo;
     auto nature_dimension = generate_synthetic_nature_dimension(ctx);
-    nature_dimension.tenant_id = h.tenant_id().to_string();
+    nature_dimension.tenant_id = h.tenant_id();
     nature_dimension.code =
         nature_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Nature dimension: " << nature_dimension;
-    CHECK_NOTHROW(repo.write(nature_dimension));
+    CHECK_NOTHROW(repo.write(h.context(), nature_dimension));
 }
 
 TEST_CASE("write_multiple_nature_dimensions", tags) {
@@ -65,16 +65,16 @@ TEST_CASE("write_multiple_nature_dimensions", tags) {
 
     database_helper h;
 
-    nature_dimension_repository repo(h.context());
+    nature_dimension_repository repo;
     generation_context ctx;
     auto nature_dimensions = generate_synthetic_nature_dimensions(3, ctx);
     for (auto& n : nature_dimensions) {
-        n.tenant_id = h.tenant_id().to_string();
+        n.tenant_id = h.tenant_id();
         n.code = n.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Nature dimensions: " << nature_dimensions;
 
-    CHECK_NOTHROW(repo.write(nature_dimensions));
+    CHECK_NOTHROW(repo.write(h.context(), nature_dimensions));
 }
 
 TEST_CASE("read_latest_nature_dimensions", tags) {
@@ -82,18 +82,18 @@ TEST_CASE("read_latest_nature_dimensions", tags) {
 
     database_helper h;
 
-    nature_dimension_repository repo(h.context());
+    nature_dimension_repository repo;
     generation_context ctx;
     auto written_nature_dimensions = generate_synthetic_nature_dimensions(3, ctx);
     for (auto& n : written_nature_dimensions) {
-        n.tenant_id = h.tenant_id().to_string();
+        n.tenant_id = h.tenant_id();
         n.code = n.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Written nature dimensions: " << written_nature_dimensions;
 
-    repo.write(written_nature_dimensions);
+    repo.write(h.context(), written_nature_dimensions);
 
-    auto read_nature_dimensions = repo.read_latest();
+    auto read_nature_dimensions = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
 
     CHECK(!read_nature_dimensions.empty());
@@ -105,21 +105,21 @@ TEST_CASE("read_latest_nature_dimension_by_code", tags) {
 
     database_helper h;
 
-    nature_dimension_repository repo(h.context());
+    nature_dimension_repository repo;
     generation_context ctx;
     auto nature_dimensions = generate_synthetic_nature_dimensions(3, ctx);
     for (auto& n : nature_dimensions) {
-        n.tenant_id = h.tenant_id().to_string();
+        n.tenant_id = h.tenant_id();
         n.code = n.code + "_" + std::string(faker::string::alphanumeric(8));
     }
 
     const auto target = nature_dimensions.front();
     BOOST_LOG_SEV(lg, debug) << "Write nature dimensions: " << nature_dimensions;
-    repo.write(nature_dimensions);
+    repo.write(h.context(), nature_dimensions);
 
     BOOST_LOG_SEV(lg, debug) << "Target nature dimension: " << target;
 
-    auto read_nature_dimensions = repo.read_latest(target.code);
+    auto read_nature_dimensions = repo.read_latest(h.context(), target.code);
     BOOST_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
 
     REQUIRE(read_nature_dimensions.size() == 1);
@@ -132,12 +132,12 @@ TEST_CASE("read_nonexistent_nature_dimension", tags) {
 
     database_helper h;
 
-    nature_dimension_repository repo(h.context());
+    nature_dimension_repository repo;
 
     const std::string nonexistent_code = "nonexistent.nature_dimension.12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
-    auto read_nature_dimensions = repo.read_latest(nonexistent_code);
+    auto read_nature_dimensions = repo.read_latest(h.context(), nonexistent_code);
     BOOST_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
 
     CHECK(read_nature_dimensions.size() == 0);

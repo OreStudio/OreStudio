@@ -21,11 +21,9 @@
 #define ORES_DQ_CORE_SERVICE_DIMENSION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.dq.api/domain/nature_dimension.hpp"
 #include "ores.dq.api/domain/origin_dimension.hpp"
 #include "ores.dq.api/domain/treatment_dimension.hpp"
 #include "ores.dq.core/export.hpp"
-#include "ores.dq.core/repository/nature_dimension_repository.hpp"
 #include "ores.dq.core/repository/origin_dimension_repository.hpp"
 #include "ores.dq.core/repository/treatment_dimension_repository.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -36,10 +34,9 @@
 namespace ores::dq::service {
 
 /**
- * @brief Service for managing dimensions (nature, origin, treatment).
+ * @brief Service for managing the origin and treatment dimensions.
  *
  * This service provides functionality for:
- * - Managing nature dimensions (CRUD operations)
  * - Managing origin dimensions (CRUD operations)
  * - Managing treatment dimensions (CRUD operations)
  */
@@ -62,54 +59,6 @@ public:
      * @param ctx The database context.
      */
     explicit dimension_service(context ctx);
-
-    // ========================================================================
-    // Nature Dimension Management
-    // ========================================================================
-
-    /**
-     * @brief Lists all nature dimensions.
-     */
-    std::vector<domain::nature_dimension> list_nature_dimensions();
-
-    /**
-     * @brief Finds a nature dimension by its code.
-     */
-    std::optional<domain::nature_dimension> find_nature_dimension(const std::string& code);
-
-    /**
-     * @brief Saves a nature dimension (creates or updates).
-     *
-     * @param dimension The dimension to save
-     */
-    void save_nature_dimension(const domain::nature_dimension& dimension);
-
-    /**
-     * @brief Saves multiple nature dimensions (creates or updates).
-     *
-     * @param dimensions The dimensions to save
-     */
-    void save_nature_dimensions(const std::vector<domain::nature_dimension>& dimensions);
-
-    /**
-     * @brief Removes a nature dimension.
-     *
-     * @param code The code of the dimension to remove
-     */
-    void remove_nature_dimension(const std::string& code);
-
-    /**
-     * @brief Removes multiple nature dimensions.
-     */
-    void remove_nature_dimensions(const std::vector<std::string>& codes);
-
-    /**
-     * @brief Gets the version history for a nature dimension.
-     *
-     * @param code The dimension code
-     * @return Vector of all versions, newest first
-     */
-    std::vector<domain::nature_dimension> get_nature_dimension_history(const std::string& code);
 
     // ========================================================================
     // Origin Dimension Management
@@ -209,7 +158,6 @@ public:
     get_treatment_dimension_history(const std::string& code);
 
 private:
-    repository::nature_dimension_repository nature_repo_;
     repository::origin_dimension_repository origin_repo_;
     repository::treatment_dimension_repository treatment_repo_;
 };

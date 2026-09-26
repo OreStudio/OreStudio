@@ -25,64 +25,8 @@ namespace ores::dq::service {
 using namespace ores::logging;
 
 dimension_service::dimension_service(context ctx)
-    : nature_repo_(ctx)
-    , origin_repo_(ctx)
+    : origin_repo_(ctx)
     , treatment_repo_(ctx) {}
-
-// ============================================================================
-// Nature Dimension Management
-// ============================================================================
-
-std::vector<domain::nature_dimension> dimension_service::list_nature_dimensions() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all nature dimensions";
-    return nature_repo_.read_latest();
-}
-
-std::optional<domain::nature_dimension>
-dimension_service::find_nature_dimension(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding nature dimension: " << code;
-    auto dimensions = nature_repo_.read_latest(code);
-    if (dimensions.empty()) {
-        return std::nullopt;
-    }
-    return dimensions.front();
-}
-
-void dimension_service::save_nature_dimension(const domain::nature_dimension& dimension) {
-    if (dimension.code.empty()) {
-        throw std::invalid_argument("Nature dimension code cannot be empty.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving nature dimension: " << dimension.code;
-    nature_repo_.write(dimension);
-    BOOST_LOG_SEV(lg(), info) << "Saved nature dimension: " << dimension.code;
-}
-
-void dimension_service::save_nature_dimensions(
-    const std::vector<domain::nature_dimension>& dimensions) {
-    for (const auto& d : dimensions) {
-        if (d.code.empty()) {
-            throw std::invalid_argument("Nature dimension code cannot be empty.");
-        }
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << dimensions.size() << " nature dimensions";
-    nature_repo_.write(dimensions);
-}
-
-void dimension_service::remove_nature_dimension(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing nature dimension: " << code;
-    nature_repo_.remove(code);
-    BOOST_LOG_SEV(lg(), info) << "Removed nature dimension: " << code;
-}
-
-void dimension_service::remove_nature_dimensions(const std::vector<std::string>& codes) {
-    nature_repo_.remove(codes);
-}
-
-std::vector<domain::nature_dimension>
-dimension_service::get_nature_dimension_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for nature dimension: " << code;
-    return nature_repo_.read_all(code);
-}
 
 // ============================================================================
 // Origin Dimension Management

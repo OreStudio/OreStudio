@@ -22,7 +22,6 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/postgres_listener_service.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
@@ -40,9 +39,12 @@ namespace ores::eventing::service {
 /**
  * @brief Event source that bridges PostgreSQL LISTEN/NOTIFY to the event bus.
  *
- * This class wraps postgres_listener_service and translates low-level
- * entity_change_event notifications into typed domain events that are
- * published to the event bus.
+ * This class wraps postgres_listener_service and turns the notify trigger's
+ * canonical notification into typed domain events on the event bus. One
+ * channel can serve two mappings, and the notification carries what both
+ * need: register_entity_event_mapping() converts it through the event's own
+ * traits, key record included, and register_mapping() builds an event from
+ * the notification's time, its changed ids and its tenant.
  *
  * Components can register their entity-to-event mappings via register_mapping(),
  * enabling the event source to automatically publish the correct typed event
@@ -115,7 +117,7 @@ public:
      *
      * When a notification is received for the specified entity, the event
      * source will publish an instance of Event to the bus with the
-     * notification's timestamp.
+     * notification's timestamp, its changed ids and its tenant.
      *
      * @tparam Event The domain event type to publish (must have a timestamp member).
      * @param entity_name The fully qualified entity name (e.g., "ores.refdata.currency").
@@ -210,13 +212,6 @@ public:
     wait_until_ready(std::chrono::milliseconds timeout = std::chrono::seconds(2));
 
 private:
-    /**
-     * @brief Handle incoming entity change events.
-     *
-     * Maps the entity name to the appropriate typed event and publishes it.
-     */
-    void on_entity_change(const domain::entity_change_event& e);
-
     /**
      * @brief Dispatches a canonical notification to its registered mapping.
      */

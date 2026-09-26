@@ -24,77 +24,996 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace assets #F2F2F2 {
         namespace domain #F2F2F2 {
-            class image <<struct>> {
-                +version : int
-                +image_id : boost::uuids::uuid
-                +key : string
-                +description : string
-                +mime_type : string
-                +data : vector<uint8_t>
-                +modified_by : string
-                +change_reason_code : string
-                +change_commentary : string
-                +performed_by : string
-                +recorded_at : chrono::system_clock::time_point
+            note "Domain types for asset management.\n\nCore entity types for the assets module: image, tag and the image_tag junction, each with JSON and table I/O." as ores_assets_domain_note
+
+            ores::assets::domain::image -[hidden]right- ores::assets::domain::tag
+            ores::assets::domain::image -[hidden]down- ores::assets::domain::image_tag
+
+            class image <<struct>> #F7E5FF {
+                {field} +version : int
+                {field} +id : boost::uuids::uuid
+                {field} +code : string
+                {field} +description : string
+                {field} +mime_type : string
+                {field} +data : string
+                {field} +modified_by : string
+                {field} +performed_by : string
+                {field} +change_reason_code : string
+                {field} +change_commentary : string
+                {field} +recorded_at : chrono::system_clock::time_point
             }
-            class image_tag <<struct>> {
-                +image_id : boost::uuids::uuid
-                +tag_id : boost::uuids::uuid
-                +assigned_by : string
-                +assigned_at : chrono::system_clock::time_point
+            note top of image
+            An SVG image published to the platform and rendered from the stored document.
+            int version // optimistic-locking version
+            boost::uuids::uuid id // surrogate identifier
+            string code // image code, unique within the tenant
+            string description // what the record means
+            string mime_type // media type of the stored document
+            string data // the SVG document itself
+            string modified_by // user who last modified the record
+            string performed_by // account that performed the action
+            string change_reason_code // code of the reason for the change
+            string change_commentary // free-text explanation of the change
+            chrono::system_clock::time_point recorded_at // when this version was recorded
+            end note
+            class image_tag <<struct>> #F7E5FF {
+                {field} +version : int
+                {field} +tenant_id : string
+                {field} +image_id : boost::uuids::uuid
+                {field} +tag_id : boost::uuids::uuid
+                {field} +assigned_by : string
+                {field} +assigned_at : chrono::system_clock::time_point
+                {field} +modified_by : string
+                {field} +performed_by : string
+                {field} +change_reason_code : string
+                {field} +change_commentary : string
+                {field} +recorded_at : chrono::system_clock::time_point
             }
-            class tag <<struct>> {
-                +version : int
-                +tenant_id : string
-                +tag_id : string
-                +name : string
-                +description : string
-                +modified_by : string
-                +change_reason_code : string
-                +change_commentary : string
-                +performed_by : string
-                +recorded_at : string
+            note top of image_tag
+            Junction row that links one image to one tag.
+            int version // optimistic-locking version
+            string tenant_id // owning tenant
+            boost::uuids::uuid image_id // id of the tagged image
+            boost::uuids::uuid tag_id // id of the applied tag
+            string assigned_by // account that made the association
+            chrono::system_clock::time_point assigned_at // when the association was made
+            string modified_by // user who last modified the record
+            string performed_by // account that performed the action
+            string change_reason_code // code of the reason for the change
+            string change_commentary // free-text explanation of the change
+            chrono::system_clock::time_point recorded_at // when this version was recorded
+            end note
+            class tag <<struct>> #F7E5FF {
+                {field} +version : int
+                {field} +id : boost::uuids::uuid
+                {field} +name : string
+                {field} +description : string
+                {field} +modified_by : string
+                {field} +performed_by : string
+                {field} +change_reason_code : string
+                {field} +change_commentary : string
+                {field} +recorded_at : chrono::system_clock::time_point
             }
-        }
-        namespace eventing #F2F2F2 {
-            class assets_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +iso_codes : vector<string>
-                +tenant_id : string
-            }
+            note top of tag
+            A category that classifies images, for example flag, currency or commodity.
+            int version // optimistic-locking version
+            boost::uuids::uuid id // surrogate identifier
+            string name // category name, unique within the tenant
+            string description // what the record means
+            string modified_by // user who last modified the record
+            string performed_by // account that performed the action
+            string change_reason_code // code of the reason for the change
+            string change_commentary // free-text explanation of the change
+            chrono::system_clock::time_point recorded_at // when this version was recorded
+            end note
         }
         namespace messaging #F2F2F2 {
-            class image_info <<struct>> {
-                +image_id : string
-                +key : string
-                +description : string
+
+            ores::assets::messaging::image_key -[hidden]down- ores::assets::messaging::image_write
+            ores::assets::messaging::image_write -[hidden]down- ores::assets::messaging::image_change
+            ores::assets::messaging::image_removal -[hidden]down- ores::assets::messaging::image_lookup
+            ores::assets::messaging::image_lookup -[hidden]down- ores::assets::messaging::image_event
+            ores::assets::messaging::image_version_key -[hidden]down- ores::assets::messaging::image_versions_filter
+            ores::assets::messaging::image_versions_filter -[hidden]down- ores::assets::messaging::list_images_request
+            ores::assets::messaging::list_images_response -[hidden]down- ores::assets::messaging::get_image_request
+            ores::assets::messaging::get_image_request -[hidden]down- ores::assets::messaging::get_image_response
+            ores::assets::messaging::get_many_images_request -[hidden]down- ores::assets::messaging::get_many_images_response
+            ores::assets::messaging::get_many_images_response -[hidden]down- ores::assets::messaging::put_image_request
+            ores::assets::messaging::put_image_response -[hidden]down- ores::assets::messaging::put_many_images_request
+            ores::assets::messaging::put_many_images_request -[hidden]down- ores::assets::messaging::put_many_images_response
+            ores::assets::messaging::delete_image_request -[hidden]down- ores::assets::messaging::delete_image_response
+            ores::assets::messaging::delete_image_response -[hidden]down- ores::assets::messaging::delete_many_images_request
+            ores::assets::messaging::delete_many_images_response -[hidden]down- ores::assets::messaging::list_image_versions_request
+            ores::assets::messaging::list_image_versions_request -[hidden]down- ores::assets::messaging::list_image_versions_response
+            ores::assets::messaging::get_image_version_request -[hidden]down- ores::assets::messaging::get_image_version_response
+            ores::assets::messaging::get_image_version_response -[hidden]down- ores::assets::messaging::image_tag_key
+            ores::assets::messaging::image_tag_write -[hidden]down- ores::assets::messaging::image_tag_change
+            ores::assets::messaging::image_tag_change -[hidden]down- ores::assets::messaging::image_tag_removal
+            ores::assets::messaging::image_tag_lookup -[hidden]down- ores::assets::messaging::image_tags_filter
+            ores::assets::messaging::image_tags_filter -[hidden]down- ores::assets::messaging::image_tag_event
+            ores::assets::messaging::list_image_tags_request -[hidden]down- ores::assets::messaging::list_image_tags_response
+            ores::assets::messaging::list_image_tags_response -[hidden]down- ores::assets::messaging::get_image_tag_request
+            ores::assets::messaging::get_image_tag_response -[hidden]down- ores::assets::messaging::get_many_image_tags_request
+            ores::assets::messaging::get_many_image_tags_request -[hidden]down- ores::assets::messaging::get_many_image_tags_response
+            ores::assets::messaging::put_image_tag_request -[hidden]down- ores::assets::messaging::put_image_tag_response
+            ores::assets::messaging::put_image_tag_response -[hidden]down- ores::assets::messaging::put_many_image_tags_request
+            ores::assets::messaging::put_many_image_tags_response -[hidden]down- ores::assets::messaging::delete_image_tag_request
+            ores::assets::messaging::delete_image_tag_request -[hidden]down- ores::assets::messaging::delete_image_tag_response
+            ores::assets::messaging::delete_many_image_tags_request -[hidden]down- ores::assets::messaging::delete_many_image_tags_response
+            ores::assets::messaging::delete_many_image_tags_response -[hidden]down- ores::assets::messaging::list_by_image_id_image_tags_request
+            ores::assets::messaging::list_by_image_id_image_tags_response -[hidden]down- ores::assets::messaging::tag_key
+            ores::assets::messaging::tag_key -[hidden]down- ores::assets::messaging::tag_write
+            ores::assets::messaging::tag_change -[hidden]down- ores::assets::messaging::tag_removal
+            ores::assets::messaging::tag_removal -[hidden]down- ores::assets::messaging::tag_lookup
+            ores::assets::messaging::tag_event -[hidden]down- ores::assets::messaging::tag_version_key
+            ores::assets::messaging::tag_version_key -[hidden]down- ores::assets::messaging::tag_versions_filter
+            ores::assets::messaging::list_tags_request -[hidden]down- ores::assets::messaging::list_tags_response
+            ores::assets::messaging::list_tags_response -[hidden]down- ores::assets::messaging::get_tag_request
+            ores::assets::messaging::get_tag_response -[hidden]down- ores::assets::messaging::get_many_tags_request
+            ores::assets::messaging::get_many_tags_request -[hidden]down- ores::assets::messaging::get_many_tags_response
+            ores::assets::messaging::put_tag_request -[hidden]down- ores::assets::messaging::put_tag_response
+            ores::assets::messaging::put_tag_response -[hidden]down- ores::assets::messaging::put_many_tags_request
+            ores::assets::messaging::put_many_tags_response -[hidden]down- ores::assets::messaging::delete_tag_request
+            ores::assets::messaging::delete_tag_request -[hidden]down- ores::assets::messaging::delete_tag_response
+            ores::assets::messaging::delete_many_tags_request -[hidden]down- ores::assets::messaging::delete_many_tags_response
+            ores::assets::messaging::delete_many_tags_response -[hidden]down- ores::assets::messaging::list_tag_versions_request
+            ores::assets::messaging::list_tag_versions_response -[hidden]down- ores::assets::messaging::get_tag_version_request
+            ores::assets::messaging::get_tag_version_request -[hidden]down- ores::assets::messaging::get_tag_version_response
+
+            ' --- image resource ---
+            class image_key <<message>> #E1F5FF {
+                {field} +code : string
             }
-            class get_images_request <<struct>> {
-                +image_ids : vector<string>
+            note top of image_key
+            Identifies an image by its human-meaningful code.
+            string code // image code, unique within the tenant
+            end note
+            class image_write <<message>> #E1F5FF {
+                {field} +id : boost::uuids::uuid
+                {field} +code : string
+                {field} +description : string
+                {field} +mime_type : string
+                {field} +data : string
             }
-            class get_images_response <<struct>> {
-                +success : bool
-                +message : string
-                +images : vector<ores::assets::domain::image>
+            note top of image_write
+            The writable fields of an image.
+            boost::uuids::uuid id // surrogate identifier
+            string code // image code, unique within the tenant
+            string description // what the record means
+            string mime_type // media type of the stored document
+            string data // the SVG document itself
+            end note
+            class image_change <<message>> #E1F5FF {
+                {field} +write : image_write
+                {field} +precondition : ores::utility::domain::precondition
             }
-            class list_images_request <<struct>> {
-                +modified_since : optional<chrono::system_clock::time_point>
+            note top of image_change
+            One image write together with the precondition it must satisfy.
+            image_write write // the values to write
+            ores::utility::domain::precondition precondition // optimistic-locking precondition
+            end note
+            class image_removal <<message>> #E1F5FF {
+                {field} +key : image_key
+                {field} +precondition : ores::utility::domain::precondition
             }
-            class list_images_response <<struct>> {
-                +success : bool
-                +message : string
-                +images : vector<image_info>
+            note top of image_removal
+            Identifies an image to delete, with the precondition for the delete.
+            image_key key // identifies the record
+            ores::utility::domain::precondition precondition // optimistic-locking precondition
+            end note
+            class image_lookup <<message>> #E1F5FF {
+                {field} +key : image_key
+                {field} +image : optional<ores::assets::domain::image>
             }
-            class save_image_request <<struct>> {
-                +data : ores::assets::domain::image
+            note top of image_lookup
+            One image key paired with the image, present only when it was found.
+            image_key key // identifies the record
+            optional<ores::assets::domain::image> image // the image, when found
+            end note
+            class image_event <<message>> #E1F5FF {
+                {field} +event_id : boost::uuids::uuid
+                {field} +key : image_key
+                {field} +action : string
+                {field} +version : uint32_t
+                {field} +occurred_at : chrono::system_clock::time_point
+                {field} +correlation_id : optional<string>
             }
-            class save_image_response <<struct>> {
-                +success : bool
-                +message : string
+            note top of image_event
+            Change event announcing an image create, update or delete.
+            boost::uuids::uuid event_id // unique id of the event
+            image_key key // identifies the record
+            string action // created, updated or deleted
+            uint32_t version // optimistic-locking version
+            chrono::system_clock::time_point occurred_at // when the change happened
+            optional<string> correlation_id // caller-supplied correlation id, when present
+            end note
+            class image_version_key <<message>> #E1F5FF {
+                {field} +image : image_key
+                {field} +version : uint32_t
             }
+            note top of image_version_key
+            Identifies one version of an image.
+            image_key image // the image whose version this is
+            uint32_t version // version number
+            end note
+            class image_versions_filter <<message>> #E1F5FF {
+                {field} +version : optional<uint32_t>
+                {field} +from_version : optional<uint32_t>
+                {field} +to_version : optional<uint32_t>
+            }
+            note top of image_versions_filter
+            Optional version filters that narrow an image history query.
+            optional<uint32_t> version // exact version to include
+            optional<uint32_t> from_version // lowest version to include
+            optional<uint32_t> to_version // highest version to include
+            end note
+            class list_images_request <<message>> #E1F5FF {
+                {field} +offset : uint32_t
+                {field} +limit : uint32_t
+                {field} +order : ores::utility::domain::order
+            }
+            note top of list_images_request
+            Asks the server for a page of images.
+            uint32_t offset // number of records to skip
+            uint32_t limit // maximum records to return
+            ores::utility::domain::order order // sort order
+            end note
+            class list_images_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +images : vector<ores::assets::domain::image>
+                {field} +total : uint64_t
+            }
+            note top of list_images_response
+            Returns one page of images.
+            ores::utility::domain::result result // outcome of the operation
+            vector<ores::assets::domain::image> images // the page of images
+            uint64_t total // total records matching the query
+            end note
+            class get_image_request <<message>> #E1F5FF {
+                {field} +key : image_key
+            }
+            note top of get_image_request
+            Asks the server for one image by key.
+            image_key key // identifies the record
+            end note
+            class get_image_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +image : optional<ores::assets::domain::image>
+            }
+            note top of get_image_response
+            Returns one image, present only when it was found.
+            ores::utility::domain::result result // outcome of the operation
+            optional<ores::assets::domain::image> image // the image, when found
+            end note
+            class get_many_images_request <<message>> #E1F5FF {
+                {field} +keys : vector<image_key>
+            }
+            note top of get_many_images_request
+            Asks the server for several images in one call.
+            vector<image_key> keys // the keys to fetch
+            end note
+            class get_many_images_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +entries : vector<image_lookup>
+            }
+            note top of get_many_images_response
+            Returns one lookup entry per requested image key.
+            ores::utility::domain::result result // outcome of the operation
+            vector<image_lookup> entries // one lookup entry per key
+            end note
+            class put_image_request <<message>> #E1F5FF {
+                {field} +change : image_change
+                {field} +intent : ores::utility::domain::change_intent
+            }
+            note top of put_image_request
+            Creates or updates one image.
+            image_change change // the write and its precondition
+            ores::utility::domain::change_intent intent // whether the change is staged or applied
+            end note
+            class put_image_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +image : ores::assets::domain::image
+            }
+            note top of put_image_response
+            Returns the image as stored after the write.
+            ores::utility::domain::result result // outcome of the operation
+            ores::assets::domain::image image // the image as stored
+            end note
+            class put_many_images_request <<message>> #E1F5FF {
+                {field} +changes : vector<image_change>
+                {field} +intent : ores::utility::domain::change_intent
+            }
+            note top of put_many_images_request
+            Creates or updates several images in one call.
+            vector<image_change> changes // the writes and their preconditions
+            ores::utility::domain::change_intent intent // whether the change is staged or applied
+            end note
+            class put_many_images_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +images : vector<ores::assets::domain::image>
+            }
+            note top of put_many_images_response
+            Returns the images as stored after the batch write.
+            ores::utility::domain::result result // outcome of the operation
+            vector<ores::assets::domain::image> images // the page of images
+            end note
+            class delete_image_request <<message>> #E1F5FF {
+                {field} +removal : image_removal
+                {field} +intent : ores::utility::domain::change_intent
+            }
+            note top of delete_image_request
+            Deletes one image.
+            image_removal removal // the removal and its precondition
+            ores::utility::domain::change_intent intent // whether the change is staged or applied
+            end note
+            class delete_image_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+            }
+            note top of delete_image_response
+            Reports the outcome of the image delete.
+            ores::utility::domain::result result // outcome of the operation
+            end note
+            class delete_many_images_request <<message>> #E1F5FF {
+                {field} +removals : vector<image_removal>
+                {field} +intent : ores::utility::domain::change_intent
+            }
+            note top of delete_many_images_request
+            Deletes several images in one call.
+            vector<image_removal> removals // the removals and their preconditions
+            ores::utility::domain::change_intent intent // whether the change is staged or applied
+            end note
+            class delete_many_images_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+            }
+            note top of delete_many_images_response
+            Reports the outcome of the batch image delete.
+            ores::utility::domain::result result // outcome of the operation
+            end note
+            class list_image_versions_request <<message>> #E1F5FF {
+                {field} +key : image_key
+                {field} +offset : uint32_t
+                {field} +limit : uint32_t
+                {field} +order : ores::utility::domain::order
+                {field} +filter : optional<image_versions_filter>
+            }
+            note top of list_image_versions_request
+            Asks the server for a page of an image's version history.
+            image_key key // identifies the record
+            uint32_t offset // number of records to skip
+            uint32_t limit // maximum records to return
+            ores::utility::domain::order order // sort order
+            optional<image_versions_filter> filter // optional narrowing filters
+            end note
+            class list_image_versions_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +versions : vector<ores::assets::domain::image>
+                {field} +total : uint64_t
+            }
+            note top of list_image_versions_response
+            Returns one page of an image's versions.
+            ores::utility::domain::result result // outcome of the operation
+            vector<ores::assets::domain::image> versions // the page of versions
+            uint64_t total // total records matching the query
+            end note
+            class get_image_version_request <<message>> #E1F5FF {
+                {field} +key : image_version_key
+            }
+            note top of get_image_version_request
+            Asks the server for one version of an image.
+            image_version_key key // identifies the record
+            end note
+            class get_image_version_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +version : ores::assets::domain::image
+            }
+            note top of get_image_version_response
+            Returns the requested image version.
+            ores::utility::domain::result result // outcome of the operation
+            ores::assets::domain::image version // the requested image version
+            end note
+            ' --- image-tag association resource ---
+            class image_tag_key <<message>> #E1F5FF {
+                {field} +image_id : boost::uuids::uuid
+                {field} +tag_id : boost::uuids::uuid
+            }
+            note top of image_tag_key
+            Identifies one image-tag association by its two ids.
+            boost::uuids::uuid image_id // id of the tagged image
+            boost::uuids::uuid tag_id // id of the applied tag
+            end note
+            class image_tag_write <<message>> #E1F5FF {
+                {field} +image_id : boost::uuids::uuid
+                {field} +tag_id : boost::uuids::uuid
+                {field} +assigned_by : string
+                {field} +assigned_at : chrono::system_clock::time_point
+            }
+            note top of image_tag_write
+            The writable fields of an image-tag association.
+            boost::uuids::uuid image_id // id of the tagged image
+            boost::uuids::uuid tag_id // id of the applied tag
+            string assigned_by // account that made the association
+            chrono::system_clock::time_point assigned_at // when the association was made
+            end note
+            class image_tag_change <<message>> #E1F5FF {
+                {field} +write : image_tag_write
+                {field} +precondition : ores::utility::domain::precondition
+            }
+            note top of image_tag_change
+            One association write together with the precondition it must satisfy.
+            image_tag_write write // the values to write
+            ores::utility::domain::precondition precondition // optimistic-locking precondition
+            end note
+            class image_tag_removal <<message>> #E1F5FF {
+                {field} +key : image_tag_key
+                {field} +precondition : ores::utility::domain::precondition
+            }
+            note top of image_tag_removal
+            Identifies an association to delete, with the precondition for the delete.
+            image_tag_key key // identifies the record
+            ores::utility::domain::precondition precondition // optimistic-locking precondition
+            end note
+            class image_tag_lookup <<message>> #E1F5FF {
+                {field} +key : image_tag_key
+                {field} +image_tag : optional<ores::assets::domain::image_tag>
+            }
+            note top of image_tag_lookup
+            One association key paired with the association, present only when it was found.
+            image_tag_key key // identifies the record
+            optional<ores::assets::domain::image_tag> image_tag // the association, when found
+            end note
+            class image_tags_filter <<message>> #E1F5FF {
+                {field} +image_id : optional<boost::uuids::uuid>
+            }
+            note top of image_tags_filter
+            Optional filters that narrow an image-tag query.
+            optional<boost::uuids::uuid> image_id // id of the tagged image
+            end note
+            class image_tag_event <<message>> #E1F5FF {
+                {field} +event_id : boost::uuids::uuid
+                {field} +key : image_tag_key
+                {field} +action : string
+                {field} +version : uint32_t
+                {field} +occurred_at : chrono::system_clock::time_point
+                {field} +correlation_id : optional<string>
+            }
+            note top of image_tag_event
+            Change event announcing an image-tag create or delete.
+            boost::uuids::uuid event_id // unique id of the event
+            image_tag_key key // identifies the record
+            string action // created, updated or deleted
+            uint32_t version // optimistic-locking version
+            chrono::system_clock::time_point occurred_at // when the change happened
+            optional<string> correlation_id // caller-supplied correlation id, when present
+            end note
+            class list_image_tags_request <<message>> #E1F5FF {
+                {field} +offset : uint32_t
+                {field} +limit : uint32_t
+                {field} +order : ores::utility::domain::order
+                {field} +filter : optional<image_tags_filter>
+            }
+            note top of list_image_tags_request
+            Asks the server for a page of image-tag associations.
+            uint32_t offset // number of records to skip
+            uint32_t limit // maximum records to return
+            ores::utility::domain::order order // sort order
+            optional<image_tags_filter> filter // optional narrowing filters
+            end note
+            class list_image_tags_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +image_tags : vector<ores::assets::domain::image_tag>
+                {field} +total : uint64_t
+            }
+            note top of list_image_tags_response
+            Returns one page of image-tag associations.
+            ores::utility::domain::result result // outcome of the operation
+            vector<ores::assets::domain::image_tag> image_tags // the page of associations
+            uint64_t total // total records matching the query
+            end note
+            class get_image_tag_request <<message>> #E1F5FF {
+                {field} +key : image_tag_key
+            }
+            note top of get_image_tag_request
+            Asks the server for one association by key.
+            image_tag_key key // identifies the record
+            end note
+            class get_image_tag_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +image_tag : optional<ores::assets::domain::image_tag>
+            }
+            note top of get_image_tag_response
+            Returns one association, present only when it was found.
+            ores::utility::domain::result result // outcome of the operation
+            optional<ores::assets::domain::image_tag> image_tag // the association, when found
+            end note
+            class get_many_image_tags_request <<message>> #E1F5FF {
+                {field} +keys : vector<image_tag_key>
+            }
+            note top of get_many_image_tags_request
+            Asks the server for several associations in one call.
+            vector<image_tag_key> keys // the keys to fetch
+            end note
+            class get_many_image_tags_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +entries : vector<image_tag_lookup>
+            }
+            note top of get_many_image_tags_response
+            Returns one lookup entry per requested association key.
+            ores::utility::domain::result result // outcome of the operation
+            vector<image_tag_lookup> entries // one lookup entry per key
+            end note
+            class put_image_tag_request <<message>> #E1F5FF {
+                {field} +change : image_tag_change
+                {field} +intent : ores::utility::domain::change_intent
+            }
+            note top of put_image_tag_request
+            Creates one image-tag association.
+            image_tag_change change // the write and its precondition
+            ores::utility::domain::change_intent intent // whether the change is staged or applied
+            end note
+            class put_image_tag_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +image_tag : ores::assets::domain::image_tag
+            }
+            note top of put_image_tag_response
+            Returns the association as stored after the write.
+            ores::utility::domain::result result // outcome of the operation
+            ores::assets::domain::image_tag image_tag // the association as stored
+            end note
+            class put_many_image_tags_request <<message>> #E1F5FF {
+                {field} +changes : vector<image_tag_change>
+                {field} +intent : ores::utility::domain::change_intent
+            }
+            note top of put_many_image_tags_request
+            Creates several image-tag associations in one call.
+            vector<image_tag_change> changes // the writes and their preconditions
+            ores::utility::domain::change_intent intent // whether the change is staged or applied
+            end note
+            class put_many_image_tags_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +image_tags : vector<ores::assets::domain::image_tag>
+            }
+            note top of put_many_image_tags_response
+            Returns the associations as stored after the batch write.
+            ores::utility::domain::result result // outcome of the operation
+            vector<ores::assets::domain::image_tag> image_tags // the page of associations
+            end note
+            class delete_image_tag_request <<message>> #E1F5FF {
+                {field} +removal : image_tag_removal
+                {field} +intent : ores::utility::domain::change_intent
+            }
+            note top of delete_image_tag_request
+            Deletes one image-tag association.
+            image_tag_removal removal // the removal and its precondition
+            ores::utility::domain::change_intent intent // whether the change is staged or applied
+            end note
+            class delete_image_tag_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+            }
+            note top of delete_image_tag_response
+            Reports the outcome of the association delete.
+            ores::utility::domain::result result // outcome of the operation
+            end note
+            class delete_many_image_tags_request <<message>> #E1F5FF {
+                {field} +removals : vector<image_tag_removal>
+                {field} +intent : ores::utility::domain::change_intent
+            }
+            note top of delete_many_image_tags_request
+            Deletes several image-tag associations in one call.
+            vector<image_tag_removal> removals // the removals and their preconditions
+            ores::utility::domain::change_intent intent // whether the change is staged or applied
+            end note
+            class delete_many_image_tags_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+            }
+            note top of delete_many_image_tags_response
+            Reports the outcome of the batch association delete.
+            ores::utility::domain::result result // outcome of the operation
+            end note
+            class list_by_image_id_image_tags_request <<message>> #E1F5FF {
+                {field} +image_id : boost::uuids::uuid
+                {field} +scope : ores::utility::domain::scope
+                {field} +offset : uint32_t
+                {field} +limit : uint32_t
+                {field} +order : ores::utility::domain::order
+                {field} +filter : optional<image_tags_filter>
+            }
+            note top of list_by_image_id_image_tags_request
+            Asks the server for the tags that classify one image.
+            boost::uuids::uuid image_id // id of the tagged image
+            ores::utility::domain::scope scope // which records the caller may see
+            uint32_t offset // number of records to skip
+            uint32_t limit // maximum records to return
+            ores::utility::domain::order order // sort order
+            optional<image_tags_filter> filter // optional narrowing filters
+            end note
+            class list_by_image_id_image_tags_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +image_tags : vector<ores::assets::domain::image_tag>
+                {field} +total : uint64_t
+            }
+            note top of list_by_image_id_image_tags_response
+            Returns the tags that classify one image.
+            ores::utility::domain::result result // outcome of the operation
+            vector<ores::assets::domain::image_tag> image_tags // the page of associations
+            uint64_t total // total records matching the query
+            end note
+            ' --- tag resource ---
+            class tag_key <<message>> #E1F5FF {
+                {field} +name : string
+            }
+            note top of tag_key
+            Identifies a tag by its name.
+            string name // category name, unique within the tenant
+            end note
+            class tag_write <<message>> #E1F5FF {
+                {field} +id : boost::uuids::uuid
+                {field} +name : string
+                {field} +description : string
+            }
+            note top of tag_write
+            The writable fields of a tag.
+            boost::uuids::uuid id // surrogate identifier
+            string name // category name, unique within the tenant
+            string description // what the record means
+            end note
+            class tag_change <<message>> #E1F5FF {
+                {field} +write : tag_write
+                {field} +precondition : ores::utility::domain::precondition
+            }
+            note top of tag_change
+            One tag write together with the precondition it must satisfy.
+            tag_write write // the values to write
+            ores::utility::domain::precondition precondition // optimistic-locking precondition
+            end note
+            class tag_removal <<message>> #E1F5FF {
+                {field} +key : tag_key
+                {field} +precondition : ores::utility::domain::precondition
+            }
+            note top of tag_removal
+            Identifies a tag to delete, with the precondition for the delete.
+            tag_key key // identifies the record
+            ores::utility::domain::precondition precondition // optimistic-locking precondition
+            end note
+            class tag_lookup <<message>> #E1F5FF {
+                {field} +key : tag_key
+                {field} +tag : optional<ores::assets::domain::tag>
+            }
+            note top of tag_lookup
+            One tag key paired with the tag, present only when it was found.
+            tag_key key // identifies the record
+            optional<ores::assets::domain::tag> tag // the tag, when found
+            end note
+            class tag_event <<message>> #E1F5FF {
+                {field} +event_id : boost::uuids::uuid
+                {field} +key : tag_key
+                {field} +action : string
+                {field} +version : uint32_t
+                {field} +occurred_at : chrono::system_clock::time_point
+                {field} +correlation_id : optional<string>
+            }
+            note top of tag_event
+            Change event announcing a tag create, update or delete.
+            boost::uuids::uuid event_id // unique id of the event
+            tag_key key // identifies the record
+            string action // created, updated or deleted
+            uint32_t version // optimistic-locking version
+            chrono::system_clock::time_point occurred_at // when the change happened
+            optional<string> correlation_id // caller-supplied correlation id, when present
+            end note
+            class tag_version_key <<message>> #E1F5FF {
+                {field} +tag : tag_key
+                {field} +version : uint32_t
+            }
+            note top of tag_version_key
+            Identifies one version of a tag.
+            tag_key tag // the tag whose version this is
+            uint32_t version // version number
+            end note
+            class tag_versions_filter <<message>> #E1F5FF {
+                {field} +version : optional<uint32_t>
+                {field} +from_version : optional<uint32_t>
+                {field} +to_version : optional<uint32_t>
+            }
+            note top of tag_versions_filter
+            Optional version filters that narrow a tag history query.
+            optional<uint32_t> version // exact version to include
+            optional<uint32_t> from_version // lowest version to include
+            optional<uint32_t> to_version // highest version to include
+            end note
+            class list_tags_request <<message>> #E1F5FF {
+                {field} +offset : uint32_t
+                {field} +limit : uint32_t
+                {field} +order : ores::utility::domain::order
+            }
+            note top of list_tags_request
+            Asks the server for a page of tags.
+            uint32_t offset // number of records to skip
+            uint32_t limit // maximum records to return
+            ores::utility::domain::order order // sort order
+            end note
+            class list_tags_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +tags : vector<ores::assets::domain::tag>
+                {field} +total : uint64_t
+            }
+            note top of list_tags_response
+            Returns one page of tags.
+            ores::utility::domain::result result // outcome of the operation
+            vector<ores::assets::domain::tag> tags // the page of tags
+            uint64_t total // total records matching the query
+            end note
+            class get_tag_request <<message>> #E1F5FF {
+                {field} +key : tag_key
+            }
+            note top of get_tag_request
+            Asks the server for one tag by key.
+            tag_key key // identifies the record
+            end note
+            class get_tag_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +tag : optional<ores::assets::domain::tag>
+            }
+            note top of get_tag_response
+            Returns one tag, present only when it was found.
+            ores::utility::domain::result result // outcome of the operation
+            optional<ores::assets::domain::tag> tag // the tag, when found
+            end note
+            class get_many_tags_request <<message>> #E1F5FF {
+                {field} +keys : vector<tag_key>
+            }
+            note top of get_many_tags_request
+            Asks the server for several tags in one call.
+            vector<tag_key> keys // the keys to fetch
+            end note
+            class get_many_tags_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +entries : vector<tag_lookup>
+            }
+            note top of get_many_tags_response
+            Returns one lookup entry per requested tag key.
+            ores::utility::domain::result result // outcome of the operation
+            vector<tag_lookup> entries // one lookup entry per key
+            end note
+            class put_tag_request <<message>> #E1F5FF {
+                {field} +change : tag_change
+                {field} +intent : ores::utility::domain::change_intent
+            }
+            note top of put_tag_request
+            Creates or updates one tag.
+            tag_change change // the write and its precondition
+            ores::utility::domain::change_intent intent // whether the change is staged or applied
+            end note
+            class put_tag_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +tag : ores::assets::domain::tag
+            }
+            note top of put_tag_response
+            Returns the tag as stored after the write.
+            ores::utility::domain::result result // outcome of the operation
+            ores::assets::domain::tag tag // the tag as stored
+            end note
+            class put_many_tags_request <<message>> #E1F5FF {
+                {field} +changes : vector<tag_change>
+                {field} +intent : ores::utility::domain::change_intent
+            }
+            note top of put_many_tags_request
+            Creates or updates several tags in one call.
+            vector<tag_change> changes // the writes and their preconditions
+            ores::utility::domain::change_intent intent // whether the change is staged or applied
+            end note
+            class put_many_tags_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +tags : vector<ores::assets::domain::tag>
+            }
+            note top of put_many_tags_response
+            Returns the tags as stored after the batch write.
+            ores::utility::domain::result result // outcome of the operation
+            vector<ores::assets::domain::tag> tags // the page of tags
+            end note
+            class delete_tag_request <<message>> #E1F5FF {
+                {field} +removal : tag_removal
+                {field} +intent : ores::utility::domain::change_intent
+            }
+            note top of delete_tag_request
+            Deletes one tag.
+            tag_removal removal // the removal and its precondition
+            ores::utility::domain::change_intent intent // whether the change is staged or applied
+            end note
+            class delete_tag_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+            }
+            note top of delete_tag_response
+            Reports the outcome of the tag delete.
+            ores::utility::domain::result result // outcome of the operation
+            end note
+            class delete_many_tags_request <<message>> #E1F5FF {
+                {field} +removals : vector<tag_removal>
+                {field} +intent : ores::utility::domain::change_intent
+            }
+            note top of delete_many_tags_request
+            Deletes several tags in one call.
+            vector<tag_removal> removals // the removals and their preconditions
+            ores::utility::domain::change_intent intent // whether the change is staged or applied
+            end note
+            class delete_many_tags_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+            }
+            note top of delete_many_tags_response
+            Reports the outcome of the batch tag delete.
+            ores::utility::domain::result result // outcome of the operation
+            end note
+            class list_tag_versions_request <<message>> #E1F5FF {
+                {field} +key : tag_key
+                {field} +offset : uint32_t
+                {field} +limit : uint32_t
+                {field} +order : ores::utility::domain::order
+                {field} +filter : optional<tag_versions_filter>
+            }
+            note top of list_tag_versions_request
+            Asks the server for a page of a tag's version history.
+            tag_key key // identifies the record
+            uint32_t offset // number of records to skip
+            uint32_t limit // maximum records to return
+            ores::utility::domain::order order // sort order
+            optional<tag_versions_filter> filter // optional narrowing filters
+            end note
+            class list_tag_versions_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +versions : vector<ores::assets::domain::tag>
+                {field} +total : uint64_t
+            }
+            note top of list_tag_versions_response
+            Returns one page of a tag's versions.
+            ores::utility::domain::result result // outcome of the operation
+            vector<ores::assets::domain::tag> versions // the page of versions
+            uint64_t total // total records matching the query
+            end note
+            class get_tag_version_request <<message>> #E1F5FF {
+                {field} +key : tag_version_key
+            }
+            note top of get_tag_version_request
+            Asks the server for one version of a tag.
+            tag_version_key key // identifies the record
+            end note
+            class get_tag_version_response <<message>> #E1F5FF {
+                {field} +result : ores::utility::domain::result
+                {field} +version : ores::assets::domain::tag
+            }
+            note top of get_tag_version_response
+            Returns the requested tag version.
+            ores::utility::domain::result result // outcome of the operation
+            ores::assets::domain::tag version // the requested tag version
+            end note
+        }
+        namespace tests #F2F2F2 {
+
+            class domain_image_tests <<test suite>> #C5E1A5 {
+                +void create_image_with_code_and_description()
+                +void default_constructed_image_has_zero_version()
+                +void image_version_can_be_set()
+                +void image_json_output_contains_code_and_description()
+            }
+            note top of domain_image_tests
+            Covers construction, defaults, versioning and JSON output of the image domain type.
+            end note
+            domain_image_tests -[hidden]down- domain_tag_tests
+            class domain_tag_tests <<test suite>> #C5E1A5 {
+                +void create_tag_with_name_and_description()
+                +void default_constructed_tag_has_zero_version()
+                +void tag_provenance_fields_can_be_set()
+                +void tag_json_output_contains_name()
+            }
+            note top of domain_tag_tests
+            Covers construction, defaults, provenance fields and JSON output of the tag domain type.
+            end note
+            domain_tag_tests -[hidden]down- domain_image_tag_tests
+            class domain_image_tag_tests <<test suite>> #C5E1A5 {
+                +void default_constructed_image_tag_has_empty_fields()
+                +void image_tag_assigned_by_can_be_set()
+                +void image_tag_json_output_contains_keys_and_actor()
+            }
+            note top of domain_image_tag_tests
+            Covers construction, defaults, key assignment and JSON output of the image_tag junction type.
+            end note
         }
     }
 }
+
+' --- relationships ---
+ores::assets::messaging::image_change *-- ores::assets::messaging::image_write
+ores::assets::messaging::image_removal *-- ores::assets::messaging::image_key
+ores::assets::messaging::image_lookup *-- ores::assets::messaging::image_key
+ores::assets::messaging::image_lookup o-- ores::assets::domain::image
+ores::assets::messaging::image_event *-- ores::assets::messaging::image_key
+ores::assets::messaging::image_version_key *-- ores::assets::messaging::image_key
+ores::assets::messaging::list_images_response o-- ores::assets::domain::image
+ores::assets::messaging::get_image_request *-- ores::assets::messaging::image_key
+ores::assets::messaging::get_image_response o-- ores::assets::domain::image
+ores::assets::messaging::get_many_images_request o-- ores::assets::messaging::image_key
+ores::assets::messaging::get_many_images_response o-- ores::assets::messaging::image_lookup
+ores::assets::messaging::put_image_request *-- ores::assets::messaging::image_change
+ores::assets::messaging::put_image_response *-- ores::assets::domain::image
+ores::assets::messaging::put_many_images_request o-- ores::assets::messaging::image_change
+ores::assets::messaging::put_many_images_response o-- ores::assets::domain::image
+ores::assets::messaging::delete_image_request *-- ores::assets::messaging::image_removal
+ores::assets::messaging::delete_many_images_request o-- ores::assets::messaging::image_removal
+ores::assets::messaging::list_image_versions_request *-- ores::assets::messaging::image_key
+ores::assets::messaging::list_image_versions_request o-- ores::assets::messaging::image_versions_filter
+ores::assets::messaging::list_image_versions_response o-- ores::assets::domain::image
+ores::assets::messaging::get_image_version_request *-- ores::assets::messaging::image_version_key
+ores::assets::messaging::get_image_version_response *-- ores::assets::domain::image
+ores::assets::messaging::image_tag_change *-- ores::assets::messaging::image_tag_write
+ores::assets::messaging::image_tag_removal *-- ores::assets::messaging::image_tag_key
+ores::assets::messaging::image_tag_lookup *-- ores::assets::messaging::image_tag_key
+ores::assets::messaging::image_tag_lookup o-- ores::assets::domain::image_tag
+ores::assets::messaging::image_tag_event *-- ores::assets::messaging::image_tag_key
+ores::assets::messaging::list_image_tags_request o-- ores::assets::messaging::image_tags_filter
+ores::assets::messaging::list_image_tags_response o-- ores::assets::domain::image_tag
+ores::assets::messaging::get_image_tag_request *-- ores::assets::messaging::image_tag_key
+ores::assets::messaging::get_image_tag_response o-- ores::assets::domain::image_tag
+ores::assets::messaging::get_many_image_tags_request o-- ores::assets::messaging::image_tag_key
+ores::assets::messaging::get_many_image_tags_response o-- ores::assets::messaging::image_tag_lookup
+ores::assets::messaging::put_image_tag_request *-- ores::assets::messaging::image_tag_change
+ores::assets::messaging::put_image_tag_response *-- ores::assets::domain::image_tag
+ores::assets::messaging::put_many_image_tags_request o-- ores::assets::messaging::image_tag_change
+ores::assets::messaging::put_many_image_tags_response o-- ores::assets::domain::image_tag
+ores::assets::messaging::delete_image_tag_request *-- ores::assets::messaging::image_tag_removal
+ores::assets::messaging::delete_many_image_tags_request o-- ores::assets::messaging::image_tag_removal
+ores::assets::messaging::list_by_image_id_image_tags_request o-- ores::assets::messaging::image_tags_filter
+ores::assets::messaging::list_by_image_id_image_tags_response o-- ores::assets::domain::image_tag
+ores::assets::messaging::tag_change *-- ores::assets::messaging::tag_write
+ores::assets::messaging::tag_removal *-- ores::assets::messaging::tag_key
+ores::assets::messaging::tag_lookup *-- ores::assets::messaging::tag_key
+ores::assets::messaging::tag_lookup o-- ores::assets::domain::tag
+ores::assets::messaging::tag_event *-- ores::assets::messaging::tag_key
+ores::assets::messaging::tag_version_key *-- ores::assets::messaging::tag_key
+ores::assets::messaging::list_tags_response o-- ores::assets::domain::tag
+ores::assets::messaging::get_tag_request *-- ores::assets::messaging::tag_key
+ores::assets::messaging::get_tag_response o-- ores::assets::domain::tag
+ores::assets::messaging::get_many_tags_request o-- ores::assets::messaging::tag_key
+ores::assets::messaging::get_many_tags_response o-- ores::assets::messaging::tag_lookup
+ores::assets::messaging::put_tag_request *-- ores::assets::messaging::tag_change
+ores::assets::messaging::put_tag_response *-- ores::assets::domain::tag
+ores::assets::messaging::put_many_tags_request o-- ores::assets::messaging::tag_change
+ores::assets::messaging::put_many_tags_response o-- ores::assets::domain::tag
+ores::assets::messaging::delete_tag_request *-- ores::assets::messaging::tag_removal
+ores::assets::messaging::delete_many_tags_request o-- ores::assets::messaging::tag_removal
+ores::assets::messaging::list_tag_versions_request *-- ores::assets::messaging::tag_key
+ores::assets::messaging::list_tag_versions_request o-- ores::assets::messaging::tag_versions_filter
+ores::assets::messaging::list_tag_versions_response o-- ores::assets::domain::tag
+ores::assets::messaging::get_tag_version_request *-- ores::assets::messaging::tag_version_key
+ores::assets::messaging::get_tag_version_response *-- ores::assets::domain::tag
+ores::assets::messaging::list_images_request ..> ores::assets::messaging::list_images_response : response
+ores::assets::messaging::get_image_request ..> ores::assets::messaging::get_image_response : response
+ores::assets::messaging::get_many_images_request ..> ores::assets::messaging::get_many_images_response : response
+ores::assets::messaging::put_image_request ..> ores::assets::messaging::put_image_response : response
+ores::assets::messaging::put_many_images_request ..> ores::assets::messaging::put_many_images_response : response
+ores::assets::messaging::delete_image_request ..> ores::assets::messaging::delete_image_response : response
+ores::assets::messaging::delete_many_images_request ..> ores::assets::messaging::delete_many_images_response : response
+ores::assets::messaging::list_image_versions_request ..> ores::assets::messaging::list_image_versions_response : response
+ores::assets::messaging::get_image_version_request ..> ores::assets::messaging::get_image_version_response : response
+ores::assets::messaging::list_image_tags_request ..> ores::assets::messaging::list_image_tags_response : response
+ores::assets::messaging::get_image_tag_request ..> ores::assets::messaging::get_image_tag_response : response
+ores::assets::messaging::get_many_image_tags_request ..> ores::assets::messaging::get_many_image_tags_response : response
+ores::assets::messaging::put_image_tag_request ..> ores::assets::messaging::put_image_tag_response : response
+ores::assets::messaging::put_many_image_tags_request ..> ores::assets::messaging::put_many_image_tags_response : response
+ores::assets::messaging::delete_image_tag_request ..> ores::assets::messaging::delete_image_tag_response : response
+ores::assets::messaging::delete_many_image_tags_request ..> ores::assets::messaging::delete_many_image_tags_response : response
+ores::assets::messaging::list_by_image_id_image_tags_request ..> ores::assets::messaging::list_by_image_id_image_tags_response : response
+ores::assets::messaging::list_tags_request ..> ores::assets::messaging::list_tags_response : response
+ores::assets::messaging::get_tag_request ..> ores::assets::messaging::get_tag_response : response
+ores::assets::messaging::get_many_tags_request ..> ores::assets::messaging::get_many_tags_response : response
+ores::assets::messaging::put_tag_request ..> ores::assets::messaging::put_tag_response : response
+ores::assets::messaging::put_many_tags_request ..> ores::assets::messaging::put_many_tags_response : response
+ores::assets::messaging::delete_tag_request ..> ores::assets::messaging::delete_tag_response : response
+ores::assets::messaging::delete_many_tags_request ..> ores::assets::messaging::delete_many_tags_response : response
+ores::assets::messaging::list_tag_versions_request ..> ores::assets::messaging::list_tag_versions_response : response
+ores::assets::messaging::get_tag_version_request ..> ores::assets::messaging::get_tag_version_response : response
+ores::assets::domain::image -- ores::assets::domain::image_tag : tags
+ores::assets::domain::tag -- ores::assets::domain::image_tag : classifies
+ores::assets::tests::domain_image_tests ..> ores::assets::domain::image : tests
+ores::assets::tests::domain_tag_tests ..> ores::assets::domain::tag : tests
+ores::assets::tests::domain_image_tag_tests ..> ores::assets::domain::image_tag : tests
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
 

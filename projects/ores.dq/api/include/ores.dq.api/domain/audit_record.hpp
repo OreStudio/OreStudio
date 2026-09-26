@@ -33,7 +33,7 @@ namespace ores::dq::domain {
  *
  * Extracted as a plain nested sub-struct so that rfl::internal::no_duplicate_field_names
  * never instantiates a Literal wider than 5 fields for this block.
- * See doc/investigations/msvc_c1202_rfl_complexity.org.
+ * See the decomposition section of doc/knowledge/architecture/data_oriented_design.org.
  */
 struct audit_record {
     /**

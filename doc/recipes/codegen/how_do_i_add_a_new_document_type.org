@@ -76,7 +76,7 @@ Manual verification by generating a document of the new type:
 #+begin_src sh :results verbatim
 compass add investigation \
   --slug sample_investigation \
-  --parent-dir doc/investigations \
+  --parent-dir doc/agile/versions/v0/sprint_18/rfl_complexity_resolution \
   --title "Sample Investigation" \
   --description "Testing the new investigation document type."
 #+end_src

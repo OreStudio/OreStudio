@@ -101,6 +101,40 @@ today the category exists only as hand-written core types in
 instantiates it yet. Revisit this paragraph if an entity model ever
 persists document trees.
 
+** Decomposition and the MSVC C1202 ceiling
+
+A struct that =rfl= reflects for JSON has a hard shape limit that
+nothing in the type system expresses, and crossing it fails the build
+on MSVC with =C1202= rather than with anything naming the field.
+
+MSVC caps the recursive type-dependency graph. The count that matters
+is a struct's /effective/ field count: its own direct fields plus every
+field of everything it flattens, recursively. The ceiling sits below 19
+effective fields — sub-structs of 9 or fewer compile cleanly, and 19 in
+one effective literal does not.
+
+Two consequences are not obvious and both have cost us builds:
+
+- =rfl::Flatten= does *not* reduce the count. Flattening is recursive, so
+  a parent of three =Flatten= members whose sub-structs hold 5, 9 and 5
+  fields still presents a 19-field literal. Flatten is a JSON-shape
+  decision, never a decomposition fix.
+- The limit is per reflected literal, not per struct or per translation
+  unit. A single struct's literal saturates it regardless of what
+  surrounds it, so moving a type between headers does not help and no
+  compiler flag raises it.
+
+The rule: *keep every =rfl=-reflected literal at 9 effective fields or
+fewer, splitting a struct through =field_group= nesting rather than
+=Flatten=. Space the margin, not the limit.* A 19-field struct is
+fragile — a twentieth field re-triggers C1202 — while nesting makes
+later fields free, because a new field joins a sub-struct that already
+has room.
+
+This applies to any type =rfl= reflects: entities, their =field_group=
+parts, and hand-written message types. It is most often hit by a wide
+generated entity, which the field-group split exists to prevent.
+
 ** The data model of a component
 
 The artefacts a review reads, per component under =projects/ores.<name>=:

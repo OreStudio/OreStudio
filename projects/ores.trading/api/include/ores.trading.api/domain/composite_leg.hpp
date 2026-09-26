@@ -30,7 +30,7 @@ namespace ores::trading::domain {
 // Decomposed into plain nested sub-structs (≤9 fields each) so that
 // rfl::internal::no_duplicate_field_names never sees more than 9 field names
 // at once, staying below MSVC's C1202 template-graph limit.
-// See doc/investigations/msvc_c1202_rfl_complexity.org for full analysis.
+// See the decomposition section of doc/knowledge/architecture/data_oriented_design.org for the rule.
 
 struct composite_leg_identity final {
     int version = 0;

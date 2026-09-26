@@ -36,7 +36,7 @@ namespace ores::trading::domain {
  * @brief Common identity fields shared by all instrument types.
  *
  * Extracted as a plain nested sub-struct to keep each rfl::Literal below
- * the MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ * the MSVC C1202 threshold. See the decomposition section of doc/knowledge/architecture/data_oriented_design.org.
  */
 struct instrument_identity {
     /**

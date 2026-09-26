@@ -21,8 +21,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 For every folder section in [[proj:doc/compass.org][=doc/compass.org=]], add a prominent org-roam
 link to the folder's index file. Create the five missing index files
-([[proj:doc/meta][=meta/=]], [[proj:doc/analysis][=analysis/=]], [[proj:doc/investigations][=investigations/=]], [[proj:doc/prompts][=prompts/=]], [[proj:doc/samples][=samples/=]]) and add
-[[proj:doc/investigations][=investigations/=]] to the compass.org layout tree.
+([[proj:doc/meta][=meta/=]], [[proj:doc/analysis][=analysis/=]], =investigations/=, [[proj:doc/prompts][=prompts/=]], [[proj:doc/samples][=samples/=]]) and add
+=investigations/= to the compass.org layout tree.
 
 * Status
 
@@ -41,10 +41,10 @@ link to the folder's index file. Create the five missing index files
   index." sentence.
 - [[proj:doc/meta/meta.org][=doc/meta/meta.org=]] — new index listing the 5 contract docs.
 - [[proj:doc/analysis/analysis.org][=doc/analysis/analysis.org=]] — new index listing analysis files with IDs.
-- [[proj:doc/investigations/investigations.org][=doc/investigations/investigations.org=]] — new index listing investigation docs.
+- =doc/investigations/investigations.org= — new index listing investigation docs.
 - [[proj:doc/prompts/prompts.org][=doc/prompts/prompts.org=]] — new empty index placeholder.
 - [[proj:doc/samples/samples.org][=doc/samples/samples.org=]] — new index listing all image assets.
-- [[proj:doc/investigations][=investigations/=]] added to the folder layout tree in =compass.org=.
+- =investigations/= added to the folder layout tree in =compass.org=.
 
 * Notes
 
@@ -77,4 +77,4 @@ Folders already linked in compass.org before this task (no changes needed):
 - [[proj:doc/compass.org][=doc/compass.org=]] — added "See =[[id:UUID][Title]]=" reference to: [[proj:doc/meta][=meta/=]], [[proj:doc/agile][=agile/=]],
   [[proj:doc/agile/versions][=agile/versions/=]], [[proj:doc/agile/product_backlog][=agile/product_backlog/=]], [[proj:doc/recipes][=recipes/=]], [[proj:doc/knowledge][=knowledge/=]],
   [[proj:doc/plans][=plans/=]], [[proj:doc/prompts][=prompts/=]], [[proj:doc/samples][=samples/=]], [[proj:doc/analysis][=analysis/=]].
-  Added [[proj:doc/investigations][=investigations/=]] to the folder layout tree.
+  Added =investigations/= to the folder layout tree.

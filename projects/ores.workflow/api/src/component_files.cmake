@@ -16,18 +16,43 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
+    "domain/workflow_instance_json_io.cpp"
+    "domain/workflow_instance_table.cpp"
+    "domain/workflow_instance_table_io.cpp"
+    "domain/workflow_step_json_io.cpp"
+    "domain/workflow_step_table.cpp"
+    "domain/workflow_step_table_io.cpp"
+    "generators/workflow_instance_generator.cpp"
+    "generators/workflow_step_generator.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/domain/workflow_instance.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/domain/workflow_instance_json_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/domain/workflow_instance_table.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/domain/workflow_instance_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/domain/workflow_step.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/domain/workflow_step_json_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/domain/workflow_step_table.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/domain/workflow_step_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/eventing/workflow_instance_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/eventing/workflow_instance_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/eventing/workflow_step_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/generators/workflow_instance_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/generators/workflow_step_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/step_log_types.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/steps_query_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/workflow_events.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/workflow_instance_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/workflow_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/workflow_query_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/workflow_step_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/ores.workflow.api.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/service/workflow_definition.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/service/workflow_registry.hpp"

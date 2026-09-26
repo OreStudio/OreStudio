@@ -16,12 +16,21 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "domain/workflow_instance_json_io.cpp"
     "domain/workflow_step_json_io.cpp"
     "messaging/registrar.cpp"
     "messaging/workflow_handler.cpp"
+    "messaging/workflow_instance_history_provider_registrar.cpp"
+    "messaging/workflow_instance_registrar.cpp"
     "messaging/workflow_query_handler.cpp"
+    "messaging/workflow_step_history_provider_registrar.cpp"
+    "messaging/workflow_step_registrar.cpp"
+    "presentation/workflow_instance_history_field_mapper.cpp"
+    "presentation/workflow_step_history_field_mapper.cpp"
     "repository/workflow_instance_entity.cpp"
     "repository/workflow_instance_mapper.cpp"
     "repository/workflow_instance_repository.cpp"
@@ -30,9 +39,11 @@ set(files
     "repository/workflow_step_repository.cpp"
     "service/fsm_state_map.cpp"
     "service/workflow_engine.cpp"
+    "service/workflow_instance_service.cpp"
+    "service/workflow_step_service.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/domain/workflow_instance.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/domain/workflow_instance_json_io.hpp"
@@ -41,8 +52,16 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/messaging/registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/messaging/workflow_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/messaging/workflow_instance_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/messaging/workflow_instance_history_provider_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/messaging/workflow_instance_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/messaging/workflow_query_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/messaging/workflow_step_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/messaging/workflow_step_history_provider_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/messaging/workflow_step_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/ores.workflow.core.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/presentation/workflow_instance_history_field_mapper.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/presentation/workflow_step_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/repository/workflow_instance_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/repository/workflow_instance_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/repository/workflow_instance_repository.hpp"
@@ -51,4 +70,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/repository/workflow_step_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/service/fsm_state_map.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/service/workflow_engine.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/service/workflow_instance_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/service/workflow_step_service.hpp"
 )

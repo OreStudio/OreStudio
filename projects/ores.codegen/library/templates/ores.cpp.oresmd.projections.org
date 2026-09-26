@@ -339,6 +339,23 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
                            *id.contract_code,
                            to_upper(*id.tenor));
     }
+    // DISCOUNT is keyed by the name the producer gave the curve and the maturity
+    // sampled off it. The corpus names curves the way curveconfig.xml declares
+    // them -- USD3M beside USD-SOFR-3M, USD-FedFunds, USD-DUMMY and the bare
+    // currency -- so the name is data that no derivation from the currency
+    // reproduces, and it is emitted verbatim. The maturity is the identifier's
+    // tenor rather than its point, so the type does not pass the guard below.
+    if (id.type == instrument_type::quote && id.quote_type == ir_quote_type::discount) {
+        if (!id.curve_id || !id.tenor)
+            return std::nullopt;
+        const auto m = id.metric ? *id.metric : default_metric(ir_quote_type::discount);
+        return std::format("{}/{}/{}/{}/{}",
+                           ore_type(ir_quote_type::discount),
+                           ore_metric(m),
+                           id.ccy,
+                           *id.curve_id,
+                           to_upper(*id.tenor));
+    }
     if (id.type != instrument_type::quote || !id.quote_type || !id.point || !id.tenor)
         return std::nullopt;
 
@@ -387,15 +404,6 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
             return std::format(
                 "{}/{}/{}/{}/{}/{}", ore_type(qt), ore_metric(m), id.ccy, settle, t, point);
         }
-        if (qt == ir_quote_type::discount)
-            // Emitted as the key spells it when the inverse kept it, and
-            // rebuilt from the currency and tenor otherwise.
-            return std::format("{}/{}/{}/{}/{}",
-                               ore_type(qt),
-                               ore_metric(m),
-                               id.ccy,
-                               id.curve_id ? *id.curve_id : curve_id(id.ccy, *id.tenor),
-                               point);
         if (!id.index) {
             // MM is the one indexed family ORE writes both ways: ccy/settle/tenor
             // when the producer names no index (94% of the corpus), and
@@ -868,28 +876,22 @@ std::optional<market_data_identifier> from_ir_swap(const std::vector<std::string
 }
 
 std::optional<market_data_identifier> from_ir_discount(const std::vector<std::string>& parts) {
-    // DISCOUNT/METRIC/CCY/CURVE_ID/POINT, where CURVE_ID = CCY + TENOR.
+    // DISCOUNT/METRIC/CCY/CURVE/TENOR, where CURVE is the name curveconfig.xml
+    // gives the curve and TENOR the maturity sampled off it. The name is kept
+    // whole and recorded always: the corpus carries USD-SOFR-3M, USD-FedFunds
+    // and the bare currency, none of which a currency-plus-tenor rule rebuilds.
     if (parts.size() != 5)
         return std::nullopt;
     const auto m = parse_metric(parts[1]);
     if (!m)
         return std::nullopt;
-    const auto ccy = to_upper(parts[2]);
-    const auto curve = parts[3];
-    if (curve.size() <= ccy.size() || to_upper(curve).substr(0, ccy.size()) != ccy)
-        return std::nullopt;
     ir_market_data_identifier id;
-    id.ccy = ccy;
+    id.ccy = to_upper(parts[2]);
     id.type = instrument_type::quote;
     id.quote_type = ir_quote_type::discount;
     id.metric = *m;
-    id.tenor = to_lower(to_upper(curve).substr(ccy.size()));
-    // Recorded only when it is not the canonical derivation, so that one key has
-    // one URI: USD3M is what the forward rebuilds from USD and 3M, while
-    // USD-FedFunds is a spelling the derivation cannot reproduce.
-    if (curve != curve_id(ccy, id.tenor.value()))
-        id.curve_id = curve;
-    id.point = to_lower(parts[4]);
+    id.curve_id = parts[3];
+    id.tenor = to_lower(parts[4]);
     return id;
 }
 

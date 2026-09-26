@@ -397,9 +397,10 @@ TEST_CASE("round_trip_ir_cc_basis_swap", tags) {
 }
 
 TEST_CASE("round_trip_ir_mm_future_price", tags) {
-    const auto original = oresmd_parser::parse(
-        uri("oresmd://ir/"
-            "eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme"));
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://ir/"
+                                 "eur?tenor=3m&contract_month=2024-04&contract_code=XICE:FEI&type="
+                                 "quote&quote=mm_future&metric=price"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
@@ -414,16 +415,24 @@ TEST_CASE("round_trip_ir_zero_yield_spread", tags) {
 }
 
 TEST_CASE("round_trip_ir_oi_future_price", tags) {
-    const auto original = oresmd_parser::parse(uri(
-        "oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme"));
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://ir/"
+                                 "usd?tenor=3m&contract_month=2024-01&contract_code=XCME:SRA&type="
+                                 "quote&quote=oi_future&metric=price"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
 
 TEST_CASE("round_trip_ir_discount", tags) {
-    const auto original = oresmd_parser::parse(uri(
-        "oresmd://ir/"
-        "usd?index=libor&tenor=3m&role=projection&type=quote&quote=discount&metric=rate&point=6m"));
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/usd?curve_id=USD3M&tenor=6m&type=quote&quote=discount&metric=rate"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_discount_currency_named_curve", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/eur?curve_id=EUR&tenor=1d&type=quote&quote=discount&metric=rate"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }

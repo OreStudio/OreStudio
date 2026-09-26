@@ -250,7 +250,7 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
     const std::set<std::string> expected_fully_named{
         "BMA_SWAP", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
         "CC_FIX_FLOAT_SWAP", "CDS_INDEX", "COMMODITY", "COMMODITY_FWD",
-        "CORRELATION", "EQUITY", "EQUITY_DIVIDEND", "EQUITY_FWD",
+        "CORRELATION", "DISCOUNT", "EQUITY", "EQUITY_DIVIDEND", "EQUITY_FWD",
         "EQUITY_OPTION", "FRA",
         "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
         "INDEX_CDS_TRANCHE", "MM_FUTURE", "OI_FUTURE", "SEASONALITY",
@@ -259,7 +259,7 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
 
     const std::set<std::string> expected_fully_round_tripped{
         "BMA_SWAP", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
-        "CC_FIX_FLOAT_SWAP", "CDS_INDEX", "COMMODITY", "EQUITY_DIVIDEND",
+        "CC_FIX_FLOAT_SWAP", "CDS_INDEX", "COMMODITY", "DISCOUNT", "EQUITY_DIVIDEND",
         "FRA", "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
         "INDEX_CDS_TRANCHE", "IR_SWAP", "MM_FUTURE", "OI_FUTURE", "SEASONALITY",
         "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",

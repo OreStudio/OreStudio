@@ -129,20 +129,32 @@ TEST_CASE("ir_swap_quote_key_matches_worked_example", tags) {
 }
 
 TEST_CASE("discount_quote_key_matches_worked_example", tags) {
-    const auto id = parse("oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&"
-                          "quote=discount&metric=rate&point=6m");
+    const auto id = parse("oresmd://ir/usd?curve_id=USD3M&tenor=6m&type=quote&"
+                          "quote=discount&metric=rate");
     REQUIRE(oresmd_projections::to_quote_key(id) == "DISCOUNT/RATE/USD/USD3M/6M");
 }
 
-TEST_CASE("swaption_vol_quote_key_matches_worked_example", tags) {
-    const auto id = parse("oresmd://ir/eur?type=vol&point=5y,2y,atm");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM");
+TEST_CASE("discount_quote_key_matches_the_corpus", tags) {
+    const auto id = parse(
+        "oresmd://ir/usd?curve_id=USD-SOFR-3M&tenor=10y&type=quote&quote=discount&metric=rate");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "DISCOUNT/RATE/USD/USD-SOFR-3M/10Y");
 }
 
 /*
  * New IR quote types covered by id:D566131C-D08C-4AFE-950E-B3DD26EB2C24
  * ("Extend oresmd to full ORE quote-type coverage"), one test per TYPE/METRIC pair.
  */
+
+TEST_CASE("discount_quote_key_matches_the_corpus_currency_named_curve", tags) {
+    const auto id =
+        parse("oresmd://ir/eur?curve_id=EUR&tenor=1d&type=quote&quote=discount&metric=rate");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "DISCOUNT/RATE/EUR/EUR/1D");
+}
+
+TEST_CASE("swaption_vol_quote_key_matches_worked_example", tags) {
+    const auto id = parse("oresmd://ir/eur?type=vol&point=5y,2y,atm");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM");
+}
 
 TEST_CASE("ir_mm_rate_quote_key", tags) {
     const auto id =
@@ -534,15 +546,21 @@ TEST_CASE("from_ore_key_ir_swap_drops_the_settlement_segment", tags) {
                   "usd?settle=1D&tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y"));
 }
 
-TEST_CASE("from_ore_key_ir_discount_reverses_the_curve_id", tags) {
-    // The forward emits CURVE_ID = CCY + TENOR; the inverse strips the ccy prefix back
-    // into the tenor field.
+TEST_CASE("from_ore_key_ir_discount_keeps_the_curve_name_whole", tags) {
+    // The curve segment is the name curveconfig.xml gives the curve, not a
+    // currency with a tenor appended: the corpus carries USD3M beside
+    // USD-SOFR-3M, USD-FedFunds and the bare currency. So the name is kept
+    // verbatim and the maturity is the trailing segment.
     REQUIRE(oresmd_projections::from_ore_key("DISCOUNT/RATE/USD/USD3M/6M") ==
-            parse("oresmd://ir/usd?tenor=3m&type=quote&quote=discount&metric=rate&point=6m"));
-}
-
-TEST_CASE("from_ore_key_ir_discount_rejects_a_curve_id_without_the_ccy_prefix", tags) {
-    REQUIRE_FALSE(oresmd_projections::from_ore_key("DISCOUNT/RATE/USD/GBP3M/6M").has_value());
+            parse("oresmd://ir/usd?curve_id=USD3M&tenor=6m&type=quote&quote=discount&metric=rate"));
+    REQUIRE(oresmd_projections::from_ore_key("DISCOUNT/RATE/USD/USD-SOFR-3M/10Y") ==
+            parse("oresmd://ir/"
+                  "usd?curve_id=USD-SOFR-3M&tenor=10y&type=quote&quote=discount&metric=rate"));
+    // A currency-named curve is a name like any other. These are the 9,075
+    // corpus keys the old currency-stripping rule rejected outright, because
+    // stripping the currency off the curve left no tenor behind.
+    REQUIRE(oresmd_projections::from_ore_key("DISCOUNT/RATE/EUR/EUR/1D") ==
+            parse("oresmd://ir/eur?curve_id=EUR&tenor=1d&type=quote&quote=discount&metric=rate"));
 }
 
 TEST_CASE("from_ore_key_ir_indexed_families", tags) {
@@ -682,6 +700,9 @@ TEST_CASE("from_ore_key_pins_the_canonical_uri_of_the_import_boundary", tags) {
                 .value == "oresmd://ir/"
                           "eur?tenor=3m&contract_month=2024-04&contract_code=XICE:FEI&type=quote&"
                           "metric=price&quote=mm_future");
+    REQUIRE(oresmd_parser::to_uri(*oresmd_projections::from_ore_key("DISCOUNT/RATE/USD/USD3M/6M"))
+                .value ==
+            "oresmd://ir/usd?tenor=6m&curve_id=USD3M&type=quote&metric=rate&quote=discount");
     REQUIRE(
         oresmd_parser::to_uri(*oresmd_projections::from_ore_key("CDS/CREDIT_SPREAD/VOD/SR/EUR/5Y"))
             .value == "oresmd://credit/vod?ccy=eur&type=quote&quote=cds&point=sr,5y");

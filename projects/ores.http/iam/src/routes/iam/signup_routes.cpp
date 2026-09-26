@@ -129,8 +129,9 @@ void signup_routes::register_routes(
             .body<messaging::signup_request>()
             .response<messaging::signup_response>()
             .handler([&session](const http_request& req) { return handle_signup(req, session); });
-    router->add_route(signup_route.build());
-    registry->register_route(signup_route.build());
+    const auto signup_built = signup_route.build();
+    router->add_route(signup_built);
+    registry->register_route(signup_built);
 
     BOOST_LOG_SEV(lg(), info) << "signup routes registered: " << 1 << " endpoint(s)";
 }

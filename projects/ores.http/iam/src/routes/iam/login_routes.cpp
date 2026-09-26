@@ -138,8 +138,9 @@ void login_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
             .body<messaging::login_request>()
             .response<messaging::login_response>()
             .handler([&session](const http_request& req) { return handle_login(req, session); });
-    router->add_route(login_route.build());
-    registry->register_route(login_route.build());
+    const auto login_built = login_route.build();
+    router->add_route(login_built);
+    registry->register_route(login_built);
 
     auto logout_route =
         router->post("/api/v1/iam/auth/logout")
@@ -150,8 +151,9 @@ void login_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
             .body<messaging::logout_request>()
             .response<messaging::logout_response>()
             .handler([&session](const http_request& req) { return handle_logout(req, session); });
-    router->add_route(logout_route.build());
-    registry->register_route(logout_route.build());
+    const auto logout_built = logout_route.build();
+    router->add_route(logout_built);
+    registry->register_route(logout_built);
 
     BOOST_LOG_SEV(lg(), info) << "login routes registered: " << 2 << " endpoint(s)";
 }

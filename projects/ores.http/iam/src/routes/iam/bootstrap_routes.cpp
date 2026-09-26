@@ -141,8 +141,9 @@ void bootstrap_routes::register_routes(
             .handler([&session](const http_request& req) {
                 return handle_bootstrap_status(req, session);
             });
-    router->add_route(bootstrap_status_route.build());
-    registry->register_route(bootstrap_status_route.build());
+    const auto bootstrap_status_built = bootstrap_status_route.build();
+    router->add_route(bootstrap_status_built);
+    registry->register_route(bootstrap_status_built);
 
     auto create_initial_admin_route =
         router->post("/api/v1/iam/bootstrap/create-admin")
@@ -155,8 +156,9 @@ void bootstrap_routes::register_routes(
             .handler([&session](const http_request& req) {
                 return handle_create_initial_admin(req, session);
             });
-    router->add_route(create_initial_admin_route.build());
-    registry->register_route(create_initial_admin_route.build());
+    const auto create_initial_admin_built = create_initial_admin_route.build();
+    router->add_route(create_initial_admin_built);
+    registry->register_route(create_initial_admin_built);
 
     BOOST_LOG_SEV(lg(), info) << "bootstrap routes registered: " << 2 << " endpoint(s)";
 }

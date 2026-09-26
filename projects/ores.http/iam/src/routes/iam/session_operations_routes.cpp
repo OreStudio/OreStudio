@@ -128,8 +128,9 @@ void session_operations_routes::register_routes(
             .handler([&session](const http_request& req) {
                 return handle_get_active_sessions(req, session);
             });
-    router->add_route(get_active_sessions_route.build());
-    registry->register_route(get_active_sessions_route.build());
+    const auto get_active_sessions_built = get_active_sessions_route.build();
+    router->add_route(get_active_sessions_built);
+    registry->register_route(get_active_sessions_built);
 
     BOOST_LOG_SEV(lg(), info) << "session_operations routes registered: " << 1 << " endpoint(s)";
 }

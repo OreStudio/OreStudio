@@ -228,8 +228,9 @@ void account_operations_routes::register_routes(
                                   .handler([&session](const http_request& req) {
                                       return handle_save_account(req, session);
                                   });
-    router->add_route(save_account_route.build());
-    registry->register_route(save_account_route.build());
+    const auto save_account_built = save_account_route.build();
+    router->add_route(save_account_built);
+    registry->register_route(save_account_built);
 
     auto update_account_route =
         router->post("/api/v1/iam/accounts/update")
@@ -242,8 +243,9 @@ void account_operations_routes::register_routes(
             .handler([&session](const http_request& req) {
                 return handle_update_account(req, session);
             });
-    router->add_route(update_account_route.build());
-    registry->register_route(update_account_route.build());
+    const auto update_account_built = update_account_route.build();
+    router->add_route(update_account_built);
+    registry->register_route(update_account_built);
 
     auto delete_account_route =
         router->post("/api/v1/iam/accounts/delete")
@@ -256,8 +258,9 @@ void account_operations_routes::register_routes(
             .handler([&session](const http_request& req) {
                 return handle_delete_account(req, session);
             });
-    router->add_route(delete_account_route.build());
-    registry->register_route(delete_account_route.build());
+    const auto delete_account_built = delete_account_route.build();
+    router->add_route(delete_account_built);
+    registry->register_route(delete_account_built);
 
     auto lock_account_route = router->post("/api/v1/iam/accounts/lock")
                                   .summary("Lock account")
@@ -269,8 +272,9 @@ void account_operations_routes::register_routes(
                                   .handler([&session](const http_request& req) {
                                       return handle_lock_account(req, session);
                                   });
-    router->add_route(lock_account_route.build());
-    registry->register_route(lock_account_route.build());
+    const auto lock_account_built = lock_account_route.build();
+    router->add_route(lock_account_built);
+    registry->register_route(lock_account_built);
 
     auto unlock_account_route =
         router->post("/api/v1/iam/accounts/unlock")
@@ -283,8 +287,9 @@ void account_operations_routes::register_routes(
             .handler([&session](const http_request& req) {
                 return handle_unlock_account(req, session);
             });
-    router->add_route(unlock_account_route.build());
-    registry->register_route(unlock_account_route.build());
+    const auto unlock_account_built = unlock_account_route.build();
+    router->add_route(unlock_account_built);
+    registry->register_route(unlock_account_built);
 
     auto reset_password_route =
         router->post("/api/v1/iam/accounts/reset-password")
@@ -297,8 +302,9 @@ void account_operations_routes::register_routes(
             .handler([&session](const http_request& req) {
                 return handle_reset_password(req, session);
             });
-    router->add_route(reset_password_route.build());
-    registry->register_route(reset_password_route.build());
+    const auto reset_password_built = reset_password_route.build();
+    router->add_route(reset_password_built);
+    registry->register_route(reset_password_built);
 
     auto update_my_email_route =
         router->post("/api/v1/iam/accounts/update-email")
@@ -311,8 +317,9 @@ void account_operations_routes::register_routes(
             .handler([&session](const http_request& req) {
                 return handle_update_my_email(req, session);
             });
-    router->add_route(update_my_email_route.build());
-    registry->register_route(update_my_email_route.build());
+    const auto update_my_email_built = update_my_email_route.build();
+    router->add_route(update_my_email_built);
+    registry->register_route(update_my_email_built);
 
     auto change_password_route =
         router->post("/api/v1/iam/accounts/change-password")
@@ -325,8 +332,9 @@ void account_operations_routes::register_routes(
             .handler([&session](const http_request& req) {
                 return handle_change_password(req, session);
             });
-    router->add_route(change_password_route.build());
-    registry->register_route(change_password_route.build());
+    const auto change_password_built = change_password_route.build();
+    router->add_route(change_password_built);
+    registry->register_route(change_password_built);
 
     BOOST_LOG_SEV(lg(), info) << "account_operations routes registered: " << 8 << " endpoint(s)";
 }

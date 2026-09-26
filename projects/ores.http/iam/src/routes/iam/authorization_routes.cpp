@@ -187,8 +187,9 @@ void authorization_routes::register_routes(
                                  .handler([&session](const http_request& req) {
                                      return handle_assign_role(req, session);
                                  });
-    router->add_route(assign_role_route.build());
-    registry->register_route(assign_role_route.build());
+    const auto assign_role_built = assign_role_route.build();
+    router->add_route(assign_role_built);
+    registry->register_route(assign_role_built);
 
     auto revoke_role_route = router->post("/api/v1/iam/roles/revoke")
                                  .summary("Revoke role")
@@ -200,8 +201,9 @@ void authorization_routes::register_routes(
                                  .handler([&session](const http_request& req) {
                                      return handle_revoke_role(req, session);
                                  });
-    router->add_route(revoke_role_route.build());
-    registry->register_route(revoke_role_route.build());
+    const auto revoke_role_built = revoke_role_route.build();
+    router->add_route(revoke_role_built);
+    registry->register_route(revoke_role_built);
 
     auto get_account_roles_route =
         router->post("/api/v1/iam/roles/by-account")
@@ -214,8 +216,9 @@ void authorization_routes::register_routes(
             .handler([&session](const http_request& req) {
                 return handle_get_account_roles(req, session);
             });
-    router->add_route(get_account_roles_route.build());
-    registry->register_route(get_account_roles_route.build());
+    const auto get_account_roles_built = get_account_roles_route.build();
+    router->add_route(get_account_roles_built);
+    registry->register_route(get_account_roles_built);
 
     auto get_account_permissions_route =
         router->post("/api/v1/iam/roles/permissions-by-account")
@@ -228,8 +231,9 @@ void authorization_routes::register_routes(
             .handler([&session](const http_request& req) {
                 return handle_get_account_permissions(req, session);
             });
-    router->add_route(get_account_permissions_route.build());
-    registry->register_route(get_account_permissions_route.build());
+    const auto get_account_permissions_built = get_account_permissions_route.build();
+    router->add_route(get_account_permissions_built);
+    registry->register_route(get_account_permissions_built);
 
     auto get_role_permissions_route =
         router->post("/api/v1/iam/roles/permissions")
@@ -242,8 +246,9 @@ void authorization_routes::register_routes(
             .handler([&session](const http_request& req) {
                 return handle_get_role_permissions(req, session);
             });
-    router->add_route(get_role_permissions_route.build());
-    registry->register_route(get_role_permissions_route.build());
+    const auto get_role_permissions_built = get_role_permissions_route.build();
+    router->add_route(get_role_permissions_built);
+    registry->register_route(get_role_permissions_built);
 
     BOOST_LOG_SEV(lg(), info) << "authorization routes registered: " << 5 << " endpoint(s)";
 }

@@ -40,6 +40,13 @@ ROUTE_RE = re.compile(r"(?:->|\.)\s*(get|post|put|patch|delete_|head|options)\s*
 
 ADD_ROUTE_RE = re.compile(r"(?<=[.>])\s*add_route\s*\(")
 VARIABLE_BUILD_RE = re.compile(r"^\s*([A-Za-z_]\w*)\s*\.\s*build\s*\(\s*\)\s*$")
+BARE_NAME_RE = re.compile(r"^[A-Za-z_]\w*$")
+
+# A route is built once and registered twice, so the call names the built
+# local rather than the builder. That local is an alias for the builder whose
+# chain states the position, and the chain is read through the alias.
+BUILD_ALIAS_RE = re.compile(
+    r"^\s*[A-Za-z_]\w*\s*=\s*([A-Za-z_]\w*)\s*\.\s*build\s*\(\s*\)\s*;")
 
 # A scan that finds almost nothing has broken, whatever the tree says. The
 # tree registers far more than this; the floor exists so a regex that stops
@@ -167,6 +174,24 @@ def _variable_chain(text: str, mask: list[bool], name: str) -> str | None:
     return None
 
 
+def _builder_chain(text: str,
+                   mask: list[bool],
+                   name: str,
+                   seen: set[str] | None = None) -> str | None:
+    """The builder chain that produces ``name``, following build aliases."""
+    seen = set() if seen is None else seen
+    if name in seen:
+        return None
+    seen.add(name)
+    chain = _variable_chain(text, mask, name)
+    if chain is None:
+        return None
+    alias = BUILD_ALIAS_RE.match(chain)
+    if alias is None:
+        return chain
+    return _builder_chain(text, mask, alias.group(1), seen)
+
+
 def check_file(path: Path) -> list[str]:
     """Every add_route call in the file that states no authentication."""
     text = path.read_text(encoding="utf-8")
@@ -185,13 +210,15 @@ def check_file(path: Path) -> list[str]:
 
         variable = VARIABLE_BUILD_RE.match(argument)
         if variable:
-            chain = _variable_chain(text, mask, variable.group(1))
+            chain = _builder_chain(text, mask, variable.group(1))
             if chain is None:
                 # A route added through a name this file never binds cannot be
                 # read here. The router's own refusal still covers it.
                 continue
         else:
-            chain = argument
+            name = argument.strip()
+            chain = (_builder_chain(text, mask, name)
+                     if BARE_NAME_RE.match(name) else None) or argument
 
         if _declared(chain):
             continue

@@ -87,6 +87,32 @@ void register_all(router r) {
     assert [v for v in check.check(tmp_path) if "GET /demo states no authentication" in v]
 
 
+def test_a_route_built_once_into_a_local_is_resolved(tmp_path):
+    _write(tmp_path, """
+void register_all(router r) {
+    auto list_route = r.get("/demo")
+                          .auth_required()
+                          .handler(handle);
+    const auto list_built = list_route.build();
+    r.add_route(list_built);
+    r.register_route(list_built);
+}
+""")
+    assert not [v for v in check.check(tmp_path) if "states no authentication" in v]
+
+
+def test_a_built_local_that_states_nothing_is_reported(tmp_path):
+    _write(tmp_path, """
+void register_all(router r) {
+    auto list_route = r.get("/demo")
+                          .handler(handle);
+    const auto list_built = list_route.build();
+    r.add_route(list_built);
+}
+""")
+    assert [v for v in check.check(tmp_path) if "GET /demo states no authentication" in v]
+
+
 def test_a_declaration_named_in_a_comment_does_not_count(tmp_path):
     _write(tmp_path, """
 void register_all(router r) {

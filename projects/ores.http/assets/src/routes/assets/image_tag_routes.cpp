@@ -318,8 +318,9 @@ void image_tag_routes::register_routes(
             .query_param("desc", "boolean", "", false, "Descending")
             .response<messaging::list_image_tags_response>()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
-    router->add_route(list_route.build());
-    registry->register_route(list_route.build());
+    const auto list_built = list_route.build();
+    router->add_route(list_built);
+    registry->register_route(list_built);
 
     auto get_route =
         router->get("/api/v1/assets/image_tags/{image_id}/{tag_id}")
@@ -329,8 +330,9 @@ void image_tag_routes::register_routes(
             .auth_required()
             .response<messaging::get_image_tag_response>()
             .handler([&session](const http_request& req) { return handle_get(req, session); });
-    router->add_route(get_route.build());
-    registry->register_route(get_route.build());
+    const auto get_built = get_route.build();
+    router->add_route(get_built);
+    registry->register_route(get_built);
 
     auto get_many_route =
         router->post("/api/v1/assets/image_tags/get-many")
@@ -341,8 +343,9 @@ void image_tag_routes::register_routes(
             .body<messaging::get_many_image_tags_request>()
             .response<messaging::get_many_image_tags_response>()
             .handler([&session](const http_request& req) { return handle_get_many(req, session); });
-    router->add_route(get_many_route.build());
-    registry->register_route(get_many_route.build());
+    const auto get_many_built = get_many_route.build();
+    router->add_route(get_many_built);
+    registry->register_route(get_many_built);
 
     auto add_route =
         router->post("/api/v1/assets/image_tags")
@@ -353,8 +356,9 @@ void image_tag_routes::register_routes(
             .body<messaging::put_image_tag_request>()
             .response<messaging::put_image_tag_response>()
             .handler([&session](const http_request& req) { return handle_add(req, session); });
-    router->add_route(add_route.build());
-    registry->register_route(add_route.build());
+    const auto add_built = add_route.build();
+    router->add_route(add_built);
+    registry->register_route(add_built);
 
     auto set_route =
         router->put("/api/v1/assets/image_tags")
@@ -366,8 +370,9 @@ void image_tag_routes::register_routes(
             .body<messaging::put_image_tag_request>()
             .response<messaging::put_image_tag_response>()
             .handler([&session](const http_request& req) { return handle_set(req, session); });
-    router->add_route(set_route.build());
-    registry->register_route(set_route.build());
+    const auto set_built = set_route.build();
+    router->add_route(set_built);
+    registry->register_route(set_built);
 
     auto put_many_route =
         router->post("/api/v1/assets/image_tags/put-many")
@@ -378,8 +383,9 @@ void image_tag_routes::register_routes(
             .body<messaging::put_many_image_tags_request>()
             .response<messaging::put_many_image_tags_response>()
             .handler([&session](const http_request& req) { return handle_put_many(req, session); });
-    router->add_route(put_many_route.build());
-    registry->register_route(put_many_route.build());
+    const auto put_many_built = put_many_route.build();
+    router->add_route(put_many_built);
+    registry->register_route(put_many_built);
 
     auto delete_route =
         router->delete_("/api/v1/assets/image_tags/{image_id}/{tag_id}")
@@ -392,8 +398,9 @@ void image_tag_routes::register_routes(
             .query_param("version", "integer", "", false, "Version")
             .response<messaging::delete_image_tag_response>()
             .handler([&session](const http_request& req) { return handle_delete(req, session); });
-    router->add_route(delete_route.build());
-    registry->register_route(delete_route.build());
+    const auto delete_built = delete_route.build();
+    router->add_route(delete_built);
+    registry->register_route(delete_built);
 
     auto delete_many_route =
         router->post("/api/v1/assets/image_tags/delete-many")
@@ -405,8 +412,9 @@ void image_tag_routes::register_routes(
             .response<messaging::delete_many_image_tags_response>()
             .handler(
                 [&session](const http_request& req) { return handle_delete_many(req, session); });
-    router->add_route(delete_many_route.build());
-    registry->register_route(delete_many_route.build());
+    const auto delete_many_built = delete_many_route.build();
+    router->add_route(delete_many_built);
+    registry->register_route(delete_many_built);
 
     auto by_image_id_route =
         router->get("/api/v1/assets/image_tags/by-image-id/{image_id}")
@@ -422,8 +430,9 @@ void image_tag_routes::register_routes(
             .response<messaging::list_by_image_id_image_tags_response>()
             .handler(
                 [&session](const http_request& req) { return handle_by_image_id(req, session); });
-    router->add_route(by_image_id_route.build());
-    registry->register_route(by_image_id_route.build());
+    const auto by_image_id_built = by_image_id_route.build();
+    router->add_route(by_image_id_built);
+    registry->register_route(by_image_id_built);
 
     BOOST_LOG_SEV(lg(), info) << "image_tags routes registered: " << 9 << " endpoint(s)";
 }

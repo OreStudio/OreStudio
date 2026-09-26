@@ -232,8 +232,9 @@ void account_routes::register_routes(
             .query_param("desc", "boolean", "", false, "Descending")
             .response<messaging::list_accounts_response>()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
-    router->add_route(list_route.build());
-    registry->register_route(list_route.build());
+    const auto list_built = list_route.build();
+    router->add_route(list_built);
+    registry->register_route(list_built);
 
     auto get_route =
         router->get("/api/v1/iam/accounts/{username}")
@@ -243,8 +244,9 @@ void account_routes::register_routes(
             .auth_required()
             .response<messaging::get_account_response>()
             .handler([&session](const http_request& req) { return handle_get(req, session); });
-    router->add_route(get_route.build());
-    registry->register_route(get_route.build());
+    const auto get_built = get_route.build();
+    router->add_route(get_built);
+    registry->register_route(get_built);
 
     auto get_many_route =
         router->post("/api/v1/iam/accounts/get-many")
@@ -255,8 +257,9 @@ void account_routes::register_routes(
             .body<messaging::get_many_accounts_request>()
             .response<messaging::get_many_accounts_response>()
             .handler([&session](const http_request& req) { return handle_get_many(req, session); });
-    router->add_route(get_many_route.build());
-    registry->register_route(get_many_route.build());
+    const auto get_many_built = get_many_route.build();
+    router->add_route(get_many_built);
+    registry->register_route(get_many_built);
 
     auto versions_route =
         router->get("/api/v1/iam/accounts/{username}/versions")
@@ -270,8 +273,9 @@ void account_routes::register_routes(
             .query_param("desc", "boolean", "", false, "Descending")
             .response<messaging::list_account_versions_response>()
             .handler([&session](const http_request& req) { return handle_versions(req, session); });
-    router->add_route(versions_route.build());
-    registry->register_route(versions_route.build());
+    const auto versions_built = versions_route.build();
+    router->add_route(versions_built);
+    registry->register_route(versions_built);
 
     auto version_route =
         router->get("/api/v1/iam/accounts/{username}/versions/{version}")
@@ -281,8 +285,9 @@ void account_routes::register_routes(
             .auth_required()
             .response<messaging::get_account_version_response>()
             .handler([&session](const http_request& req) { return handle_version(req, session); });
-    router->add_route(version_route.build());
-    registry->register_route(version_route.build());
+    const auto version_built = version_route.build();
+    router->add_route(version_built);
+    registry->register_route(version_built);
 
     BOOST_LOG_SEV(lg(), info) << "accounts routes registered: " << 5 << " endpoint(s)";
 }

@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: B0DEC846-32B2-494D-96B9-3E1F6819345D
+:END:
+#+title: ores.variability.system_setting
+#+description: Codegen entity model for the variability system settings table. Drives the C++ domain class, mapper, repository, service, handler, protocol and SQL schema from a single literate source.
+#+type: ores.codegen.entity
+#+component: variability
+#+filetags: :model:entity:variability:
+#+brief: A named, typed runtime configuration value.
+#+entity_singular: system_setting
+#+entity_plural: system_settings
+#+entity_title: System Setting
+#+key_field: name
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+A system setting is a named configuration value the platform reads while it
+runs, such as =system.bootstrap_mode= or =onboarding.party=. The value is
+stored as text and =data_type= says how to read it, because one table carries
+every type rather than one table per type.
+
+A setting is scoped to a tenant and a party. Tenant-wide settings live under
+the tenant's system party, and a party-specific setting such as
+=onboarding.party= lives under that party's own id. The pair is what makes a
+setting name unique: the same name may hold different values for two parties
+in one tenant, so a caller always reads within a scope.
+
+The table is bitemporal like every other entity, so a setting's history is
+kept and a configuration change is auditable and reversible. The name is the
+natural key callers use; =id= is the surrogate the store keeps for
+foreign-key stability.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: variability
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate identifier for the setting row.
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Dotted setting name, for example =system.bootstrap_mode=. Callers ask for a
+setting by this name, within a tenant and party scope.
+
+#+begin_src cpp :name generator
+std::string("system.") + faker::word::noun()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:END:
+
+Party that scopes this setting. Tenant-wide settings use the tenant's system
+party; a party-specific setting uses that party's own id. Together with =name=
+it makes one setting distinguishable from another of the same name.
+
+#+begin_src cpp :name generator
+faker::uuid::uuid()
+#+end_src
+
+** value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The setting's value, always stored as text. =data_type= says how to read it.
+
+#+begin_src cpp :name generator
+std::string("true")
+#+end_src
+
+** data_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How to read =value=: =boolean=, =integer=, =string= or =json=. Stored beside
+the value because one table carries every type.
+
+#+begin_src cpp :name generator
+std::string("boolean")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+What the setting controls, for an operator reading the list.
+
+#+begin_src cpp :name generator
+std::string("Setting that controls ") + faker::word::noun()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_variability_system_settings_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation:  true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: setting
+:entity_plural_short:   settings
+:entity_singular_words: system setting
+:entity_plural_words:   system settings
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: s
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| name        | Name        |
+| value       | Value       |
+| data_type   | Type        |
+| description | Description |
+| modified_by | Modified By |
+| recorded_at | Recorded At |
+
+** Presentation
+:PROPERTIES:
+:key_field: name
+:END:
+
+Callers address a setting by its name, not by the surrogate id the store
+keeps behind it, so every operation carries the name.
+
+* See also
+
+- [[id:E4C6D3F8-7F74-4D16-86AC-CA1BAA76F0AD][ores.variability]] — component group overview.

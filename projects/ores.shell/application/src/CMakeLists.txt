@@ -58,6 +58,7 @@ target_link_libraries(${lib_target_name}
         ores.shell.trading.lib
         ores.shell.iam.lib
         ores.shell.synthetic.lib
+        ores.shell.assets.lib
         ores.shell.refdata.lib
         ores.shell.compute.lib
         ores.trading.api.lib

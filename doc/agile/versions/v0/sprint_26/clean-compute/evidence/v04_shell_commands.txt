@@ -19,49 +19,49 @@ OK    apps versions ORE --limit 1
 OK    platforms add v04-tmp "V04 Temporary" "created by the clean-compute V04 run" linux x86_64 sysv false system.new_record v04
 OK    platforms get v04-tmp
 OK    platforms versions v04-tmp --limit 1
-OK    platforms set 37b7649c-0951-43f3-a69f-86cf66bc0484 v04-tmp "V04 Temporary" "renamed by the clean-compute V04 run" linux x86_64 sysv false system.new_record v04
+OK    platforms set eaf2cc4f-9f0d-44c2-989e-764fd1e4ee45 v04-tmp "V04 Temporary" "renamed by the clean-compute V04 run" linux x86_64 sysv false system.new_record v04
 OK    platforms delete v04-tmp system.new_record v04
 ########## apps ##########
 OK    apps add v04-app "V04 application" system.new_record v04
 OK    apps get v04-app
 OK    apps versions v04-app --limit 1
-OK    apps set ca570c1c-9c7d-4639-b6f1-23c3023b9209 v04-app "V04 application renamed" system.new_record v04
+OK    apps set 54ecbf1c-3ead-4451-b1b3-c0433aa4161c v04-app "V04 application renamed" system.new_record v04
 OK    apps delete v04-app system.new_record v04
 ########## batches ##########
 OK    batches add v04-batch open system.new_record v04
 OK    batches get v04-batch
 OK    batches versions v04-batch --limit 1
-OK    batches set 59e8c3f0-db96-4376-b02f-1d89475d1072 v04-batch open system.new_record v04
+OK    batches set fecdebe6-0f70-4631-88a1-4ecb1acbb662 v04-batch open system.new_record v04
 OK    batches delete v04-batch system.new_record v04
 ########## hosts ##########
 OK    hosts add v04-host here 4 8192 none "V04 host" 2026-09-26T00:00:00Z 0 system.new_record v04
 OK    hosts get v04-host
 OK    hosts versions v04-host --limit 1
-OK    hosts set bf672dd0-ada5-4bf5-80c3-53cfd2670f1c v04-host here 8 16384 none "V04 host" 2026-09-26T00:00:00Z 0 system.new_record v04
+OK    hosts set 41550d1b-f359-4c41-bf63-d84ae55af5cf v04-host here 8 16384 none "V04 host" 2026-09-26T00:00:00Z 0 system.new_record v04
 OK    hosts delete v04-host system.new_record v04
 ########## app_versions ##########
-OK    app_versions add 8d4230c9-bfff-4361-bd21-a6d2c3224aff v04-wrapper v04-engine 128 system.new_record v04
+OK    app_versions add cb4b7b88-3627-452d-8bfe-9a66294c9039 v04-wrapper v04-engine 128 system.new_record v04
 OK    app_versions get v04-wrapper
 OK    app_versions versions v04-wrapper --limit 1
-OK    app_versions set da2379d1-f2b4-4cf0-84df-92fe10ff528a 8d4230c9-bfff-4361-bd21-a6d2c3224aff v04-wrapper v04-engine 256 system.new_record v04
+OK    app_versions set eda305d6-9b36-4fa4-ab01-502c40fee1b7 cb4b7b88-3627-452d-8bfe-9a66294c9039 v04-wrapper v04-engine 256 system.new_record v04
 ########## app_version_platforms ##########
-OK    app_version_platforms get fa905de7-cf26-4649-b658-ebce23fcf470 a62ad180-53f5-43c7-8bb9-70f0cad26693
-OK    app_version_platforms add fa905de7-cf26-4649-b658-ebce23fcf470 a62ad180-53f5-43c7-8bb9-70f0cad26693 s3://v04/pkg.tar.gz deadbeef system.new_record v04
-OK    app_version_platforms set fa905de7-cf26-4649-b658-ebce23fcf470 a62ad180-53f5-43c7-8bb9-70f0cad26693 s3://v04/pkg2.tar.gz deadbeef system.new_record v04
-OK    app_version_platforms delete fa905de7-cf26-4649-b658-ebce23fcf470 a62ad180-53f5-43c7-8bb9-70f0cad26693 system.new_record v04
+OK    app_version_platforms get 7322fc79-ed39-4cf3-a35f-cff4dcc49c53 b3f42ee2-c4ff-48b0-a7b9-2cbe216fd077
+OK    app_version_platforms add 7322fc79-ed39-4cf3-a35f-cff4dcc49c53 b3f42ee2-c4ff-48b0-a7b9-2cbe216fd077 s3://v04/pkg.tar.gz deadbeef system.new_record v04
+OK    app_version_platforms set 7322fc79-ed39-4cf3-a35f-cff4dcc49c53 b3f42ee2-c4ff-48b0-a7b9-2cbe216fd077 s3://v04/pkg2.tar.gz deadbeef system.new_record v04
+OK    app_version_platforms delete 7322fc79-ed39-4cf3-a35f-cff4dcc49c53 b3f42ee2-c4ff-48b0-a7b9-2cbe216fd077 system.new_record v04
 ########## workunits ##########
 OK    batches add v04-batch open system.new_record v04
-OK    workunits add 7b7f0d52-6ca3-401c-b1d7-ba6da0403b8c da2379d1-f2b4-4cf0-84df-92fe10ff528a s3://v04/input.tar.gz s3://v04/config 1 1 00000000-0000-0000-0000-000000000000 system.new_record v04
+OK    workunits add eabe95e9-dbf8-4913-9a4c-f7b53e8afab4 eda305d6-9b36-4fa4-ab01-502c40fee1b7 s3://v04/input.tar.gz s3://v04/config 1 1 00000000-0000-0000-0000-000000000000 system.new_record v04
 OK    workunits get s3://v04/input.tar.gz
 OK    workunits versions s3://v04/input.tar.gz --limit 1
-OK    workunits set 59d6e2cf-4c6c-469d-bdb1-0fa3b8a4bb0d 7b7f0d52-6ca3-401c-b1d7-ba6da0403b8c da2379d1-f2b4-4cf0-84df-92fe10ff528a s3://v04/input.tar.gz s3://v04/config2 1 1 00000000-0000-0000-0000-000000000000 system.new_record v04
+OK    workunits set 1eb845f9-0131-450b-a4ce-6522dd763e0f eabe95e9-dbf8-4913-9a4c-f7b53e8afab4 eda305d6-9b36-4fa4-ab01-502c40fee1b7 s3://v04/input.tar.gz s3://v04/config2 1 1 00000000-0000-0000-0000-000000000000 system.new_record v04
 ########## results ##########
 OK    hosts add v04-host here 4 8192 none "V04 host" 2026-09-26T00:00:00Z 0 system.new_record v04
-OK    results add 59d6e2cf-4c6c-469d-bdb1-0fa3b8a4bb0d 34f92618-8479-4bc9-8119-9219ffa1153f 0 2 0 s3://v04/out.tar.gz v04-no-error 2026-09-26T00:00:00Z system.new_record v04
-OK    results get 3de516e6-eb2b-4e8d-ab74-397700d1c502
-OK    results versions 3de516e6-eb2b-4e8d-ab74-397700d1c502 --limit 1
-OK    results set 3de516e6-eb2b-4e8d-ab74-397700d1c502 59d6e2cf-4c6c-469d-bdb1-0fa3b8a4bb0d 34f92618-8479-4bc9-8119-9219ffa1153f 0 5 1 s3://v04/out.tar.gz v04-no-error 2026-09-26T00:00:00Z system.new_record v04
-OK    results delete 3de516e6-eb2b-4e8d-ab74-397700d1c502 system.new_record v04
+OK    results add 1eb845f9-0131-450b-a4ce-6522dd763e0f 1071fb98-1c4b-462c-8817-eea8e97345a7 0 2 0 s3://v04/out.tar.gz v04-no-error 2026-09-26T00:00:00Z system.new_record v04
+OK    results get 6f17a84c-7911-442f-bb83-3bc3761ef6b2
+OK    results versions 6f17a84c-7911-442f-bb83-3bc3761ef6b2 --limit 1
+OK    results set 6f17a84c-7911-442f-bb83-3bc3761ef6b2 1eb845f9-0131-450b-a4ce-6522dd763e0f 1071fb98-1c4b-462c-8817-eea8e97345a7 0 5 1 s3://v04/out.tar.gz v04-no-error 2026-09-26T00:00:00Z system.new_record v04
+OK    results delete 6f17a84c-7911-442f-bb83-3bc3761ef6b2 system.new_record v04
 ########## teardown ##########
 OK    app_versions delete v04-wrapper system.new_record v04
 OK    workunits delete s3://v04/input.tar.gz system.new_record v04

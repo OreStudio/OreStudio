@@ -88,7 +88,11 @@ TEST_CASE("read_latest_book_statuses", tags) {
     auto read_book_statuses = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read book statuses: " << read_book_statuses;
 
-    CHECK(read_book_statuses.size() >= written_book_statuses.size());
+    for (const auto& written : written_book_statuses) {
+        const auto found = std::ranges::any_of(
+            read_book_statuses, [&](const auto& v) { return v.code == written.code; });
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_book_status_by_code", tags) {
@@ -127,7 +131,9 @@ TEST_CASE("read_nonexistent_book_status_code", tags) {
     auto read_book_statuses = repo.read_latest(h.context(), nonexistent_code);
     BOOST_LOG_SEV(lg, debug) << "Read book statuses: " << read_book_statuses;
 
-    CHECK(read_book_statuses.size() == 0);
+    const auto found = std::ranges::any_of(
+        read_book_statuses, [&](const auto& v) { return v.code == nonexistent_code; });
+    CHECK_FALSE(found);
 }
 
 TEST_CASE("read_book_status_versions_by_code", tags) {

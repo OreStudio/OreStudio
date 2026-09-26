@@ -1660,6 +1660,31 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
     return items
 
 
+_NUMERIC_CPP_TYPES = frozenset({
+    "int", "long", "long long", "short", "double", "float",
+    "std::int16_t", "std::int32_t", "std::int64_t",
+    "std::uint16_t", "std::uint32_t", "std::uint64_t", "std::size_t",
+})
+
+
+def _key_as_text(expression: str, column: dict[str, Any]) -> str:
+    """One key column's value in the text form a key parameter takes it in.
+
+    The repository's key parameters are text for every column, so a member
+    of any other type converts here: a uuid through to_string, a timestamp
+    through the platform formatter, a number through std::to_string. A text
+    member passes through unchanged, and both halves of a batch comparison
+    state the same conversion or the row never matches.
+    """
+    if column.get("is_uuid"):
+        return f"boost::uuids::to_string({expression})"
+    if column.get("is_timestamp"):
+        return f"ores::platform::time::datetime::to_db_string({expression})"
+    if column.get("cpp_type", "") in _NUMERIC_CPP_TYPES:
+        return f"std::to_string({expression})"
+    return expression
+
+
 def _protocol_owned_by_operation(model_path, entity) -> bool:
     """Whether an operation model beside this one owns the entity's protocol.
 
@@ -2699,7 +2724,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # value_log_fields below would reference a flat field that the
         # identity-grouped domain struct no longer has.
         pk_dict = domain_entity.get('primary_key', {})
-        for col in [pk_dict] + list(pk_dict.get('columns', [])):
+        for col in ([pk_dict] + list(pk_dict.get('columns', []))
+                    + list(domain_entity.get('natural_keys', []) or [])):
             _set_group_prefix(col)
         # Who supplies each field's value, for facets that build an entity
         # from user input (the shell command units). A column states it with
@@ -3632,12 +3658,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # Every key parameter the repository takes is text, so a
                 # timestamp key column converts here as a uuid one does.
                 def one(column: dict[str, Any]) -> str:
-                    member = f'{prefix}{column["column"]}'
-                    if column.get('is_uuid'):
-                        return f'boost::uuids::to_string({member})'
-                    if column.get('is_timestamp'):
-                        return f'ores::platform::time::datetime::to_db_string({member})'
-                    return member
+                    return _key_as_text(f'{prefix}{column["column"]}', column)
 
                 return ', '.join(one(column) for column in pk_columns)
 
@@ -3667,12 +3688,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # The same key read from a domain object rather than from a key
             # record, which the repository's own key parameters take as text.
             def _v_arg(column: dict[str, Any]) -> str:
-                if column.get('is_uuid'):
-                    return f'boost::uuids::to_string(v.{column["column"]})'
-                if column.get('is_timestamp'):
-                    return (f'ores::platform::time::datetime::to_db_string('
-                            f'v.{column["column"]})')
-                return f'v.{column["column"]}'
+                ref = f'v.{column.get("group_prefix") or ""}{column["column"]}'
+                return _key_as_text(ref, column)
 
             pk['v_args'] = ', '.join(_v_arg(c) for c in pk_columns)
             # The storage key of a row already in hand, which is what the
@@ -3680,12 +3697,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # caller's declared key to a row states the row's storage key from
             # here rather than re-deriving the conversion at each operation.
             def _row_arg(column: dict[str, Any]) -> str:
-                if column.get('is_uuid'):
-                    return f'boost::uuids::to_string(row.{column["column"]})'
-                if column.get('is_timestamp'):
-                    return (f'ores::platform::time::datetime::to_db_string('
-                            f'row.{column["column"]})')
-                return f'row.{column["column"]}'
+                ref = f'row.{column.get("group_prefix") or ""}{column["column"]}'
+                return _key_as_text(ref, column)
 
             pk['row_args'] = ', '.join(_row_arg(c) for c in pk_columns)
             pk['batch_keys_args'] = ', '.join(
@@ -3720,21 +3733,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             )
             pk['batch_tuple_type'] = ', '.join('std::string' for _ in pk_columns)
 
-            def _key_as_text(expression: str, column: dict[str, Any]) -> str:
-                """One key column's value in the text form the batch takes it in.
-
-                The repository's batch parameters are text for every key
-                column, so a tuple built from a mapped row has to state the
-                same conversion the caller's key did, or the two halves of the
-                comparison are different types and the row never matches.
-                """
-                if column.get('is_uuid'):
-                    return f'boost::uuids::to_string({expression})'
-                if column.get('is_timestamp'):
-                    return (f'ores::platform::time::datetime::to_db_string('
-                            f'{expression})')
-                return expression
-
             pk['batch_requested_insert'] = (
                 'requested.emplace(' +
                 ', '.join(f"{c['column']}s[i]" for c in pk_columns) +
@@ -3742,7 +3740,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             )
             pk['batch_requested_size_check'] = pk_columns[0]['column'] + 's.size()'
             pk['batch_tuple_from_item'] = ', '.join(
-                _key_as_text(f"item.{c['column']}", c) for c in pk_columns
+                _key_as_text(f"item.{c.get('group_prefix') or ''}{c['column']}", c)
+                for c in pk_columns
             )
             pk['has_timestamp_key'] = any(
                 c.get('is_timestamp') for c in pk_columns)
@@ -3806,10 +3805,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             if _event_key is not None:
                 _event_name = declared_key_field(domain_entity)
                 pk['key_equals_v'] = (
-                    f'decoded->key.{_event_name} == v.{_event_name}')
+                    f'decoded->key.{_event_name} == '
+                    f'v.{_event_key.get("group_prefix") or ""}{_event_name}')
             else:
                 pk['key_equals_v'] = ' && '.join(
-                    f'decoded->key.{c["column"]} == v.{c["column"]}'
+                    f'decoded->key.{c["column"]} == '
+                    f'v.{c.get("group_prefix") or ""}{c["column"]}'
                     for c in pk_columns)
             pk['notify_key_object'] = 'jsonb_build_object(' + ', '.join(
                 f"'{c['column']}', changed_{c['column']}"

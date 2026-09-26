@@ -44,6 +44,7 @@ target_link_libraries(${lib_target_name}
         ores.logging.lib
         Boost::boost
     PRIVATE
+        ores.platform.lib
         ores.utility.lib
         LibArchive::LibArchive)
 

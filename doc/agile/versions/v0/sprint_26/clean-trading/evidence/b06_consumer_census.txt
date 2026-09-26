@@ -7,8 +7,10 @@ $ grep -rl '#include "ores.trading' projects/ | sed 's|projects/||; s|/.*||' | s
 $ grep -rl 'ores.trading\|trading/v1' projects/ores.web --include=*.ts --include=*.tsx | wc -l
 0
 
-distinct ores.trading headers included outside the component:
-971
+$ grep -rho '#include "ores\.trading[^"]*"' projects/ --include=*.hpp --include=*.cpp --exclude-dir=ores.trading | sort -u | wc -l
+126
+
+distinct ores.trading headers included outside the component (126):
 
 distinct ores.trading headers included outside the component:
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"

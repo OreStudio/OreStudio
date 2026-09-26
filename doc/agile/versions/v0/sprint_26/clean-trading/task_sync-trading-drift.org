@@ -32,8 +32,8 @@ would be created. Of the changes, 1434 are the generated-file banner
 alone, 78 are the eventing rename, 123 are substantive template changes
 and 1 is the root =CMakeLists.txt=. A component usually cannot be
 cleaned by landing that much at once, but here it is safe, because 88
-per cent of it is attributable to one cause and the generator already
-reproduces the tree's semantics.
+per cent of the changes are attributable to one cause and the generator
+already reproduces the tree's semantics.
 
 * Status
 

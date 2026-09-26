@@ -36,7 +36,7 @@ instrument carrying the economic terms.
 
 The code disagrees. =instrument_identity_field_group.org= declares
 =instrument_id= as a key and =trade_id= as an optional soft
-back-reference, and 27 models inherit the group. =trade= adds a second
+back-reference, and 26 models inherit the group. =trade= adds a second
 nullable pointer back at the instrument. The declaration carries 91
 =instrument_id= columns and no foreign key targets an instrument table,
 so the two directions of a one-to-one relationship are two nullable
@@ -95,7 +95,7 @@ collapse first, because the reverse reshapes the same tables twice.
 ** 1. Model the collapse
 
 =instrument_identity_field_group= is the leverage point. It declares
-=instrument_id=, =trade_type_code=, =party_id= and =trade_id=, and 27
+=instrument_id=, =trade_type_code=, =party_id= and =trade_id=, and 26
 models inherit it. Removing =instrument_id= there and making =trade_id=
 the non-nullable key carries most of the change. The remaining entities
 keyed on =instrument_id= are the per-product and child tables. The

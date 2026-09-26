@@ -28,9 +28,10 @@ the whole V group.
 
 The entry in the registry is a claim that regeneration is byte
 identical, that every protocol header has its twin, and that every
-applicable item passes. Five of the gates read green today only because
+applicable item passes. Four of the gates read green today only because
 the component is absent from their registries, so this task must state
-which green is real and which became real here.
+which green is real and which became real here. The CMake source list
+check is the one that already fails and is therefore honest.
 
 * Status
 
@@ -64,7 +65,7 @@ which green is real and which became real here.
   =compass db recreate -y -k= followed by the fleet start proves it.
 - B06: every public symbol is classified by its consumer, production, test
   only or none. A test-only consumer counts as dead code and the symbol
-  and its test are deleted. The census covers the 120 headers consumed
+  and its test are deleted. The census covers the 126 headers consumed
   outside the component.
 - H01: the Component Architecture Audit is run and its record written,
   and the three diagrams are authored in two passes: the automated pass,
@@ -166,10 +167,10 @@ file, and the reason for each not-applicable.
   are that task's open item 10. They are not trading's, but they make an
   in-place drift check fail. Sweep them or record them as still open
   before the =--all= run.
-- Five gates read green today because ores.trading is absent from their
+- Four gates read green today because ores.trading is absent from their
   registries: component drift, handler permissions, protocol twin
-  coverage, recipe inventory and the CMake source lists. Recording that
-  is part of V05.
+  coverage and recipe inventory. The CMake source list check is the one
+  that fails honestly. Recording both is part of V05.
 - The twin gate cannot be satisfied by trading without TypeScript
   twins, and the component has no web consumer. Decide whether the
   protocol twin item applies, and record the reason either way.

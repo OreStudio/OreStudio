@@ -30,11 +30,11 @@ plus the decision record the story needs. It changes no code.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | The 2026-09-26 investigation is done and the evidence is collected. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit the record and raise PR 1.      |
+| Next         | Nothing. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -47,14 +47,19 @@ plus the decision record the story needs. It changes no code.
   inventory (B04).
 - =evidence/b05_open_work.txt= holds the open pull requests, the
   branches and the backlog captures that touch ores.trading.
-- =evidence/b06_consumer_census.txt= and
-  =evidence/b06_external_headers.txt= hold the consumer census.
+- =evidence/b06_consumer_census.txt= holds the consumer census and the
+  126 headers consumed outside the component.
 - =evidence/v02_trading_tests.txt= holds the measured test state.
 - =evidence/v05_codegen_gates.txt= holds every gate output with its exit
   code, and states which gates read green only because ores.trading is
   excluded from their registries.
-- The six decisions D1 to D6 are recorded on the story, each with its
+- The seven decisions D1 to D7 are recorded on the story, each with its
   reason and its consequence.
+- =evidence/pr1_local_checks.txt= holds the local checks: =compass lint=,
+  =validate_docs.sh=, the site check, and the misspell pass.
+- The sprint 25 release notes and health review no longer claim that
+  ores.trading is drift-free, and the release notes are re-exported from
+  their org source.
 - =compass lint= passes, =validate_docs.sh= passes, and the component
   drift dry run still reports the same 1751 files.
 
@@ -85,7 +90,7 @@ projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/survey_compo
 #+end_src
 
 It reports 65 models in =projects/ores.trading/modeling/=: 57 entity, 6
-field group, 1 module and 1 overview. It also reports the 31 entity
+field group, 1 module and 1 component overview. It also reports the 31 entity
 models that bind a profile and the 26 that do not.
 
 ** B03, the hand-written file classification
@@ -135,11 +140,19 @@ symbol-level census belongs to PR 6.
 
 ** The decisions
 
-The six decisions are recorded in the story's =* Decisions= section.
+The seven decisions are recorded in the story's =* Decisions= section.
 They are D1 the rates wire, D2 the instrument identity, D3 the
-unmodelled families, D4 M07, D5 the sixteen trade model defects, and
-D6 the stale remote branch. D7 records that this PR changes
-documentation and evidence only.
+unmodelled families, D4 M07, D5 the sixteen trade model defects,
+D6 the stale remote branch, and D7 that this PR changes documentation
+and evidence only.
+
+** The documentation defect the baseline exposed
+
+The sprint 25 release notes and health review 2 list ores.trading among
+the drift-free components. Correct both in their org sources, re-export
+the release notes markdown, and record the correction here. The health
+review keeps its own list of four closed components and says why
+analytics is the fifth that the release notes count.
 
 ** Items recorded as not applicable here
 
@@ -201,6 +214,51 @@ documentation and evidence only.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The acceptance names =evidence/b06_external_headers.txt=, which does not exist | task_clean_trading.org | Accept | The file list lives in =b06_consumer_census.txt=; the acceptance now names that file alone |
+| 2 | The banner figure is 1434 in the prose and 1435 in the evidence | story.org, task_sync-trading-drift.org | Accept | The evidence groups the banner with the root =CMakeLists.txt=; the story now says so and the two views are the same 1636 changes |
+| 3 | The health review says four drift-free components and the release notes say five | sprint_25 release notes, health review 2 | Accept | The review lists the four whose stories closed; analytics is the fifth with an open story. The review now says so |
+| 4 | Five gates are called vacuous, but the evidence marks four | story.org, task_trading-shell-wiring-verification.org | Accept | Component drift, handler permissions, protocol twins and recipe inventory. The CMake check fails honestly |
+| 5 | The task says "the six decisions D1 to D6" and then refers to D7 | task_clean_trading.org | Accept | Seven decisions, D1 to D7 |
+| 6 | The drift classification is restated in the story, two tasks and the evidence | story.org, task_sync-trading-drift.org | Decline | The restatement is deliberate, so the record survives context compaction. The figures are reconciled instead |
+| 7 | The consumer header count appears as 120, 126 and 971 | story.org, tasks, b06 evidence | Accept | 126. The evidence line carried the unfiltered count; both are corrected |
+| 8 | "88 per cent of them are the banner" reads as a share of 1751 | story.org | Accept | 88 per cent of the 1636 changes, which is the claim the PR 2 task already made |
+| 9 | The permission sentence contradicts the checklist row | story.org | Accept | The gate does not read trading's 98 codes, and 92 of them are unseeded |
+| 10 | "Twenty-seven models inherit the group" | story.org, task_collapse-instrument-identity.org | Accept | Twenty-six files declare =:domain_identity_group:=. The twenty-seventh mention is the group file itself |
+| 11 | Defect 13 is misquoted | story.org | Accept | The id-keyed tables also include =trade_identifiers= and =party_roles= |
+| 12 | The fourth metatype is called "overview" | story.org, task_clean_trading.org | Accept | The metatype is =component=; the file is =component_overview.org= |
+| 13 | The local lint pass is required by the acceptance and recorded nowhere | task_clean_trading.org | Accept | =evidence/pr1_local_checks.txt= now holds lint, the site check, docs and misspell |
+| 14 | The sprint 25 documentation correction is outside the acceptance | task_clean_trading.org | Accept | The acceptance and the plan now own the retraction, and the health review reconciles with the release notes |
+| 15 | The five new tasks carry empty =Test Scenarios=, =PRs= and =Review= tables | the five task files | Decline | The repository's task template carries them and every other task keeps them. They are filled as each task runs |
 
 * Result
+
+PR 1 records the baseline and the decisions and changes no code.
+
+The investigation is on the story: the measured baseline, the four
+threads inherited from sprint 25, the trade to instrument doctrine that
+the knowledge base already states, the bond pilot's unfinished work, and
+the sixteen trade model defects. The story also carries the 49-item
+checklist with the state of each item on 2026-09-26 and the task that
+owns it.
+
+The evidence is on the task: the drift dry run with every block
+classified by cause, the model drift summary, the B02 to B04 survey,
+the open work, the consumer census, the measured test state, the gate
+outputs with their exit codes, and the local checks of this PR.
+
+Seven decisions bound the six PRs. D1 accepts the generated per-family
+rates protocols and deletes the hand consolidation. D2 implements the
+documented instrument identity, collapse first and security split
+second. D3 models the unmodelled families. D4 records M07 as not
+applicable with its reason. D5 assigns the sixteen trade model defects.
+D6 records and does not delete the stale remote branch. D7 keeps this PR
+to documentation and evidence.
+
+Two documents were corrected: the sprint 25 release notes, in the org
+source and re-exported, and health review 2. Both claimed ores.trading
+was drift-free, and the measurement finds 1751 files.
+
+Every figure in the record was re-measured at b79609d808. The independent
+review folded fifteen findings into the record: thirteen accepted and
+two declined with their reasons in the table above.
+

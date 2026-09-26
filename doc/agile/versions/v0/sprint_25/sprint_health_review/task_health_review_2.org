@@ -119,7 +119,10 @@ components are drift-free and closed: dq, iam, synthetic and
 compute. This review listed trading as a fifth; that is wrong. A
 measurement on 2026-09-26 finds 1751 files of drift in ores.trading, and
 the sprint 25 story said the component could not join the drift gate.
-The redundant-properties pass is also DONE. analytics and reporting
+The release notes count five drift-free components because they also
+count analytics, which is drift-free while its story stays STARTED, as
+the next sentence says. The redundant-properties pass is also DONE.
+analytics and reporting
 have all tasks DONE, but their stories are still STARTED. marketdata
 is in flight. database, scheduler, workflow and workspace are in
 BACKLOG. The codegen template fixes, the systemic gap fixes and the

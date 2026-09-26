@@ -31,9 +31,9 @@ that bound each one.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Task 1 has started. The 2026-09-26 investigation is recorded below. |
+| Now           | PR 1 is complete: the analysis, the evidence and the seven decisions. |
 | Waiting on    | Nothing. |
-| Next          | Land task 1: baseline, decisions and evidence. |
+| Next          | Raise and merge PR 1, then start PR 2. |
 | Last touched  | 2026-09-26                               |
 
 * Acceptance
@@ -47,7 +47,7 @@ that bound each one.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:AC960907-8838-4254-9C45-F5E48FA8840C][Baseline, decisions and evidence for ores.trading]] | STARTED | 2026-09-26 | | PR 1. Record the B01 to B06 baseline, the consumer census, the open work and the six decisions, with the evidence files. No code change. |
+| [[id:AC960907-8838-4254-9C45-F5E48FA8840C][Baseline, decisions and evidence for ores.trading]] | DONE | 2026-09-26 | 2026-09-26 | PR 1. Record the B01 to B06 baseline, the consumer census, the open work and the seven decisions, with the evidence files. No code change. |
 | [[id:14795122-7D5B-442E-9B2A-E7517632F612][Sync the ores.trading tree to its models]] | BACKLOG | | | PR 2. Regenerate the modelled component, land the canonical protocol and the canonical notify triggers, delete the hand consolidation and the superseded hand-written twins, and make the tree build and test green. |
 | [[id:13217FCC-66E9-4887-B950-8C73FFC8D067][Model the unmodelled trading families and bind the unbound]] | BACKLOG | | | PR 3. Author the missing entity models, bind the 26 unbound entities to profiles or record the no-match, clear the legacy model fragments, and close the type defects the trade model investigation lists. |
 | [[id:8EB4DE8E-1A9B-40CB-9B61-2918F778557C][Collapse the instrument identity into the trade and split the bond security]] | BACKLOG | | | PR 4. One trade identity, one instrument identity and one security identity, with a real foreign key where a soft link sits today, regenerated. |
@@ -67,12 +67,12 @@ their raw output are in the task's =evidence/= folder.
 | C++ files in the component | 1763, of which 35 carry the generated marker (2.0%) |
 | Non-test C++ sources | 732, of which 12 are generated |
 | Test sources | 58 files, 215 test cases across three executables |
-| Models under =projects/ores.trading/modeling/= | 65: 57 entity, 6 field group, 1 module, 1 overview |
+| Models under =projects/ores.trading/modeling/= | 65: 57 entity, 6 field group, 1 module, 1 component overview |
 | Tables owned | 65, declared by 137 scripts under =ores.sql/create/trading/= |
 | Protocol headers | 49, of which 1 is generated (=trade_protocol.hpp=) |
 | TypeScript twins | 0 |
 | Raw NATS subject literals in the component | 249 distinct, none declared in a model |
-| Consumers outside the component | 38 files in ores.shell, 17 in ores.ore, 1 in ores.reporting, 120 distinct headers |
+| Consumers outside the component | 38 files in ores.shell, 17 in ores.ore, 1 in ores.reporting, 126 distinct headers |
 | Web consumers | 0 |
 
 ** The drift is mostly a banner
@@ -87,6 +87,10 @@ total. Every block was classified by cause:
 | The eventing rename: =entity_change_event= to =entity_event_traits=, =*_changed_event.hpp= to =*_event.hpp= | 78 |
 | Substantive template change | 123 |
 | The root =CMakeLists.txt= | 1 |
+
+The evidence file groups the banner and the root =CMakeLists.txt= into
+one bucket and reports 1435 marker-only files; the table above splits
+them. The two views are the same 1636 changes.
 
 The 123 substantive changes are the 114 database scripts under
 =ores.sql/create/trading/= plus the =trade= protocol, handler,
@@ -125,7 +129,7 @@ is why its share of the drift includes them and why its suite fails.
 |------+--------------+---------------|
 | =check_component_drift.py --component trading-cpp --dry-run= | 1751 files differ, exit 1 | The only honest failure |
 | =check_model_drift.py --summary= | 164 of 309 models bound, no drift | ores.trading's unbound entities are invisible to it |
-| =check_handler_permissions.py= | 174 codes seeded across 4 components, exit 0 | Trading is not in the script's =REGISTRY=, so its 98 permission codes are unchecked and 92 are unseeded |
+| =check_handler_permissions.py= | 174 codes seeded across 4 components, exit 0 | Trading is not in the script's =REGISTRY=, so the gate does not read trading's 98 permission codes at all, and 92 of them are unseeded |
 | =check_protocol_twin_coverage.py= | 38 headers in 6 components, exit 0 | Trading is not counted; it has 0 TypeScript twins |
 | =regenerate_shell_recipe_inventory.py --check= | silent, exit 0 | Trading has no recipes, so nothing can be stale |
 | =validate_docs.py= | 40 components pass | Genuine |
@@ -149,7 +153,7 @@ Story [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-o
 scored the component 2 of 5 on the persisted-data regime and 2 of 5 on
 the wire regime, and named 13 findings. Its September 8 regeneration
 oracle produced 47 modified and 65 untracked files; the same check
-today produces 1751, but 88 per cent of them are the banner.
+today produces 1751, but 88 per cent of the 1636 changes are the banner.
 
 Landed: the bond relational family, a regenerable =trade= entity with
 five field groups and org-declared foreign keys, insert trigger and
@@ -184,7 +188,7 @@ the instrument carrying the economic terms.
 The code carries three identities instead of two:
 
 - =instrument_identity_field_group.org= declares =instrument_id= as a
-  key and =trade_id= as an optional soft back-reference. Twenty-seven
+  key and =trade_id= as an optional soft back-reference. Twenty-six
   models inherit the group.
 - =ores.trading.trade.org= adds =instrument_id= to the trade, and
   =trading_trades_create.sql= declares it =uuid null=.
@@ -204,8 +208,8 @@ The independent investigation
 =doc/agile/versions/v0/sprint_25/ore_trade_generator_trade_populations/trade_model_defects.org=
 reaches the same place from the persistence side, as its defect 13:
 twenty-five instrument tables are keyed on =instrument_id= and five are
-keyed on =id=, together with =trades=, =swap_legs= and
-=composite_legs=.
+keyed on =id=, together with =trades=, =swap_legs=, =composite_legs=,
+=trade_identifiers= and =party_roles=.
 
 So =7B23DB0F= and =0C525D24= are not an open design question. They are
 the implementation of a decision the knowledge base already records,
@@ -309,10 +313,10 @@ row is updated as each PR lands.
 
 | Id | Applies | State 2026-09-26 | Owner |
 |----+---------+------------------+-------|
-| B01 | All | Not met; recorded in PR 1 | PR 1 |
-| B02 | All | Not met; recorded in PR 1 | PR 1 |
-| B03 | All | Not met; recorded in PR 1 | PR 1 |
-| B04 | Protocol | Not met; recorded in PR 1 | PR 1 |
+| B01 | All | Met: =evidence/b01_component_drift_dry_run.txt= and =b01_model_drift.txt= | PR 1 |
+| B02 | All | Met: =evidence/b02_b03_b04_survey.md= | PR 1 |
+| B03 | All | Met: =evidence/b02_b03_b04_survey.md= | PR 1 |
+| B04 | Protocol | Met: =evidence/b02_b03_b04_survey.md= | PR 1 |
 | B05 | All | Met in PR 1 | PR 1 |
 | B06 | All | Not met; census in PR 6 | PR 6 |
 | M01 | Entity | Met: no legacy JSON model, no =lookup_entity= | - |
@@ -321,7 +325,7 @@ row is updated as each PR lands.
 | M04 | Entity | Cannot tell; verify each model in PR 3 | PR 3 |
 | M05 | Entity | Not met in places: joined shapes and two products in one table | PR 3, PR 4 |
 | M06 | Protocol | Not met: 48 hand-written protocol headers, 0 TypeScript twins | PR 2, PR 6 |
-| M07 | Entity | Not applicable: no junction metatype exists | PR 1 records it |
+| M07 | Entity | Not applicable: no junction metatype exists | Recorded in PR 1 |
 | M08 | Entity | Mostly met; defects 2, 3, 4 and 6 are this item | PR 3 |
 | M09 | All | Not met: 5 presentation drawers, 25 singular generator facet names | PR 3 |
 | M10 | All | Met: composite overview with three parts; validate_docs passes | - |
@@ -330,7 +334,7 @@ row is updated as each PR lands.
 | P03 | Protocol | Cannot tell until the B04 inventory is complete | PR 2 |
 | P04 | Protocol | Partly: no operation models; two hand-written operations | PR 2, PR 6 |
 | P05 | Protocol | Not met: consumers not migrated | PR 2 |
-| P06 | Protocol | Not applicable: no warmed event cache | PR 1 records it |
+| P06 | Protocol | Not applicable: no warmed event cache | Recorded in PR 1 |
 | G01 | Entity | Not met: 1751 files | PR 2 |
 | G02 | All | Not met: 48 protocol headers and 732 hand-written sources remain | PR 2 |
 | G03 | All | Partly: 35 marked files; correctness follows G01 | PR 2 |

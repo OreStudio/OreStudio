@@ -136,16 +136,35 @@ Deleted because nothing reaches them: the file-JSONL exporter sub-tree
 `upload_position_tracker`) and `log/macros.hpp`. Their last mention was a
 doxygen example in `log/lifecycle_manager.hpp`, which is rewritten.
 
-Kept, with the reason recorded: `application_exception.hpp`,
-`database_sink_utils.hpp` and the database sink example, which the census
-called dead and which are used by the component's own service, its own test
-and its own example CMakeLists. The distributed-tracing API, test-only, whose
-intended consumer the `instrument_components_with_telemetry_context` capture
-names. The four stats reads, test-only, whose intended consumer the
+Kept, with the reason recorded: `application_exception.hpp`, which the census
+called dead and which the component's own service uses. The distributed-tracing
+API, test-only, whose intended consumer the
+`instrument_components_with_telemetry_context` capture names. The four stats
+reads, test-only, whose intended consumer the
 `expose_the_telemetry_stats_surface` capture names.
 
 Kept because the story's Protocol scope leaves them hand-written: the five
 tables, their RLS policies and the stats SQL functions.
+
+** What the item table records as a limit rather than a pass
+
+Two things this component cannot assert, both named on the item that owns
+them, so that neither reads as coverage it does not have:
+
+- The id ordering property. `span_ids_are_time_sortable` and its trace
+  counterpart asserted that a later id sorts later, which is one production
+  run against another; the generator takes the system clock and accepts no
+  other, so the cases are deleted rather than made deterministic.
+- Accepted logging options. `validate()` returns nothing, so a case that a
+  valid configuration is accepted cannot tell real validation from an empty
+  body. The five accept cases are deleted and their inputs folded into the
+  reject cases, whose literal exception is the contract.
+
+One observation the task did not act on: `ores.telemetry.core` links
+`ores.nats.lib` PUBLIC, and no core source includes a nats header. The link is
+a leftover from the exporter sub-tree this task deletes. Removing a PUBLIC
+transitive link would change what every consumer sees, so it is recorded here
+rather than changed inside a clean-up.
 
 ** The NATS sample handlers answered with nothing
 

@@ -99,8 +99,8 @@ well as the All items.
 | H03 | Pass. Comments follow the project comment rules; the survey found no commented-out code. | Comment pass |
 | H04 | Not applicable. The component carries no platform conditional and no OS header; its one platform need, the ISO-8601 timestamp, goes through =ores.platform=. | =grep= for preprocessor conditionals |
 | V01 | Pass. The whole tree builds, with the component's tests and every consumer: =./compass.sh build= with no target exits 0, and its log carries every component library, every test binary, the shell executable and =ores.reporting=, whose migrated =report_scheduling_service.cpp= is compiled in the same run. | =evidence/v01_whole_tree_build.txt= |
-| V02 | Partly. The codegen suite passes: 571 tests, 0 failed. The component's api and service suites pass, 33 assertions in 6 cases and 26 in 10. The core suite builds and runs, and its single case, the generated eventing integration test, fails at the NATS connect because the fleet is down; V03 records the fleet. | The three test binaries; =pytest projects/ores.codegen/tests= |
-| V03 | Not run. The database recreate and the fleet start need the services, and this environment has them stopped: =compass services status= reports 23 missing. | =compass services status= |
+| V02 | Pass. With the fleet up: the codegen suite is 608 passed, 0 failed; the api suite is 33 assertions in 6 cases and the service suite 26 in 10. The core suite's single case is the generated eventing integration test and it passes against the live database and NATS -- 7 assertions -- after the live run found the jsonb defect recorded below. | =evidence/v02_v03_live_fleet.txt= |
+| V03 | Pass, with one environmental failure. =compass db recreate -y -k= exits 0, creating the whole schema from scratch including the scheduler's generated SQL; =compass services start= brings NATS and 22 of 23 units ready. The unit that does not come up is =ores.web.service=, which cannot build because npm is absent -- the configure step says so -- and that is the environment, not this change. The generated objects were then checked in the live database, not in a diff: nullable =tenant_id=, and =job_definitions_job_name_uniq_idx= on =(tenant_id, job_name)=. | =evidence/v02_v03_live_fleet.txt= |
 | V04 | Not applicable. The component generates no shell command, because the model disables =ores.cpp.shell-command= with its reason in the =* Physical space= table, so there is no generated command to run against a fleet. | The model's =* Physical space= table |
 | V05 | Partly. Every gate this component is in scope for passes: its own drift check, model drift, handler permissions, populate references, protocol twin coverage, the recipe inventory, the CMake source lists and the shell-script inventory. The item's last clause, "with the component added", is the registry entry, which is held under V06. | Each check script |
 | V07 | Pass. The audit found one vacuous case and it is fixed: =next_occurrence= asserted only that the result was in the future, which any implementation returning a future time satisfies. It now asserts a literal interval (an every-minute expression, from a fixed minute boundary, advances by exactly 60 seconds) and literal local calendar fields (a midnight expression lands on hour 0, minute 0); the assertion is time-zone stable because the subject evaluates in local time, and the alternative — computing the expectation by calling the subject twice — is the "one production run against another" anti-pattern the item names. The case was proved load-bearing by stubbing =next_occurrence= to return its input and re-running: all four new assertions fail and the other four cases still pass. The remaining cases assert literal round-trips and rejections, the config parser asserts literals, and the generated eventing test is a real end-to-end chain. | =domain_cron_expression_tests.cpp=, 33 assertions in 6 cases; the stub run |
@@ -283,6 +283,22 @@ now sits above the single-key branch in
 =ores.sql.schema.domain_entity_create.org= telling the next reader to read the
 two branches together; it emits nothing into the SQL and changes no output,
 which the shared gate confirms.
+
+* A defect only a live run could find
+
+The generated sample value for a =jsonb= column was a faker word, because the
+column's C++ type is a string and the generator template falls back to a word
+for a string. A word is not JSON, so the insert the generated eventing test
+performs was refused by PostgreSQL: =invalid input syntax for type json, Token
+"CD" is invalid=. Nothing before the live run could see it -- the SQL was
+valid, the model was valid, the C++ compiled, and every gate compared generated
+text with generated text. Codegen now fills an empty object for a =jsonb=
+column that states no generator expression, in one place, so every template
+site that falls back to a faker word picks it up; regression test
+=test_jsonb_sample_value.py=. The two components that also have =jsonb= columns,
+=marketdata= and =workflow=, will pick it up when their own refresh happens --
+both already carry pre-existing drift, =workflow= by 65 files, so refreshing
+them here would bury this change in unrelated work.
 
 * Generator defects found
 

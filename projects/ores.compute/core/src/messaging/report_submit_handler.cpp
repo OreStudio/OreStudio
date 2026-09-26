@@ -47,7 +47,7 @@ namespace {
 // Subject for work assignment events: append tenant_id so wrappers can
 // subscribe to their own tenant's work stream.
 std::string assignment_subject(const std::string& tenant_id) {
-    return "compute.v1.work.assignments." + tenant_id;
+    return std::string(work_assignment_event::nats_subject) + "." + tenant_id;
 }
 
 } // namespace

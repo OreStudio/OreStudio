@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,38 +19,21 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_protocol.hpp.mustache
+ * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_COMPUTE_MESSAGING_WORK_PROTOCOL_HPP
-#define ORES_COMPUTE_MESSAGING_WORK_PROTOCOL_HPP
-
-#include <string>
-#include <string_view>
-
-namespace ores::compute::messaging {
-
 /**
  * @brief Asks the grid for one unit of work to run.
  *
  * Session gated: the handler checks compute::batches:write before it
  * assigns anything.
  */
-struct pull_work_request {
-    using response_type = struct pull_work_response;
-    static constexpr std::string_view nats_subject = "compute.v1.work.pull";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
+export interface PullWorkRequest {
     /**
      * @brief The node that will run the work.
      */
-    std::string host_id;
-};
+    host_id: string;
+}
 
 /**
  * @brief The assignment, or the reason there is none.
@@ -58,36 +41,36 @@ struct pull_work_request {
  * A successful reply names the result, its workunit and the app version
  * whose package the node needs.
  */
-struct pull_work_response {
+export interface PullWorkResponse {
     /**
      * @brief Whether work was assigned.
      */
-    bool success = false;
+    success: boolean;
     /**
      * @brief The result row the node must fill in.
      */
-    std::string result_id;
+    result_id: string;
     /**
      * @brief The workunit the result belongs to.
      */
-    std::string workunit_id;
+    workunit_id: string;
     /**
      * @brief The app version whose cached package the node runs.
      */
-    std::string app_version_id;
+    app_version_id: string;
     /**
      * @brief Where the node fetches the job input.
      */
-    std::string input_uri;
+    input_uri: string;
     /**
      * @brief Where the node fetches the job config.
      */
-    std::string config_uri;
+    config_uri: string;
     /**
      * @brief Why no work was assigned, when none was.
      */
-    std::string message;
-};
+    message: string;
+}
 
 /**
  * @brief The payload published to the COMPUTE JetStream stream on dispatch.
@@ -98,48 +81,40 @@ struct pull_work_response {
  * subscribes only to its own triplet, so it never sees an assignment it
  * could not run.
  */
-struct work_assignment_event {
-    static constexpr std::string_view nats_subject = "compute.v1.work.assignments";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = false;
+export interface WorkAssignmentEvent {
     /**
      * @brief The result row the node must fill in.
      */
-    std::string result_id;
+    result_id: string;
     /**
      * @brief The workunit the result belongs to.
      */
-    std::string workunit_id;
+    workunit_id: string;
     /**
      * @brief Identifies the cached package.
      */
-    std::string app_version_id;
+    app_version_id: string;
     /**
      * @brief Engine bundle (.tar.gz) to download and cache.
      */
-    std::string package_uri;
+    package_uri: string;
     /**
      * @brief Expected SHA256 of the downloaded package bundle.
      */
-    std::string package_sha256;
+    package_sha256: string;
     /**
      * @brief Job input data (HTTP GET).
      */
-    std::string input_uri;
+    input_uri: string;
     /**
      * @brief Job config passed through to the engine (HTTP GET).
      */
-    std::string config_uri;
+    config_uri: string;
     /**
      * @brief Pre-assigned upload location for the result (HTTP PUT).
      */
-    std::string output_uri;
-};
+    output_uri: string;
+}
 
 /**
  * @brief A wrapper node's liveness signal.
@@ -147,36 +122,20 @@ struct work_assignment_event {
  * Fire-and-forget and unauthenticated: the handler touches the host row
  * with the service context, and registers the host on its first heartbeat.
  */
-struct heartbeat_message {
-    static constexpr std::string_view nats_subject = "compute.v1.work.heartbeat";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = false;
+export interface HeartbeatMessage {
     /**
      * @brief The node that is alive.
      */
-    std::string host_id;
-};
+    host_id: string;
+}
 
 /**
  * @brief Asks the service to requeue the work of stale hosts.
  *
  * It carries no fields, because the stale threshold is the service's own.
  */
-struct reap_work_message {
-    static constexpr std::string_view nats_subject = "compute.v1.work.reap";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = false;
-};
+export interface ReapWorkMessage {
+}
 
 /**
  * @brief Hands a finished job back from a wrapper node.
@@ -186,52 +145,59 @@ struct reap_work_message {
  * user-session-gated save flow rejects them. Like the heartbeat, the submit
  * is trusted at the transport layer.
  */
-struct submit_result_request {
-    using response_type = struct submit_result_response;
-    static constexpr std::string_view nats_subject = "compute.v1.results.submit";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = false;
+export interface SubmitResultRequest {
     /**
      * @brief The result row that finished.
      */
-    std::string result_id;
+    result_id: string;
     /**
      * @brief UUID string of the wrapper node that ran the job.
      */
-    std::string host_id;
+    host_id: string;
     /**
      * @brief Where the result archive was uploaded.
      */
-    std::string output_uri;
+    output_uri: string;
     /**
      * @brief 1=Success, 3=ClientError, 4=NoReply.
      */
-    int outcome = 0;
+    outcome: number;
     /**
      * @brief Human-readable failure reason; empty on success.
      */
-    std::string error_message;
-};
+    error_message: string;
+}
 
 /**
  * @brief Whether the result was accepted.
  */
-struct submit_result_response {
+export interface SubmitResultResponse {
     /**
      * @brief Whether the result was accepted.
      */
-    bool success = false;
+    success: boolean;
     /**
      * @brief Why it was not, when it was not.
      */
-    std::string message;
-};
-
+    message: string;
 }
 
-#endif
+export const subjects = {
+    pull_work_request: "compute.v1.work.pull",
+    work_assignment_event: "compute.v1.work.assignments",
+    heartbeat_message: "compute.v1.work.heartbeat",
+    reap_work_message: "compute.v1.work.reap",
+    submit_result_request: "compute.v1.results.submit",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    pull_work_request: true,
+    work_assignment_event: false,
+    heartbeat_message: false,
+    reap_work_message: false,
+    submit_result_request: false,
+} as const;

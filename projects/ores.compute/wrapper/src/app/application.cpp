@@ -651,7 +651,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     try {
         const auto stream_name = nats.make_stream_name("compute_assignments");
         auto admin = nats.make_admin();
-        admin.ensure_stream(stream_name, {nats.make_subject("compute.v1.work.assignments.>")});
+        const std::string assignment_stream =
+            std::string(compute::messaging::work_assignment_event::nats_subject) + ".>";
+        admin.ensure_stream(stream_name, {nats.make_subject(assignment_stream)});
         BOOST_LOG_SEV(lg(), info) << "Compute JetStream stream ready: " << stream_name;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure compute stream: " << e.what();
@@ -679,8 +681,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     std::string sanitised_tenant = cfg.tenant_id;
     std::replace(sanitised_tenant.begin(), sanitised_tenant.end(), '.', '_');
     const std::string my_triplet(ores::utility::version::platform_triplet());
-    const std::string work_subject =
-        "compute.v1.work.assignments." + cfg.tenant_id + "." + my_triplet;
+    const std::string assignment_prefix(compute::messaging::work_assignment_event::nats_subject);
+    const std::string work_subject = assignment_prefix + "." + cfg.tenant_id + "." + my_triplet;
     const std::string durable_name = "compute_wrapper_" + sanitised_tenant + "_" + my_triplet;
     const std::string queue_group = "ores.compute.wrapper." + my_triplet;
 

@@ -69,8 +69,7 @@ void workunit_dispatcher::dispatch(const ores::compute::eventing::workunit_chang
 void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx,
                                        const std::string& workunit_id) {
     ores::compute::service::workunit_service wu_svc(tenant_ctx);
-    const auto wu = wu_svc.get_workunit(
-        boost::lexical_cast<boost::uuids::uuid>(workunit_id));
+    const auto wu = wu_svc.get_workunit(boost::lexical_cast<boost::uuids::uuid>(workunit_id));
     if (!wu) {
         BOOST_LOG_SEV(lg(), warn) << "Workunit not found for dispatch: " << workunit_id;
         return;
@@ -131,8 +130,10 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
             .input_uri = wu->input_uri,
             .config_uri = wu->config_uri,
             .output_uri = ores::compute::net::compute_storage::output_path(result_id_str)};
-        nats_.js_publish("compute.v1.work.assignments." + tenant_uuid + "." + avp.platform_code,
-                         ores::nats::default_wire_codec().encode(event));
+        const std::string subject =
+            std::string(ores::compute::messaging::work_assignment_event::nats_subject) + "." +
+            tenant_uuid + "." + avp.platform_code;
+        nats_.js_publish(subject, ores::nats::default_wire_codec().encode(event));
         BOOST_LOG_SEV(lg(), info) << "Dispatched result " << result_id_str << " for workunit "
                                   << workunit_id << " to platform " << avp.platform_code;
     }

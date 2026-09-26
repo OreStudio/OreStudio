@@ -11,7 +11,7 @@
 #+brief: compute telemetry protocol messages.
 #+filetags: :model:operation:compute:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-09-26
 
 The grid telemetry surface: one request and reply for the dashboard
 summary, and one fire-and-forget publish from a wrapper node reporting
@@ -42,21 +42,35 @@ it reads the newest stored samples and calls the grid-stats function.
 :response: get_grid_stats_response
 :END:
 
-Requests the current grid summary. It carries no fields: the caller's
-tenant decides what it sees.
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the current grid summary.
+ *
+ * It carries no fields, because the caller's session decides what the
+ * summary covers.
+ */
+#+end_src
 
 ** node_stats_summary
 :PROPERTIES:
 :END:
 
-One node's contribution to the grid summary, as the dashboard renders it.
+#+begin_src cpp :name comment
+/**
+ * @brief One node's contribution to the grid summary.
+ */
+#+end_src
 
 *** host_id
 :PROPERTIES:
 :cpp_type: std::string
 :END:
 
-The node the summary describes.
+#+begin_src cpp :name comment
+/**
+ * @brief The node the summary describes.
+ */
+#+end_src
 
 *** tasks_completed
 :PROPERTIES:
@@ -64,7 +78,11 @@ The node the summary describes.
 :default:  0
 :END:
 
-Tasks the node has finished since its wrapper started.
+#+begin_src cpp :name comment
+/**
+ * @brief Tasks the node finished since its wrapper started.
+ */
+#+end_src
 
 *** tasks_since_last
 :PROPERTIES:
@@ -72,7 +90,11 @@ Tasks the node has finished since its wrapper started.
 :default:  0
 :END:
 
-Tasks the node finished since its previous sample.
+#+begin_src cpp :name comment
+/**
+ * @brief Tasks the node finished since its previous sample.
+ */
+#+end_src
 
 *** avg_task_duration_ms
 :PROPERTIES:
@@ -80,7 +102,11 @@ Tasks the node finished since its previous sample.
 :default:  0
 :END:
 
-Mean task duration over the tasks since the last sample.
+#+begin_src cpp :name comment
+/**
+ * @brief Mean task duration over the tasks since the last sample.
+ */
+#+end_src
 
 *** input_bytes_fetched
 :PROPERTIES:
@@ -88,7 +114,11 @@ Mean task duration over the tasks since the last sample.
 :default:  0
 :END:
 
-Bytes the node fetched for those tasks.
+#+begin_src cpp :name comment
+/**
+ * @brief Bytes the node fetched for those tasks.
+ */
+#+end_src
 
 *** output_bytes_uploaded
 :PROPERTIES:
@@ -96,7 +126,11 @@ Bytes the node fetched for those tasks.
 :default:  0
 :END:
 
-Bytes the node uploaded for those tasks.
+#+begin_src cpp :name comment
+/**
+ * @brief Bytes the node uploaded for those tasks.
+ */
+#+end_src
 
 *** seconds_since_hb
 :PROPERTIES:
@@ -104,14 +138,24 @@ Bytes the node uploaded for those tasks.
 :default:  0
 :END:
 
-Seconds since the node last heartbeated.
+#+begin_src cpp :name comment
+/**
+ * @brief Seconds since the node last heartbeated.
+ */
+#+end_src
 
 ** get_grid_stats_response
 :PROPERTIES:
 :END:
 
-The grid summary. The counters mirror one stored grid sample, and the
-node summaries come from the most recent sample of every node.
+#+begin_src cpp :name comment
+/**
+ * @brief The grid summary, as the dashboard renders it.
+ *
+ * The counters mirror one stored grid sample, and the node summaries come
+ * from the most recent sample of every node.
+ */
+#+end_src
 
 *** success
 :PROPERTIES:
@@ -119,14 +163,22 @@ node summaries come from the most recent sample of every node.
 :default:  false
 :END:
 
-Whether the summary was produced.
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the summary was produced.
+ */
+#+end_src
 
 *** message
 :PROPERTIES:
 :cpp_type: std::string
 :END:
 
-Why it was not, when it was not.
+#+begin_src cpp :name comment
+/**
+ * @brief Why it was not, when it was not.
+ */
+#+end_src
 
 *** total_hosts
 :PROPERTIES:
@@ -134,7 +186,11 @@ Why it was not, when it was not.
 :default:  0
 :END:
 
-Hosts registered for the tenant.
+#+begin_src cpp :name comment
+/**
+ * @brief Hosts registered for the tenant.
+ */
+#+end_src
 
 *** online_hosts
 :PROPERTIES:
@@ -142,7 +198,11 @@ Hosts registered for the tenant.
 :default:  0
 :END:
 
-Hosts that heartbeated inside the online window.
+#+begin_src cpp :name comment
+/**
+ * @brief Hosts that heartbeated inside the online window.
+ */
+#+end_src
 
 *** idle_hosts
 :PROPERTIES:
@@ -150,7 +210,11 @@ Hosts that heartbeated inside the online window.
 :default:  0
 :END:
 
-Online hosts with nothing in flight.
+#+begin_src cpp :name comment
+/**
+ * @brief Online hosts with nothing in flight.
+ */
+#+end_src
 
 *** results_inactive
 :PROPERTIES:
@@ -158,7 +222,11 @@ Online hosts with nothing in flight.
 :default:  0
 :END:
 
-Results in server state 1.
+#+begin_src cpp :name comment
+/**
+ * @brief Results in server state 1.
+ */
+#+end_src
 
 *** results_unsent
 :PROPERTIES:
@@ -166,7 +234,11 @@ Results in server state 1.
 :default:  0
 :END:
 
-Results in server state 2.
+#+begin_src cpp :name comment
+/**
+ * @brief Results in server state 2.
+ */
+#+end_src
 
 *** results_in_progress
 :PROPERTIES:
@@ -174,7 +246,11 @@ Results in server state 2.
 :default:  0
 :END:
 
-Results in server state 4.
+#+begin_src cpp :name comment
+/**
+ * @brief Results in server state 4.
+ */
+#+end_src
 
 *** results_done
 :PROPERTIES:
@@ -182,7 +258,11 @@ Results in server state 4.
 :default:  0
 :END:
 
-Results in server state 5.
+#+begin_src cpp :name comment
+/**
+ * @brief Results in server state 5.
+ */
+#+end_src
 
 *** total_workunits
 :PROPERTIES:
@@ -190,7 +270,11 @@ Results in server state 5.
 :default:  0
 :END:
 
-Workunits the tenant holds.
+#+begin_src cpp :name comment
+/**
+ * @brief Workunits the tenant holds.
+ */
+#+end_src
 
 *** total_batches
 :PROPERTIES:
@@ -198,7 +282,11 @@ Workunits the tenant holds.
 :default:  0
 :END:
 
-Batches the tenant holds.
+#+begin_src cpp :name comment
+/**
+ * @brief Batches the tenant holds.
+ */
+#+end_src
 
 *** active_batches
 :PROPERTIES:
@@ -206,7 +294,11 @@ Batches the tenant holds.
 :default:  0
 :END:
 
-Batches that are not closed.
+#+begin_src cpp :name comment
+/**
+ * @brief Batches that are not closed.
+ */
+#+end_src
 
 *** outcomes_success
 :PROPERTIES:
@@ -214,7 +306,11 @@ Batches that are not closed.
 :default:  0
 :END:
 
-Results that finished with outcome 1 in the last day.
+#+begin_src cpp :name comment
+/**
+ * @brief Results that finished with outcome 1 in the last day.
+ */
+#+end_src
 
 *** outcomes_client_error
 :PROPERTIES:
@@ -222,7 +318,11 @@ Results that finished with outcome 1 in the last day.
 :default:  0
 :END:
 
-Results that finished with outcome 3 in the last day.
+#+begin_src cpp :name comment
+/**
+ * @brief Results that finished with outcome 3 in the last day.
+ */
+#+end_src
 
 *** outcomes_no_reply
 :PROPERTIES:
@@ -230,21 +330,33 @@ Results that finished with outcome 3 in the last day.
 :default:  0
 :END:
 
-Results that finished with outcome 4 in the last day.
+#+begin_src cpp :name comment
+/**
+ * @brief Results that finished with outcome 4 in the last day.
+ */
+#+end_src
 
 *** sampled_at
 :PROPERTIES:
 :cpp_type: std::string
 :END:
 
-ISO-8601 timestamp of when the sample was taken.
+#+begin_src cpp :name comment
+/**
+ * @brief ISO-8601 timestamp of when the sample was taken.
+ */
+#+end_src
 
 *** node_summaries
 :PROPERTIES:
 :cpp_type: std::vector<node_stats_summary>
 :END:
 
-Per-node summaries from the most recent node samples.
+#+begin_src cpp :name comment
+/**
+ * @brief Per-node summaries from the most recent node samples.
+ */
+#+end_src
 
 ** node_sample_message
 :PROPERTIES:
@@ -252,31 +364,48 @@ Per-node summaries from the most recent node samples.
 :auth: none
 :END:
 
-One node's report, published fire-and-forget from a wrapper. It carries no
-response, so the wrapper does not wait for one. The publishing node has no
-session, and the handler reads it without one, so the model marks the
-message public rather than claiming a token it never sends.
+#+begin_src cpp :name comment
+/**
+ * @brief One node's report, published fire-and-forget from a wrapper.
+ *
+ * It carries no response, so the wrapper does not wait for one. The
+ * publishing node has no session and the handler reads it without one, so
+ * the message is public rather than claiming a token it never sends.
+ */
+#+end_src
 
 *** tenant_id
 :PROPERTIES:
 :cpp_type: std::string
 :END:
 
-The tenant the node works for.
+#+begin_src cpp :name comment
+/**
+ * @brief The tenant the node works for.
+ */
+#+end_src
 
 *** host_id
 :PROPERTIES:
 :cpp_type: std::string
 :END:
 
-The reporting node.
+#+begin_src cpp :name comment
+/**
+ * @brief The reporting node.
+ */
+#+end_src
 
 *** sampled_at
 :PROPERTIES:
 :cpp_type: std::string
 :END:
 
-ISO-8601 timestamp of the sample.
+#+begin_src cpp :name comment
+/**
+ * @brief ISO-8601 timestamp of the sample.
+ */
+#+end_src
 
 *** tasks_completed
 :PROPERTIES:
@@ -284,7 +413,11 @@ ISO-8601 timestamp of the sample.
 :default:  0
 :END:
 
-Tasks finished since the wrapper started.
+#+begin_src cpp :name comment
+/**
+ * @brief Tasks finished since the wrapper started.
+ */
+#+end_src
 
 *** tasks_failed
 :PROPERTIES:
@@ -292,7 +425,11 @@ Tasks finished since the wrapper started.
 :default:  0
 :END:
 
-Tasks that failed since the wrapper started.
+#+begin_src cpp :name comment
+/**
+ * @brief Tasks that failed since the wrapper started.
+ */
+#+end_src
 
 *** tasks_since_last
 :PROPERTIES:
@@ -300,7 +437,11 @@ Tasks that failed since the wrapper started.
 :default:  0
 :END:
 
-Tasks finished since the previous sample.
+#+begin_src cpp :name comment
+/**
+ * @brief Tasks finished since the previous sample.
+ */
+#+end_src
 
 *** avg_task_duration_ms
 :PROPERTIES:
@@ -308,7 +449,11 @@ Tasks finished since the previous sample.
 :default:  0
 :END:
 
-Mean task duration over the tasks since the last sample.
+#+begin_src cpp :name comment
+/**
+ * @brief Mean task duration over the tasks since the last sample.
+ */
+#+end_src
 
 *** max_task_duration_ms
 :PROPERTIES:
@@ -316,7 +461,11 @@ Mean task duration over the tasks since the last sample.
 :default:  0
 :END:
 
-Longest task duration over the tasks since the last sample.
+#+begin_src cpp :name comment
+/**
+ * @brief Longest task duration over the tasks since the last sample.
+ */
+#+end_src
 
 *** input_bytes_fetched
 :PROPERTIES:
@@ -324,7 +473,11 @@ Longest task duration over the tasks since the last sample.
 :default:  0
 :END:
 
-Bytes fetched for those tasks.
+#+begin_src cpp :name comment
+/**
+ * @brief Bytes fetched for those tasks.
+ */
+#+end_src
 
 *** output_bytes_uploaded
 :PROPERTIES:
@@ -332,7 +485,11 @@ Bytes fetched for those tasks.
 :default:  0
 :END:
 
-Bytes uploaded for those tasks.
+#+begin_src cpp :name comment
+/**
+ * @brief Bytes uploaded for those tasks.
+ */
+#+end_src
 
 *** seconds_since_hb
 :PROPERTIES:
@@ -340,7 +497,11 @@ Bytes uploaded for those tasks.
 :default:  0
 :END:
 
-Seconds since this node last heartbeated.
+#+begin_src cpp :name comment
+/**
+ * @brief Seconds since this node last heartbeated.
+ */
+#+end_src
 
 * See also
 

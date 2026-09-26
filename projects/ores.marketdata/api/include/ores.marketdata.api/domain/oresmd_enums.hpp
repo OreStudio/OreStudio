@@ -175,8 +175,11 @@ enum class inflation_quote_type {
     seasonality, ///< SEASONALITY/RATE (seasonality adjustment factor).
     zc_capfloor, ///< 6-segment: ZC_INFLATIONCAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE, and
                  ///< the same shape under RATE_NVOL.
-    yy_capfloor  ///< 6-segment: YY_INFLATIONCAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE, and
+    yy_capfloor, ///< 6-segment: YY_INFLATIONCAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE, and
                  ///< the same shape under RATE_NVOL.
+    cf_price     ///< 6-segment: CAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE -- the inflation
+                 ///< cap/floor price under the older CAPFLOOR type name, which the corpus carries
+                 ///< beside ZC_INFLATIONCAPFLOOR/PRICE for the same instrument.
 };
 
 /**

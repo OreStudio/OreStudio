@@ -595,6 +595,8 @@ std::string_view ore_type(inflation_quote_type qt) {
             return ore_type_spec::zc_inflation_capfloor;
         case inflation_quote_type::yy_capfloor:
             return ore_type_spec::yy_inflation_capfloor;
+        case inflation_quote_type::cf_price:
+            return ore_type_spec::capfloor;
     }
     return ore_type_spec::zc_inflation_swap;
 }
@@ -607,6 +609,7 @@ std::string_view ore_inflation_metric(inflation_quote_type qt) {
             return ore_metric_spec::rate;
         case inflation_quote_type::zc_capfloor:
         case inflation_quote_type::yy_capfloor:
+        case inflation_quote_type::cf_price:
             return ore_metric_spec::price;
     }
     return ore_metric_spec::rate;
@@ -620,7 +623,8 @@ std::optional<std::string> quote_key_inflation(const inflation_market_data_ident
         if (!id.vol || !id.quote_type || !id.vol->call_put)
             return std::nullopt;
         const auto qt = *id.quote_type;
-        if (qt != inflation_quote_type::zc_capfloor && qt != inflation_quote_type::yy_capfloor)
+        if (qt != inflation_quote_type::zc_capfloor && qt != inflation_quote_type::yy_capfloor &&
+            qt != inflation_quote_type::cf_price)
             return std::nullopt;
         return std::format("{}/{}/{}/{}/{}/{}",
                            ore_type(qt),
@@ -1200,8 +1204,19 @@ inverse_projection(const std::vector<std::string>& parts,
         return from_ir_bond_option(parts);
     if (type == ore_type_spec::swaption)
         return from_ir_swaption(parts);
-    if (type == ore_type_spec::capfloor)
-        return from_ir_capfloor(parts);
+    if (type == ore_type_spec::capfloor) {
+        // CAPFLOOR spells two instruments. At eight segments it is the rate
+        // cap/floor vol surface; at six it is an inflation cap/floor price, the
+        // shape the catalogue gives ZC_INFLATIONCAPFLOOR, under the type name
+        // the corpus carries beside it for the same instrument. Both spellings
+        // get their own quote type so a key round-trips to the name it arrived
+        // under rather than to a normalised one.
+        if (parts.size() == 8)
+            return from_ir_capfloor(parts);
+        if (parts.size() == 6)
+            return from_inflation_capfloor(inflation_quote_type::cf_price, parts);
+        return std::nullopt;
+    }
     if (type == ore_type_spec::mm) {
         // MM is written both ways in the corpus, so the segment count decides
         // which shape this key is: ccy/index/settle/tenor or ccy/settle/tenor.

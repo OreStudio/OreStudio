@@ -410,6 +410,12 @@ TEST_CASE("zc_inflation_capfloor_price_quote_key_matches_the_corpus", tags) {
             "ZC_INFLATIONCAPFLOOR/PRICE/EUHICPXT/10Y/C/0.00");
 }
 
+TEST_CASE("cf_price_quote_key_matches_the_corpus", tags) {
+    const auto id =
+        parse("oresmd://inflation/euhicpxt?type=vol&quote=cf_price&model=price&point=10y,c,0.00");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "CAPFLOOR/PRICE/EUHICPXT/10Y/C/0.00");
+}
+
 TEST_CASE("yy_inflation_capfloor_normal_vol_quote_key_matches_the_corpus", tags) {
     const auto id = parse(
         "oresmd://inflation/euhicpxt?type=vol&quote=yy_capfloor&model=rate_nvol&point=5y,f,0.02");

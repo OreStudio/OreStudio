@@ -180,6 +180,13 @@ std::string system_settings_service::get_string(std::string_view name) const {
     return std::string(domain::get_setting_default(name));
 }
 
+std::optional<std::string> system_settings_service::get(std::string_view name) const {
+    auto it = cache_.find(std::string(name));
+    if (it == cache_.end())
+        return std::nullopt;
+    return it->second;
+}
+
 void system_settings_service::set_bool_setting(std::string_view name,
                                                bool value,
                                                std::string_view modified_by,

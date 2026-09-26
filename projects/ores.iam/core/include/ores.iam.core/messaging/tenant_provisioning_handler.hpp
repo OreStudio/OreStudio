@@ -50,7 +50,7 @@
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
-#include "ores.variability.api/messaging/system_settings_protocol.hpp"
+#include "ores.variability.api/messaging/operations_protocol.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -163,13 +163,15 @@ public:
                                                          std::move(hdrs),
                                                          std::chrono::seconds(5));
                 const auto resp = codec.decode<clear_bootstrap_mode_response>(resp_msg.data);
-                if (resp && resp->success) {
+                if (resp
+                    && resp->result.outcome
+                           == ores::utility::domain::outcome::ok) {
                     BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                         << "Bootstrap mode cleared for tenant: " << ids.front();
                 } else {
                     BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
                         << "Failed to clear bootstrap mode for tenant " << ids.front() << ": "
-                        << (resp ? resp->message : "malformed response");
+                        << (resp ? resp->result.message : "malformed response");
                 }
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
@@ -1202,7 +1204,7 @@ private:
         }
 
         ores::variability::messaging::complete_party_onboarding_request onboarding_req;
-        onboarding_req.party_id = boost::uuids::to_string(party.id);
+        onboarding_req.party_id = party.id;
         client.request(onboarding_req);
 
         ores::iam::messaging::put_many_account_parties_request assoc_req;

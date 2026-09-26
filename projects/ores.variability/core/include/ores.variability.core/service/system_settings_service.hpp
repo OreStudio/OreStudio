@@ -25,6 +25,7 @@
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.core/export.hpp"
 #include "ores.variability.core/repository/system_setting_repository.hpp"
+#include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -104,6 +105,16 @@ public:
      * Returns the registered default when the setting is absent.
      */
     [[nodiscard]] std::string get_string(std::string_view name) const;
+
+    /**
+     * @brief Returns a setting's value as it was last read, or nothing.
+     *
+     * For a setting this component does not know about there is no registered
+     * default to fall back on, so a consumer that has its own default reads the
+     * value here and applies it. Nothing means the setting was absent when this
+     * instance last refreshed.
+     */
+    [[nodiscard]] std::optional<std::string> get(std::string_view name) const;
 
     /**
      * @brief Re-reads every setting in this instance's scope.

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.iam.core/messaging/registrar.hpp"
+#include "ores.variability.api/messaging/system_setting_protocol.hpp"
 #include "ores.iam.api/messaging/account_contact_information_protocol.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
@@ -365,14 +366,22 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // --- Reload token settings on variability change ---
-    // Subscribe to the system_setting_changed event so that any update to
-    // iam.token.* settings takes effect without restarting the IAM service.
-    constexpr std::string_view settings_changed_subject = "ores.variability.system_setting_changed";
-    subs.push_back(
-        nats.queue_subscribe(settings_changed_subject, qg, [ah, acth](ores::nats::message) {
+    // Any change to a setting can affect one of iam.token.*, so all three
+    // event actions reload. The subjects come from the generated protocol
+    // rather than from a literal here: the literal this used to carry named a
+    // subject no publisher has ever used, so the reload never fired.
+    {
+        using namespace ores::variability::messaging;
+        const auto reload = [ah, acth](ores::nats::message) {
             ah->reload_token_settings();
             acth->reload_token_settings();
-        }));
+        };
+        for (const auto subject :
+             {system_setting_event_subjects::created,
+              system_setting_event_subjects::updated,
+              system_setting_event_subjects::deleted})
+            subs.push_back(nats.queue_subscribe(std::string(subject), qg, reload));
+    }
 
     BOOST_LOG_SEV(lg(), debug) << "Registered " << subs.size() << " IAM message handlers.";
 

@@ -21,6 +21,5 @@
 # To modify, update the template and regenerate.
 set(files
     "main.cpp"
-    "repository_system_settings_repository_tests.cpp"
     "system_setting_eventing_integration_tests.cpp"
 )

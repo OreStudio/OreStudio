@@ -24,7 +24,7 @@
 #include "ores.refdata.core/repository/calendar_exception_repository.hpp"
 #include "ores.refdata.core/repository/calendar_repository.hpp"
 #include "ores.refdata.core/repository/calendar_rule_repository.hpp"
-#include "ores.variability.core/repository/system_settings_repository.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
 #include <algorithm>
 #include <array>
 #include <bitset>
@@ -109,15 +109,19 @@ int clamp_horizon_year(int horizon_year) {
     return std::min(horizon_year, max_year);
 }
 
-int read_int_setting(ores::variability::repository::system_settings_repository& repo,
-                     ores::database::context ctx,
+// A calendar setting is this component's own, so variability holds no
+// registered default for it: the fallback is the caller's to state. The value
+// is read through variability's in-process service rather than its store,
+// because the store is the component's business and the service is what it
+// publishes.
+int read_int_setting(ores::variability::service::system_settings_service& settings,
                      const std::string& name,
                      int fallback) {
-    auto rows = repo.read_latest(ctx, name);
-    if (rows.empty())
+    const auto raw = settings.get(name);
+    if (!raw)
         return fallback;
     try {
-        return std::stoi(rows.front().value);
+        return std::stoi(*raw);
     } catch (const std::exception&) {
         return fallback;
     }
@@ -149,15 +153,15 @@ calendar_materialisation_service::regenerate(const std::string& calendar_code,
         throw std::runtime_error("No such calendar: " + calendar_code);
     const auto& cal = calendars.front();
 
-    ores::variability::repository::system_settings_repository settings_repo;
-    const auto start_offset = read_int_setting(settings_repo,
-                                               ctx_,
-                                               "calendar.materialisation.start_offset_years",
-                                               k_default_start_offset_years);
+    ores::variability::service::system_settings_service settings(ctx_);
+    settings.refresh();
+    const auto start_offset =
+        read_int_setting(settings,
+                         "calendar.materialisation.start_offset_years",
+                         k_default_start_offset_years);
     const auto horizon_year =
         clamp_horizon_year(end_year ? static_cast<int>(*end_year) :
-                                      read_int_setting(settings_repo,
-                                                       ctx_,
+                                      read_int_setting(settings,
                                                        "calendar.materialisation.end_horizon",
                                                        k_default_end_horizon_year));
 

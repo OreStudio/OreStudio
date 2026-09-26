@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :investigations:index:knowledge:
 #+created: 2026-05-24
-#+updated: 2026-05-24
+#+updated: 2026-09-26
 
 Targeted investigations into specific technical problems encountered during
 development. Each is a focused deep-dive capturing the problem, findings,
@@ -22,3 +22,6 @@ and resolution.
   component's three generators, its structural deviations from the
   component architecture, the stale document cluster, and the round trip
   moved off the exporter.
+- [[id:6EA32258-F1DC-45D2-8913-202E845CD969][Investigation: what ores.ore should own]] — the four jobs the
+  component does, measured; the three external use cases; and the options
+  for narrowing it to an ORE representation library.

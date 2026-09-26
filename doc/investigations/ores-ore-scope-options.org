@@ -1,0 +1,182 @@
+:PROPERTIES:
+:ID: 6EA32258-F1DC-45D2-8913-202E845CD969
+:END:
+#+title: Investigation: what ores.ore should own
+#+description: The four jobs ores.ore does today, measured; the three external use cases in detail; and the options for narrowing the component to an ORE representation library.
+#+type: investigation
+#+level: cross
+#+filetags: :ore:architecture:scope:clean-standard:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page answers a question the [[id:794EC06A-86D6-499B-9166-5B24EBAAF0CD][design and documentation survey]] raised but could not settle. The question is not how to tidy =ores.ore=; it is what =ores.ore= is for.
+
+* The stated intent
+
+The owner's model, given while reviewing the survey:
+
+#+begin_quote
+=ores.ore= should not be exposing NATS. It should just be a library to
+provide mappings from and to the ORE XML representation.
+#+end_quote
+
+That is a narrow, testable definition. A library that maps ORE
+representations to ORES domain types and back needs: the ORE bindings, the
+mappers, the readers that turn ORE bytes into those bindings, and the writers
+that go the other way. It does not need a database, a message bus, an
+executable, or a shell command surface.
+
+The rest of this page measures how far the component is from that definition,
+so the gap can be closed deliberately rather than by attrition.
+
+* What the component owns today
+
+=ores.ore= is a composite of three parts, =api=, =core= and =service=, plus a
+root =modeling/= directory that holds the one entity model. Every C++ line in
+the component falls into one of four jobs:
+
+| Job | Facets | Lines | Is it ORE representation? |
+|-----|--------|-------|---------------------------|
+| A. ORE representation | =core/domain= minus the bindings, =core/xml=, =core/log= | 11,318 hand-written | Yes |
+| — the =xsdcpp= bindings | =core/domain/domain.{hpp,cpp}=, =domain_xsd.hpp= | 56,645 generated | Yes |
+| B. ORE market data readers | =core/market= | 1,105, of which 639 read and 466 do not | Mostly |
+| C. Import orchestration | =core/planner=, =core/hierarchy=, =core/scanner=, the import protocols in =api=, =service/app=, =service/config=, the import handlers in =service/messaging= | 4,461 | No |
+| D. A CRUD service for =series_key_shape= | =api/domain=, =api/eventing=, =api/generators=, the entity protocol, =core/repository=, =core/service=, =core/messaging=, =core/presentation=, the event registrar | 3,196 plus SQL and a generated shell unit | No |
+
+Job A is the component's reason to exist and is in scope by the stated intent.
+The other three are what the component does /besides/ map ORE representations.
+
+**Job B, the market data readers, in more detail.** This facet holds two
+different things. =market_data_parser= (free functions =parse_market_data= and
+=parse_fixings=) and =fixing= read ORE's =-market*.txt= and =fixings*.txt=
+text formats. That is representation work and belongs in scope. =series_key_registry=
+and =fx_quote_convention_checker= are not: the first decomposes an =oresmd= key
+using rows from a database table, and the second validates a currency pair
+against =ores.refdata= conventions. They are ORES logic that happens to be
+about ORE files.
+
+**Job C, import orchestration.** =ore_import_planner= decides what an import
+will do before anything is written: which currencies to import and how
+(create, update, skip), whether a re-import replaces or merges, and what
+defaults a trade gets. =ore_hierarchy_builder= turns a flat scan into a
+portfolio and book tree. =ore_directory_scanner= classifies files. Around them
+sit the =ore.import= protocol, the object-storage tarball helper, and the
+workflow registration. None of this maps a representation; all of it decides
+policy and drives a saga. It is a service.
+
+**Job D, the entity service.** The component models one entity,
+[[id:8316E5A7-9BDA-4C88-856C-C933290F7396][=ores.ore.series_key_shape=]], and
+owns everything a domain entity needs: a table in the =ore= schema, generated
+repository, service and handler, a 35-class NATS protocol in the api, change
+events, a sample generator, a =presentation= renderer, a shell command unit,
+and the =ores.ore.service= executable that hosts the import saga. The entity's
+own model page justifies the *table* belonging to =ores.ore=: the key grammar
+is ORE's, and a table lets ORE add a type later without a rebuild. That
+argument covers the data. It does not cover the protocol, the events, the
+executable, or the shell surface.
+
+**Job D is also unwired.** Of the four registrar families the regeneration
+produces, three are declared, defined, compiled and called from nowhere: the
+entity handler registrar in =core/messaging=, the history provider registrar in
+=core/messaging=, and the event mapping registrar in =service/messaging=. The
+nine =ore.v1.series_key_shapes*= subjects therefore answer nothing, and the
+generated shell command unit that would drive them is not compiled because it
+lands in a directory no CMake target owns.
+
+* The three external use cases
+
+Fourteen includes reach =ores.ore.core= from outside and three reach
+=ores.ore.api=. They fall into three use cases, and they are not equally
+defensible.
+
+**1. =ores.marketdata= — seven files, the substantive case.**
+
+| File | What it reaches for |
+|------|---------------------|
+| =core/src/service/import_service.cpp= | =parse_market_data=, =parse_fixings=, =fixing=, =series_key_registry=, =fx_quote_convention_checker=, =series_key_shape_repository= |
+| =core/include/…/oresmd/oresmd_projections.hpp= | =fx_quote_convention_checker= |
+| =service/src/app/feed_ingest_loop.cpp= | =series_key_registry=, =series_key_shape_repository= |
+| two test files | the parser and the fx checker |
+
+This is the honest use of the component: =ores.marketdata= imports ORE market
+data files, and the only code that knows ORE's text formats is =ores.ore=. Two
+of the six things it reaches for are the leak. It builds the key registry from
+=series_key_shape_repository{}.read_latest(ctx)=, a direct read of another
+component's table, and it checks FX quotes against =ores.refdata= through a
+type that lives in =ores.ore=.
+
+**2. =ores.compute= — one file, and clean.** =wrapper/src/app/log_publisher.cpp=
+calls =parse_ore_log_line(line)= and gets an =ore_log_line= struct. That is 226
+lines of pure format parsing with no state, no database and no bus. It is
+exactly what the stated intent describes, and it should stay.
+
+**3. =ores.shell= — two files, and both are avoidable.**
+=application/…/trading/ore_commands.cpp= serialises =planner::import_choices=
+to JSON for an =ore.import= request, and calls =exporter::export_portfolio= on
+the items that come back from a =trading= NATS reply. The shell is a client: it
+should ask over the protocol, not link a library. The second file,
+=ore/…/series_key_shape_commands.cpp=, does use the generated protocol, and is
+not compiled.
+
+Note what the shell does /not/ do: it drives the import through
+=workflow.v1.ore.import=. Job C is already server-side. Only the small type
+that parameterises the request, and the export step on the reply, are on the
+client.
+
+* What follows from the stated intent
+
+Three consequences, in order of confidence.
+
+**The entity service (Job D) does not belong in this component.** The owner
+intent and the entity's own justification point the same way: the grammar is
+ORE's, but the entity is an =oresmd= series key shape, and =oresmd= is
+=ores.marketdata='s vocabulary. =ores.marketdata= already models =market_series=,
+=market_observation=, =feed_binding= and the =oresmd/quote_type= models, and it
+is the only real consumer of the table. Moving the entity to =ores.marketdata=
+removes the component's NATS surface, its executable, its shell unit, its
+events and its SQL schema in one move, and puts the table next to the code that
+reads it.
+
+**Import orchestration (Job C) is a service and should be named as one.** Either
+=a slimmed =ores.ore.service= keeps it, in which case the component is a library
+plus a service and the api holds only the import contract, or it moves to its own
+component and =ores.ore= becomes a pure library with no executable at all. The
+first is a smaller change and keeps the =ores.ore.service= registry entry,
+database role and account. The second matches the stated intent exactly.
+
+**Two pieces of Job B are in the wrong place within the component.**
+=series_key_registry= should follow the entity to =ores.marketdata=, since it
+exists to decompose keys using that entity's rows. =fx_quote_convention_checker=
+either follows it or moves to the shared contract, because its input is
+=ores.refdata= conventions rather than ORE.
+
+* Options
+
+| Option | What moves | Effect on the component |
+|--------|-----------|-------------------------|
+| 1. Record the current shape | Nothing | =ores.ore= stays a library, a service and an entity host. Cheapest, and the survey's finding 2 is answered with a reason rather than a change. Leaves the unwired surface in place. |
+| 2. Move the entity to =ores.marketdata= | Job D, plus =series_key_registry= | Removes the api, the executable's entity work, the entity SQL and the shell unit. =ores.ore= keeps =api= for the import contract and =service= for the saga. Medium change, touches =ores.marketdata=, =ores.sql= and the service registry. |
+| 3. Move the entity, and move the saga out | Jobs C and D | =ores.ore= becomes =core= only: a pure library with bindings, mappers and readers. The strongest match to the stated intent, and the largest change: a new component, a new service registry entry, and the shell's export step must move onto a protocol. |
+
+Options 2 and 3 both require the shell to stop calling =exporter::export_portfolio=
+directly. That is a small, independent piece of work and can be done first.
+
+* Recommendation
+
+Take option 2 now and treat option 3 as the target. Option 2 removes the
+component's largest surface of unjustified ownership in one move, and it is
+where the evidence is strongest: the entity is =ores.marketdata='s, its only
+consumer already reads its table directly, and moving it deletes the unwired
+NATS surface rather than documenting it. Option 3 then becomes a question about
+one service's name and location, which is cheap to answer once the entity has
+gone.
+
+Under either option the survey's W01 finding dissolves instead of needing a
+decision: there is no entity protocol left in =ores.ore= to wire.
+
+* See also
+
+- [[id:794EC06A-86D6-499B-9166-5B24EBAAF0CD][Investigation: ores.ore design and documentation survey]] — the component census this page builds on.
+- [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]] — the component the series key shape entity would join.
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the model configuration domain surface, which the survey also found partly landed.
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] — the standard this investigation serves.

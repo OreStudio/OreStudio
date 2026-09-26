@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-namespace ores::utility::converter {
+namespace ores::utility::convert {
 
 /**
  * @brief Minimal Base64 encoder.

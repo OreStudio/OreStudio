@@ -28,7 +28,7 @@ const std::string tags("[convert]");
 
 }
 
-using ores::utility::converter::base64_converter;
+using ores::utility::convert::base64_converter;
 using namespace ores::logging;
 
 TEST_CASE("base64_encode_empty_input", tags) {

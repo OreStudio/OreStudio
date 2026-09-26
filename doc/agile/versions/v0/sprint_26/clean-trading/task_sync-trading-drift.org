@@ -39,10 +39,10 @@ already reproduces the tree's semantics.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | PR [#2204](https://github.com/OreStudio/OreStudio/pull/2204) is raised, with the evidence and an independent verification round running. |
-| Waiting on   | The PR review and CI. |
+| Now          | Merged as =8733a051fb= on 2026-09-26. All eleven pull-request checks pass. |
+| Waiting on   | Nothing. |
 | Next         | Raise PR 2, answer the review, merge, then start PR 3. |
 | Last touched | 2026-09-26                               |
 

@@ -34,9 +34,9 @@ to the reference-data work and are out of scope, per decision D5.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Branch =feature/model-missing-trading-families= cut from main at the PR 2 merge. |
 | Waiting on   | PR 2 merged, so the model work starts from a drift-clean tree. |
 | Next         | Bind the 26 unbound entities, then author the seven missing models. |
 | Last touched | 2026-09-26                               |

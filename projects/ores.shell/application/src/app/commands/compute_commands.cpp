@@ -212,11 +212,6 @@ void compute_commands::register_commands(cli::Menu& root_menu, nats_client& sess
                          {"app_name engine_version platform_code [--file <path>] "
                           "[--wrapper-version <v>] [--min-ram-mb <n>] [--http-base-url <url>]"});
 
-    compute_menu->Insert(
-        "list-platforms",
-        [&session](std::ostream& out) { process_list_platforms(std::ref(out), std::ref(session)); },
-        "List compute platforms");
-
     compute_menu->Insert("dispatch-batch",
                          [&session](std::ostream& out, std::vector<std::string> args) {
                              process_dispatch_batch(std::ref(out), std::ref(session), args);
@@ -396,28 +391,6 @@ void compute_commands::process_publish_package(std::ostream& out,
 
     out << "Published " << app_name << " " << engine_version << " (" << platform_code
         << ") successfully." << std::endl;
-}
-
-void compute_commands::process_list_platforms(std::ostream& out, nats_client& session) {
-    if (!session.is_logged_in()) {
-        fail(out) << "Not logged in." << std::endl;
-        return;
-    }
-
-    compute::messaging::list_platforms_request req;
-    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
-    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
-        const auto& msg =
-            resp && !resp->result.message.empty() ? resp->result.message : "Failed to list platforms.";
-        BOOST_LOG_SEV(lg(), warn) << msg;
-        fail(out) << msg << std::endl;
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << resp->platforms.size()
-                              << " platforms.";
-
-    out << resp->platforms << std::endl;
 }
 
 void compute_commands::process_dispatch_batch(std::ostream& out,

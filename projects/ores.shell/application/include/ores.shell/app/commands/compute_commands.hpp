@@ -76,16 +76,6 @@ public:
                                         const std::vector<std::string>& args);
 
     /**
-     * @brief List compute platforms: compute list-platforms
-     *
-     * Prints the known platform rows (id, code, display name, OS,
-     * CPU arch) as provisional raw rows until the drift story lands
-     * the generated platform table_io.
-     */
-    static void process_list_platforms(std::ostream& out,
-                                       ores::nats::service::nats_client& session);
-
-    /**
      * @brief Dispatch a batch's jobs: compute dispatch-batch
      * <external_ref> <job_count> <app_version_id> <input_dir>
      *

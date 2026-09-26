@@ -2,16 +2,17 @@
 :ID: 9CF4FA67-3F04-4F02-B135-4B5966C4CE35
 :END:
 #+title: How do I list compute platforms from the shell?
-#+description: List the compute platform triplets (id, code, display name, OS, CPU arch) from the shell as a table.
+#+description: List the compute platform triplets (id, code, display name, OS, CPU arch, active) from the shell as a table.
 #+type: recipe
 #+level: cross
 #+filetags: :recipe:shell:compute:platforms:
 #+created: 2026-08-10
-#+updated: 2026-08-10
+#+updated: 2026-09-26
 
-The compute grid verbs live in the shell's =compute= menu. They talk to
-the ~ores.compute~ service over NATS; the domain shapes and table
-renderers come from ~ores.compute.api~.
+The compute entity verbs live in their own shell menus, one per entity
+(=apps=, =app_versions=, =platforms=, =batches=, =hosts=, =workunits=,
+=results=). They talk to the ~ores.compute~ service over NATS; the
+domain shapes and table renderers come from ~ores.compute.api~.
 
 * Question
 
@@ -20,17 +21,16 @@ How do I list compute platforms from the shell?
 * Answer
 
 Log in as the system super admin (principals are
-=username@hostname=), then =compute list-platforms=: the shell prints
-the platform rows — id, code, display name, OS, CPU arch, one platform
-per line. No rows print until a platform exists (e.g. after =compute
-publish-package=). The output is provisional: the generated table
-renderer replaces it once the ores.compute drift work lands.
+=username@hostname=), then =platforms list=: the shell prints the
+platform rows as a table — id, code, display name, OS family, CPU arch,
+active, modified by, recorded at. No rows print until a platform exists
+(e.g. after =compute publish-package=).
 
 #+name: list-compute-platforms
 #+begin_src ores-shell :exports none
 connect $ORES_NATS_URL
 login super_admin@localhost Secure-Password-123
-compute list-platforms
+platforms list
 logout
 exit
 #+end_src

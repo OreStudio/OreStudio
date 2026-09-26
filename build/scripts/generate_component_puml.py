@@ -120,10 +120,20 @@ _ENUM_VAL_RE = re.compile(r'^\s*(\w+)\s*(?:=\s*[^,\n]+)?\s*,?\s*$')
 # Visibility labels
 _VISIBILITY_RE = re.compile(r'^\s*(public|protected|private)\s*:')
 
-# Skip patterns: template, typedef, using, macros, operators, constructors, destructors
+# Skip patterns: template, typedef, using, macros, constructors, destructors
 _SKIP_LINE_RE = re.compile(
-    r'^\s*(template\s*<|typedef|using\s|#|operator|~|explicit\s|'
+    r'^\s*(template\s*<|typedef|using\s|#|~|explicit\s|'
     r'virtual\s|static\s|inline\s|friend\s|//|/\*|\*|return\s)')
+
+# An operator function: `operator=`, `operator==`, `operator[]`, `operator()`,
+# `operator<<`, `operator new`, `operator delete`. A return type precedes the
+# name, so this matches anywhere in the line rather than anchoring. It is a
+# function, never a data member: the `=` in `operator=` precedes the
+# parenthesis, so the field-versus-method test below would otherwise read
+# `application& operator=(const application&) = delete;` as a data member
+# named `operator`.
+_OPERATOR_FUNC_RE = re.compile(
+    r'\boperator\s*(?:[=!<>+\-*/%^&|~\[\]()]+|\bnew\b|\bdelete\b)')
 _FUNC_RE = re.compile(r'\(')
 
 
@@ -393,11 +403,13 @@ def parse_header(path: Path) -> dict[tuple[str, ...], list[TypeInfo]]:
             # initialiser: `uuid tenant_id = tenant_id::system();` is a field,
             # and skipping it hid tenant_id from every generated entity box and
             # any member whose initialiser calls something. A parenthesis
-            # before the `=` (or with no `=` at all) is a signature.
+            # before the `=` (or with no `=` at all) is a signature, and a line
+            # naming an operator is a signature whatever the `=` does.
             first_paren = stripped.find('(')
-            if first_paren != -1 and not (
-                    stripped.find('=') != -1
-                    and stripped.find('=') < first_paren):
+            if first_paren != -1 and (
+                    _OPERATOR_FUNC_RE.search(stripped)
+                    or not (stripped.find('=') != -1
+                            and stripped.find('=') < first_paren)):
                 i += 1
                 continue
 

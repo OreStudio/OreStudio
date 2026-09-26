@@ -145,3 +145,46 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged as PR [[https://github.com/OreStudio/OreStudio/pull/2180][#2180]], 19
+commits, every check green. The task stays STARTED, deliberately: the standard
+keeps a component out of the registry until every item passes or its exceptions
+are accepted, and V06 puts that decision to the review rather than to me.
+
+What landed. Fifteen defects fixed at source. The one that mattered is W01:
+the component published no entity change events at all, because the ten
+generated registrars had no composition point -- invisible to the drift gate
+and to ctest alike, and proved fixed against the running fleet by 19 events on
+NATS. Then the last two entities bound to profiles, with two no-matches
+recorded rather than forced; =login_info='s three flags moved from integer to
+boolean with every predicate and writer that had to follow; a hand-written JSON
+I/O layer, a protocol umbrella, a dead service and seventeen stale recipe
+documents deleted; the diagram capture's operator-function defect fixed with a
+regression test that fails on the pre-fix parser, and all four diagrams
+refreshed with ~3000 hand-authored lines read back as images; the operation
+command tests made to assert the menu instead of =CHECK(true)=, proved by
+stubbing; and documentation that was materially false corrected.
+
+Verified. The whole tree builds. All four iam suites and all three workflow
+suites pass. Registration is byte-identical and idempotent at every address.
+Every codegen gate is green with iam registered, including the new registry
+check. Schema validation reports 304 tables and 0 warnings. The database
+recreates from scratch with no workaround, because main removed the foreign key
+that had blocked it. 141 shell recipes replay live: 120 answered, 20 recorded
+as destructive, one aborts.
+
+What did not land, and why. One recipe still aborts, and the reason is a
+duration rather than a defect in the command: =tenant_provisioning
+provision-acme-tenant= takes about 32 seconds on the server while the shell's
+request timeout is 30, so the client gives up seconds before the answer
+arrives. Both fixes are design changes -- make the operation asynchronous
+behind a poll, or let an operation command declare a longer timeout -- and
+neither is surgical. The items the review must weigh are otherwise recorded
+individually in the table above: S01's hand-written shell units, the six dead
+=*_table_io= pairs and the missing export macro, the unmodelled
+=account_role=/=role_permission=/=auth_event= tables, and three design
+decisions. Four defects this pass found in other components are filed as
+captures: the workflow start failure (fixed here), the assets publish
+function's missing columns, and the workflow actor attribution the fix leaves
+to its owner.
+

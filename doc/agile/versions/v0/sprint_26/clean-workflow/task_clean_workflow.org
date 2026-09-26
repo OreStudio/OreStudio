@@ -592,6 +592,33 @@ Worth checking at the same time whether generation is supposed to emit those bui
 files and does not, because if it is, this is a generator defect to fix at source
 under G05 rather than a one-off scaffold.
 
+** S01 the scaffold, written down rather than half-applied
+
+=ores.shell.iam= is the template to copy, because it is the closest sibling. Its
+root CMakeLists is three =add_subdirectory= lines (src, tests, modeling); workflow
+has no modeling directory, so it needs two. Its =src/CMakeLists.txt= sets a name,
+includes =component_files.cmake=, declares a STATIC library over =${files}
+${HEADERS}=, adds the module include directory, finds =cli=, and links
+=ores.shell.api.lib=, =ores.nats.lib= and =ores.logging.lib= publicly plus the
+component's own api and =cli::cli= privately.
+
+For workflow the target is =ores.shell.workflow.lib=, the module directory is
+=ORES_SHELL_WORKFLOW_DIR=, and the sources are the two generated command units with
+their headers. =component_files.cmake= is hand-written here because the module has
+no =modeling/component_overview.org= for =regenerate_cmake_component_files.py= to
+read -- the script only handles codegen components, and this module is a target
+generation writes into rather than one it owns.
+
+Then two lines outside the module: =add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/workflow)=
+in =projects/ores.shell/CMakeLists.txt=, between the compute and application
+entries, and =ores.shell.workflow.lib= in =ores.shell.application='s
+=target_link_libraries= beside the other four generated command modules.
+
+Not applied here. Five files and two edits, plus the tests scaffold, is a change
+that has to land and build together, and a half-added =add_subdirectory= breaks the
+shell for everyone. The plan is recorded so the next pass can execute it in one
+piece rather than rediscovering the template.
+
 ** H01 the diagrams are skeletons
 
 The item asks for two passes and says why: the automated pass reads data members

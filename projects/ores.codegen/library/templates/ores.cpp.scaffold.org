@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 4D5A5C43-B0AE-49E0-920F-2513335E0570
+:END:
+#+title: ores.cpp.scaffold
+#+description: First-generation component scaffolding: the umbrella header, the placeholder domain type and its test. Emitted only where a component opts in.
+#+type: facet
+#+model_types: component
+#+default: disabled
+#+level: cross
+#+facet_group: ores.cpp
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is the node for the =ores.cpp.scaffold= facet of the codegen
+template library, part of the [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own
+linked page — this page is the facet-level summary and the routing
+table to them.
+
+* Summary
+
+The files a component needs so its CMake targets link and its test runner
+passes *before any real code exists*: the umbrella header, a placeholder
+domain type with its implementation, and a placeholder Catch2 test (one
+archetype for the flat, api and core kinds, and a separate one for a
+service, whose targets differ). Every one of them is deleted as the
+component's first real model lands.
+
+* The ores.cpp.scaffold facet
+
+This facet is =#+default: disabled=, so a normal regeneration of a
+component emits nothing from it. A component opts in, once, by adding one
+line to its overview's =:PROPERTIES:= drawer:
+
+#+begin_example
+:ores.cpp.scaffold.enabled: true
+#+end_example
+
+The line is scaffolding, not configuration: it is removed together with
+the files, once the component has a real model to generate. While it is
+present, every regeneration of that component re-emits the four files,
+which is what the line is asking for.
+
+The split exists because the scaffold used to be part of
+[[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]] and
+[[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]], keyed
+on =#+component_kind:= alone. Any non-composite component therefore
+re-emitted the stubs whenever it was regenerated — including a mature
+component with hundreds of real files, and any component newly listed in
+the codegen catalogue. The umbrella header went the same way: a component
+that had deleted it as dead code had it recreated on the next run.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:FD8A5EA4-4525-42F8-B1DE-422144D694B6][ores.cpp.scaffold.service_stub_test]] | Placeholder Catch2 test keeping the tests target linking. =component-service= profile. |
+| [[id:1DA3FBDB-498A-47FF-9387-6F8A823CEDA3][ores.cpp.scaffold.stub_header]] | Placeholder declaration so the library target has a header. |
+| [[id:20E9E482-1401-4AE8-85CC-55813D153148][ores.cpp.scaffold.stub_impl]] | Placeholder implementation so the library target has a TU. |
+| [[id:C435328C-74BF-46A4-B649-44F99D413D46][ores.cpp.scaffold.stub_test]] | Placeholder Catch2 test so the tests target runs. |
+| [[id:1CA9A1E1-6E02-47BB-BE1F-40F5888DAAE0][ores.cpp.scaffold.umbrella_header]] | Umbrella header with the component's namespace docs. |

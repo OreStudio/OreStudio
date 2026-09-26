@@ -38,7 +38,7 @@ do not edit by hand.
 
 | Facet | Archetypes | Description |
 |-------+------------+-------------|
-| [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]] | 6 | Per-component C++ scaffolding: export, main header, stub domain type, test main. |
+| [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]] | 2 | Per-component C++ presence: export macros and the Catch2 test main. |
 | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]] | 7 | Domain types: class, JSON I/O, table I/O. |
 | [[id:71124286-50D3-4E3F-A948-43A67690FFB3][ores.cpp.enum]] | 1 | C++ enum types. |
 | [[id:CD698EB1-D411-4BF7-84B0-9794D47C802A][ores.cpp.eventing-integration-test]] | 1 | Per-entity Catch2 test proving the DB-write -> pg_notify -> postgres_event_source -> event_bus -> NATS-publish pipeline end to end. |
@@ -54,8 +54,9 @@ do not edit by hand.
 | [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]] | 2 | Server-side rendering of a domain type for display: history field mapper. |
 | [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]] | 1 | Protocol (de)serialisation. |
 | [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]] | 6 | Repository layer: entity, mapper, CRUD. |
+| [[id:4D5A5C43-B0AE-49E0-920F-2513335E0570][ores.cpp.scaffold]] | 5 | First-generation component scaffolding: the umbrella header, the placeholder domain type and its test. Emitted only where a component opts in. |
 | [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]] | 2 | C++ service application classes. |
-| [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]] | 12 | Service-application C++ scaffold: application, host, config options/parser, main. |
+| [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]] | 11 | Service-application C++ scaffold: application, host, config options/parser, main. |
 | [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] | 6 | Shell REPL command units: one submenu per entity or junction, one command per derived verb, and the per-menu registrar. |
 
 * See also

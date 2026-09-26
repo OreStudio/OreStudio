@@ -3,7 +3,8 @@
 :END:
 #+title: ores.sample_composite
 #+description: Sample composite (group-level) component fixture used to validate the new-component scaffold flow.
-#+type: component
+#+type: ores.codegen.component
+#+component_kind: composite
 #+level: cross
 #+filetags: :test:fixture:component:composite:
 #+created: 2026-06-02

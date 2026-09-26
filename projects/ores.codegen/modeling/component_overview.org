@@ -130,18 +130,22 @@ Naming and idempotency conventions are in
 
 ** Component scaffold profiles
 
-All variants run via =--address ores.cpp.component=; the overview's
-=#+component_kind:= frontmatter (=api=/=core=/=service=/=flat=/=composite=/
-=adapter=) picks which one. They create a new component skeleton rather than
-entity code: CMakeLists, a master header, a stub header+impl, and test
-harness.  See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] for the split model and CMake dep chain.
+The CMake files run via =--address ores.cmake.component= and the C++ files
+via =--address ores.cpp=; the overview's =#+component_kind:= frontmatter
+(=api=/=core=/=service=/=flat=/=composite=/=adapter=) picks which one. They
+create a new component skeleton rather than entity code: the CMakeLists and
+source lists, the export macros, the test harness, and — only where the
+component opts into [[id:4D5A5C43-B0AE-49E0-920F-2513335E0570][ores.cpp.scaffold]]
+— a master header, a stub header+impl and a stub test. The scaffold facet is
+=#+default: disabled=, so regenerating an existing component never recreates
+the placeholders it has outgrown.  See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] for the split model and CMake dep chain.
 
 | =#+component_kind:= | Part | Files |
 |---|---|---|
-| =api= | =ores.COMPONENT.api= | 10 (CMakeLists ×4, export.hpp, header, stub header+impl, test main+stub) |
-| =core= | =ores.COMPONENT.core= | 10 (same set, core CMake deps) |
-| =service= | =ores.COMPONENT.service= | 19 (core set + export.hpp + app/config headers+impls + main.cpp) |
-| =flat= (default) | standalone (no split) | 10 (generic CMake deps + export.hpp) |
+| =api= | =ores.COMPONENT.api= | 8 always (CMakeLists ×4, =src/= and =tests/ component file lists, =export.hpp=, test main) + 4 with the opt-in (=header=, =stub.hpp=, =stub.cpp=, =stub_tests.cpp=) |
+| =core= | =ores.COMPONENT.core= | the same set, with core CMake deps |
+| =service= | =ores.COMPONENT.service= | the core set plus the service application, and 2 with the opt-in (=header= and =stub_tests.cpp=) |
+| =flat= (default) | standalone (no split) | the api set with generic CMake deps |
 | =composite= | composite root | 1 (the root CMakeLists that adds the =#+parts:=) |
 | =adapter= | adapter part | 2 (the =src/= and =tests/component_files.cmake= file lists) |
 
@@ -158,9 +162,9 @@ that exercises the scaffold profiles end-to-end.
 
 | Fixture | Address exercised |
 |---+---|
-| [[id:22222222-2222-4222-9222-222222222222][ores.sample_composite]] | =--address ores.cpp.component= (group-level composite) |
-| [[id:33333333-3333-4333-9333-333333333333][ores.sample_composite.api]] | =--address ores.cpp.component= (API subcomponent) |
-| [[id:44444444-4444-4444-9444-444444444444][ores.sample_composite.core]] | =--address ores.cpp.component= (core subcomponent) |
+| [[id:22222222-2222-4222-9222-222222222222][ores.sample_composite]] | =--address ores.cmake.component= (group-level composite: its root CMakeLists only) |
+| [[id:33333333-3333-4333-9333-333333333333][ores.sample_composite.api]] | =--address ores.cpp= (API subcomponent, plus the opt-in scaffold) |
+| [[id:44444444-4444-4444-9444-444444444444][ores.sample_composite.core]] | =--address ores.cpp= (core subcomponent, plus the opt-in scaffold) |
 
 * Entry points
 

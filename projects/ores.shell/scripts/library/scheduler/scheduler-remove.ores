@@ -1,0 +1,6 @@
+# =remove=
+#
+# GENERATED from doc/recipes/shell/scheduler/scheduler.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+scheduler remove shell-example

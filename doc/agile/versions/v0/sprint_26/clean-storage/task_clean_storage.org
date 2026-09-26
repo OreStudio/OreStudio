@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-storage:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/clean-storage
+#+pr: 2174
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
-#+updated: 2026-09-23
-#+environment:
+#+updated: 2026-09-26
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1AF1672B-C21F-4337-A9F3-4253008DB80D][Clean ores.storage to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ ores.storage passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:1AF1672B-C21F-4337-A9F3-4253008DB80D][Clean ores.storage to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-26                               |
 
 * Acceptance
 
@@ -45,21 +45,74 @@ ores.storage passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order, one entity at a time, and
 record each item's result in the table below.
 
-1. Baseline and inventory (B01 to B05). Record the baseline before any
+1. Baseline and inventory (B01 to B06). Record the baseline before any
    edit.
 2. Models (M01 to M10).
 3. Protocol (P01 to P06).
-4. Generation (G01 to G06).
+4. Generation (G01 to G08).
 5. Wiring and data (W01 to W04).
 6. Shell (S01, S02).
-7. Structure and hygiene (H01 to H03).
-8. Verification (V01 to V06), ending with the registry entry.
+7. Structure and hygiene (H01 to H05).
+8. Verification (V01 to V08), ending with the registry entry.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | Baseline recorded before any edit, on =feature/clean-storage= at =1a5beb39a2=. The component has no row in =component_catalogue.org=, so =check_component_drift.py --component storage= answers "Unknown component" and the drift gate cannot name it. =regenerate_cmake_component_files.py --component ores.storage --check= reports two stale files, =src/component_files.cmake= and =tests/component_files.cmake=, both for the missing generated marker and nothing else. The rest is green: =check_model_drift.py= at one pre-existing exception in =ores.reporting=, protocol twin coverage (31 headers in 3 components), handler permissions (160 codes in 2 components), populate references, the shell recipe inventory, and =validate_docs.py= at 40 of 40 components. =ores.storage.tests= links and runs no tests. | The check runs; the whole-tree build at the baseline passes |
+| B02 | Passes. One model file, =modeling/component_overview.org=, of metatype =ores.codegen.component=. No entity, junction, operation, message, field group or module model exists, so there is no variability-carrying model to bind and nothing to exclude. | =grep= for =#+type:= across =modeling/= |
+| B03 | Nine hand-written files and no generatable one. =export.hpp= and =ores.storage.hpp= are conventional scaffolding: the export macro and the namespace documentation header. =net/storage_paths.hpp=, =net/http_client.{hpp,cpp}=, =filesystem/archiver.{hpp,cpp}= and =net/storage_transfer.{hpp,cpp}= are infrastructure that stays hand-written, because the component has no domain, repository, mapper, service, handler, registrar, protocol, generator, table or JSON I/O to generate from. 453 lines of header and 526 of source at the survey, before the changes recorded below took the sources to 486; no file is dead. | The nine files; the B06 census |
+| B04 | Not applicable. The component serves and sends no NATS subject and carries no protocol header. Its wire contract is HTTP, and =net/storage_paths= documents that path shape rather than declaring it. | =grep= for =nats_subject= and for a protocol header returns nothing |
+| B05 | Read. Four open captures are about the component, a fifth names it only inside a list of components it affects, none is in flight, and no remote branch touches =projects/ores.storage=. [[id:CA6A6FA0-0DA7-4FF6-8F66-F51FAF620A94][Migrate the remaining temp path call sites to the shared scoped temp types]] names this component's =storage_transfer.cpp= as one of its six sites, so it is taken here. The other three are cross-component and stay with their captures: [[id:A3D9F559-9665-4E61-9564-2FF29E014541][Unify the codebase's three separate Beast HTTP client implementations]], [[id:43217FF8-2359-4C99-8E1D-6344E50C47EE][Consolidate the duplicated tarball archivers into one shared utility]], [[id:EA916A96-0F86-42EF-BC26-CB1E7857B3EC][Stream large HTTP upload bodies to disk instead of buffering]]. | The four captures; =git diff --name-only origin/main...origin/<branch>= over every remote feature branch |
+| B06 | Recorded. =net::storage_transfer= is the component's public surface: seven files in five components name it. =net::storage_paths= has two consumers outside the component, =ores.compute= and =ores.ore=, which use it to build their own bucket keys. =net::http_client= and =filesystem::archiver= have no consumer outside the component; their intended consumer is =storage_transfer=, which composes both, and the two are kept as public facets rather than deleted because the archiver and HTTP-client captures above want them as the survivor of a cross-component consolidation. =ORES_STORAGE_EXPORT= and =ores.storage.hpp= have no consumer by design: the one is the export macro the facet headers use, the other is the empty namespace G08 requires. | =grep= for each symbol across =projects/=, excluding the component and its tests |
+| M01 to M08 | Not applicable. No entity, junction or operation model, so there is no legacy format to migrate, no profile to bind, no property to place in the namespace the loader reads, no table to describe, no junction to declare and no custom C++ type to bind. | =grep= for =#+type:= across =modeling/= |
+| M09 | Not applicable. The one model file is the component overview, and it carries no Qt or Wt drawer, no presentation property, no property naming a retired message type and no dead history property. The component has no entity model, so no other model can carry one. | =grep= over =modeling/= for the retired keywords |
+| M10 | Fixed. The overview described a different component. It credited =ores.assets= with consuming it, where the consumers are =ores.compute=, =ores.marketdata=, =ores.ore=, =ores.shell= and =ores.trading=; it placed =storage_paths= in =filesystem/= where the file is in =net/=; it offered "Boost.Beast or libcurl" where the client is Beast alone; and its Dependencies named =ores.platform=, which the CMake did not link, while omitting =ores.utility= and libarchive. It is rewritten against the tree with the facet list, the consumer census and the real dependencies, and =ores.platform= is now genuinely a dependency, for the scoped temporary file. The component has no parts, so its root =CMakeLists.txt= is hand-written and no group model applies. | The overview; the consumer includes; =src/CMakeLists.txt= |
+| P01 to P06 | Not applicable. The component has no entity and no protocol header, and it declares no NATS subject, so there is no canonical entity protocol to speak, no subject to declare once, no message to serve and no operation to model. | =grep= for =nats_subject= and for a protocol header returns nothing |
+| G01 | Not applicable. No model, so nothing regenerates byte for byte. | — |
+| G02 | Nothing to delete. No generation supersedes a hand-written file, because the component has no model to generate from. The namespace header stays, as G08 requires. The two facets with no consumer outside the component are the internals =storage_transfer= composes and are named under B06, so they are not dead. | Survey B03 re-run: no generatable file left hand-written |
+| G04 | Not applicable. No generated code, so there is no generated style to review. | — |
+| G05 | No generator defect surfaced in this pass, so nothing needed a fix at source. The two generator-adjacent artefacts the pass touched behaved: the CMake source-list generator reproduced the tree, and the diagram generator's dry run reported no change. | The two generator runs |
+| G07 | Passes. The automated diagram pass is idempotent: both a dry run and a real run report no change for the component, so nothing was refreshed against an open generator defect, and every hunk of the manual pass sits below the sentinel, which the refresh left untouched. The manual block was read as an image rather than merely regenerated, which found a defect the source did not show: the automated pass already emits =http_base_url_=, so repeating it in the manual block drew the field twice. It now also applies the conventions' class colours, =#F7E5FF= for the struct and =#ECECEC= for the three classes, and carries the conventions' test-suite section: one class per test file, a method per case, a note each, and a dependency to the class under test. The four suites are stacked with =together= and hidden links, which brings the render from 4.29:1 to 2.30:1 and inside the 2:1 to 3:1 the conventions ask for. | =generate_component_puml.py --project ores.storage=, dry and real; the rendered =ores.storage.png=, which is 3349 by 1455 |
+| G08 | Passes. =include/ores.storage/ores.storage.hpp= is the component's outermost namespace header. It carries the namespace =@brief= doxygen renders and the diagram conventions read, and both its claims are true: the bucket constants do live in the domain libraries, and the filesystem-backed HTTP implementation is in =ores.http.core=. Nothing includes it and nothing should. No facet namespace header exists at =include/ores.storage/net/net.hpp= or =include/ores.storage/filesystem/filesystem.hpp=; the standard records that coverage as uneven across the tree and filling the gaps as separate work, so their absence is not a finding here. | The header; the entry-point list in the overview |
+| W01 to W04 | Not applicable. No entity, so no registrar family, no handler permission, no populate script and no SQL script. | — |
+| S01, S02 | Not applicable. No entity and no shell unit. | — |
+| H01 | Exception, accepted, on one check only. Every other dimension passes: the shape is a simple, single-module component — =include/ores.storage/<facet>/=, =src/<facet>/=, =tests/= and =modeling/=, with no part split and no group model; every file, type and namespace is snake_case and each type matches the file that holds it; no leftover or scaffold artefact; the catalogue has no row, recorded under V06; and the System Model's Infrastructure layer page promised "file storage" in its own summary while carrying no section for the component, which is now written with its dependency column. Documentation and diagram are current (M10, G07), the diagram carrying the four test suites alongside the production classes. The exception is platform-specific code placement: the audit gives platform concerns one home, =ores.platform=, and the archiver's four =#ifdef _WIN32= blocks sit outside it. H04 does not cover them, because they are not a shim over a standard facility, so they are recorded here. The fix is the relocation the archiver capture already scopes; it is not done in this pass because it would add libarchive to a foundation component and rewrite the tree of a closed clean pass. The complexity measure the audit also asks for was run with lizard 1.24.0 from the compass venv over =src/=: 340 non-comment lines in 21 functions, average cyclomatic complexity 2.7, the worst per-file average =archiver.cpp= at 5.0, the worst single function =archiver::extract= at 14 against a threshold of 15, and no threshold exceeded. | =validate_docs.py=; the layer page; the diagram; =projects/ores.compass/venv/bin/lizard projects/ores.storage/src= |
+| H02 | Fixed for the component's own duplicates. Three hand-rolled temporary-file constructions and their three hand-rolled clean-up blocks became one =scoped_temp_file= guard per call, and =upload= — which differed from =upload_returning_response= only by discarding the response body — now delegates to it, the way =http_client::put= already delegated to =put_returning_body=. No commented-out code, no dead code and no legacy fragment remains. Two cross-component duplicates stay, recorded rather than fixed: =ores.compute.wrapper= keeps its own archiver and its own Beast client, and that client buffers uploads in memory where this component streams them from disk. | The diff on =storage_transfer.cpp=; [[id:A3D9F559-9665-4E61-9564-2FF29E014541][Unify the codebase's three separate Beast HTTP client implementations]]; [[id:43217FF8-2359-4C99-8E1D-6344E50C47EE][Consolidate the duplicated tarball archivers into one shared utility]] |
+| H03 | Fixed. The transfer header described the old temporary-file scheme in five places: the class comment, the two composite helpers and the two blob helpers, three of them still naming a UUID and two promising removal only after success. All five now describe the guard that owns the file and removes it on the way out, whatever the outcome. No end-of-line comment, no commented-out code and no edit narration remains. The comment on =safe_error_string= stays: it records why the wrapper exists, which is undefined behaviour rather than history. | The comment sweep over =include/= and =src/= |
+| H04 | Passes. The sweep for standard-facility shims finds nothing: no =ORES_NO_UNIQUE_ADDRESS= and no hand-rolled =unreachable()=. The archiver's four =#ifdef _WIN32= blocks are not a shim over a standard facility — libarchive has separate wide-character entry points and a =std::filesystem::path= yields =wchar_t= on Windows — so they are not this item's concern; their placement is the audit's, and it is H01's recorded exception. For scale, the audit's own grep over the tree returns four files outside =ores.platform= carrying a platform macro: this component's archiver, =ores.compute.wrapper='s archiver, =ores.ore.core= and =ores.testing=. A broader macro sweep, which also counts =__GNUC__=, finds six: those four plus =ores.diff/include/ores.diff/export.hpp= and =ores.trading/core/include/ores.trading.core/export.hpp=. | The =grep= sweep for =_WIN32= and for the shims; the audit's platform-placement rule |
+| H05 | Passes. The overview carries the six sections the Component Documentation Guide requires — Summary, Inputs, Outputs, Entry points, Dependencies and See also — filled against the tree rather than as placeholders, and its Diagram section points at the committed =ores.storage.puml= and =ores.storage.png= pair. The component's code changed in this pass and the diagram was refreshed in the same pass, which is what H05 asks for. The component owns no schema, so no ER diagram applies. | The overview; the =puml= and image pair; the render, 3349 by 1455 |
+| Finding: a failed download destroyed the destination | =http_client::get= opened the destination with =file_mode::write= and only then read the response status, so a 404 truncated a file that was already there and left the error body in one that was not. The status is now read with =http::read_header= before the destination is opened. Fixed, and the two cases under V07 are the proof that it was broken. | The fix; =http_client_tests.cpp= |
+| G03 | Fixed. Neither =component_files.cmake= carried the generated marker; both do now, which takes the component off the 147-file staleness list the standard records. The src list also carried a Qt-era comment — "Headers must be listed for AUTOMOC to find Q_OBJECT declarations" — from a template that has since changed; it now says what the template says, that the headers are listed for the install and IDE targets. Every other file in the component is hand-written and carries no marker, which is correct. | =regenerate_cmake_component_files.py --component ores.storage=; the diff |
+| G06 | Passes. =regenerate_cmake_component_files.py --component ores.storage --check= reports every list up to date, and the tests list names the four new suites. The repo-wide staleness the standard records for other components is untouched by this pass. | The check; =tests/component_files.cmake= |
+| V01 | Passes. The whole tree builds, exit code 0, with =ores.storage.tests= among the targets. | =compass build= |
+| V02 | Passes. The codegen suite passes, and =ores.storage.tests= passes at 40 assertions in 17 test cases with the fleet up. The cases themselves touch no NATS broker and call no HTTP service: they serve themselves from a Beast server on an ephemeral loopback port. The binary does need the database, because =tests/main.cpp= registers =ores::testing::database_lifecycle_listener=, which opens a database context and provisions a test tenant before the first case. | =ores.storage.tests=; =projects/ores.storage/tests/main.cpp= |
+| V03, V04 | Not applicable. No entity, no SQL and no generated shell command, so there is no database to recreate and no verb to run against the fleet. | — |
+| V05 | Passes. Every codegen gate is green: component drift cannot name the component (V06), model drift at its one pre-existing exception, protocol twin coverage intact at 31 headers in 3 components, handler permissions seeded at 160 codes, populate references resolve, the shell recipe inventory, the CMake source lists, =validate_docs.py= at 40 of 40 components, =compass lint=, and =clang-format --dry-run --Werror= over every changed and added C++ file. | Each check |
+| V06 | Accepted exception, the programme gap. =COMPONENTS_UNDER_TEST= lists catalogue components, and a catalogue component is one whose =modeling/= directory holds codegen models. =ores.storage= has one model, the component overview, and no entity, so it has no catalogue row and the registry cannot admit it: =check_component_drift.py --component storage= answers "Unknown component". This is the same gap the standard records for the whole infrastructure tier, =ores.platform=, =ores.utility=, =ores.security= and =ores.geo= among them. The component is still covered by the gates that do not need the registry: the CMake source lists, =validate_docs.py= and =compass lint=. | =component_registry.py=; =check_component_drift.py --component storage= |
+| V07 | Passes, and was proved rather than asserted. The two cases that guard the download fix — a 404 must create no file, and a 404 must leave an existing file byte-identical — were run against the pre-fix =http_client.cpp=, and both failed, at =http_client_tests.cpp:120= and =:136=, while the other 15 cases and 38 assertions still passed. Restoring the fix returns the suite to 17 of 17 and 40 of 40. The rest of the suite asserts literal values — exact path strings, exact byte sequences, exact file contents — or a specific exception type, which its four =CHECK_THROWS_AS= cases do. Five further checks are existential rather than literal: a packed archive exists and is non-empty, a 404 leaves the destination absent, and an upload and a compressed blob are non-empty. Every one of them sits beside a literal assertion rather than standing in for one, so no case is vacuous. | The two runs, one against each version of the source |
+| V08 | Passes. Every source file under =src/= is exercised: =archiver.cpp= and =storage_transfer.cpp= by the archive and transfer suites, =http_client.cpp= by its own, and =storage_paths.hpp= by the path suite. What no test touches is scaffolding rather than logic: =export.hpp= is a macro, =ores.storage.hpp= is an empty namespace, =main.cpp= is the Catch2 entry point and =tests/support/= is test-only. Before this pass the component had no test at all. | The suite; =ls projects/ores.storage/tests/= |
 
 * Notes
+
+Survey, 2026-09-26, on =feature/clean-storage=. The component is a model-free,
+single-module infrastructure library, and the survey is what the B and M rows
+above record in detail.
+
+- Scale. Nine hand-written C++ files, 979 lines across six headers and three
+  sources; =storage_transfer.cpp= is the largest at 223 lines before this pass.
+  No file is generated, and no model exists beyond the component overview.
+- Surface. =net::storage_transfer= is what other components call, from
+  =ores.compute=, =ores.marketdata=, =ores.ore=, =ores.shell= and
+  =ores.trading=. =net::storage_paths= is used by two of them to build their own
+  bucket keys. =filesystem::archiver= and =net::http_client= have no consumer
+  outside the component; =storage_transfer= is the consumer they are kept for.
+- Capture conflict. Four open captures are about the component, and a fifth
+  names it only inside a list of components it affects. None is in flight. One of them, the temp-path migration, assigned this component a call
+  site and is taken here; the three cross-component ones stay with their
+  captures and are linked from the rows that hit them.
+- Defects found. Two, both fixed with evidence: a failed download destroyed its
+  destination, and the duplicate =upload= pair differed only in what it
+  returned. One placement finding is recorded rather than fixed: the archiver's
+  four =#ifdef _WIN32= blocks, which the platform rule gives to =ores.platform=.
 
 * Test Scenarios
 
@@ -76,12 +129,88 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2174][#2174]] | [storage] Bring ores.storage to the Component Clean Standard |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | H03 claims the header's stale comments were fixed, but four more remain: three still name a UUID temp file and two promise removal only after success | projects/ores.storage/include/ores.storage/net/storage_transfer.hpp | fixed | Only the class comment was changed. The two composite helpers and the two blob helpers still described the removed scheme; all five now describe the guard and when it removes the file. |
+| 2 | H01 says the complexity measure was not run because lizard is not installed; lizard 1.24.0 ships in the compass venv | the task record | fixed | I had checked =which lizard= and stopped there. The audit's measure now runs and its figures are recorded: 340 non-comment lines in 21 functions, average cyclomatic complexity 2.7, worst file =archiver.cpp= at 5.0, no threshold exceeded. |
+| 3 | V02 says nothing in the suite depends on the database; the binary registers =database_lifecycle_listener=, which provisions a test tenant before the first case | the task record | fixed | The cases need no NATS broker and no HTTP service, but the binary does need the database. The row now says which part needs what. |
+| 4 | H04 calls the archiver one of only three files outside =ores.platform= carrying a platform macro; the audit's own grep returns four | the task record | fixed | My sweep used a shell glob that could not match =ores.compute/wrapper=. The row now names all four and notes that a broader macro sweep finds six. |
+| 5 | V07 says the remaining cases assert literals "not lengths, non-throws or truthiness"; three cases assert non-emptiness | the task record | fixed | Softened. The three non-emptiness checks each sit beside a literal assertion rather than standing in for one, so no case is vacuous. |
+| 6 | B01's evidence cell stops mid-sentence | the task record | fixed | The build evidence now says what it covers, the baseline. |
+| 7 | B05 says four captures name the component; a fifth names it inside a list of components it affects | the task record | fixed | The row now separates the four captures that are about the component from the one that merely lists it. |
+| 8 | The new capture says the stale plan stops short "by up to three items in two sections"; it omits six items in four sections | doc/agile/product_backlog/inbox/clean-standard-item-ranges-go-stale-in-task-plans.org | fixed | B06, G07, G08, H04, V07 and V08. The capture's own quoted plan shows it; the sentence did not. |
+| 9 | H01 is recorded as "Passes with one recorded finding", which is neither a pass nor the exception the standard asks for | the task record | fixed | H01 is now an exception. The platform-placement check fails, and the archiver's conditionals are not H04's concern because they are not a shim over a standard facility, so H04 passes cleanly and the finding moved to H01. |
+| 10 | The Beast usage in =http_client::get=: =read_header=, then open, then =read= | projects/ores.storage/src/net/http_client.cpp | no change | Confirmed as the documented pattern. =read_header= fills the parser and leaves any body bytes in the shared buffer, so opening the file body after the status check and reading on resumes into the file. |
+| 11 | A second, bounded round re-checked all nine fixes: all confirmed, with two cosmetic residuals and one error of its own | the task record | fixed | The residuals — the two unnamed files behind the broader macro sweep, and the worst-file versus worst-function distinction — are closed. The error is that it reported =file_size > 0= as absent; it is at =archiver_tests.cpp:72=. |
+| 12 | The maintainer asked for the diagram to be massaged into a proper reflection of the component before the PR | projects/ores.storage/modeling/ores.storage.puml | fixed | The manual pass now applies the conventions' styling table and carries its test-suite section, which no other diagram has yet because no other manual pass has reached it. The four suites are stacked so the render holds the conventions' 2:1 to 3:1 ratio, at 2.30:1. |
 
 * Result
+
+The clean standard is complete for a model-free component: of its 49 items, 26
+do not apply to a component with no entity, no protocol and no shell unit, and
+each is recorded with its reason; 21 pass or are fixed, with their evidence; and
+two are accepted exceptions — H01's platform placement, which the archiver
+capture already scopes, and V06, the registry gap the standard records for the
+whole infrastructure tier. That second exception is why the story's acceptance
+criterion naming =COMPONENTS_UNDER_TEST= cannot be met by a component with no
+entity model.
+
+What the pass changed. The component gained its first test suite, 17 test cases
+and 40 assertions, in place of a binary that linked, ran and reported nothing.
+Its absence is why a defect could sit in =http_client::get=: a failed download
+opened the destination with =file_mode::write= before it read the status, so a
+404 truncated a file that was already there. That is fixed, and the two cases
+that guard it were run against the pre-fix source to prove they fail. Three
+hand-rolled temporary files and their three hand-rolled clean-up blocks became
+one shared =scoped_temp_file= guard per call, and the duplicate =upload= now
+delegates to =upload_returning_response=. The overview, its diagram and the
+System Model's infrastructure layer page now describe the component that
+exists, and both CMake source lists carry the generated marker.
+
+What stays open, and why it is not a standard item:
+
+- The archiver is platform code in the wrong component, and it has a near-twin
+  in =ores.compute.wrapper=. The audit's platform rule and the duplicate rule
+  point at the same fix, one archiver in =ores.platform::filesystem=, which
+  would add libarchive to a foundation component and rewrite the tree of a
+  closed clean pass. The archiver capture owns the move.
+- =ores.compute.wrapper='s Beast client duplicates this one, buffers whole
+  uploads in a =std::string= where this component streams them from disk, and
+  its =download= carries the same status-after-open shape this pass fixed here.
+- The component cannot join the registry until the registry admits a component
+  with no entity model. Six components share that gap.
+
+* Verification
+
+An independent reviewer that did not write the change checked the branch against
+the standard, the component architecture audit and the code review checklist,
+and tried to falsify the record rather than read it. It failed the first pass
+and listed nine findings. All nine are fixed in the rows above. Two of them
+changed a conclusion rather than a turn of phrase: the header's stale comments
+were four more than the record claimed, and H01 had been left in a state that
+was neither a pass nor an exception.
+
+The reviewer also confirmed what holds, so the reader knows the record was
+attacked rather than only written: the 17 cases and 40 assertions, the four
+platform-macro blocks and their file, no external consumer of the archiver or
+the HTTP client, no NATS subject or protocol header, the drift gate answering
+"Unknown component", the regenerated CMake lists, the diagram's members against
+the headers, and the Beast usage in =http_client::get= as the documented
+pattern.
+
+It could not check two claims because it was asked not to build: the whole-tree
+build and the two test runs against the pre-fix source. Both were run here, and
+their evidence is recorded under V01 and V07.
+
+A second, bounded round re-checked the nine fixes and confirmed all nine. It
+left two cosmetic residuals, both now closed: the two extra files behind the
+broader macro sweep are named, and the complexity figure now separates the worst
+file from the worst function. That round also reported that =file_size > 0=
+appears nowhere in the suite. It does, at =archiver_tests.cpp:72=, so the claim
+it queried was right and the note was wrong — which is the reason each round's
+findings are checked against the tree before they are acted on, this one
+included.

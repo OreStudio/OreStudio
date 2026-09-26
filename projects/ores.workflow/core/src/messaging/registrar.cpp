@@ -19,6 +19,8 @@
  */
 #include "ores.workflow.core/messaging/registrar.hpp"
 #include "ores.dq.api/workflow/bundle_publish_workflow.hpp"
+#include "ores.history.core/messaging/registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.api/workflow/ore_import_workflow.hpp"
 #include "ores.refdata.api/workflow/provision_parties_workflow.hpp"
@@ -29,8 +31,10 @@
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include "ores.workflow.core/messaging/workflow_handler.hpp"
+#include "ores.workflow.core/messaging/workflow_instance_history_provider_registrar.hpp"
 #include "ores.workflow.core/messaging/workflow_instance_registrar.hpp"
 #include "ores.workflow.core/messaging/workflow_query_handler.hpp"
+#include "ores.workflow.core/messaging/workflow_step_history_provider_registrar.hpp"
 #include "ores.workflow.core/messaging/workflow_step_registrar.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include "ores.workflow.core/service/workflow_engine.hpp"
@@ -45,6 +49,13 @@ using namespace ores::logging;
 inline static std::string_view logger_name = "ores.workflow.messaging.registrar";
 static auto& lg() {
     static auto instance = make_logger(logger_name);
+    return instance;
+}
+
+// Function-local static: the returned subscription borrows the registry, so it
+// has to outlive register_handlers, which runs once per service process.
+ores::history::service::dispatch_registry& history_registry() {
+    static ores::history::service::dispatch_registry instance;
     return instance;
 }
 
@@ -69,6 +80,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
     };
     fold(register_workflow_instance_handlers(nats, ctx, signer));
     fold(register_workflow_step_handlers(nats, ctx, signer));
+
+    // The history family is the same shape as the messaging one: a generated
+    // provider per entity, composed here. One generic subject serves both, so
+    // the providers register on a shared table and the subscription is taken
+    // once. Must precede the moves of ctx and signer below.
+    auto& hist_registry = history_registry();
+    register_workflow_instance_history_provider(hist_registry);
+    register_workflow_step_history_provider(hist_registry);
+    subs.push_back(ores::history::messaging::register_history_handlers(
+        nats, hist_registry, "workflow", qg, ctx, signer));
 
     // ----------------------------------------------------------------
     // Load FSM state maps once at startup (one NATS round-trip each).

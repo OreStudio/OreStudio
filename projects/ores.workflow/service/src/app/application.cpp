@@ -19,6 +19,8 @@
  */
 #include "ores.workflow.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -27,12 +29,15 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.workflow.api/messaging/workflow_events.hpp"
 #include "ores.workflow.core/messaging/registrar.hpp"
+#include "ores.workflow.service/messaging/workflow_instance_event_registrar.hpp"
+#include "ores.workflow.service/messaging/workflow_step_event_registrar.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 
 namespace ores::workflow::service::app {
 
 using namespace ores::logging;
+namespace ev = ores::eventing;
 
 namespace {
 constexpr std::string_view service_name = "ores.workflow.service";
@@ -84,6 +89,29 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         ores::iam::client::make_service_token_provider(
             nats, cfg.database.user, cfg.database.password()));
 
+    // =========================================================================
+    // Entity change event pipeline: PostgreSQL LISTEN/NOTIFY → NATS publish
+    // =========================================================================
+    ev::service::event_bus event_bus;
+    ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
+
+    // Each generated registrar owns one entity's mapping: it reads the trigger's
+    // channel and publishes the canonical event on the subject its action names.
+    // Both subscriptions are held here rather than discarded, because the source
+    // delivers into them and they must outlive start().
+    auto instance_event_sub =
+        ores::workflow::service::messaging::register_workflow_instance_event_mapping(
+            event_source, event_bus, nats);
+    auto step_event_sub = ores::workflow::service::messaging::register_workflow_step_event_mapping(
+        event_source, event_bus, nats);
+    (void)instance_event_sub;
+    (void)step_event_sub;
+
+    // Subscriptions are in place before the source starts, so no change that
+    // lands during startup is missed.
+    event_source.start();
+    BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
+
     co_await ores::service::service::run(
         io_ctx,
         nats,
@@ -98,6 +126,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
+
+    event_source.stop();
     co_return;
 }
 

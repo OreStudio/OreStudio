@@ -19,7 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.shell/app/commands/workflow/workflow_wait_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -27,7 +27,7 @@
 #include <string_view>
 
 using ores::nats::service::nats_client;
-using ores::shell::app::commands::workflow_wait_commands;
+using ores::shell::app::commands::workflow_operation_commands;
 using namespace ores::logging;
 
 namespace {
@@ -37,13 +37,13 @@ const std::string tags("[commands]");
 
 }
 
-TEST_CASE("workflow_wait_commands_registers_the_wait_verb", tags) {
+TEST_CASE("workflow_operation_commands_registers_the_wait_verb", tags) {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
     nats_client session;
 
-    workflow_wait_commands::register_commands(root_menu, session);
+    workflow_operation_commands::register_commands(root_menu, session);
 
     // A publish that declines to block tells the operator to follow progress
     // with this verb, so a wait that is no longer registered turns a shipped

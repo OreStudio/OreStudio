@@ -17,11 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.shell/app/commands/workflow/workflow_wait_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
 #include "ores.nats/service/request_helpers.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/request_helpers.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
 #include <expected>
 #include <map>
@@ -96,7 +102,7 @@ void print_step(std::ostream& out,
 
 }
 
-void workflow_wait_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
+void workflow_operation_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto workflow_menu = std::make_unique<cli::Menu>("workflow");
 
     workflow_menu->Insert(
@@ -139,10 +145,26 @@ void workflow_wait_commands::register_commands(cli::Menu& root_menu, nats_client
         "Wait for a workflow instance to reach a terminal state",
         {"instance_id [--timeout <seconds>] [--expect-steps <n>]"});
 
+    workflow_menu->Insert(
+        "definitions",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_definitions(std::ref(out), std::ref(session), args);
+        },
+        "List the workflow types the service has registered",
+        {});
+
+    workflow_menu->Insert(
+        "start",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_start(std::ref(out), std::ref(session), args);
+        },
+        "Start a workflow and print the instance id to follow",
+        {"<type> <request_json>"});
+
     root_menu.Insert(std::move(workflow_menu));
 }
 
-bool workflow_wait_commands::wait_for_instance(std::ostream& out,
+bool workflow_operation_commands::wait_for_instance(std::ostream& out,
                                                nats_client& session,
                                                const std::string& instance_id,
                                                std::chrono::seconds timeout,
@@ -226,6 +248,86 @@ bool workflow_wait_commands::wait_for_instance(std::ostream& out,
         }
         std::this_thread::sleep_for(poll_interval);
     }
+}
+
+void workflow_operation_commands::process_definitions(std::ostream& out,
+                                                      nats_client& session,
+                                                      const std::vector<std::string>& args) {
+    (void)args;
+    BOOST_LOG_SEV(lg(), debug) << "Listing workflow definitions.";
+
+    if (!session.is_logged_in()) {
+        fail(out) << "You must be logged in to list workflow definitions." << std::endl;
+        return;
+    }
+
+    workflow::messaging::list_workflow_definitions_request req;
+    auto result = do_auth_request<workflow::messaging::list_workflow_definitions_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    if (!result->success) {
+        fail(out) << result->message << std::endl;
+        return;
+    }
+
+    if (result->definitions.empty()) {
+        out << "No workflow definitions are registered." << std::endl;
+        return;
+    }
+
+    for (const auto& def : result->definitions) {
+        out << def.type_name << "  (" << def.step_count << " step(s))" << std::endl;
+        if (!def.description.empty())
+            out << "  " << def.description << std::endl;
+    }
+}
+
+void workflow_operation_commands::process_start(std::ostream& out,
+                                               nats_client& session,
+                                               const std::vector<std::string>& args) {
+    if (args.size() != 2) {
+        fail(out) << "Usage: workflow start <type> <request_json>" << std::endl;
+        fail(out) << "For example: workflow start identity_workflow "
+                     "{\"steps\":[{\"name\":\"a\"}]}"
+                  << std::endl;
+        return;
+    }
+
+    if (!session.is_logged_in()) {
+        fail(out) << "You must be logged in to start a workflow." << std::endl;
+        return;
+    }
+
+    const auto& type = args[0];
+    const auto& request_json = args[1];
+
+    BOOST_LOG_SEV(lg(), info) << "Starting workflow of type: " << type;
+
+    // Generated here so the caller can follow the run: the engine acknowledges
+    // the start rather than answering with the result.
+    boost::uuids::random_generator rng;
+    const auto instance_id = boost::uuids::to_string(rng());
+
+    workflow::messaging::start_workflow_message msg;
+    msg.type = type;
+    msg.tenant_id = session.auth().tenant_id;
+    msg.request_json = request_json;
+    msg.instance_id = instance_id;
+
+    try {
+        session.transport().js_publish(
+            workflow::messaging::start_workflow_message::nats_subject,
+            ores::nats::default_wire_codec().encode(msg));
+    } catch (const std::exception& e) {
+        fail(out) << "Failed to start the workflow: " << e.what() << std::endl;
+        return;
+    }
+
+    out << "Dispatched " << type << "." << std::endl;
+    out << "workflow_instance_id: " << instance_id << std::endl;
+    out << "Follow progress with: workflow wait " << instance_id << std::endl;
 }
 
 }

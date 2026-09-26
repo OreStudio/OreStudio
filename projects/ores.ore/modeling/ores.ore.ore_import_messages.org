@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: E723EABC-54B5-4EAC-BC0E-CFA1AFB021CB
+:END:
+#+title: ores.ore.ore_import_messages
+#+description: Codegen operation model for the ORE import request, response and per-item error, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: ore
+#+subcomponent: api
+#+entity_singular: ore_import
+#+namespace: ores::ore::messaging
+#+brief: The ORE import request, its response and the per-item error.
+#+filetags: :model:operation:ore:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The client-facing half of the ORE import protocol. The caller uploads the
+packed ORE directory to object storage first, then sends the request; the
+service answers once the saga has run, or returns a workflow instance id when
+it has dispatched the import asynchronously.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** ore_import_item_error
+
+#+begin_src cpp :name comment
+/**
+ * @brief Error for a single item within an ORE import.
+ *
+ * Carries the exact source file and item identifier so the caller can present
+ * a precise failure location, such as "trades.xml / trade-0042".
+ */
+#+end_src
+
+*** source_file
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** item_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** ore_import_request
+:PROPERTIES:
+:subject: workflow.v1.ore.import
+:response: ore_import_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Request to import an ORE directory already uploaded to storage.
+ *
+ * The caller uploads the packed directory to the ore-imports bucket as
+ * {request_id}.tar.gz before sending this message.
+ */
+#+end_src
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** UUID; also the storage key root. */
+#+end_src
+
+*** import_choices_json
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** ore_import_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief Response for an ore_import_request.
+ *
+ * On partial failure success is still true and item_errors is non-empty; a
+ * false success means the saga itself failed and compensation ran.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** item_errors
+:PROPERTIES:
+:cpp_type: std::vector<ore_import_item_error>
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** workflow_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * Set when the import was dispatched asynchronously through the workflow
+ * engine. The import then runs in the background, item_errors is empty in
+ * this response, and this id queries the workflow's status.
+ */
+#+end_src
+
+* See also
+
+- [[id:5F280C8C-8C50-40A2-8C84-C85B8821D33E][ores.ore]] — component group overview.
+- [[id:D79B6B1F-06B2-4139-A604-0C7876AD616A][ores.ore.ore_import_engine_messages]] — the saga-step messages the workflow engine publishes.

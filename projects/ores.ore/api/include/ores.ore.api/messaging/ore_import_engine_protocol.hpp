@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_ORE_API_MESSAGING_ORE_IMPORT_ENGINE_PROTOCOL_HPP
 #define ORES_ORE_API_MESSAGING_ORE_IMPORT_ENGINE_PROTOCOL_HPP
 
@@ -30,28 +35,31 @@ namespace ores::ore::messaging {
 /**
  * @brief Workflow step command: execute the full ORE import.
  *
- * Published by the workflow engine to ore.v1.ore.import.execute when the
- * ore_import_workflow starts.  The handler in ores.ore.service fetches the
- * packed tarball, scans, plans, and saves all items, then calls
- * publish_step_completion.
- *
- * @note bearer_token is carried here so the handler can delegate the
- *       original caller's identity to downstream domain services.
+ * Published by the workflow engine when the ore_import_workflow starts. The
+ * handler fetches the packed tarball, scans, plans and saves every item, then
+ * calls publish_step_completion.
  */
 struct ore_import_execute_request {
     static constexpr std::string_view nats_subject = "ore.v1.ore.import.execute";
-
-    std::string request_id;          ///< UUID; storage key root for the tarball
-    std::string import_choices_json; ///< JSON-serialised import_choices
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string request_id;
+    std::string import_choices_json;
     std::string correlation_id;
-    std::string bearer_token; ///< Caller's JWT — used for delegated NATS calls
+    /** The caller's JWT, so the handler can delegate the caller's identity downstream. */
+    std::string bearer_token;
 };
 
 /**
- * @brief Internal result stored as workflow_step.response_json for step 0.
+ * @brief The step's stored response.
  *
- * Includes everything needed for compensation (saved entity IDs) plus the
- * public-facing item_errors list.  Not sent over NATS directly.
+ * Carries everything compensation needs -- the identifiers of every entity
+ * the step saved -- alongside the caller-facing item_errors list.
  */
 struct ore_import_execute_result {
     bool success = false;
@@ -67,15 +75,22 @@ struct ore_import_execute_result {
 /**
  * @brief Workflow compensation command: roll back a completed ORE import.
  *
- * Published by the workflow engine to ore.v1.ore.import.rollback when step 0
- * compensation is triggered.  The handler deletes all saved entities in
- * reverse order and calls publish_step_completion.
+ * Published by the workflow engine when step 0's compensation is triggered.
+ * The handler deletes every saved entity in reverse order and calls
+ * publish_step_completion.
  */
 struct ore_import_rollback_request {
     static constexpr std::string_view nats_subject = "ore.v1.ore.import.rollback";
-
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string correlation_id;
-    std::string bearer_token; ///< Caller's JWT — used for delegated NATS calls
+    /** The caller's JWT, so the handler can delegate the caller's identity downstream. */
+    std::string bearer_token;
     std::vector<std::string> saved_currency_iso_codes;
     std::vector<std::string> saved_portfolio_ids;
     std::vector<std::string> saved_book_ids;

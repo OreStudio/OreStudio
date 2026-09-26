@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,29 +19,20 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_protocol.hpp.mustache
+ * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_ORE_API_MESSAGING_ORE_IMPORT_PROTOCOL_HPP
-#define ORES_ORE_API_MESSAGING_ORE_IMPORT_PROTOCOL_HPP
-
-#include <string>
-#include <string_view>
-#include <vector>
-
-namespace ores::ore::messaging {
-
 /**
  * @brief Error for a single item within an ORE import.
  *
  * Carries the exact source file and item identifier so the caller can present
  * a precise failure location, such as "trades.xml / trade-0042".
  */
-struct ore_import_item_error {
-    std::string source_file;
-    std::string item_id;
-    std::string message;
-};
+export interface OreImportItemError {
+    source_file: string;
+    item_id: string;
+    message: string;
+}
 
 /**
  * @brief Request to import an ORE directory already uploaded to storage.
@@ -49,21 +40,12 @@ struct ore_import_item_error {
  * The caller uploads the packed directory to the ore-imports bucket as
  * {request_id}.tar.gz before sending this message.
  */
-struct ore_import_request {
-    using response_type = struct ore_import_response;
-    static constexpr std::string_view nats_subject = "workflow.v1.ore.import";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
+export interface OreImportRequest {
     /** UUID; also the storage key root. */
-    std::string request_id;
-    std::string import_choices_json;
-    std::string correlation_id;
-};
+    request_id: string;
+    import_choices_json: string;
+    correlation_id: string;
+}
 
 /**
  * @brief Response for an ore_import_request.
@@ -71,19 +53,27 @@ struct ore_import_request {
  * On partial failure success is still true and item_errors is non-empty; a
  * false success means the saga itself failed and compensation ran.
  */
-struct ore_import_response {
-    bool success = false;
-    std::string message;
-    std::vector<ore_import_item_error> item_errors;
-    std::string correlation_id;
+export interface OreImportResponse {
+    success: boolean;
+    message: string;
+    item_errors: OreImportItemError[];
+    correlation_id: string;
     /**
      * Set when the import was dispatched asynchronously through the workflow
      * engine. The import then runs in the background, item_errors is empty in
      * this response, and this id queries the workflow's status.
      */
-    std::string workflow_instance_id;
-};
-
+    workflow_instance_id: string;
 }
 
-#endif
+export const subjects = {
+    ore_import_request: "workflow.v1.ore.import",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    ore_import_request: true,
+} as const;

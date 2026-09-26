@@ -31,6 +31,7 @@
 #include "ores.shell/app/commands/compute/app_version_platform_commands.hpp"
 #include "ores.shell/app/commands/compute/batch_commands.hpp"
 #include "ores.shell/app/commands/compute/host_commands.hpp"
+#include "ores.shell/app/commands/compute/platform_commands.hpp"
 #include "ores.shell/app/commands/compute/result_commands.hpp"
 #include "ores.shell/app/commands/compute/workunit_commands.hpp"
 #include "ores.shell/app/commands/connection_commands.hpp"
@@ -113,6 +114,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     app_version_platform_commands::register_commands(*root, session_);
     batch_commands::register_commands(*root, session_);
     host_commands::register_commands(*root, session_);
+    platform_commands::register_commands(*root, session_);
     result_commands::register_commands(*root, session_);
     workunit_commands::register_commands(*root, session_);
     marketdata_commands::register_commands(*root, session_);

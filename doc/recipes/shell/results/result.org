@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-results add <id> <workunit_id> <host_id> <pgmq_msg_id> <server_state> <outcome> <output_uri> <error_message> <received_at> <reason> <commentary>
+results add <workunit_id> <host_id> <pgmq_msg_id> <server_state> <outcome> <output_uri> <error_message> <received_at> <reason> <commentary>
 #+end_example
 
 It is addressed at =compute.v1.results.put=.
 
 #+name: results-add
 #+begin_src ores-shell :tangle results-add.ores :exports none
-results add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 0 0 __none__ __none__ 1970-01-01T00:00:00Z system.new_record generated_script
+results add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 0 0 __none__ __none__ 1970-01-01T00:00:00Z system.new_record generated_script
 #+end_src
 
 ** =set=

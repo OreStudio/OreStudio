@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <code> <display_name> <description> <os_family> <cpu_arch> <abi> <is_active>
+     * @brief add <code> <display_name> <description> <os_family> <cpu_arch> <abi> <is_active>
      * <reason> <commentary>
      */
     static void process_add(std::ostream& out,

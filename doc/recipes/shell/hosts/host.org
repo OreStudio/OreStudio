@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-hosts add <id> <external_id> <location> <cpu_count> <ram_mb> <gpu_type> <display_name> <last_rpc_time> <credit_total> <reason> <commentary>
+hosts add <external_id> <location> <cpu_count> <ram_mb> <gpu_type> <display_name> <last_rpc_time> <credit_total> <reason> <commentary>
 #+end_example
 
 It is addressed at =compute.v1.hosts.put=.
 
 #+name: hosts-add
 #+begin_src ores-shell :tangle hosts-add.ores :exports none
-hosts add 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 0 __none__ __none__ 1970-01-01T00:00:00Z 0 system.new_record generated_script
+hosts add __none__ __none__ 0 0 __none__ __none__ 1970-01-01T00:00:00Z 0 system.new_record generated_script
 #+end_src
 
 ** =set=

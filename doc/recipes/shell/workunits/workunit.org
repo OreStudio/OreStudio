@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-workunits add <id> <batch_id> <app_version_id> <input_uri> <config_uri> <priority> <target_redundancy> <canonical_result_id> <reason> <commentary>
+workunits add <batch_id> <app_version_id> <input_uri> <config_uri> <priority> <target_redundancy> <canonical_result_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =compute.v1.workunits.put=.
 
 #+name: workunits-add
 #+begin_src ores-shell :tangle workunits-add.ores :exports none
-workunits add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 0 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+workunits add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 0 00000000-0000-0000-0000-000000000000 system.new_record generated_script
 #+end_src
 
 ** =set=

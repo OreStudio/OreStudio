@@ -140,7 +140,7 @@ void session_commands::register_commands(cli::Menu& root_menu, nats_client& sess
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <start_time> <account_id> <end_time> <client_ip> <client_identifier> "
+        "add <start_time> <account_id> <end_time> <client_ip> <client_identifier> "
         "<client_version_major> <client_version_minor> <bytes_sent> <bytes_received> "
         "<country_code> <protocol> <reason> <commentary>");
 
@@ -340,8 +340,8 @@ void session_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 11 + 2) {
+            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -409,7 +409,7 @@ void session_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.start_time, parsed->positionals[next++], "start_time");
         read_token(req.change.write.account_id, parsed->positionals[next++], "account_id");
         read_token(req.change.write.end_time, parsed->positionals[next++], "end_time");

@@ -86,7 +86,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <external_id> <location> <cpu_count> <ram_mb> <gpu_type> <display_name>
+     * @brief add <external_id> <location> <cpu_count> <ram_mb> <gpu_type> <display_name>
      * <last_rpc_time> <credit_total> <reason> <commentary>
      */
     static void process_add(std::ostream& out,

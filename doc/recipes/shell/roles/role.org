@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-roles add <id> <name> <description> <reason> <commentary>
+roles add <name> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.roles.put=.
 
 #+name: roles-add
 #+begin_src ores-shell :tangle roles-add.ores :exports none
-roles add 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+roles add __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=

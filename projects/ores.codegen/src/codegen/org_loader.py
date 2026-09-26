@@ -4183,16 +4183,31 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
         "get_version": ("version_read", "version"),
     }
 
-    def _used_inputs(kind: str) -> list[dict[str, Any]]:
+    def _used_inputs(kind: str, typed: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if kind in ("put", "put_many"):
-            return writes
+            return typed
         if kind in ("paged", "list_by"):
             return []
         return keys
 
     def _command(operation: dict[str, Any], kind: str, name: str,
                  precondition: str = "",
-                 relation: dict[str, Any] | None = None) -> dict[str, Any]:
+                 relation: dict[str, Any] | None = None,
+                 id_from_caller: bool = False) -> dict[str, Any]:
+        # A create mints the row's id, so the caller does not state it. A
+        # replace addresses a row that already exists, and the id is how the
+        # store finds it: a minted id reaches the trigger as a row no current
+        # row matches, so the write is taken for a create and collides with
+        # the natural key's unique index. The replace therefore takes the id
+        # from the caller, which is what a read of the row returns.
+        def _typed(field: dict[str, Any]) -> dict[str, Any]:
+            item = _input(field.get("name", ""), field.get("cpp_type", ""))
+            if id_from_caller and item.get("is_minted"):
+                item["is_minted"] = False
+                item["is_user"] = True
+            return item
+
+        typed = [_typed(field) for field in entity.get("write_fields") or []]
         command = {
             "command": name,
             "identifier": name.replace("-", "_"),
@@ -4202,9 +4217,16 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
             "response_type": operation["response"],
             "subject": operation["subject"],
             "keys": keys,
-            "writes": writes,
+            "writes": typed,
+            # A single put fills a session party itself, so the caller types
+            # only the remaining fields. A put_many reads the whole write
+            # record, because a batch of changes states its own ids. The two
+            # arities differ, and a command whose stated count is the wider one
+            # refuses the line its own help prints.
+            "put_writes": [field for field in typed if field.get("is_user")],
             "key_arity": len(keys),
-            "write_arity": len(writes),
+            "write_arity": len(typed),
+            "put_arity": sum(1 for field in typed if field.get("is_user")),
             "relation": relation,
             "has_order": bool(operation.get("has_order")),
             "has_intent": operation.get("verb") in
@@ -4215,7 +4237,8 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
             # key, and a write takes the write record rather than the key,
             # because the key travels inside it.
             "unsupported": sorted(
-                item["name"] for item in _used_inputs(kind) if not item["fillable"]),
+                item["name"] for item in _used_inputs(kind, typed)
+                if not item["fillable"]),
         }
         # The flags the handler declares. Exact rather than uniform, so a
         # command that takes no page cannot be handed one.
@@ -4264,7 +4287,8 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
         verb = operation.get("verb", "")
         if verb == "put":
             commands.append(_command(operation, "put", "add", "must_not_exist"))
-            commands.append(_command(operation, "put", "set", "any"))
+            commands.append(_command(operation, "put", "set", "any",
+                                     id_from_caller=True))
             continue
         # A scoped read's verb names the shape and not the column it is scoped
         # by: the derivation states the relation in `leading`, so the command
@@ -4381,7 +4405,10 @@ def _entity_shell_invocation(command: dict[str, Any]) -> str:
     if kind in ("put", "put_many"):
         if kind == "put_many":
             tokens += ["--count", "1"]
-        tokens += [_sentinel_value(field["cpp_type"]) for field in command["writes"]]
+            typed = command["writes"]
+        else:
+            typed = command["put_writes"]
+        tokens += [_sentinel_value(field["cpp_type"]) for field in typed]
     elif kind == "list_by":
         tokens.append(_sentinel_value(command["relation"]["cpp_type"]))
     elif kind != "paged":
@@ -4408,7 +4435,10 @@ def _entity_shell_usage(command: dict[str, Any]) -> str:
     if kind in ("put", "put_many"):
         if kind == "put_many":
             parts.append("--count <n>")
-        parts.extend(f"<{field['name']}>" for field in command["writes"])
+            typed = command["writes"]
+        else:
+            typed = command["put_writes"]
+        parts.extend(f"<{field['name']}>" for field in typed)
     elif kind == "list_by":
         parts.append(f"<{command['relation']['name']}>")
     elif kind != "paged":

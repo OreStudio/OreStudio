@@ -140,7 +140,7 @@ void result_commands::register_commands(cli::Menu& root_menu, nats_client& sessi
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <workunit_id> <host_id> <pgmq_msg_id> <server_state> <outcome> <output_uri> "
+        "add <workunit_id> <host_id> <pgmq_msg_id> <server_state> <outcome> <output_uri> "
         "<error_message> <received_at> <reason> <commentary>");
 
     menu->Insert(
@@ -358,8 +358,8 @@ void result_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -419,7 +419,7 @@ void result_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.workunit_id, parsed->positionals[next++], "workunit_id");
         read_token(req.change.write.host_id, parsed->positionals[next++], "host_id");
         read_token(req.change.write.pgmq_msg_id, parsed->positionals[next++], "pgmq_msg_id");

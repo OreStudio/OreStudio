@@ -1,7 +1,7 @@
 Codegen suite (projects/ores.codegen):
 
   venv/bin/python -m pytest tests/ -q
-  536 passed
+  538 passed
 
 Compute test suites, run against the live fleet with .env loaded:
 
@@ -16,6 +16,9 @@ Compute test suites, run against the live fleet with .env loaded:
 
   publish/bin/ores.compute.wrapper.tests
   All tests passed (20 assertions in 5 test cases)
+
+  publish/bin/ores.shell.compute.tests
+  All tests passed (219 assertions in 138 test cases)
 
 The core suite needs the fleet because its ten cases are the seven
 eventing integration tests and the three junction repository tests; all

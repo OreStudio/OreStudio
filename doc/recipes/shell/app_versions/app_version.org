@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-app_versions add <id> <app_id> <wrapper_version> <engine_version> <min_ram_mb> <reason> <commentary>
+app_versions add <app_id> <wrapper_version> <engine_version> <min_ram_mb> <reason> <commentary>
 #+end_example
 
 It is addressed at =compute.v1.app_versions.put=.
 
 #+name: app_versions-add
 #+begin_src ores-shell :tangle app_versions-add.ores :exports none
-app_versions add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+app_versions add 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
 #+end_src
 
 ** =set=

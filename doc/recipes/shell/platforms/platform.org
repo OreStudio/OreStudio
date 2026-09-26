@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-platforms add <id> <code> <display_name> <description> <os_family> <cpu_arch> <abi> <is_active> <reason> <commentary>
+platforms add <code> <display_name> <description> <os_family> <cpu_arch> <abi> <is_active> <reason> <commentary>
 #+end_example
 
 It is addressed at =compute.v1.platforms.put=.
 
 #+name: platforms-add
 #+begin_src ores-shell :tangle platforms-add.ores :exports none
-platforms add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ false system.new_record generated_script
+platforms add __none__ __none__ __none__ __none__ __none__ __none__ false system.new_record generated_script
 #+end_src
 
 ** =set=

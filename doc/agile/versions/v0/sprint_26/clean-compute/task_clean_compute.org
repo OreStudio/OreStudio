@@ -28,9 +28,9 @@ ores.compute passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:543DE51B-B9D8-4261-9DB1-9B97D4C9F187][Clean ores.compute to the component clean standard]] |
-| Now          | Every section is worked. Three items do not pass: G02, on the two telemetry tables the codegen cannot express; V03, on the iam bootstrap that creates no account; and V04, which is blocked by V03. |
-| Waiting on   | A decision on the append-only fact-table shape (G02) and a fix to the iam bootstrap (V03, V04). |
-| Next         | Whichever of those two the reader wants first. |
+| Now          | Every section is worked and every applicable item passes except G02, on the two telemetry tables the codegen cannot express. |
+| Waiting on   | A decision on whether the codegen gains an append-only fact-table entity shape. |
+| Next         | That decision. Nothing else on the component is open. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -66,7 +66,7 @@ record each item's result in the table below.
 | G02  | Partial | Every hand-written file the generation supersedes is generated now, at the path it was hand-written at: the three protocol headers and the platform domain, entity, mapper, repository, service, handler and registrar. No dead header remains and there is no hand-written protocol umbrella. Nine files remain that the generation does not supersede: the two telemetry tables with the reads over them, which the codegen cannot express, and the workflow batch link, which is open work. Recorded in Notes. |
 | G03  | Pass    | 225 files under =projects/ores.compute= carry the generated marker and 60 do not, and the 60 are the hand-written set B03 classified. The argument that every generated file is marked is the empty drift list: the generator writes the marker, so a generated file missing it would always differ from the tree and appear there. =evidence/b02_b03_b04_inventory_after_work.txt=. |
 | G04  | Pass    | The generated output was read against the hand-written code it replaced, facet by facet, over the platform model and the two operation models. Two defects came out of it and are fixed in the templates: a response member that collided with an entity named =result=, and TypeScript domain imports that collided with the public types. Details in Notes. |
-| G05  | Pass    | Six generator defects, all in =org_loader.py=, fixed at source with thirteen cases in =projects/ores.codegen/tests/test_protocol_name_collisions.py= and one in =test_junction_protocol_verbs.py=. Details in Notes. |
+| G05  | Pass    | Eight generator defects, fixed at source with fifteen new cases across =test_protocol_name_collisions.py=, =test_junction_protocol_verbs.py= and =test_shell_entities.py=. Five are in =org_loader.py=, two in the shell command template, and one in the junction derivation. Details in Notes. |
 | G06  | Pass    | =regenerate_cmake_component_files.py --component ores.compute.<part> --check= reports every source list up to date, for all five parts and for the shell adapter part. |
 | M02  | Pass    | All seven entity and junction models bind to a profile: six to =uuid-identified-lookup= and the junction to =tenant-scoped-junction=. No model needed a no-match record. |
 | M04  | Pass    | No property sits in a namespace the loader does not read for it. The one that did was =has_change_reason_cache=, moved to the model root for M09, and it is now removed as dead. |
@@ -80,8 +80,8 @@ record each item's result in the table below.
 | M09  | Pass    | No Qt or Wt presentation drawer or property remains in a compute model. The drawer's Qt list-window columns and its retired-type class names are gone. =grep -l "^\*\* Presentation" projects/ores.compute/modeling/*.org= returns nothing, against 109 files elsewhere. |
 | V01  | Pass    | =compass build= over the whole tree exits 0, with the component's tests and every consumer. |
 | V02  | Pass    | The codegen suite passes 536 cases. All four compute suites pass against the live fleet: api 165 assertions in 54 cases, core 60 in 10, service 26 in 10, wrapper 20 in 5. One defect came out of it, the platform table's select-only RLS policy, and is fixed. Evidence in =evidence/v02_test_suites.txt=. |
-| V03  | Partial | The database recreates from scratch: =compass db recreate -y -k= exits 0, and the recreated platform table carries the generated notify trigger. The fleet starts and serves: the services reconnect after the recreate, hosts save, and node samples land in =ores_compute_node_samples_tbl=. A session does not: the recreated database is in bootstrap mode and both bootstrap commands report success while persisting no account and no tenant, so every login fails. That is an iam bootstrap defect. Evidence in =evidence/v03_v04_fleet.txt=. |
-| V04  | Blocked | The fourteen generated compute recipes all stop at their login step for the V03 reason, so no command has been run against the live fleet. The commands themselves are linked and exercised by the shell's own tests. Evidence in =evidence/v03_v04_fleet.txt=. |
+| V03  | Pass    | The database recreates from scratch, the fleet starts and serves, and a session works. =compass db recreate -y -k= exits 0 and the recreated platform table carries the generated notify trigger. The bootstrap commands were persisting nothing, which is fixed: an account and a tenant now exist and a login succeeds. Evidence in =evidence/v03_v04_fleet.txt= and =evidence/v04_shell_commands.txt=. |
+| V04  | Pass    | All 57 generated compute shell commands ran against the live fleet and answered, with no failure: the eight menus' reads, the seeded reads, and a full add, get, versions, set and delete cycle for each of the seven entities and the junction. Three defects came out of the run and are fixed at source. Evidence in =evidence/v04_shell_commands.txt=. |
 | V05  | Pass    | Every gate is green with the component under test: component drift, model drift, protocol twin coverage, handler permissions, populate references, recipe inventory and the CMake source lists, with the exceptions each gate already carries elsewhere. Evidence in =evidence/v05_gates_with_compute_listed.txt= and =evidence/v06_registry_all.txt=. |
 | V06  | Pass    | =COMPONENTS_UNDER_TEST= in =projects/ores.codegen/scripts/component_registry.py= lists =compute-cpp=, and =check_component_drift.py --all= passes over the list. Evidence in =evidence/v06_registry_all.txt=. |
 | P05  | Pass    | Every consumer follows the protocol: the shell application and, before main deleted the component, the CLI. Nothing is carried for backwards compatibility. |
@@ -94,7 +94,7 @@ record each item's result in the table below.
 | W02  | Pass    | Every permission a compute handler checks is seeded, and the three roles that need them carry =compute::*=. Eleven codes were missing, so the seed script gains them. =check_handler_permissions.py= now covers two components and 160 codes. Evidence in =evidence/v05_gates_with_compute_listed.txt=. |
 | W03  | Pass    | =check_populate_references.py= reports that populate references resolve with compute under test. Same evidence file. |
 | W04  | Pass    | =validate_schemas.sh= reports 303 tables and no warning, against two =WIRE_001= warnings before the fix: the platform model generated a notify trigger pair and the compute aggregators did not include it. Both aggregators now do. Evidence in =evidence/w04_validate_schemas.txt=. |
-| S01  | Pass    | The seven generated command units are registered in the repl and linked into =ores.shell.application=. The commands they supersede are deleted, and the commands no unit covers stay hand-written. |
+| S01  | Pass    | The eight generated command units are registered in the repl and linked into =ores.shell.application=: the seven that were there plus =platform_commands=, which the platform model generated and nothing registered. The commands they supersede are deleted, and the commands no unit covers stay hand-written. |
 | S02  | Pass    | The recipe inventory lists 191 recipes in 110 categories and the gate passes. |
 | H01  | Pass    | The Component Architecture Audit ran against =projects/ores.compute=. Shape and part catalogue pass, every directory at depth 3 is signed off, no never-tracked file and no empty directory exists, the facade dirs mirror, and =validate_docs.sh= passes all 41 components. Its two real findings are fixed: the stale =service= and =wrapper= part diagrams are refreshed and re-rendered. The missing root =.puml= is not a finding, because a composite root's =modeling/= is the group index the validator exempts. Details in Notes. |
 | H02  | Pass    | No Qt or Wt code, no commented-out code and no dead code remain. The one hand-written duplicate of a generated artefact is deleted: =wrapper/src/app/log_publisher.hpp=, a redirect header that nothing included. Details in Notes. |
@@ -271,6 +271,53 @@ stay hand-written and are classified as such rather than as infrastructure.
 
 The blocker stops the two telemetry *entities*. It does not stop the
 protocol, which is a separate model, as the next note records.
+
+** A login could never find a bootstrap account
+
+V03 needs a session, and a session needs an account. The commands that
+create one reported success and left the tables empty, so the fault read
+as a database problem. It was not.
+
+A principal is "username@hostname". The hostname routes a request to a
+tenant; the username is what an account row is stored under and what a
+login looks up. The login handler split the principal on its last '@' and
+looked up the part before it. The bootstrap handler did not split it at
+all, so `create-initial-admin super_admin@localhost` wrote an account whose
+username was `super_admin@localhost`, and every login looked for
+`super_admin` and found nothing. The provisioning path had the same gap,
+in the account and in the party association's audit columns.
+
+The rule was written out at five other call sites and missing at these
+two, which is exactly how a rule that lives nowhere gets forgotten. It now
+lives in one place, =ores.iam.core/messaging/principal.hpp=, as
+=split_principal= and =username_of=, and all seven sites call it. The
+bootstrap handler keeps the full principal only where a principal is
+genuinely wanted.
+
+** Three shell defects the V04 run found
+
+Running every generated compute command against the live fleet found
+three defects the codegen suite did not, because the suite read the
+projection and never ran the command.
+
+- *A create stated one argument more than it read.* The `add` command
+  checked for and printed `write_arity + 2` positionals, where
+  `write_arity` counted the whole write record, but the id is minted and
+  never read. The command therefore refused the invocation its own help
+  printed, and accepted one only if the first value was a decoy. The count
+  is now the fields a caller types.
+- *A replace could not address a row.* `set` minted a fresh id, so the
+  store's trigger saw a row no current row matched, took the write for a
+  create, and collided with the natural key's unique index. A replace now
+  takes the id from the caller, which is what the read it follows returns,
+  and its help says so.
+- *The platform menu was never registered.* The platform model generated
+  =platform_commands= and nothing added it to the repl, so every platform
+  command answered "Wrong command". S01 counted seven units; there are
+  eight.
+
+All three are fixed in the generator, with cases in
+=test_shell_entities.py=, and the whole sweep passes.
 
 ** The live run found a wire-format defect
 
@@ -563,30 +610,26 @@ below are the baseline ones unless a row says otherwise.
   an operation model generates no service handler; they are live, not dead.
   Nothing in the component was found dead.
 
-** The shell component tree is generated but unwired
+** The shell component tree, and what stays hand-written
 
-Regeneration creates =projects/ores.shell/compute/= with seven command
-units, their tests and seven recipes. It creates no =CMakeLists.txt=,
-no =modeling/= directory and no =tests/main.cpp=, and
-=projects/ores.shell/CMakeLists.txt= does not list =compute= at all.
-Every other shell component (=iam=, =refdata=, =trading=) has that
-scaffold. So the generated units cannot compile today. S01 and V01
-cannot pass until the scaffold exists.
+Regeneration created =projects/ores.shell/compute/= with the seven entity
+command units and their recipes and nothing else: no =CMakeLists.txt=, no
+=modeling/= directory and no =tests/main.cpp=, and
+=projects/ores.shell/CMakeLists.txt= did not list =compute=. Every other
+shell component has that scaffold, so the units could not compile until it
+was added. =ores.compute= joined the shell under =compute/= with its own
+group overview and diagram, and the eight units, including the platform
+unit the model later generated, are registered in the repl and linked into
+=ores.shell.application=.
 
-** A hand-written shell command family duplicates the generated units
-
-=projects/ores.shell/application/*/commands/compute_commands.hpp= and
-=.cpp= hand-write a =compute= command family that lists apps, app
-versions, platforms, hosts, batches, workunits and results, publishes a
-package and downloads bundles. The generated units supersede the list
-commands. S01 deletes the hand-written half and keeps only what no
-entity verb covers.
-
-** The shell command units drive the retired Qt flows
-
-=compute_commands.hpp= describes itself as the non-interactive
-equivalent of the retired Qt compute screens. P05 and H02 decide whether
-the remaining verbs belong in the shell at all.
+=A hand-written compute command family sat beside them=, listing apps, app
+versions, platforms, hosts, batches, workunits and results, publishing a
+package and downloading bundles. The generated units supersede the list
+verbs, so those commands are deleted and the hand-written file keeps only
+what no entity verb covers: publishing a package, dispatching a batch, and
+downloading a job's input or a result's output. Those four are
+orchestrations over several entities rather than one entity's verb, which
+is why no unit carries them.
 
 * Test Scenarios
 

@@ -140,7 +140,7 @@ void tenant_commands::register_commands(cli::Menu& root_menu, nats_client& sessi
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <code> <name> <type> <description> <hostname> <status> <reason> <commentary>");
+        "add <code> <name> <type> <description> <hostname> <status> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -351,8 +351,8 @@ void tenant_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -410,7 +410,7 @@ void tenant_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.code, parsed->positionals[next++], "code");
         read_token(req.change.write.name, parsed->positionals[next++], "name");
         read_token(req.change.write.type, parsed->positionals[next++], "type");

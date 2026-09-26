@@ -140,7 +140,7 @@ void host_commands::register_commands(cli::Menu& root_menu, nats_client& session
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <external_id> <location> <cpu_count> <ram_mb> <gpu_type> <display_name> "
+        "add <external_id> <location> <cpu_count> <ram_mb> <gpu_type> <display_name> "
         "<last_rpc_time> <credit_total> <reason> <commentary>");
 
     menu->Insert(
@@ -352,8 +352,8 @@ void host_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -413,7 +413,7 @@ void host_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.external_id, parsed->positionals[next++], "external_id");
         read_token(req.change.write.location, parsed->positionals[next++], "location");
         read_token(req.change.write.cpu_count, parsed->positionals[next++], "cpu_count");

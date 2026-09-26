@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <batch_id> <app_version_id> <input_uri> <config_uri> <priority>
+     * @brief add <batch_id> <app_version_id> <input_uri> <config_uri> <priority>
      * <target_redundancy> <canonical_result_id> <reason> <commentary>
      */
     static void process_add(std::ostream& out,

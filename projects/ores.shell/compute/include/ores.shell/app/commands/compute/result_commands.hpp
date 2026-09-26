@@ -86,7 +86,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <workunit_id> <host_id> <pgmq_msg_id> <server_state> <outcome> <output_uri>
+     * @brief add <workunit_id> <host_id> <pgmq_msg_id> <server_state> <outcome> <output_uri>
      * <error_message> <received_at> <reason> <commentary>
      */
     static void process_add(std::ostream& out,

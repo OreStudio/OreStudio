@@ -140,8 +140,8 @@ void workunit_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <batch_id> <app_version_id> <input_uri> <config_uri> <priority> "
-        "<target_redundancy> <canonical_result_id> <reason> <commentary>");
+        "add <batch_id> <app_version_id> <input_uri> <config_uri> <priority> <target_redundancy> "
+        "<canonical_result_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -359,8 +359,8 @@ void workunit_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -422,7 +422,7 @@ void workunit_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.batch_id, parsed->positionals[next++], "batch_id");
         read_token(req.change.write.app_version_id, parsed->positionals[next++], "app_version_id");
         read_token(req.change.write.input_uri, parsed->positionals[next++], "input_uri");

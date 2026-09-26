@@ -86,7 +86,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <code> <description> <reason> <commentary>
+     * @brief add <code> <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,

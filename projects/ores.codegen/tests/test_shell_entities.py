@@ -37,9 +37,26 @@ def _column(name, cpp_type="std::string", **overrides):
     return column
 
 
-def _write(name, cpp_type="std::string"):
-    """A member of the wire write record."""
-    return {"name": name, "cpp_type": cpp_type}
+def _write(name, cpp_type="std::string", **overrides):
+    """A member of the wire write record.
+
+    Every field is marked the way the loader marks it, because the command
+    template branches on ``is_user``: a field it does not read must not be
+    counted in the line the help prints.
+    """
+    field = {
+        "name": name,
+        "cpp_type": cpp_type,
+        "is_user": True,
+        "is_minted": False,
+        "is_session_party": False,
+    }
+    field.update(overrides)
+    # The loader derives is_user from the supply, so a minted or session-filled
+    # field carries is_user false. Mirror that, or a fixture claims a field is
+    # both typed by the caller and filled by the code.
+    field["is_user"] = not (field["is_minted"] or field["is_session_party"])
+    return field
 
 
 def _entity(columns=None, key=None, writes=None, operations=None):
@@ -174,6 +191,37 @@ class TestWhatACommandAsksFor:
         commands = entity_shell_commands(_entity(operations=ALL_VERBS))
         delete = next(c for c in commands if c["command"] == "delete")
         assert delete["usage"] == "delete <type> <reason> <commentary> [--version <n>]"
+
+    def test_a_minted_write_field_is_not_asked_for_and_not_counted(self):
+        """A single put mints the id itself, so it reads one field fewer than
+        the write record holds. The count a command states and the line its
+        help prints must both be the fields a caller types, or the command
+        refuses the invocation it documents."""
+        minted = _column("id", "boost::uuids::uuid", is_minted=True,
+                         is_user_supplied=False)
+        writes = [_write("id", "boost::uuids::uuid", is_minted=True),
+                  _write("name"), _write("description")]
+        commands = entity_shell_commands(
+            _entity(columns=[minted], writes=writes, operations=ALL_VERBS))
+        add = next(c for c in commands if c["command"] == "add")
+
+        assert add["usage"] == "add <name> <description> <reason> <commentary>"
+        assert add["put_arity"] == 2
+        assert len(add["put_writes"]) == 2
+        # The batch verb states its own ids, so it still reads the whole record.
+        assert add["write_arity"] == 3
+
+    def test_a_minted_write_field_is_left_out_of_the_script_the_recipe_exports(self):
+        minted = _column("id", "boost::uuids::uuid", is_minted=True,
+                         is_user_supplied=False)
+        writes = [_write("id", "boost::uuids::uuid", is_minted=True),
+                  _write("name")]
+        commands = entity_shell_commands(
+            _entity(columns=[minted], writes=writes, operations=ALL_VERBS))
+        add = next(c for c in commands if c["command"] == "add")
+
+        # The command, the one typed field, and the two intent tokens.
+        assert len(add["invocation"].split()) == 1 + 1 + 2
 
     def test_a_version_read_asks_for_the_number(self):
         commands = entity_shell_commands(_entity(operations=ALL_VERBS))

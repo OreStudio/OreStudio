@@ -69,7 +69,7 @@ record each item's result in the table below.
 | M02  | Pass    | All seven entity and junction models bind to a profile: six to =uuid-identified-lookup= and the junction to =tenant-scoped-junction=. No model needed a no-match record. |
 | M04  | Pass    | No property sits in a namespace the loader does not read for it. The one that did was =has_change_reason_cache=, moved to the model root for M09, and it is now removed as dead. |
 | M05  | Pass    | Each model describes one table. The junction is modelled as a junction and no joined shape is modelled as an entity. No compute table is current-state, so no model needs the current-state shape. |
-| M06  | Partial | =platform= is modelled: its domain, protocol, entity, repository, service, handler, registrar, SQL, shell unit and TypeScript twin all generate, and the hand-written versions are deleted. Two wire surfaces remain hand-written, =telemetry_protocol.hpp= with =telemetry_handler.hpp=, and =work_protocol.hpp= with =work_handler.hpp=, =report_submit_handler.hpp= and =result_submit_handler.hpp=. |
+| M06  | Partial | =platform= is modelled: its domain, protocol, entity, repository, service, handler, registrar, SQL, shell unit and TypeScript twin all generate, and the hand-written versions are deleted. The telemetry and work wire surfaces remain hand-written. Telemetry is blocked on a read the codegen does not generate, and the work surface wants an operation model. Both are recorded in Notes. |
 | M07  | Pass    | The junction names its singular (=#+name_singular: app_version_platform=), gives both key columns their real type (uuid), and its row-level security is tenant scoped, =ores_compute_app_version_platforms_tbl= with a =tenant_id= policy and a current-tenant check. =read_only=, =client_read_only= and =party_id_is_target= do not apply: the junction is written by publish, and it has no party column. |
 | M08  | Pass    | Every =cpp_type= in the component is a scalar or a registered built-in, so no custom type needs a header binding. =validate_schemas.sh= passes with 303 tables and no warnings, so the SQL spellings are canonical. No flag is an integer. |
 | M10  | Pass    | The component overview declares the parts and the composite generates its root =CMakeLists.txt= (the file carries the generated marker). =validate_docs.py= passes all 41 components. |
@@ -90,6 +90,40 @@ record each item's result in the table below.
 Items not listed are not yet worked. Sections 2 to 8 are open.
 
 * Notes
+
+** Telemetry is blocked on a read the codegen does not generate
+
+The telemetry tables map cleanly onto the time-series shape. =grid_sample=
+and =node_sample= are append-only hypertables with no audit tail, and
+=ores.marketdata.market_observation= is the working template: =hypertable=,
+=hypertable_partition_column=, =hypertable_chunk_interval=,
+=no_audit_columns=, =suppress_nk_index= and =rls_tenant_isolation= in the
+SQL drawer, with the key columns in the Bitemporal natural keys table.
+=grid_sample= was modelled that way and regenerated without complaint.
+
+The handler is what stops it. =telemetry_handler::get_grid_stats= reads
+=compute_telemetry_repository::latest_grid_sample=, the newest stored
+sample for the tenant. The generated repository offers =read_latest(ctx)=,
+which returns every row, =read_latest(ctx, sampled_at)=, which wants the
+key, and a paged read in key order. None of them answers "the newest one",
+and for a hypertable the first is not affordable.
+
+So the item needs a decision before the model lands, and there are two.
+
+- *Teach the codegen a most-recent read.* An entity keyed by a timestamp
+  has no way to ask for its latest row. A plain-list order, or a
+  =latest= read, would serve it. That is a codegen change with a
+  regression test, and it would serve every time-series entity, not just
+  this one.
+- *Decide the handler computes live.* =compute_telemetry_repository::
+  compute_grid_stats= calls the =ores_compute_grid_stats_fn= SQL function
+  and returns a computed sample. The handler could call that instead of
+  reading the stored one, which would make the stored samples historical
+  only and =latest_grid_sample= dead.
+
+The second is a product decision about what the telemetry surface is for,
+so it is not mine to take. The attempt was reverted rather than forced,
+and the tree is as it was.
 
 ** M06, the platform model
 

@@ -83,7 +83,7 @@ record each item's result in the table below.
 | G03  | Pass. Every generated file carries the marker and no hand-written file does. | marker =grep= against the B03 inventory |
 | G04  | Pass. The regenerated output matches the reference shapes; no template defect surfaced. | generated-code review record |
 | G05  | Pass. One generator defect found and fixed at source: =key_finders= deduplicated a legacy finder against the declared key by column alone, so the repository dropped the read the service calls. Fixed in =org_loader.py= with a regression test. | commit bb7d9f5890; =test_org_loader_keys.py= |
-| G06  | Pass for this component. The four analytics parts and the two shell parts this story owns regenerate clean. The gate is scoped per component, the way the platform and fpml passes scoped it; the 133 stale lists =--all --check= still reports on this base belong to the other components' stories. | =regenerate_cmake_component_files.py --component ores.analytics.core --check= (and =api=, =quant=, =service=), =--component ores.shell.analytics --check=, =--component ores.shell.application --check=, each exit 0 |
+| G06  | Pass for this component. The four analytics parts and the two shell parts this story owns regenerate clean. The gate is scoped per component, the way the platform and fpml passes scoped it; the 133 stale lists =--all --check= still reports on this base belong to the other components' stories. The group slug =ores.analytics= is not evidence: it is a modeled component with no CMake unit, so it passes without reading a file ([[id:B4A528D7-EF42-4134-9796-C492CB5553BD][capture]]). | =regenerate_cmake_component_files.py --component ores.analytics.core --check= (and =api=, =quant=, =service=), =--component ores.shell.analytics --check=, =--component ores.shell.application --check=, each exit 0 |
 | W01  | Pass. The core registrar composes the generated =*_history_provider= family; the service composes the generated event mappings through the new =event_registrar= aggregate. No unwired family remains. | commit a74ebddd1e; =registrar.cpp=, =event_registrar.cpp= |
 | W02  | Pass. Every permission the analytics handlers check is seeded, and the =AnalyticsService= role holds =analytics::*=. | =check_handler_permissions.py=; =iam_roles_populate.sql= |
 | W03  | Pass. | =check_populate_references.py= |
@@ -298,7 +298,9 @@ the whole cycle was then run from scratch on 2026-09-26:
   instrument_type_code: __none__=, =Invalid change_reason_code: __none__=,
   or the id check constraint on the zero uuid. That is the command working,
   not failing. Three of the fourteen are a defect rather than a sentinel
-  verdict, and one script aborted in the client; both are recorded below.
+  verdict, and one script aborted in the client; both are recorded below. The
+  verdicts were read from the output because =compass shell -l= exits 0 on an
+  abort ([[id:7A821ED8-764C-48FA-962A-CBA7947E449B][capture]]).
 - The sentinel writes left nothing behind. The three analytics tables hold
   zero rows for the Acme tenant, so a sentinel write either failed
   validation or addressed no row.

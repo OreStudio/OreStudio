@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 7A821ED8-764C-48FA-962A-CBA7947E449B
+:END:
+#+title: Make compass shell report a script abort in its exit status
+#+description: compass shell -l exits 0 even when the loaded script aborts at its first bad command, because run_host_sync returns EXIT_SUCCESS and the shell's own failure flag never reaches it. Observed during the ores.analytics clean pass: pricing_model_product_parameters put-many aborts with 'Invalid value for pricing_model_product_id: __none__' and the process still exits 0, so the 40-script V04 sweep had to be read by eye and no CI job can gate on the library.
+#+type: capture
+#+level: cross
+#+filetags: :shell:compass:testing:tech_debt:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A scripted shell run must report its own failure. Today it does not:
+
+#+begin_src sh :results verbatim
+./compass.sh shell -l projects/ores.shell/scripts/library/pricing_model_product_parameters/pricing_model_product_parameters-put-many.ores
+# prints: ✗ Invalid value for pricing_model_product_id: __none__
+#         ✗ Script aborted at line 6: ...
+echo $?
+# 0
+#+end_src
+
+The shell already knows. =script_commands.cpp= calls =fail(out)=, which keeps the
+failure flag set so an enclosing =load= aborts too, and the tests assert on
+=command_feedback::failed()=. Nothing carries that flag to the process exit
+status: =host::execute= returns whatever =run_host_sync= returns, and that is
+=EXIT_SUCCESS= unless =early_exit= asks for something else.
+
+The fix is to let a failed scripted run reach the exit status — the flag exists,
+and =compass shell= already forwards the child's status.
+
+* Why
+
+Found on 2026-09-26 during the =ores.analytics= clean pass. The library keeps one
+script per command so that a failure cannot hide the commands after it, and V04
+ran all 40 of them. The exit code carried nothing, so each verdict had to be
+read by eye, and a wrapper that trusted the code would have reported success on
+the aborted script. The same gap stops the library from being a CI gate at all:
+a job that ran the scripts would be green whether they passed or aborted.
+
+Two related facts, so the fix is not attempted the wrong way:
+
+- =load --continue-on-error= does not help. The inner abort still propagates and
+  stops the enclosing script, which is why the sweep runs one script per
+  invocation rather than one file that loads 40.
+- =compass shell= already propagates the child's exit code; it is the child that
+  never sets it. Fixing the child fixes every caller at once.
+
+* References
+
+- =projects/ores.shell/application/src/app/commands/script_commands.cpp= — the
+  =load= command, its =fail(out)= call and =result.aborted=.
+- =projects/ores.shell/application/src/app/host.cpp= — =host::execute= returns
+  =run_host_sync='s value.
+- =projects/ores.service/include/ores.service/service/host_runner_sync_impl.hpp= —
+  =EXIT_SUCCESS= unless =early_exit= intervenes.
+- [[id:01193D52-DD7C-4276-B6C2-E4B7F137B99E][How do I test the shell?]] — the recipe that has to tell readers to read
+  the output instead of the exit code because of this.
+
+* See also
+
+- [[id:D3D78161-377F-4970-998F-37C7359761DA][Refuse an empty key list before delete-many renders IN ()]] — the other defect the same V04 run found.
+- [[id:B64C92DE-56F6-40D1-A080-16A6690E40E6][Bring ores.analytics to the clean standard]] — where this was found.

@@ -28,9 +28,9 @@ ores.refdata passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:70CC87FB-BA24-4B22-827F-F4F42C1F5A1B][Clean ores.refdata to the component clean standard]] |
-| Now          | V01 passes: the whole tree builds. Tests (V02) are next. |
+| Now          | V01 passes; B06 deleted the dead symbols. Rebuilding, then V02. |
 | Waiting on   | Nothing. |
-| Next         | Start the fleet, then run the tests (V02). |
+| Next         | Confirm the build after the deletions, then run the tests (V02). |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -66,7 +66,11 @@ record each item's result in the table below.
 | B05 | No refdata work is in flight. =origin/feature/adopt-the-protocol-in-refdata= is fully merged into main (0 commits ahead). No fleet worktree owns refdata. | =git merge-base --is-ancestor=; =compass fleet=. |
 | B05 | Four open captures touch refdata: stale generated output (47134F35), unregistered =*_changed_event= types (6908F023), generator change-reason literals (008F2F44), junction profile binding (493D1539). | Capture UUIDs. |
 | B05 | Capture 493D1539 is already fixed: the four junctions now carry =#+has_tenant_id: true= in front matter, and their create SQL is not in the drift set. Tenant scoping survives regeneration. | =head -20= of the four junction models; absent from the B01 drift list. |
-| B06 | Not started. | — |
+| B06 | PASS — every public symbol of the component now has a production consumer. A census of the 38 hand-written headers (1292 of the 1330 under the component and its shell module carry the generated marker) classified each symbol; thirteen had none and were deleted. | Census table on the task; committed as the B06 deletion commit. |
+| B06 | Deleted: =csv::exporter= (test-only, and the Qt client that used it is gone, so the currency model's =csv_export_*= keys went with it); =domain::resolve_window= (test-only wrapper over =resolve_end_date=; its two tests now build the window directly and keep their =windows_overlap= coverage); =domain::convert_to_json= for currency (a hand-written duplicate of the generated =currency_json_io=, named only by a stale include in =ores.http=); =book_status_constants::closed=, =::frozen= and =::all=; =regulatory_book_type_constants::banking=, =::all=, =is_trading_book= and =is_banking_book=; =service::app::application_exception=; =ORES_REFDATA_CLIENT_EXPORT=. | =rg= per symbol, excluding the component and its tests. |
+| B06 | Two classes of symbol were kept and their consumer named. The export macros (=ORES_REFDATA_API_EXPORT=, =CORE=, =SERVICE=) are used by hundreds of files in the component. =application=, =parser= and =options= are used by =ores.service='s =run_host_async= template, an external component, with the concrete types bound in =service/src/app/host.cpp=. | Census table. |
+| B06 | Not applicable: the shell module =ores.shell/refdata= is entirely generated (all 74 of its headers carry the marker), so it declares no hand-written public symbol. Nine hand-written headers declare no symbol at all: they document an empty namespace, which is G08's subject. | Census preamble. |
+
 | M01 | PASS — every model is on the current org format. No legacy JSON model and no =lookup_entity= remains. | 79 =*.org= model files; 0 =*.json=; =grep -rl lookup_entity= returns nothing. |
 | M02 | PASS — every one of the 74 entity and junction models now binds a profile. The two that did not, =ir_curve_bootstrap_config= and =ir_curve_bootstrap_pillar=, both bind =uuid-surrogate-lookup=. | =Flags= drawer of both models; =check_model_drift.py --summary= reports 166 bound models and no drift. |
 | M02 | The bind is proven, not forced. Each candidate profile was applied to a scratch copy and the loader's resolved model was compared. =uuid-surrogate-lookup= is the only profile whose live features the two entities already satisfy. =ir_curve_bootstrap_pillar= has no =** Presentation= drawer, so the presentation half is inert and the match is on the root and SQL features. | Live-delta table per profile, in =build/audit/refdata-clean/= (case logs =M02-config.txt=, =M02-pillar.txt=). |

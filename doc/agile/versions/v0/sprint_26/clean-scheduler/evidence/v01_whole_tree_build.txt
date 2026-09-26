@@ -2,7 +2,10 @@ V01 whole-tree build
 ====================
 
 Command:  cmake --build build/output/linux-clang-debug-make -j 3
-Revision: 0088c1ff9e, the head after the rebase onto main (tree clean)
+Revision: 0088c1ff9e, the head after the rebase onto main (tree clean). Two
+commits follow it and both are documentation plus one generated template-doc
+line -- `git diff --stat 0088c1ff9e..HEAD` lists five files, none of them
+compiled -- so this build describes HEAD (916568586e) too.
 Result:   exit 0. 173 targets built, no compiler error in the log.
 
 Why the direct command, and not `compass build`

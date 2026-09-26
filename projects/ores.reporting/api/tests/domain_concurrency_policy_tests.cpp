@@ -137,7 +137,11 @@ TEST_CASE("create_multiple_random_concurrency_policies", tags) {
     for (const auto& [code, name, order] : policies) {
         auto sut = make_concurrency_policy(code, name, order);
         BOOST_LOG_SEV(lg, info) << "Concurrency policy: " << sut;
-        CHECK(!sut.code.empty());
+        // The expected values are the inputs, so assert them rather than that
+        // something non-empty came back.
+        CHECK(sut.code == code);
+        CHECK(sut.name == name);
+        CHECK(sut.display_order == order);
         CHECK(sut.version == 1);
     }
 }

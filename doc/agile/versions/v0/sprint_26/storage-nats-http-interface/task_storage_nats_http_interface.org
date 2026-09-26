@@ -21,12 +21,14 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Storage is reachable over NATS and over HTTP, and both surfaces authenticate.
-The surface is declared once, as an operation model, so that its protocol header,
-its TypeScript twin and its shell commands generate; the handler, the service and
-the registrar are hand-written, because no facet admits an operation model. The
-storage routes that already move bytes gain the identity and permission checks
-they lack today, and both transports are made to fail closed rather than fall
-back to allow.
+That needs a service of its own, so the component splits into the parts the
+architecture requires — a public API, a core, and a service — before any surface
+is modelled: the operation set is declared once, as an operation model, so that
+its protocol header, its TypeScript twin and its shell commands generate, while
+the handler, the service and the registrar are hand-written, because no facet
+admits an operation model. The storage routes that already move bytes gain the
+identity and permission checks they lack today, and both transports are made to
+fail closed rather than fall back to allow.
 
 * Status
 
@@ -41,6 +43,12 @@ back to allow.
 
 * Acceptance
 
+- The component is split into an api, a core and a service, its consumers link
+  the public API rather than the implementation, and the catalogue and the
+  permission registry name the new parts.
+- Storage holds no bucket name, no bucket registry and no allow-list. The bucket
+  is part of the key, the server validates it as a path segment and authorises
+  the operation, and which buckets exist stays the caller's concern.
 - An operation model declares the storage surface, and the generator produces its
   protocol header, TypeScript twin, shell commands and shell recipes from it. The
   handler, service and registrar are hand-written, and the task records that
@@ -61,6 +69,19 @@ back to allow.
   interfaces, and the refusal path on each.
 
 * Plan
+
+** The split comes first
+
+A service needs somewhere to live, and this component has none: it is one flat
+library behind a single public header that its consumers link directly, with no
+=api=, =core= or =service= part. So the first move is structural, following
+[[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]]: an
+=ores.storage.api= holding the modelled protocol and the path helpers the
+consumers are allowed to see, an =ores.storage.core= holding the implementation
+both interfaces call (the HTTP client, the archiver, the transfer helpers), and
+an =ores.storage.service= holding the handler, the service entry point and the
+registrar. The component joins the catalogue in the same move, because codegen
+cannot discover a model until it does.
 
 ** The shape: an operation model, not an entity
 
@@ -219,29 +240,40 @@ then wrap the same operations instead of running a parallel surface.
   component's suite cannot do today: its tests use bucket names the real server
   refuses.
 
-** Decisions to take, in order**
+** Decisions taken
 
-1. *Exists: a verb or a read.* Recommend =get= returning =missing=, plus HTTP
-   =HEAD=, keeping the surface conformant.
-2. *Where the bucket list lives.* The
-   [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] target state leaves
-   this open and the interface forces it: either storage owns a =buckets=
-   resource the deployment populates, or the deployment supplies the list as
-   configuration and the route consults it. Either way no bucket name enters the
-   code, which is what the application-agnostic decision requires, and the
-   =report-data= defect is what happens while it stays undecided.
-3. *Which component owns the =storage= subject.* A new =ores.storage.service=, or
-   the existing library plus a service shim. The protocol forbids an ownerless
-   subject, so this decides the tree shape, not just a name.
-4. *Tenancy on the wire.* Global buckets with namespaced keys, or a bucket per
-   tenant; and whether the login =tenant_id= fix is in this task.
-5. *Whether a small value travels over NATS at all,* given that no message
-   carries raw bytes today.
-6. *Whether the batch forms ship first,* or the surface declares the single forms
-   only and gains =put_many= and =delete_many= when a caller needs them.
-7. *How much clean-standard rollout rides along.* Adding =storage= to the
-   catalogue and the permission registry brings the TypeScript twin and the drift
-   gates with it, and that is a decision about this task's size.
+- *Buckets are the caller's concern.* Storage holds no bucket name, no bucket
+  registry and no allow-list. The bucket is part of the object key; the server
+  validates it as a path segment and authorises the operation rather than the
+  name; and which buckets exist is declared by the components that use them. The
+  hardcoded pair goes, and with it the =report-data= 404 — the server stops
+  having an opinion about a name it was never told.
+- *Existence is a read.* No =exists= verb: =get= answers =missing=, HTTP answers
+  =HEAD=, and the surface stays inside the canonical set.
+- *Storage gets a service.* The component splits into api, core and service
+  parts, so the operation set has a home and the consumers link a public API
+  rather than an implementation.
+- *The consumers move onto it.* =ores.compute.wrapper=, =ores.ore=,
+  =ores.reporting= and the shell verbs are migrated, and the duplicates the
+  migration leaves behind — the wrapper's own HTTP client and archiver, the
+  hand-built keys — are deleted rather than kept beside the shared ones. That is
+  the story's second task.
+
+** Still open
+
+- *Where the HTTP routes live once a service exists.* =ores.storage.service=
+  could host both transports, or =ores.http= could keep hosting the byte routes
+  and call the same core. The decision also fixes who owns the listener and its
+  authentication configuration.
+- *Tenancy on the wire.* Global buckets with namespaced keys, or a bucket per
+  tenant, and whether the login =tenant_id= fix rides in this task.
+- *Whether a small value travels over NATS at all,* given that no message
+  carries raw bytes today.
+- *Whether the batch forms ship first,* or the surface declares the single forms
+  only and gains =put_many= and =delete_many= when a caller needs them.
+- *How much clean-standard rollout rides along.* Adding the new parts to the
+  catalogue and the permission registry brings the TypeScript twin and the drift
+  gates with them.
 
 * Notes
 

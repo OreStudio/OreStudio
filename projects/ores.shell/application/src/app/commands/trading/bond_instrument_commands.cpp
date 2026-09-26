@@ -272,12 +272,12 @@ void bond_instrument_commands::process_add_bond_instrument(std::ostream& out,
     instrument.audit.change_reason_code = change_reason_code;
     instrument.audit.change_commentary = change_commentary;
 
-    const auto save_row = [&](const auto& request,
-                              std::string_view subject,
-                              std::string_view what) {
+    const auto save_row = [&](const auto& request, std::string_view what) {
         using request_type = std::decay_t<decltype(request)>;
-        auto result =
-            do_auth_request<typename request_type::response_type>(out, session, subject, request);
+        // The request carries its own subject, so the row cannot be sent to a
+        // subject no handler answers.
+        auto result = do_auth_request<typename request_type::response_type>(
+            out, session, std::string(request.nats_subject), request);
         if (!result)
             return false;
         if (result->result.outcome != ores::utility::domain::outcome::ok) {
@@ -306,7 +306,7 @@ void bond_instrument_commands::process_add_bond_instrument(std::ostream& out,
                              .reference_curve_id = issue.reference_curve_id,
                              .income_curve_id = issue.income_curve_id,
                              .bond_notional = issue.bond_notional}}};
-    if (!save_row(issue_req, "trading.v1.bond_issues.save", "bond issue"))
+    if (!save_row(issue_req, "bond issue"))
         return;
 
     auto instrument_req = trading::messaging::put_bond_instrument_request{
@@ -314,7 +314,7 @@ void bond_instrument_commands::process_add_bond_instrument(std::ostream& out,
                              .trade_type_code = instrument.identity.trade_type_code,
                              .trade_id = instrument.identity.trade_id,
                              .issue_id = instrument.issue_id}}};
-    if (!save_row(instrument_req, "trading.v1.bond_instruments.save", "bond instrument")) {
+    if (!save_row(instrument_req, "bond instrument")) {
         fail(out) << "The issue row remains saved (issue id " << boost::uuids::to_string(issue_id)
                   << ")." << std::endl;
         return;
@@ -338,7 +338,7 @@ void bond_instrument_commands::process_add_bond_instrument(std::ostream& out,
                                  .redemption = option_row.redemption,
                                  .price_type = option_row.price_type,
                                  .knocks_out = option_row.knocks_out}}};
-        if (!save_row(option_req, "trading.v1.bond_options.save", "bond option")) {
+        if (!save_row(option_req, "bond option")) {
             fail(out) << "The issue and instrument rows remain saved (issue id "
                       << boost::uuids::to_string(issue_id) << ", instrument id "
                       << boost::uuids::to_string(instrument_id) << ")." << std::endl;
@@ -377,7 +377,7 @@ void bond_instrument_commands::process_add_bond_instrument(std::ostream& out,
                                  .payer = trs_row.payer,
                                  .price_type = trs_row.price_type,
                                  .initial_price = trs_row.initial_price}}};
-        if (!save_row(trs_req, "trading.v1.bond_trs.save", "bond trs")) {
+        if (!save_row(trs_req, "bond trs")) {
             fail(out) << "The issue and instrument rows remain saved (issue id "
                       << boost::uuids::to_string(issue_id) << ", instrument id "
                       << boost::uuids::to_string(instrument_id) << ")." << std::endl;

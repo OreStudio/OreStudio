@@ -19,6 +19,27 @@
  */
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.trading.core/messaging/ascot_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_forward_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_future_delivery_basket_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_future_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_issue_call_date_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_issue_conversion_target_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_issue_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_leg_amortization_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_leg_amount_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_leg_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_leg_rate_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_option_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_repo_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_trs_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_option_exercise_fee_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_option_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_option_payment_date_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_option_premium_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_schedule_date_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_schedule_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_strike_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/lifecycle_event_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/lifecycle_event_registrar.hpp"
 #include "ores.trading.core/messaging/party_role_type_history_provider_registrar.hpp"
@@ -97,6 +118,27 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_trade_envelope_history_provider(hist_registry);
     register_trade_envelope_portfolio_id_history_provider(hist_registry);
     register_trade_envelope_additional_field_history_provider(hist_registry);
+    register_ascot_history_provider(hist_registry);
+    register_bond_forward_history_provider(hist_registry);
+    register_bond_future_delivery_basket_history_provider(hist_registry);
+    register_bond_future_history_provider(hist_registry);
+    register_bond_issue_call_date_history_provider(hist_registry);
+    register_bond_issue_conversion_target_history_provider(hist_registry);
+    register_bond_issue_history_provider(hist_registry);
+    register_bond_leg_amortization_history_provider(hist_registry);
+    register_bond_leg_amount_history_provider(hist_registry);
+    register_bond_leg_history_provider(hist_registry);
+    register_bond_leg_rate_history_provider(hist_registry);
+    register_bond_option_history_provider(hist_registry);
+    register_bond_repo_history_provider(hist_registry);
+    register_bond_trs_history_provider(hist_registry);
+    register_instrument_option_exercise_fee_history_provider(hist_registry);
+    register_instrument_option_history_provider(hist_registry);
+    register_instrument_option_payment_date_history_provider(hist_registry);
+    register_instrument_option_premium_history_provider(hist_registry);
+    register_instrument_schedule_date_history_provider(hist_registry);
+    register_instrument_schedule_history_provider(hist_registry);
+    register_instrument_strike_history_provider(hist_registry);
     register_trade_history_provider(hist_registry);
     register_trade_type_history_provider(hist_registry);
     subs.push_back(ores::history::messaging::register_history_handlers(

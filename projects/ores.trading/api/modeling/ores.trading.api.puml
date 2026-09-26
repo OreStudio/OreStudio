@@ -891,11 +891,14 @@ namespace ores #F2F2F2 {
                 +recorded_at : chrono::system_clock::time_point
             }
         }
-        namespace eventing #F2F2F2 {
-            class trade_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +trade_ids : vector<string>
-                +tenant_id : string
+        namespace messaging #F2F2F2 {
+            class trade_event <<struct>> {
+                +event_id : uuid
+                +key : trade_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
             }
         }
         namespace messaging #F2F2F2 {

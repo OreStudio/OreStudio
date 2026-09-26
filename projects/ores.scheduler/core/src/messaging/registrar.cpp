@@ -62,15 +62,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto jih = std::make_shared<job_instance_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_job_instances_request::nats_subject,
-            queue_group,
-            [jih](ores::nats::message msg) { jih->list(std::move(msg)); }));
+            get_job_instances_request::nats_subject, queue_group, [jih](ores::nats::message msg) {
+                jih->list(std::move(msg));
+            }));
 
         auto ssh = std::make_shared<scheduler_status_handler>(nats, ctx, verifier);
-        subs.push_back(nats.queue_subscribe(
-            get_scheduler_status_request::nats_subject,
-            queue_group,
-            [ssh](ores::nats::message msg) { ssh->status(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(get_scheduler_status_request::nats_subject,
+                                 queue_group,
+                                 [ssh](ores::nats::message msg) { ssh->status(std::move(msg)); }));
     }
 
     // Job definition history comes from the generic history provider.

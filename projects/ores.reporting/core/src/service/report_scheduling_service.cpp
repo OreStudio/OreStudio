@@ -122,8 +122,7 @@ report_scheduling_service::send_schedule_request(const domain::report_definition
 
     const ores::scheduler::messaging::put_job_definition_request req{
         .change = *change,
-        .intent = {.reason_code =
-                       std::string(ores::service::messaging::change_reasons::new_record),
+        .intent = {.reason_code = std::string(ores::service::messaging::change_reasons::new_record),
                    .commentary = "Scheduled by reporting service"}};
 
     const auto& codec = ores::nats::default_wire_codec();
@@ -202,8 +201,7 @@ report_scheduling_service::unschedule_one(const domain::report_definition& def,
     const auto job_id_str = boost::uuids::to_string(*def.scheduler_job_id);
     const ores::scheduler::messaging::delete_job_definition_request req{
         .removal = {.key = {.id = *def.scheduler_job_id}},
-        .intent = {.reason_code =
-                       std::string(ores::service::messaging::change_reasons::new_record),
+        .intent = {.reason_code = std::string(ores::service::messaging::change_reasons::new_record),
                    .commentary = "Unscheduled by reporting service"}};
 
     const auto& codec = ores::nats::default_wire_codec();
@@ -212,16 +210,16 @@ report_scheduling_service::unschedule_one(const domain::report_definition& def,
             ores::scheduler::messaging::delete_job_definition_request::nats_subject,
             codec.encode(req));
 
-        auto resp =
-            codec.decode<ores::scheduler::messaging::delete_job_definition_response>(reply_msg.data);
+        auto resp = codec.decode<ores::scheduler::messaging::delete_job_definition_response>(
+            reply_msg.data);
         if (!resp) {
             const std::string err = "Scheduler returned unparseable response for job " + job_id_str;
             BOOST_LOG_SEV(lg(), error) << err;
             return std::unexpected(err);
         }
         if (resp->result.outcome != ores::utility::domain::outcome::ok) {
-            const std::string err = "Scheduler failed to unschedule job " + job_id_str + ": " +
-                                    resp->result.message;
+            const std::string err =
+                "Scheduler failed to unschedule job " + job_id_str + ": " + resp->result.message;
             BOOST_LOG_SEV(lg(), error) << err;
             return std::unexpected(err);
         }
@@ -353,9 +351,9 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         };
         std::vector<pending_entry> pending;
         ores::scheduler::messaging::put_many_job_definitions_request batch_req;
-        batch_req.intent = {
-            .reason_code = std::string(ores::service::messaging::change_reasons::new_record),
-            .commentary = "Startup reconciliation by reporting service"};
+        batch_req.intent = {.reason_code =
+                                std::string(ores::service::messaging::change_reasons::new_record),
+                            .commentary = "Startup reconciliation by reporting service"};
 
         for (const auto& def : unscheduled) {
             const auto job_id = gen_uuid();

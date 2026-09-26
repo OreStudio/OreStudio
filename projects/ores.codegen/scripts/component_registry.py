@@ -64,4 +64,12 @@ Usage: imported by the check scripts, never run.
 # byte-identical and idempotent, and the component builds. Its protocol headers
 # carry no TypeScript twin yet, so the twin gate is the one claim to check
 # before this line is merged.
-COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "ore", "workflow-cpp")
+# telemetry-cpp joins at the end of its clean-standard pass. It was the first
+# Protocol-kind component through the standard: its three models are operation
+# models for the six subjects it serves and sends, and the repository reads
+# the payload types those models generate. Its regeneration is byte-identical
+# and idempotent, its three suites pass, and every item is recorded as a pass
+# or as not applicable. Two of its own tests were deleted rather than
+# strengthened because the id generator takes the system clock, and four stats
+# reads are kept with a capture naming the consumer that should reach them.
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "ore", "telemetry-cpp", "workflow-cpp")

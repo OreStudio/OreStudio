@@ -179,6 +179,27 @@ It is addressed at =workflow.v1.workflow_steps.delete_many=.
 workflow_steps delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
 #+end_src
 
+** =by-workflow-id=
+:PROPERTIES:
+:ID: 33EE8DC1-AF35-5116-95EF-A2781AC8F589
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_steps by-workflow-id <workflow_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =workflow.v1.workflow_steps.list_by_workflow_id=.
+
+#+name: workflow_steps-by-workflow-id
+#+begin_src ores-shell :tangle workflow_steps-by-workflow-id.ores :exports none
+workflow_steps by-workflow-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
 ** =versions=
 :PROPERTIES:
 :ID: 7203AAD0-0406-5255-A81C-CD5C7C32555D

@@ -180,6 +180,51 @@ std::optional<domain::workflow_step> workflow_step_repository::read_at_version(
     return entities.front();
 }
 
+std::vector<domain::workflow_step> workflow_step_repository::read_latest_by_workflow_id(
+    context ctx, const std::string& workflow_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow steps. workflow_id: " << workflow_id
+                               << " offset: " << offset << " limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<workflow_step_entity>> |
+                       where("tenant_id"_c == tid && "workflow_id"_c == workflow_id &&
+                             "valid_to"_c == max.value()) |
+                       order_by("step_index"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<workflow_step_entity, domain::workflow_step>(
+        ctx,
+        query,
+        [](const auto& entities) { return workflow_step_mapper::map(entities); },
+        lg(),
+        "Reading latest workflow steps by workflow_id.");
+}
+
+std::uint32_t
+workflow_step_repository::get_total_step_count_by_workflow_id(context ctx,
+                                                              const std::string& workflow_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active workflow steps count. workflow_id: "
+                               << workflow_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::select_from<workflow_step_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "workflow_id"_c == workflow_id &&
+                             "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active workflow steps count by workflow_id: " << count;
+    return count;
+}
+
+
 workflow_step_repository::remove_status workflow_step_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing workflow step. " << "id: " << id;

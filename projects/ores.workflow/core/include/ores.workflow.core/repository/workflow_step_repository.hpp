@@ -125,6 +125,24 @@ public:
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
     /**
+     * @brief Reads latest workflow steps filtered by workflow_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param workflow_id The workflow_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::workflow_step> read_latest_by_workflow_id(context ctx,
+                                                                  const std::string& workflow_id,
+                                                                  std::uint32_t offset,
+                                                                  std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active workflow steps filtered by workflow_id.
+     */
+    std::uint32_t get_total_step_count_by_workflow_id(context ctx, const std::string& workflow_id);
+
+
+    /**
      * @brief Reads latest workflow steps with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip

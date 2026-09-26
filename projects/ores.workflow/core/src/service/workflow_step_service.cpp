@@ -113,8 +113,44 @@ workflow_step_service::list_workflow_steps(const messaging::list_workflow_steps_
             "This store pages in key order and cannot order by a stated field.";
         return response;
     }
+    if (request.filter) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_not_supported";
+        response.result.message = "Filtering is not served for this resource yet.";
+        return response;
+    }
     response.steps = repo_.read_latest(ctx_, request.offset, request.limit);
     response.total = repo_.get_total_step_count(ctx_);
+    return response;
+}
+
+messaging::list_by_workflow_id_workflow_steps_response
+workflow_step_service::list_by_workflow_id_workflow_steps(
+    const messaging::list_by_workflow_id_workflow_steps_request& request) {
+    messaging::list_by_workflow_id_workflow_steps_response response;
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "order_not_supported";
+        response.result.message =
+            "This store pages in key order and cannot order by a stated field.";
+        return response;
+    }
+    if (request.filter) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_not_supported";
+        response.result.message = "Filtering is not served for this resource yet.";
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "scope_not_supported";
+        response.result.message = "This resource reads its direct members; it has no subtree.";
+        return response;
+    }
+    const auto relation = boost::uuids::to_string(request.workflow_id);
+    response.steps =
+        repo_.read_latest_by_workflow_id(ctx_, relation, request.offset, request.limit);
+    response.total = repo_.get_total_step_count_by_workflow_id(ctx_, relation);
     return response;
 }
 
@@ -365,6 +401,19 @@ std::vector<domain::workflow_step> workflow_step_service::list_steps(std::uint32
 std::uint32_t workflow_step_service::count_steps() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total workflow steps count";
     return repo_.get_total_step_count(ctx_);
+}
+
+
+std::vector<domain::workflow_step> workflow_step_service::list_steps_by_workflow_id(
+    const std::string& workflow_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing workflow steps by workflow_id: " << workflow_id;
+    return repo_.read_latest_by_workflow_id(ctx_, workflow_id, offset, limit);
+}
+
+std::uint32_t workflow_step_service::count_steps_by_workflow_id(const std::string& workflow_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total workflow steps count by workflow_id: "
+                               << workflow_id;
+    return repo_.get_total_step_count_by_workflow_id(ctx_, workflow_id);
 }
 
 

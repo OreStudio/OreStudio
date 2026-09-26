@@ -85,6 +85,17 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate workflow_id (soft FK to ores_workflow_workflow_instances_tbl)
+    if not exists (
+        select 1 from ores_workflow_workflow_instances_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.workflow_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid workflow_id: %. No active workflow instance found with this id.', NEW.workflow_id
+            using errcode = '23503';
+    end if;
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

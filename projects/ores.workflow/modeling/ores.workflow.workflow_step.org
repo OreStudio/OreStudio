@@ -185,6 +185,18 @@ Timestamp when the step reached a terminal state.
 :tablename: ores_workflow_workflow_steps_tbl
 :END:
 
+* Foreign keys
+
+** workflow_id
+:PROPERTIES:
+:table:             ores_workflow_workflow_instances_tbl
+:parent_entity:     workflow_instance
+:nullable:          false
+:error_message:     Invalid workflow_id: %. No active workflow instance found with this id.
+:list_by:           true
+:list_by_order_by:  step_index
+:END:
+
 * C++
 
 ** Flags

@@ -68,6 +68,10 @@ register_workflow_step_handlers(ores::nats::service::client& nats,
         queue_group,
         [h](ores::nats::message msg) { h->delete_many_workflow_steps(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
+        list_by_workflow_id_workflow_steps_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_by_workflow_id_workflow_steps(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
         list_workflow_step_versions_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->list_workflow_step_versions(std::move(msg)); }));

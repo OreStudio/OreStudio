@@ -32,10 +32,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.testing/nats_options_helper.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/domain/workflow_step.hpp"
 #include "ores.workflow.api/domain/workflow_step_json_io.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/eventing/workflow_step_event.hpp"
@@ -43,6 +39,14 @@
 #include "ores.workflow.api/messaging/workflow_step_protocol.hpp"
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
 #include "ores.workflow.core/service/workflow_step_service.hpp"
+// Soft-FK parent seeding (ores_workflow_workflow_instances_tbl): the parent may live in another
+// component, so its own component names the headers.
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/nats_options_helper.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.workflow.api/generators/workflow_instance_generator.hpp"
+#include "ores.workflow.core/repository/workflow_instance_repository.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <thread>
@@ -113,6 +117,14 @@ TEST_CASE("write_workflow_step_publishes_an_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_workflow_step(ctx);
     v.change_reason_code = "system.test";
+    // Seed the active workflow_instance row ores_workflow_workflow_instances_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto workflow_id_parent = ores::workflow::generators::generate_synthetic_workflow_instance(ctx);
+    workflow_id_parent.change_reason_code = "system.test";
+    ores::workflow::repository::workflow_instance_repository workflow_id_repo;
+    workflow_id_repo.write(party_ctx, workflow_id_parent);
+    v.workflow_id = workflow_id_parent.id;
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Workflow Step: " << v;
 

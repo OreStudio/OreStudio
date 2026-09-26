@@ -89,6 +89,8 @@ public:
     delete_workflow_step(const messaging::delete_workflow_step_request& request);
     messaging::delete_many_workflow_steps_response
     delete_many_workflow_steps(const messaging::delete_many_workflow_steps_request& request);
+    messaging::list_by_workflow_id_workflow_steps_response list_by_workflow_id_workflow_steps(
+        const messaging::list_by_workflow_id_workflow_steps_request& request);
     messaging::list_workflow_step_versions_response
     list_workflow_step_versions(const messaging::list_workflow_step_versions_request& request);
     messaging::get_workflow_step_version_response
@@ -110,6 +112,27 @@ public:
      * @return Total number of active workflow steps.
      */
     std::uint32_t count_steps();
+
+
+    /**
+     * @brief Lists workflow steps filtered by workflow_id, with pagination.
+     *
+     * @param workflow_id The workflow_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching workflow steps for the requested page.
+     */
+    std::vector<domain::workflow_step> list_steps_by_workflow_id(const std::string& workflow_id,
+                                                                 std::uint32_t offset,
+                                                                 std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active workflow steps filtered by workflow_id.
+     *
+     * @param workflow_id The workflow_id to filter by.
+     * @return Total number of matching workflow steps.
+     */
+    std::uint32_t count_steps_by_workflow_id(const std::string& workflow_id);
 
 
     /**

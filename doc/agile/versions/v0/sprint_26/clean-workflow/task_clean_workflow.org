@@ -85,6 +85,8 @@ record each item's result in the table below.
 | W02 | Finding: five permission codes are checked and none is seeded, and three legacy codes are seeded that nothing checks. | The handlers, =workflow_instance_handler.hpp= among them; =iam_permissions_populate.sql=. Detail below. |
 | W03 | Pass. The populate references resolve. | =check_populate_references.py=, which reports "populate references resolve". |
 | W04 | Pending: the SQL reachability and the service grants need =compass db recreate=, which the same environment gap blocks as V01. | To be recorded with V03. |
+| S01 | Finding, in two parts. Generation wrote a command unit and a test for both entities, covering the canonical verbs, but nothing registers them; and the hand-written =workflow_commands.{hpp,cpp}= they supersede is still present, still compiled, and still wired into the shell's REPL. | The generated units and their tests; =git grep= showing the generated pair referenced nowhere outside its own module while the hand-written pair is named by =repl.cpp=, =bundles_commands=, =provision_commands= and =ore_commands=. Detail below. |
+| S02 | Pass. Both generated recipes exist and the inventory lists them. | =regenerate_shell_recipe_inventory.py --check= was stale on =doc/recipes/shell/shell.org=; regenerated, the diff is the two new categories and nothing else, and the re-check is silent. |
 | M09 | Pass. No retired fragment survives in any model. | =grep= over the modeling directories for =qt=, =wt=, =drawer= and =presentation= returns nothing. |
 | M10 | The component model declares its parts. =validate_docs.sh= still to run. | =modeling/component_overview.org= carries =* Summary=, =* Sub-components= and =* Entity modules=. Verification is deferred to H01, which owns the diagram and the docs gate. |
 
@@ -448,6 +450,31 @@ way, and changing the generated side would break the convention that
 component(s), 160 distinct code(s))", which does not cover =ores.workflow=: the
 component is not in the registry until V06, so this item is where the check
 would catch it and currently cannot.
+
+** S01 the shell units, generated and wired nowhere
+
+Generation wrote six files: a header, a source and a test for each entity, 2380
+lines in all. The source registers the canonical verbs -- =list=, =get=, =add=,
+=delete= -- and the generated protocol backs them with =list=, =list_versions=,
+=get=, =get_version=, =get_many=, =put=, =put_many= and =delete=. The tests are
+there too.
+
+None of it is reachable. Searching =ores.shell= for either generated unit
+outside its own module returns nothing, so the shell never registers them.
+
+The hand-written unit the generation replaces is still there:
+=ores.shell/application/app/commands/workflow_commands.{hpp,cpp}=, 359 lines. It
+is listed in that module's =component_files.cmake=, dispatched from =repl.cpp=,
+and named by three other command units -- =bundles_commands=,
+=provision_commands= and =ore_commands=. So the component's shell surface is
+currently twice over: a hand-written one that is wired and a generated one that
+is not.
+
+That is the item's second clause exactly, "the hand-written units the generation
+replaces are deleted", and it is the same shape as W01: generation materialised
+a family and nothing composes it. The deletion is not a one-line matter, because
+three other command units reference the hand-written pair and their call sites
+have to move to the generated units in the same piece of work.
 
 * Test Scenarios
 

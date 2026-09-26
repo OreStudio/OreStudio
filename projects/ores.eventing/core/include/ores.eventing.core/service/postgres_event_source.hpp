@@ -127,6 +127,7 @@ public:
         BOOST_LOG_SEV(lg(), info) << "Registering entity-to-event mapping: entity='" << entity_name
                                   << "', channel='" << channel_name << "'";
 
+        channel_entities_[channel_name] = entity_name;
         entity_mappings_[entity_name] = entity_mapping{
             .channel_name = channel_name,
             .publisher = [this, entity_name](std::chrono::system_clock::time_point ts,
@@ -225,6 +226,16 @@ private:
     ores::database::service::postgres_listener_service listener_;
     std::unordered_map<std::string, entity_mapping> entity_mappings_;
     std::unordered_map<std::string, entity_event_mapping> entity_event_mappings_;
+    /**
+     * @brief The entity each channel serves, for the older mapping.
+     *
+     * entity_mappings_ is keyed by entity name, so a notification arriving on a
+     * channel cannot find its mapping without this index. It exists because one
+     * channel can serve both mappings: the canonical one publishes the typed
+     * event to NATS, and the older one hands the change to an in-process
+     * subscriber that needs the tenant and the changed ids.
+     */
+    std::unordered_map<std::string, std::string> channel_entities_;
     std::string registered_entities_;
     std::atomic<std::uint64_t> parse_failure_count_{0};
 };

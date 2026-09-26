@@ -19,6 +19,7 @@
  */
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <map>
 #include <rfl/json.hpp>
 
 namespace ores::eventing::service {
@@ -28,36 +29,52 @@ using namespace ores::logging;
 postgres_event_source::postgres_event_source(database::context ctx, event_bus& bus)
     : bus_(bus)
     , listener_(std::move(ctx), [this](const std::string& channel, const std::string& payload) {
-        // A channel belongs to one kind of mapping. A canonical event's channel
-        // carries the specification's event fields; every other channel carries
-        // the older change notification, which is a different shape and is
-        // parsed as one.
-        const auto canonical = entity_event_mappings_.find(channel);
+        // Every channel carries the same payload: the trigger's
+        // canonical notification. A channel with a canonical
+        // mapping turns it into the typed event its traits name. A
+        // channel with an older mapping hands the change to an
+        // in-process subscriber that needs the tenant and the
+        // changed ids, so the notification is converted rather than
+        // parsed as an entity_change_event -- parsing it as one
+        // fails on every notification, because the trigger stopped
+        // emitting that shape. One channel may have both.
         try {
-            if (canonical != entity_event_mappings_.end()) {
-                auto result = rfl::json::read<domain::entity_event_notification>(payload);
-                if (result) {
-                    on_entity_event(channel, *result);
-                } else {
-                    const auto n = ++parse_failure_count_;
-                    BOOST_LOG_SEV(lg(), error) << "Failed to deserialize event notification payload"
-                                               << " (total failures: " << n << "): " << payload;
-                }
-                return;
-            }
-            auto result = rfl::json::read<domain::entity_change_event>(payload);
-            if (result) {
-                on_entity_change(*result);
-            } else {
+            const auto notification = rfl::json::read<domain::entity_event_notification>(payload);
+            if (!notification) {
                 const auto n = ++parse_failure_count_;
                 BOOST_LOG_SEV(lg(), error) << "Failed to deserialize notification payload"
                                            << " (total failures: " << n << "): " << payload;
+                return;
             }
+            const auto canonical = entity_event_mappings_.find(channel);
+            if (canonical != entity_event_mappings_.end())
+                canonical->second.publisher(*notification);
+
+            const auto legacy = channel_entities_.find(channel);
+            if (legacy != channel_entities_.end()) {
+                const auto mapping = entity_mappings_.find(legacy->second);
+                if (mapping != entity_mappings_.end()) {
+                    domain::entity_change_event change;
+                    change.entity = notification->entity;
+                    change.timestamp = notification->occurred_at;
+                    change.tenant_id = notification->tenant_id;
+                    if (const auto keys =
+                            rfl::json::read<std::map<std::string, std::string>>(notification->key))
+                        for (const auto& entry : *keys)
+                            change.entity_ids.push_back(entry.second);
+                    mapping->second.publisher(
+                        change.timestamp, change.entity_ids, change.tenant_id);
+                }
+            }
+
+            if (canonical == entity_event_mappings_.end() && legacy == channel_entities_.end())
+                BOOST_LOG_SEV(lg(), warn) << "No mapping registered for channel: '" << channel
+                                          << "' - notification ignored";
         } catch (const std::exception& e) {
             const auto n = ++parse_failure_count_;
             BOOST_LOG_SEV(lg(), error)
-                << "Exception parsing notification payload" << " (total failures: " << n
-                << "): " << payload << " — " << e.what();
+                << "Exception parsing notification payload"
+                << " (total failures: " << n << "): " << payload << " - " << e.what();
         }
     }) {
     BOOST_LOG_SEV(lg(), debug) << "Postgres event source created.";

@@ -29,6 +29,12 @@
 #include "ores.compute.service/app/batch_workflow_bridge.hpp"
 #include "ores.compute.service/app/compute_grid_poller.hpp"
 #include "ores.compute.service/app/workunit_dispatcher.hpp"
+#include "ores.compute.service/messaging/app_event_registrar.hpp"
+#include "ores.compute.service/messaging/app_version_event_registrar.hpp"
+#include "ores.compute.service/messaging/batch_event_registrar.hpp"
+#include "ores.compute.service/messaging/host_event_registrar.hpp"
+#include "ores.compute.service/messaging/result_event_registrar.hpp"
+#include "ores.compute.service/messaging/workunit_event_registrar.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
@@ -69,13 +75,6 @@ namespace {
 constexpr std::string_view service_name = "ores.compute.service";
 constexpr std::string_view service_version = ORES_VERSION;
 
-void publish_entity_event(ores::nats::service::client& nats,
-                          const std::string& subject,
-                          const ev::domain::entity_change_event& notif) {
-    // Delegate to the shared hardened publisher: it rethrows on failure so
-    // the event_bus surfaces the lost notification at error.
-    ev::service::publish_entity_event(nats, subject, notif);
-}
 
 } // namespace
 
@@ -94,89 +93,47 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ev::service::event_bus event_bus;
     ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
 
-    ev::service::registrar::register_mapping<cev::app_changed_event>(
-        event_source, "ores.compute.app", "ores_compute_apps");
-    ev::service::registrar::register_mapping<cev::app_version_changed_event>(
-        event_source, "ores.compute.app_version", "ores_compute_app_versions");
-    ev::service::registrar::register_mapping<cev::batch_changed_event>(
-        event_source, "ores.compute.batch", "ores_compute_batches");
+    // The generated registrars own each entity's mapping and its NATS
+    // publication. Registering here with the legacy register_mapping() instead
+    // left the channel on the older notification shape, which the generated
+    // trigger does not emit, so every notification failed to parse and nothing
+    // reached the dispatcher.
+    auto app_sub = ores::compute::service::messaging::register_app_event_mapping(
+        event_source, event_bus, nats);
+    auto app_version_sub = ores::compute::service::messaging::register_app_version_event_mapping(
+        event_source, event_bus, nats);
+    auto batch_sub = ores::compute::service::messaging::register_batch_event_mapping(
+        event_source, event_bus, nats);
+    auto workunit_sub = ores::compute::service::messaging::register_workunit_event_mapping(
+        event_source, event_bus, nats);
+    auto result_sub = ores::compute::service::messaging::register_result_event_mapping(
+        event_source, event_bus, nats);
+    auto host_sub = ores::compute::service::messaging::register_host_event_mapping(
+        event_source, event_bus, nats);
+
+    // The dispatch seam reads the in-process bus, and the bus event it wants
+    // carries the tenant and the changed workunit ids. The canonical event the
+    // registrar publishes carries no tenant, so the workunit channel is mapped
+    // a second time, to the older domain event. One channel serves both.
     ev::service::registrar::register_mapping<cev::workunit_changed_event>(
         event_source, "ores.compute.workunit", "ores_compute_workunits");
-    ev::service::registrar::register_mapping<cev::result_changed_event>(
-        event_source, "ores.compute.result", "ores_compute_results");
-    ev::service::registrar::register_mapping<cev::host_changed_event>(
-        event_source, "ores.compute.host", "ores_compute_hosts");
 
-    // Grid dispatch seam: creates the result rows and publishes the JetStream
-    // assignments for shell-saved workunits. Lives here, subscribed to the
-    // in-process event bus (not in the generated workunit handler, which
-    // regeneration would strip — see workunit_dispatcher.hpp). Must be
-    // constructed before event_source.start() so no change is missed.
+    // Must be constructed before event_source.start() so no change is missed.
     app::workunit_dispatcher dispatcher(nats, make_context(cfg.database));
 
-    auto app_sub =
-        event_bus.subscribe<cev::app_changed_event>([&nats](const cev::app_changed_event& e) {
-            publish_entity_event(nats,
-                                 "ores.compute.app_changed",
-                                 ev::domain::entity_change_event{.entity = "ores.compute.app",
-                                                                 .timestamp = e.timestamp,
-                                                                 .entity_ids = e.app_ids,
-                                                                 .tenant_id = e.tenant_id});
-        });
-
-    auto app_version_sub = event_bus.subscribe<cev::app_version_changed_event>(
-        [&nats](const cev::app_version_changed_event& e) {
-            publish_entity_event(
-                nats,
-                "ores.compute.app_version_changed",
-                ev::domain::entity_change_event{.entity = "ores.compute.app_version",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.app_version_ids,
-                                                .tenant_id = e.tenant_id});
-        });
-
-    auto batch_sub =
-        event_bus.subscribe<cev::batch_changed_event>([&nats](const cev::batch_changed_event& e) {
-            publish_entity_event(nats,
-                                 "ores.compute.batch_changed",
-                                 ev::domain::entity_change_event{.entity = "ores.compute.batch",
-                                                                 .timestamp = e.timestamp,
-                                                                 .entity_ids = e.batch_ids,
-                                                                 .tenant_id = e.tenant_id});
-        });
-
-    auto workunit_sub = event_bus.subscribe<cev::workunit_changed_event>(
-        [&nats](const cev::workunit_changed_event& e) {
-            publish_entity_event(nats,
-                                 "ores.compute.workunit_changed",
-                                 ev::domain::entity_change_event{.entity = "ores.compute.workunit",
-                                                                 .timestamp = e.timestamp,
-                                                                 .entity_ids = e.workunit_ids,
-                                                                 .tenant_id = e.tenant_id});
-        });
-
+    // Grid dispatch seam: creates the result rows and publishes the JetStream
+    // assignments for shell-saved workunits. It reads the in-process bus rather
+    // than the NATS publication, so it stays beside the registrars rather than
+    // inside one.
     auto dispatch_sub = event_bus.subscribe<cev::workunit_changed_event>(
         [&dispatcher](const cev::workunit_changed_event& e) { dispatcher.dispatch(e); });
-
-    auto result_sub =
-        event_bus.subscribe<cev::result_changed_event>([&nats](const cev::result_changed_event& e) {
-            publish_entity_event(nats,
-                                 "ores.compute.result_changed",
-                                 ev::domain::entity_change_event{.entity = "ores.compute.result",
-                                                                 .timestamp = e.timestamp,
-                                                                 .entity_ids = e.result_ids,
-                                                                 .tenant_id = e.tenant_id});
-        });
-
-    auto host_sub =
-        event_bus.subscribe<cev::host_changed_event>([&nats](const cev::host_changed_event& e) {
-            publish_entity_event(nats,
-                                 "ores.compute.host_changed",
-                                 ev::domain::entity_change_event{.entity = "ores.compute.host",
-                                                                 .timestamp = e.timestamp,
-                                                                 .entity_ids = e.host_ids,
-                                                                 .tenant_id = e.tenant_id});
-        });
+    (void)app_sub;
+    (void)app_version_sub;
+    (void)batch_sub;
+    (void)workunit_sub;
+    (void)result_sub;
+    (void)host_sub;
+    (void)dispatch_sub;
 
     event_source.start();
     BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";

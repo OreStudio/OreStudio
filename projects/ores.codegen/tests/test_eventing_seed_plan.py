@@ -133,6 +133,21 @@ def test_ancestor_variables_stay_distinct_when_a_fk_column_repeats(
     assert len({i["var"] for i in items} | {"config_id_parent"}) == 3
 
 
+def test_ancestor_carries_its_system_tenant_flag(org_infos):
+    # synthetic's process parameter value references a definition through a
+    # :use_system_tenant: soft FK: the referencing row's insert trigger
+    # resolves the definition under the system tenant, so the generated
+    # test has to seed the ancestor there rather than in the test tenant.
+    org_infos["ores_compute_app_versions_tbl"]["mandatory_fks"] = [
+        {"column": "app_id", "table": "ores_compute_apps_tbl",
+         "target_column": "id", "use_system_tenant": True},
+    ]
+    items = _call(org_infos)
+    by_entity = {i["parent_entity_singular"]: i for i in items}
+    assert by_entity["app"]["use_system_tenant"] is True
+    assert by_entity["app_version"]["use_system_tenant"] is False
+
+
 def test_party_ancestors_are_skipped(org_infos):
     org_infos["ores_compute_apps_tbl"]["mandatory_fks"] = [
         {"column": "party_id", "table": "ores_parties_tbl", "target_column": "id"},

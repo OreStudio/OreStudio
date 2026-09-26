@@ -1606,6 +1606,10 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
             'var': var,
             'column': mfk['column'],
             'table': mfk['table'],
+            # A system-tenant ancestor has to be seeded under the system
+            # tenant: the referencing row's insert trigger resolves it
+            # there, so a row written in the test tenant is invisible.
+            'use_system_tenant': bool(mfk.get('use_system_tenant', False)),
             'parent_var': parent_var,
             'parent_entity_singular': grandparent['entity_singular'],
             'parent_component': grandparent['component'],
@@ -3164,6 +3168,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     c.get('name') == fk.get('column')
                     and c.get('is_identity_group_column', False)
                     for c in domain_entity.get('columns', []) or [])
+            # A parent, or an ancestor of one, that the referencing row's
+            # insert trigger resolves under the system tenant must be
+            # seeded there. The test template needs the tenant_id helper
+            # for the forced tenant, so the entity carries the flag.
+            domain_entity['has_system_tenant_fks'] = any(
+                fk.get('use_system_tenant')
+                or any(item.get('use_system_tenant')
+                       for item in fk.get('parent_required_fks') or [])
+                for fk in fks)
             # The amending activity is declared by column name; resolve it
             # to the member path the test must assign through, which for a
             # grouped entity sits inside one of the groups.

@@ -8,6 +8,13 @@
 // tenant_id helpers.
 #include "ores.utility/uuid/tenant_id.hpp"
 {{/sql.system_scope}}
+{{#has_system_tenant_fks}}
+// A seeded parent is system-tenant reference data (its soft FK carries
+// :use_system_tenant:), so its row is forced to the system tenant and
+// written under a system-scoped context, and the tenant_id helpers are
+// needed.
+#include "ores.utility/uuid/tenant_id.hpp"
+{{/has_system_tenant_fks}}
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
@@ -236,6 +243,21 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
 {{#foreign_keys}}
 {{^nullable}}
 {{#parent_entity_singular}}
+{{#use_system_tenant}}
+    // {{parent_entity_singular}} is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, so the shared system
+    // catalogue keeps exactly the rows the populate scripts put there. The
+    // referencing row's insert trigger resolves the parent under the system
+    // tenant.
+    {
+        ores::{{parent_component}}::repository::{{parent_entity_singular}}_repository {{column}}_catalogue_repo;
+        const auto {{column}}_catalogue = {{column}}_catalogue_repo.read_latest(
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE({{column}}_catalogue.empty());
+        v.{{{group_prefix}}}{{column}} = {{column}}_catalogue.front().{{target_column}};
+    }
+{{/use_system_tenant}}
+{{^use_system_tenant}}
     // Seed the active {{parent_entity_singular}} row {{table}} references:
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
@@ -290,6 +312,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
     patch target (a row one step shallower in the chain, declared here)
     must exist before any write runs. }}
 {{#parent_required_fks}}
+{{^use_system_tenant}}
     auto {{var}} = ores::{{parent_component}}::{{parent_generator_facet_name}}::generate_synthetic_{{parent_entity_singular}}(ctx);
 {{#parent_has_audit_group}}
     {{var}}.audit.change_reason_code = "system.test";
@@ -297,6 +320,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
 {{^parent_has_audit_group}}
     {{var}}.change_reason_code = "system.test";
 {{/parent_has_audit_group}}
+{{/use_system_tenant}}
 {{/parent_required_fks}}
 {{#parent_required_fks}}
 {{#requires_party}}
@@ -316,12 +340,26 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
     {{var}}_party_repo.write(party_ctx, {{var}}_party);
     {{var}}.{{#parent_has_identity_group}}identity.{{/parent_has_identity_group}}party_id = {{var}}_party.id;
 {{/requires_party}}
+{{#use_system_tenant}}
+    // {{parent_entity_singular}} is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, as the direct-parent
+    // system-tenant branch does.
+    {
+        ores::{{parent_component}}::repository::{{parent_entity_singular}}_repository {{var}}_repo;
+        const auto {{var}}_catalogue = {{var}}_repo.read_latest(
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE({{var}}_catalogue.empty());
+        {{parent_var}}.{{column}} = {{var}}_catalogue.front().{{target_column}};
+    }
+{{/use_system_tenant}}
+{{^use_system_tenant}}
     // Seed the active {{parent_entity_singular}} row {{table}} references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.
     ores::{{parent_component}}::repository::{{parent_entity_singular}}_repository {{var}}_repo;
     {{var}}_repo.write(party_ctx, {{var}});
     {{parent_var}}.{{column}} = {{var}}.{{target_column}};
+{{/use_system_tenant}}
 {{/parent_required_fks}}
 {{#parent_seed_country_sentinel}}
     // The parent calendar's insert trigger validates country_code
@@ -349,6 +387,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
     ores::{{parent_component}}::repository::{{parent_entity_singular}}_repository {{column}}_repo;
     {{column}}_repo.write(party_ctx, {{column}}_parent);
     v.{{{group_prefix}}}{{column}} = {{column}}_parent.{{target_column}};
+{{/use_system_tenant}}
 {{/parent_entity_singular}}
 {{#parent_seed_snippet}}
 {{{parent_seed_snippet}}}

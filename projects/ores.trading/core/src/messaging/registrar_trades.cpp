@@ -17,8 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
 #include "ores.trading.core/messaging/trade_handler.hpp"
+#include "ores.trading.core/messaging/trade_registrar.hpp"
 #include "ores.trading.core/messaging/trade_type_registrar.hpp"
 
 namespace ores::trading::messaging::detail {
@@ -28,44 +30,13 @@ register_trade_handlers(ores::nats::service::client& nats,
                         ores::database::context ctx,
                         std::optional<ores::security::jwt::jwt_authenticator> verifier,
                         const std::string& http_base_url) {
-    std::vector<ores::nats::service::subscription> subs;
+    // The trade entity's own verbs come from its generated registrar.
+    auto subs = ores::trading::messaging::register_trade_handlers(nats, ctx, verifier);
+
     constexpr auto queue = queue_name;
 
-    subs.push_back(nats.queue_subscribe(std::string(get_activity_types_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            trade_handler h(nats, ctx, verifier);
-                                            h.list_activity_types(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(get_trades_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            trade_handler h(nats, ctx, verifier);
-                                            h.list(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(save_trade_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            trade_handler h(nats, ctx, verifier);
-                                            h.save(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(delete_trade_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            trade_handler h(nats, ctx, verifier);
-                                            h.remove(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(get_trade_history_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            trade_handler h(nats, ctx, verifier);
-                                            h.history(std::move(msg));
-                                        }));
-
+    // The three operations below have no model and stay hand-written: the
+    // instrument rebuild, the portfolio export, and the storage export.
     subs.push_back(nats.queue_subscribe(std::string(get_trade_instrument_request::nats_subject),
                                         queue,
                                         [&nats, ctx, verifier](ores::nats::message msg) mutable {
@@ -88,11 +59,17 @@ register_trade_handlers(ores::nats::service::client& nats,
             h.export_trades_to_storage(std::move(msg));
         }));
 
+    // activity_type has no model yet, so its lookup verb is served here.
+    subs.push_back(nats.queue_subscribe(std::string(get_activity_types_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            trade_handler h(nats, ctx, verifier);
+                                            h.list_activity_types(std::move(msg));
+                                        }));
+
     // Instrument reference data — floating index types and leg types moved
     // to ores.refdata (see ores.refdata.core/messaging/registrar.cpp); trade
     // types are handled by the entity-shaped trade_type handler stack.
-
-    // Instrument reference data — trade types
     auto trade_type_subs = register_trade_type_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(trade_type_subs.begin()),

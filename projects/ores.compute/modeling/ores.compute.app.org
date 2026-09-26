@@ -22,6 +22,7 @@ grid nodes (e.g., ORE_STUDIO, LLAMA_CPP, LEDGER). The BOINC equivalent of 'app'.
 :product:   ores
 :component: compute
 :profile:   uuid-identified-lookup
+:key_field: name
 :END:
 
 * Columns
@@ -102,33 +103,6 @@ own-tenant scoped.
 | description | Description |
 | modified_by | Modified By |
 | recorded_at | Recorded At |
-
-** Presentation
-:PROPERTIES:
-:domain_include:          ores.compute.api/domain/app.hpp
-:domain_class:            compute::domain::app
-:protocol_include:        ores.compute.api/messaging/app_protocol.hpp
-:collection_name:         apps
-:key_field:               name
-:get_request_class:       compute::messaging::get_apps_request
-:get_response_class:      compute::messaging::get_apps_response
-:get_message_type:        get_apps_request
-:save_request_class:      compute::messaging::save_app_request
-:save_response_class:     compute::messaging::save_app_response
-:save_message_type:       save_app_request
-:delete_request_class:    compute::messaging::delete_app_request
-:delete_response_class:   compute::messaging::delete_app_response
-:delete_message_type:     delete_app_request
-:END:
-
-*** Columns
-
-| enum_name   | field       | header      | type   | width |
-|-------------+-------------+-------------+--------+-------|
-| Name        | name        | Name        | string | 160   |
-| Description | description | Description | string | 300   |
-| Version     | version     | Version     | int    | 60    |
-| ModifiedBy  | modified_by | Modified By | string | 120   |
 
 ** Custom repository methods
 

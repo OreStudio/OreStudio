@@ -40,6 +40,7 @@ storage key. The retired Qt list window keyed on the audit column
 :product:   ores
 :component: compute
 :profile:   uuid-identified-lookup
+:has_change_reason_cache: false
 :END:
 
 * Columns
@@ -248,38 +249,6 @@ them.
 | received_at   | Received At   |
 | modified_by   | Modified By   |
 | recorded_at   | Recorded At   |
-
-** Presentation
-:PROPERTIES:
-:domain_include:          ores.compute.api/domain/result.hpp
-:domain_class:            compute::domain::result
-:protocol_include:        ores.compute.api/messaging/result_protocol.hpp
-:collection_name:         results
-:get_request_class:       compute::messaging::get_results_request
-:get_response_class:      compute::messaging::get_results_response
-:get_message_type:        get_results_request
-:save_request_class:      compute::messaging::save_result_request
-:save_response_class:     compute::messaging::save_result_response
-:save_message_type:       save_result_request
-:delete_request_class:    compute::messaging::delete_result_request
-:delete_response_class:   compute::messaging::delete_result_response
-:delete_message_type:     delete_result_request
-:has_change_reason_cache: false
-:END:
-
-*** Columns
-
-| enum_name   | field        | header      | type      | width |
-|-------------+--------------+-------------+-----------+-------|
-| WorkunitId  | workunit_id  | Workunit ID | uuid      | 160   |
-| HostId      | host_id      | Host ID     | uuid      | 160   |
-| ServerState | server_state | State       | int       | 70    |
-| Outcome     | outcome      | Outcome     | int       | 70    |
-| ErrorMessage | error_message | Error      | string    | 160   |
-| OutputUri   | output_uri   | Output URI  | string    | 200   |
-| ReceivedAt  | received_at  | Received At | timestamp | 140   |
-| Version     | version      | Version     | int       | 60    |
-| ModifiedBy  | modified_by  | Modified By | string    | 120   |
 
 ** Custom repository methods
 

@@ -22,6 +22,7 @@ compute grid. Tracks hardware capabilities, heartbeat, and accumulated credit.
 :product:   ores
 :component: compute
 :profile:   uuid-identified-lookup
+:key_field: external_id
 :END:
 
 * Columns
@@ -167,39 +168,6 @@ Accumulated work units successfully processed by this host.
 | credit_total  | Credit Total  |
 | modified_by   | Modified By   |
 | recorded_at   | Recorded At   |
-
-** Presentation
-:PROPERTIES:
-:domain_include:          ores.compute.api/domain/host.hpp
-:domain_class:            compute::domain::host
-:protocol_include:        ores.compute.api/messaging/host_protocol.hpp
-:collection_name:         hosts
-:key_field:               external_id
-:get_request_class:       compute::messaging::get_hosts_request
-:get_response_class:      compute::messaging::get_hosts_response
-:get_message_type:        get_hosts_request
-:save_request_class:      compute::messaging::save_host_request
-:save_response_class:     compute::messaging::save_host_response
-:save_message_type:       save_host_request
-:delete_request_class:    compute::messaging::delete_host_request
-:delete_response_class:   compute::messaging::delete_host_response
-:delete_message_type:     delete_host_request
-:END:
-
-*** Columns
-
-| enum_name   | field         | header         | type      | width | tooltip_field | data_paste                           |
-|-------------+---------------+----------------+-----------+-------+---------------+-------------------------------------|
-| DisplayName | display_name  | Name           | string    | 160   | external_id   | B7A4E9F2-6C3D-4E8F-9A1B-5C7D2E8F4A6B |
-| ExternalId  | external_id   | Host ID        | string    | 180   |               |                                     |
-| Location    | location      | Location       | string    | 120   |               |                                     |
-| CpuCount    | cpu_count     | CPUs           | int       | 60    |               |                                     |
-| RamMb       | ram_mb        | RAM (MB)       | int       | 80    |               |                                     |
-| GpuType     | gpu_type      | GPU            | string    | 100   |               |                                     |
-| LastRpcTime | last_rpc_time | Last Heartbeat | timestamp | 140   |               |                                     |
-| CreditTotal | credit_total  | Credits        | int       | 80    |               |                                     |
-| Version     | version       | Version        | int       | 60    |               |                                     |
-| ModifiedBy  | modified_by   | Modified By    | string    | 120   |               |                                     |
 
 ** Custom repository methods
 

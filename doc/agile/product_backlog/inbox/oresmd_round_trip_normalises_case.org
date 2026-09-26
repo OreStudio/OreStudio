@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 67A49A94-2588-4D17-BFCA-54813F3193B3
+:END:
+#+title: The forward projection uppercases free-text identifiers, so 7,055 corpus keys do not read back
+#+description: Eight series types project a key to an oresmd URI and get a different key back, because the forward uppercases tickers, commodity codes, reference entities and curve ids that the corpus writes in mixed case. The projection reports success, so nothing downstream sees the loss.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Eight ORE series types project a corpus key to an oresmd URI and then read a
+different key back. Measured over the whole corpus, that is 7,055 keys out of
+364,375 that oresmd names:
+
+| Type | Keys named | Round-tripped |
+|------+-----------+---------------|
+| EQUITY_OPTION | 119,137 | 116,601 |
+| DISCOUNT | 36,394 | 33,369 |
+| IR_SWAP | 11,560 | 10,241 |
+| COMMODITY_FWD | 2,803 | 2,793 |
+| CDS | 405 | 357 |
+| EQUITY_FWD | 384 | 300 |
+| RECOVERY_RATE | 217 | 205 |
+| EQUITY | 105 | 84 |
+
+Two causes, and the first accounts for all but one of them: **the forward
+projection uppercases free-text identifiers that the corpus writes in mixed
+case.** The clearest case is short enough to see whole:
+
+#+begin_example
+EQUITY/PRICE/Lufthansa/EUR  ->  EQUITY/PRICE/LUFTHANSA/EUR
+#+end_example
+
+The same shape appears wherever the third segment is a name rather than a
+currency: =CDS/CREDIT_SPREAD/Underlying1/...=,
+=COMMODITY_FWD/PRICE/NaturalGas/...=,
+=DISCOUNT/RATE/USD/USD-FedFunds/...=, =RECOVERY_RATE/RATE/Underlying1/...=.
+The forward calls =to_upper()= on each and the inverse lowercases, so the key
+comes back in a casing that matches neither the corpus nor the identifier.
+
+The second cause is the IR settlement segment, captured separately: the
+six-segment IR_SWAP path rebuilds the settle as a hardcoded ="2D"=, so
+=IR_SWAP/RATE/EUR/0D/1D/1D= reads back as =IR_SWAP/RATE/EUR/2D/1D/1D=.
+
+* Why
+
+This is the silent kind of loss, and it is worse than a key oresmd cannot name.
+An unnameable key returns nullopt and the caller knows to stop. These return a
+URI and a key, both well formed, and the only sign that anything changed is
+that the string differs from the one that went in. Nothing downstream sees it:
+not the drift gate, not the generated per-type tests -- each of which pins a URI
+the test author chose, in the casing the author chose -- and not the coverage
+record, which compares declared types rather than data.
+
+It matters for the stated goal. The requirement is to export stored data back to
+ORE representation without loss, and a key that reads back in different casing
+is a changed key: ORE matches keys as strings, so a series stored under
+=EQUITY/PRICE/LUFTHANSA/EUR= is not the series the file declared.
+
+The fix is not obviously "stop uppercasing". Casing does real work elsewhere:
+the URI grammar normalises currencies and enum tokens so that =EUR/USD= and
+=eur/usd= are one identifier, and the corpus is itself inconsistent about the
+case of names. The question is which segments are *identifiers*, whose spelling
+is data, and which are *tokens*, whose spelling is presentation. A name is the
+first kind. The likely answer is therefore a per-segment decision rather than a
+global one, and it wants making before the export path is built rather than
+after.
+
+* References
+
+- =projects/ores.marketdata/core/tests/oresmd_ore_coverage_tests.cpp= -- prints
+  one failing key per type, and fails when the set of types changes.
+- =projects/ores.marketdata/core/src/oresmd/oresmd_projections.cpp= -- the
+  =to_upper()= calls in each =quote_key_*= function.
+- The IR settlement capture, for the second cause.
+
+* See also
+
+- [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Story: Clean ores.marketdata to the component clean standard]]

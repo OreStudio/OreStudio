@@ -63,6 +63,9 @@ struct type_coverage {
     std::size_t keys = 0;
     std::size_t named = 0;
     std::size_t round_tripped = 0;
+    /// One key that projected and did not read back, with what it became. A
+    /// count says a gap exists; the example says what it is.
+    std::string mismatch;
 };
 
 /// A corpus file that carries market data. The corpus names its own files, and
@@ -142,8 +145,11 @@ std::map<std::string, type_coverage> survey() {
                 continue;
             ++c.named;
             const auto back = oresmd_projections::to_quote_key(*id);
-            if (back && *back == *key)
+            if (back && *back == *key) {
                 ++c.round_tripped;
+            } else if (c.mismatch.empty()) {
+                c.mismatch = *key + " -> " + (back ? *back : std::string("<none>"));
+            }
         }
     }
     return coverage;
@@ -201,6 +207,10 @@ TEST_CASE("no_series_type_oresmd_cannot_name_has_gone_unrecorded", tags) {
         round_tripped += c.round_tripped;
         WARN(std::format("{:<26} {:>7} keys, {:>7} named, {:>7} round-tripped",
                          type, c.keys, c.named, c.round_tripped));
+        // On its own line: the log wraps long messages, and a truncated key is
+        // worse than none.
+        if (!c.mismatch.empty())
+            WARN(std::format("  {} first loss: {}", type, c.mismatch));
     }
     WARN(std::format("{:<26} {:>7} keys, {:>7} named, {:>7} round-tripped",
                      "TOTAL", keys, named, round_tripped));

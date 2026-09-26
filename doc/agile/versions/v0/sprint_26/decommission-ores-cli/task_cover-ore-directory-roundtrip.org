@@ -8,7 +8,7 @@
 #+filetags: :decommission-ores-cli:sprint_26:v0:
 #+owner: marco
 #+branch: feature/finish-mop-up-ores-cli
-#+pr:
+#+pr: 2144
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -63,7 +63,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2144][#2144]] | [ore] Cover the ORE directory round trip and clear the mop-up residue |
 
 * Review
 

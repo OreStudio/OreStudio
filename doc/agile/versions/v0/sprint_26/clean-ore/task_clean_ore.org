@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-ore:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-ore
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:873B0E5C-BDDE-40DE-9729-F0278D0F8EC2][Clean ores.ore to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ ores.ore passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:873B0E5C-BDDE-40DE-9729-F0278D0F8EC2][Clean ores.ore to the component clean standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Survey done and the round trip moved off the exporter. Six decisions must be taken before the checklist can be worked in order. |
+| Waiting on   | Decisions on the root group model, the api and core boundary, the classifier split, the xsdcpp dependency, the facet vocabulary, and the wiring. |
+| Next         | Take those decisions, then work B02 onward. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -57,7 +57,8 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | Baseline recorded, then cleared. The component did not match its models. The dry run of 2026-09-26 reported 13 files to change and 5 to create, all for the =series_key_shape= entity: the domain header, protocol, handler, repository, service, registrar, eventing tests, the service event registrar, two SQL scripts, the TypeScript protocol, plus a missing eventing header, a whole missing shell command unit, a missing recipe and a missing shell test. Cause: the codegen templates changed on 2026-09-23, after the model's last edit on 2026-09-18, and the component was never regenerated. Applying the generation gives 18 files, 2830 insertions. | =check_component_drift.py --component ore --dry-run= output, 18 files |
+| Survey | Merged into the [[id:794EC06A-86D6-499B-9166-5B24EBAAF0CD][design and documentation survey]]. The headline facts for the items that follow: three generators divide the tree, with xsdcpp producing 78% of the C++ bytes and carrying no generated marker; seven facet names sit outside every catalogue; the component has no root group model; three of four registrar families are called from nowhere and the generated shell unit sits in a directory no CMake target owns; all four diagrams and the three part overviews are stale; the round trip now composes the importer and the exporter from =xml/roundtrip.{hpp,cpp}=. | Survey document; =ores.ore.core.tests "[xml]"= green at 10057 assertions in 353 cases |
 
 * Notes
 

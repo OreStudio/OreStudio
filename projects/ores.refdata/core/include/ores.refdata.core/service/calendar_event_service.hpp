@@ -195,15 +195,18 @@ public:
      * @param version The version to fetch.
      * @return The calendar event at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::calendar_event> get_calendar_event_at_version(const std::string& id,
-                                                                        std::uint32_t version);
+    std::optional<domain::calendar_event>
+    get_calendar_event_at_version(const boost::uuids::uuid& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single calendar event by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The calendar event if found, std::nullopt otherwise.
      */
-    std::optional<domain::calendar_event> get_calendar_event(const std::string& id);
+    std::optional<domain::calendar_event> get_calendar_event(const boost::uuids::uuid& id);
 
     /**
      * @brief Retrieves a batch of calendar events by primary key.
@@ -231,7 +234,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_calendar_event(const std::string& id);
+    void delete_calendar_event(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes calendar events by their primary keys.
@@ -240,6 +243,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a calendar event.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::calendar_event> get_calendar_event_history(const std::string& id);
 

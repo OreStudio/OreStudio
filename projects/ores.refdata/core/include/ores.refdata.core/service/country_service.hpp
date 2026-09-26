@@ -164,6 +164,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a country.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::country> get_country_history(const std::string& alpha2_code);
 

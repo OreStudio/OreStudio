@@ -41,15 +41,6 @@ export interface CalendarDatesFilter {
     calendar_code: string | null;
 }
 
-export interface CalendarDateEvent {
-    event_id: string;
-    key: CalendarDateKey;
-    action: string;
-    version: number;
-    occurred_at: string;
-    correlation_id: string | null;
-}
-
 export interface ListCalendarDatesRequest {
     offset: number;
     limit: number;

@@ -36,7 +36,7 @@
 namespace ores::refdata::messaging {
 
 struct business_unit_type_key {
-    boost::uuids::uuid id;
+    std::string code;
 };
 
 struct business_unit_type_write {

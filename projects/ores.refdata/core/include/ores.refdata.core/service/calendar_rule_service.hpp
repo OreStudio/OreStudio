@@ -157,15 +157,18 @@ public:
      * @param version The version to fetch.
      * @return The calendar rule at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::calendar_rule> get_calendar_rule_at_version(const std::string& id,
+    std::optional<domain::calendar_rule> get_calendar_rule_at_version(const boost::uuids::uuid& id,
                                                                       std::uint32_t version);
 
     /**
      * @brief Retrieves a single calendar rule by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The calendar rule if found, std::nullopt otherwise.
      */
-    std::optional<domain::calendar_rule> get_calendar_rule(const std::string& id);
+    std::optional<domain::calendar_rule> get_calendar_rule(const boost::uuids::uuid& id);
 
     /**
      * @brief Retrieves a batch of calendar rules by primary key.
@@ -193,7 +196,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_calendar_rule(const std::string& id);
+    void delete_calendar_rule(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes calendar rules by their primary keys.
@@ -202,6 +205,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a calendar rule.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::calendar_rule> get_calendar_rule_history(const std::string& id);
 

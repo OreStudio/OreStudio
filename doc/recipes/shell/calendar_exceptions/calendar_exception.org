@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-calendar_exceptions add <id> <calendar_code> <exception_date> <is_business_day> <description> <reason> <commentary>
+calendar_exceptions add <calendar_code> <exception_date> <is_business_day> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.calendar_exceptions.put=.
 
 #+name: calendar_exceptions-add
 #+begin_src ores-shell :tangle calendar_exceptions-add.ores :exports none
-calendar_exceptions add 00000000-0000-0000-0000-000000000000 __none__ __none__ false __none__ system.new_record generated_script
+calendar_exceptions add __none__ __none__ false __none__ system.new_record generated_script
 #+end_src
 
 ** =set=

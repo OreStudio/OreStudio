@@ -36,7 +36,7 @@
 namespace ores::refdata::messaging {
 
 struct party_contact_information_key {
-    boost::uuids::uuid id;
+    std::string contact_type;
 };
 
 struct party_contact_information_write {

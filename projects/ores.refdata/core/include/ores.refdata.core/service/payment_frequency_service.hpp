@@ -167,6 +167,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a payment frequency.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::payment_frequency> get_payment_frequency_history(const std::string& code);
 

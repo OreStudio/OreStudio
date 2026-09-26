@@ -50,6 +50,10 @@ namespace {
  * A key record carries each column with the column's own type, and the
  * repository takes the text form every one of its key parameters shares, so
  * the conversion lives here rather than at every call site.
+ *
+ * The key record carries the key the model declares, which is the one a caller
+ * holds. When that is not the storage key the row is found by it and the
+ * repository's storage-key read is not used at all.
  */
 std::vector<domain::calendar_event> read_one(repository::calendar_event_repository& repo,
                                              const ores::database::context& ctx,
@@ -474,17 +478,17 @@ calendar_event_service::list_calendar_events_by_diary_entry_type_as_of(
 }
 
 std::optional<domain::calendar_event>
-calendar_event_service::get_calendar_event_at_version(const std::string& id,
+calendar_event_service::get_calendar_event_at_version(const boost::uuids::uuid& id,
                                                       std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting calendar event at version. " << "id: " << id
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, id, version);
+    return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::calendar_event>
-calendar_event_service::get_calendar_event(const std::string& id) {
+calendar_event_service::get_calendar_event(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting calendar event. " << "id: " << id;
-    auto results = repo_.read_latest(ctx_, id);
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
     return results.front();
@@ -519,9 +523,9 @@ void calendar_event_service::save_calendar_events(
     repo_.write(ctx_, ts);
 }
 
-void calendar_event_service::delete_calendar_event(const std::string& id) {
+void calendar_event_service::delete_calendar_event(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing calendar event. " << "id: " << id;
-    repo_.remove(ctx_, id);
+    repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed calendar event. " << "id: " << id;
 }
 

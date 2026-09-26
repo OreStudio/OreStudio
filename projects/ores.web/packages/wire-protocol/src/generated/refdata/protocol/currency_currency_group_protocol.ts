@@ -58,15 +58,6 @@ export interface CurrencyCurrencyGroupsFilter {
     currency_iso_code: string | null;
 }
 
-export interface CurrencyCurrencyGroupEvent {
-    event_id: string;
-    key: CurrencyCurrencyGroupKey;
-    action: string;
-    version: number;
-    occurred_at: string;
-    correlation_id: string | null;
-}
-
 export interface ListCurrencyCurrencyGroupsRequest {
     offset: number;
     limit: number;

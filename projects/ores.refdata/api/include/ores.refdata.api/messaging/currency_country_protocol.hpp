@@ -64,15 +64,6 @@ struct currency_countries_filter {
     std::optional<std::string> currency_iso_code;
 };
 
-struct currency_country_event {
-    boost::uuids::uuid event_id;
-    currency_country_key key;
-    std::string action;
-    std::uint32_t version;
-    std::chrono::system_clock::time_point occurred_at;
-    std::optional<std::string> correlation_id;
-};
-
 struct list_currency_countries_request {
     using response_type = struct list_currency_countries_response;
     static constexpr std::string_view nats_subject = "refdata.v1.currency_countries.list";

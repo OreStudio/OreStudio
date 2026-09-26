@@ -160,6 +160,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a tenor.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::tenor> get_tenor_history(const std::string& code);
 

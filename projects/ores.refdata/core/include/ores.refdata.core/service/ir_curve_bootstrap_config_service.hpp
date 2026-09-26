@@ -124,14 +124,18 @@ public:
      * @return The IR curve bootstrap config at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::ir_curve_bootstrap_config>
-    get_bootstrap_config_at_version(const std::string& id, std::uint32_t version);
+    get_bootstrap_config_at_version(const boost::uuids::uuid& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single IR curve bootstrap config by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The IR curve bootstrap config if found, std::nullopt otherwise.
      */
-    std::optional<domain::ir_curve_bootstrap_config> get_bootstrap_config(const std::string& id);
+    std::optional<domain::ir_curve_bootstrap_config>
+    get_bootstrap_config(const boost::uuids::uuid& id);
 
     /**
      * @brief Retrieves a batch of IR curve bootstrap configs by primary key.
@@ -161,7 +165,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_bootstrap_config(const std::string& id);
+    void delete_bootstrap_config(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes IR curve bootstrap configs by their primary keys.
@@ -170,6 +174,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a IR curve bootstrap config.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::ir_curve_bootstrap_config>
     get_bootstrap_config_history(const std::string& id);

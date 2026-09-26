@@ -159,14 +159,17 @@ public:
      * @return The calendar exception at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::calendar_exception>
-    get_calendar_exception_at_version(const std::string& id, std::uint32_t version);
+    get_calendar_exception_at_version(const boost::uuids::uuid& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single calendar exception by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The calendar exception if found, std::nullopt otherwise.
      */
-    std::optional<domain::calendar_exception> get_calendar_exception(const std::string& id);
+    std::optional<domain::calendar_exception> get_calendar_exception(const boost::uuids::uuid& id);
 
     /**
      * @brief Retrieves a batch of calendar exceptions by primary key.
@@ -196,7 +199,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_calendar_exception(const std::string& id);
+    void delete_calendar_exception(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes calendar exceptions by their primary keys.
@@ -205,6 +208,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a calendar exception.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::calendar_exception> get_calendar_exception_history(const std::string& id);
 

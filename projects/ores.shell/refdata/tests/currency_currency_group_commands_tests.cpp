@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/refdata/currency_currency_group_commands.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
 #include <sstream>
@@ -69,8 +70,23 @@ TEST_CASE("currency_currency_group_commands_registers_every_derived_verb", tags)
 
     currency_currency_group_commands::register_commands(root_menu, session);
 
+    // The menu's completion list is the only public view of its children, so
+    // a verb that is missing from it was never registered.
+    const auto completions = root_menu.GetCompletions("currency_currency_groups ");
+    for (const auto& verb : {
+             std::string{"currency_currency_groups list"},
+             std::string{"currency_currency_groups get"},
+             std::string{"currency_currency_groups get-many"},
+             std::string{"currency_currency_groups add"},
+             std::string{"currency_currency_groups set"},
+             std::string{"currency_currency_groups put-many"},
+             std::string{"currency_currency_groups delete"},
+             std::string{"currency_currency_groups delete-many"},
+             std::string{"currency_currency_groups by-currency-iso-code"},
+         })
+        CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
+
     BOOST_LOG_SEV(lg, debug) << "Registered 9 command(s).";
-    CHECK(true);
 }
 
 TEST_CASE("currency_currency_group_commands_process_list_requires_a_session", tags) {
@@ -112,6 +128,12 @@ TEST_CASE("currency_currency_group_commands_process_get_reports_the_expected_cou
     currency_currency_group_commands::process_get(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -154,6 +176,12 @@ TEST_CASE("currency_currency_group_commands_process_add_reports_the_expected_cou
     currency_currency_group_commands::process_add(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -182,6 +210,12 @@ TEST_CASE("currency_currency_group_commands_process_set_reports_the_expected_cou
     currency_currency_group_commands::process_set(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -224,6 +258,12 @@ TEST_CASE("currency_currency_group_commands_process_delete_reports_the_expected_
     currency_currency_group_commands::process_delete(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -269,5 +309,11 @@ TEST_CASE(
     currency_currency_group_commands::process_by_currency_iso_code(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }

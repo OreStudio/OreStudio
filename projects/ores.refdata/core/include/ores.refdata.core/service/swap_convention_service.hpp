@@ -165,6 +165,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a swap convention.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::swap_convention> get_swap_convention_history(const std::string& id);
 

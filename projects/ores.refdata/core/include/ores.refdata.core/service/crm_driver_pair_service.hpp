@@ -120,15 +120,18 @@ public:
      * @param version The version to fetch.
      * @return The CRM driver pair at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::crm_driver_pair> get_crm_driver_pair_at_version(const std::string& id,
-                                                                          std::uint32_t version);
+    std::optional<domain::crm_driver_pair>
+    get_crm_driver_pair_at_version(const boost::uuids::uuid& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single CRM driver pair by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The CRM driver pair if found, std::nullopt otherwise.
      */
-    std::optional<domain::crm_driver_pair> get_crm_driver_pair(const std::string& id);
+    std::optional<domain::crm_driver_pair> get_crm_driver_pair(const boost::uuids::uuid& id);
 
     /**
      * @brief Retrieves a batch of CRM driver pairs by primary key.
@@ -156,7 +159,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_crm_driver_pair(const std::string& id);
+    void delete_crm_driver_pair(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes CRM driver pairs by their primary keys.
@@ -165,6 +168,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a CRM driver pair.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::crm_driver_pair> get_crm_driver_pair_history(const std::string& id);
 

@@ -41,15 +41,6 @@ export interface TenorConventionResolutionsFilter {
     convention_code: string | null;
 }
 
-export interface TenorConventionResolutionEvent {
-    event_id: string;
-    key: TenorConventionResolutionKey;
-    action: string;
-    version: number;
-    occurred_at: string;
-    correlation_id: string | null;
-}
-
 export interface ListTenorConventionResolutionsRequest {
     offset: number;
     limit: number;

@@ -164,6 +164,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a business centre.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::business_centre> get_centre_history(const std::string& code);
 

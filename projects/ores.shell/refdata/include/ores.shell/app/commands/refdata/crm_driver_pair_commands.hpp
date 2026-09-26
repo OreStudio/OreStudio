@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <config_id> <base_currency_code> <quote_currency_code> <enabled> <reason>
+     * @brief add <config_id> <base_currency_code> <quote_currency_code> <enabled> <reason>
      * <commentary>
      */
     static void process_add(std::ostream& out,

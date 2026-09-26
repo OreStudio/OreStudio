@@ -58,15 +58,6 @@ export interface PartyCounterpartiesFilter {
     party_id: string | null;
 }
 
-export interface PartyCounterpartyEvent {
-    event_id: string;
-    key: PartyCounterpartyKey;
-    action: string;
-    version: number;
-    occurred_at: string;
-    correlation_id: string | null;
-}
-
 export interface ListPartyCounterpartiesRequest {
     offset: number;
     limit: number;

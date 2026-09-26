@@ -22,8 +22,8 @@
  * Template: cpp_protocol.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_REFDATA_MESSAGING_ASSET_CLASS_PROTOCOL_HPP
-#define ORES_REFDATA_MESSAGING_ASSET_CLASS_PROTOCOL_HPP
+#ifndef ORES_REFDATA_API_MESSAGING_ASSET_CLASS_PROTOCOL_HPP
+#define ORES_REFDATA_API_MESSAGING_ASSET_CLASS_PROTOCOL_HPP
 
 #include <string>
 #include <vector>

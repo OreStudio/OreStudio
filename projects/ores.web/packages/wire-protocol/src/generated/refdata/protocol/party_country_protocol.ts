@@ -58,15 +58,6 @@ export interface PartyCountriesFilter {
     party_id: string | null;
 }
 
-export interface PartyCountryEvent {
-    event_id: string;
-    key: PartyCountryKey;
-    action: string;
-    version: number;
-    occurred_at: string;
-    correlation_id: string | null;
-}
-
 export interface ListPartyCountriesRequest {
     offset: number;
     limit: number;

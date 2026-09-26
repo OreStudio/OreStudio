@@ -127,21 +127,21 @@ void counterparty_contact_information_commands::register_commands(cli::Menu& roo
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <id>");
+        "get <contact_type>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <id>");
+        "get-many <contact_type>");
 
     menu->Insert(
         "add",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <counterparty_id> <contact_type> <street_line_1> <street_line_2> <city> <state> "
+        "add <counterparty_id> <contact_type> <street_line_1> <street_line_2> <city> <state> "
         "<country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>");
 
     menu->Insert(
@@ -167,14 +167,14 @@ void counterparty_contact_information_commands::register_commands(cli::Menu& roo
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <id> <reason> <commentary> [--version <n>]");
+        "delete <contact_type> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <id> <reason> <commentary>");
+        "delete-many <contact_type> <reason> <commentary>");
 
     menu->Insert(
         "by-counterparty-id",
@@ -189,14 +189,14 @@ void counterparty_contact_information_commands::register_commands(cli::Menu& roo
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "versions <contact_type> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <id> --version <n>");
+        "version <contact_type> --version <n>");
 
     root_menu.Insert(std::move(menu));
 }
@@ -278,6 +278,7 @@ void counterparty_contact_information_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.contact_type, parsed->positionals[next++], "contact_type");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -321,7 +322,7 @@ void counterparty_contact_information_commands::process_get_many(
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::counterparty_contact_information_key key;
-            read_token(key.id, parsed->positionals[i + 0], "id");
+            read_token(key.contact_type, parsed->positionals[i + 0], "contact_type");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -361,8 +362,8 @@ void counterparty_contact_information_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 11 + 2) {
+            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -426,7 +427,7 @@ void counterparty_contact_information_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(
             req.change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
         read_token(req.change.write.contact_type, parsed->positionals[next++], "contact_type");
@@ -560,6 +561,7 @@ void counterparty_contact_information_commands::process_delete(
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.contact_type, parsed->positionals[next++], "contact_type");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -612,7 +614,7 @@ void counterparty_contact_information_commands::process_delete_many(
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::counterparty_contact_information_key key;
-            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
+            read_token(key.contact_type, parsed->positionals[i * 1 + 0], "contact_type");
             req.removals.push_back(
                 messaging::counterparty_contact_information_removal{.key = std::move(key)});
         }
@@ -721,6 +723,7 @@ void counterparty_contact_information_commands::process_versions(
                       << std::endl;
             return;
         }
+        read_token(req.key.contact_type, parsed->positionals[next++], "contact_type");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -766,6 +769,9 @@ void counterparty_contact_information_commands::process_version(
                       << std::endl;
             return;
         }
+        read_token(req.key.counterparty_contact_information.contact_type,
+                   parsed->positionals[next++],
+                   "contact_type");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

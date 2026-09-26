@@ -183,15 +183,31 @@ public:
      * @return The counterparty identifier at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::counterparty_identifier>
-    get_counterparty_identifier_at_version(const std::string& id, std::uint32_t version);
+    get_counterparty_identifier_at_version(const boost::uuids::uuid& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single counterparty identifier by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The counterparty identifier if found, std::nullopt otherwise.
      */
     std::optional<domain::counterparty_identifier>
-    get_counterparty_identifier(const std::string& id);
+    get_counterparty_identifier(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single counterparty identifier by the key the model
+     * declares -- the human-readable key a caller holds.
+     *
+     * This is the counterpart of the uuid overload above: the two keys an
+     * entity holds are different keys, and a call site has to say which one it
+     * means.
+     *
+     * @return The counterparty identifier if found, std::nullopt otherwise.
+     */
+    std::optional<domain::counterparty_identifier>
+    get_counterparty_identifier_by_id_value(const std::string& id_value);
 
     /**
      * @brief Retrieves a single counterparty identifier by its uuid primary key.
@@ -241,7 +257,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_counterparty_identifier(const std::string& id);
+    void delete_counterparty_identifier(const boost::uuids::uuid& id);
 
     /**
      * @brief Removes a counterparty identifier by its uuid primary key.
@@ -257,9 +273,13 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a counterparty identifier.
+     *
+     * Addressed by the key the model declares, which is the one a caller
+     * holds; the storage key is resolved from it here, the same step every
+     * other read makes.
      */
     std::vector<domain::counterparty_identifier>
-    get_counterparty_identifier_history(const std::string& id);
+    get_counterparty_identifier_history(const std::string& key);
 
     /**
      * @brief Retrieves all historical versions of a counterparty identifier

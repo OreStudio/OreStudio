@@ -219,11 +219,11 @@ TEST_CASE("write_crm_driver_pair_publishes_an_event", tags) {
         REQUIRE(versions.size() >= 2);
         REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
 
-        svc.delete_crm_driver_pair(id_str);
+        svc.delete_crm_driver_pair(v.id);
         // Delete soft-closes the active row (the instead-of delete
         // rule sets valid_to): the row disappears from latest reads,
         // and the version history keeps every version.
-        REQUIRE_FALSE(svc.get_crm_driver_pair(id_str).has_value());
+        REQUIRE_FALSE(svc.get_crm_driver_pair(v.id).has_value());
         REQUIRE(svc.get_crm_driver_pair_history(id_str).size() == versions.size());
     }
 }

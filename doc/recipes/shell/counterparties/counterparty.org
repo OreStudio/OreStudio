@@ -43,14 +43,14 @@ Reads the one row its key addresses. A key states every identifying column, so a
 The command is shaped like this:
 
 #+begin_example
-counterparties get <id>
+counterparties get <short_code>
 #+end_example
 
 It is addressed at =refdata.v1.counterparties.get=.
 
 #+name: counterparties-get
 #+begin_src ores-shell :tangle counterparties-get.ores :exports none
-counterparties get 00000000-0000-0000-0000-000000000000
+counterparties get __none__
 #+end_src
 
 ** =get-many=
@@ -64,14 +64,14 @@ Reads several rows in one request, one key group per row.
 The command is shaped like this:
 
 #+begin_example
-counterparties get-many <id>
+counterparties get-many <short_code>
 #+end_example
 
 It is addressed at =refdata.v1.counterparties.get_many=.
 
 #+name: counterparties-get-many
 #+begin_src ores-shell :tangle counterparties-get-many.ores :exports none
-counterparties get-many 00000000-0000-0000-0000-000000000000
+counterparties get-many __none__
 #+end_src
 
 ** =add=
@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-counterparties add <id> <short_code> <full_name> <transliterated_name> <party_type> <parent_counterparty_id> <business_center_code> <status> <image_id> <reason> <commentary>
+counterparties add <short_code> <full_name> <transliterated_name> <party_type> <parent_counterparty_id> <business_center_code> <status> <image_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.counterparties.put=.
 
 #+name: counterparties-add
 #+begin_src ores-shell :tangle counterparties-add.ores :exports none
-counterparties add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+counterparties add __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -148,14 +148,14 @@ Removes a row. The change carries a reason and a commentary, which the server re
 The command is shaped like this:
 
 #+begin_example
-counterparties delete <id> <reason> <commentary> [--version <n>]
+counterparties delete <short_code> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.counterparties.delete=.
 
 #+name: counterparties-delete
 #+begin_src ores-shell :tangle counterparties-delete.ores :exports none
-counterparties delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+counterparties delete __none__ system.new_record generated_script
 #+end_src
 
 ** =delete-many=
@@ -169,14 +169,14 @@ Removes several rows in one request. The change carries a reason and a commentar
 The command is shaped like this:
 
 #+begin_example
-counterparties delete-many <id> <reason> <commentary>
+counterparties delete-many <short_code> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.counterparties.delete_many=.
 
 #+name: counterparties-delete-many
 #+begin_src ores-shell :tangle counterparties-delete-many.ores :exports none
-counterparties delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+counterparties delete-many __none__ system.new_record generated_script
 #+end_src
 
 ** =versions=
@@ -190,14 +190,14 @@ Reads the row's recorded history, newest first.
 The command is shaped like this:
 
 #+begin_example
-counterparties versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+counterparties versions <short_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
 #+end_example
 
 It is addressed at =refdata.v1.counterparties_versions.list=.
 
 #+name: counterparties-versions
 #+begin_src ores-shell :tangle counterparties-versions.ores :exports none
-counterparties versions 00000000-0000-0000-0000-000000000000 --limit 1
+counterparties versions __none__ --limit 1
 #+end_src
 
 ** =version=
@@ -211,13 +211,13 @@ Reads one recorded version of the row.
 The command is shaped like this:
 
 #+begin_example
-counterparties version <id> --version <n>
+counterparties version <short_code> --version <n>
 #+end_example
 
 It is addressed at =refdata.v1.counterparties_versions.get=.
 
 #+name: counterparties-version
 #+begin_src ores-shell :tangle counterparties-version.ores :exports none
-counterparties version 00000000-0000-0000-0000-000000000000 --version 1
+counterparties version __none__ --version 1
 #+end_src
 

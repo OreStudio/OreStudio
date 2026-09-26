@@ -36,7 +36,7 @@
 namespace ores::refdata::messaging {
 
 struct book_key {
-    boost::uuids::uuid id;
+    std::string name;
 };
 
 struct book_write {

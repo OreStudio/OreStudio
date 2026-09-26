@@ -162,6 +162,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a calendar.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::calendar> get_calendar_history(const std::string& code);
 

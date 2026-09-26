@@ -199,7 +199,6 @@ business_day_convention_type_repository::read_at_version(context ctx,
     return entities.front();
 }
 
-
 business_day_convention_type_repository::remove_status
 business_day_convention_type_repository::remove(context ctx,
                                                 const std::string& code,

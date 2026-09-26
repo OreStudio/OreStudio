@@ -140,7 +140,7 @@ void calendar_rule_commands::register_commands(cli::Menu& root_menu, nats_client
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <calendar_code> <kind> <month> <day> <weekday> <occurrence> <day_offset> <shift> "
+        "add <calendar_code> <kind> <month> <day> <weekday> <occurrence> <day_offset> <shift> "
         "<effective_from> <effective_to> <reason> <commentary>");
 
     menu->Insert(
@@ -358,8 +358,8 @@ void calendar_rule_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -421,7 +421,7 @@ void calendar_rule_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.calendar_code, parsed->positionals[next++], "calendar_code");
         read_token(req.change.write.kind, parsed->positionals[next++], "kind");
         read_token(req.change.write.month, parsed->positionals[next++], "month");

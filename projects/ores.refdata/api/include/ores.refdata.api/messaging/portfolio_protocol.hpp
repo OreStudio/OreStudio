@@ -36,7 +36,7 @@
 namespace ores::refdata::messaging {
 
 struct portfolio_key {
-    boost::uuids::uuid id;
+    std::string name;
 };
 
 struct portfolio_write {

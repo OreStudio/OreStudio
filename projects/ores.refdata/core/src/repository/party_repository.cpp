@@ -153,6 +153,20 @@ std::vector<domain::party> party_repository::read_latest_by_code(context ctx,
         lg(),
         "Reading latest party by short_code.");
 }
+std::vector<domain::party>
+party_repository::read_latest_by_short_code(context ctx, const std::string& short_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party by short_code: " << short_code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<party_entity>> |
+                       where("short_code"_c == short_code && "valid_to"_c == max.value());
+
+    return execute_read_query<party_entity, domain::party>(
+        ctx,
+        query,
+        [](const auto& entities) { return party_mapper::map(entities); },
+        lg(),
+        "Reading latest party by short_code.");
+}
 
 std::vector<domain::party> party_repository::read_any_by_short_code(context ctx,
                                                                     const std::string& short_code) {

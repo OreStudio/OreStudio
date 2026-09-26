@@ -165,6 +165,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a instrument code.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::instrument_code> get_instrument_history(const std::string& code);
 

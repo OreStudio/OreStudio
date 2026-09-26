@@ -147,6 +147,12 @@ struct tenor_convention_resolution final {
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality, on the same terms as an entity's.
+     */
+    friend bool operator==(const tenor_convention_resolution&,
+                           const tenor_convention_resolution&) = default;
 };
 
 /**

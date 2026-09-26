@@ -164,6 +164,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a currency pair.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::currency_pair> get_pair_history(const std::string& pair_code);
 

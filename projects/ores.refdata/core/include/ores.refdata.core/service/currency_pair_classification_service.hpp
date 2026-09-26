@@ -173,6 +173,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a currency pair classification.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::currency_pair_classification>
     get_classification_history(const std::string& code);

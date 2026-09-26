@@ -173,6 +173,24 @@ party_contact_information_repository::read_latest_by_code(context ctx,
         lg(),
         "Reading latest party contact information by contact_type.");
 }
+std::vector<domain::party_contact_information>
+party_contact_information_repository::read_latest_by_contact_type(context ctx,
+                                                                  const std::string& contact_type) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party contact information by contact_type: "
+                               << contact_type;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_contact_information_entity>> |
+                       where("tenant_id"_c == tid && "contact_type"_c == contact_type &&
+                             "valid_to"_c == max.value());
+
+    return execute_read_query<party_contact_information_entity, domain::party_contact_information>(
+        ctx,
+        query,
+        [](const auto& entities) { return party_contact_information_mapper::map(entities); },
+        lg(),
+        "Reading latest party contact information by contact_type.");
+}
 
 std::vector<domain::party_contact_information>
 party_contact_information_repository::read_any_by_contact_type(context ctx,
@@ -233,7 +251,6 @@ party_contact_information_repository::read_at_version(context ctx,
         return std::nullopt;
     return entities.front();
 }
-
 
 std::vector<domain::party_contact_information>
 party_contact_information_repository::read_latest_by_party_id(context ctx,

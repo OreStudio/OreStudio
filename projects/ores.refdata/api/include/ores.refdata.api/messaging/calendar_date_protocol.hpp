@@ -49,15 +49,6 @@ struct calendar_dates_filter {
     std::optional<std::string> calendar_code;
 };
 
-struct calendar_date_event {
-    boost::uuids::uuid event_id;
-    calendar_date_key key;
-    std::string action;
-    std::uint32_t version;
-    std::chrono::system_clock::time_point occurred_at;
-    std::optional<std::string> correlation_id;
-};
-
 struct list_calendar_dates_request {
     using response_type = struct list_calendar_dates_response;
     static constexpr std::string_view nats_subject = "refdata.v1.calendar_dates.list";

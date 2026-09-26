@@ -115,6 +115,12 @@ public:
         context ctx, const std::string& counterparty_id, const std::string& contact_type);
 
     /**
+     * @brief Reads latest counterparty contact informations filtered by contact_type.
+     */
+    std::vector<domain::counterparty_contact_information>
+    read_latest_by_contact_type(context ctx, const std::string& contact_type);
+
+    /**
      * @brief Reads the newest counterparty contact informations filtered by contact_type, current
      * or not.
      *
@@ -144,7 +150,6 @@ public:
      */
     std::optional<domain::counterparty_contact_information>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
-
 
     /**
      * @brief Reads latest counterparty contact informations filtered by counterparty_id, with

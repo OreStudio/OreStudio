@@ -50,6 +50,10 @@ namespace {
  * A key record carries each column with the column's own type, and the
  * repository takes the text form every one of its key parameters shares, so
  * the conversion lives here rather than at every call site.
+ *
+ * The key record carries the key the model declares, which is the one a caller
+ * holds. When that is not the storage key the row is found by it and the
+ * repository's storage-key read is not used at all.
  */
 std::vector<domain::tenor_schedule> read_one(repository::tenor_schedule_repository& repo,
                                              const ores::database::context& ctx,
@@ -134,16 +138,7 @@ tenor_schedule_service::list_by_calendar_code_tenor_schedules(
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-    // A read scoped by a relation that the request leaves unstated has no
-    // scope, so it is refused rather than answered with every unset row.
-    if (!request.calendar_code) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "relation_required";
-        response.result.message =
-            "This read is scoped by calendar_code, and the request states none.";
-        return response;
-    }
-    const auto relation = *request.calendar_code;
+    const auto relation = request.calendar_code;
     response.schedules =
         repo_.read_latest_by_calendar_code(ctx_, relation, request.offset, request.limit);
     response.total = repo_.get_total_schedule_count_by_calendar_code(ctx_, relation);
@@ -173,16 +168,7 @@ tenor_schedule_service::list_by_diary_entry_type_tenor_schedules(
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-    // A read scoped by a relation that the request leaves unstated has no
-    // scope, so it is refused rather than answered with every unset row.
-    if (!request.diary_entry_type) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "relation_required";
-        response.result.message =
-            "This read is scoped by diary_entry_type, and the request states none.";
-        return response;
-    }
-    const auto relation = *request.diary_entry_type;
+    const auto relation = request.diary_entry_type;
     response.schedules =
         repo_.read_latest_by_diary_entry_type(ctx_, relation, request.offset, request.limit);
     response.total = repo_.get_total_schedule_count_by_diary_entry_type(ctx_, relation);

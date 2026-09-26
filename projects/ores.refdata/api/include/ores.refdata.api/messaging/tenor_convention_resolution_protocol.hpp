@@ -49,15 +49,6 @@ struct tenor_convention_resolutions_filter {
     std::optional<std::string> convention_code;
 };
 
-struct tenor_convention_resolution_event {
-    boost::uuids::uuid event_id;
-    tenor_convention_resolution_key key;
-    std::string action;
-    std::uint32_t version;
-    std::chrono::system_clock::time_point occurred_at;
-    std::optional<std::string> correlation_id;
-};
-
 struct list_tenor_convention_resolutions_request {
     using response_type = struct list_tenor_convention_resolutions_response;
     static constexpr std::string_view nats_subject = "refdata.v1.tenor_convention_resolutions.list";

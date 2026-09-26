@@ -25,7 +25,6 @@
 #include "ores.refdata.core/repository/calendar_date_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/calendar_date_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/calendar_date_entity.hpp"
 #include "ores.refdata.core/repository/calendar_date_mapper.hpp"
@@ -153,17 +152,14 @@ std::vector<domain::calendar_date> calendar_date_repository::read_latest(std::ui
 }
 
 std::vector<domain::calendar_date>
-calendar_date_repository::read_latest(const std::string& calendar_code,
-                                      const std::chrono::year_month_day& date) {
+calendar_date_repository::read_latest(const std::string& calendar_code, const std::string& date) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar date. " << calendar_code << "/" << date;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto calendar_code_str = calendar_code;
-    const auto date_str = ores::platform::time::datetime::to_iso8601_date(date);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<calendar_date_entity>> |
                        where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "date"_c == date_str && "valid_to"_c == max.value());
+                             "date"_c == date && "valid_to"_c == max.value());
 
     return execute_read_query<calendar_date_entity, domain::calendar_date>(
         ctx_,
@@ -216,15 +212,14 @@ calendar_date_repository::read_latest_by_calendar(const std::string& calendar_co
 }
 
 std::vector<domain::calendar_date>
-calendar_date_repository::read_latest_by_date(const std::chrono::year_month_day& date) {
+calendar_date_repository::read_latest_by_date(const std::string& date) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar dates. Date: " << date;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto date_str = ores::platform::time::datetime::to_iso8601_date(date);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<calendar_date_entity>> |
-        where("tenant_id"_c == tid && "date"_c == date_str && "valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "date"_c == date && "valid_to"_c == max.value()) |
         order_by("calendar_code"_c);
 
     auto rows = execute_read_query<calendar_date_entity, domain::calendar_date>(
@@ -283,9 +278,8 @@ std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_calenda
     return count;
 }
 
-std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_date(
-    const std::chrono::year_month_day& date) {
-    const auto date_str = ores::platform::time::datetime::to_iso8601_date(date);
+std::uint32_t
+calendar_date_repository::get_total_calendar_date_count_by_date(const std::string& date) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar dates count. Date: " << date;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
@@ -296,7 +290,7 @@ std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_date(
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         sqlgen::select_from<calendar_date_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "date"_c == date_str && "valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "date"_c == date && "valid_to"_c == max.value()) |
         sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
@@ -307,14 +301,13 @@ std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_date(
     return count;
 }
 
-void calendar_date_repository::remove(const std::string& calendar_code,
-                                      const std::chrono::year_month_day& date) {
+void calendar_date_repository::remove(const std::string& calendar_code, const std::string& date) {
     static_cast<void>(remove(calendar_code, date, std::nullopt));
 }
 
 calendar_date_repository::remove_status
 calendar_date_repository::remove(const std::string& calendar_code,
-                                 const std::chrono::year_month_day& date,
+                                 const std::string& date,
                                  std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing calendar date from database: " << calendar_code << "/"
                                << date;
@@ -332,12 +325,10 @@ calendar_date_repository::remove(const std::string& calendar_code,
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
-    const auto calendar_code_str = calendar_code;
-    const auto date_str = ores::platform::time::datetime::to_iso8601_date(date);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         sqlgen::delete_from<calendar_date_entity> |
-        where("tenant_id"_c == tid && "calendar_code"_c == calendar_code && "date"_c == date_str &&
+        where("tenant_id"_c == tid && "calendar_code"_c == calendar_code && "date"_c == date &&
               "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx_, query, lg(), "removing calendar date from database");

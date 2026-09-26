@@ -124,7 +124,6 @@ public:
     std::optional<domain::calendar_exception>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
-
     /**
      * @brief Reads latest calendar exceptions filtered by calendar_code, with pagination.
      * @param ctx Repository context with database connection

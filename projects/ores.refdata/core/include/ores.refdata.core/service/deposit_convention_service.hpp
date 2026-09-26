@@ -167,6 +167,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a deposit convention.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::deposit_convention> get_deposit_convention_history(const std::string& id);
 

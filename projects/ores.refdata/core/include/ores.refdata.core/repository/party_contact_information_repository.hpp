@@ -113,6 +113,12 @@ public:
     read_latest_by_code(context ctx, const std::string& party_id, const std::string& contact_type);
 
     /**
+     * @brief Reads latest party contact informations filtered by contact_type.
+     */
+    std::vector<domain::party_contact_information>
+    read_latest_by_contact_type(context ctx, const std::string& contact_type);
+
+    /**
      * @brief Reads the newest party contact informations filtered by contact_type, current or not.
      *
      * History is addressed by the key the model declares and must stay readable
@@ -140,7 +146,6 @@ public:
      */
     std::optional<domain::party_contact_information>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
-
 
     /**
      * @brief Reads latest party contact informations filtered by party_id, with pagination.

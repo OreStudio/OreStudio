@@ -177,7 +177,6 @@ tenor_repository::read_at_version(context ctx, const std::string& code, std::uin
     return entities.front();
 }
 
-
 tenor_repository::remove_status tenor_repository::remove(context ctx,
                                                          const std::string& code,
                                                          std::optional<std::uint32_t> version) {

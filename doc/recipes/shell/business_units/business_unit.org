@@ -43,14 +43,14 @@ Reads the one row its key addresses. A key states every identifying column, so a
 The command is shaped like this:
 
 #+begin_example
-business_units get <id>
+business_units get <unit_code>
 #+end_example
 
 It is addressed at =refdata.v1.business_units.get=.
 
 #+name: business_units-get
 #+begin_src ores-shell :tangle business_units-get.ores :exports none
-business_units get 00000000-0000-0000-0000-000000000000
+business_units get __none__
 #+end_src
 
 ** =get-many=
@@ -64,14 +64,14 @@ Reads several rows in one request, one key group per row.
 The command is shaped like this:
 
 #+begin_example
-business_units get-many <id>
+business_units get-many <unit_code>
 #+end_example
 
 It is addressed at =refdata.v1.business_units.get_many=.
 
 #+name: business_units-get-many
 #+begin_src ores-shell :tangle business_units-get-many.ores :exports none
-business_units get-many 00000000-0000-0000-0000-000000000000
+business_units get-many __none__
 #+end_src
 
 ** =add=
@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-business_units add <id> <unit_name> <parent_business_unit_id> <unit_code> <business_centre_code> <unit_type_id> <status> <reason> <commentary>
+business_units add <unit_name> <parent_business_unit_id> <unit_code> <business_centre_code> <unit_type_id> <status> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.business_units.put=.
 
 #+name: business_units-add
 #+begin_src ores-shell :tangle business_units-add.ores :exports none
-business_units add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+business_units add __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -148,14 +148,14 @@ Removes a row. The change carries a reason and a commentary, which the server re
 The command is shaped like this:
 
 #+begin_example
-business_units delete <id> <reason> <commentary> [--version <n>]
+business_units delete <unit_code> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.business_units.delete=.
 
 #+name: business_units-delete
 #+begin_src ores-shell :tangle business_units-delete.ores :exports none
-business_units delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+business_units delete __none__ system.new_record generated_script
 #+end_src
 
 ** =delete-many=
@@ -169,14 +169,14 @@ Removes several rows in one request. The change carries a reason and a commentar
 The command is shaped like this:
 
 #+begin_example
-business_units delete-many <id> <reason> <commentary>
+business_units delete-many <unit_code> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.business_units.delete_many=.
 
 #+name: business_units-delete-many
 #+begin_src ores-shell :tangle business_units-delete-many.ores :exports none
-business_units delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+business_units delete-many __none__ system.new_record generated_script
 #+end_src
 
 ** =versions=
@@ -190,14 +190,14 @@ Reads the row's recorded history, newest first.
 The command is shaped like this:
 
 #+begin_example
-business_units versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+business_units versions <unit_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
 #+end_example
 
 It is addressed at =refdata.v1.business_units_versions.list=.
 
 #+name: business_units-versions
 #+begin_src ores-shell :tangle business_units-versions.ores :exports none
-business_units versions 00000000-0000-0000-0000-000000000000 --limit 1
+business_units versions __none__ --limit 1
 #+end_src
 
 ** =version=
@@ -211,13 +211,13 @@ Reads one recorded version of the row.
 The command is shaped like this:
 
 #+begin_example
-business_units version <id> --version <n>
+business_units version <unit_code> --version <n>
 #+end_example
 
 It is addressed at =refdata.v1.business_units_versions.get=.
 
 #+name: business_units-version
 #+begin_src ores-shell :tangle business_units-version.ores :exports none
-business_units version 00000000-0000-0000-0000-000000000000 --version 1
+business_units version __none__ --version 1
 #+end_src
 

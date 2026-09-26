@@ -90,6 +90,11 @@ struct party_counterparty final {
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality, on the same terms as an entity's.
+     */
+    friend bool operator==(const party_counterparty&, const party_counterparty&) = default;
 };
 
 /**

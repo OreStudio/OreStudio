@@ -36,7 +36,7 @@
 namespace ores::refdata::messaging {
 
 struct crm_topology_config_key {
-    boost::uuids::uuid id;
+    std::string name;
 };
 
 struct crm_topology_config_write {

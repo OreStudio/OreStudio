@@ -124,7 +124,6 @@ public:
     std::optional<domain::ir_curve_bootstrap_config>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
-
     /**
      * @brief Reads latest IR curve bootstrap configs with pagination support.
      * @param ctx Repository context with database connection

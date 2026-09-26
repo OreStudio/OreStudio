@@ -167,6 +167,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a series subclass code.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::series_subclass_code> get_series_subclass_history(const std::string& code);
 

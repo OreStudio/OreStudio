@@ -58,15 +58,6 @@ export interface PartyCurrenciesFilter {
     party_id: string | null;
 }
 
-export interface PartyCurrencyEvent {
-    event_id: string;
-    key: PartyCurrencyKey;
-    action: string;
-    version: number;
-    occurred_at: string;
-    correlation_id: string | null;
-}
-
 export interface ListPartyCurrenciesRequest {
     offset: number;
     limit: number;

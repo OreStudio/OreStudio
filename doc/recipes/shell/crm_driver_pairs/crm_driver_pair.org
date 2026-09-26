@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-crm_driver_pairs add <id> <config_id> <base_currency_code> <quote_currency_code> <enabled> <reason> <commentary>
+crm_driver_pairs add <config_id> <base_currency_code> <quote_currency_code> <enabled> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.crm_driver_pairs.put=.
 
 #+name: crm_driver_pairs-add
 #+begin_src ores-shell :tangle crm_driver_pairs-add.ores :exports none
-crm_driver_pairs add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
+crm_driver_pairs add 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
 #+end_src
 
 ** =set=

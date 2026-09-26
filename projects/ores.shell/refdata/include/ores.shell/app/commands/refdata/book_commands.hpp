@@ -72,23 +72,23 @@ public:
                              const std::vector<std::string>& args);
 
     /**
-     * @brief get <id>
+     * @brief get <name>
      */
     static void process_get(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief get-many <id>
+     * @brief get-many <name>
      */
     static void process_get_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <name> <description> <parent_portfolio_id> <owner_unit_id>
-     * <functional_currency> <gl_account_ref> <cost_center> <book_status> <regulatory_book_type>
-     * <is_sweepable> <rates_centre_code> <reason> <commentary>
+     * @brief add <name> <description> <parent_portfolio_id> <owner_unit_id> <functional_currency>
+     * <gl_account_ref> <cost_center> <book_status> <regulatory_book_type> <is_sweepable>
+     * <rates_centre_code> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -113,14 +113,14 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief delete <id> <reason> <commentary> [--version <n>]
+     * @brief delete <name> <reason> <commentary> [--version <n>]
      */
     static void process_delete(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::vector<std::string>& args);
 
     /**
-     * @brief delete-many <id> <reason> <commentary>
+     * @brief delete-many <name> <reason> <commentary>
      */
     static void process_delete_many(std::ostream& out,
                                     ores::nats::service::nats_client& session,
@@ -135,14 +135,14 @@ public:
                                                const std::vector<std::string>& args);
 
     /**
-     * @brief versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+     * @brief versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
     static void process_versions(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief version <id> --version <n>
+     * @brief version <name> --version <n>
      */
     static void process_version(std::ostream& out,
                                 ores::nats::service::nats_client& session,

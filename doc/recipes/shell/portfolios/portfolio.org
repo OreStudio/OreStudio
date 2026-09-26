@@ -43,14 +43,14 @@ Reads the one row its key addresses. A key states every identifying column, so a
 The command is shaped like this:
 
 #+begin_example
-portfolios get <id>
+portfolios get <name>
 #+end_example
 
 It is addressed at =refdata.v1.portfolios.get=.
 
 #+name: portfolios-get
 #+begin_src ores-shell :tangle portfolios-get.ores :exports none
-portfolios get 00000000-0000-0000-0000-000000000000
+portfolios get __none__
 #+end_src
 
 ** =get-many=
@@ -64,14 +64,14 @@ Reads several rows in one request, one key group per row.
 The command is shaped like this:
 
 #+begin_example
-portfolios get-many <id>
+portfolios get-many <name>
 #+end_example
 
 It is addressed at =refdata.v1.portfolios.get_many=.
 
 #+name: portfolios-get-many
 #+begin_src ores-shell :tangle portfolios-get-many.ores :exports none
-portfolios get-many 00000000-0000-0000-0000-000000000000
+portfolios get-many __none__
 #+end_src
 
 ** =add=
@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-portfolios add <id> <name> <description> <parent_portfolio_id> <owner_unit_id> <purpose_type> <aggregation_ccy> <is_virtual> <status> <reason> <commentary>
+portfolios add <name> <description> <parent_portfolio_id> <owner_unit_id> <purpose_type> <aggregation_ccy> <is_virtual> <status> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.portfolios.put=.
 
 #+name: portfolios-add
 #+begin_src ores-shell :tangle portfolios-add.ores :exports none
-portfolios add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+portfolios add __none__ __none__ __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -148,14 +148,14 @@ Removes a row. The change carries a reason and a commentary, which the server re
 The command is shaped like this:
 
 #+begin_example
-portfolios delete <id> <reason> <commentary> [--version <n>]
+portfolios delete <name> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.portfolios.delete=.
 
 #+name: portfolios-delete
 #+begin_src ores-shell :tangle portfolios-delete.ores :exports none
-portfolios delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+portfolios delete __none__ system.new_record generated_script
 #+end_src
 
 ** =delete-many=
@@ -169,14 +169,14 @@ Removes several rows in one request. The change carries a reason and a commentar
 The command is shaped like this:
 
 #+begin_example
-portfolios delete-many <id> <reason> <commentary>
+portfolios delete-many <name> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.portfolios.delete_many=.
 
 #+name: portfolios-delete-many
 #+begin_src ores-shell :tangle portfolios-delete-many.ores :exports none
-portfolios delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+portfolios delete-many __none__ system.new_record generated_script
 #+end_src
 
 ** =versions=
@@ -190,14 +190,14 @@ Reads the row's recorded history, newest first.
 The command is shaped like this:
 
 #+begin_example
-portfolios versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+portfolios versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
 #+end_example
 
 It is addressed at =refdata.v1.portfolios_versions.list=.
 
 #+name: portfolios-versions
 #+begin_src ores-shell :tangle portfolios-versions.ores :exports none
-portfolios versions 00000000-0000-0000-0000-000000000000 --limit 1
+portfolios versions __none__ --limit 1
 #+end_src
 
 ** =version=
@@ -211,13 +211,13 @@ Reads one recorded version of the row.
 The command is shaped like this:
 
 #+begin_example
-portfolios version <id> --version <n>
+portfolios version <name> --version <n>
 #+end_example
 
 It is addressed at =refdata.v1.portfolios_versions.get=.
 
 #+name: portfolios-version
 #+begin_src ores-shell :tangle portfolios-version.ores :exports none
-portfolios version 00000000-0000-0000-0000-000000000000 --version 1
+portfolios version __none__ --version 1
 #+end_src
 

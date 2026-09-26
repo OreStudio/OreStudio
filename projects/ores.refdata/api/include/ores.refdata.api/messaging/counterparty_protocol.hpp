@@ -38,7 +38,7 @@
 namespace ores::refdata::messaging {
 
 struct counterparty_key {
-    boost::uuids::uuid id;
+    std::string short_code;
 };
 
 struct counterparty_write {

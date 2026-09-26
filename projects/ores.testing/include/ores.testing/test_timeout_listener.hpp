@@ -22,10 +22,11 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/export.hpp"
-#include <atomic>
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include <chrono>
+#include <condition_variable>
+#include <mutex>
 #include <string>
 #include <thread>
 
@@ -41,6 +42,10 @@ namespace ores::testing {
  *
  * Default timeout is 60 seconds per test. Set the ORES_TEST_TIMEOUT_SECONDS
  * environment variable to override.
+ *
+ * The watchdog waits on a condition rather than sleeping, so a test that ends
+ * wakes it at once. A plain sleep made every case pay the rest of its tick at
+ * teardown -- a suite of 34 tests that do nothing took 34 seconds.
  */
 class ORES_TESTING_EXPORT test_timeout_listener : public Catch::EventListenerBase {
 private:
@@ -63,7 +68,9 @@ private:
 
     std::chrono::steady_clock::time_point test_start_time_;
     std::string current_test_name_;
-    std::atomic<bool> test_running_{false};
+    std::mutex mutex_;
+    std::condition_variable finished_;
+    bool test_running_{false};
     std::thread watchdog_thread_;
     std::chrono::seconds timeout_{60};
 };

@@ -104,6 +104,27 @@ it would pass whenever it happened to win.
 
 * Notes
 
+** The per-test watchdog cost a second per case
+
+Found while measuring the suite. =test_timeout_listener=, registered by twenty
+test mains, slept in one-second ticks and =testCaseEnded= joined it, so every
+case that finished inside a tick waited out the rest of it. =ores.shell.workflow.tests=
+reported 34 cases at almost exactly 1.000s each -- 34.17s for tests whose work is
+milliseconds -- and =ores.shell.application.tests= took 22.23s the same way.
+
+It reached this branch by rebase: the shell workflow tests used to register
+=database_lifecycle_listener=, and another environment's commit swapped it for
+this one, which is why the same target went from 1.3s to 34s at the rebase. The
+watchdog now waits on a condition variable, so teardown is immediate:
+34.17s to 0.11s and 22.23s to 0.69s.
+
+Worth knowing: changing that listener's members is an ABI break for every test
+binary that instantiates it. Building only the target under test leaves the
+others linking the new =libores.testing.so= with the old layout, which aborts
+with "terminate called without an active exception". All twenty were rebuilt.
+
+** Running a configuration
+
 The fixture needs no other component's data, so every configuration runs as
 =super_admin= in the system tenant. Drive it from =ores.shell=:
 

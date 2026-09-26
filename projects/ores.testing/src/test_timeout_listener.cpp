@@ -33,7 +33,10 @@ void test_timeout_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo
 
     current_test_name_ = testInfo.name;
     test_start_time_ = std::chrono::steady_clock::now();
-    test_running_ = true;
+    {
+        const std::lock_guard<std::mutex> lock(mutex_);
+        test_running_ = true;
+    }
 
     BOOST_LOG_SEV(lg(), debug) << "Starting test: " << current_test_name_
                                << " (timeout: " << timeout_.count() << "s)";
@@ -42,7 +45,14 @@ void test_timeout_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo
 }
 
 void test_timeout_listener::testCaseEnded(Catch::TestCaseStats const& /*testCaseStats*/) {
-    test_running_ = false;
+    // Wake the watchdog instead of leaving it to finish its tick: joining a
+    // sleeping thread made every case that ended inside a tick pay the rest of
+    // it, which is a second per test on a suite of quick cases.
+    {
+        const std::lock_guard<std::mutex> lock(mutex_);
+        test_running_ = false;
+    }
+    finished_.notify_all();
 
     if (watchdog_thread_.joinable()) {
         watchdog_thread_.join();
@@ -64,10 +74,11 @@ void test_timeout_listener::testCaseEnded(Catch::TestCaseStats const& /*testCase
 void test_timeout_listener::watchdog_thread_func() {
     const auto check_interval = std::chrono::seconds(1);
 
+    std::unique_lock<std::mutex> lock(mutex_);
     while (test_running_) {
-        std::this_thread::sleep_for(check_interval);
-
-        if (!test_running_) {
+        // The wait doubles as the sleep: it returns early when the test ends,
+        // and otherwise wakes every check_interval to look at the clock.
+        if (finished_.wait_for(lock, check_interval, [this]() { return !test_running_; })) {
             return;
         }
 
@@ -86,7 +97,8 @@ void test_timeout_listener::watchdog_thread_func() {
                       << "========================================\n\n";
 
             // _Exit, not exit: the watchdog must not unwind a test that is
-            // still running.
+            // still running. Holding the lock is harmless, since nothing
+            // unwinds.
             std::_Exit(EXIT_FAILURE);
         }
     }

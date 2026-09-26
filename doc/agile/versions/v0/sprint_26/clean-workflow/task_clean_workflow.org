@@ -77,6 +77,10 @@ record each item's result in the table below.
 | P04 | Finding, and the section's centre of gravity. The workflow's own conversation is an operation, not an entity verb, and no model expresses it. Five hand-written protocol headers carry it today. The metatype and three precedents exist, so the work is modelling rather than generator invention. | Header inventory from B03; =ores.codegen.operation= precedents =ores.compute.work=, =ores.iam.account_messages= and =ores.history.history_messages=. Detail below. |
 | P05 | Not applicable yet. There is no protocol change to follow until the operation model replaces the hand-written headers; the consumers are then updated in the same piece of work. | — |
 | P06 | Not applicable: the component has no event cache, and B03 found none among its 53 files. | B03 survey. |
+| G01 | Pass. Regeneration is byte-identical and idempotent. The first run wrote 75 files; the second wrote nothing and reported "No drift: regenerated output matches the checked-in tree", exit 0, with the tree untouched. | Two runs of =check_component_drift.py --component workflow-cpp=, the second after committing the first. |
+| G02 | In progress. The generated set exists now, so the hand-written files generation supersedes are identifiable rather than guessed. The 12 repository files the B01 baseline said would change are among those the marker census now counts as generated. | G03's census, against B03's classification. |
+| G03 | Pass in part. The component holds 97 C++ files outside tests where the baseline held 53: 56 carry the generated marker and 41 remain hand-written, against a baseline of 0 and 53. Twelve of the original files are now generated, which is the 12 the baseline predicted would change. | File census over =projects/ores.workflow=, marker =AUTO-GENERATED FILE=. |
+| G06 | Pass for this component. All three modules report "All component_files.cmake up to date", each regenerated through the =ores.cmake.component.files= archetype rather than edited by hand. | =regenerate_cmake_component_files.py --component ores.workflow.{api,core,service}=. =--all= still fails on 24 components, verified pre-existing because =ores.reporting.core= is stale on a component this work never touched. |
 | M09 | Pass. No retired fragment survives in any model. | =grep= over the modeling directories for =qt=, =wt=, =drawer= and =presentation= returns nothing. |
 | M10 | The component model declares its parts. =validate_docs.sh= still to run. | =modeling/component_overview.org= carries =* Summary=, =* Sub-components= and =* Entity modules=. Verification is deferred to H01, which owns the diagram and the docs gate. |
 
@@ -360,6 +364,43 @@ One bare literal does survive, and P02 should catch it. =ores.refdata='s
 =s.command_subject = "refdata.v1.parties.put"= rather than referencing a
 generated constant. It is the only one on this path: inside =ores.workflow= the
 registrar references =::nats_subject= throughout.
+
+** G01 the regeneration, and why the drift check exits 1 first
+
+The first apply reports exit 1, and that is the check working rather than
+failing. It materialises untracked files and then refuses to pass, because
+=git diff= cannot see an untracked file, so it says so explicitly: "Commit the
+files or bring the component to a fully committed state before it can pass."
+Committed, the second run is clean.
+
+That is the idempotence G01 asks for, and it is worth having as evidence rather
+than as an assertion: the 75 files the baseline predicted are exactly the 75 the
+apply wrote -- 15 changed and 60 created -- and re-running the generator over
+them changes nothing.
+
+** G02 what generation superseded
+
+The 41 hand-written files that remain are the working list, and B03 already
+classified them. The ones generation supersedes are the five =api= protocol
+headers, the three =core= messaging handler and registrar files, and the four
+=core= domain files, all of which P04's operation model or the generated
+per-entity protocols will replace. The rest -- the engine, the service shell,
+and the umbrella and export headers -- stays.
+
+** V01 the build cannot run through compass in this session
+
+=compass build= invokes =systemd-run --user --scope= to place the compiler in a
+resource slice, and =systemd-run= cannot reach the user manager in this sandbox:
+"Failed to connect to user scope bus via local transport". =systemctl_bus= has
+no =systemd-run= path, so the busctl transport merged in #2153 does not cover it;
+it covers =systemctl= only. =--direct= does not help either, since it selects the
+emacs path rather than bypassing the wrapper.
+
+The underlying command is plain CMake, so the build is run directly as
+=cmake --build --preset linux-clang-debug-make -j 3=. That is the same
+compilation the wrapper would perform, minus the slice, and it is how V01 is
+evidenced here. The compass-level gap is recorded rather than worked around
+silently.
 
 * Test Scenarios
 

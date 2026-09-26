@@ -20,7 +20,13 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "generators_image_generator_tests.cpp"
+    "generators_image_tag_generator_tests.cpp"
+    "generators_tag_generator_tests.cpp"
     "image_eventing_integration_tests.cpp"
     "main.cpp"
+    "repository_image_repository_tests.cpp"
+    "repository_image_tag_repository_tests.cpp"
+    "repository_tag_repository_tests.cpp"
     "tag_eventing_integration_tests.cpp"
 )

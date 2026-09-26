@@ -22,7 +22,6 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.shell/app/pagination_context.hpp"
 
 namespace cli {
 
@@ -55,8 +54,7 @@ public:
      * @brief Register every synthetic entity's commands.
      */
     static void register_commands(cli::Menu& root_menu,
-                                  ores::nats::service::nats_client& session,
-                                  pagination_context& pagination);
+                                  ores::nats::service::nats_client& session);
 };
 
 } // namespace ores::shell::app::commands

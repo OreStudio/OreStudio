@@ -33,13 +33,11 @@ namespace ores::shell::app::commands {
 using namespace logging;
 
 void synthetic_entity_commands::register_commands(cli::Menu& root_menu,
-                                                  ores::nats::service::nats_client& session,
-                                                  pagination_context& /*pagination*/) {
+                                                  ores::nats::service::nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Registering synthetic entity command surface.";
 
     // Every unit is generated, so a verb the model gains or loses needs no edit
-    // here. The paged reads carry their own paging, which is why this registrar
-    // takes a pagination_context it does not pass on.
+    // here.
     folder_commands::register_commands(root_menu, session);
     fx_spot_generation_config_commands::register_commands(root_menu, session);
     gmm_component_commands::register_commands(root_menu, session);

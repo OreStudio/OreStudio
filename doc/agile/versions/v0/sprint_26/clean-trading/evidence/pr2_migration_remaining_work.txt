@@ -63,3 +63,22 @@ c. The unmodelled families' branch may take the generated arm.
    restored by hand after the run.
 
 All three are in the codemod, not in the consumer.
+
+Update, second trial
+--------------------
+The three fixes landed and the trial reports three things the codemod
+still gets wrong:
+
+- The many-row request's entity is not derivable by stripping the verb.
+  put_many_trades_request names the plural, so the stem reads "trades"
+  and the response check is left unrewritten. The write record's own
+  header is the reliable source: read the entity from the protocol
+  header that declares the request.
+- value_or belongs only where the wire member is not optional. The
+  identity members are optional on both sides (a nullable uuid), so
+  adding the empty string breaks them; the codemod now reads the write
+  record's member types and converts only where the two differ.
+- The four families with no model still take a generated arm somewhere
+  in the dispatch chain. The block-scoped reset is not enough; the
+  decision has to follow the request type actually declared in the
+  branch.

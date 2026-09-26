@@ -100,6 +100,27 @@ def group_fields(type_name: str) -> list[str]:
     return fields
 
 
+def optional_fields(entity: str) -> set[str]:
+    """The entity's domain members that the group declares optional."""
+    header = API / "domain" / f"{entity}.hpp"
+    if not header.exists():
+        return set()
+    optional: set[str] = set()
+    for type_name, _ in struct_member_pairs(
+            header.read_text(encoding="utf-8"), entity):
+        bare = type_name.split("::")[-1]
+        for directory in DOMAIN_DIRS:
+            candidate = directory / f"{bare}.hpp"
+            if not candidate.exists():
+                continue
+            for field_type, field_name in struct_member_pairs(
+                    candidate.read_text(encoding="utf-8"), bare):
+                if "optional<" in field_type:
+                    optional.add(field_name)
+            break
+    return optional
+
+
 def domain_paths(entity: str) -> dict[str, str]:
     """Field name -> the path it is read at on the domain object.
 
@@ -135,7 +156,8 @@ def generated_requests() -> set[str]:
 def is_generated(entity: str, generated: set[str]) -> bool:
     """Whether the entity's own protocol is generated rather than consolidated."""
     return bool({f"put_{entity}_request", f"list_{entity}s_request",
-                 f"delete_{entity}_request"} & generated)
+                 f"list_{entity}_request", f"delete_{entity}_request"}
+                & generated)
 
 
 def write_members(entity: str) -> list[str]:
@@ -202,12 +224,29 @@ def migrate(text: str, path: Path, report: list[str]) -> str:
                 indent = line[:len(line) - len(line.lstrip())]
                 ref = expr if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.]*", expr) \
                     else f"({expr})"
-                lines = [f"{indent}{var}.change.write.{m} = {ref}.{paths.get(m, m)};\n"
-                         for m in members]
+                optional = optional_fields(entity)
+                wire = dict(struct_member_pairs(
+                    (MSG / f"{entity}_protocol.hpp").read_text(encoding="utf-8"),
+                    f"{entity}_write"))
+                rendered = []
+                for m in members:
+                    value = f"{ref}.{paths.get(m, m)}"
+                    # An optional domain member reaches a non-optional wire
+                    # member through its empty value; where the wire member is
+                    # optional too, the two agree and nothing converts.
+                    if (paths.get(m, m).split(".")[-1] in optional
+                            and "optional<" not in wire.get(m, "")):
+                        value += '.value_or("")'
+                    rendered.append(f"{indent}{var}.change.write.{m} = {value};\n")
+                lines = rendered
                 out.extend(lines)
                 expanded += 1
                 continue
 
+        if re.search(r"^\s*(\}\s*)?(else\s+)?if\s*(constexpr)?\s*\(", line) or line.rstrip().endswith("{"):
+            # A branch declares its own request and response, so the
+            # previous branch's pairing must not reach it.
+            resp_entity.clear()
         call = re.search(r"auto\s+(\w+)\s*=\s*nats_call\([^,]+,\s*(\w+),", line)
         if call:
             resp_entity[call.group(1)] = var_entity.get(call.group(2), "")

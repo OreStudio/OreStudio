@@ -347,6 +347,7 @@ void workflow_engine::check_compensation_complete(const domain::workflow_instanc
 }
 
 void workflow_engine::on_step_completed(ores::nats::message msg) {
+    const std::lock_guard<std::mutex> lock(mutex_);
     auto event_result =
         ores::nats::default_wire_codec().decode<messaging::step_completed_event>(msg.data);
     if (!event_result) {
@@ -448,6 +449,7 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
 }
 
 void workflow_engine::on_start_workflow(ores::nats::message msg) {
+    const std::lock_guard<std::mutex> lock(mutex_);
 
     auto msg_result =
         ores::nats::default_wire_codec().decode<messaging::start_workflow_message>(msg.data);
@@ -606,6 +608,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
 }
 
 void workflow_engine::recover_in_progress() {
+    const std::lock_guard<std::mutex> lock(mutex_);
     BOOST_LOG_SEV(lg(), info) << "Starting workflow recovery pass.";
 
     // Recover both in-progress and compensating instances.

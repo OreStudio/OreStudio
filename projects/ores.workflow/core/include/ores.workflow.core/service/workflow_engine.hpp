@@ -32,6 +32,7 @@
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <memory>
+#include <mutex>
 
 namespace ores::workflow::service {
 
@@ -43,10 +44,14 @@ namespace ores::workflow::service {
  * to PostgreSQL before and after each NATS publish so that the engine can
  * restart at any time and resume all in-flight workflows.
  *
- * Thread safety: instances of this class are not thread-safe. Each NATS
- * message callback runs on the NATS IO thread; a single engine instance
- * is shared across all queue-group subscribers, protected by the NATS
- * library's serialisation guarantees.
+ * Thread safety: a single engine instance is shared by every subscription, and
+ * the callbacks are NOT serialised by the NATS library. The start and
+ * step-completed handlers have been measured running on different threads, with
+ * the completion being processed inside the start that caused it. Every entry
+ * point therefore takes mutex_, because the handlers write the same rows with a
+ * read-modify-write under optimistic locking and would otherwise lose each
+ * other's updates: the identity fixture had set_step_state lose to
+ * stamp_command_published, which left the step in_progress for good.
  */
 class ORES_WORKFLOW_CORE_EXPORT workflow_engine {
 private:
@@ -187,6 +192,17 @@ private:
     fsm_state_map step_states_;
     repository::workflow_instance_repository instance_repo_;
     repository::workflow_step_repository step_repo_;
+
+    /**
+     * @brief Serialises the entry points against each other.
+     *
+     * Held for the whole of a handler, so a handler's read-modify-write of a
+     * step or instance row cannot interleave with another's. A plain mutex is
+     * enough because the handlers run on different threads: a publish is
+     * asynchronous, so the handler it provokes never re-enters this one on the
+     * same thread and the lock cannot deadlock.
+     */
+    std::mutex mutex_;
 };
 
 }

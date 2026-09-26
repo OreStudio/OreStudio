@@ -58,7 +58,7 @@ investigation:
 ├─────────────────────────────────────────────────────┤                  │
 │                                                     │  Diagram list    │
 │                                                     │  ─────────────   │
-│           SVG canvas (pan/zoom)                     │  • C++: ores.cli │
+│           SVG canvas (pan/zoom)                   │  • C++: ores.shell │
 │                                                     │  • C++: ores.gui │
 │    Click on class/entity → opens detail panel       │  • SQL: schema   │
 │    (overlays right side of canvas)                  │  • Codegen model │

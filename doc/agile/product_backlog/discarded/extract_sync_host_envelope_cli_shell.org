@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 80C2A6CC-1CAF-4250-A807-85390C798266
+:END:
+#+title: Extract a sync sibling of run_host_async for the console tools
+#+description: Discarded. The extraction landed as the sprint 25 sync host envelope story, and ores.cli retired on 2026-09-23, leaving ores.shell as the only consumer.
+#+type: capture
+#+level: cross
+#+filetags: :cpp:service-app:shell:discarded:
+#+created: 2026-08-05
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog. The idea is ruled out rather than deferred, and the file stays as the record of why.
+
+* What
+
+Add a sync counterpart to
+=ores::service::service::run_host_async()=
+(=projects/ores.service/include/ores.service/service/host_runner.hpp=)
+for the console tools, whose =host.cpp= bodies are correctly *not* on
+the async helper (neither has an =io_context=) but duplicated about 70%
+of their own structure with each other: parse args, check for an empty
+=optional<config>=, init the =lifecycle_manager=, log the args and
+config, then run the
+=try { construct application; run; } catch (const std::exception&)=
+block.
+
+* Why discarded
+
+The extraction landed. =ores::service::service::run_host_sync()= lives in
+=projects/ores.service/include/ores.service/service/host_runner_sync.hpp=,
+delivered by the sprint 25 story
+[[id:6481A516-8BBB-4BFC-82A0-1F4A69438FD6][Extract a sync sibling of run_host_async for ores.cli/ores.shell]].
+=ores.cli= then retired on 2026-09-23 (story
+[[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]]), so
+=ores.shell= is the only caller and there is no second tool left to
+share the envelope with.
+
+* References
+
+- projects/ores.shell/src/app/host.cpp
+- projects/ores.service/include/ores.service/service/host_runner_sync.hpp
+- projects/ores.service/include/ores.service/service/host_runner.hpp
+
+* See also
+
+- [[id:DAA69C0E-E1E6-4441-954A-037ACB494F04][Review whether ores.cli/ores.shell's host.cpp divergence is load-bearing or historical]] — the investigation that surfaced this
+- [[id:4544572F-7C42-4A37-8440-C11B58511C94][Unify application.cpp and service initialisation across services]] — the original async extraction

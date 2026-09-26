@@ -83,6 +83,15 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Delivery
+
+PR [#2140](https://github.com/OreStudio/OreStudio/pull/2140) merged on
+2026-09-23 as =388a90445f=. It was rebased onto =ddced912a5= first, which
+resolved two conflicts with the Qt-remnant cleanup, in
+=doc/meta/tag_inventory.org= and =projects/ores.hpp=. Two independent
+verifiers returned PASS+NOTES, one before the rebase and one after. All
+six PR checks passed.
+
 * Result
 
 Done on 2026-09-23, branch =feature/decommission-ores-cli=, off

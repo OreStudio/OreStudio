@@ -58,8 +58,7 @@ commission story carries an identical "implement shell commands" task that only
 defers the real work. A single top-level story — establish the pattern on
 currency, templatize into a facet, then roll out — gives every entity a
 consistent, generated REPL surface and removes the per-entity toil, exactly as
-was done for HTTP and Wt. =ores.cli= has the *identical* gap and warrants a
-separate sibling story.
+was done for HTTP and Wt.
 
 * References
 
@@ -93,4 +92,3 @@ would fold that rollout in for free.
 
 - [[id:03FC50B3-622B-4456-AE66-2F180B526723][HTTP entity endpoints — top-level commissioning story]] (sibling horizontal layer; same per-entity + generated-aggregator approach).
 - [[id:EEE4880F-525A-4805-8082-B8638CB54ABA][Wt entity UI — top-level commissioning story]] (sibling horizontal layer).
-- =ores.cli= has the identical codegen gap — file a sibling "CLI commands — top-level commissioning story".

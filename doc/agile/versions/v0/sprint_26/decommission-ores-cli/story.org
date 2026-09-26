@@ -26,10 +26,10 @@ supported command surface.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The component, its round-trip chain and its 65 recipes are deleted, verified and up for review. One follow-up task remains. |
+| Now           | PR #2140 is merged on trunk. The mop-up task is clearing the backlog references the merge left. One follow-up task remains. |
 | Waiting on    | Nothing.                               |
-| Next          | Close the follow-up task, then close the story. |
-| Last touched  | 2026-09-23                               |
+| Next          | Finish the mop-up and the orphaned round-trip task, then close the story. |
+| Last touched  | 2026-09-26                               |
 
 * Acceptance
 
@@ -47,9 +47,16 @@ supported command surface.
 |------+-------+-------+-----+-------------|
 | [[id:22EDB3D2-10F7-4FBB-960B-2AD6AD9945D5][Delete the ores.cli component and its round-trip chain]] | DONE | 2026-09-23 | 2026-09-23 | Task for: Decommission ores.cli |
 | [[id:BC0854B0-E6FD-4935-B326-7FDC654A80CB][Retire the orphaned ORE directory round-trip export]] | BACKLOG | | | ores::ore::xml::exporter::roundtrip lost its only caller when ores.cli was deleted. The directory-level round-trip has no test coverage and no consumer. Decide whether to delete the method and its options model or keep it as library API. |
+| [[id:1D5FFEA8-BAE4-4122-8A8D-30058906A5C4][Mop up the CLI references the decommission left]] | DONE | 2026-09-26 | 2026-09-26 | Task for: Decommission ores.cli |
 
 * Decisions
 
+- *PR #2140 merged on 2026-09-23* as =388a90445f=, after a rebase onto
+  =ddced912a5= that resolved two conflicts with the Qt-remnant cleanup, in
+  =doc/meta/tag_inventory.org= and =projects/ores.hpp=. Two independent
+  verifiers returned PASS+NOTES, one before the rebase and one after. The
+  tag row for =cli= was kept and marked retired, matching the convention
+  the Qt removal had just set for =qt=.
 - *Decommission instead of cleaning.* The component passed the
   Component Clean Standard's automated half already, so a clean pass had
   no validator failure to fix. Its 125 test cases are 95% argument

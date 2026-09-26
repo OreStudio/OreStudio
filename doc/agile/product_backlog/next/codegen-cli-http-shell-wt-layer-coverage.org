@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 9CBDBDC0-33A9-4A2C-B02A-7F49F07007E5
 :END:
-#+title: Add CLI, HTTP, shell, and Wt layer generation to codegen
-#+description: Codegen currently has no profiles for generating CLI commands, HTTP REST endpoints, shell REPL commands, or Wt web UI. Each entity commissioned since the codegen migration ships without these layers, and per-entity placeholder captures accumulate. Build codegen profiles for each layer so entities get CLI/HTTP/shell/Wt support automatically on regeneration. This will need splitting into per-layer stories (one for CLI, one for HTTP, one for shell, one for Wt) with per-component tasks.
+#+title: Add HTTP, shell, and Wt layer generation to codegen
+#+description: Codegen currently has no profiles for generating HTTP REST endpoints, shell REPL commands, or Wt web UI. Each entity commissioned since the codegen migration ships without these layers, and per-entity placeholder captures accumulate. Build codegen profiles for each layer so entities get HTTP/shell/Wt support automatically on regeneration. This will need splitting into per-layer stories (one for HTTP, one for shell, one for Wt) with per-component tasks. The CLI layer left this list when ores.cli retired on 2026-09-23.
 #+type: capture
 #+level: cross
 #+filetags: 
@@ -13,10 +13,9 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next
 
 * What
 
-Add codegen profiles for the four presentation/access layers that
+Add codegen profiles for the three presentation/access layers that
 currently have no codegen support at all:
 
-- CLI commands (=ores.cli=)
 - HTTP REST endpoints (=ores.http.server=)
 - Shell REPL commands (=ores.shell=)
 - Wt web UI (=ores.wt=)

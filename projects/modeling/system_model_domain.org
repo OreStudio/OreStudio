@@ -142,9 +142,9 @@ requiring real market feeds.
 
 | Sub-component          | Role                                               | Dependencies                                           |
 |------------------------+----------------------------------------------------+--------------------------------------------------------|
-| [[id:44039E5B-3435-4BCB-824F-3990AF341FBE][ores.synthetic.api]]     | Shared synthetic data types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                                      |
-| [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]]    | Scenario generation, curve/surface synthesis       | [[id:44039E5B-3435-4BCB-824F-3990AF341FBE][ores.synthetic.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]] |
-| [[id:702753E8-0E07-4690-AFAB-D75514ADE660][ores.synthetic.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                          | [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                         |
+| [[id:44039E5B-3435-4BCB-824F-3990AF341FBE][ores.synthetic.api]]     | Domain types, generators, feed implementations, and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]]                                                      |
+| [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]]    | Repositories, CRUD services, NATS handlers, and history providers | [[id:44039E5B-3435-4BCB-824F-3990AF341FBE][ores.synthetic.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]] |
+| [[id:702753E8-0E07-4690-AFAB-D75514ADE660][ores.synthetic.service]] | NATS entrypoint, feed control plane, and change-event publishing | [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                         |
 
 ** ores.assets
 

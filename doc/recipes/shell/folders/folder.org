@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 0FD93EEC-FBDC-530D-98F9-8110C71E102B
+:END:
+#+title: How do I run the folders commands from the shell?
+#+description: Every command the folders submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:folders:
+
+This file documents the folders resource at the shell, one section per command. Every command is a subcommand of =folders=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 97BC6A2D-E765-573A-B42D-1B9E5EE0453F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+folders list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.folders.list=.
+
+#+name: folders-list
+#+begin_src ores-shell :tangle folders-list.ores :exports none
+folders list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 3C6CCE1B-26BF-5F0A-A3F8-879777A07A32
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+folders get <id>
+#+end_example
+
+It is addressed at =synthetic.v1.folders.get=.
+
+#+name: folders-get
+#+begin_src ores-shell :tangle folders-get.ores :exports none
+folders get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: B2E32924-D823-5EC6-A5FA-E80BCA3A60B2
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+folders get-many <id>
+#+end_example
+
+It is addressed at =synthetic.v1.folders.get_many=.
+
+#+name: folders-get-many
+#+begin_src ores-shell :tangle folders-get-many.ores :exports none
+folders get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 73406BFF-0351-57D1-880B-5F00B725E75D
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+folders add <id> <parent_id> <name> <kind> <collection_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.folders.put=.
+
+#+name: folders-add
+#+begin_src ores-shell :tangle folders-add.ores :exports none
+folders add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 2BED276A-38C7-5DD7-B30F-5B8434675170
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+folders set <id> <parent_id> <name> <kind> <collection_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.folders.put=.
+
+#+name: folders-set
+#+begin_src ores-shell :tangle folders-set.ores :exports none
+folders set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 2FB66D0B-D3E0-5977-91E9-CB220677ED23
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+folders put-many --count <n> <id> <parent_id> <name> <kind> <collection_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.folders.put_many=.
+
+#+name: folders-put-many
+#+begin_src ores-shell :tangle folders-put-many.ores :exports none
+folders put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 2D294AFB-E6EA-581E-9FCD-E9B388D2E06A
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+folders delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.folders.delete=.
+
+#+name: folders-delete
+#+begin_src ores-shell :tangle folders-delete.ores :exports none
+folders delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 2CA563A4-150A-51AD-A614-E56BCE6C9145
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+folders delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.folders.delete_many=.
+
+#+name: folders-delete-many
+#+begin_src ores-shell :tangle folders-delete-many.ores :exports none
+folders delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 0AB0DBD3-DBCB-5F31-8EE0-7192F91D9E73
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+folders versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.folders_versions.list=.
+
+#+name: folders-versions
+#+begin_src ores-shell :tangle folders-versions.ores :exports none
+folders versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 9715E702-8D75-5EDB-AF27-AA6DB3F12DDD
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+folders version <id> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.folders_versions.get=.
+
+#+name: folders-version
+#+begin_src ores-shell :tangle folders-version.ores :exports none
+folders version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

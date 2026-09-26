@@ -292,13 +292,13 @@ resolve_folder_id(std::ostream& out, nats_client& session, const std::string& to
     if (const auto id = try_uuid(token))
         return boost::uuids::to_string(*id);
 
-    synthetic::messaging::get_folders_request req{.offset = 0, .limit = 1000};
-    auto result = do_auth_request<synthetic::messaging::get_folders_response>(
+    synthetic::messaging::list_folders_request req{.offset = 0, .limit = 1000};
+    auto result = do_auth_request<synthetic::messaging::list_folders_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return std::nullopt;
-    if (!result->success) {
-        fail(out) << "Failed to list folders: " << result->message << std::endl;
+    if (result->result.outcome != ores::utility::domain::outcome::ok) {
+        fail(out) << "Failed to list folders: " << result->result.message << std::endl;
         return std::nullopt;
     }
 
@@ -389,13 +389,15 @@ std::optional<resolved_feed>
 resolve_feed(std::ostream& out, nats_client& session, const std::string& token) {
     const auto id = try_uuid(token);
 
-    synthetic::messaging::get_fx_spot_generation_configs_request fx_req{.offset = 0, .limit = 1000};
-    auto fx_result = do_auth_request<synthetic::messaging::get_fx_spot_generation_configs_response>(
-        out, session, std::string(fx_req.nats_subject), fx_req);
+    synthetic::messaging::list_fx_spot_generation_configs_request fx_req{.offset = 0,
+                                                                        .limit = 1000};
+    auto fx_result =
+        do_auth_request<synthetic::messaging::list_fx_spot_generation_configs_response>(
+            out, session, std::string(fx_req.nats_subject), fx_req);
     if (!fx_result)
         return std::nullopt;
-    if (!fx_result->success) {
-        fail(out) << "Failed to list feeds: " << fx_result->message << std::endl;
+    if (fx_result->result.outcome != ores::utility::domain::outcome::ok) {
+        fail(out) << "Failed to list feeds: " << fx_result->result.message << std::endl;
         return std::nullopt;
     }
 
@@ -415,15 +417,15 @@ resolve_feed(std::ostream& out, nats_client& session, const std::string& token) 
             return matched.feed;
     }
 
-    synthetic::messaging::get_ir_curve_generation_configs_request ir_req{.offset = 0,
-                                                                         .limit = 1000};
+    synthetic::messaging::list_ir_curve_generation_configs_request ir_req{.offset = 0,
+                                                                          .limit = 1000};
     auto ir_result =
-        do_auth_request<synthetic::messaging::get_ir_curve_generation_configs_response>(
+        do_auth_request<synthetic::messaging::list_ir_curve_generation_configs_response>(
             out, session, std::string(ir_req.nats_subject), ir_req);
     if (!ir_result)
         return std::nullopt;
-    if (!ir_result->success) {
-        fail(out) << "Failed to list feeds: " << ir_result->message << std::endl;
+    if (ir_result->result.outcome != ores::utility::domain::outcome::ok) {
+        fail(out) << "Failed to list feeds: " << ir_result->result.message << std::endl;
         return std::nullopt;
     }
 
@@ -724,13 +726,13 @@ bool synthetic_commands::list_folders(std::ostream& out,
                                       const std::string& folder_name) {
     BOOST_LOG_SEV(lg(), debug) << "Listing synthetic folders.";
 
-    synthetic::messaging::get_folders_request req{.offset = 0, .limit = 1000};
-    auto result = do_auth_request<synthetic::messaging::get_folders_response>(
+    synthetic::messaging::list_folders_request req{.offset = 0, .limit = 1000};
+    auto result = do_auth_request<synthetic::messaging::list_folders_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return false;
-    if (!result->success) {
-        fail(out) << "Failed to list folders: " << result->message << std::endl;
+    if (result->result.outcome != ores::utility::domain::outcome::ok) {
+        fail(out) << "Failed to list folders: " << result->result.message << std::endl;
         return false;
     }
 
@@ -785,7 +787,7 @@ bool synthetic_commands::list_folders(std::ostream& out,
         for (const auto& root : roots)
             printed += print_folder_tree(out, root, by_id, visited, 0);
 
-    out << printed << " of " << result->total_available_count << " folders shown." << std::endl;
+    out << printed << " of " << result->total << " folders shown." << std::endl;
     return true;
 }
 
@@ -822,15 +824,15 @@ bool synthetic_commands::list_configs(std::ostream& out,
                                       std::optional<synthetic::domain::scope> scope_filter) {
     BOOST_LOG_SEV(lg(), debug) << "Listing market data generation configs.";
 
-    synthetic::messaging::get_market_data_generation_configs_request req{.offset = 0,
+    synthetic::messaging::list_market_data_generation_configs_request req{.offset = 0,
                                                                          .limit = 1000};
     auto result =
-        do_auth_request<synthetic::messaging::get_market_data_generation_configs_response>(
+        do_auth_request<synthetic::messaging::list_market_data_generation_configs_response>(
             out, session, std::string(req.nats_subject), req);
     if (!result)
         return false;
-    if (!result->success) {
-        fail(out) << "Failed to list configs: " << result->message << std::endl;
+    if (result->result.outcome != ores::utility::domain::outcome::ok) {
+        fail(out) << "Failed to list configs: " << result->result.message << std::endl;
         return false;
     }
 
@@ -847,7 +849,7 @@ bool synthetic_commands::list_configs(std::ostream& out,
             out << " party_id=" << boost::uuids::to_string(*c.party_id);
         out << std::endl;
     }
-    out << shown << " of " << result->total_available_count << " configs shown." << std::endl;
+    out << shown << " of " << result->total << " configs shown." << std::endl;
     return true;
 }
 

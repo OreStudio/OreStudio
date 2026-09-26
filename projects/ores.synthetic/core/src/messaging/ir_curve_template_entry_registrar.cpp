@@ -40,20 +40,46 @@ std::vector<ores::nats::service::subscription> register_ir_curve_template_entry_
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<ir_curve_template_entry_handler>(
         nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_ir_curve_template_entries_request::nats_subject,
+    subs.push_back(nats.queue_subscribe(
+        list_ir_curve_template_entries_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_ir_curve_template_entries(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_ir_curve_template_entry_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_ir_curve_template_entry(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_ir_curve_template_entries_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_many_ir_curve_template_entries(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_ir_curve_template_entry_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_ir_curve_template_entry(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_ir_curve_template_entries_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_many_ir_curve_template_entries(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_ir_curve_template_entry_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_ir_curve_template_entry(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(delete_many_ir_curve_template_entries_request::nats_subject,
                                         queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_ir_curve_template_entry_request::nats_subject,
+                                        [h](ores::nats::message msg) {
+                                            h->delete_many_ir_curve_template_entries(
+                                                std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(list_ir_curve_template_entry_versions_request::nats_subject,
                                         queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(delete_ir_curve_template_entry_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(get_ir_curve_template_entry_history_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+                                        [h](ores::nats::message msg) {
+                                            h->list_ir_curve_template_entry_versions(
+                                                std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(
+        get_ir_curve_template_entry_version_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_ir_curve_template_entry_version(std::move(msg)); }));
     return subs;
 }
 

@@ -505,13 +505,6 @@ WIRE_001 refdata_curve_roles_drop.sql
 WIRE_001 refdata_curve_roles_notify_trigger_drop.sql
 
 # =============================================================================
-# Synthetic yield-curve process types -- synthetic_drop.sql wires the
-# process-parameter-definitions sibling family; these two files were not added.
-# =============================================================================
-WIRE_001 synthetic_yield_curve_process_types_drop.sql
-WIRE_001 synthetic_yield_curve_process_types_notify_trigger_drop.sql
-
-# =============================================================================
 # IAM -- iam_drop.sql never wired the session-samples drop or the
 # tenant-terminator drop.
 # =============================================================================

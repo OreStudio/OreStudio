@@ -25,6 +25,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <concepts>
 #include <cstdint>
 #include <optional>
 #include <stdexcept>
@@ -64,6 +65,18 @@ inline constexpr bool has_token_conversion_v =
 template <typename T>
 inline constexpr bool always_false_v = false;
 
+/**
+ * @brief Whether a column type parses its own command token.
+ *
+ * A domain enum opts in by declaring parse_token(std::string_view, T) in
+ * its own namespace. The call depends on T, so argument-dependent lookup
+ * finds it at instantiation and this header carries no domain include.
+ */
+template <typename T>
+concept has_parse_token = requires(std::string_view sv, T tag) {
+    { parse_token(sv, tag) } -> std::same_as<std::optional<T>>;
+};
+
 }
 
 /**
@@ -95,6 +108,10 @@ T from_token(const std::string& token) {
         return ores::platform::time::datetime::from_iso8601_date(token);
     } else if constexpr (detail::has_token_conversion_v<T>) {
         return boost::lexical_cast<T>(token);
+    } else if constexpr (detail::has_parse_token<T>) {
+        if (auto parsed = parse_token(std::string_view(token), T{}); parsed.has_value())
+            return *parsed;
+        throw std::invalid_argument("Unrecognised value: " + token);
     } else {
         static_assert(detail::always_false_v<T>,
                       "from_token has no conversion for this column type. "

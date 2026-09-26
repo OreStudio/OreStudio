@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 6657CEBD-B7F6-5626-BF3D-8A277B46E591
+:END:
+#+title: How do I run the yield_curve_process_parameter_definitions commands from the shell?
+#+description: Every command the yield_curve_process_parameter_definitions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:yield_curve_process_parameter_definitions:
+
+This file documents the yield_curve_process_parameter_definitions resource at the shell, one section per command. Every command is a subcommand of =yield_curve_process_parameter_definitions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 4D7BBBCF-A22F-5688-B26E-FFAF16FE7F9A
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_process_parameter_definitions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.yield_curve_process_parameter_definitions.list=.
+
+#+name: yield_curve_process_parameter_definitions-list
+#+begin_src ores-shell :tangle yield_curve_process_parameter_definitions-list.ores :exports none
+yield_curve_process_parameter_definitions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B228D610-7F67-58E8-80E6-209F9A21266C
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_process_parameter_definitions get <parameter_name>
+#+end_example
+
+It is addressed at =synthetic.v1.yield_curve_process_parameter_definitions.get=.
+
+#+name: yield_curve_process_parameter_definitions-get
+#+begin_src ores-shell :tangle yield_curve_process_parameter_definitions-get.ores :exports none
+yield_curve_process_parameter_definitions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 325CBF8F-213E-52A2-A023-446EBF909D81
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_process_parameter_definitions get-many <parameter_name>
+#+end_example
+
+It is addressed at =synthetic.v1.yield_curve_process_parameter_definitions.get_many=.
+
+#+name: yield_curve_process_parameter_definitions-get-many
+#+begin_src ores-shell :tangle yield_curve_process_parameter_definitions-get-many.ores :exports none
+yield_curve_process_parameter_definitions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: A68E6360-2CB0-5183-888F-A7779483477D
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_process_parameter_definitions add <id> <process_type_code> <parameter_name> <display_name> <symbol> <short_label> <description> <data_type> <default_value> <min_value> <max_value> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.yield_curve_process_parameter_definitions.put=.
+
+#+name: yield_curve_process_parameter_definitions-add
+#+begin_src ores-shell :tangle yield_curve_process_parameter_definitions-add.ores :exports none
+yield_curve_process_parameter_definitions add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ 0 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 408F5A1F-9A9C-57C2-A7B1-7323289168EA
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_process_parameter_definitions set <id> <process_type_code> <parameter_name> <display_name> <symbol> <short_label> <description> <data_type> <default_value> <min_value> <max_value> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.yield_curve_process_parameter_definitions.put=.
+
+#+name: yield_curve_process_parameter_definitions-set
+#+begin_src ores-shell :tangle yield_curve_process_parameter_definitions-set.ores :exports none
+yield_curve_process_parameter_definitions set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ 0 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 7C800C73-7BC4-5FDA-AD87-01F5C7A55C8B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_process_parameter_definitions put-many --count <n> <id> <process_type_code> <parameter_name> <display_name> <symbol> <short_label> <description> <data_type> <default_value> <min_value> <max_value> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.yield_curve_process_parameter_definitions.put_many=.
+
+#+name: yield_curve_process_parameter_definitions-put-many
+#+begin_src ores-shell :tangle yield_curve_process_parameter_definitions-put-many.ores :exports none
+yield_curve_process_parameter_definitions put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ 0 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 5E7CD2FE-881B-5DB9-9C1F-3A8F91C8054B
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_process_parameter_definitions delete <parameter_name> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.yield_curve_process_parameter_definitions.delete=.
+
+#+name: yield_curve_process_parameter_definitions-delete
+#+begin_src ores-shell :tangle yield_curve_process_parameter_definitions-delete.ores :exports none
+yield_curve_process_parameter_definitions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 4A8154E4-4266-59B3-83E9-2062AFB4B4A5
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_process_parameter_definitions delete-many <parameter_name> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.yield_curve_process_parameter_definitions.delete_many=.
+
+#+name: yield_curve_process_parameter_definitions-delete-many
+#+begin_src ores-shell :tangle yield_curve_process_parameter_definitions-delete-many.ores :exports none
+yield_curve_process_parameter_definitions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 0B9B6E86-1341-5750-BAA5-900C2FDF396B
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_process_parameter_definitions versions <parameter_name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.yield_curve_process_parameter_definitions_versions.list=.
+
+#+name: yield_curve_process_parameter_definitions-versions
+#+begin_src ores-shell :tangle yield_curve_process_parameter_definitions-versions.ores :exports none
+yield_curve_process_parameter_definitions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 25CF3A67-FD8E-5963-B91D-4CCC5418AB0E
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_process_parameter_definitions version <parameter_name> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.yield_curve_process_parameter_definitions_versions.get=.
+
+#+name: yield_curve_process_parameter_definitions-version
+#+begin_src ores-shell :tangle yield_curve_process_parameter_definitions-version.ores :exports none
+yield_curve_process_parameter_definitions version __none__ --version 1
+#+end_src
+

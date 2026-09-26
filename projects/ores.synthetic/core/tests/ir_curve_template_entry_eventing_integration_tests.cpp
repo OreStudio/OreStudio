@@ -23,7 +23,8 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
@@ -35,8 +36,9 @@
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.synthetic.api/domain/ir_curve_template_entry.hpp"
 #include "ores.synthetic.api/domain/ir_curve_template_entry_json_io.hpp" // IWYU pragma: keep.
-#include "ores.synthetic.api/eventing/ir_curve_template_entry_changed_event.hpp"
+#include "ores.synthetic.api/eventing/ir_curve_template_entry_event.hpp"
 #include "ores.synthetic.api/generators/ir_curve_template_entry_generator.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include "ores.synthetic.core/repository/ir_curve_template_entry_repository.hpp"
 #include "ores.synthetic.core/service/ir_curve_template_entry_service.hpp"
 // Soft-FK parent seeding (ores_synthetic_ir_curve_generation_configs_tbl): the parent may live in
@@ -95,7 +97,7 @@ using ores::synthetic::repository::ir_curve_template_entry_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_ir_curve_template_entry_publishes_nats_changed_event", tags) {
+TEST_CASE("write_ir_curve_template_entry_publishes_an_event", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -113,28 +115,23 @@ TEST_CASE("write_ir_curve_template_entry_publishes_nats_changed_event", tags) {
     nats.connect();
     REQUIRE(nats.is_connected());
 
-    auto sub = bus.subscribe<ores::synthetic::eventing::ir_curve_template_entry_changed_event>(
-        [&nats](const ores::synthetic::eventing::ir_curve_template_entry_changed_event& e) {
-            ev::service::publish_entity_event(
-                nats,
-                std::string(
-                    ev::domain::event_traits<
-                        ores::synthetic::eventing::ir_curve_template_entry_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.synthetic.ir_curve_template_entry",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.ir_curve_template_entry_ids,
-                                                .tenant_id = e.tenant_id});
-        });
+    using event_type = ores::synthetic::messaging::ir_curve_template_entry_event;
+    auto sub = bus.subscribe<event_type>([&nats](const event_type& e) {
+        // One payload is addressed by three subjects, so the subject is the
+        // collection's prefix and the action the event reports.
+        ev::service::publish_entity_event(nats, ev::domain::event_subject<event_type>(e.action), e);
+    });
 
-    event_source.register_mapping<ores::synthetic::eventing::ir_curve_template_entry_changed_event>(
-        "ores.synthetic.ir_curve_template_entry", "ores_synthetic_ir_curve_template_entries");
+    event_source.register_entity_event_mapping<event_type>(
+        "ores_synthetic_ir_curve_template_entries");
 
     // 2. Subscribe as an external observer would, on the relative subject --
-    // client::subscribe() prepends the subject_prefix itself.
+    // client::subscribe() prepends the subject_prefix itself. The wildcard
+    // takes every action: the first write creates the row and a re-drive
+    // updates it, and the chain is what is under test rather than which of
+    // the three subjects carried it.
     auto observer = nats.subscribe_buffered(
-        std::string(ev::domain::event_traits<
-                    ores::synthetic::eventing::ir_curve_template_entry_changed_event>::name),
-        10);
+        std::string(ev::domain::entity_event_traits<event_type>::subject_prefix) + ".>", 10);
 
     // The listener thread issues LISTEN asynchronously on its own
     // dedicated connection. Block until it has actually done so before
@@ -154,15 +151,17 @@ TEST_CASE("write_ir_curve_template_entry_publishes_nats_changed_event", tags) {
     auto ir_curve_config_id_parent =
         ores::synthetic::generators::generate_synthetic_ir_curve_generation_config(ctx);
     ir_curve_config_id_parent.change_reason_code = "system.test";
-    auto config_id_parent =
+    auto market_data_generation_config_parent =
         ores::synthetic::generators::generate_synthetic_market_data_generation_config(ctx);
-    config_id_parent.change_reason_code = "system.test";
+    market_data_generation_config_parent.change_reason_code = "system.test";
     // Seed the active market_data_generation_config row
     // ores_synthetic_market_data_generation_configs_tbl references: the referencing row's insert
     // trigger rejects a synthetic key that matches no active row, so it must be written first.
-    ores::synthetic::repository::market_data_generation_config_repository config_id_parent_repo;
-    config_id_parent_repo.write(party_ctx, config_id_parent);
-    ir_curve_config_id_parent.config_id = config_id_parent.id;
+    ores::synthetic::repository::market_data_generation_config_repository
+        market_data_generation_config_parent_repo;
+    market_data_generation_config_parent_repo.write(party_ctx,
+                                                    market_data_generation_config_parent);
+    ir_curve_config_id_parent.config_id = market_data_generation_config_parent.id;
     ores::synthetic::repository::ir_curve_generation_config_repository ir_curve_config_id_repo;
     ir_curve_config_id_repo.write(party_ctx, ir_curve_config_id_parent);
     v.ir_curve_config_id = ir_curve_config_id_parent.id;
@@ -192,15 +191,11 @@ TEST_CASE("write_ir_curve_template_entry_publishes_nats_changed_event", tags) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             auto snap = observer.snapshot();
             for (const auto& msg : snap) {
-                auto decoded =
-                    ores::nats::default_wire_codec().decode<ev::domain::entity_change_event>(
-                        msg.data);
-                if (decoded && decoded->entity == "ores.synthetic.ir_curve_template_entry") {
-                    for (const auto& changed_id : decoded->entity_ids) {
-                        if (changed_id == id_str)
-                            received.push_back(msg);
-                    }
-                }
+                auto decoded = ores::nats::default_wire_codec().decode<event_type>(msg.data);
+                // The event carries the row's own key record, so the row under
+                // test is recognised by comparing it with the row written.
+                if (decoded && decoded->key.id == v.id)
+                    received.push_back(msg);
             }
         }
     }
@@ -243,11 +238,11 @@ TEST_CASE("write_ir_curve_template_entry_publishes_nats_changed_event", tags) {
         REQUIRE(versions.size() >= 2);
         REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
 
-        svc.delete_ir_curve_template_entry(id_str);
+        svc.delete_ir_curve_template_entry(v.id);
         // Delete soft-closes the active row (the instead-of delete
         // rule sets valid_to): the row disappears from latest reads,
         // and the version history keeps every version.
-        REQUIRE_FALSE(svc.get_ir_curve_template_entry(id_str).has_value());
+        REQUIRE_FALSE(svc.get_ir_curve_template_entry(v.id).has_value());
         REQUIRE(svc.get_ir_curve_template_entry_history(id_str).size() == versions.size());
     }
 }

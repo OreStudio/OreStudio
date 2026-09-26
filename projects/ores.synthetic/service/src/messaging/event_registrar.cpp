@@ -20,6 +20,7 @@
 #include "ores.synthetic.service/messaging/event_registrar.hpp"
 
 // Per-entity generated event-mapping registrars.
+#include "ores.synthetic.service/messaging/folder_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/fx_spot_generation_config_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/gmm_component_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/ir_curve_generation_config_event_registrar.hpp"
@@ -43,6 +44,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     // event_bus subscription that republishes it to NATS; we take
     // ownership of the subscriptions here so they outlive this call.
     // ----------------------------------------------------------------
+    subs.push_back(register_folder_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_fx_spot_generation_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_gmm_component_event_mapping(event_source, event_bus, nats));
     subs.push_back(

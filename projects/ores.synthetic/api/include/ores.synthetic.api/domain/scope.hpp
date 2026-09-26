@@ -66,6 +66,16 @@ inline std::ostream& operator<<(std::ostream& s, scope s2) {
     return std::nullopt;
 }
 
+/**
+ * @brief Parse a scope from a shell command token.
+ *
+ * The shell command-token reader finds this overload by argument-dependent
+ * lookup, so the shell header needs no include of this one.
+ */
+[[nodiscard]] inline std::optional<scope> parse_token(std::string_view sv, scope) {
+    return scope_from_string(sv);
+}
+
 }
 
 #endif

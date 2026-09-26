@@ -42,21 +42,59 @@ register_yield_curve_process_parameter_definition_handlers(
     auto h = std::make_shared<yield_curve_process_parameter_definition_handler>(
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(
-        nats.queue_subscribe(get_yield_curve_process_parameter_definitions_request::nats_subject,
+        nats.queue_subscribe(list_yield_curve_process_parameter_definitions_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->list_yield_curve_process_parameter_definitions(std::move(msg));
+                             }));
     subs.push_back(
-        nats.queue_subscribe(save_yield_curve_process_parameter_definition_request::nats_subject,
+        nats.queue_subscribe(get_yield_curve_process_parameter_definition_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->get_yield_curve_process_parameter_definition(std::move(msg));
+                             }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_yield_curve_process_parameter_definitions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) {
+            h->get_many_yield_curve_process_parameter_definitions(std::move(msg));
+        }));
+    subs.push_back(
+        nats.queue_subscribe(put_yield_curve_process_parameter_definition_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->put_yield_curve_process_parameter_definition(std::move(msg));
+                             }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_yield_curve_process_parameter_definitions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) {
+            h->put_many_yield_curve_process_parameter_definitions(std::move(msg));
+        }));
     subs.push_back(
         nats.queue_subscribe(delete_yield_curve_process_parameter_definition_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->delete_yield_curve_process_parameter_definition(std::move(msg));
+                             }));
     subs.push_back(nats.queue_subscribe(
-        get_yield_curve_process_parameter_definition_history_request::nats_subject,
+        delete_many_yield_curve_process_parameter_definitions_request::nats_subject,
         queue_group,
-        [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+        [h](ores::nats::message msg) {
+            h->delete_many_yield_curve_process_parameter_definitions(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        list_yield_curve_process_parameter_definition_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) {
+            h->list_yield_curve_process_parameter_definition_versions(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_yield_curve_process_parameter_definition_version_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) {
+            h->get_yield_curve_process_parameter_definition_version(std::move(msg));
+        }));
     return subs;
 }
 

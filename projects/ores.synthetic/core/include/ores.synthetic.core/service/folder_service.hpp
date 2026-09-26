@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/folder.hpp"
+#include "ores.synthetic.api/messaging/folder_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/repository/folder_repository.hpp"
 #include "ores.utility/domain/hierarchy.hpp"
@@ -67,6 +68,33 @@ public:
     explicit folder_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_folders_response list_folders(const messaging::list_folders_request& request);
+    messaging::get_folder_response get_folder(const messaging::get_folder_request& request);
+    messaging::get_many_folders_response
+    get_many_folders(const messaging::get_many_folders_request& request);
+    messaging::put_folder_response put_folder(const messaging::put_folder_request& request);
+    messaging::put_many_folders_response
+    put_many_folders(const messaging::put_many_folders_request& request);
+    messaging::delete_folder_response
+    delete_folder(const messaging::delete_folder_request& request);
+    messaging::delete_many_folders_response
+    delete_many_folders(const messaging::delete_many_folders_request& request);
+    messaging::list_folder_versions_response
+    list_folder_versions(const messaging::list_folder_versions_request& request);
+    messaging::get_folder_version_response
+    get_folder_version(const messaging::get_folder_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists folders with pagination support.
      *
      * @param offset Number of records to skip.
@@ -90,15 +118,23 @@ public:
      * @param version The version to fetch.
      * @return The folder at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::folder> get_folder_at_version(const std::string& id,
+    std::optional<domain::folder> get_folder_at_version(const boost::uuids::uuid& id,
                                                         std::uint32_t version);
 
     /**
      * @brief Retrieves a single folder by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The folder if found, std::nullopt otherwise.
      */
-    std::optional<domain::folder> get_folder(const std::string& id);
+    std::optional<domain::folder> get_folder(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a batch of folders by primary key.
+     */
+    std::vector<domain::folder> get_folders(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a folder (creates or updates).
@@ -121,7 +157,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_folder(const std::string& id);
+    void delete_folder(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes folders by their primary keys.
@@ -130,6 +166,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a folder.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::folder> get_folder_history(const std::string& id);
 
@@ -148,6 +186,23 @@ public:
 private:
     context ctx_;
     repository::folder_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::folder_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::folder& out);
 };
 
 }

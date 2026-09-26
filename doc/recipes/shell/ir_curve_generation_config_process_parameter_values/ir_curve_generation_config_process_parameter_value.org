@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 698E250D-ECFD-5C03-A58C-CB77E01C6CFD
+:END:
+#+title: How do I run the ir_curve_generation_config_process_parameter_values commands from the shell?
+#+description: Every command the ir_curve_generation_config_process_parameter_values submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:ir_curve_generation_config_process_parameter_values:
+
+This file documents the ir_curve_generation_config_process_parameter_values resource at the shell, one section per command. Every command is a subcommand of =ir_curve_generation_config_process_parameter_values=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 03EC2541-3952-514B-A95F-8F5C2A3A9357
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_generation_config_process_parameter_values list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_generation_config_process_parameter_values.list=.
+
+#+name: ir_curve_generation_config_process_parameter_values-list
+#+begin_src ores-shell :tangle ir_curve_generation_config_process_parameter_values-list.ores :exports none
+ir_curve_generation_config_process_parameter_values list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 3E97E11D-1C6C-5ECD-AC76-5401F3311297
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_generation_config_process_parameter_values get <id>
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_generation_config_process_parameter_values.get=.
+
+#+name: ir_curve_generation_config_process_parameter_values-get
+#+begin_src ores-shell :tangle ir_curve_generation_config_process_parameter_values-get.ores :exports none
+ir_curve_generation_config_process_parameter_values get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 5E18636D-8386-5029-B00D-243F5822ED24
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_generation_config_process_parameter_values get-many <id>
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_generation_config_process_parameter_values.get_many=.
+
+#+name: ir_curve_generation_config_process_parameter_values-get-many
+#+begin_src ores-shell :tangle ir_curve_generation_config_process_parameter_values-get-many.ores :exports none
+ir_curve_generation_config_process_parameter_values get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 8089AF00-D231-5B83-A959-6DE67BD25D6C
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_generation_config_process_parameter_values add <id> <config_id> <parameter_definition_id> <parameter_value> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_generation_config_process_parameter_values.put=.
+
+#+name: ir_curve_generation_config_process_parameter_values-add
+#+begin_src ores-shell :tangle ir_curve_generation_config_process_parameter_values-add.ores :exports none
+ir_curve_generation_config_process_parameter_values add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 86CF0A48-9C50-50A3-80D6-8C2D77705905
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_generation_config_process_parameter_values set <id> <config_id> <parameter_definition_id> <parameter_value> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_generation_config_process_parameter_values.put=.
+
+#+name: ir_curve_generation_config_process_parameter_values-set
+#+begin_src ores-shell :tangle ir_curve_generation_config_process_parameter_values-set.ores :exports none
+ir_curve_generation_config_process_parameter_values set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 051EE604-D9B7-5968-8C31-ACC2969A44B5
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_generation_config_process_parameter_values put-many --count <n> <id> <config_id> <parameter_definition_id> <parameter_value> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_generation_config_process_parameter_values.put_many=.
+
+#+name: ir_curve_generation_config_process_parameter_values-put-many
+#+begin_src ores-shell :tangle ir_curve_generation_config_process_parameter_values-put-many.ores :exports none
+ir_curve_generation_config_process_parameter_values put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 09F09381-B148-56F9-A708-DF7ED2D2B785
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_generation_config_process_parameter_values delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_generation_config_process_parameter_values.delete=.
+
+#+name: ir_curve_generation_config_process_parameter_values-delete
+#+begin_src ores-shell :tangle ir_curve_generation_config_process_parameter_values-delete.ores :exports none
+ir_curve_generation_config_process_parameter_values delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: B4140C97-360A-521F-AEFC-F267047E57A2
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_generation_config_process_parameter_values delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_generation_config_process_parameter_values.delete_many=.
+
+#+name: ir_curve_generation_config_process_parameter_values-delete-many
+#+begin_src ores-shell :tangle ir_curve_generation_config_process_parameter_values-delete-many.ores :exports none
+ir_curve_generation_config_process_parameter_values delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 2116F6FB-387E-5270-B6DD-8D5DB2FD1A88
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_generation_config_process_parameter_values versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_generation_config_process_parameter_values_versions.list=.
+
+#+name: ir_curve_generation_config_process_parameter_values-versions
+#+begin_src ores-shell :tangle ir_curve_generation_config_process_parameter_values-versions.ores :exports none
+ir_curve_generation_config_process_parameter_values versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 9707F6CE-CA94-557A-A226-11AF267C6448
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_generation_config_process_parameter_values version <id> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_generation_config_process_parameter_values_versions.get=.
+
+#+name: ir_curve_generation_config_process_parameter_values-version
+#+begin_src ores-shell :tangle ir_curve_generation_config_process_parameter_values-version.ores :exports none
+ir_curve_generation_config_process_parameter_values version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

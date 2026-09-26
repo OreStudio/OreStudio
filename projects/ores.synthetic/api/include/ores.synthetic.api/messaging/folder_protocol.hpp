@@ -26,81 +26,247 @@
 #define ORES_SYNTHETIC_API_MESSAGING_FOLDER_PROTOCOL_HPP
 
 #include "ores.synthetic.api/domain/folder.hpp"
-#include "ores.utility/domain/hierarchy.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::synthetic::messaging {
 
-struct get_folders_request {
-    using response_type = struct get_folders_response;
+struct folder_key {
+    boost::uuids::uuid id;
+};
+
+struct folder_write {
+    boost::uuids::uuid id;
+    std::optional<boost::uuids::uuid> parent_id;
+    std::string name;
+    std::string kind;
+    std::optional<boost::uuids::uuid> collection_id;
+};
+
+struct folder_change {
+    folder_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct folder_removal {
+    folder_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct folder_lookup {
+    folder_key key;
+    std::optional<ores::synthetic::domain::folder> folder;
+};
+
+struct folder_event {
+    boost::uuids::uuid event_id;
+    folder_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct folder_version_key {
+    folder_key folder;
+    std::uint32_t version;
+};
+
+struct folder_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_folders_request {
+    using response_type = struct list_folders_response;
     static constexpr std::string_view nats_subject = "synthetic.v1.folders.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
 };
 
-struct get_folders_response {
+struct list_folders_response {
+    ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::folder> folders;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_folder_request {
-    using response_type = struct save_folder_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.folders.save";
-    ores::synthetic::domain::folder data;
-
-    static save_folder_request from(ores::synthetic::domain::folder v) {
-        return {.data = std::move(v)};
-    }
+struct get_folder_request {
+    using response_type = struct get_folder_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.folders.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    folder_key key;
 };
 
-struct save_folder_response {
-    bool success = false;
-    std::string message;
+struct get_folder_response {
+    ores::utility::domain::result result;
+    std::optional<ores::synthetic::domain::folder> folder;
+};
+
+struct get_many_folders_request {
+    using response_type = struct get_many_folders_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.folders.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<folder_key> keys;
+};
+
+struct get_many_folders_response {
+    ores::utility::domain::result result;
+    std::vector<folder_lookup> entries;
+};
+
+struct put_folder_request {
+    using response_type = struct put_folder_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.folders.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    folder_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_folder_response {
+    ores::utility::domain::result result;
+    ores::synthetic::domain::folder folder;
+};
+
+struct put_many_folders_request {
+    using response_type = struct put_many_folders_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.folders.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<folder_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_folders_response {
+    ores::utility::domain::result result;
+    std::vector<ores::synthetic::domain::folder> folders;
 };
 
 struct delete_folder_request {
     using response_type = struct delete_folder_response;
     static constexpr std::string_view nats_subject = "synthetic.v1.folders.delete";
-    std::vector<std::string> ids;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    folder_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_folder_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_folder_history_request {
-    using response_type = struct get_folder_history_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.folders.history";
-    std::string id;
+struct delete_many_folders_request {
+    using response_type = struct delete_many_folders_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.folders.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<folder_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_folder_history_response {
-    std::vector<ores::synthetic::domain::folder> history;
-    bool success = false;
-    std::string message;
+struct delete_many_folders_response {
+    ores::utility::domain::result result;
+};
+
+struct list_folder_versions_request {
+    using response_type = struct list_folder_versions_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.folders_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    folder_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<folder_versions_filter> filter;
+};
+
+struct list_folder_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::synthetic::domain::folder> versions;
+    std::uint64_t total;
+};
+
+struct get_folder_version_request {
+    using response_type = struct get_folder_version_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.folders_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    folder_version_key key;
+};
+
+struct get_folder_version_response {
+    ores::utility::domain::result result;
+    ores::synthetic::domain::folder version;
 };
 
 /**
- * @brief Reads the folder hierarchy rooted at, or containing,
- * a given folder.
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
  */
-struct get_folder_hierarchy_request {
-    using response_type = struct get_folder_hierarchy_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.folders.hierarchy";
-    std::string root_id;
-    bool from_root = false;
-};
-
-struct get_folder_hierarchy_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::utility::domain::hierarchy_node> roots;
-};
+namespace folder_event_subjects {
+inline constexpr std::string_view created = "synthetic.v1.folders_events.created";
+inline constexpr std::string_view updated = "synthetic.v1.folders_events.updated";
+inline constexpr std::string_view deleted = "synthetic.v1.folders_events.deleted";
+}
 
 }
 

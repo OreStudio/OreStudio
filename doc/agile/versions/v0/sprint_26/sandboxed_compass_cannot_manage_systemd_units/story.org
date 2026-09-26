@@ -51,7 +51,7 @@ fleet state it cannot actually see or change.
 
 - =ORES_USE_BUSCTL= is written into the =.env= that =compass env provision= and =compass env configure= generate, and defaults to on.
 - Both commands take a =--use-busctl= / =--no-use-busctl= pair, so a host where plain =systemctl --user= reaches the manager can switch the transport off, and the choice survives a re-configure.
-- =compass systemd= accepts =--use-busctl=, as =compass services= already does.
+- Every command that drives systemd takes the transport from =ORES_USE_BUSCTL= in the process environment first and the checkout's =.env= second, so an operator can switch the bus on or off for one command.
 - A failed =daemon-reload= is reported and makes the command fail, instead of returning 0 while systemd never reloads.
 - On a host where =systemctl --user= cannot connect, =compass services status= reports the units as stopped rather than missing.
 
@@ -138,7 +138,7 @@ whether =env provision= should deploy units, is the larger question.
 
 - =projects/ores.compass/src/systemctl_bus.py= — the busctl transport and its docstring, lines 1 to 65.
 - =projects/ores.compass/src/systemd_generate.py= — =cmd_generate= writes =systemd/units/=, =cmd_deploy= installs and calls daemon-reload with =check=False=.
-- =projects/ores.compass/src/compass_services.py= — line 765 sets the flag from =args.use_busctl=; only the services pillar defines it.
+- =projects/ores.compass/src/compass_services.py= — the =services= pillar adopts the transport after =load_env=, as every pillar that drives systemd now does.
 
 ** See also
 
@@ -152,8 +152,10 @@ A provisioned environment now carries =ORES_USE_BUSCTL=1= in its =.env=, so a
 sandboxed session reaches the user manager through busctl without anyone
 exporting a variable. =compass env provision= and =compass env configure= both
 take =--use-busctl= / =--no-use-busctl=, an explicit flag wins, an existing
-=.env= value stands, and a fresh checkout defaults to on. =compass systemd=
-accepts the flag the =services= pillar already had.
+=.env= value stands, and a fresh checkout defaults to on. Every other command
+resolves the same choice from =ORES_USE_BUSCTL= in the process environment
+first, and the file second, so the bus can be switched off for one call
+without editing anything.
 
 =compass systemd deploy= now exits 1 and prints why when systemd does not
 reload, instead of exiting 0 with the connection failure on stderr.

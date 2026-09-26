@@ -8,10 +8,10 @@
 #+level: cross
 #+filetags: :testing:services:nats:hygiene:memory:feedback:
 #+created: 2026-09-20
-#+updated: 2026-09-20
+#+updated: 2026-09-26
 
 Run compass services start before running the test suite, in particular before running ctest or any component test binary that carries eventing integration tests. Do not start services only when a failure asks for it.
 
 *Why:* The IAM core suite reports five failures that are nothing but 'NATS connect failed: No server available for connection' when the broker is down. They read exactly like regressions, so a stopped fleet costs a diagnosis every time and can hide a real failure among the noise. The user asked for this explicitly on 2026-09-19.
 
-*How to apply:* Start with =compass services start --use-busctl=, which brings the whole fleet up including the broker, and check =compass services status --use-busctl= reports no unit missing before running anything. The start is slow when the fleet is cold -- about eight minutes for twenty-four units -- so start it before the work that needs it, not after a failure. Load the checkout's =.env= when a test binary is run directly rather than through compass, since the binary reads its database and broker settings from the environment.
+*How to apply:* Start with =compass services start=, which brings the whole fleet up including the broker, and check =compass services status= reports no unit missing before running anything. Both take the transport from =ORES_USE_BUSCTL=, so a checkout configured for the bus needs no flag. The start is slow when the fleet is cold -- about eight minutes for twenty-four units -- so start it before the work that needs it, not after a failure. Load the checkout's =.env= when a test binary is run directly rather than through compass, since the binary reads its database and broker settings from the environment.

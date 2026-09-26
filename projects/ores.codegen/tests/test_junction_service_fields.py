@@ -89,3 +89,36 @@ def test_the_collection_is_written_and_read_on_the_same_field(tmp_path):
     }
     assert PLURAL in written
     assert SHORT not in written
+
+
+# A junction that stamps a target party takes the change intent as a parameter.
+# A branch that stamps and then ignores the intent both loses the caller's
+# reason and leaves the parameter unused, which -Werror refuses.
+PARTY_JUNCTION = (
+    REPO_ROOT
+    / "projects/ores.refdata/modeling/ores.refdata.party_counterparty_junction.org"
+)
+
+
+def _render_party_service(tmp_path):
+    model = tmp_path / PARTY_JUNCTION.name
+    model.write_text(PARTY_JUNCTION.read_text(encoding="utf-8"), encoding="utf-8")
+    output_dir = tmp_path / "out"
+    output_dir.mkdir()
+    output_name = "party_counterparty_service.cpp"
+    generate_from_model(
+        str(model),
+        DATA_DIR,
+        TEMPLATES_DIR,
+        output_dir,
+        is_processing_batch=True,
+        target_template="cpp_service.cpp.mustache",
+        target_output=output_name,
+    )
+    return (output_dir / output_name).read_text(encoding="utf-8")
+
+
+def test_a_target_party_stamp_keeps_the_caller_reason(tmp_path):
+    rendered = _render_party_service(tmp_path)
+    assert "out.change_reason_code = intent.reason_code;" in rendered
+

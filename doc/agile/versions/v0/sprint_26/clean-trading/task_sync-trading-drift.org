@@ -43,7 +43,7 @@ already reproduces the tree's semantics.
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
 | Now          | Not yet started.                       |
 | Waiting on   | PR 1 merged, so the decisions are on the main branch. |
-| Next         | Re-measure the baseline at the new head, then regenerate. |
+| Next         | Regenerate, then run migrate_consumer_to_generated_protocol.py over ores.ore's handler and the nine rates shell units; decide how the rollback names a trade now that the wire key is external_id. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance

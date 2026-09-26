@@ -67,7 +67,7 @@ ores.platform meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
   item B06 of the standard.
 - *Prefer the standard facility over a hand-rolled shim when every
   supported compiler has one.* `ORES_NO_UNIQUE_ADDRESS` gives way to
-  `[[no_unique_address]]`, and `ores::platform::unreachable()` to
+  =[[no_unique_address]]=, and `ores::platform::unreachable()` to
   `std::unreachable()`. Recorded as item H04.
 - *Fix a generator before refreshing what it generates.* A refresh that
   deletes correct content is worse than a stale diagram. Recorded as item

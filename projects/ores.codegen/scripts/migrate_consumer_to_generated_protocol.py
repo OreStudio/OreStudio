@@ -275,9 +275,11 @@ def migrate(text: str, path: Path, report: list[str]) -> str:
                 ref = expr if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.]*", expr) \
                     else f"({expr})"
                 optional = optional_fields(entity)
-                wire = dict(struct_member_pairs(
+                # struct_member_pairs yields (type, name); the lookup is by
+                # the wire member's name.
+                wire = {name: type_name for type_name, name in struct_member_pairs(
                     (MSG / f"{entity}_protocol.hpp").read_text(encoding="utf-8"),
-                    f"{entity}_write"))
+                    f"{entity}_write")}
                 types = domain_types(entity)
                 rendered = []
                 for m in members:

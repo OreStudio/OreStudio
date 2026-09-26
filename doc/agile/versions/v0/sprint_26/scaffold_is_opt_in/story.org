@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 231347B8-D537-4742-8D7E-5296DAE9A070
+:END:
+#+title: Story: Make first-generation component scaffolding opt-in
+#+description: A codegen scaffolding facet, default-disabled, so a normal regeneration can never recreate stub files or the umbrella header for an existing component.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:codegen:scaffold:v0:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-26                               |
+| End           | 2026-09-26                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1DD78C34-0C3B-412E-B6E1-1845CCF25374][Make the first-generation scaffold opt-in]] | DONE | 2026-09-26 | 2026-09-26 | Move the stub trio and the umbrella header into a default-disabled ores.cpp.scaffold facet, so a normal regeneration of an existing component never recreates them. |
+
+* Decisions
+
+- *First-generation scaffolding is opt-in, and the opt-in is one line.* The
+  facet is `#+default: disabled`; a component asks for it with
+  `:ores.cpp.scaffold.enabled: true`, which the overview scaffold writes for
+  a new component and which the first real model retires.
+- *The address states the lifetime.* The scaffold used to sit in
+  `ores.cpp.component`, so "first-generation only" was a convention nobody
+  could see. A facet of its own makes it structural.
+- *A component's umbrella header is scaffolding too.* The same run showed it
+  recreated for a component that had deleted it; it moved with the stubs.
+
+* Out of scope
+
+-

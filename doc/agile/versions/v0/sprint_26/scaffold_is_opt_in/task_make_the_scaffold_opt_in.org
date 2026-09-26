@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: 1DD78C34-0C3B-412E-B6E1-1845CCF25374
+:END:
+#+title: Task: Make the first-generation scaffold opt-in
+#+description: Move the stub trio and the umbrella header into a default-disabled ores.cpp.scaffold facet, so a normal regeneration of an existing component never recreates them.
+#+type: task
+#+level: s1
+#+filetags: :scaffold_is_opt_in:sprint_26:v0:
+#+owner: marco
+#+branch: feature/scaffold-is-opt-in
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:231347B8-D537-4742-8D7E-5296DAE9A070][Make first-generation component scaffolding opt-in]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:231347B8-D537-4742-8D7E-5296DAE9A070][Make first-generation component scaffolding opt-in]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+The finding came out of the ores.nats clean-standard analysis. Listing that
+component in the codegen catalogue made the drift gate offer to create
+`domain/stub.hpp`, `src/domain/stub.cpp`, `tests/stub_tests.cpp` and the
+umbrella header `ores.nats.hpp` -- the last of which that task had just
+deleted as dead code. The scaffold archetypes hung off `ores.cpp.component`
+and `ores.cpp.service-app`, keyed on `#+component_kind:` alone, so any
+non-composite component re-emitted them on every regeneration.
+
+1. Create `ores.cpp.scaffold`, `#+default: disabled`, and move the umbrella
+   header, the two stub archetypes and the two stub tests into it, renaming
+   them to match the facet.
+2. Re-run the physical-space inventory generator so the facet tables follow.
+3. Point the C++ scaffold address at the technical space (`ores.cpp`), since
+   the scaffold is now a sibling of `ores.cpp.component`, and correct the
+   guard message in `core.py`.
+4. Have the component-overview scaffold write
+   `:ores.cpp.scaffold.enabled: true`, so a new component still links and
+   tests before its first model.
+5. Update the skill, the runbook, the scaffold verifier, the fixtures and the
+   architecture docs.
+6. Add the regression test and re-run the codegen suite, the inventory check,
+   the drift gate and the documentation checks.
+
+| Step | Result |
+|------+--------|
+| 1 | Done. Five archetypes moved and renamed. |
+| 2 | Done. 42 inventory tables up to date. |
+| 3 | Done. `--address ores.cpp` reaches the scaffold; a facet-scoped address does not, which the test pins. |
+| 4 | Done. `doc_component.org.mustache` writes the line. |
+| 5 | Done. |
+| 6 | Done: 563 codegen tests pass, no drift, 40 components pass the doc checks, and zero stub files remain. |
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+** Why the scaffold is a facet and not a flag on the model
+
+The scaffold already had a home in the physical space; the bug was that its
+home was `ores.cpp.component`, which every component uses for life. A
+separate facet makes "this is first-generation only" a property of the
+address rather than a convention someone has to remember, and it reuses the
+switchable-facet mechanism the repo already has (`ores.sql.populate`,
+`ores.cpp.shell-command`, `ores.cpp.eventing-integration-test`).
+
+** What still emits from the scaffold by design
+
+A component created from the overview scaffold carries the opt-in line, so
+its first build works with no models. The line and the four files are
+removed together when the first real model lands, and
+`grep -rn 'ores.cpp.scaffold.enabled: true' projects/*/modeling/` lists
+whatever still carries scaffolding. No component in the tree carries it
+today.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | `applied_masd.org` still counted 12 service-app archetypes where the stub test moved out and 11 remain. | =projects/modeling/applied_masd.org= | Accept | Fixed: 11, matching the generated facet table and the facet's own prose. |
+| 2 | The regression test injected the opt-in as a `properties` override, so the documented drawer line was never exercised; breaking the drawer read would still pass every case. | =projects/ores.codegen/tests/test_scaffold_is_opt_in.py= | Accept | Fixed: a case writes `:ores.cpp.scaffold.enabled: true` into the model and lets the resolver read the drawer, and the helper now passes `None` rather than an empty dict so the drawer is read in the default cases too. |
+| 3 | The sample fixtures' prose described an opt-in their drawers did not carry, so the scaffold flow they exist to exercise never fired. | =projects/ores.codegen/tests/component_scaffold/= | Accept | Fixed: the three part fixtures carry the line and their `#+type:` is the current one, so the resolver reads them. |
+| 4 | The composite fixture still used the retired `#+type: component`, and its parts are not recognisable sub-components, so the resolver rejected it. | =sample_composite/component_overview.org= | Accept | Fixed: `#+type: ores.codegen.component` with `#+component_kind: composite`, and no `#+parts:` since the fixture's parts have no `modeling/` directory. |
+| 5 | `verify.py` defined a scaffold-output tuple it never used, and its path check asserted only that a directory exists. | =projects/ores.codegen/tests/component_scaffold/verify.py= | Accept | Fixed: the verifier now runs `resolve_targets` per target and asserts the emitted set equals what the overview asks for, so it distinguishes an opted-in component, a plain one and a composite root. |
+| 6 | The test's service cases matched the umbrella header by a flat-case suffix, so a service umbrella could not be pinned. | =test_scaffold_is_opt_in.py= | Accept | Fixed: the umbrella is matched by shape (`include/<component>/<component>.hpp`) and a service case pins it. |
+| 7 | The five moved archetypes' `Parent facet` link still pointed at the facet they left. | =projects/ores.codegen/library/templates/= | Accept | Fixed: all five link to `ores.cpp.scaffold`. |
+| 8 | The facet summary named three items where the facet holds five archetypes. | =ores.cpp.scaffold.org= | Accept | Fixed: the prose now names the service variant too. |
+| 9 | The task record claims the drift gate reports no drift while the agile records are uncommitted, so the gate exits non-zero on the dirty tree. | this task | Accept | Not a defect: the gate compares the tree with the committed state. Re-run after the records commit. |
+| 10 | The stub marker text survives in the scaffold templates. | =library/templates/= | Decline | The templates must state what they emit; the marker is the placeholder's text, and nothing emits it unless a component opts in. |
+| 11 | Two addresses are now documented (`ores.cmake.component` and `ores.cpp`) where the skill named one. | =SKILL.org=, =runbook.org= | Accept | Kept: the CMake files have always come from their own address; the skill was wrong, and a scaffold that omits them does not build. |
+| 12 | `core.py`'s guard message changed address. | =core.py= | Accept | Kept: the message must name the address that reaches the scaffold. |
+
+* Result
+
+The scaffold is opt-in. `ores.cpp.scaffold` is `#+default: disabled` and
+holds the umbrella header, the two stub archetypes and the two stub tests;
+`ores.cpp.component` and `ores.cpp.service-app` hold only what a component
+keeps for life. The C++ scaffold address is `ores.cpp`, the component
+overview scaffold opts a new component in with one line, and
+`test_scaffold_is_opt_in.py` proves that no scaffold path appears without
+it -- including for a facet-scoped address -- and that no `stub.hpp`,
+`stub.cpp` or `stub_tests.cpp` exists anywhere under `projects/`.
+
+Verified: codegen suite 563 passed, physical-space inventories 42/42 up to
+date, `check_component_drift.py --all` reports no drift, `validate_docs.sh`
+passes all 40 components, and a dry run of `--address ores.cpp` against a
+mature part (`ores.iam/core`) emits only `export.hpp` and `tests/main.cpp`.

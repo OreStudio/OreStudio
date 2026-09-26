@@ -24,38 +24,40 @@
  *
  * Job Definition Table
  *
- * Metadata overlay for a pg_cron cron.job entry. Tracks the job name,
- * cron expression, SQL command, target database, and active state.
+ * A job the scheduler fires on a cron expression. The row carries the schedule
+ * (schedule_expression), what to run when it fires, and whether it is active.
+ * action_type selects the behaviour: execute_sql runs the SQL in command,
+ * and nats_publish publishes the subject and body carried in action_payload.
  *
- * DO NOT regenerate this entity at all -- every facet is out of sync with
- * the hand-maintained C++ (the model's own tenant_id/schedule_expression/
- * is_active column shapes don't match the hand-written job_definition
- * struct's actual types: std::optional<boost::uuids::uuid>, cron_expression,
- * bool. A regenerated tenant_id would come out as the codegen
- * utility::uuid::tenant_id wrapper, not the hand-written std::optional
- * type, so even the "safe" domain/repository-entity/mapper facets would
- * regenerate *wrong types*, not just wrong formatting) on top of the
- * deeper repository/service/messaging divergence documented under
- * ** Custom repository methods below.
- * None of this is modeled here yet; regenerating clobbers it with a
- * generic CRUD-only stack (and silently wrong column types) that breaks
- * all of the above. This model needs a proper resync -- correcting the
- * column shapes to match the hand-written struct, then re-adding
- * repository/messaging support for the four hand-written operations --
- * before any facet of it can be regenerated safely. The Qt facet is
- * equally excluded: its generated controllers/dialogs bind to the
- * hand-maintained scheduler_protocol.hpp classes, so a Qt regen would
- * emit code against a protocol surface that does not exist. Mirrors
- * party's hand-maintained-SQL treatment in the refdata drift-fix task,
- * but wider in scope (no facet is currently safe, not just SQL).
+ * The table is bi-temporal and audited (see
+ * projects/ores.sql/create/scheduler/scheduler_job_definitions_create.sql): it
+ * carries version, the four audit columns and the valid_from/valid_to pair
+ * with the GIST exclusion and the delete rule, so the model takes the ordinary
+ * audited shape and needs no shape flag.
+ *
+ * tenant_id is nullable. A job may belong to no tenant, because the scheduler
+ * fires system jobs from a NULL-tenant row: the MQ statistics scrape and the
+ * compute stale-result reaper are both such rows. The model binds
+ * uuid-identified-lookup for its UUID surrogate key, its tenant scope and its
+ * standard presentation tier, and states nullable_tenant_id itself, which that
+ * profile leaves to the model.
+ *
+ * job_name is the natural key and is unique within its tenant; id is the
+ * surrogate. Uniqueness is what the component's upsert path relies on: a job that
+ * arrives under an existing name updates that row in place instead of adding a
+ * second one.
+ *
+ * The component's operational views — the global job-instance list and the live
+ * scheduler status — are operations rather than entity verbs, and are modelled
+ * in ores.scheduler.scheduling_operations.
  */
 
 create table if not exists "ores_scheduler_job_definitions_tbl" (
     "id" uuid not null,
     "tenant_id" uuid,
     "version" integer not null,
-    "party_id" uuid null,
     "job_name" text not null,
+    "party_id" uuid null,
     "description" text not null default '',
     "command" text not null default '',
     "schedule_expression" text not null,
@@ -76,6 +78,11 @@ create table if not exists "ores_scheduler_job_definitions_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn())
 );
+
+-- Unique job_name for active records
+create unique index if not exists job_definitions_job_name_uniq_idx
+on "ores_scheduler_job_definitions_tbl" (tenant_id, job_name)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists job_definitions_version_uniq_idx
@@ -112,7 +119,17 @@ begin
     for update;
 
     if found then
-        if NEW.version != 0 and NEW.version != current_version then
+        -- The write states what it believes about the row, and the store is
+        -- what decides. Version zero means one thing: no current row exists.
+        -- So a create that collides with a live row is refused here, for every
+        -- client, rather than by a check each client has to remember.
+        if NEW.version = 0 then
+            if not ores_utility_version_replace_allowed_fn() then
+                raise exception
+                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
+                    using errcode = '23505';
+            end if;
+        elsif NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
                 NEW.version, current_version
                 using errcode = 'P0002';

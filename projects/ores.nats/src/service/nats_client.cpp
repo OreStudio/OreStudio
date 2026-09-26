@@ -218,8 +218,4 @@ message nats_client::authenticated_request(std::string_view subject,
     return do_authenticated_request(subject, body, timeout);
 }
 
-std::shared_ptr<client> nats_client::get_client() const {
-    return owned_client_;
-}
-
 } // namespace ores::nats::service

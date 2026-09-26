@@ -219,10 +219,9 @@ void on_msg(natsConnection*, natsSubscription*, natsMsg* msg, void* ud) {
     // itself throws -- e.g. decompress_if_flagged() on a message that
     // claims gzip encoding but isn't valid gzip (corrupted in transit,
     // or a malformed/malicious sender on a shared bus). That call must
-    // stay inside this try: it used to run before it, and an uncaught
-    // exception here crosses a C frame boundary into std::terminate(),
-    // killing the whole process with no log line for what would
-    // otherwise be a single droppable bad message.
+    // stay inside this try: an uncaught exception here crosses a C frame
+    // boundary into std::terminate(), killing the whole process with no
+    // log line for what would otherwise be a single droppable bad message.
     const char* s = natsMsg_GetSubject(msg);
     const std::string subject = s ? s : std::string();
     try {
@@ -683,37 +682,6 @@ void client::js_publish(std::string_view subject,
 
     if (s != NATS_OK)
         throw std::runtime_error(std::string("JetStream publish failed: ") + natsStatus_GetText(s));
-}
-
-subscription client::js_subscribe(std::string_view subject,
-                                  std::string_view durable_name,
-                                  message_handler handler) {
-
-    auto cl = std::make_unique<sub_closure>();
-    cl->handler = std::move(handler);
-
-    const std::string subj_str(make_subject(subject));
-    const std::string durable_str(durable_name);
-
-    BOOST_LOG_SEV(lg(), info) << "NATS js-subscribe: " << subj_str << " (durable: " << durable_str
-                              << ")";
-
-    jsSubOptions sub_opts;
-    jsSubOptions_Init(&sub_opts);
-    sub_opts.Config.Durable = durable_str.c_str();
-
-    natsSubscription* sub = nullptr;
-    // js_Subscribe(sub, js, subject, cb, closure, jsOptions*, jsSubOptions*, jsErrCode*)
-    const natsStatus s = js_Subscribe(
-        &sub, impl_->js, subj_str.c_str(), on_msg, cl.get(), nullptr, &sub_opts, nullptr);
-
-    if (s != NATS_OK)
-        throw std::runtime_error(std::string("js_Subscribe failed: ") + natsStatus_GetText(s));
-
-    auto si = std::make_unique<subscription::impl>();
-    si->sub = sub;
-    si->closure = std::move(cl);
-    return subscription(std::move(si));
 }
 
 subscription client::js_queue_subscribe(std::string_view subject,

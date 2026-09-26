@@ -34,6 +34,7 @@ Usage: imported by the check scripts, never run.
 # supersede each:
 # doc/agile/versions/v0/sprint_26/clean-compute/task_clean_compute.org.
 #
+<<<<<<< HEAD
 # ore joins it at the end of its clean-standard pass. The same three claims
 # hold: regeneration is byte-identical across every facet, every one of its
 # protocol headers has a TypeScript twin, and its seeds are complete.
@@ -42,4 +43,7 @@ Usage: imported by the check scripts, never run.
 # component that is not yet regenerable stays out for the reason refdata does:
 # an un-regenerated component's whole backlog rides along with any model
 # change to it.
-COMPONENTS_UNDER_TEST = ("iam", "compute-cpp", "ore")
+# synthetic joins it for the clean-synthetic task: its regeneration is
+# byte-identical and idempotent, all four of its test suites pass, and its
+# component diagrams are authored in the two passes H01 requires.
+COMPONENTS_UNDER_TEST = ("iam", "compute-cpp", "ore", "synthetic")

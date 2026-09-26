@@ -112,6 +112,13 @@ _FIELD_RE = re.compile(
     r'^\s*([\w:*&<>, ]+?)\s+(\w+)\s*'
     r'(?:=\s*[^;]+|\{(?:[^{}]|\{[^{}]*\})*\})?\s*;')
 _ENUM_VAL_RE = re.compile(r'^\s*(\w+)\s*(?:=\s*[^,\n]+)?\s*,?\s*$')
+_BLOCK_COMMENT_RE = re.compile(r'/\*.*?\*/')
+_LINE_COMMENT_RE = re.compile(r'//.*$')
+
+
+def _strip_trailing_comment(line: str) -> str:
+    """Drops a trailing comment so an enumeration value that carries one still reads."""
+    return _LINE_COMMENT_RE.sub('', _BLOCK_COMMENT_RE.sub('', line)).rstrip()
 
 # Visibility labels
 _VISIBILITY_RE = re.compile(r'^\s*(public|protected|private)\s*:')
@@ -374,7 +381,7 @@ def parse_header(path: Path) -> dict[tuple[str, ...], list[TypeInfo]]:
             # Enum values
             if current_type.kind in ("enum", "enum class"):
                 if stripped and not stripped.startswith('//') and not stripped.startswith('/*'):
-                    m = _ENUM_VAL_RE.match(stripped)
+                    m = _ENUM_VAL_RE.match(_strip_trailing_comment(stripped))
                     if m:
                         current_type.members.append(MemberInfo(name=m.group(1), type_str="", visibility="+"))
                 i += 1

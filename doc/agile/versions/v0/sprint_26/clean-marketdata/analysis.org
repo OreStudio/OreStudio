@@ -330,11 +330,16 @@ stay as written. Six of the mis-modelled shapes are fixed:
 | MM_FUTURE | 319 | declared ccy/index/tenor/point; ORE writes ccy/contract-month/contract-code/tenor | =contract_month=, =contract_code= |
 | OI_FUTURE | 620 | same | =contract_month=, =contract_code= |
 | DISCOUNT | 9,075 | the curve segment is an opaque declared name, not ccy+tenor; the derivation rejected every currency-named curve | the curve kept verbatim, the trailing segment read as the tenor |
+| CDS | 1,717 | ORE writes a seven-segment key carrying the credit derivatives' restructuring clause between the currency and the tenor; the model accepted only six | the clause as a third point part |
+| RECOVERY_RATE | 134 | the same clause, on the keys that name one | same |
 
 That is 13,806 corpus lines brought in by the first six, 939 by the two
-futures, and 9,075 by the discount re-modelling. What remains of the shape
-record is CPR and MM's residual (producers spell the index =ESTER= where
-=index_family= says =estr=).
+futures, 9,075 by the discount re-modelling and 1,851 by the credit
+restructuring clause. What remains of the shape record is CPR and MM's
+residual (producers spell the index =ESTER= where =index_family= says
+=estr=). Of the unnamed keys, the ones CPR and BOND share are the
+=SECURITY_1= placeholders the corpus writes instead of real identifiers, so
+the shape is readable even where the data is not.
 
 Each of the remaining shapes needs the identifier grammar extended, and the
 oresmd parser is hand-written per asset class rather than table-driven -- its

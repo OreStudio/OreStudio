@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ID: F7564B4B-EDCF-46F4-BB8B-DE88449BEC70
+:END:
+#+title: Task: Add the NATS and HTTP interface to ores.storage, with authentication
+#+description: Model the storage operation set so that put, get, delete, exists and list generate a protocol, a handler and permission codes on NATS and an authenticated route set on HTTP, and make both exercisable.
+#+type: task
+#+level: s1
+#+filetags: :storage-nats-http-interface:sprint_26:v0:
+#+owner: marco
+#+branch: feature/storage-nats-http-interface
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5EA439A5-43AE-4223-9026-6B3D8C91AEEA][Give object storage a NATS and HTTP interface with authentication]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Storage is reachable over NATS and over HTTP, and both surfaces authenticate.
+The operation set is modelled so that its protocol header, handler, permission
+codes, shell verbs and TypeScript twin generate from the model, and the storage
+routes that already move bytes gain the identity and permission checks they
+lack today.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:5EA439A5-43AE-4223-9026-6B3D8C91AEEA][Give object storage a NATS and HTTP interface with authentication]] |
+| Now          | Deriving the surface: the target state, the NATS entity protocol and the authentication conventions are being read against the component as it stands. |
+| Waiting on   | Nothing.                               |
+| Next         | Record the design in =* Plan=, then model the operation set. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- A model declares the storage operation set, and the generator produces its
+  protocol header, NATS handler, permission codes, shell verbs and TypeScript
+  twin from it, with no hand-written surface left behind.
+- The HTTP storage routes authenticate before they act, and each operation
+  checks its own permission code; an unauthenticated put and get are refused.
+- The NATS surface carries the same operations as HTTP, with the same bucket and
+  key semantics and the same failure set.
+- A raw shell surface takes a bucket, a key and a local path, so storage is
+  usable without a domain verb.
+- The permission codes are seeded, and =check_handler_permissions.py= passes
+  with the new codes.
+- A test proves the put, get, exists, list and delete round trip on both
+  interfaces.
+
+* Plan
+
+Storage is a resource, not an exception. The protocol's verbs already describe
+what storage does, so the surface starts as a model of an =objects= resource
+whose key is the pair =(bucket, key)=, and the HTTP routes become the projection
+of that model rather than a table written by hand.
+
+** The operation set
+
+The
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]]
+fixes eight verbs and forbids inventing one (*The verb set*). Storage declares
+the ones it serves, and that choice is the whole design:
+
+| Verb | Subject | What it does for storage |
+|------+---------+--------------------------|
+| =get= | =storage.v1.objects.get= | Read one object named by =(bucket, key)=. |
+| =get_many= | =storage.v1.objects.get_many= | Read a set of objects in one reply. |
+| =list= | =storage.v1.objects.list= | Page the objects in a bucket, filtered by key prefix. |
+| =put= | =storage.v1.objects.put= | Create or replace one object. |
+| =put_many= | =storage.v1.objects.put_many= | Create or replace a set as one transaction. |
+| =delete= | =storage.v1.objects.delete= | Remove one object. |
+| =delete_many= | =storage.v1.objects.delete_many= | Remove a set as one transaction. |
+
+=exists= is not one of the eight, and it does not need to be. The protocol has
+no =exists= and no =count= for the same reason: a count is a property of a list,
+and existence is a read. =get= answers existence with a =not_found= result, and
+HTTP answers it with =HEAD=, a read with the body left out. The target state's
+"exists" is therefore =get= rather than a new verb, and a raw =storage exists=
+is a shell convenience over =get=.
+
+The single and batch forms are paired by the protocol, so the plan declares both
+or neither for each verb it uses.
+
+** Where the bytes go
+
+NATS carries commands and, if it ever carries values, small ones. HTTP carries
+the bodies, because the request and response body already stream through a file
+body and a multi-megabyte object must never sit in memory. The two are one
+operation rather than two: the projection maps an operation to a route and the
+model declares the operation, so a route cannot advertise something the service
+does not perform.
+
+No message in the tree carries a raw byte payload today — an image travels
+base64-encoded in a text column — so a value over NATS is one of the decisions
+below rather than an assumption.
+
+** The HTTP projection
+
+The routes already exist and keep their path shape. What changes is that they
+become the model's projection, and that they gain the operations the model
+declares:
+
+| Operation | Route |
+|-----------+-------|
+| =put= | =PUT /api/v1/storage/{bucket}/{key}= |
+| =get= | =GET /api/v1/storage/{bucket}/{key}= |
+| =get= (existence and length) | =HEAD /api/v1/storage/{bucket}/{key}= |
+| =delete= | =DELETE /api/v1/storage/{bucket}/{key}= |
+| =list= | =GET /api/v1/storage/{bucket}?prefix=&offset=&limit=&order= |
+| =put_many=, =delete_many= | =PUT=, =DELETE /api/v1/storage/{bucket}= |
+
+Today the server registers three of these by hand and advertises no =HEAD=
+(=projects/ores.http/core/src/routes/storage_routes.cpp:51-80=).
+
+** Authentication and authorisation
+
+Both interfaces follow the protocol's *Security* section: the caller is
+authenticated before the operation is reached, identity and tenancy travel in
+the envelope or the session and never in a payload, and authorisation is per
+operation and per resource — a read verb is never authorised by the same code as
+a write verb.
+
+- HTTP: the storage routes call the router's =auth_required()=
+  (=projects/ores.http/api/src/net/router.cpp:82=), as the =iam= routes already
+  do, and the handler checks the operation's code. Today they call neither, so
+  the route default is public and an unauthenticated =PUT= succeeds.
+- NATS: the generated handler carries the same checks, with the codes declared
+  in the model and seeded with the component's others, so
+  =check_handler_permissions.py= gates them like any other component's.
+
+The exact code names come from the generator rather than from this plan. The
+rule the plan fixes is one code per =(resource, verb)=, with no sharing between a
+read and a write.
+
+** The raw surface
+
+=storage put=, =get=, =delete=, =list= and =exists= over a bucket, a key and a
+local path, generated from the model like any other component's shell unit. The
+component has no shell unit today — the clean pass recorded its items S01 and
+S02 as "Not applicable. No entity and no shell unit." — so this is an addition,
+not a restoration. The consumer verbs (=ore upload=, =compute publish-package=)
+then wrap the same operations instead of running a parallel surface.
+
+** Exercising both
+
+- HTTP: an integration test against the running server with a real token — put,
+  get, list, delete — asserting that the bytes come back identical and that an
+  unauthenticated call is refused.
+- NATS: a request/reply test through the generated handler for the operations
+  that carry no body, including the refusal path of the permission check.
+- End to end: a shell session against the live services, which is also what the
+  component's suite cannot do today: its tests use bucket names the real server
+  refuses.
+
+** Decisions to take, in order**
+
+1. *Where the bucket list lives.* The
+   [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] target state leaves
+   this open, and the interface forces it. Either storage owns a =buckets=
+   resource that the deployment populates, or the deployment supplies the list
+   as configuration and the route consults it. Either way the code holds no
+   bucket name, which is what the application-agnostic decision requires. The
+   =report-data= defect is what happens while it stays undecided.
+2. *Whether =objects= joins the protocol's conformance list,* which is all or
+   nothing: a component adopts the specification whole.
+3. *Whether a small value travels over NATS at all,* given that no message
+   carries raw bytes today.
+4. *Whether the batch forms ship first,* or the resource declares the single
+   forms only and gains =put_many= and =delete_many= when a caller needs them.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

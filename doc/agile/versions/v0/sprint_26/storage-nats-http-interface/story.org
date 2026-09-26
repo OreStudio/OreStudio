@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 5EA439A5-43AE-4223-9026-6B3D8C91AEEA
+:END:
+#+title: Story: Give object storage a NATS and HTTP interface with authentication
+#+description: Model the storage operation set so that put, get, delete, exists and list are reachable over both NATS and HTTP, authenticated on both, and exercisable from the shell and the test suite.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Object storage is reachable, and authenticated, on both interfaces the
+[[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] target state names.
+A caller puts, gets, deletes, tests existence and lists an object over HTTP when
+it is moving bytes, and over NATS when it is sending a command, and the two
+agree: the same bucket and key name the same object, the same failure is
+reported the same way, and the same identity is required.
+
+Storage becomes generatable in the process. The target state's claim is that
+modelling the operation set is what produces the protocol, the handler, the
+permission codes, the shell verbs and the TypeScript twin, the way an entity's
+model produces its own, and this story is where that claim is tested.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Design in progress: the surface is being derived from the target state, the NATS entity protocol and the authentication conventions. |
+| Waiting on    | Nothing.                               |
+| Next          | Fill the task's plan, then land the first surface. |
+| Last touched  | 2026-09-26                               |
+
+* Acceptance
+
+- The operation set is modelled, and the generator produces its protocol header,
+  NATS handler, permission codes, shell verbs and TypeScript twin from the model
+  rather than by hand.
+- Every storage route authenticates before it acts, and each operation is gated
+  by its own permission code rather than by a valid token alone.
+- NATS carries the same operation set as HTTP: the same bucket and key leave the
+  same object, and the same failure is reported the same way, so a caller can
+  move between the two without relearning the error set.
+- A raw surface exists in the shell — one verb per operation over a bucket, a
+  key and a local path — so a caller that only wants bytes somewhere does not
+  have to learn a domain verb.
+- Which buckets a caller may address comes from a declared source rather than
+  from a literal in the server, so the =report-data= class of drift cannot recur
+  in silence.
+- The surface is exercisable end to end: a shell session and an automated test
+  each prove the put, get, exists, list and delete round trip on both
+  interfaces.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F7564B4B-EDCF-46F4-BB8B-DE88449BEC70][Add the NATS and HTTP interface to ores.storage, with authentication]] | STARTED | 2026-09-26 | | Model the storage operation set so that put, get, delete, exists and list generate a protocol, a handler and permission codes on NATS and an authenticated route set on HTTP, and make both exercisable. |
+
+* Decisions
+
+* Out of scope
+
+- The backend. The filesystem behind the HTTP server stays the implementation;
+  replacing it with Redis, an S3 bucket or a table is the target state's
+  separate concern, and the contract is what has to survive the swap.
+- Compression and archiving as wire conventions. Archiving a directory before a
+  put is a wrapper's business, and nothing on the wire may mark an object as
+  compressed.
+- Each consumer wrapper's own design: the compute package, input and output
+  keys, the ore import bundle and the report package. This story gives them a
+  surface; migrating them onto it is their own work.
+- The tenancy model. Whether a bucket is global with keys namespaced per tenant
+  or tenants get buckets of their own is open in the target state, and this
+  story must not settle it by accident: it authenticates the caller and gates
+  the operation, and leaves the isolation question where the target state
+  leaves it.

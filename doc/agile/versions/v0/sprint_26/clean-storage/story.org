@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-09-26
 #+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -23,10 +23,11 @@ ores.storage meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Nothing. The component is clean on =feature/clean-storage=; no PR raised. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Nothing. |
+| Next          | Nothing. The interface work this pass deliberately left out is a story of its own: [[id:5EA439A5-43AE-4223-9026-6B3D8C91AEEA][Give object storage a NATS and HTTP interface with authentication]]. |
 | Last touched  | 2026-09-26                               |
+| End           | 2026-09-26                               |
 
 * Acceptance
 
@@ -44,6 +45,15 @@ ores.storage meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 * Notes
 
 - Survey on 2026-09-23: 0 entity, junction or operation models; 9 C++ files outside tests, 0 of them generated (0%); 0 messaging headers, 0 of them hand-written.
+- Closed in PR #2174, merged as =b79609d808=; the remote branch was deleted by
+  the merge and the local branch with it. The PR merged after a rebase onto
+  =0f8054f2bd=, where two files conflicted: this story's layer page, which had
+  gained a telemetry section on =main= beside the storage one this pass added,
+  and the generated backlog index.
+- The pass side-loaded documentation it did not set out to write: the
+  [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] target state, three
+  defect captures, the [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] hub,
+  and one capture for the doc-lint gap the pass exposed.
 
 * Decisions
 
@@ -72,4 +82,22 @@ ores.storage meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 * Out of scope
 
--
+- The interface itself. The pass records that the component is model-free: it
+  has no protocol, no handler, no permission codes and no shell commands, and
+  its shell verbs are hand-written and named after the consumers that happen to
+  call it. Giving it a NATS surface and an HTTP surface, authenticated on both,
+  is the story
+  [[id:5EA439A5-43AE-4223-9026-6B3D8C91AEEA][Give object storage a NATS and HTTP interface with authentication]].
+- Authentication. The storage routes never call =auth_required()=, so the route
+  default is public and an unauthenticated write succeeds. That is a property of
+  the surface, so it belongs to the interface story above rather than to this
+  pass, which saw the client half only.
+- The bucket allow-list. The server accepts a hardcoded pair of names, which is
+  an unowned literal that has already drifted from its consumers, and which
+  owner should hold it is open in
+  [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]].
+- The defects found while reading the component, each with its own capture in
+  the product backlog inbox: the =report-data= bucket the server refuses, the
+  three services whose storage base URL names a port the server does not use,
+  and the shell recipe inventory that ships conflict markers its gate cannot
+  see.

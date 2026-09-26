@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 8B4E6A21-7C3D-4F58-9A2E-5D1C7B3F8E42
+:END:
+#+title: The storage server refuses the report-data bucket its own consumers write to
+#+description: ores.reporting and ores.ore both write to a report-data bucket, and the http server's bucket allowlist names only compute and ore-imports, so every report export and package handler call answers 404. The allowlist replaced a shared bucket header and drifted from the consumers it was meant to serve.
+#+type: capture
+#+level: cross
+#+filetags: :storage:http:reporting:defect:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.http/core/src/routes/storage_routes.cpp:36-39= accepts exactly
+two buckets, =compute= and =ore-imports=. Every other bucket answers 404, from
+all three verbs. Two components write to a third:
+
+- =projects/ores.reporting/core/src/messaging/report_execution_handler.cpp:76= — =report_data_bucket = "report-data"=, with keys ={instance_id}/trades.msgpack= (:78) and ={instance_id}/market_data.msgpack= (:82).
+- =projects/ores.ore/service/src/messaging/report_package_handler.cpp:39= — the same bucket name again, with =tarball_storage_key = {instance_id}/ore_package.tar.gz= (:41).
+
+The name is duplicated in two anonymous namespaces, and the server has never
+heard of it. Corroboration on disk:
+=build/output/linux-clang-debug-make/publish/storage/= holds =compute/= and
+=ore-imports/= only, because the server creates one directory per known bucket
+at construction (storage_routes.cpp:44-48).
+
+* Why
+
+This is the unowned literal failing in the way either candidate answer in
+[[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] prevents. Commit
+=1e4f37564c= introduced =ores.storage/net/buckets.hpp= holding the bucket names;
+=00b358951c= deleted it and replaced it with two literals inside the server;
+=34cb517514= then added =report-data= in ores.reporting and did not update the
+list. The bucket list is domain knowledge living in the storage facility, which
+is exactly what [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] says
+must move out of it: a bucket is an allocation the facility should be told
+about, not a name it hardcodes.
+
+Nothing caught it. There is no test that exercises a real consumer against the
+real server, and the failure is a 404 deep inside a NATS handler.
+
+The fix belongs with the target state's bucket registry: either the server
+accepts registered buckets, or the allowlist is generated from the consumers
+that declare them. A quick patch that adds a third literal would reproduce the
+defect a fourth time.
+
+* References
+
+- =projects/ores.http/core/src/routes/storage_routes.cpp:36-39, :83-98, :130, :149, :173=
+- =projects/ores.reporting/core/src/messaging/report_execution_handler.cpp:76, :78, :82=
+- =projects/ores.ore/service/src/messaging/report_package_handler.cpp:39, :41, :88, :98, :106=
+- =build/output/linux-clang-debug-make/publish/storage/= — the buckets that exist
+- git =1e4f37564c= (created the bucket header), =00b358951c= (deleted it), =34cb517514= (added the bucket)
+
+* See also
+
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the target state, and the bucket registry that resolves this.

@@ -1,0 +1,325 @@
+:PROPERTIES:
+:ID: 93AB3ADB-9694-4451-A4B9-4FBABBB0B826
+:END:
+#+title: DSH Settings
+#+description: Literate source for the DSH harness's sandbox settings — the runner that adds the writable paths, and the paths themselves — tangled into .dsh/ and copied into ~/.dsh.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:dsh:sandbox:settings:permissions:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+* Summary
+
+This file is the single authoritative source for the rules the DSH harness
+sandbox runs under in this environment. It follows the literate style of
+[[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]]: every grant is accompanied by prose naming the
+command it enables and the failure it prevents, so a reader of a diff can see
+what is being authorised and why.
+
+Do not edit the generated files by hand. Regenerate them with
+=compass build settings --dsh=, which tangles this file into
+[[proj:.dsh][=.dsh/=]] and copies the result to =~/.dsh=, where the harness reads it.
+
+=~/.dsh= holds copies, never symbolic links into this checkout. That is
+deliberate and it is the whole point of the design: a confined command can
+write the checkout, so a link would let a confined command widen the sandbox
+that confines it. With a copy, the live rules sit outside the workspace where
+the sandbox cannot reach them, and the rules change only when a person runs
+the deploy.
+
+* How to regenerate
+
+Via the Build pillar in =--direct= mode — Emacs only, no cmake or vcpkg:
+
+#+begin_src sh
+compass build --direct settings --dsh   # .dsh/, copied to ~/.dsh
+compass build --direct settings         # both surfaces
+#+end_src
+
+Or via the full-environment CMake target:
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug-make --target deploy_dsh_settings
+#+end_src
+
+Both invoke [[proj:projects/ores.lisp/src/ores-build-dsh-settings.el][=projects/ores.lisp/src/ores-build-dsh-settings.el=]], which tangles
+this file and then installs the result. Requires Emacs on PATH. **It must run
+outside the sandbox**: it writes =~/.dsh=, which the sandbox does not grant,
+precisely so that the rules cannot rewrite themselves. Use
+=dangerouslyDisableSandbox: true= on the Bash tool call, or run it from a
+terminal outside the harness.
+
+* What the sandbox confines
+
+The harness runs every bash command under [[https://github.com/containers/bubblewrap][bubblewrap]]. Three things decide what
+that sandbox does, and only the last two are ours:
+
+| Setting | Where it lives | Ours? |
+|---------|----------------|-------|
+| The mode, =workspace-write= | the harness configuration in =~/.dsh/cordis.patch.yml= and the profile | No. Chosen by whoever starts the session. |
+| The runner that is invoked instead of =bwrap= | =runnerCommand= in =~/.dsh/cordis.patch.yml= | The name is ours; the file it names is generated here. |
+| The paths a confined command may write to | the path list below | Yes. This is what the document governs. |
+
+Only *file effects* are confined. Network access, the process view and unix
+sockets are outside the sandbox's guarantees, which is why a path list cannot
+fix a verb that needs a socket (see *What cannot be authorised*).
+
+The harness has no equivalent of Claude Code's =sandbox.excludedCommands=. It
+cannot be told to run a command unconfined as a rule; escalation is per call.
+The path list is therefore the only lever this repository has over the sandbox,
+and it is a lever over files, not over commands.
+
+* The path list
+
+The list is read by the runner below on every confined command, so an edit
+takes effect on the next command. One absolute path per line; =#= starts a
+comment; a leading =~/= is expanded by the runner.
+
+Each entry names the command that needs it and what fails without it. Keep
+grants to the narrowest path that fixes the failure: a directory grants
+everything beneath it, and the value of the sandbox is that a mistyped command
+cannot reach the rest of the host.
+
+** Master list block
+
+The =:tangle= paths are relative to this document rather than to the
+repository root, because that is what org-babel resolves them against. From
+=doc/llm/=, =../../.dsh/= is the generated directory beside the checkout's
+root.
+
+#+begin_src sh :noweb yes :tangle ../../.dsh/sandbox-writable-paths
+<<dsh-paths-header>>
+<<dsh-paths-ores-git>>
+<<dsh-paths-systemd>>
+<<dsh-paths-ccache>>
+<<dsh-paths-sccache>>
+<<dsh-paths-emacs>>
+#+end_src
+
+** The shared bare repository
+
+Every worktree points at one bare repository at
+=~/Development/OreStudio/ores.git=, and its git directory for a worktree lives
+in =ores.git/worktrees/<name>=, outside the workspace. Without this grant a
+confined =git commit= cannot take its lock and fails with a read-only
+filesystem error.
+
+#+begin_src sh :tangle no :noweb-ref dsh-paths-ores-git
+# The shared bare repository every worktree points at. git writes each
+# worktree's git directory under ores.git/worktrees/<name>, outside the
+# workspace, so a confined commit fails without this.
+~/Development/OreStudio/ores.git
+#+end_src
+
+** The generated systemd units
+
+=compass services= writes the units it generates into the user's systemd
+directory. Without this grant the units cannot be written and the fleet cannot
+be reconfigured from a confined shell.
+
+#+begin_src sh :tangle no :noweb-ref dsh-paths-systemd
+# compass services writes the generated systemd units here.
+~/.config/systemd/user
+#+end_src
+
+** The compiler caches
+
+Both caches are read and written by every build. The ccache directory was
+granted from the start; the sccache directory was missed, which is why this
+document exists in the form it does — the two lists disagreed, and the gap was
+found by a build rather than by reading.
+
+#+begin_src sh :tangle no :noweb-ref dsh-paths-ccache
+# The ccache directory. Read and written by every build.
+~/Development/.cache/ccache
+#+end_src
+
+#+begin_src sh :tangle no :noweb-ref dsh-paths-sccache
+# The sccache directory. The same role as ccache, and missed until a build
+# failed to populate it.
+~/Development/.cache/sccache
+#+end_src
+
+** The Emacs package directory
+
+Emacs is the engine behind every =compass build --direct= target — skills,
+site, manual, settings, org-ids, the diagrams. It installs packages into its
+own directory and rewrites =package-quickstart.elc= there. Without this grant
+the target fails part-way through with a read-only filesystem error against
+=~/.emacs.d=, after doing part of its work.
+
+#+begin_src sh :tangle no :noweb-ref dsh-paths-emacs
+# Emacs is the engine behind every compass deploy target, and it installs
+# packages and rewrites package-quickstart.elc in its own directory.
+~/.emacs.d
+#+end_src
+
+** Header
+
+#+begin_src sh :tangle no :noweb-ref dsh-paths-header
+# Extra paths the DSH workspace-write sandbox may write to, one absolute path
+# per line. '#' starts a comment, and a leading ~/ expands to the invoking
+# user's home.
+#
+# Generated from doc/llm/dsh_settings.org. Do not edit by hand; regenerate with
+# compass build settings --dsh. See that document for what each entry
+# authorises and for what the sandbox cannot be told to allow.
+#+end_src
+
+* The runner
+
+The harness invokes this script in place of =bwrap=, passing the arguments the
+sandbox profile supplies. It does two things before handing over: it inserts a
+writable bind for each path in the list above, and it replaces the system ssh
+include directory with a user-owned copy.
+
+The second job is not about ORE Studio. The sandbox user namespace maps only
+the calling uid, so every root-owned file reads back as =nobody=, and OpenSSH
+refuses to include a configuration file it cannot attribute to root or to the
+invoking user. That breaks every =ssh= call, including the ones git makes, so
+the wrapper binds a user-owned directory over =/etc/ssh/ssh_config.d= and
+mirrors the system snippet into it.
+
+#+begin_src bash :tangle ../../.dsh/bin/dsh-bwrap-writable-ores.sh
+#!/usr/bin/env bash
+# DSH sandbox runner wrapper for ORE Studio. Run bubblewrap with the profile
+# arguments DSH supplies, and add one extra writable bind per path listed in
+# the path list, one absolute path per line, '#' comments, a leading ~/
+# expanded to the invoking user's home. The binds must follow the profile's
+# read-only root mount, so insert them just before the argv separator.
+#
+# The list is $DSH_SANDBOX_WRITABLE_PATHS when set, else
+# ~/.dsh/sandbox-writable-paths, which this script is deployed beside.
+#
+# It also replaces /etc/ssh/ssh_config.d with a user-owned directory, because
+# the sandbox user namespace maps only the calling uid: every root-owned file
+# reads back as nobody (65534), and OpenSSH refuses to Include a config file it
+# cannot attribute to root or the invoking user.
+#
+# Only bash commands receive these grants: the write and edit tools are fenced
+# by the in-process policy, which knows only the workspace root and the
+# platform temp areas. Use a command for anything under a path listed here.
+set -euo pipefail
+
+readonly list_file="${DSH_SANDBOX_WRITABLE_PATHS:-$HOME/.dsh/sandbox-writable-paths}"
+
+# The shared bare repository every ORE Studio worktree points at, kept as the
+# fallback when the list file is absent so an unconfigured host still works.
+readonly fallback_path="$HOME/Development/OreStudio/ores.git"
+
+# The replacement ssh include directory, and the systemd snippet mirrored into
+# it so the .host and machine/* aliases survive the replacement.
+readonly ssh_include_dir="${DSH_SSH_INCLUDE_DIR:-$HOME/.dsh/ssh-config.d}"
+readonly ssh_include_src=/usr/lib/systemd/ssh_config.d/20-systemd-ssh-proxy.conf
+
+# Expand a leading ~/ here rather than in the shell that reads the list, since
+# the list is data and the host that reads it owns the home it means.
+expand_home() {
+  case "$1" in
+    "~/"*) printf '%s\n' "$HOME/${1#\~/}" ;;
+    *)     printf '%s\n' "$1" ;;
+  esac
+}
+
+paths=()
+if [ -f "$list_file" ]; then
+  while IFS= read -r line; do
+    line="${line%%#*}"
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [ -n "$line" ] && paths+=("$(expand_home "$line")")
+  done < "$list_file"
+else
+  paths=("$fallback_path")
+fi
+
+grants=()
+for path in "${paths[@]}"; do
+  # bwrap refuses a bind whose source is missing, so skip it rather than let
+  # one stale list entry break every confined command.
+  [ -e "$path" ] && grants+=(--bind "$path" "$path")
+done
+
+# The sandbox user namespace maps only the calling uid, so every root-owned
+# file reads back as nobody. ssh refuses to Include a config file whose owner
+# is neither root nor the invoking user, which breaks every ssh call on the
+# system include directory. A user-owned directory bound over it leaves ssh
+# with only files it accepts. A host that cannot provide that directory keeps
+# the system one, rather than losing every confined command.
+if [ -d /etc/ssh/ssh_config.d ] && mkdir -p "$ssh_include_dir" 2>/dev/null; then
+  if [ -r "$ssh_include_src" ] &&
+     ! cmp -s "$ssh_include_src" "$ssh_include_dir/20-systemd-ssh-proxy.conf"; then
+    cp -f "$ssh_include_src" "$ssh_include_dir/20-systemd-ssh-proxy.conf" || true
+  fi
+  grants+=(--bind "$ssh_include_dir" /etc/ssh/ssh_config.d)
+fi
+
+granted=0
+for arg in "$@"; do
+  if [ "$arg" = "--bind" ]; then granted=1; fi
+done
+
+out=()
+for arg in "$@"; do
+  if [ "$arg" = "--" ] && [ "$granted" = 1 ] && [ "${#grants[@]}" -gt 0 ]; then
+    out+=("${grants[@]}")
+  fi
+  out+=("$arg")
+done
+
+exec /usr/bin/bwrap "${out[@]}"
+#+end_src
+
+* The home patch layer
+
+The runner is selected by the harness configuration, not by this document. The
+home patch layer applies to every profile and is where the selection belongs:
+
+#+begin_example
+- id: sandbox
+  config:
+    runnerCommand:
+      - /home/marco/.dsh/bin/dsh-bwrap-writable-ores.sh
+    runnerFailureSignatures:
+      - "bwrap: "
+#+end_example
+
+This file also carries a block the harness manages itself, so the deploy
+neither writes nor owns it: it copies the runner and the path list, then
+reports whether the patch selects that runner. Add the block by hand if it
+reports that it does not, or if the harness rewrites the file and drops it.
+
+* What cannot be authorised
+
+A path list cannot grant a socket, and several compass verbs need one. This is
+a limit of the mechanism, not a gap in the list.
+
+| Verb | What it needs | Confined? |
+|------+---------------+-----------|
+| =compass build=, =compass services start= | the systemd user manager, reached through =systemd-run --user --scope= | No. The bus socket is visible and =busctl --user= works, but =systemd-run= cannot create a transient scope inside the user namespace. Builds use the standing escalation in [[id:06A0919D-B741-40EA-BFF2-376BD36C4A27][Builds can run outside the sandbox]]. |
+| =compass deploy *= (skills, site, manual, settings) | Emacs and its package directory | Yes, with the Emacs grant above. |
+| =compass services status= | =busctl --user= | Yes, with =ORES_USE_BUSCTL=1=, which the checkout sets. |
+| =compass pr *=, =compass review *= | =gh= and its token | Yes. |
+| =compass sql=, =compass db= | a TCP connection | Yes. |
+
+* The two surfaces
+
+Two harnesses run agents in this checkout, and each has its own settings with
+its own mechanism:
+
+| Surface | Source | Generated into | Covers |
+|---------+--------+----------------+--------|
+| Claude Code | [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] | =.claude/settings.json= (ignored by git) | command allow-list, sandbox overrides, hooks |
+| DSH | this document | =.dsh/= (ignored by git), copied to =~/.dsh= | the sandbox runner and its writable paths |
+
+They must agree on what they grant. When they disagreed over the sccache
+directory, nothing reported it; the two files were edited at different times
+and the divergence surfaced only as a build failure. A change to either is a
+security-relevant change and belongs in a pull request, where the diff shows
+exactly what is newly authorised.
+
+* See also
+
+- [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] -- the sibling surface, and the pattern this file follows.
+- [[id:06A0919D-B741-40EA-BFF2-376BD36C4A27][Builds can run outside the sandbox]] -- why a build may leave the sandbox, and the standing authorisation for it.

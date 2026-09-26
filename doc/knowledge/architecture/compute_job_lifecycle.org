@@ -359,6 +359,7 @@ every result has outcome Success. See
 
 * See also
 
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.
 - [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]] — the ORE engine: what a run computes and how its output is produced.
 - [[id:C4C10772-C8E0-4E0E-B976-C407A6135317][How do I add a compute batch from the shell?]] — batches add.

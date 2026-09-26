@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 02301C18-3FB9-4208-B132-8F3FDA5E59CC
+:END:
+#+title: The compute wrapper's HTTP download opens its destination before it checks the status
+#+description: ores.compute.wrapper's Beast client writes the response body to the destination file and only then checks the HTTP status, so a 404 truncates a file that was already there and leaves the error body in one that was not. ores.storage carried the same defect and this pass fixed it there.
+#+type: capture
+#+level: cross
+#+filetags: :compute:storage:http:correctness:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores.compute.wrapper= carries its own Beast HTTP client, and its =download=
+opens the destination file before it looks at the response status:
+
+#+begin_src cpp
+std::filesystem::create_directories(dest.parent_path());                            // :78
+parser.get().body().open(dest.string().c_str(), beast::file_mode::write, open_ec);  // :82
+http::read(stream, buf, parser);
+if (parser.get().result_int() < 200 || parser.get().result_int() >= 300)            // :89
+    throw std::runtime_error(...);
+#+end_src
+
+A 404 therefore truncates a file that was already at that path, leaves the error
+body in a file that was not, and only then throws. =ores.storage= had the
+identical shape in =http_client::get=, and
+[[id:023DDD49-944D-45B2-88E1-080BCE4741EB][Bring ores.storage to the clean standard]]
+fixed it by reading the header first and opening the destination only for a
+2xx:
+
+#+begin_src cpp
+http::read_header(stream, buf, parser);
+if (parser.get().result_int() < 200 || parser.get().result_int() >= 300)
+    throw std::runtime_error(...);
+// only now create the directory and open the body sink
+#+end_src
+
+The wrapper's =upload= is not affected: it reads from disk and checks the status
+before anything is written.
+
+* Why
+
+The wrapper's download is how a compute node receives its engine package and its
+input tarballs, so its destination is usually the artefact the node already has.
+Destroying the previous artefact on a failed download is worse than failing and
+leaving it in place, and nothing reports the difference: the caller sees the same
+exception either way.
+
+The two clients are one behaviour written twice, which is the capture
+[[id:A3D9F559-9665-4E61-9564-2FF29E014541][Unify the codebase's three separate Beast HTTP client implementations]]
+exists to collapse. That consolidation is the lasting fix and would retire this
+defect with the file. Until it lands, this is a standalone correctness fix of
+three moved lines.
+
+* References
+
+- =projects/ores.compute/wrapper/src/net/http_client.cpp:56-97= — =download=, opening at :82 and checking at :89.
+- =projects/ores.storage/src/net/http_client.cpp= — the same method after the fix.
+- =projects/ores.storage/tests/http_client_tests.cpp:107-137= — two cases that fail against the old order, one for a destination that did not exist and one for a file that did.
+
+* See also
+
+- [[id:A3D9F559-9665-4E61-9564-2FF29E014541][Unify the codebase's three separate Beast HTTP client implementations]] — the consolidation that retires both copies.
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] — V07, the rule that a fix carries a test that fails without it.

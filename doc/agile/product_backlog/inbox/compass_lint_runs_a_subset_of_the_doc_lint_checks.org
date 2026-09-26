@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: A636C917-027E-4D2D-8BE0-0C9F49C7B545
+:END:
+#+title: compass lint runs one of the six checks in the doc-lint job
+#+description: The doc-lint job runs six checks and only the first is compass lint; the other five are committed build scripts the workflow invokes by path. A contributor who runs the verb named after the job gets a green result while CI can still fail, and the trigger filter names only the generate_skill scripts.
+#+type: capture
+#+level: cross
+#+filetags: :ci:documentation:tooling:tech_debt:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The =doc-lint= job runs six checks, and =compass lint= is one of them. The
+other five are committed scripts under =build/scripts/=, and the workflow
+invokes each by path:
+
+- =rename_skills_to_compass_namespace.py --check=
+- =generate_skills_catalogue.py --check=
+- =generate_skill_type_tables.py --check=
+- =apply_skill_levels.py --check=
+- =link_skill_recipes.py --check=
+- =link_structure_notes.py --check=
+
+The command named after the job is therefore a subset of the job. A local
+=compass lint= pass does not mean the job passes. Measured on 2026-09-26: a new
+knowledge page tagged =structure_note= left seven ordered pages without their
+back-link; =compass lint= passed on that branch, and the job failed on its last
+step.
+
+The trigger has the opposite fault. The =paths:= filter names
+=build/scripts/generate_skill*.py= and the other four scripts not at all, so a
+change to one of those four does not start the job that owns it. It names
+=projects/ores.compass/src/compass.py=, so it does start for a change to the one
+check that never moved.
+
+* Why
+
+Nothing recorded says the split is deliberate. The job grew one check at a time,
+each as a script plus a step:
+
+- =f27fcfedf7= — the namespace check
+- =433ce5053b= — the catalogue and the type tables
+- =1b07eaa137= — the skill levels
+- =c96b21dda7= — the recipe links
+- =6f17f685ac= — the structure-note back-links
+
+=compass lint= predates all of them, in =e6fd15664d=, and no commit afterwards
+moved a new check into it. Two facts make that easy to leave alone: =compass
+lint= lives inside the compass package and scans the corpus with no other
+dependency, while the five checks are repo scripts outside that package. To
+consolidate, compass must either shell out to files it does not own, or absorb
+those files.
+
+The cost is a mismatch between the name and the contract. All six are repo-wide
+consistency checks over the org corpus, so a contributor has one reason to run
+them, and the tooling offers two places to find them.
+
+The simplification is one entry point. Either =compass lint= runs the five
+scripts as well, with a flag for the fast corpus-only subset, or the scripts
+move under compass and the workflow keeps a single step. Whichever way it goes,
+the =paths:= filter widens to =build/scripts/**= so a change to a check starts
+the job that runs it.
+
+* References
+
+- =.github/workflows/doc-lint.yml:22-30= — the =paths:= filter, and the four scripts it omits
+- =.github/workflows/doc-lint.yml:43-78= — the six steps
+- =projects/ores.compass/src/compass.py:2559= — =cmd_lint=, and the scope it documents: filetags, generator markers, malformed and dangling id links, and the advisory durable-link check
+- =build/scripts/link_structure_notes.py= — the check that failed, and one of the four the filter omits
+- git =e6fd15664d= (=compass lint=), =f27fcfedf7=, =433ce5053b=, =1b07eaa137=, =c96b21dda7=, =6f17f685ac= — the commit behind each step
+- CI run =36261793217= — =compass lint= passing and the last step failing, on the same push
+
+* See also
+
+- [[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and local checks]] — the inventory of gating checks that this capture corrects.
+- [[id:C5E0CC86-8FD1-4DF9-987C-2C1ED52C055F][No CI job runs the physical-space inventory check]] — the same class of gap from the other side: a check with no job at all.
+- [[id:F646B28F-4C6C-4793-BBD1-1FACDFBF9CAF][Durable documents link into agile content]] — the advisory check inside =compass lint=, and the reason the verb cannot simply become "everything".

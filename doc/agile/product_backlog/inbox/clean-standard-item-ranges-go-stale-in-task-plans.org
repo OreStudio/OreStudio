@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 1EF71790-978B-4810-9511-445BCD48A704
+:END:
+#+title: The clean-standard item ranges go stale in the component task plans
+#+description: Every clean-* task plan enumerates the standard's section ranges, and the standard has grown twice since the tasks were scaffolded, so the plans name ranges that no longer cover the standard and the five items added later are invisible to the worker.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:clean_standard:docs:agile:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Each =task_clean_*.org= under a clean-* story carries a copy of the same
+=* Plan= section, and that plan enumerates the standard's sections with
+hard item ranges:
+
+#+begin_src org
+1. Baseline and inventory (B01 to B05). Record the baseline before any edit.
+4. Generation (G01 to G06).
+7. Structure and hygiene (H01 to H03).
+8. Verification (V01 to V06), ending with the registry entry.
+#+end_src
+
+The [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]
+has grown three times since those plans were written. The survey of the four
+model-free infrastructure components added B06, G07, H04, V07 and V08; the
+=ores.security= pass added G08; and a codegen pass made the documentation
+requirement explicit as H05. Read against the standard, that plan omits seven
+items in four sections — B06, G07, G08, H04, H05, V07 and V08 — and a worker
+who follows the plan literally never runs any of them.
+
+Of the 35 tasks, 22 are BACKLOG, so the stale plan still governs 22 of them.
+The one that found this is fixed. The ranges are copied into every task
+rather than generated, so no edit to the standard reaches them and nothing
+keeps them in step.
+
+* Why
+
+Two review rounds already paid for this defect.
+
+[[id:D042AF8C-F308-46E0-9646-B9BEA4FADC91][Bring ores.logging to the clean standard]]
+was failed by independent verification: "The standard grew to 47 items on
+main and the table had 42." B06, G07, H04, V07 and V08 were missing from
+its plan, its notes and its evidence.
+
+[[id:74AED0CF-573B-4179-8C75-A9572EE49B2B][Bring ores.compute to the clean standard]]
+carried the same finding: "Five standard items (B06, G07, H04, V07, V08)
+are absent from the Plan table, Notes and evidence." Both records now say
+the table holds 47 items, which G08 has since made 48.
+
+Both rounds fixed the task in front of them. Neither fixed the cause, which
+is that the plan text is duplicated rather than derived from the standard.
+
+Two ways out, in order of preference:
+
+1. Remove the ranges from the plan and name the sections only. The sentence
+   above the list already points at the standard, which is the one place
+   that holds the ids, so the enumeration is redundant and will go stale
+   again the next time the standard grows.
+2. Keep the ranges and generate them, so that the standard is the single
+   source and a check fails when the two disagree.
+
+Either way the sweep covers the 22 live tasks in one mechanical change;
+that is what makes it a capture rather than a fix on the component pass
+that noticed it.
+
+* References
+
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] — the item set the plans quote
+- [[id:D042AF8C-F308-46E0-9646-B9BEA4FADC91][Bring ores.logging to the clean standard]] — first round to catch it
+- [[id:74AED0CF-573B-4179-8C75-A9572EE49B2B][Bring ores.compute to the clean standard]] — second round to catch it
+
+* See also
+
+-

@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 7c47d7c8-1eca-45d1-a168-084dcbfdd01e
+:END:
+#+title: index_family has no F-TIIE, so 46 MXN keys cannot be named
+#+description: The corpus writes IR_SWAP/RATE/MXN/FTIIE/... and MM/RATE/MXN/FTIIE/... F-TIIE is Mexico's overnight funding rate, a different benchmark from the TIIE the enum already holds, so the keys have no family to resolve to and are the last 42 IR_SWAP and 4 MM keys oresmd cannot name.
+#+type: capture
+#+level: cross
+#+filetags:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+`index_family` lists 22 benchmarks. `tiie` is there; `ftiie` is not. The corpus
+writes both forms:
+
+| Key | Count |
+|-----+-------|
+| =IR_SWAP/RATE/MXN/FTIIE/1D/1D/130M= and 41 sibling maturities | 42 |
+| =MM/RATE/MXN/FTIIE/0D/1D= | 4 |
+
+These are the whole of what remains unnamed in those two types: after the
+seven-segment swap form and the ESTER spelling were carried, `IR_SWAP` stands at
+13,841 of 13,883 and `MM` at 1,672 of 1,676.
+
+F-TIIE is the *TIIE de Fondeo*, Mexico's overnight funding rate. It is not a
+spelling of =tiie=, which is the 28-day interbank rate; it is a second Mexican
+benchmark, and ORE quotes curves on both. So it belongs in the family list on
+its merits rather than as an alias.
+
+* Why it is not a one-line change
+
+The family list is mirrored by a CHECK constraint in
+=projects/ores.sql/create/synthetic/synthetic_ir_curve_generation_configs_create.sql=,
+in two places: the membership list and the tenor-combo rule that splits term
+families (libor, euribor) from overnight ones. A family the enum holds and the
+constraint does not is a drift the codegen gates exist to catch, so the change
+is:
+
+1. =ftiie= in the Index family table of =ir_quote_type.org=, which regenerates
+   =oresmd_enums.hpp=.
+2. =ftiie= in both constraint lists, classified as overnight.
+3. A one-shot migration widening the constraint, following
+   =synthetic_ir_curve_generation_configs_tenor_combo_relax_migration.sql=.
+4. The two template comments and =oresmd_index_family_utils.hpp= that state the
+   family count and name the constraint.
+
+That is six files in two components, to name 46 keys.
+
+* Why it was deferred rather than done
+
+The open question is not mechanical: it is whether ores models F-TIIE curve
+configurations at all. The constraint governs
+=ores_synthetic_ir_curve_generation_configs_tbl=, which is an ores concept, and
+adding a family there is a claim that ores seeds and bootstraps MXN F-TIIE
+curves. Nothing in the corpus or the seeds says that. Adding the family to
+satisfy the key parser would widen an ores domain contract to fit an ORE file
+naming, which is the wrong direction of fit.
+
+Until that is answered, the gap is named and counted rather than closed.
+=oresmd= names every ORE series *type*; this is one missing member of a closed
+enumerated vocabulary, which is a different kind of gap.
+
+The same walk turns up one more such token: three
+=IR_SWAP/RATE/.../NoDiscount/...= keys, where the index slot holds a curve
+marker rather than a benchmark. Those want the index slot to accept an arbitrary
+name, which is a larger change than either of the two above and is not sized
+here.
+
+* References
+
+- =projects/ores.marketdata/modeling/oresmd/ir_quote_type.org= — the Index
+  family table.
+- =projects/ores.sql/create/synthetic/synthetic_ir_curve_generation_configs_create.sql= —
+  the two CHECK lists.
+- =projects/ores.marketdata/core/include/ores.marketdata.core/oresmd/detail/oresmd_index_family_utils.hpp= —
+  =is_overnight()= and the family count in its comment.
+- =external/ore/examples/= — the 46 keys.
+
+* See also
+
+- [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Story: Clean ores.marketdata to the component clean standard]]

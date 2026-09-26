@@ -8,7 +8,7 @@
 #+filetags: :clean-geo:sprint_26:v0:
 #+owner: marco
 #+branch: feature/clean-geo
-#+pr: 2160
+#+pr: 2165
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -178,6 +178,7 @@ fix. The build, the component suite and the gates are the evidence.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2165][#2165]] | [geo] Massage the component diagram by hand |
 | [[https://github.com/OreStudio/OreStudio/pull/2160][#2160]] | [geo] Bring the component to the clean standard |
 
 * Review

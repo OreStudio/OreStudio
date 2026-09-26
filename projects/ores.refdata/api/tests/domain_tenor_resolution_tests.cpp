@@ -26,6 +26,7 @@ using ores::refdata::domain::resolve_end_date;
 using ores::refdata::domain::tenor;
 using ores::refdata::domain::tenor_convention;
 using ores::refdata::domain::tenor_convention_resolution;
+using ores::refdata::domain::tenor_window;
 using ores::refdata::domain::windows_overlap;
 
 const std::string tags("[tenor_resolution]");

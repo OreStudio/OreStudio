@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 156BB434-0CA9-452A-BFD8-466413BFD328
+:END:
+#+title: compass build scopes itself with systemd-run, which the sandbox cannot reach
+#+description: Inside the DSH sandbox, compass build fails before it compiles anything: 'Failed to connect to user scope bus via local transport: No data available'. The memory-cap scope is added with a raw systemd-run --user --scope, which needs the private user-manager socket at $XDG_RUNTIME_DIR/systemd/private. That socket is unreachable here, which is exactly why systemctl_bus.py exists: it drives the same user manager over busctl on the D-Bus session bus, and that path works. So the detection and the action disagree -- _has_user_systemd() probes through the shim and answers yes, and the scope creation then fails through the raw call. Measured: 'busctl --user list' succeeds unprivileged, 'systemctl --user show-environment' fails, 'systemd-run --user --scope' fails. Two candidate fixes: route the scope through the shim, or make the check probe what it is about to do and run unscoped when it cannot. Workaround in use is an escalated shell, which is a policy ask every build should not need.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=compass build= caps the compile step in a memory-limited slice by wrapping it in
+a raw =systemd-run --user --scope=. Inside the DSH file sandbox that call fails
+before anything compiles:
+
+#+begin_example
+Failed to connect to user scope bus via local transport: No data available
+#+end_example
+
+The scope needs the private user-manager socket at
+=$XDG_RUNTIME_DIR/systemd/private=, which the sandbox does not expose.
+
+* Why
+
+The rest of compass already solved this. =systemctl_bus.py= exists because
+"inside a bubblewrap" the user manager "answers busctl over the D-Bus session
+bus" rather than over the private socket, so every =systemctl --user= call goes
+through it. The build's scope is the one place that calls the raw tool instead,
+and that is what breaks.
+
+The result is a detection that disagrees with the action it authorises.
+=_has_user_systemd()= probes with =systemctl_bus.run(["show-environment"])=,
+which succeeds through the shim, so compass decides to scope the build; the raw
+=systemd-run= that follows then cannot connect. Measured in the sandbox:
+
+| Command | Result |
+|---------+--------|
+| =busctl --user list= | succeeds |
+| =systemctl --user show-environment= | "No data available" |
+| =systemd-run --user --scope= | "No data available" |
+
+Two candidate fixes. Route the scope through the shim, if busctl can start a
+transient scope at all. Or make the check probe what it is about to do, and run
+the build unscoped when it cannot -- the memory cap is a convenience, and an
+uncapped build beats no build.
+
+Until then the workaround is an escalated shell, which is an approval prompt on
+every build and one an agent should not have to raise.
+
+* References
+
+- =projects/ores.compass/src/compass.py=, the =systemd-run= invocation in the
+  build pillar.
+- =projects/ores.compass/src/systemctl_bus.py=, the shim and the reason for it.
+- =projects/ores.compass/src/compass_claude.py=, =_has_user_systemd()= and the
+  slice deployment.
+
+* See also
+
+- =doc/agile/product_backlog/inbox/settings_build_reverts_bare_stash_test.org=,
+  another build-side effect that only shows up when the build is run.

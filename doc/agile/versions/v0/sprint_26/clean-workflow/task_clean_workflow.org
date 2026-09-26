@@ -28,9 +28,9 @@ ores.workflow passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]] |
-| Now          | Second increment on =feature/clean-workflow=, raised as PR #2179. S01, S02, W01, H01 and the documentation gate are done. |
-| Waiting on   | A fleet and a test database, for V02 to V04. |
-| Next         | Bring the fleet up, run =compass db recreate -y -k=, execute the integration suites and a shell command against the live service, then close the task. |
+| Now          | Second increment on =feature/clean-workflow=, raised as PR #2179. S01, S02, W01, H01 and the documentation gate are done, and V02 to V04 now pass with the fleet up and the database recreated. |
+| Waiting on   | Nothing.                                |
+| Next         | Close the task once PR #2179 merges. V07 and V08 remain unsurveyed and are recorded as such. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -85,11 +85,11 @@ record each item's result in the table below.
 | W01 | Done, and the four unwired registrars turned out to be two families with two different homes rather than one gap. The history providers belong in the aggregate registrar and are composed there, as five other components compose theirs. The event mappings belong in the service's composition root, which needed the event bus and the postgres event source built first; both are now built, the returned subscriptions are held, and the source starts only after they are registered. | =ores.workflow.core.lib= and =ores.workflow.service.lib= reach "Built target"; =ores.workflow.service.exe= links. Detail below. |
 | W02 | Fixed, and less severe than first recorded. The catalogue carried three =workflow::instances:*= rows that no handler checks, and none of the five codes the handlers do check. Access was never broken, because =has_permission= expands a component wildcard and =workflow::*= satisfies all five; what was stale was the catalogue an operator grants from. The three dead rows are replaced by the five checked codes. | The handlers; =iam_permissions_populate.sql=; =has_permission= in =ores.service/messaging/handler_helpers.hpp=, lines 204 to 213. Detail below. |
 | W03 | Pass. The populate references resolve. | =check_populate_references.py=, which reports "populate references resolve". |
-| W04 | Done, with two recorded exceptions. Create and drop now agree: the component aggregator points at the generated plural table scripts and their notify triggers, the hand-written singular table scripts are gone, and both sides reach every script -- five through the component aggregators and the row-level-security pair through the global one. =workflow_constraints_create.sql= stays for a partial index and a cascading foreign key, neither of which the generator can express. | Per-file reachability on both aggregators; =grep= for =on delete cascade= across =projects/ores.sql/create/= returns this constraint alone. Detail below. |
+| W04 | Done, with the row's second exception corrected. Create and drop now agree: the component aggregator points at the generated plural table scripts and their notify triggers, the hand-written singular table scripts are gone, and both sides reach every script -- five through the component aggregators and the row-level-security pair through the global one. =workflow_constraints_create.sql= stays for its partial index, which no model can state. The cascading foreign key it also carried is gone: it was not expressible against a temporal parent, and =compass db recreate= failed on it outright, so the "exception" was a hard failure wearing the same clothes as a limitation. | Per-file reachability on both aggregators. The constraint's removal and the recreate failure are in detail below. |
 | W04-old | Finding, and create and drop disagree. The create aggregator wires the hand-written *singular* table scripts; the drop aggregator wires the generated *plural* ones; and the generated create scripts and both notify triggers are reachable from neither. The row-level security script is NOT affected: it is wired, but into the global =rls_create.sql= and =rls_drop.sql= aggregators rather than the component's. | =workflow_create.sql= and =drop_workflow.sql= against the generated set; =rls/rls_create.sql= line 38 and =rls/rls_drop.sql= line 28. Detail below. |
 | S01 | Done, in three pieces. The scaffold was completed -- a test =main.cpp= the module never had, so the generated tests had never linked. Main's =c4bbe9409b= added the same file independently while this work was in progress, and the two copies are identical, so the file is shared rather than duplicated. The two generated units are registered from =repl.cpp=, and the hand-written unit is retired. Retiring it turned out to be a move rather than a deletion: =wait_for_instance= is shared infrastructure that no generated unit provides, so it survives as =workflow_wait_commands= in the workflow module with the =workflow wait= verb that a shipped message points operators at. | =ores.shell.workflow.tests= 37 cases pass; =ores.shell.exe= links, which is what proves nothing still names the retired class. The call sites and the deletion are in detail below. |
 | S02 | Done, with a correction to this row's first reading. Both generated recipes exist and the inventory lists them. The row first recorded a pass on the strength of a silent =--check=, and that silence was false: the file carried six git conflict markers, which the generator reproduced byte for byte because the prose under a heading is its writer's. The markers are gone, the generator now refuses such a file, and the check is silent for the right reason. | =--check= silent on the repaired file; both modes exit 1 and name the line when a marker is appended to it; =test_shell_recipe_inventory.py= 14 passed. Detail below. |
-| H01 | Done. All three diagrams now carry an authored manual pass below the sentinel: the engine, the handlers and the aggregate registrar filled with their real API, the four generated registrars added, and the composition point, the registry and definition seam, the step-log types and the state maps drawn. Two stale things were found and one of them fixed: the api diagram named a type B06 deleted and showed neither of its replacements, and the generated per-entity protocol collides by name with the hand-written query protocol. | PlantUML renders all three without error; =check_component_drift.py --component workflow-cpp= reports no drift with the manual passes in place, which is the sentinel contract holding. Detail below. |
+| H01 | Done. All three diagrams now carry an authored manual pass below the sentinel: the engine, the handlers and the aggregate registrar filled with their real API, the four generated registrars added, and the composition point, the registry and definition seam, the step-log types and the state maps drawn. Two stale things were found and both are fixed: the api diagram named a type B06 deleted and showed neither of its replacements, and the generated protocol's name collision with the hand-written query protocol -- which authoring the diagram exposed and running the commands proved live, not latent. | PlantUML renders all three without error; =check_component_drift.py --component workflow-cpp= reports no drift with the manual passes in place, which is the sentinel contract holding. Detail below and under V04. |
 | H02 | Two of three parts done; the third is owned by W01 and S01. The stale Qt references are gone -- the engine's doc comment no longer tells a Qt client to call =markAsStale=, and =grep= over the component's C++ and diagrams now finds no Qt or Wt mention at all. The dead event is deleted (B06). What remains is the hand-written duplication: the shell unit S01 owns and the aggregate registrar W01 owns. | =grep= for =qt=, =Wt::= and =QWidget= over =ores.workflow=; the deletions in B06 and the comment fix. |
 | H02-old | Finding, in three parts. Two comments still name Qt as a consumer although the Qt client was retired; the hand-written shell unit and the aggregate registrar that generation supersedes both survive, as S01 and W01 record; and one file is dead outright. | The Qt references in =workflow_instance_changed_event.hpp= and =workflow_engine.hpp=; S01 and W01 for the duplicates; B06 for the dead event. |
 | H03 | Done. The three end-of-line comments moved above their code. | Re-grepped after the fix: no end-of-line comment survives outside the idiomatic =} // namespace= closers and =IWYU pragma:= directives. The sites are =application.cpp= line 78, =workflow_engine.cpp= line 283 and =workflow_handler.cpp= line 99. |
@@ -97,9 +97,9 @@ record each item's result in the table below.
 | M09 | Pass. No retired fragment survives in any model. | =grep= over the modeling directories for =qt=, =wt=, =drawer= and =presentation= returns nothing. |
 | M10 | Pass. The component model declares its parts and the documentation gate is green. The gate initially failed on the shell's workflow module rather than on this component: =ores.shell.workflow= had no =modeling= directory, which is the pair of violations H01's docs half owns, and it is fixed there. | =validate_docs.sh= reports all 40 components passing. =modeling/component_overview.org= carries =* Summary=, =* Sub-components= and =* Entity modules=. |
 | V01 | Pass. The whole tree builds, and every consumer of the component links -- including =ores.reporting.service=, which is the executable that reported the undefined streaming operators before the api module was repaired. | Full-tree =cmake --build= with the =linux-clang-debug-make= preset exits 0. |
-| V02 | Partly verified, and the gap is environmental rather than unrecorded. The codegen suite passes. The component's three test binaries build, but the integration tests need =ORES_TEST_DB_USER= and a running fleet, which this worktree does not have, so they are not executed. | =test_shell_recipe_inventory.py= 14 passed; =ores.shell.workflow.tests= 37 cases and 103 assertions passed; =ores.workflow.{api,core,service}.tests= build but exit with "Required environment variable not set: ORES_TEST_DB_USER". |
-| V03 | Not verified. The fleet start was attempted and did not complete: 22 of 23 units became ready, =ores.web.service= did not, and the attempt exited 1 before the database was recreated. That unit is unrelated to this component, and =ores.web= is not built here at all because npm is absent. | =compass services start= exited 1 after 483s with =ores.web.service= the only unit not ready. =compass db recreate= was not run. |
-| V04 | Not verified, for the same reason as V03: with no fleet there is no live surface for the shell commands to answer. The command units are covered by their registration tests instead, which is weaker evidence and recorded as such. | The generated unit tests and =workflow_wait_commands_tests.cpp=. |
+| V02 | Pass. The codegen suite passes, and all three of the component's suites pass with the fleet up and the database recreated. | =test_shell_recipe_inventory.py= 14 passed; =ores.shell.workflow.tests= 37 cases and 103 assertions; =compass test run -- -R "ores.workflow"= is 3 of 3 passed, and the core suite alone is 14 assertions in 2 test cases, so it is not vacuous. |
+| V03 | Pass, and it found a blocker rather than confirming one. The fleet needed =ores.web=, which needed npm, which the host does not have; the BFF was built and the unit came up. The recreate then failed outright on this component's own SQL -- the hand-written cascading foreign key was not expressible against the temporal parent -- and could not have succeeded before, which is why no database in this tree ever contained it. | =compass services start=: 24 of 24 units running, =ores.web= included. =compass db recreate -y -k= exits 0. The reconcile error, its cause and the fix are in detail below. |
+| V04 | Pass. The workflow commands run against the live fleet and answer. =workflow_instances list= and =workflow_steps list= both return a well-formed empty result, and =workflow wait= polls, reports the missing instance as transient, and times out with its hint naming =workflow_steps by-workflow-id=. The item asks for every generated command; these are the three the module owns, and the list command only worked after the name collision below was fixed. | The shell run is below. It also needed a bootstrapped administrator, because a recreated database has no accounts and the shell rejects the banner's own =bootstrap= spelling. |
 | V05 | Pass for the gates that apply to this component. The two that do not are recorded rather than waived: =check_protocol_twin_coverage.py= covers only the three committed components and cannot see this one (M06), and the tree-wide CMake source-list check fails on 24 other components, verified pre-existing against =ores.reporting.core=. | =check_component_drift.py --component workflow-cpp= reports no drift; =regenerate_shell_recipe_inventory.py --check= is silent; the handler-permission and populate-reference gates pass in CI; =regenerate_cmake_component_files.py= is up to date for all three modules. |
 | V06 | Done, with the half that cannot pass recorded. The component is in =COMPONENTS_UNDER_TEST=. =check_component_drift.py --all= still fails on roughly 24 components, none of them this one, and the control is =ores.reporting.core=, which this work never touched. | =component_registry.py=; the =--all= run and its control. Detail below. |
 | V07 | Not surveyed. Recorded rather than passed. | -- |
@@ -1056,6 +1056,96 @@ without error, and =check_component_drift.py --component workflow-cpp= reports n
 drift with the manual passes in place, so a regeneration leaves them byte for byte.
 Every box the manual pass adds or fills carries a stereotype saying whether the
 generator or a person owns it.
+
+** H01's collision was live, and V04 is where it showed
+
+The api diagram's note recorded a name collision and called it latent, on the
+grounds that nothing includes both headers today. Running the commands against the
+fleet showed that reading was wrong, and the correction is worth keeping because the
+mistake is a tempting one.
+
+=workflow_instances list= failed:
+
+#+begin_src text
+no service is handling subject
+'ores.dev.brave_hopper.workflow.v1.workflow_instances.list'
+#+end_src
+
+The generated registrar does subscribe its list verb. The trouble is that two
+headers declare =list_workflow_instances_request= in the same namespace on different
+subjects, and the generated registrar's translation unit resolved the name to the
+query protocol's. The subscription log from one startup says it plainly:
+
+#+begin_src text
+queue-subscribe: ...workflow.v1.instances.list    <- the generated registrar's first
+...
+queue-subscribe: ...workflow.v1.instances.list    <- the query handler's
+#+end_src
+
+=workflow.v1.workflow_instances.list= is subscribed zero times in the whole log, and
+=workflow.v1.instances.list= twice in one process. Both are in the same queue group,
+so NATS delivers each request to exactly one of them, and the two expect different
+message shapes. Nothing needed to include both headers for this to break: one
+translation unit resolving an ambiguous name was enough, and the fix was to rename
+the hand-written operation-side types so the name is not ambiguous at all.
+
+The lesson generalises past this component. "Nothing includes both" is not evidence
+that a duplicate name is harmless; it is evidence that the next translation unit to
+reach both will decide the behaviour by include order. The generator cannot see this,
+and no gate in the tree looks for it.
+
+** V03 found the schema could not be built at all
+
+Recreating the database failed, and not for an environmental reason:
+
+#+begin_src text
+create/workflow/workflow_constraints_create.sql:40:
+ERROR:  there is no unique constraint matching given keys for referenced
+        table "ores_workflow_workflow_instances_tbl"
+#+end_src
+
+The hand-written cascading foreign key W04 recorded as an exception was not
+expressible. The parent is temporal, so its only uniqueness on =(tenant_id, id)= is a
+partial index over the open row, and PostgreSQL refuses a partial index as a foreign
+key target; its full key is unique only because it carries the parent's own
+lifetime, which a step does not have. It was also the only cascading foreign key in
+the tree, which is the same fact seen from the other side.
+
+W04's row called it an exception the generator cannot express. That was right about
+the generator and wrong about the schema: the generator cannot express it, and
+neither can the database. The distinction matters because it hid a hard failure
+behind a plausible-sounding limitation, and the failure was total -- no database in
+this tree has ever been created with that statement.
+
+What it was meant to close stays open and is now written down where the statement
+was: removing an instance is a physical delete, so it can orphan its steps, and no
+schema constraint can prevent that here. The delete path is where it belongs.
+
+** A recreated database cannot be logged into, for two reasons
+
+Neither is this component's, and both block anyone starting from a fresh database,
+so they are recorded here rather than left in a terminal scrollback.
+
+The first is =ores.web=. It is a fleet unit like any other, and it needs npm, which
+this host does not have: Debian ships =nodejs= without it. The CMake configure warns
+and skips the component, so the BFF is never built, so the unit fails to start, so
+=compass services start= reports a unit that will not come up. Installing npm 12 into
+=build/output/tools= and configuring with it on =PATH= built the BFF and the unit
+came up. That is a local workaround, not a fix: the host is still without npm.
+
+The second is the bootstrap banner. A recreated database has no accounts, so the
+shell is in bootstrap mode and prints its own instruction:
+
+#+begin_src text
+Use 'bootstrap <principal> <password> <email>' to create admin.
+#+end_src
+
+There is no such command. The real one is =bootstrap create-initial-admin <principal>
+<password> <email>=, and the checked-in =bootstrap_smoke.ores= -- tangled from
+=doc/recipes/shell/provisioning/bootstrap_smoke.org= and therefore the canonical
+first-run script -- uses the banner's spelling, so it aborts on its own ninth line.
+Whoever owns the shell's bootstrap surface should fix the banner and the recipe
+together; this component only needed to work around it to reach V04.
 
 ** W04 the two SQL surfaces disagree
 

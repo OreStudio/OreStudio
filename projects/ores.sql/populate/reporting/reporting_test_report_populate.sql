@@ -71,10 +71,16 @@ begin
     -- The actor a seeded row names. Prefer a human account, fall back to
     -- whatever exists, and only then to the database user: the insert
     -- triggers reject a name that is not an account, once bootstrap is over.
+    -- The author the seeded rows name. Populate runs before any human account
+    -- exists, so a plain ordering picks whichever service account sorts first
+    -- and the audit trail then credits an unrelated service. The DDL user is
+    -- who actually performs population, and it is what the other seeds name.
     select username into v_actor
     from ores_iam_accounts_tbl
     where valid_to = ores_utility_infinity_timestamp_fn()
-    order by (account_type = 'service'), username
+    order by (username like '%\_ddl\_user') desc,
+             (account_type <> 'service') desc,
+             username
     limit 1;
     v_actor := coalesce(v_actor, current_user);
 

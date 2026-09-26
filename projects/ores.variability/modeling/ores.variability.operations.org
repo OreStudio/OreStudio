@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: D4A00A97-BD2C-4871-B1A5-318EFDAFD907
+:END:
+#+title: ores.variability.operations
+#+description: Codegen operation model for the variability component's domain operations: messages that are not entity verbs and so do not belong in the common resource grammar.
+#+type: ores.codegen.operation
+#+component: variability
+#+subcomponent: api
+#+entity_singular: operations
+#+namespace: ores::variability::messaging
+#+brief: The variability component's domain operations.
+#+filetags: :model:operation:variability:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+Two operations act on settings without being entity verbs, so they live in the
+component's reserved =ops= namespace rather than in the resource grammar
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] § "Domain operations" defines for
+entities.
+
+=clear_bootstrap_mode= ends a tenant's bootstrap window. It is not a write of
+one setting: it clears =system.bootstrap_mode= and sets =onboarding.tenant=,
+and it must succeed for the tenant that is activating whether or not the
+activating account holds the permission an ordinary setting write needs.
+
+=complete_party_onboarding= marks one party's onboarding complete. The party it
+names is the party being onboarded, not the caller's own, so it cannot be an
+ordinary write: a write record's party comes from the authenticated context,
+and the two are different parties here. The tenant is still derived from the
+validated token, so the operation can only ever affect a party inside the
+caller's own tenant.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+* Messages
+
+** clear_bootstrap_mode_request
+:PROPERTIES:
+:subject: variability.v1.ops.clear_bootstrap_mode
+:response: clear_bootstrap_mode_response
+:END:
+
+** clear_bootstrap_mode_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+Outcome of the operation, in the same shape every entity operation answers
+with, so a caller reads one result convention across the component.
+
+** complete_party_onboarding_request
+:PROPERTIES:
+:subject: variability.v1.ops.complete_party_onboarding
+:response: complete_party_onboarding_response
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The party whose onboarding is complete. This is the party being onboarded, not
+the caller's own party, which is why the value is carried here rather than
+derived from the token.
+
+#+begin_src cpp :name comment
+/*
+ * The party being onboarded, which is not the caller's own party.
+ */
+#+end_src
+
+** complete_party_onboarding_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+* See also
+
+- [[id:E4C6D3F8-7F74-4D16-86AC-CA1BAA76F0AD][ores.variability]] — component group overview.

@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: E4C6D3F8-7F74-4D16-86AC-CA1BAA76F0AD
+:END:
+#+title: ores.variability
+#+description: System settings component: typed runtime configuration stored per tenant and party with bitemporal history, served over NATS and read in process by the components that depend on it.
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: :variability:component:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+name: variability
+#+full_name: ores.variability
+#+brief: Typed runtime configuration for the platform
+#+component_kind: composite
+#+parts: api core service
+
+* Summary
+
+=ores.variability= holds the platform's typed runtime configuration as a
+single bitemporal table of named settings. A setting is named by a dotted
+string such as =system.bootstrap_mode=, carries a type and a value, and is
+scoped to a tenant and a party. Components read settings in process and are
+told when one changes, so a configuration change takes effect without a
+restart; the shell and other clients read and write the same settings over
+NATS.
+
+* Sub-components
+
+| Sub-component | Brief |
+|---------------+-------|
+| [[id:26218AD6-C63E-44E8-9B92-7FB51C366566][ores.variability.api]] | Domain types, JSON/table I/O, and NATS protocol schemas for system settings. |
+| [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability.core]] | Setting persistence, the typed accessors components read in process, and the NATS handlers. |
+| [[id:95D9E246-27ED-440F-B14A-481A546B7C4F][ores.variability.service]] | NATS service entrypoint for the variability domain. |

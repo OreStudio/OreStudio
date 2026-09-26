@@ -31,7 +31,7 @@ change_commentary) — tick-level data volumes make these impractical.
 :schema:        public
 :product:       ores
 :component:     marketdata
-:has_tenant_id: true
+:profile:       readonly-timeseries
 :END:
 
 * Columns

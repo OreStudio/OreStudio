@@ -38,7 +38,7 @@ specific derived point came from) is a separate concern, tracked by
 :schema:        public
 :product:       ores
 :component:     marketdata
-:has_tenant_id: true
+:profile:       uuid-surrogate-lookup
 :END:
 
 * Columns

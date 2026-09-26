@@ -27,7 +27,7 @@ No audit trail columns — volume makes them impractical.
 :schema:        public
 :product:       ores
 :component:     marketdata
-:has_tenant_id: true
+:profile:       readonly-timeseries
 :END:
 
 * Columns

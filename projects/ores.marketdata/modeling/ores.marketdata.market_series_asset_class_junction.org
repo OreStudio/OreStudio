@@ -13,7 +13,6 @@
 #+brief: Links a market series to each asset class it belongs to.
 #+product: ores
 #+schema: public
-#+has_tenant_id: true
 #+created: 2026-09-17
 #+updated: 2026-09-17
 

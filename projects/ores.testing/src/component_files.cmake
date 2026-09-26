@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "database_helper.cpp"
     "database_lifecycle_listener.cpp"
@@ -26,7 +29,7 @@ set(files
     "test_timeout_listener.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/database_helper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/database_lifecycle_listener.hpp"
@@ -36,7 +39,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/nats_options_helper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/ores.testing.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/project_root.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/run_coroutine_test.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/scoped_database_helper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/scoped_environment_override.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/series_classification_rule_seed.hpp"

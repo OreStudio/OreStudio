@@ -32,9 +32,9 @@ The design question is already answered: an artefact table *can* generate from t
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
-| Now          | Analysis complete. Implementation not started. |
-| Waiting on   | Nothing. |
-| Next         | Step 1: settle the 7 orphan tables and the 13 retired-model tables. |
+| Now          | Steps 1 to 7, 11 and 12 done. Step 9 has nine of fifteen entities canonical, and the last six are a deletion problem, not a modelling problem. |
+| Waiting on   | A decision on =subject_area='s composite history identity, and the shell wiring for =change_reason= and =change_reason_category=. |
+| Next         | Commit the regeneration for =badge_definition=, =badge_severity= and =code_domain= and shrink =badge_protocol.hpp= to =badge_mapping=; then wire =ores.shell.dq= and migrate the change-reason pair; then add dq to =COMPONENTS_UNDER_TEST=. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -72,7 +72,7 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
 | 7. Publication template | DONE | The template generated a retired design; deleted with 21 dead files; see Step 7 results |
 | 8. Remaining models | TODO | The FPML family is blocked; the rest is unblocked |
-| 9. Regenerate C++ | IN PROGRESS | Four facets byte-identical; C++ is a per-entity protocol migration, 9 of 14 entities done; see Step 9 parts one to three |
+| 9. Regenerate C++ | IN PROGRESS | Four facets byte-identical; 9 of 15 entities canonical; the last 6 need deletion, not models; see Step 9 parts one to four |
 | 10. Eventing headers | TODO | |
 | 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
 | 12. Divergent tables: declare the projection | DONE | All 11 landed; divergent is 0; see Step 12 results |
@@ -105,6 +105,30 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 - The umbrella headers and the bespoke handlers they carry (=badge_handler=, =badge_service=, =data_organization_handler=, =dimension_handler=) are consumed only by =registrar.cpp=, so they can go. But each carries registrations for entities that are not modelled yet — methodologies, dimensions, datasets, coding schemes, publications — and those have to move before the umbrella can be deleted.
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
+
+* Step 9 part four: the last six entities are a deletion problem, not a modelling problem
+
+Run on 2026-09-26. The branch merged =origin/main= (120 commits) and the drift gate it brought in was read for what it actually guards. Nothing in the remaining six entities has to be modelled.
+
+**The generator already emits all six.** Regenerating dq produces a canonical protocol, handler, registrar, repository, service, event header, history-provider registrar and integration test for =badge_definition=, =badge_severity=, =code_domain=, =change_reason=, =change_reason_category= and =subject_area=. The committed =*_protocol.hpp= of each is a legacy 84- to 86-line file that the generator owns and overwrites. So the remaining work is to delete the hand-written duplicates and commit the regeneration, not to author models. Part two read the same group as blocked on missing models; the regeneration shows the blocker is narrower.
+
+**Three deletions, named.** The three are mechanical once the regeneration lands:
+
+- =badge_protocol.hpp= (213 lines) defines the legacy =badge_severity=, =code_domain= and =badge_definition= protocols a second time, and =badge_mapping=, which is a junction with no generated handler of its own. The file shrinks to the =badge_mapping= projection and its read-only list subject. =badge_handler.hpp= loses twelve of its thirteen methods in the same change.
+- =data_organization_protocol.hpp= (292 lines) covers methodologies and the three dimensions, none of them modelled, and =subject_area=. Part two's finding stands for the first four; only the =subject_area= block goes.
+- The generated =*_history_provider_registrar= units duplicate the =hist_registry.register_history_provider= calls that =registrar.cpp= makes by hand. Both sides must go in one change or a provider registers twice.
+
+**=subject_area= needs a decision first, and it is the only one.** It has a composite =(name, domain_name)= natural key and no surrogate, and the Qt client addresses its history as =name|domain_name=; =registrar.cpp= splits that string apart by hand. The generated stack has no equivalent for a composite history identity, so migrating it either changes the wire identity that client uses or keeps a hand-written bridge. Recorded rather than guessed at.
+
+**What the drift gate actually guards, and what it does not.** =COMPONENTS_UNDER_TEST= in =component_registry.py= lists eight components: iam, analytics-cpp, assets-cpp, compute-cpp, ore, telemetry-cpp, workflow-cpp and variability-cpp. dq is not among them, and neither is refdata. That is why a committed dq tree can lag its own generator without any gate noticing, and it is why this task's acceptance says "twice in a row" — the property is not yet enforced. Adding dq to that list is the last step, because it is what turns byte-identical regeneration from a claim into a check.
+
+**One consequence of that gap, measured.** =check_component_drift.py --all= fails on this branch until two workflow recipes are refreshed: =workflow_instances/workflow_instance.org= and =workflow_steps/workflow_step.org=. Both carry optional columns, so the shell sentinel fix writes =-= where the committed recipes still say =__none__=. Six lines across two files, committed with the fix. This is the gate working as intended, and it is the only thing standing between the branch and a green drift job.
+
+**Regeneration writes into the tree, and that is not free.** The gate materializes the output it compares, so running it leaves untracked generated files behind. For dq those are the six entities' event headers, history-provider registrars and eventing tests, and the 42 shell units under =projects/ores.shell/dq=. They were reverted rather than committed, because they belong with the deletion work above. A reader who finds them untracked has run the gate, not a broken tree.
+
+**Also out of scope, and pre-existing.** =check_component_drift.py --component refdata= reports drift on =main= independent of this branch — upstream template prose and a defaulted =operator=== that were never regenerated into refdata. refdata is outside =COMPONENTS_UNDER_TEST=, so no gate sees it. It is not this task's to fix and is not fixed here.
+
+**Figures.** Codegen suite 700 passing after the merge, up from 687; =check_component_drift.py --all= green once the two recipes are refreshed; model drift, protocol twin coverage, handler permissions, populate references and registry exceptions all pass; the recipe inventory regenerates to 222 recipes in 143 categories.
 
 * Step 9 part three: the dataset bundles, and a generator defect wider than this task
 

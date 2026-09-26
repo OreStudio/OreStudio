@@ -25,9 +25,9 @@ The component needs two passes. The first gives a model to the SQL that has none
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Pass 1 analysis is complete. Implementation has not started. |
-| Waiting on    | Nothing.                               |
-| Next          | Start pass 1 at step 2, the liveness census. |
+| Now           | Pass 1 is most of the way through: the artefact tables generate from the entity model, and nine of fifteen entities are on the canonical protocol stack. |
+| Waiting on    | Nothing. Pass 1 continues.             |
+| Next          | Finish pass 1: the last six entities, the shell wiring and =COMPONENTS_UNDER_TEST=. See the [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][pass 1 task]]. |
 | Last touched  | 2026-09-26                               |
 
 * Acceptance
@@ -43,14 +43,15 @@ Pass 1 models the handcrafted SQL. Pass 2 runs the standard. Pass 1 is first, be
 
 | Task | Pass | State | Start | End | Description |
 |------+------+-------+-------+-----+-------------|
-| [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][Model the handcrafted ores.dq code and generate the artefact tables]] | STARTED | BACKLOG | | | Author models for every handcrafted ores.dq table and function, automate the artefact tables, and reach byte-identical regeneration. |
+| [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][Model the handcrafted ores.dq code and generate the artefact tables]] | 1 | STARTED | 2026-09-26 | | Author models for every handcrafted ores.dq table and function, automate the artefact tables, and reach byte-identical regeneration. |
 | [[id:43AF9F63-5764-4F8E-A8D0-38454B2FD199][Bring ores.dq to the clean standard]] | 2 | BACKLOG | | | Work ores.dq through the Component Clean Standard in order and record each item. |
 
 * Notes
 
 - Survey on 2026-09-23: 16 entity, junction or operation models; 614 C++ files outside tests, 1 of them generated (0%); 84 messaging headers, 84 of them hand-written.
 - Bound to profiles in sprint 25, but not regenerated since the generated marker landed (#2087), so almost no file carries the marker (G03).
-- Analysis on 2026-09-26, recorded in the [[id:C8E3E017-6B93-47E0-B680-55F640F2B0A7][investigation]]: =create/dq= declares 74 tables, 49 of them artefact tables (19 generated, 5 derivable, 12 divergent, 6 foreign, 7 orphan); 84 handcrafted SQL files; drift is 517 files.
+- Analysis on 2026-09-26, recorded in the [[id:C8E3E017-6B93-47E0-B680-55F640F2B0A7][investigation]]: =create/dq= declares 74 tables, 49 of them artefact tables; 84 handcrafted SQL files; drift is 517 files.
+- The census ran to ground on 2026-09-26 and is now 41 generated, 1 derivable, 0 divergent, 7 orphan — 49 artefact tables, all of them live, so no table is a deletion candidate. Divergent went to zero because the projection is declared in the model rather than reconciled by hand. Progress is on the [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][pass 1 task]].
 - The design question is answered: an artefact table generates from the same entity model as its base table, and 19 of the 49 already do. The archetypes drop the audit and bitemporal columns and add =dataset_id=, and codegen forces the =dq_= output prefix for an entity any component owns.
 - The largest automation gain is the publication functions. 21 files implement them by hand, and their template is wired to no facet.
 - 13 of the 19 generated artefact tables have no entity in the 295-entity registry. The drift check cannot see them. =asset_classes= is one, and it is live.

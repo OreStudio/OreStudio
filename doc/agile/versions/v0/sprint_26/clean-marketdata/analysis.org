@@ -341,20 +341,28 @@ stay as written. Six of the mis-modelled shapes are fixed:
 | BOND | 157 | a whole asset class was missing: the key is =TYPE/METRIC/SECURITY=, with no currency, no tenor and no point | a new =security= asset class |
 | RECOVERY_RATE | 48 | the same security-keyed shape, under a type that also has credit-keyed forms | the same class, one more quote type |
 | SHAPE_PROFILE | 171 | a profile-keyed class was missing: the key is TYPE/METRIC/PROFILE/DATE/SECOND/PERIOD with an optional DST flag, and no class carried a time-of-day coordinate | a new =shape_profile= asset class |
+| RATING | 128 | a provider-keyed class was missing: the key is TYPE/METRIC/PROVIDER/FROM/TO, with a provider-only form the corpus also writes | a new =rating= asset class |
 
 That is 13,806 corpus lines brought in by the first six, 939 by the two
 futures, 9,075 by the discount re-modelling, 1,851 by the credit restructuring
 clause, 2,365 by the swap's named-index form and the index spelling, 99,977 by
 the swaption's two qualifiers, 3,026 by the credit vol path, 2,346 by the
-commodity one, 426 by the basis swap's named form, 205 by the security class and
-171 by the shape-profile one. The shape record is down to CPR alone, and 99.96%
-of the corpus is named.
+commodity one, 426 by the basis swap's named form, 205 by the security class,
+171 by the shape-profile one and 128 by the rating one. The shape record is down
+to CPR alone, and 99.99% of the corpus is named.
 
-What is left, 176 keys, is two groups and no shape defect among them:
+What is left is 48 keys, and nothing in it is a shape defect:
 
-- =RATING= (128) needs a class keyed by a rating provider -- the last asset class.
-- The residuals already named: =IR_SWAP= (42) and =MM= (4) on F-TIIE, and =CPR=
-  (2).
+- =IR_SWAP= (42) and =MM= (4) are F-TIIE. The family list holds =tiie= and not
+  =ftiie=, and F-TIIE is a second Mexican benchmark rather than a spelling, so
+  closing it means widening a CHECK constraint on an ores table. That is a domain
+  decision, not a key grammar, and it has its own capture.
+- =CPR= (2) is a security-keyed key on a type modelled under commodity. It is the
+  last shape-mismatch entry, it has a recorded test-coverage exemption, and the
+  security class added here is where it belongs.
+
+Every ORE series type is now either represented or recorded with its reason, and
+the gate fails if a gap goes unrecorded.
 
 ** The security class exposed two generator defects
 

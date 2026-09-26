@@ -938,6 +938,7 @@ test('every live card and task carries the fields the board renders', (t) => {
       const text = dir.tasks.find((task) => task.slug === item.slug).text
       assert.ok(item.id.length > 0)
       assert.ok(item.title.length > 0)
+      assert.equal(item.description, keywordOf(text, 'description'))
       assert.equal(typeof item.environment, 'string')
       assert.equal(item.environment, firstTokenOf(text, 'environment'))
       // A task's state comes from its own `* Status` table and nowhere else.

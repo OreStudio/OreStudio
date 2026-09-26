@@ -207,6 +207,42 @@ example in =ores.codegen=. Neither component is in
 =COMPONENTS_UNDER_TEST=, so no registered component changes, but
 =ores.dq='s generated output does and that is recorded here.
 
+** The second generator defect: the repository ignores the group pair
+
+The API library builds after the equality fix. The core library stops on
+the 26 instrument repositories, and the defect is in the repository
+template.
+
+Two grammar forms exist for a grouped entity. =trade= uses the modern
+=** Domain groups= table, which replaces the struct body entirely. The 26
+instrument entities use the older pair, =:domain_identity_group:= and
+=:domain_audit_group:=, which nests those two groups and leaves the
+entity's own columns flat. The domain-class template and the mapper
+template honour the pair; the repository template does not, so it emits
+=v.instrument_id= where the domain type has =v.identity.instrument_id=.
+The committed tree compiled because that repository was hand-written;
+the regeneration replaces it.
+
+Evidence: =evidence/pr2_generator_defect_repository_group.txt=.
+
+Two ways forward, and the choice is a model-shape decision:
+
+- Teach the repository template the pair, addressing the grouped columns
+  through their member. This keeps the current model shape and the wire
+  format, and it is the smaller change.
+- Migrate the 26 models to the =** Domain groups= table. The loader then
+  requires every column to be in a group, so each entity needs a third
+  field group for its own columns, the struct body changes from "two
+  nested members plus flat columns" to a member list, and the wire JSON
+  changes shape for 26 instrument types. It also needs the loader to
+  resolve the shared =ores.dq.audit_record= group across components;
+  the table form resolves a group only beside the entity's own model
+  today, which is a second small defect the experiment confirmed.
+
+Recorded recommendation: take the first now, because the component's
+acceptance is drift-clean regeneration, not a wire reshape, and revisit
+the table form when PR 3 models the remaining families.
+
 
 ** 3. Regenerate
 

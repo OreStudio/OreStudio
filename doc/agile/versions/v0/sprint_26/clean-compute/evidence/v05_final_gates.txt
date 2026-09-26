@@ -1,9 +1,8 @@
 ## drift --all
-INFO Regeneration complete.
-No drift: regenerated output matches the checked-in tree.
+
+Generated output does not match what's checked in -- a generated file was hand-edited, or its .org model changed without running `compass codegen regenerate` afterwards. Run the regenerate command locally and commit the result.
 
 ## model drift
-154 of 297 models bind to a profile; 13 profiles defined.
 No model drift: every bound model agrees with its profile (1 known exception(s)).
 
 ## twins
@@ -15,17 +14,8 @@ handler permissions are seeded (2 component(s), 160 distinct code(s)).
 ## populate refs
 populate references resolve.
 
-## cmake compute+iam+shell
-ores.compute.api       All component_files.cmake up to date.
-ores.compute.core      All component_files.cmake up to date.
-ores.compute.service   All component_files.cmake up to date.
-ores.compute.client    All component_files.cmake up to date.
-ores.compute.wrapper   All component_files.cmake up to date.
-ores.iam.api           All component_files.cmake up to date.
-ores.shell.compute     All component_files.cmake up to date.
-
-## formula inventory
+## recipe inventory
 exit=0
 
 ## codegen suite
-536 passed in 9.82s
+538 passed in 9.87s

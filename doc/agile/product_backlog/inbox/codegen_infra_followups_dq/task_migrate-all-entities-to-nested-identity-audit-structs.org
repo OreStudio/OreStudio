@@ -25,8 +25,8 @@ identity (version/tenant_id/workspace_id/primary key) and audit
 (modified_by/performed_by/change_reason_code/change_commentary/
 recorded_at) columns folded into nested =identity=/=audit= sub-structs
 (the C1202 pattern — see the decomposition section of
-=doc/knowledge/architecture/data_oriented_design.org=), not left flat
-on the entity struct.
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE
+Studio]]), not left flat on the entity struct.
 
 Today both shapes are correctly supported (flat: most of
 =ores.refdata=; nested: trading instrument entities) — every facet

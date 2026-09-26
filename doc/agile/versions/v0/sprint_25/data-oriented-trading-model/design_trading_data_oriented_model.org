@@ -70,7 +70,8 @@ repository, service, and messaging headers under
 =projects/ores.sql/create/trading/=. It builds on prior analysis:
 the codegen gap investigation (task [[id:2548EE95-7C62-4C48-BA11-2146604B2082][2548EE95]]), the bond probe
 org [[id:BE4698B1-56B1-4686-AD68-C16D4611A1FD][BE4698B1]], the C1202 complexity investigation
-(now in the sprint 18 =rfl_complexity_resolution= story), the Sep-8
+([[id:D75F4921-B431-4E78-99AB-62A47F761D1D][MSVC C1202 and rfl complexity]],
+now in the sprint 18 =rfl_complexity_resolution= story), the Sep-8
 drift oracle it produced, the temporal and composite versioning design
 [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][BA159E88]], and the Sep-6 entity classification and drift baseline
 work (sprint 25 story =entity-classification-drift-rollout=). The

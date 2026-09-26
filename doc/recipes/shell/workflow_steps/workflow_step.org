@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 14E95BD6-FFD8-575A-95D7-57F38A3CD303
+:END:
+#+title: How do I run the workflow_steps commands from the shell?
+#+description: Every command the workflow_steps submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:workflow_steps:
+
+This file documents the workflow_steps resource at the shell, one section per command. Every command is a subcommand of =workflow_steps=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: E3C4FCB1-3577-5E60-A884-E83710192B6B
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_steps list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =workflow.v1.workflow_steps.list=.
+
+#+name: workflow_steps-list
+#+begin_src ores-shell :tangle workflow_steps-list.ores :exports none
+workflow_steps list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 079FD459-E03F-56CF-8AD1-9DF33CAE5239
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_steps get <id>
+#+end_example
+
+It is addressed at =workflow.v1.workflow_steps.get=.
+
+#+name: workflow_steps-get
+#+begin_src ores-shell :tangle workflow_steps-get.ores :exports none
+workflow_steps get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 11CB04B9-C4ED-5597-9D7C-C3E0123DF47B
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_steps get-many <id>
+#+end_example
+
+It is addressed at =workflow.v1.workflow_steps.get_many=.
+
+#+name: workflow_steps-get-many
+#+begin_src ores-shell :tangle workflow_steps-get-many.ores :exports none
+workflow_steps get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 4303D366-1326-5A2F-A1AA-19AC147FCF18
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_steps add <workflow_id> <step_index> <name> <state_id> <request_json> <response_json> <error> <step_log_json> <command_subject> <command_json> <command_published_at> <idempotency_key> <compensation_subject> <compensation_json> <started_at> <completed_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =workflow.v1.workflow_steps.put=.
+
+#+name: workflow_steps-add
+#+begin_src ores-shell :tangle workflow_steps-add.ores :exports none
+workflow_steps add 00000000-0000-0000-0000-000000000000 0 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: F78F75E8-127D-5862-80A0-4A00336E3CDE
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_steps set <id> <workflow_id> <step_index> <name> <state_id> <request_json> <response_json> <error> <step_log_json> <command_subject> <command_json> <command_published_at> <idempotency_key> <compensation_subject> <compensation_json> <started_at> <completed_at> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =workflow.v1.workflow_steps.put=.
+
+#+name: workflow_steps-set
+#+begin_src ores-shell :tangle workflow_steps-set.ores :exports none
+workflow_steps set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 60C50DBD-120F-51FD-9850-4A07AA0E7DD4
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_steps put-many --count <n> <id> <workflow_id> <step_index> <name> <state_id> <request_json> <response_json> <error> <step_log_json> <command_subject> <command_json> <command_published_at> <idempotency_key> <compensation_subject> <compensation_json> <started_at> <completed_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =workflow.v1.workflow_steps.put_many=.
+
+#+name: workflow_steps-put-many
+#+begin_src ores-shell :tangle workflow_steps-put-many.ores :exports none
+workflow_steps put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 4D03B543-C192-5693-AD03-68C0E2641618
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_steps delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =workflow.v1.workflow_steps.delete=.
+
+#+name: workflow_steps-delete
+#+begin_src ores-shell :tangle workflow_steps-delete.ores :exports none
+workflow_steps delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 83D0DCD3-1C73-5168-AB85-6E6E8CF1AF8D
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_steps delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =workflow.v1.workflow_steps.delete_many=.
+
+#+name: workflow_steps-delete-many
+#+begin_src ores-shell :tangle workflow_steps-delete-many.ores :exports none
+workflow_steps delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-workflow-id=
+:PROPERTIES:
+:ID: 33EE8DC1-AF35-5116-95EF-A2781AC8F589
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_steps by-workflow-id <workflow_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =workflow.v1.workflow_steps.list_by_workflow_id=.
+
+#+name: workflow_steps-by-workflow-id
+#+begin_src ores-shell :tangle workflow_steps-by-workflow-id.ores :exports none
+workflow_steps by-workflow-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 7203AAD0-0406-5255-A81C-CD5C7C32555D
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_steps versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =workflow.v1.workflow_steps_versions.list=.
+
+#+name: workflow_steps-versions
+#+begin_src ores-shell :tangle workflow_steps-versions.ores :exports none
+workflow_steps versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 71F3D3C2-F4A8-511E-9C0F-6726E96A15C0
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_steps version <id> --version <n>
+#+end_example
+
+It is addressed at =workflow.v1.workflow_steps_versions.get=.
+
+#+name: workflow_steps-version
+#+begin_src ores-shell :tangle workflow_steps-version.ores :exports none
+workflow_steps version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

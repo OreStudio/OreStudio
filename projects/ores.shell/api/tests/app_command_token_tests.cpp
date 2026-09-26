@@ -18,8 +18,10 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.shell/app/command_token.hpp"
 #include <boost/lexical_cast.hpp>
+#include <chrono>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -90,4 +92,18 @@ TEST_CASE("from_token_rejects_a_malformed_typed_token", tags) {
 
     CHECK_THROWS_AS(from_token<int>("not-a-number"), boost::bad_lexical_cast);
     CHECK_THROWS_AS(from_token<boost::uuids::uuid>("not-a-uuid"), boost::bad_lexical_cast);
+}
+
+TEST_CASE("from_token_converts_an_instant_token", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The storage form is the token a caller types, so a token parses back to
+    // the instant it names. The second pair is what stops this passing when
+    // from_token returns a constant.
+    const auto parsed = from_token<std::chrono::system_clock::time_point>("2026-09-26T14:30:00Z");
+    CHECK(ores::platform::time::datetime::to_iso8601_utc(parsed) == "2026-09-26T14:30:00Z");
+
+    const auto other = from_token<std::chrono::system_clock::time_point>("2020-01-01T00:00:00Z");
+    CHECK(ores::platform::time::datetime::to_iso8601_utc(other) == "2020-01-01T00:00:00Z");
+    CHECK(parsed != other);
 }

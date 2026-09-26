@@ -22,7 +22,7 @@ their parent workflow instance via workflow_id.
 :schema:        public
 :product:       ores
 :component:     workflow
-:has_tenant_id: false
+:profile:       uuid-identified-lookup
 :END:
 
 * Natural keys
@@ -101,6 +101,16 @@ Serialised JSON response received from the downstream service.
 
 Human-readable error message if the step failed.
 
+** step_log_json
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Opaque log entries emitted while the step ran, held as serialised JSON. The
+query surface returns them beside the step's result.
+
 ** command_subject
 :PROPERTIES:
 :type:     text
@@ -123,7 +133,7 @@ Serialised JSON command payload published to the domain service.
 
 ** command_published_at
 :PROPERTIES:
-:type:     timestamptz
+:type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
 :END:
@@ -162,7 +172,7 @@ Serialised JSON compensation command payload, populated when compensation is tri
 
 ** started_at
 :PROPERTIES:
-:type:     timestamptz
+:type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
 :END:
@@ -171,7 +181,7 @@ Timestamp when the step began executing.
 
 ** completed_at
 :PROPERTIES:
-:type:     timestamptz
+:type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
 :END:
@@ -183,6 +193,28 @@ Timestamp when the step reached a terminal state.
 ** Flags
 :PROPERTIES:
 :tablename: ores_workflow_workflow_steps_tbl
+:END:
+
+* Foreign keys
+
+** workflow_id
+:PROPERTIES:
+:table:             ores_workflow_workflow_instances_tbl
+:parent_entity:     workflow_instance
+:nullable:          false
+:error_message:     Invalid workflow_id: %. No active workflow instance found with this id.
+:list_by:           true
+:list_by_order_by:  step_index
+:END:
+
+* Indexes
+
+Every step read is scoped by its workflow, which is also the generated
+parent-scoped list's filter, so this index is its hot path.
+
+** workflow_id
+:PROPERTIES:
+:columns: workflow_id
 :END:
 
 * C++

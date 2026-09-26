@@ -667,9 +667,11 @@ BEGIN
     -- Workflow Component Permissions
     -- =============================================================================
 
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workflow::instances:read',   'View workflow instances');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workflow::instances:write',  'Create workflow instances');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workflow::instances:delete', 'Delete workflow instances');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workflow::parties:provision',         'Start a party provisioning workflow');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workflow::workflow_instances:write',  'Create and modify workflow instances');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workflow::workflow_instances:delete', 'Delete workflow instances');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workflow::workflow_steps:write',      'Create and modify workflow steps');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workflow::workflow_steps:delete',     'Delete workflow steps');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workflow::*', 'Full access to all workflow operations');
 
     -- =============================================================================

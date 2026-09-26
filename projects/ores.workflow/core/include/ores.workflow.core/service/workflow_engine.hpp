@@ -24,8 +24,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.workflow.api/domain/workflow_instance.hpp"
+#include "ores.workflow.api/domain/workflow_step.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
-#include "ores.workflow.core/domain/workflow_instance.hpp"
 #include "ores.workflow.core/export.hpp"
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
@@ -101,6 +102,35 @@ public:
 
 private:
     /**
+     * @brief Moves an instance to a state, recording an optional result and error.
+     *
+     * Reads the instance, applies the change and writes it back, because the
+     * generated repository exposes no state-transition method of its own.
+     */
+    void set_instance_state(const boost::uuids::uuid& instance_id,
+                            const boost::uuids::uuid& state_id,
+                            const std::string& result_json,
+                            const std::string& error);
+
+    /** @brief Advances an instance's step index, leaving everything else alone. */
+    void set_step_progress(const boost::uuids::uuid& instance_id, int step_index);
+
+    /**
+     * @brief Moves a step to a state, recording its response, error and log.
+     *
+     * Reads the step, applies the change and writes it back, because the
+     * generated repository exposes no state-transition method of its own.
+     */
+    void set_step_state(const boost::uuids::uuid& step_id,
+                        const boost::uuids::uuid& state_id,
+                        const std::string& response_json,
+                        const std::string& error,
+                        const std::string& step_log_json = {});
+
+    /** @brief Stamps a step as having published its command. */
+    void stamp_command_published(const boost::uuids::uuid& step_id);
+
+    /**
      * @brief Publishes a step command to the domain service.
      *
      * Includes X-Workflow-Instance-Id, X-Workflow-Step-Id, and X-Tenant-Id
@@ -114,8 +144,8 @@ private:
     /**
      * @brief Publishes a workflow_instance_changed event to the NATS event bus.
      *
-     * Called at every instance state transition so Qt clients can call
-     * markAsStale() and refresh their workflow monitor view.
+     * Called at every instance state transition so a subscriber can refresh its
+     * view of the instance.
      */
     void publish_status_event(const boost::uuids::uuid& instance_id,
                               const boost::uuids::uuid& tenant_id);

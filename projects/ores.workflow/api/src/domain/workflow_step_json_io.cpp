@@ -17,7 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.workflow.core/domain/workflow_step_json_io.hpp"
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_json_io.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.workflow.api/domain/workflow_step_json_io.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <ostream>
 #include <rfl.hpp>

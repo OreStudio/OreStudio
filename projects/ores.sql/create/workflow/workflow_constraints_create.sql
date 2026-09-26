@@ -23,31 +23,18 @@
 -- =============================================================================
 
 -- -----------------------------------------------------------------------------
--- Workflow Instances: indexes for common query patterns
+-- Hand-written SQL the generator cannot express
 -- -----------------------------------------------------------------------------
-
-create index if not exists workflow_instances_tenant_id_idx
-on ores_workflow_workflow_instances_tbl (tenant_id);
-
-create index if not exists workflow_instances_state_id_idx
-on ores_workflow_workflow_instances_tbl (state_id);
+-- Two things live here because no model can state them: a partial index, and a
+-- cascading foreign key. The four other indexes this file used to carry are
+-- generated now, from the models' * Indexes sections.
 
 create index if not exists workflow_instances_correlation_id_idx
 on ores_workflow_workflow_instances_tbl (correlation_id)
 where correlation_id is not null;
-
-create index if not exists workflow_instances_tenant_type_idx
-on ores_workflow_workflow_instances_tbl (tenant_id, type);
-
--- -----------------------------------------------------------------------------
--- Workflow Steps: FK to instances and index on workflow_id for joins
--- -----------------------------------------------------------------------------
 
 alter table ores_workflow_workflow_steps_tbl
     add constraint ores_workflow_workflow_steps_workflow_id_fk
     foreign key (workflow_id)
     references ores_workflow_workflow_instances_tbl (id)
     on delete cascade;
-
-create index if not exists workflow_steps_workflow_id_idx
-on ores_workflow_workflow_steps_tbl (workflow_id);

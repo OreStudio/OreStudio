@@ -22,5 +22,9 @@
 -- Drop Workflow Tables
 -- =============================================================================
 
+-- Triggers first: dropping a table removes its trigger but not the trigger
+-- function, which would then collide on the next create.
+\ir ./workflow_workflow_steps_notify_trigger_drop.sql
+\ir ./workflow_workflow_instances_notify_trigger_drop.sql
 \ir ./workflow_workflow_steps_drop.sql
 \ir ./workflow_workflow_instances_drop.sql

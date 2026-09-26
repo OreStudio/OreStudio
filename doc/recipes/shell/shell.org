@@ -550,6 +550,8 @@ tangled into the runnable script library
 
 * Platforms
 
+<<<<<<< HEAD
+
 - [[id:B07AA915-541C-55EB-BBC1-9DEA5AB1421F][How do I run the platforms commands from the shell?]]
 
 * Folders
@@ -598,6 +600,11 @@ tangled into the runnable script library
 
 * Tags
 
+=======
+
+
+<<<<<<< HEAD
+
 - [[id:B08A234B-9FEF-5B71-B0FC-DC4A43CAA19A][How do I run the tags commands from the shell?]]
 
 * Pricing Engine Types
@@ -618,4 +625,18 @@ tangled into the runnable script library
 
 * Testing
 
+=======
+
 - [[id:01193D52-DD7C-4276-B6C2-E4B7F137B99E][How do I test the shell?]]
+
+* Workflow Instances
+
+- [[id:781A0602-319F-5ABF-8BEE-02FBD847554D][How do I run the workflow_instances commands from the shell?]]
+
+* Workflow Steps
+
+>>>>>>> af11271b7e ([workflow] List the generated shell recipes in the inventory)
+
+>>>>>>> ddab9ae787 ([workflow] List the generated shell recipes in the inventory)
+
+- [[id:14E95BD6-FFD8-575A-95D7-57F38A3CD303][How do I run the workflow_steps commands from the shell?]]

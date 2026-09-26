@@ -17,14 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_INSTANCE_REPOSITORY_HPP
 #define ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_INSTANCE_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.workflow.core/domain/workflow_instance.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include "ores.workflow.api/domain/workflow_instance.hpp"
 #include "ores.workflow.core/export.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
@@ -33,7 +40,7 @@
 namespace ores::workflow::repository {
 
 /**
- * @brief Repository for workflow instances (non-temporal, append-mostly).
+ * @brief Reads and writes workflow instances to data storage.
  */
 class ORES_WORKFLOW_CORE_EXPORT workflow_instance_repository {
 private:
@@ -49,47 +56,139 @@ private:
 public:
     using context = ores::database::context;
 
-    std::vector<domain::workflow_instance> read(context ctx);
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
+    std::string sql();
 
     /**
-     * @brief Finds a workflow instance by primary key (no tenant filter).
+     * @brief Writes workflow instances to database.
      *
-     * Used by the engine which operates cross-tenant as the service account.
-     * Returns nullopt if no record with @p id exists.
+     * The plain form replaces the row the caller last read: it states the
+     * version the row carries now, so the store can tell a replace from a
+     * create. A row that moved on since that read is a conflict, never a silent
+     * overwrite.
      */
-    std::optional<domain::workflow_instance> find_by_id(context ctx, const boost::uuids::uuid& id);
+    /**@{*/
+    void write(context ctx, const domain::workflow_instance& v);
+    void write(context ctx, const std::vector<domain::workflow_instance>& v);
+    /**@}*/
 
     /**
-     * @brief Returns all workflow instances with state_id == @p state_id.
+     * @brief Writes a workflow instance, honouring the claim it states.
      *
-     * Used at startup to recover in-progress workflows across all tenants.
+     * The claim is the version the caller read (@c must_match_version), that no
+     * current row exists (@c must_not_exist), or neither (@c any, which
+     * replaces the row as it stands). The store decides in the write's own
+     * transaction, so a create that collides with a live row and a write over a
+     * row that moved on are refused by the store rather than by a check a
+     * caller might have forgotten.
      */
-    std::vector<domain::workflow_instance> find_by_state(context ctx,
-                                                         const boost::uuids::uuid& state_id);
+    void write(context ctx,
+               const domain::workflow_instance& v,
+               const ores::utility::domain::precondition& claim);
 
     /**
-     * @brief Inserts a new workflow instance record.
+     * @brief Writes a set of workflow instances, each honouring its own
+     * claim, as one statement.
      */
-    void create(context ctx, const domain::workflow_instance& v);
+    void write(context ctx,
+               const std::vector<domain::workflow_instance>& v,
+               const std::vector<ores::utility::domain::precondition>& claims);
 
     /**
-     * @brief Updates the FSM state (and optional result/error) of a workflow instance.
+     * @brief Reads latest workflow instances, possibly filtered by primary key.
+     */
+    /**@{*/
+    std::vector<domain::workflow_instance> read_latest(context ctx);
+    std::vector<domain::workflow_instance> read_latest(context ctx, const std::string& id);
+    std::vector<domain::workflow_instance> read_latest(context ctx,
+                                                       const std::vector<std::string>& ids);
+    /**@}*/
+
+
+    /**
+     * @brief Reads all workflow instances, possibly filtered by primary key.
+     */
+    std::vector<domain::workflow_instance> read_all(context ctx, const std::string& id);
+
+    /**
+     * @brief Reads a single workflow instance as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::workflow_instance>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
+    /**
+     * @brief Reads latest workflow instances with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::workflow_instance>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active workflow instances.
+     * @param ctx Repository context with database connection
+     * @return Total number of active workflow instances
+     */
+    std::uint32_t get_total_instance_count(context ctx);
+
+    /**
+     * @brief Deletes a workflow instance by closing its temporal validity.
+     */
+    void remove(context ctx, const std::string& id);
+
+    /**
+     * @brief What a removal did, so a caller reports a conflict as an outcome
+     * rather than catching an exception.
      *
-     * Sets @p state_id, @p result_json, @p error, and stamps completed_at to now.
+     * @c missing means there was no current row to remove, and @c unsupported
+     * means the store cannot answer the version at all -- a current-state
+     * table has no version column, so a versioned removal has no meaning
+     * there.
      */
-    void update_state(context ctx,
-                      const boost::uuids::uuid& id,
-                      const boost::uuids::uuid& state_id,
-                      const std::string& result_json,
-                      const std::string& error);
+    enum class remove_status { removed, conflicting, missing, unsupported };
 
     /**
-     * @brief Advances the current step index and records the event timestamp.
+     * @brief Removes a workflow instance, refusing a row that moved on.
      *
-     * Called by the engine after successfully dispatching the next step command.
-     * Sets current_step_index = @p next_index and last_event_at = now().
+     * A stated version is the version the caller read. The removal is refused
+     * with @c conflicting when the current row carries another, so a caller
+     * that decided on stale state cannot remove a change it never saw. A null
+     * version removes whatever is current, which is what a caller that stated
+     * no version asked for.
      */
-    void update_step_progress(context ctx, const boost::uuids::uuid& id, int next_index);
+    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+
+    /**
+     * @brief Deletes workflow instances by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& ids);
+
+
+private:
+    /**
+     * @brief The claim a replace makes: the version the row carries now, or
+     * that no row exists yet.
+     */
+    ores::utility::domain::precondition replace_claim(context ctx,
+                                                      const domain::workflow_instance& v);
+
+    /**
+     * @brief The object with the claim's version stamped onto it.
+     *
+     * A claim the store cannot check is refused here rather than ignored.
+     */
+    domain::workflow_instance apply_claim(context ctx,
+                                          const domain::workflow_instance& v,
+                                          const ores::utility::domain::precondition& claim);
 };
 
 }

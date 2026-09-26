@@ -17,11 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_INSTANCE_MAPPER_HPP
 #define ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_INSTANCE_MAPPER_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.workflow.core/domain/workflow_instance.hpp"
+#include "ores.workflow.api/domain/workflow_instance.hpp"
 #include "ores.workflow.core/export.hpp"
 #include "ores.workflow.core/repository/workflow_instance_entity.hpp"
 
@@ -43,9 +48,12 @@ private:
 
 public:
     static domain::workflow_instance map(const workflow_instance_entity& v);
+    static workflow_instance_entity map(const domain::workflow_instance& v);
+
     static std::vector<domain::workflow_instance>
     map(const std::vector<workflow_instance_entity>& v);
-    static workflow_instance_entity to_entity(const domain::workflow_instance& v);
+    static std::vector<workflow_instance_entity>
+    map(const std::vector<domain::workflow_instance>& v);
 };
 
 }

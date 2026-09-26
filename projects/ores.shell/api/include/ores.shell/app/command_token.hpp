@@ -106,6 +106,10 @@ T from_token(const std::string& token) {
         // A date column is stored as an ISO calendar date, which is also the
         // token a caller types.
         return ores::platform::time::datetime::from_iso8601_date(token);
+    } else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>) {
+        // An instant is stored as an ISO 8601 UTC string, which is also the
+        // token a caller types.
+        return ores::platform::time::datetime::from_iso8601_utc(token);
     } else if constexpr (detail::has_token_conversion_v<T>) {
         return boost::lexical_cast<T>(token);
     } else if constexpr (detail::has_parse_token<T>) {

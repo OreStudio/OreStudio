@@ -99,13 +99,64 @@ void workflow_engine::publish_status_event(const boost::uuids::uuid& instance_id
     }
 }
 
+void workflow_engine::set_instance_state(const boost::uuids::uuid& instance_id,
+                                         const boost::uuids::uuid& state_id,
+                                         const std::string& result_json,
+                                         const std::string& error) {
+    const auto rows = instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
+    if (rows.empty())
+        return;
+    auto instance = rows.front();
+    instance.state_id = state_id;
+    if (!result_json.empty())
+        instance.result_json = result_json;
+    instance.error = error;
+    instance_repo_.write(ctx_, instance);
+}
+
+void workflow_engine::set_step_progress(const boost::uuids::uuid& instance_id, int step_index) {
+    const auto rows = instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
+    if (rows.empty())
+        return;
+    auto instance = rows.front();
+    instance.current_step_index = step_index;
+    instance_repo_.write(ctx_, instance);
+}
+
+void workflow_engine::stamp_command_published(const boost::uuids::uuid& step_id) {
+    const auto rows = step_repo_.read_latest(ctx_, boost::uuids::to_string(step_id));
+    if (rows.empty())
+        return;
+    auto step = rows.front();
+    step.command_published_at = std::chrono::system_clock::now();
+    step_repo_.write(ctx_, step);
+}
+
+void workflow_engine::set_step_state(const boost::uuids::uuid& step_id,
+                                     const boost::uuids::uuid& state_id,
+                                     const std::string& response_json,
+                                     const std::string& error,
+                                     const std::string& step_log_json) {
+    const auto rows = step_repo_.read_latest(ctx_, boost::uuids::to_string(step_id));
+    if (rows.empty())
+        return;
+    auto step = rows.front();
+    step.state_id = state_id;
+    if (!response_json.empty())
+        step.response_json = response_json;
+    step.error = error;
+    if (!step_log_json.empty())
+        step.step_log_json = step_log_json;
+    step_repo_.write(ctx_, step);
+}
+
 void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
                                          const std::string& last_result_json) {
 
     const auto* def = registry_->find(instance.type);
     if (!def) {
         BOOST_LOG_SEV(lg(), error) << "No workflow definition for type: " << instance.type;
-        instance_repo_.update_state(ctx_,
+        set_instance_state(
                                     instance.id,
                                     instance_states_.require("failed"),
                                     "",
@@ -120,9 +171,8 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
         BOOST_LOG_SEV(lg(), info) << "Workflow COMPLETED:" << " type=" << instance.type
                                   << " workflow=" << boost::uuids::to_string(instance.id)
                                   << " steps=" << instance.step_count;
-        instance_repo_.update_state(
-            ctx_, instance.id, instance_states_.require("completed"), last_result_json, "");
-        publish_status_event(instance.id, instance.tenant_id);
+        set_instance_state(instance.id, instance_states_.require("completed"), last_result_json, "");
+        publish_status_event(instance.id, instance.tenant_id.to_uuid());
         return;
     }
 
@@ -131,13 +181,13 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
     // for non-deterministic ones the materialised_steps_json on the instance
     // guards against a different list being produced.
     const auto steps = def->build_steps(instance.request_json,
-                                        boost::uuids::to_string(instance.tenant_id),
+                                        boost::uuids::to_string(instance.tenant_id.to_uuid()),
                                         instance.correlation_id);
 
     if (next_index >= static_cast<int>(steps.size())) {
         BOOST_LOG_SEV(lg(), error)
             << "Step index " << next_index << " out of range for type: " << instance.type;
-        instance_repo_.update_state(ctx_,
+        set_instance_state(
                                     instance.id,
                                     instance_states_.require("failed"),
                                     "",
@@ -147,7 +197,7 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
 
     // Build the command for the next step.
     const auto& step_def = steps[next_index];
-    const auto all_steps = step_repo_.find_by_workflow_id(ctx_, instance.id);
+    const auto all_steps = step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance.id), 0, 1000);
 
     // Only include forward step results (step_index >= 0), not compensation.
     std::vector<std::string> results;
@@ -170,26 +220,26 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
     next_step.command_json = cmd_json;
     next_step.idempotency_key = boost::uuids::to_string(next_id);
     next_step.compensation_subject = step_def.compensation_subject;
-    next_step.created_at = std::chrono::system_clock::now();
+    next_step.recorded_at = std::chrono::system_clock::now();
 
     // Persist before publishing (ensures restart can re-dispatch).
-    step_repo_.create(ctx_, next_step);
+    step_repo_.write(ctx_, next_step);
 
     // Publish the command.
-    publish_command(next_step, instance.id, instance.tenant_id);
+    publish_command(next_step, instance.id, instance.tenant_id.to_uuid());
 
     // Record that the command was published.
-    step_repo_.mark_command_published(ctx_, next_id);
+    stamp_command_published( next_id);
 
     // Advance the instance's step index.
-    instance_repo_.update_step_progress(ctx_, instance.id, next_index);
+    set_step_progress( instance.id, next_index);
     instance.current_step_index = next_index;
 
     BOOST_LOG_SEV(lg(), info) << "Dispatched step " << next_index << "/"
                               << (instance.step_count - 1) << " (" << step_def.name << ")"
                               << " for workflow=" << boost::uuids::to_string(instance.id)
                               << " type=" << instance.type;
-    publish_status_event(instance.id, instance.tenant_id);
+    publish_status_event(instance.id, instance.tenant_id.to_uuid());
 }
 
 void workflow_engine::begin_compensation(const domain::workflow_instance& instance,
@@ -200,24 +250,22 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
                               << " workflow=" << boost::uuids::to_string(instance.id)
                               << " error=" << failure_msg;
 
-    instance_repo_.update_state(
-        ctx_, instance.id, instance_states_.require("compensating"), "", failure_msg);
-    publish_status_event(instance.id, instance.tenant_id);
+    set_instance_state(instance.id, instance_states_.require("compensating"), "", failure_msg);
+    publish_status_event(instance.id, instance.tenant_id.to_uuid());
 
     const auto* def = registry_->find(instance.type);
     if (!def) {
         BOOST_LOG_SEV(lg(), error) << "Cannot compensate: no definition for type " << instance.type;
-        instance_repo_.update_state(
-            ctx_, instance.id, instance_states_.require("compensated"), "", failure_msg);
+        set_instance_state(instance.id, instance_states_.require("compensated"), "", failure_msg);
         return;
     }
 
     const auto step_defs = def->build_steps(instance.request_json,
-                                            boost::uuids::to_string(instance.tenant_id),
+                                            boost::uuids::to_string(instance.tenant_id.to_uuid()),
                                             instance.correlation_id);
 
     // Load completed forward steps in reverse order for compensation.
-    auto steps = step_repo_.find_by_workflow_id(ctx_, instance.id);
+    auto steps = step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance.id), 0, 1000);
     std::ranges::reverse(steps);
 
     bool dispatched_any = false;
@@ -252,15 +300,15 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
         comp_step.command_subject = step_def.compensation_subject;
         comp_step.command_json = comp_json;
         comp_step.idempotency_key = boost::uuids::to_string(comp_id);
-        comp_step.created_at = std::chrono::system_clock::now();
-        step_repo_.create(ctx_, comp_step);
+        comp_step.recorded_at = std::chrono::system_clock::now();
+        step_repo_.write(ctx_, comp_step);
 
         // Publish compensation command with tenant header.
         BOOST_LOG_SEV(lg(), info) << "Dispatching compensation for step " << s.step_index << " ("
                                   << step_def.name << "_compensation)"
                                   << " workflow=" << boost::uuids::to_string(instance.id);
-        publish_command(comp_step, instance.id, instance.tenant_id);
-        step_repo_.mark_command_published(ctx_, comp_id);
+        publish_command(comp_step, instance.id, instance.tenant_id.to_uuid());
+        stamp_command_published( comp_id);
         dispatched_any = true;
     }
 
@@ -269,18 +317,18 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
     if (!dispatched_any) {
         BOOST_LOG_SEV(lg(), info) << "No compensation steps needed for workflow "
                                   << boost::uuids::to_string(instance.id);
-        instance_repo_.update_state(
-            ctx_, instance.id, instance_states_.require("compensated"), "", failure_msg);
+        set_instance_state(instance.id, instance_states_.require("compensated"), "", failure_msg);
     }
 }
 
 void workflow_engine::check_compensation_complete(const domain::workflow_instance& instance) {
 
-    const auto steps = step_repo_.find_by_workflow_id(ctx_, instance.id);
+    const auto steps = step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance.id), 0, 1000);
 
     for (const auto& s : steps) {
+        // Compensate the completed steps only; the rest never ran.
         if (s.step_index >= 0)
-            continue; // skip forward steps
+            continue;
         if (s.state_id == step_states_.require("in_progress")) {
             // At least one compensation step is still running.
             return;
@@ -291,8 +339,8 @@ void workflow_engine::check_compensation_complete(const domain::workflow_instanc
     BOOST_LOG_SEV(lg(), info) << "Workflow COMPENSATED (all rollback steps complete):" << " type="
                               << instance.type
                               << " workflow=" << boost::uuids::to_string(instance.id);
-    instance_repo_.update_state(ctx_, instance.id, instance_states_.require("compensated"), "", "");
-    publish_status_event(instance.id, instance.tenant_id);
+    set_instance_state( instance.id, instance_states_.require("compensated"), "", "");
+    publish_status_event(instance.id, instance.tenant_id.to_uuid());
 }
 
 void workflow_engine::on_step_completed(ores::nats::message msg) {
@@ -321,11 +369,12 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
         return;
     }
 
-    auto step = step_repo_.find_by_id(ctx_, step_id);
-    if (!step) {
+    const auto found_steps = step_repo_.read_latest(ctx_, boost::uuids::to_string(step_id));
+    if (found_steps.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Step not found: " << event.step_id;
         return;
     }
+    const auto* step = &found_steps.front();
 
     // Guard: duplicate event if step is already out of in_progress.
     if (step->state_id != step_states_.require("in_progress")) {
@@ -341,20 +390,17 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
     using outcome = ores::workflow::messaging::step_outcome;
     switch (event.outcome) {
         case outcome::completed:
-            step_repo_.update_state(
-                ctx_, step_id, step_states_.require("completed"), event.result_json, "", "");
+            set_step_state(step_id, step_states_.require("completed"), event.result_json, "", "");
             break;
         case outcome::completed_with_warnings:
-            step_repo_.update_state(ctx_,
-                                    step_id,
+            set_step_state(step_id,
                                     step_states_.require("completed_with_warnings"),
                                     event.result_json,
                                     "",
                                     log_json);
             break;
         case outcome::failed:
-            step_repo_.update_state(
-                ctx_, step_id, step_states_.require("failed"), "", event.error_message, log_json);
+            set_step_state(step_id, step_states_.require("failed"), "", event.error_message, log_json);
             break;
     }
 
@@ -368,11 +414,13 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
         return;
     }
 
-    auto instance = instance_repo_.find_by_id(ctx_, instance_id);
-    if (!instance) {
+    auto found_instances =
+        instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
+    if (found_instances.empty()) {
         BOOST_LOG_SEV(lg(), error) << "Workflow instance not found: " << event.workflow_instance_id;
         return;
     }
+    auto* instance = &found_instances.front();
 
     // Distinguish between forward steps and compensation steps.
     using outcome = ores::workflow::messaging::step_outcome;
@@ -448,7 +496,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     }
     domain::workflow_instance instance;
     instance.id = instance_id;
-    instance.tenant_id = tenant_id;
+    instance.tenant_id = utility::uuid::tenant_id::from_uuid(tenant_id).value();
     instance.type = req.type;
     instance.state_id = instance_states_.require("in_progress");
     instance.request_json = req.request_json;
@@ -457,13 +505,13 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     instance.current_step_index = 0;
     instance.step_count = static_cast<int>(steps.size());
     instance.materialised_steps_json = materialise_steps_json(steps);
-    instance.created_at = std::chrono::system_clock::now();
+    instance.recorded_at = std::chrono::system_clock::now();
 
     bool instance_created = false;
     bool step_created = false;
     boost::uuids::uuid step_id{};
     try {
-        instance_repo_.create(ctx_, instance);
+        instance_repo_.write(ctx_, instance);
         instance_created = true;
 
         // Build and dispatch step 0.
@@ -482,12 +530,12 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         step.command_json = cmd_json;
         step.idempotency_key = boost::uuids::to_string(step_id);
         step.compensation_subject = step_def.compensation_subject;
-        step.created_at = std::chrono::system_clock::now();
+        step.recorded_at = std::chrono::system_clock::now();
 
-        step_repo_.create(ctx_, step);
+        step_repo_.write(ctx_, step);
         step_created = true;
         publish_command(step, instance_id, tenant_id);
-        step_repo_.mark_command_published(ctx_, step_id);
+        stamp_command_published( step_id);
 
         BOOST_LOG_SEV(lg(), info) << "Workflow STARTED:" << " type=" << req.type
                                   << " workflow=" << boost::uuids::to_string(instance_id)
@@ -505,7 +553,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         const auto id_str = boost::uuids::to_string(instance_id);
         if (instance_created) {
             BOOST_LOG_SEV(lg(), error) << "Failed to start workflow " << id_str << ": " << e.what();
-            instance_repo_.update_state(ctx_,
+            set_instance_state(
                                         instance_id,
                                         instance_states_.require("failed"),
                                         "",
@@ -515,8 +563,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
             // stay in_progress forever: recovery re-dispatches only steps of
             // instances still in_progress, and this instance is now failed.
             if (step_created) {
-                step_repo_.update_state(ctx_,
-                                        step_id,
+                set_step_state(step_id,
                                         step_states_.require("failed"),
                                         "",
                                         "Failed to start workflow: " + std::string(e.what()));
@@ -535,8 +582,19 @@ void workflow_engine::recover_in_progress() {
     const auto in_progress_id = instance_states_.require("in_progress");
     const auto compensating_id = instance_states_.require("compensating");
 
-    auto instances = instance_repo_.find_by_state(ctx_, in_progress_id);
-    auto compensating = instance_repo_.find_by_state(ctx_, compensating_id);
+    // The generated repository has no find-by-state read, so the recovery pass
+    // reads the tenant's instances once and splits them by state in memory.
+    const auto all_instances = instance_repo_.read_latest(ctx_);
+    std::vector<domain::workflow_instance> instances;
+    std::vector<domain::workflow_instance> compensating;
+    std::copy_if(all_instances.begin(),
+                 all_instances.end(),
+                 std::back_inserter(instances),
+                 [&](const auto& i) { return i.state_id == in_progress_id; });
+    std::copy_if(all_instances.begin(),
+                 all_instances.end(),
+                 std::back_inserter(compensating),
+                 [&](const auto& i) { return i.state_id == compensating_id; });
     instances.insert(instances.end(),
                      std::make_move_iterator(compensating.begin()),
                      std::make_move_iterator(compensating.end()));
@@ -553,19 +611,19 @@ void workflow_engine::recover_in_progress() {
             }
 
             // Find all in-progress steps for this instance and re-dispatch.
-            const auto steps = step_repo_.find_by_workflow_id(ctx_, instance.id);
+            const auto steps = step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance.id), 0, 1000);
             if (steps.empty()) {
                 // A start that died before persisting its first step leaves
                 // an in_progress instance with no steps; nothing can ever
                 // re-dispatch it. Mark it failed so waiters see a real error.
                 BOOST_LOG_SEV(lg(), error) << "Instance " << boost::uuids::to_string(instance.id)
                                            << " has no steps; marking failed";
-                instance_repo_.update_state(ctx_,
+                set_instance_state(
                                             instance.id,
                                             instance_states_.require("failed"),
                                             "",
                                             "instance has no steps after recovery");
-                publish_status_event(instance.id, instance.tenant_id);
+                publish_status_event(instance.id, instance.tenant_id.to_uuid());
                 continue;
             }
             for (const auto& s : steps) {
@@ -576,7 +634,7 @@ void workflow_engine::recover_in_progress() {
                     << "Re-dispatching step " << s.step_index << " (" << s.name << ") for instance "
                     << boost::uuids::to_string(instance.id);
 
-                publish_command(s, instance.id, instance.tenant_id);
+                publish_command(s, instance.id, instance.tenant_id.to_uuid());
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "Recovery failed for instance "

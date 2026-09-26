@@ -17,19 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKFLOW_CORE_DOMAIN_WORKFLOW_STEP_JSON_IO_HPP
-#define ORES_WORKFLOW_CORE_DOMAIN_WORKFLOW_STEP_JSON_IO_HPP
-
-#include "ores.workflow.core/domain/workflow_step.hpp"
-#include <iosfwd>
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table_io.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.workflow.api/domain/workflow_instance_table_io.hpp"
+#include "ores.workflow.api/domain/workflow_instance_table.hpp"
+#include <ostream>
 
 namespace ores::workflow::domain {
 
-/**
- * @brief Dumps the workflow_step to a stream in JSON format.
- */
-std::ostream& operator<<(std::ostream& s, const workflow_step& v);
+namespace {
+
+void print_workflow_instance_table(std::ostream& s, const std::vector<workflow_instance>& v) {
+    s << std::endl << convert_to_table(v) << std::endl;
+}
 
 }
 
-#endif
+std::ostream& operator<<(std::ostream& s, const std::vector<workflow_instance>& v) {
+    print_workflow_instance_table(s, v);
+    return s;
+}
+
+}

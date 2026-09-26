@@ -75,7 +75,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         BOOST_LOG_SEV(lg(), info) << "Workflow JetStream stream ready: " << stream_name;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure workflow stream: " << e.what();
-        throw; // propagate — service cannot run without the stream
+        // The service cannot run without the stream, so the failure propagates.
+        throw;
     }
 
     ores::nats::service::nats_client svc_nats(

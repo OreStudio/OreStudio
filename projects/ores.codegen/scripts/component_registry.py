@@ -58,4 +58,10 @@ Usage: imported by the check scripts, never run.
 # messaging reference is stale; V04, no live fleet). The standard keeps a
 # component out until every item passes or its exceptions are accepted, so add
 # it once they are.
-COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "ore")
+
+# workflow joins on the same terms at the end of its clean-standard pass: its
+# tree was regenerated from its two entity models, the drift check is
+# byte-identical and idempotent, and the component builds. Its protocol headers
+# carry no TypeScript twin yet, so the twin gate is the one claim to check
+# before this line is merged.
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "ore", "workflow-cpp")

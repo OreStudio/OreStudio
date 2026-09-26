@@ -96,7 +96,8 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
         wf_req.party_type = input.party_type;
         wf_req.business_center_code = input.business_center_code;
         wf_req.parent_party_id = input.parent_party_id;
-        wf_req.status = "Inactive"; // wizard fires on first login
+        // The provisioning wizard fires on first login, so the account waits.
+        wf_req.status = "Inactive";
         wf_req.principal = input.principal;
         wf_req.password = input.password;
         wf_req.totp_secret = input.totp_secret;

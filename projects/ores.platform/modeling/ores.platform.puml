@@ -37,6 +37,12 @@ namespace ores #F2F2F2 {
         namespace filesystem #F2F2F2 {
             class file {
             }
+            class scoped_temp_directory {
+                -path_ : filesystem::path
+            }
+            class scoped_temp_file {
+                -path_ : filesystem::path
+            }
         }
         namespace time #F2F2F2 {
             class datetime {
@@ -146,6 +152,36 @@ skips both, because each puts its base-clause list where
 the parser expects an opening brace.
 end note
 
+class ores::platform::filesystem::scoped_temp_file {
+    +scoped_temp_file()
+    +scoped_temp_file(other : scoped_temp_file&&)
+    +operator=(other : scoped_temp_file&&) : scoped_temp_file&
+    +~scoped_temp_file()
+    +path() : path&
+    +release() : path
+}
+note right of "ores::platform::filesystem::scoped_temp_file"
+Owns an empty file under the system temporary directory
+until it leaves scope, and exposes it with path(). The
+destructor removes the file and never throws. This is the
+one place the tree builds a temporary file, so the
+retry-on-collision policy lives here alone.
+end note
+
+class ores::platform::filesystem::scoped_temp_directory {
+    +scoped_temp_directory()
+    +scoped_temp_directory(other : scoped_temp_directory&&)
+    +operator=(other : scoped_temp_directory&&) : scoped_temp_directory&
+    +~scoped_temp_directory()
+    +path() : path&
+    +release() : path
+}
+note right of "ores::platform::filesystem::scoped_temp_directory"
+The directory form. Its destructor removes the whole tree,
+so a caller may fill the directory with whatever the test
+or the service needs.
+end note
+
 class ores::platform::time::datetime {
     {static} +to_iso8601_utc(tp : time_point) : string
     {static} +from_iso8601_utc(str : string) : time_point
@@ -220,6 +256,8 @@ ores::platform::environment::fake_environment_provider ..|> ores::platform::envi
 ores::platform::environment::environment ..> ores::platform::environment::environment_provider : delegates to
 ores::platform::filesystem::file ..> ores::platform::filesystem::io_error : throws
 ores::platform::filesystem::file ..> ores::platform::filesystem::file_not_found : throws
+ores::platform::filesystem::scoped_temp_file ..> ores::platform::filesystem::io_error : throws
+ores::platform::filesystem::scoped_temp_directory ..> ores::platform::filesystem::io_error : throws
 ores::platform::process ..> ores::platform::time : build time uses file-time conversion
 
 ' Local Variables:

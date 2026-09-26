@@ -9,7 +9,7 @@
 #+level: cross
 #+filetags: :platform:os:component:
 #+created: 2026-05-20
-#+updated: 2026-09-25
+#+updated: 2026-09-26
 
 * Diagram
 
@@ -52,8 +52,9 @@ with a =Z= suffix; local time is used for display only.
   =fake_environment_provider= for that purpose, and =environment=
   routes every call through the installed provider.
 - =filesystem/= — reading and writing file content, deleting a list of
-  files, and the =file_not_found= and =io_error= exceptions the facet
-  raises.
+  files, the =file_not_found= and =io_error= exceptions the facet
+  raises, and the =scoped_temp_file= and =scoped_temp_directory= guards
+  that own a temporary path until they leave scope.
 - =net/= — machine identity: the hostname, the primary non-loopback
   hardware address in both colon-separated and raw-byte form, and the
   stable machine identifier derived from the two.
@@ -80,6 +81,8 @@ with a =Z= suffix; local time is used for display only.
   unparseable case both distinguishable from a real value.
 - File content, and the exceptions raised when a file or directory
   cannot be read.
+- A path under the system temporary directory, held by a guard that
+  removes it on destruction.
 - The hostname, the primary MAC address, a stable hex machine
   identifier, and the current process id.
 - Cross-platform =time_t= to UTC and local =tm= conversions, ISO 8601
@@ -93,7 +96,7 @@ with a =Z= suffix; local time is used for display only.
   =environment_provider=, =fake_environment_provider=,
   =real_environment_provider=.
 - =include/ores.platform/filesystem/= — =file=, =file_not_found=,
-  =io_error=.
+  =io_error=, =scoped_temp_file=, =scoped_temp_directory=.
 - =include/ores.platform/net/= — =get_hostname=,
   =get_primary_mac_address=, =get_primary_mac_address_bytes=,
   =derive_machine_id=, =derive_machine_id_hash=.

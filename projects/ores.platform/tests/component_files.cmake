@@ -22,6 +22,7 @@
 set(files
     "environment_environment_tests.cpp"
     "filesystem_file_tests.cpp"
+    "filesystem_scoped_temp_file_tests.cpp"
     "main.cpp"
     "net_network_info_tests.cpp"
     "process_executable_tests.cpp"

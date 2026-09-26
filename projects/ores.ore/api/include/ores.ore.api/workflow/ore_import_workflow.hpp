@@ -20,7 +20,7 @@
 #ifndef ORES_ORE_API_WORKFLOW_ORE_IMPORT_WORKFLOW_HPP
 #define ORES_ORE_API_WORKFLOW_ORE_IMPORT_WORKFLOW_HPP
 
-#include "ores.ore.api/messaging/ore_import_engine_protocol.hpp"
+#include "ores.ore.api/messaging/ore_import_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"

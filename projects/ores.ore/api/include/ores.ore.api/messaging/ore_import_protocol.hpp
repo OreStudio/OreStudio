@@ -75,13 +75,78 @@ struct ore_import_response {
     bool success = false;
     std::string message;
     std::vector<ore_import_item_error> item_errors;
-    std::string correlation_id;
     /**
      * Set when the import was dispatched asynchronously through the workflow
      * engine. The import then runs in the background, item_errors is empty in
      * this response, and this id queries the workflow's status.
      */
+    std::string correlation_id;
     std::string workflow_instance_id;
+};
+
+/**
+ * @brief Workflow step command: execute the full ORE import.
+ *
+ * Published by the workflow engine when the ore_import_workflow starts. The
+ * handler fetches the packed tarball, scans, plans and saves every item, then
+ * calls publish_step_completion.
+ */
+struct ore_import_execute_request {
+    static constexpr std::string_view nats_subject = "ore.v1.ore.import.execute";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string request_id;
+    std::string import_choices_json;
+    std::string correlation_id;
+    /** The caller's JWT, so the handler can delegate the caller's identity downstream. */
+    std::string bearer_token;
+};
+
+/**
+ * @brief The step's stored response.
+ *
+ * Carries everything compensation needs -- the identifiers of every entity
+ * the step saved -- alongside the caller-facing item_errors list.
+ */
+struct ore_import_execute_result {
+    bool success = false;
+    std::string message;
+    std::string correlation_id;
+    std::vector<ore_import_item_error> item_errors;
+    std::vector<std::string> saved_currency_iso_codes;
+    std::vector<std::string> saved_portfolio_ids;
+    std::vector<std::string> saved_book_ids;
+    std::vector<std::string> saved_trade_ids;
+};
+
+/**
+ * @brief Workflow compensation command: roll back a completed ORE import.
+ *
+ * Published by the workflow engine when step 0's compensation is triggered.
+ * The handler deletes every saved entity in reverse order and calls
+ * publish_step_completion.
+ */
+struct ore_import_rollback_request {
+    static constexpr std::string_view nats_subject = "ore.v1.ore.import.rollback";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string correlation_id;
+    /** The caller's JWT, so the handler can delegate the caller's identity downstream. */
+    std::string bearer_token;
+    std::vector<std::string> saved_currency_iso_codes;
+    std::vector<std::string> saved_portfolio_ids;
+    std::vector<std::string> saved_book_ids;
+    std::vector<std::string> saved_trade_ids;
 };
 
 }

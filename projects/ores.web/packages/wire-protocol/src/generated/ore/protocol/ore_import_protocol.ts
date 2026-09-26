@@ -57,17 +57,68 @@ export interface OreImportResponse {
     success: boolean;
     message: string;
     item_errors: OreImportItemError[];
-    correlation_id: string;
     /**
      * Set when the import was dispatched asynchronously through the workflow
      * engine. The import then runs in the background, item_errors is empty in
      * this response, and this id queries the workflow's status.
      */
+    correlation_id: string;
     workflow_instance_id: string;
+}
+
+/**
+ * @brief Workflow step command: execute the full ORE import.
+ *
+ * Published by the workflow engine when the ore_import_workflow starts. The
+ * handler fetches the packed tarball, scans, plans and saves every item, then
+ * calls publish_step_completion.
+ */
+export interface OreImportExecuteRequest {
+    request_id: string;
+    import_choices_json: string;
+    correlation_id: string;
+    /** The caller's JWT, so the handler can delegate the caller's identity downstream. */
+    bearer_token: string;
+}
+
+/**
+ * @brief The step's stored response.
+ *
+ * Carries everything compensation needs -- the identifiers of every entity
+ * the step saved -- alongside the caller-facing item_errors list.
+ */
+export interface OreImportExecuteResult {
+    success: boolean;
+    message: string;
+    correlation_id: string;
+    item_errors: OreImportItemError[];
+    saved_currency_iso_codes: string[];
+    saved_portfolio_ids: string[];
+    saved_book_ids: string[];
+    saved_trade_ids: string[];
+}
+
+/**
+ * @brief Workflow compensation command: roll back a completed ORE import.
+ *
+ * Published by the workflow engine when step 0's compensation is triggered.
+ * The handler deletes every saved entity in reverse order and calls
+ * publish_step_completion.
+ */
+export interface OreImportRollbackRequest {
+    correlation_id: string;
+    /** The caller's JWT, so the handler can delegate the caller's identity downstream. */
+    bearer_token: string;
+    saved_currency_iso_codes: string[];
+    saved_portfolio_ids: string[];
+    saved_book_ids: string[];
+    saved_trade_ids: string[];
 }
 
 export const subjects = {
     ore_import_request: "workflow.v1.ore.import",
+    ore_import_execute_request: "ore.v1.ore.import.execute",
+    ore_import_rollback_request: "ore.v1.ore.import.rollback",
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -76,4 +127,6 @@ export const subjects = {
  */
 export const requiresSession = {
     ore_import_request: true,
+    ore_import_execute_request: true,
+    ore_import_rollback_request: true,
 } as const;

@@ -2,21 +2,34 @@
 :ID: E723EABC-54B5-4EAC-BC0E-CFA1AFB021CB
 :END:
 #+title: ores.ore.ore_import_messages
-#+description: Codegen operation model for the ORE import request, response and per-item error, rendered to C++ and TypeScript from one source.
+#+description: Codegen operation model for the whole ORE import protocol: the client request and its response, the per-item error they share, and the execute, result and rollback messages the workflow engine exchanges with the saga. Rendered to C++ and TypeScript from one source.
 #+type: ores.codegen.operation
 #+component: ore
 #+subcomponent: api
 #+entity_singular: ore_import
 #+namespace: ores::ore::messaging
-#+brief: The ORE import request, its response and the per-item error.
+#+brief: The ORE import protocol, client-facing and engine-facing.
 #+filetags: :model:operation:ore:
 #+created: 2026-09-26
 #+updated: 2026-09-26
 
-The client-facing half of the ORE import protocol. The caller uploads the
+The ORE import protocol, both halves in one model. The caller uploads the
 packed ORE directory to object storage first, then sends the request; the
 service answers once the saga has run, or returns a workflow instance id when
 it has dispatched the import asynchronously.
+
+The workflow engine then drives the saga itself, publishing the execute command
+when the workflow starts and the rollback command when compensation is
+triggered. The handler answers each by calling publish_step_completion, so
+neither command has a response type. The result is not sent over the wire
+either: it travels as the step's response_json, which is why it carries the
+saved entity identifiers the rollback needs.
+
+Both halves are one model because they share =ore_import_item_error=. The
+generator resolves one model at a time, so a message in one operation model
+cannot be referenced from a second model's header or its TypeScript twin; a
+single model keeps the shared type local, and the service includes one header
+rather than two.
 
 * Includes
 
@@ -120,11 +133,6 @@ it has dispatched the import asynchronously.
 :cpp_type: std::string
 :END:
 
-*** workflow_instance_id
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
 #+begin_src cpp :name comment
 /**
  * Set when the import was dispatched asynchronously through the workflow
@@ -133,7 +141,151 @@ it has dispatched the import asynchronously.
  */
 #+end_src
 
+*** workflow_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** ore_import_execute_request
+:PROPERTIES:
+:subject: ore.v1.ore.import.execute
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Workflow step command: execute the full ORE import.
+ *
+ * Published by the workflow engine when the ore_import_workflow starts. The
+ * handler fetches the packed tarball, scans, plans and saves every item, then
+ * calls publish_step_completion.
+ */
+#+end_src
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** import_choices_json
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** bearer_token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The caller's JWT, so the handler can delegate the caller's identity downstream. */
+#+end_src
+
+** ore_import_execute_result
+
+#+begin_src cpp :name comment
+/**
+ * @brief The step's stored response.
+ *
+ * Carries everything compensation needs -- the identifiers of every entity
+ * the step saved -- alongside the caller-facing item_errors list.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** item_errors
+:PROPERTIES:
+:cpp_type: std::vector<ore_import_item_error>
+:END:
+
+*** saved_currency_iso_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+*** saved_portfolio_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+*** saved_book_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+*** saved_trade_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** ore_import_rollback_request
+:PROPERTIES:
+:subject: ore.v1.ore.import.rollback
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Workflow compensation command: roll back a completed ORE import.
+ *
+ * Published by the workflow engine when step 0's compensation is triggered.
+ * The handler deletes every saved entity in reverse order and calls
+ * publish_step_completion.
+ */
+#+end_src
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** bearer_token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The caller's JWT, so the handler can delegate the caller's identity downstream. */
+#+end_src
+
+*** saved_currency_iso_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+*** saved_portfolio_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+*** saved_book_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+*** saved_trade_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
 * See also
 
 - [[id:5F280C8C-8C50-40A2-8C84-C85B8821D33E][ores.ore]] — component group overview.
-- [[id:D79B6B1F-06B2-4139-A604-0C7876AD616A][ores.ore.ore_import_engine_messages]] — the saga-step messages the workflow engine publishes.

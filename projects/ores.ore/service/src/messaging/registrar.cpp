@@ -19,7 +19,7 @@
  */
 #include "ores.ore.service/messaging/registrar.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore.api/messaging/ore_import_engine_protocol.hpp"
+#include "ores.ore.api/messaging/ore_import_protocol.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
 #include "ores.ore.service/messaging/ore_import_execute_handler.hpp"
 #include "ores.ore.service/messaging/ore_import_handler.hpp"

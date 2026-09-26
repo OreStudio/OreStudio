@@ -119,8 +119,8 @@ struct ore_import_execute_result {
     std::string correlation_id;
     std::vector<ore_import_item_error> item_errors;
     std::vector<std::string> saved_currency_iso_codes;
-    std::vector<std::string> saved_portfolio_ids;
-    std::vector<std::string> saved_book_ids;
+    std::vector<std::string> saved_portfolio_names;
+    std::vector<std::string> saved_book_names;
     /**
      * The external identifier of each saved trade, which is the key the
      * trade model declares. The rollback addresses a trade by this key.
@@ -148,8 +148,8 @@ struct ore_import_rollback_request {
     /** The caller's JWT, so the handler can delegate the caller's identity downstream. */
     std::string bearer_token;
     std::vector<std::string> saved_currency_iso_codes;
-    std::vector<std::string> saved_portfolio_ids;
-    std::vector<std::string> saved_book_ids;
+    std::vector<std::string> saved_portfolio_names;
+    std::vector<std::string> saved_book_names;
     /** The external identifier of each saved trade, which the rollback deletes by. */
     std::vector<std::string> saved_trade_external_ids;
 };

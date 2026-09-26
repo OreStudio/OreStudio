@@ -222,12 +222,12 @@ rather than two.
 :cpp_type: std::vector<std::string>
 :END:
 
-*** saved_portfolio_ids
+*** saved_portfolio_names
 :PROPERTIES:
 :cpp_type: std::vector<std::string>
 :END:
 
-*** saved_book_ids
+*** saved_book_names
 :PROPERTIES:
 :cpp_type: std::vector<std::string>
 :END:
@@ -278,12 +278,12 @@ rather than two.
 :cpp_type: std::vector<std::string>
 :END:
 
-*** saved_portfolio_ids
+*** saved_portfolio_names
 :PROPERTIES:
 :cpp_type: std::vector<std::string>
 :END:
 
-*** saved_book_ids
+*** saved_book_names
 :PROPERTIES:
 :cpp_type: std::vector<std::string>
 :END:

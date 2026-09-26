@@ -93,8 +93,8 @@ export interface OreImportExecuteResult {
     correlation_id: string;
     item_errors: OreImportItemError[];
     saved_currency_iso_codes: string[];
-    saved_portfolio_ids: string[];
-    saved_book_ids: string[];
+    saved_portfolio_names: string[];
+    saved_book_names: string[];
     /**
      * The external identifier of each saved trade, which is the key the
      * trade model declares. The rollback addresses a trade by this key.
@@ -114,8 +114,8 @@ export interface OreImportRollbackRequest {
     /** The caller's JWT, so the handler can delegate the caller's identity downstream. */
     bearer_token: string;
     saved_currency_iso_codes: string[];
-    saved_portfolio_ids: string[];
-    saved_book_ids: string[];
+    saved_portfolio_names: string[];
+    saved_book_names: string[];
     /** The external identifier of each saved trade, which the rollback deletes by. */
     saved_trade_external_ids: string[];
 }

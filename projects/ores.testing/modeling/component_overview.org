@@ -67,10 +67,15 @@ code.
 - Catch2 — the framework the listeners plug into.
 - [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] — the connection
   pool, and the tenant and party contexts.
+- [[id:1FBCC86B-8E04-4F81-8558-85C0B6C54836][ores.logging]] — the logger
+  factory every test translation unit calls, and the lifecycle manager the
+  per-test listener drives.
 - [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — the connection
   options =make_nats_options()= builds.
 - [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]] — environment
   access and the local-time conversion behind a test tenant code.
+- [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]] — the tenant
+  identifier the helpers hand out, and the generation context they build.
 - [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]] and
   [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]] — the domain
   types the seed readers return.

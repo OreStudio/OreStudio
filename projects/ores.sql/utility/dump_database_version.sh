@@ -73,19 +73,20 @@ echo ""
 "${RUN_SQL}" -c "
 select
     'Schema version  : ' || schema_version    as info
-from ores_database_info_fn()
+from ores_database_info_tbl
 union all
 select 'Build environment: ' || build_environment
-from ores_database_info_fn()
+from ores_database_info_tbl
 union all
 select 'Git commit       : ' || git_commit
-from ores_database_info_fn()
+from ores_database_info_tbl
 union all
 select 'Git date         : ' || git_date
-from ores_database_info_fn()
+from ores_database_info_tbl
 union all
 select 'Created at       : ' || to_char(created_at, 'YYYY-MM-DD HH24:MI:SS TZ')
-from ores_database_info_fn();
+from ores_database_info_tbl
+order by 1;
 "
 
 echo ""

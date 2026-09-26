@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: A7822C2A-5F0C-4ABF-BF4E-1A7FA586BCE8
+:END:
+#+title: Task: Fix the defects the ores.iam clean-up found
+#+description: Task for: Clean ores.iam to the component clean standard
+#+type: task
+#+level: s1
+#+filetags: :clean-iam:sprint_26:v0:
+#+owner: marco
+#+branch: hotfix/fix-clean-iam-defects
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D65BA4A2-8FBD-429D-B2AD-697D4F66C20A][Clean ores.iam to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix at root cause the defects the ores.iam component clean-up recorded and deliberately left open: the assets publish-from-DQ function selecting columns its table does not have, the workflow engine attributing records to its service account instead of the caller behind the bearer token, and the tenant provisioning command that cannot answer inside the client's request timeout. Retire the captures whose defects have already merged. Verify each fix against the real artefact -- a recreated database, live NATS, and the real shell recipes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:D65BA4A2-8FBD-429D-B2AD-697D4F66C20A][Clean ores.iam to the component clean standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- The assets publish-from-DQ function reads the columns ores_assets_images_tbl has, and a live publish inserts instead of aborting
+- The workflow engine records the caller's username from the bearer token on the instance and its steps, and falls back to the service account only when no caller is present
+- The tenant provisioning command completes inside a request timeout the operation model declares
+- Captures whose defects have merged are removed or corrected, and no dangling links remain
+- Build, the iam and workflow suites, drift and lint all pass
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

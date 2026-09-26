@@ -444,8 +444,9 @@ literate template org file.
 | Generator           | =ores.cpp.generator=     | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]            | 2          | Test-data generator (sample-value builder)         |
 | Repository          | =ores.cpp.repository=    | [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]]        | 12         | Entity, mapper, repository (temporal + non-temporal) |
 | Messaging           | =ores.cpp.protocol=      | [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]]         | 6          | NATS event, handler, protocol types, service       |
-| Service application | =ores.cpp.service-app=   | [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]]       | 12         | Application, host, config options/parser, entry point |
-| Component           | =ores.cpp.component=     | [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]]         | 6          | Umbrella header, export macros, test main, stubs   |
+| Service application | =ores.cpp.service-app=   | [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]]       | 11         | Application, host, config options/parser, entry point |
+| Component           | =ores.cpp.component=     | [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]]         | 2          | Export macros and the test main                    |
+| Scaffold            | =ores.cpp.scaffold=      | [[id:4D5A5C43-B0AE-49E0-920F-2513335E0570][ores.cpp.scaffold]]          | 5          | First-generation placeholders: umbrella header, stub domain type, stub test. Opt-in, =#+default: disabled= |
 | Model types         | =ores.cpp.enum=          | [[id:71124286-50D3-4E3F-A948-43A67690FFB3][ores.cpp.enum]]       | 2          | Enum class, field-group struct                     |
 | Table               | part of =ores.cpp.domain=  | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]           | 4          | libfort table adapter and I/O                      |
 

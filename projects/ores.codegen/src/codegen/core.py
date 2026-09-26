@@ -1745,11 +1745,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             print(f"Field-group model '{model_filename}' requires --address ores.cpp.field-group")
             return
     elif is_component:
-        # Component scaffold models must be used via an address (no default templates)
+        # Component scaffold models must be used via an address (no default
+        # templates). The address is the technical space rather than one
+        # facet: the opt-in scaffold (ores.cpp.scaffold) is a sibling of
+        # ores.cpp.component, so a facet-scoped address never reaches it.
         if target_template:
             templates_to_process = [target_template]
         else:
-            print(f"Component model '{model_filename}' requires --address ores.cpp.component")
+            print(f"Component model '{model_filename}' requires --address ores.cpp")
             return
     elif is_service_registry:
         # Service registry models must be used via an address (no default templates)

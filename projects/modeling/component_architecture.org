@@ -234,15 +234,19 @@ adjust to actual deps after generation):
 
 * Scaffold kinds
 
-Codegen (=--address ores.cpp.component=) generates all boilerplate for
-each part; the overview's =#+component_kind:= frontmatter picks the
-variant. See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for the template list.
+Codegen (=--address ores.cpp=, plus =--address ores.cmake.component= for
+the CMake files) generates all boilerplate for each part; the overview's
+=#+component_kind:= frontmatter picks the variant. A component that has no
+models yet opts into =ores.cpp.scaffold= for a placeholder domain type, its
+test and the umbrella header; that facet is =#+default: disabled=, so a
+component that has real code never has them recreated. See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for the template list.
 
 | =#+component_kind:= | Part | Files generated |
 |---------|------|-----------------|
-| =api= | =api= | CMakeLists (root, src, tests, modeling), component header, stub header+impl, test main+stub |
-| =core= | =core= | same set with core-flavoured CMake deps |
-| =service= | =service= | same core set + app/config headers+impls + main.cpp |
+| =api= | =api= | CMakeLists (root, src, tests, modeling), the two component file lists, =export.hpp= and the test main; with the =ores.cpp.scaffold= opt-in, the component header, the stub header+impl and the stub test |
+| =core= | =core= | the same set with core-flavoured CMake deps |
+| =service= | =service= | the core set plus app/config headers+impls and =main.cpp=; with the opt-in, the component header and the stub test |
+| =flat= (default) | standalone | the api set with generic CMake deps |
 | =composite= | composite root | the root CMakeLists that adds the declared parts. The root holds no code of its own. |
 | =adapter= | adapter part | the two file lists only, =src/= and =tests/component_files.cmake=. The part carries hand-authored CMakeLists files. |
 

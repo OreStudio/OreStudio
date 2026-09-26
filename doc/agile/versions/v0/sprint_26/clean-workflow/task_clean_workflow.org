@@ -64,7 +64,8 @@ record each item's result in the table below.
 | B05 | No open capture and no in-flight branch touches =ores.workflow=. | =doc/agile/product_backlog/inbox= holds no =workflow= capture; =git branch -a= holds no other =workflow= branch. |
 | B06 | One dead symbol group. Everything else is production-consumed, and nothing is test-only. =workflow_instance_changed_event= and its =event_traits= specialisation have no consumer at all: nothing constructs one, publishes one, or subscribes to one. | =git grep= over =projects/=: the only hits are the definition itself, the component's own =.puml=, and its =component_files.cmake=. Table below. |
 | M01 | Pass. No legacy JSON model remains and no =lookup_entity= survives. | =find= for =*.json= under the modeling directories returns nothing; =grep= for =lookup_entity= returns nothing. =check_model_drift.py= reports no model drift for this component. |
-| M02 | Finding: neither entity binds a variability profile, and neither records a no-match with its feature values. | Both =Flags= blocks carry only =schema=, =product=, =component= and =has_tenant_id=. Detail below. |
+| M02 | Fixed. Both entities bind =uuid-identified-lookup=. =workflow_step= carried =:has_tenant_id: false=, the only model in the tree that did, against a feature whose default is true and whose own document says to omit it only for genuinely global entities such as currencies and countries. Its parent is tenant-scoped, so the flag was a defect with row-level-security consequences, not a deliberate no-match. | Feature values read from =variability_uuid_identified_lookup.org=; the feature's default and effect from =variability_feature_has_tenant_id.org=; the census is 19 models at =true=, 1 at =false= and 0 absent. |
+| M03 | Pass by construction so far: the binding replaced the stated properties instead of adding to them. =has_tenant_id= came out of both =Flags= blocks, so neither model states a property its profile already fixes to the same value. | The diff on both models. =check_model_drift.py= is re-run with the regeneration, under G01. |
 | M09 | Pass. No retired fragment survives in any model. | =grep= over the modeling directories for =qt=, =wt=, =drawer= and =presentation= returns nothing. |
 | M10 | The component model declares its parts. =validate_docs.sh= still to run. | =modeling/component_overview.org= carries =* Summary=, =* Sub-components= and =* Entity modules=. Verification is deferred to H01, which owns the diagram and the docs gate. |
 
@@ -160,25 +161,32 @@ Nothing is test-only, so no symbol is deleted for having only a test behind it.
 
 ** M02 profile binding
 
-Neither entity carries a =:profile:=. Every other cleaned component binds one in
-the =Flags= block, for example =:profile: uuid-identified-lookup= in
-=ores.compute=, so the omission is a gap rather than a deliberate no-match: a
-no-match has to be recorded with its feature values and its reason, and nothing
-is recorded here.
+Both entities now bind =:profile: uuid-identified-lookup=, and both dropped the
+=has_tenant_id= line they used to state.
 
-=workflow_instance= matches *UUID-identified lookup*: UUID surrogate key, tenant
-scope, standard presentation tier, no parent and no workspace. Its =Flags= agree
-with every feature of that profile.
+The profile fixes =has_tenant_id: true=, =has_workspace_id: false=,
+=has_uuid_primary_key: true=, =has_change_reason_cache: true= and
+=has_pagination: true=, and enables the shell-command and
+eventing-integration-test physical spaces. Any feature it does not list is left
+to the model, which is what makes it bindable to both entities here.
 
-=workflow_step= matches no profile as it stands. It is a UUID-keyed child of
-=workflow_instance= through =workflow_id=, and it declares =has_tenant_id:
-false=, so it is neither *UUID-identified lookup* (which is tenant-scoped and
-parentless) nor *FK-scoped child* (which requires tenant and workspace scope).
-Its scope has to be settled before it can be bound, and the decision is not
-cosmetic: row-level security follows the tenant feature, so a child that carries
-no tenant needs its own RLS story or it is readable across tenants. This is
-recorded as a finding rather than bound to the nearest profile, which M02
-forbids.
+=workflow_step='s =:has_tenant_id: false= was the finding. The feature's own
+document gives =true= as its default and says to omit it only for genuinely
+global entities such as currencies and countries; =workflow_step= is a child of
+a tenant-scoped =workflow_instance=, and it was the only model in the tree
+carrying the false value. Left alone it would have produced a table with no
+=tenant_id= and therefore no tenant isolation, which is a correctness defect
+rather than a style one.
+
+The earlier reading that =workflow_step= matched no profile had it backwards:
+the mismatch was the tenant flag, not the shape. With the flag removed it binds
+the same profile as its parent.
+
+Still open on this item: whether =workflow_step= also takes the parent linkage
+features that =book= sets in its C++ =Flags= (=:parent_entity_singular:
+portfolio= for =book=). The profile leaves them to the model. The regeneration
+under G01 will show the shape each choice produces, and the decision is recorded
+there rather than guessed here.
 
 * Test Scenarios
 

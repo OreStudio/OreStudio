@@ -22,7 +22,7 @@ their parent workflow instance via workflow_id.
 :schema:        public
 :product:       ores
 :component:     workflow
-:has_tenant_id: false
+:profile:       uuid-identified-lookup
 :END:
 
 * Natural keys

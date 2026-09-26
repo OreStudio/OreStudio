@@ -22,7 +22,7 @@ Instances are append-mostly; status transitions are the primary mutation.
 :schema:        public
 :product:       ores
 :component:     workflow
-:has_tenant_id: true
+:profile:       uuid-identified-lookup
 :END:
 
 * Natural keys

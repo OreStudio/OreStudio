@@ -29,17 +29,11 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
-#include <chrono>
-#include <thread>
 
 namespace {
 
 const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[repository]");
-
-std::string now_as_of() {
-    return ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now());
-}
 
 }
 
@@ -136,11 +130,8 @@ TEST_CASE("read_nonexistent_regulatory_book_type_code", tags) {
     CHECK(read_regulatory_book_types.size() == 0);
 }
 
-TEST_CASE("read_regulatory_book_type_at_timepoint_before_creation_is_empty", tags) {
+TEST_CASE("read_regulatory_book_types_versions_by_key", tags) {
     auto lg(make_logger(test_suite));
-
-    const auto as_of_before = now_as_of();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
@@ -151,14 +142,13 @@ TEST_CASE("read_regulatory_book_type_at_timepoint_before_creation_is_empty", tag
     regulatory_book_type_repository repo;
     repo.write(h.context(), rbt);
 
-    auto read_regulatory_book_types = repo.read_at_timepoint(h.context(), as_of_before, rbt.code);
-    BOOST_LOG_SEV(lg, debug) << "Read regulatory book types at timepoint before creation: "
-                             << read_regulatory_book_types;
-
-    CHECK(read_regulatory_book_types.size() == 0);
+    CHECK_FALSE(repo.read_at_version(h.context(), rbt.code, 99).has_value());
+    const auto versions = repo.read_all(h.context(), rbt.code);
+    REQUIRE(versions.size() == 1);
+    CHECK(versions[0].code == rbt.code);
 }
 
-TEST_CASE("read_regulatory_book_type_at_timepoint_resolves_prior_version", tags) {
+TEST_CASE("read_regulatory_book_types_versions_resolve_each_version", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -171,29 +161,25 @@ TEST_CASE("read_regulatory_book_type_at_timepoint_resolves_prior_version", tags)
     regulatory_book_type_repository repo;
     repo.write(h.context(), rbt);
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    const auto as_of_mid = now_as_of();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-
     rbt.name = original_name + " v2";
     BOOST_LOG_SEV(lg, debug) << "Regulatory book type v2: " << rbt;
     repo.write(h.context(), rbt);
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    const auto as_of_after = now_as_of();
+    const auto versions = repo.read_all(h.context(), rbt.code);
+    REQUIRE(versions.size() == 2);
+    CHECK(versions[0].name == original_name + " v2");
+    CHECK(versions[1].name == original_name);
 
-    auto read_at_mid = repo.read_at_timepoint(h.context(), as_of_mid, rbt.code);
-    BOOST_LOG_SEV(lg, debug) << "Read regulatory book type at mid timepoint: " << read_at_mid;
-    REQUIRE(read_at_mid.size() == 1);
-    CHECK(read_at_mid[0].name == original_name);
+    const auto at_v1 = repo.read_at_version(h.context(), rbt.code, 1);
+    REQUIRE(at_v1.has_value());
+    CHECK(at_v1->name == original_name);
 
-    auto read_at_after = repo.read_at_timepoint(h.context(), as_of_after, rbt.code);
-    BOOST_LOG_SEV(lg, debug) << "Read regulatory book type at after timepoint: " << read_at_after;
-    REQUIRE(read_at_after.size() == 1);
-    CHECK(read_at_after[0].name == original_name + " v2");
+    const auto at_v2 = repo.read_at_version(h.context(), rbt.code, 2);
+    REQUIRE(at_v2.has_value());
+    CHECK(at_v2->name == original_name + " v2");
 }
 
-TEST_CASE("read_regulatory_book_type_at_timepoint_without_code_filter", tags) {
+TEST_CASE("read_latest_regulatory_book_types_includes_the_written_row", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -205,14 +191,8 @@ TEST_CASE("read_regulatory_book_type_at_timepoint_without_code_filter", tags) {
     regulatory_book_type_repository repo;
     repo.write(h.context(), rbt);
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    const auto as_of = now_as_of();
-
-    auto read_regulatory_book_types = repo.read_at_timepoint(h.context(), as_of);
-    BOOST_LOG_SEV(lg, debug) << "Read regulatory book types at timepoint: "
-                             << read_regulatory_book_types;
-
-    const auto found = std::ranges::any_of(read_regulatory_book_types,
-                                           [&](const auto& v) { return v.code == rbt.code; });
+    const auto read_regulatory_book_types = repo.read_latest(h.context());
+    const auto found = std::ranges::any_of(
+        read_regulatory_book_types, [&](const auto& v) { return v.code == rbt.code; });
     CHECK(found);
 }

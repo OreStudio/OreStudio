@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 768B9B97-E5CB-4541-8956-3A03A5364CD7
+:END:
+#+title: The legacy entity event mappings remain
+#+description: One hundred and fifty-nine registrations still use the older register_mapping API and depend on the event source converting the trigger's canonical notification for them; migrate them to the generated canonical registrars and delete the older API.
+#+type: capture
+#+level: cross
+#+filetags: :eventing:codegen:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+One event source carries two mapping APIs. =register_mapping<Event>=
+takes the entity name and the channel and publishes an event built from
+the notification's timestamp, the changed ids and the tenant.
+=register_entity_event_mapping<Event>= takes only the channel and lets
+the event's own traits convert the whole notification, key record
+included, into the event the model specifies. The second is the one the
+codegen emits per entity; the first is the older hand-written shape.
+
+Both work: since the event source parses the trigger's notification once
+and converts it for the older API, a channel registered either way
+receives its events. The older API is now a compatibility surface that
+118 of the 275 mapping registrations still use: 53 in trading, 14 in dq,
+9 each in synthetic and reporting, 5 each in marketdata and analytics,
+2 in ore, and one each in workspace, refdata and compute. Migrate the
+registrations to the generated canonical registrars, then delete the
+older API, =channel_entities_= and the conversion branch in the listener.
+
+* Why
+
+Two APIs for one job means every reader has to know which one a channel
+uses and why. The older API also cannot express a key: it hands a
+subscriber a timestamp, a list of ids and a tenant, so an event that
+needs its key record has to be re-read or re-derived, while the canonical
+event carries it. The conversion in the listener is the load-bearing
+seam that keeps the older callers alive, and it is the code the
+2026-09-26 compute outage ran through: the compute service registered
+the older API while the trigger published the canonical payload, and
+every host, batch and workunit notification was dropped until the
+listener was taught to convert. Deleting the older API removes the
+choice that caused it.
+
+* References
+
+- =projects/ores.eventing/core/include/ores.eventing.core/service/postgres_event_source.hpp= —
+  both mapping APIs, =channel_entities_=, =entity_event_mappings_=.
+- =projects/ores.eventing/core/src/service/postgres_event_source.cpp= —
+  the listener's conversion for the older mapping.
+- =projects/ores.compute/service/src/app/application.cpp= — migrated to
+  the generated canonical registrars, with one older mapping kept for
+  the dispatch seam, which needs the tenant and the changed ids.
+- =projects/ores.codegen/= — emits =register_<entity>_event_mapping= per
+  entity model.
+
+* See also
+
+- [[id:CC0A311E-7245-4694-86A1-3170023C385A][Run a compute job end to end]] — the run
+  whose silent outage the two mapping APIs produced.

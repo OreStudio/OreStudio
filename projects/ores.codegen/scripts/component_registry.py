@@ -17,6 +17,8 @@ at the time. Everything outside the list is to-do, not exempt.
 Usage: imported by the check scripts, never run.
 """
 
+from dataclasses import dataclass
+
 # The components under test. Every other catalogue component is to-do.
 #
 # Listing a component claims responsibility for regenerating it. The branch
@@ -79,4 +81,68 @@ Usage: imported by the check scripts, never run.
 # suites pass with the fleet's NATS up. What remains hand-written is recorded
 # with its reason on the task:
 # doc/agile/versions/v0/sprint_26/clean-variability/task_clean_variability.org.
+@dataclass(frozen=True)
+class AcceptedException:
+    """One checklist item a listed component does not pass.
+
+    Listing a component is a claim that every checklist item that applies to it
+    passes. Sometimes an item cannot be made to pass in the environment the work
+    was done in -- a check that needs a live fleet, a tool that cannot draw what
+    the standard asks for -- and the honest thing is to run every gate that
+    *can* run rather than withhold the component from all of them.
+
+    That is what this records: the component is listed, the gates check it, and
+    the item that does not pass is named here with its reason and the person who
+    accepted it. An item is never simply omitted -- a component with an item
+    that is neither passing nor recorded here cannot be listed, which
+    ``check_registry_exceptions.py`` enforces against the standard's own item
+    list. The reason is not free text to be skimmed: it is the thing a reviewer
+    reads to decide whether the acceptance still holds.
+    """
+
+    item: str
+    reason: str
+    accepted_by: str
+    accepted_on: str
+
+
+# The accepted exceptions, by component. A component absent from this mapping
+# passes every item that applies to it.
+ACCEPTED_EXCEPTIONS: dict[str, tuple[AcceptedException, ...]] = {
+    "variability-cpp": (
+        AcceptedException(
+            item="H01",
+            reason=(
+                "The diagrams are refreshed from the code and every rendered "
+                "image was read, but the automated pass reads data members and "
+                "not methods, so a class whose content is methods arrives "
+                "without its API, and PlantUML will not attach members declared "
+                "in the manual section below the sentinel to a class inside a "
+                "nested namespace -- it draws a second, empty namespace "
+                "instead. Every class is present; the API of the method-only "
+                "ones is not drawn."
+            ),
+            accepted_by="marco",
+            accepted_on="2026-09-26",
+        ),
+        AcceptedException(
+            item="V08",
+            reason=(
+                "The in-process facade added by this work, "
+                "system_settings_service, has no unit test of its own. Its "
+                "behaviour is covered end to end by the iam and http suites and "
+                "by the generated eventing integration test, but not directly."
+            ),
+            accepted_by="marco",
+            accepted_on="2026-09-26",
+        ),
+    ),
+}
+
+
+def accepted_exceptions(component: str) -> tuple[AcceptedException, ...]:
+    """The items accepted against one component; empty when it has none."""
+    return ACCEPTED_EXCEPTIONS.get(component, ())
+
+
 COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "ore", "telemetry-cpp", "workflow-cpp", "variability-cpp")

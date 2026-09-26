@@ -1,0 +1,45 @@
+Clean-tree drift checks, run after commit b217ab8c0f
+====================================================
+
+1. The component's own gate.
+
+    check_component_drift.py --component scheduler-cpp --dry-run
+
+    Checking component 'scheduler-cpp' at address 'ores.cpp' (dry run, no writes)...
+    Checking component 'scheduler-cpp' at address 'ores.doc' (dry run, no writes)...
+    Checking component 'scheduler-cpp' at address 'ores.plantuml' (dry run, no writes)...
+    Checking component 'scheduler-cpp' at address 'ores.shell' (dry run, no writes)...
+    Checking component 'scheduler-cpp' at address 'ores.sql' (dry run, no writes)...
+    No drift: generated output matches the checked-in tree.
+    exit 0
+
+2. The shared list, which this work changed the shared templates under.
+
+    check_component_drift.py --all --dry-run
+
+    ... compute-cpp at every address ...
+    No drift: generated output matches the checked-in tree.
+    exit 0
+
+The second check is the one that matters for the template changes. The three
+generator fixes are gated on model properties that only the scheduler entity
+sets -- =nullable_tenant_id=, a nullable tenant with a natural key, and
+=:is_value_type: true= -- so =iam= and =compute-cpp=, the two registered
+components, regenerate byte for byte as before. Their SQL, C++ and TypeScript
+output is untouched.
+
+The codegen suite: 571 passed, 0 failed
+(=projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q=),
+against 563 before this work added the eight cases across the three
+regression tests named in g01_regeneration.txt.
+
+The component's own suites, from the committed tree:
+
+    ores.scheduler.api.tests       All tests passed (29 assertions in 5 test cases)
+    ores.scheduler.service.tests   All tests passed (26 assertions in 10 test cases)
+    ores.scheduler.core.tests      built and ran; its one case is the generated
+                                   eventing integration test, which fails with
+                                   "NATS connect failed: No server available"
+                                   because the fleet is down. It is a live-fleet
+                                   test, not a defect: V02 records it as waiting
+                                   on the fleet.

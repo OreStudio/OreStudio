@@ -31,6 +31,7 @@ _SERVICES = [
     "ores.scheduler.service",
     "ores.reporting.service",
     "ores.telemetry.service",
+    "ores.storage.service",
     "ores.trading.service",
     "ores.marketdata.service",
     "ores.compute.service",

@@ -42,7 +42,8 @@ ores::database::context application::make_context(const ores::database::database
     context_factory::configuration cfg{.database_options = db_opts,
                                        .pool_size = static_cast<std::size_t>(db_opts.pool_size),
                                        .num_attempts = 10,
-                                       .wait_time_in_seconds = 1};
+                                       .wait_time_in_seconds = 1,
+                                       .service_account = db_opts.user};
 
     return context_factory::make_context(cfg);
 }

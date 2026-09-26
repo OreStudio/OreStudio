@@ -371,6 +371,14 @@
 :depends_on:  ores.iam.service
 :END:
 
+** Extra args
+
+# The same root the HTTP server is given, because the two processes are two
+# front doors onto one set of objects. Without this the service falls back to
+# its own default and the two stop seeing each other's writes.
+
+- --storage-dir ../storage
+
 * ores.compute.wrapper
 :PROPERTIES:
 :description: Compute grid worker nodes. {host_id} = stable UUID derived from hostname:replica_index; {work_dir} = ../run/wrappers/node_N; all replicas share the same certificate (ores.compute.wrapper.crt).

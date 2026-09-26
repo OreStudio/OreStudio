@@ -83,7 +83,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
                       "objects through the same store.");
     const auto od(
         standard_service_options::make_options_description("ores.storage.service.log", sod));
-    const auto vm(standard_service_options::parse(od, arguments, "SERVICE"));
+    const auto vm(standard_service_options::parse(od, arguments, "STORAGE_SERVICE"));
 
     if (standard_service_options::wants_help(vm)) {
         print_help(od, info);

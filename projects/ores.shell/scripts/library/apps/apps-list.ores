@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/apps/app.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+apps list --limit 1

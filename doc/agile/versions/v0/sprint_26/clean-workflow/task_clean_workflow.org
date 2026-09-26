@@ -271,10 +271,82 @@ That leaves two coherent designs and the standard does not choose between them:
    the other four components already register their definitions. It moves a wire
    type across a component boundary and changes the engine's handler.
 
-Recorded for a decision rather than taken unilaterally, because the cost is real
-either way. Everything the engine owns on its own account -- start, step
-completion, step result, and the three query projections -- is unaffected by the
-answer and is modelled either way.
+Decision, 2026-09-26, taken by the user: *option 2*. Every commissioner owns its
+workflow's payload beside its own definition, and the engine keeps only the
+generic operation conversation.
+
+** The payload question is narrower than it first looked
+
+Checking the other three commissioners changes the size of the work. Three of
+the four already own their payload; only refdata reads the engine's type.
+
+| Workflow | Component | Payload declared by |
+|----------+-----------+---------------------|
+| =provision_parties= | refdata | the engine: =wf::provision_party_workflow_request= |
+| =ore_import= | ore | itself: =ores::ore::messaging::ore_import_execute_request= |
+| =report_execution= | reporting | itself: =report_execution_request= |
+| =bundle_publish= | dq | itself: =bundle_publish_workflow_request= |
+
+So refdata is the lone outlier and the move brings it into line. No widening is
+needed for payload ownership.
+
+** A second problem the first one hides
+
+=ores.workflow/core/src/messaging/registrar.cpp= includes all four commissioners'
+APIs and calls their registration functions at lines 69 to 72, so the engine
+cannot build without dq, ore, refdata and reporting. This is a dependency
+inversion in four directions, and it is separate from payload ownership.
+
+The payload move does not fix it. The engine owns the =workflow_registry= and
+passes it in, so a commissioner can only register if the engine calls it, and
+that call is the inversion. The definitions are hand-written C++ lambdas, so they
+must be compiled into the engine's process whatever the payloads do.
+
+Removing the inversion therefore means making the definitions *data* rather than
+C++, which is what modelling the workflows would produce. That is a project
+rather than a checklist item, and it is recorded here as a finding for its own
+work item rather than silently counted as satisfied. After the payload move the
+honest position is that the engine stops *serving* a domain subject and stops
+*declaring* a domain payload, but it does not stop depending on refdata.
+
+** The change set for the payload move
+
+1. Move =provision_party_input=, =provision_parties_request=,
+   =provision_parties_response= and =provision_party_workflow_request= from
+   =ores.workflow.api/messaging/workflow_protocol.hpp= to a new
+   =ores.refdata.api/messaging/provision_parties_protocol.hpp=. The types are
+   already refdata-shaped, so they move as they are.
+2. Move the adapter. =workflow_handler.cpp='s only method receives
+   =provision_parties_request= and publishes the generic =start_workflow_message=,
+   so it becomes =ores.refdata='s handler for =workflow.v1.parties.provision=.
+3. =ores.workflow= loses =workflow_protocol.hpp= and
+   =workflow_handler.{hpp,cpp}=, which become dead once the adapter leaves, and
+   the registrar loses the handler registration.
+4. =provision_parties_workflow.hpp= includes the new header and its bare
+   =s.command_subject = "refdata.v1.parties.put"= becomes the generated constant,
+   which is P02's item landing naturally.
+
+Status: planned and awaiting the go-ahead, because the move crosses a component
+boundary and the reviewer asked to see the plan first.
+
+** Where the moved pieces land
+
+The host exists and follows the engine's own shape. =ores.refdata= has an
+aggregate =core/src/messaging/registrar.cpp= beside its per-entity registrars,
+and =service/src/app/application.cpp= calls it, so the adapter goes there and the
+subject is registered where refdata's other subjects are. Nothing new has to be
+invented.
+
+The dependency direction comes out the right way round.
+=ores.refdata/api/src/CMakeLists.txt= already links =ores.workflow.api.lib=, so
+refdata depending on the engine's API is the existing and correct direction,
+domain on infrastructure. What the move removes is the reverse arrow, the engine
+including =ores.refdata.api= to serve refdata's subject, though not the
+registration call that shares the same include.
+
+Nothing outside =ores.workflow= names =workflow.v1.parties.provision=, so the
+move breaks no consumer outside the two components and P05's whole-tree build is
+the whole of its verification.
 
 The subjects follow the same story. Seven =nats_subject= constants exist --
 =workflow.v1.parties.provision=, =workflow.v1.instances.list=,

@@ -19,107 +19,135 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/net/network_info.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
+#include <functional>
+#include <iomanip>
+#include <sstream>
+#include <string>
+#include <unistd.h>
+#include <vector>
 
 namespace {
 
 const std::string_view test_suite("ores.platform.tests");
 const std::string tags("[net]");
 
+#if defined(__linux__)
+/**
+ * @brief Returns the non-loopback MAC addresses the kernel reports, sorted.
+ *
+ * This is the same adapter state the implementation reads, but through a
+ * different API, so comparing the two is a cross-check rather than a
+ * restatement of the subject.
+ */
+std::vector<std::string> kernel_mac_addresses() {
+    std::vector<std::string> macs;
+
+    const std::filesystem::path net_dir("/sys/class/net");
+    if (!std::filesystem::exists(net_dir))
+        return macs;
+
+    for (const auto& entry : std::filesystem::directory_iterator(net_dir)) {
+        const auto iface = entry.path().filename().string();
+        if (iface == "lo")
+            continue;
+
+        std::ifstream address_file(entry.path() / "address");
+        if (!address_file)
+            continue;
+
+        std::string address;
+        std::getline(address_file, address);
+        if (address.size() == 17 && address != "00:00:00:00:00:00")
+            macs.push_back(address);
+    }
+
+    std::sort(macs.begin(), macs.end());
+    return macs;
+}
+
+/** @brief Reverses the colon-separated hex formatting back to raw bytes. */
+std::string mac_bytes_from_string(const std::string& formatted) {
+    std::string bytes;
+    bytes.reserve(6);
+    for (std::size_t i = 0; i < 6; ++i)
+        bytes.push_back(static_cast<char>(std::stoi(formatted.substr(i * 3, 2), nullptr, 16)));
+    return bytes;
+}
+#endif
+
 }
 
 using namespace ores::platform::net;
 using namespace ores::logging;
 
-TEST_CASE("get_hostname_returns_non_empty_string", tags) {
+TEST_CASE("get_hostname_matches_the_operating_system", tags) {
     auto lg(make_logger(test_suite));
+
+    char os_hostname[256] = {};
+    REQUIRE(::gethostname(os_hostname, sizeof(os_hostname)) == 0);
 
     const auto hostname = get_hostname();
-
     BOOST_LOG_SEV(lg, info) << "Hostname: " << hostname;
 
-    REQUIRE_FALSE(hostname.empty());
-    REQUIRE(hostname != "unknown");
+    CHECK(hostname == os_hostname);
 }
 
-TEST_CASE("get_hostname_is_stable", tags) {
-    const auto hostname1 = get_hostname();
-    const auto hostname2 = get_hostname();
-
-    REQUIRE(hostname1 == hostname2);
-}
-
-TEST_CASE("get_primary_mac_address_format", tags) {
+#if defined(__linux__)
+TEST_CASE("get_primary_mac_address_reports_the_first_kernel_address", tags) {
     auto lg(make_logger(test_suite));
+
+    const auto kernel_macs = kernel_mac_addresses();
+    if (kernel_macs.empty()) {
+        BOOST_LOG_SEV(lg, warn) << "No non-loopback interface available";
+        return;
+    }
 
     const auto mac = get_primary_mac_address();
+    REQUIRE(mac.has_value());
+    BOOST_LOG_SEV(lg, info) << "Primary MAC: " << *mac;
 
-    if (mac.has_value()) {
-        BOOST_LOG_SEV(lg, info) << "Primary MAC: " << mac.value();
-
-        // MAC should be 17 chars: "xx:xx:xx:xx:xx:xx"
-        REQUIRE(mac->size() == 17);
-
-        // Should have colons at positions 2, 5, 8, 11, 14
-        REQUIRE((*mac)[2] == ':');
-        REQUIRE((*mac)[5] == ':');
-        REQUIRE((*mac)[8] == ':');
-        REQUIRE((*mac)[11] == ':');
-        REQUIRE((*mac)[14] == ':');
-    } else {
-        BOOST_LOG_SEV(lg, warn) << "No MAC address available (may be in container)";
-    }
+    CHECK(*mac == kernel_macs.front());
 }
 
-TEST_CASE("get_primary_mac_address_is_stable", tags) {
-    const auto mac1 = get_primary_mac_address();
-    const auto mac2 = get_primary_mac_address();
+TEST_CASE("get_primary_mac_address_bytes_are_the_first_kernel_address", tags) {
+    const auto kernel_macs = kernel_mac_addresses();
+    if (kernel_macs.empty())
+        return;
 
-    REQUIRE(mac1 == mac2);
+    const auto formatted = get_primary_mac_address();
+    REQUIRE(formatted.has_value());
+
+    const auto expected = mac_bytes_from_string(kernel_macs.front());
+    const auto bytes = get_primary_mac_address_bytes();
+    REQUIRE(bytes.has_value());
+
+    CHECK(*bytes == expected);
+    CHECK(bytes->size() == 6);
 }
+#endif
 
-TEST_CASE("get_primary_mac_address_bytes_length", tags) {
-    const auto mac_bytes = get_primary_mac_address_bytes();
-
-    if (mac_bytes.has_value()) {
-        // Raw MAC should be 6 bytes
-        REQUIRE(mac_bytes->size() == 6);
-    }
-}
-
-TEST_CASE("derive_machine_id_is_non_empty", tags) {
+TEST_CASE("derive_machine_id_is_the_hex_hash_of_hostname_and_formatted_mac", tags) {
     auto lg(make_logger(test_suite));
 
     const auto machine_id = derive_machine_id();
-
     BOOST_LOG_SEV(lg, info) << "Machine ID: " << machine_id;
 
-    REQUIRE_FALSE(machine_id.empty());
+    const std::string combined = get_hostname() + ":" + get_primary_mac_address().value_or("");
+    const std::size_t expected_hash = std::hash<std::string>{}(combined);
+    std::ostringstream expected;
+    expected << std::hex << std::setfill('0') << std::setw(16) << expected_hash;
+
+    CHECK(machine_id == expected.str());
 }
 
-TEST_CASE("derive_machine_id_is_stable", tags) {
-    const auto id1 = derive_machine_id();
-    const auto id2 = derive_machine_id();
+TEST_CASE("derive_machine_id_hash_is_the_low_sixteen_bits_of_hostname_and_raw_mac", tags) {
+    const auto combined = get_hostname() + get_primary_mac_address_bytes().value_or("");
+    const std::size_t expected_hash = std::hash<std::string>{}(combined);
 
-    REQUIRE(id1 == id2);
-}
-
-TEST_CASE("derive_machine_id_is_hex", tags) {
-    const auto machine_id = derive_machine_id();
-
-    // Should be 16 hex chars
-    REQUIRE(machine_id.size() == 16);
-
-    for (const char c : machine_id) {
-        const bool is_hex =
-            (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
-        REQUIRE(is_hex);
-    }
-}
-
-TEST_CASE("derive_machine_id_hash_is_stable", tags) {
-    const auto hash1 = derive_machine_id_hash();
-    const auto hash2 = derive_machine_id_hash();
-
-    REQUIRE(hash1 == hash2);
+    CHECK(derive_machine_id_hash() == static_cast<std::uint16_t>(expected_hash & 0xFFFF));
 }

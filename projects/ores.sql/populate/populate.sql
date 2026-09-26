@@ -221,6 +221,19 @@
 \ir acme/acme_publish_populate.sql
 
 -- =============================================================================
+-- Report Instance FSM Test Fixture
+--
+-- A report definition needs a party and a book, so this runs after the
+-- reference data publication rather than with the reporting seeds. It exists
+-- so that the report instance FSM can be walked end to end from ores.shell in
+-- any environment; see the script's own header for what each fixture covers.
+-- =============================================================================
+
+\echo ''
+\echo '--- Report Instance FSM Test Fixture ---'
+\ir reporting/reporting_test_report_populate.sql
+
+-- =============================================================================
 -- Trading Layer
 -- =============================================================================
 

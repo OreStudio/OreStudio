@@ -66,7 +66,13 @@ domain::{{entity_singular}}
     r.{{{scaffold_prefix}}}version = v.version;
 {{/has_audit_columns}}
 {{#has_tenant_id}}
+{{#nullable_tenant_id}}
+    if (v.tenant_id)
+        r.{{{scaffold_prefix}}}tenant_id = utility::uuid::tenant_id::from_string(*v.tenant_id).value();
+{{/nullable_tenant_id}}
+{{^nullable_tenant_id}}
     r.{{{scaffold_prefix}}}tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+{{/nullable_tenant_id}}
 {{/has_tenant_id}}
 {{#has_workspace_id}}
     r.{{{scaffold_prefix}}}workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
@@ -165,6 +171,9 @@ domain::{{entity_singular}}
 {{#is_enum}}
     r.{{{group_prefix}}}{{name}} = rfl::string_to_enum<{{{cpp_type}}}>(v.{{name}}).value();
 {{/is_enum}}
+{{#is_value_type}}
+    r.{{{group_prefix}}}{{name}} = {{{cpp_type}}}::from_string(v.{{name}}).value();
+{{/is_value_type}}
 {{#render_is_enum}}
 {{^is_enum}}
     r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ?
@@ -209,7 +218,13 @@ domain::{{entity_singular}}
 {{/is_timestamp}}
 {{/primary_key.columns}}
 {{#has_tenant_id}}
+{{#nullable_tenant_id}}
+    if (v.{{{scaffold_prefix}}}tenant_id)
+        r.tenant_id = v.{{{scaffold_prefix}}}tenant_id->to_string();
+{{/nullable_tenant_id}}
+{{^nullable_tenant_id}}
     r.tenant_id = v.{{{scaffold_prefix}}}tenant_id.to_string();
+{{/nullable_tenant_id}}
 {{/has_tenant_id}}
 {{#has_workspace_id}}
     r.workspace_id = boost::uuids::to_string(v.{{{scaffold_prefix}}}workspace_id);
@@ -294,6 +309,9 @@ domain::{{entity_singular}}
 {{#is_enum}}
     r.{{name}} = rfl::enum_to_string(v.{{{group_prefix}}}{{name}});
 {{/is_enum}}
+{{#is_value_type}}
+    r.{{name}} = v.{{{group_prefix}}}{{name}}.to_string();
+{{/is_value_type}}
 {{#render_is_enum}}
 {{^is_enum}}
     r.{{name}} = v.{{{group_prefix}}}{{name}} == {{{render_cpp_type}}}{} ?

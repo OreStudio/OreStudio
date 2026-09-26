@@ -26,25 +26,39 @@ values, together with JSON and table I/O via =rfl=, and the NATS protocol
 schemas consumed by =ores.scheduler.core= and any client managing scheduled
 jobs.
 
+Everything the job-definition entity puts on the wire is generated from
+=modeling/ores.scheduler.job_definition.org=: the domain type and its JSON,
+table and table-I/O companions, the entity protocol, the change event, the
+generator, and the TypeScript projection. The hand-written types here are
+=cron_expression=, which is the entity's one custom column type and carries
+its own =rfl= reflector and stream operator, and the job-instance and
+job-status types behind the two operational views.
+
 * Inputs
 
-- Domain entity type definitions: =job_definition.hpp=, =job_instance.hpp=,
-  =job_status.hpp=, =cron_expression.hpp=.
+- Domain entity type definitions: =job_definition.hpp= (generated),
+  =job_instance.hpp=, =job_status.hpp=, =cron_expression.hpp=.
 
 * Outputs
 
 - C++ headers for scheduler domain types with JSON and table I/O.
-- NATS protocol headers for job-definition and job-instance operations.
+- The canonical entity protocol for job definitions, its change event, and the
+  operation protocol for the job-instance and status views.
 
 * Entry points
 
 - =include/ores.scheduler.api/domain/= — all domain entity headers.
-- =include/ores.scheduler.api/messaging/= — NATS protocol message headers.
+- =include/ores.scheduler.api/messaging/= — the generated entity protocol and
+  the operation protocol.
+- =include/ores.scheduler.api/eventing/= — the generated change event.
+- =include/ores.scheduler.api/generators/= — the generated synthetic
+  job-definition generator.
 
 * Dependencies
 
 - =rfl= — JSON serialisation via reflection.
 - =fort= — formatted table rendering.
+- =croncpp= — cron expression validation and next-occurrence computation.
 
 * See also
 

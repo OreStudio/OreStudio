@@ -1,0 +1,46 @@
+V07 falsification probe
+=======================
+
+The rule is "stub the subject and re-run. The test must fail." The subject here
+is `cron_expression::next_occurrence`, whose test used to assert only that the
+result was in the future.
+
+The probe replaced the body's first statement with `return after;` so the
+function returned its own input, then ran the suite:
+
+    ../../../../../../../projects/ores.scheduler/api/tests/domain_cron_expression_tests.cpp:82: failed:
+        sut->next_occurrence(after) - after == std::chrono::seconds(60) for: 0 ns == 60 s
+        cron_expression::next_occurrence advances by the expression's interval
+    ../../../../../../../projects/ores.scheduler/api/tests/domain_cron_expression_tests.cpp:93: failed:
+        next > after for: 2023-11-14T22:14:00Z > 2023-11-14T22:14:00Z
+    ../../../../../../../projects/ores.scheduler/api/tests/domain_cron_expression_tests.cpp:97: failed:
+        local.tm_hour == 0 for: 22 == 0
+    ../../../../../../../projects/ores.scheduler/api/tests/domain_cron_expression_tests.cpp:98: failed:
+        local.tm_min == 0 for: 14 == 0
+        cron_expression::next_occurrence lands on a local midnight
+    test cases:  6 |  4 passed | 2 failed
+    assertions: 33 | 29 passed | 4 failed
+
+All four assertions of the two rewritten cases fail; the other four cases in
+the file pass, so the probe is specific to the subject and not a build
+accident. The stub was then reverted (`git checkout` on
+`cron_expression.cpp`), and the suite returned green:
+
+    All tests passed (33 assertions in 6 test cases)   [the run this file
+                                                       records; the suite stood
+                                                       at 38 in 8 after the
+                                                       review added two
+                                                       reflector cases]
+
+The two cases before the fix, for contrast, were one case asserting
+`CHECK(next > now)` with a wall-clock `now`, which any implementation that
+returns a future instant satisfies, including one that returns the wrong
+instant, the wrong zone or a constant offset.
+
+Why the assertion is a duration and local fields rather than an instant: the
+subject calls `cron::cron_next`, which the installed `croncpp.h` implements
+through `localtime_r` and `mktime` -- local time. This container's zone is BST,
+so a literal instant would be environment-dependent, and computing the expected
+instant by calling the subject again would be the "one production run against
+another" shape the item also names. A literal interval and literal calendar
+fields are stable in every zone.

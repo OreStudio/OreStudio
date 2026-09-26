@@ -61,6 +61,7 @@ code.
 - =include/ores.testing/database_helper.hpp= — tenant context, RBAC seed and party scope.
 - =include/ores.testing/scoped_database_helper.hpp= — the RAII wrapper a test declares.
 - =include/ores.testing/make_generation_context.hpp= — generation contexts for codegen tests.
+- =include/ores.testing/run_coroutine_test.hpp= — drives one coroutine to completion and fails the case when it throws.
 
 * Dependencies
 

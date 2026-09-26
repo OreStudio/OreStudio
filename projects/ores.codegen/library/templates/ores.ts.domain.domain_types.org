@@ -83,7 +83,12 @@ export interface {{entity_pascal}} {
     version: number;
 {{/has_audit_columns}}
 {{#has_tenant_id}}
+{{#nullable_tenant_id}}
+    tenant_id: string | null;
+{{/nullable_tenant_id}}
+{{^nullable_tenant_id}}
     tenant_id: string;
+{{/nullable_tenant_id}}
 {{/has_tenant_id}}
 {{#has_workspace_id}}
     workspace_id: string;

@@ -2,59 +2,74 @@
 :ID: BD750888-6B72-48C1-AE74-DDC535705022
 :END:
 #+title: ores.scheduler.job_definition
-#+description: Codegen entity model for the scheduler =job_definition= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the scheduler job_definition table. Drives the C++ domain class, mapper, repository, service, protocol, eventing, generator, history provider and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: scheduler
 #+filetags: :model:entity:scheduler:
-#+brief: Persistent plan for a pg_cron scheduled SQL job.
+#+brief: Persistent plan for a recurring or one-off scheduled job.
 #+entity_singular: job_definition
 #+entity_plural: job_definitions
 #+entity_title: Job Definition
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-09-26
 
-Metadata overlay for a pg_cron cron.job entry. Tracks the job name,
-cron expression, SQL command, target database, and active state.
+A job the scheduler fires on a cron expression. The row carries the schedule
+(=schedule_expression=), what to run when it fires, and whether it is active.
+=action_type= selects the behaviour: =execute_sql= runs the SQL in =command=,
+and =nats_publish= publishes the subject and body carried in =action_payload=.
 
-DO NOT regenerate this entity at all -- every facet is out of sync with
-the hand-maintained C++ (the model's own =tenant_id=/=schedule_expression=/
-=is_active= column shapes don't match the hand-written =job_definition=
-struct's actual types: =std::optional<boost::uuids::uuid>=, =cron_expression=,
-=bool=. A regenerated =tenant_id= would come out as the codegen
-=utility::uuid::tenant_id= wrapper, not the hand-written =std::optional=
-type, so even the "safe" domain/repository-entity/mapper facets would
-regenerate *wrong types*, not just wrong formatting) on top of the
-deeper repository/service/messaging divergence documented under
-=** Custom repository methods= below.
-None of this is modeled here yet; regenerating clobbers it with a
-generic CRUD-only stack (and silently wrong column types) that breaks
-all of the above. This model needs a proper resync -- correcting the
-column shapes to match the hand-written struct, then re-adding
-repository/messaging support for the four hand-written operations --
-before any facet of it can be regenerated safely. The deleted Qt
-templates were excluded for the same reason: their generated
-controllers/dialogs bound to the hand-maintained
-=scheduler_protocol.hpp= classes, so a regen would have emitted code
-against a protocol surface that does not exist. Mirrors
-=party='s hand-maintained-SQL treatment in the refdata drift-fix task,
-but wider in scope (no facet is currently safe, not just SQL).
+The table is bi-temporal and audited (see
+=projects/ores.sql/create/scheduler/scheduler_job_definitions_create.sql=): it
+carries =version=, the four audit columns and the =valid_from=/=valid_to= pair
+with the GIST exclusion and the delete rule, so the model takes the ordinary
+audited shape and needs no shape flag.
+
+=tenant_id= is nullable. A job may belong to no tenant, because the scheduler
+fires system jobs from a NULL-tenant row: the MQ statistics scrape and the
+compute stale-result reaper are both such rows. The model binds
+=uuid-identified-lookup= for its UUID surrogate key, its tenant scope and its
+standard presentation tier, and states =nullable_tenant_id= itself, which that
+profile leaves to the model.
+
+=job_name= is the natural key and is unique within its tenant; =id= is the
+surrogate. Uniqueness is what the component's upsert path relies on: a job that
+arrives under an existing name updates that row in place instead of adding a
+second one.
+
+The component's operational views — the global job-instance list and the live
+scheduler status — are operations rather than entity verbs, and are modelled
+in =ores.scheduler.scheduling_operations=.
 
 * Flags
 :PROPERTIES:
-:schema:        public
-:product:       ores
-:component:     scheduler
-:has_tenant_id: true
+:schema:    public
+:product:   ores
+:component: scheduler
+:profile:   uuid-identified-lookup
 :END:
+
+* Natural keys
 
 * Columns
 
+** job_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Unique name for the job within its tenant. The scheduler seed writes
+=ores.mq.metrics_scrape= and the compute seed writes
+=compute.v1.reap.stale_results=; both are system jobs, so both carry a NULL
+tenant and neither collides with a tenant's own job of the same name.
+
 ** id
 :PROPERTIES:
-:type:      uuid
-:cpp_type:  boost::uuids::uuid
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
 :uuid_check_fn: ores_utility_nil_uuid_fn()
-:primary_key: true
 :END:
 
 UUID primary key for the job definition.
@@ -66,16 +81,8 @@ UUID primary key for the job definition.
 :nullable: true
 :END:
 
-Optional party scope for this job (NULL for tenant-scoped or system jobs).
-
-** job_name
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Unique name for the scheduled job.
+Optional party scope for this job. NULL for a tenant-scoped job and for a
+system job.
 
 ** description
 :PROPERTIES:
@@ -95,48 +102,52 @@ Human-readable description of the job.
 :default:  ''
 :END:
 
-SQL command to execute (used when action_type = execute_sql).
+SQL command to execute when =action_type= is =execute_sql=.
 
 ** schedule_expression
 :PROPERTIES:
-:type:     text
-:cpp_type: cron_expression
-:nullable: false
+:type:          text
+:cpp_type:      domain::cron_expression
+:is_value_type: true
+:nullable:      false
 :END:
 
-Cron expression defining the schedule.
+Cron expression defining the schedule. It is the component's own validated
+=cron_expression= type, so an invalid expression cannot enter the domain.
 
 ** action_type
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:default:  'execute_sql'
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       'execute_sql'
 :default_value: "execute_sql"
 :END:
 
-Execution mode: execute_sql or nats_publish.
+Execution mode: =execute_sql= or =nats_publish=.
 
 ** action_payload
 :PROPERTIES:
-:type:     jsonb
-:cpp_type: std::string
-:nullable: false
-:default:  '{}'::jsonb
+:type:          jsonb
+:cpp_type:      std::string
+:nullable:      false
+:default:       '{}'::jsonb
 :default_value: "{}"
 :END:
 
-Payload for nats_publish action type.
+Payload for the =nats_publish= action type. The scheduler seed writes an empty
+object; the compute seed writes ={"subject":"compute.v1.work.reap"}=.
 
 ** is_active
 :PROPERTIES:
-:type:     boolean
-:cpp_type: bool
-:nullable: false
-:default:  true
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default:       true
+:default_value: true
 :END:
 
-1 = active, 0 = paused.
+Whether the job fires. A paused job keeps its row and its history.
 
 * SQL
 
@@ -146,12 +157,26 @@ Payload for nats_publish action type.
 :nullable_tenant_id: true
 :END:
 
+* Physical space
+
+The shell commands for this entity are switched off. The =ores.shell= composite
+does not carry a scheduler part yet, and the shell command registry is
+hand-written, so enabling the facet here would generate command units and a
+recipe for a module no build reaches. Adding the part to the shell component,
+registering its commands, and then enabling this facet is the next unit of the
+scheduler clean-up; the profile enables the facet, so this table states the
+reason it is overridden.
+
+| Address                | Enabled |
+|------------------------+---------|
+| ores.cpp.shell-command | false   |
+
 * C++
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
-:generator_facet_name: generator
+:subcomponent:        api
+:generator_facet_name: generators
 :END:
 
 ** Repository
@@ -165,7 +190,10 @@ Payload for nats_publish action type.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
 #include <string>
+#include <boost/uuid/uuid.hpp>
 #+end_src
 
 ** Conventions
@@ -173,65 +201,56 @@ Payload for nats_publish action type.
 :iterator_var: jd
 :END:
 
-** Presentation
-:PROPERTIES:
-:domain_include:         ores.scheduler/domain/job_definition.hpp
-:domain_class:           scheduler::domain::job_definition
-:protocol_include:       ores.scheduler/messaging/scheduler_protocol.hpp
-:collection_name:        definitions
-:key_field:              job_name
-:has_uuid_primary_key:   true
-:get_request_class:      scheduler::messaging::get_job_definitions_request
-:get_response_class:     scheduler::messaging::get_job_definitions_response
-:get_message_type:       get_job_definitions_request
-:save_request_class:     scheduler::messaging::schedule_job_request
-:save_response_class:    scheduler::messaging::schedule_job_response
-:save_message_type:      schedule_job_request
-:delete_request_class:   scheduler::messaging::unschedule_job_request
-:delete_response_class:  scheduler::messaging::unschedule_job_response
-:delete_message_type:    unschedule_job_request
-:END:
+** Table display
 
-*** Detail fields
-
-| field               | label           | widget                 | type      | is_key | is_required | placeholder                        |
-|---------------------+-----------------+------------------------+-----------+--------+-------------+------------------------------------|
-| job_name            | Job Name        | jobNameEdit            | line_edit | true   | true        | Enter unique job name              |
-| description         | Description     | descriptionEdit        | text_edit |        |             | Enter a human-readable description |
-| command             | SQL Command     | commandEdit            | text_edit |        | true        | Enter the SQL command to execute   |
-| schedule_expression | Schedule (cron) | scheduleExpressionEdit | line_edit |        | true        | e.g., 0 * * * * (every hour)       |
-| database_name       | Database        | databaseNameEdit       | line_edit |        | true        | Target PostgreSQL database name    |
-
-*** Columns
-
-| enum_name    | field               | header      | type   | width |
-|--------------+---------------------+-------------+--------+-------|
-| JobName      | job_name            | Job Name    | string | 200   |
-| Description  | description         | Description | string | 250   |
-| Schedule     | schedule_expression | Schedule    | string | 150   |
-| DatabaseName | database_name       | Database    | string | 150   |
-| Active       | is_active           | Active      | bool   | 80    |
-| Version      | version             | Version     | int    | 60    |
-| ModifiedBy   | modified_by         | Modified By | string | 120   |
+| column              | header        |
+|---------------------+---------------|
+| id                  | ID            |
+| job_name            | Job Name      |
+| description         | Description   |
+| schedule_expression | Schedule      |
+| is_active           | Active        |
+| modified_by         | Modified By   |
+| version             | Version       |
 
 ** Custom repository methods
 
-- =job_definition_repository.hpp= hand-implements =read_all_active=
-  (used by =scheduler_loop= to load every job it needs to fire,
-  regardless of tenant) and =find_by_name= x2 (used by
-  =save_definition='s name-collision dedup so an existing job updates
-  in-place instead of hitting a unique-constraint violation).
-- =job_definition_handler.hpp= hand-implements =schedule=/
-  =schedule_batch=/=unschedule= (domain-named, permission-gated
-  wrappers with custom NATS subjects and a batch-save operation with
-  partial-failure reporting) and a custom =history= whose request/
-  response shape differs from the generic one and would collide by
-  name if paste-blocked in alongside it. Their protocol structs live
-  in the separate, hand-maintained =scheduler_protocol.hpp=, consumed
-  not just by =registrar.cpp= and the removed desktop client's UI
-  classes (=JobDefinitionController=/=JobDefinitionMdiWindow=/
-  =JobDefinitionDetailDialog=/=JobDefinitionAuditDialog=), but
-  cross-component by =ores.reporting='s =report_scheduling_service=.
+The generated CRUD set reads by primary key and by the natural key. The
+scheduler loop needs a third read: every active job, across every tenant,
+because it fires system jobs as well as tenant ones. That read is the one
+method beyond the generated set, and it cannot be expressed by the generated
+by-column finder because it deliberately drops the tenant filter.
+
+*** Repository declarations
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief Reads every active job definition, across all tenants.
+     *
+     * The scheduler loop fires system jobs as well as tenant ones, so it
+     * cannot read through the tenant-scoped CRUD set.
+     */
+    std::vector<domain::job_definition> read_all_active(context ctx);
+#+end_src
+
+*** Repository implementations
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::job_definition>
+job_definition_repository::read_all_active(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all active job definitions.";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<job_definition_entity>> |
+                       where("is_active"_c == true && "valid_to"_c == max.value());
+
+    return execute_read_query<job_definition_entity, domain::job_definition>(
+        ctx,
+        query,
+        [](const auto& entities) { return job_definition_mapper::map(entities); },
+        lg(),
+        "Reading all active job definitions.");
+}
+#+end_src
 
 * See also
 

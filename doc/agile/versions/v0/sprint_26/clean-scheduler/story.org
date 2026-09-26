@@ -21,19 +21,19 @@ ores.scheduler meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
+| Now           | The =job_definition= entity is modelled, regenerated and wired; its hand-written stack and the retired custom operations are gone. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Next          | The remaining units on the task: the diagram manual pass, the shell part, and the =job_instance= entity. |
+| Last touched  | 2026-09-26                               |
 
 * Acceptance
 
 - Every checklist item that applies to a component of kind *Entity* passes, with its evidence recorded on the task.
 - Every item that does not apply is recorded as not applicable, with the reason.
 - Every generator defect found is fixed at its source, with a regression test.
-- ores.scheduler is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
+- ores.scheduler passes its own gate, =check_component_drift.py --component scheduler-cpp=. It joins =COMPONENTS_UNDER_TEST=, and with it the shared =--all= list, in the =job_instance= unit (V06); the shared list deliberately covers only a component whose regeneration leaves the tree fully clean.
 
 * Tasks
 
@@ -45,6 +45,25 @@ ores.scheduler meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 - Survey on 2026-09-23: 1 entity, junction or operation models; 62 C++ files outside tests, 0 of them generated (0%); 5 messaging headers, 5 of them hand-written.
 - Nothing is generated yet. Known work sits in the inbox story "Complete the LLM skills catalogue": the scheduler audit findings, the hand-written operations to model, and the custom history handler to replace. Take those tasks into this story.
+- Survey on 2026-09-26, before any edit: 39 public headers, reproduced by command at
+  =f7fc9396b7=; nine of the names they declare had a production consumer outside
+  the component, all of them in =ores.reporting=, and that list is verified by
+  =git grep= at the same revision: =cron_expression=, its =rfl::Reflector=,
+  =job_definition=, and the three request and response pairs of the old protocol.
+  The survey also tallied 59 declared symbols, a manual count that no command
+  reproduces -- counting named types alone gives 45 -- so the task keeps the
+  verified list rather than a ratio. One model was visible to codegen, eight
+  subject literals were in code, and regeneration would have rewritten 19 files
+  and created 12.
+- The =job_definition= unit is done: the model is resynced and bound to =uuid-identified-lookup=, the entity stack is generated, the retired =schedule=, =unschedule= and =schedule-batch= subjects are gone in favour of the canonical put, put_many and delete verbs, =ores.reporting= has moved to them, and the generated history provider replaces the custom history handler. Five generator defects were found and fixed at source, each with a regression test.
+- The units that remain are recorded on the task, each with its size: the
+  =job_instance= model and the registry entry (M06, V06 and V05's last clause),
+  the scheduler shell part and its commands (S01, S02 and V04), the scheduler
+  loop's I/O path -- the decisions it computes are tested now, the database and
+  NATS work is not -- the model-property reference gap, the repository-wide
+  =component_files.cmake= sweep, the drift check's repository-wide diff, the SQL
+  ER diagram that no gate covers, and the diagram generator's inability to
+  regenerate a composite component's modules.
 
 * Decisions
 

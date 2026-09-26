@@ -17,11 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_MAPPER_HPP
-#define ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_MAPPER_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_MAPPER_HPP
+#define ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_MAPPER_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.scheduler.core/export.hpp"
 #include "ores.scheduler.core/repository/job_definition_entity.hpp"
 
 namespace ores::scheduler::repository {
@@ -29,7 +35,7 @@ namespace ores::scheduler::repository {
 /**
  * @brief Maps job_definition domain entities to data storage layer and vice-versa.
  */
-class job_definition_mapper {
+class ORES_SCHEDULER_CORE_EXPORT job_definition_mapper {
 private:
     inline static std::string_view logger_name = "ores.scheduler.repository.job_definition_mapper";
 

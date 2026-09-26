@@ -45,7 +45,7 @@ the group doc's shared conventions. List sections
 |-----------+-------------|
 | [[id:4723841E-96FB-42F9-A6ED-94B1EFD9253E][ores.doc.knowledge.capture]] | Product-backlog capture: What/Why skeleton plus the bucket-aware blurb (={{bucket}}= names inbox/next/deferred). |
 | [[id:DA424429-4FC6-4594-8D9D-7183F5D9C08B][ores.doc.knowledge.component]] | Component =component_overview.org=: =#+component_name= / =#+brief= keywords read back by codegen, plus the standard overview sections. |
-| [[id:4086A9C8-E7BB-43E4-B183-FF606B2B17E7][ores.doc.knowledge.investigation]] | Investigation doc with the =Investigation:= title prefix and findings skeleton. |
+| [[id:4086A9C8-E7BB-43E4-B183-FF606B2B17E7][ores.doc.knowledge.investigation]] | Investigation doc, scoped to the story that commissioned it: =Investigation:= title prefix, findings skeleton, and a snapshot framing. |
 | [[id:4829F5E5-5B63-4A9B-ACFA-D7D9B94043E0][ores.doc.knowledge.knowledge]] | Generic knowledge page: Summary / Detail / See also. |
 | [[id:3268F1AC-D311-4418-8DA1-FC0F0B6BCE55][ores.doc.knowledge.manual]] | User-manual chapter under =doc/manual/user_guide/=. |
 | [[id:8FECAF12-6D73-42E7-8337-D0B80CE6D421][ores.doc.knowledge.memory]] | Project memory: =#+memory_subtype= plus statement / why / how-to-apply one-shot body fields. |

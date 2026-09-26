@@ -136,8 +136,11 @@ create table if not exists "{{domain_entity.sql_name_base}}_tbl" (
 
 -- Composite natural key: unique combination for active records
 {{#domain_entity.has_tenant_id}}
+{{! A nullable tenant column makes NULL a tenant of its own: the system scope.
+    PostgreSQL treats NULLs as distinct in a unique index, so without this clause
+    two system rows could carry the same natural key. }}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{domain_entity.natural_keys_composite_name}}_uniq_idx
-on "{{domain_entity.sql_name_base}}_tbl" (tenant_id, {{domain_entity.natural_keys_composite_columns}})
+on "{{domain_entity.sql_name_base}}_tbl" (tenant_id, {{domain_entity.natural_keys_composite_columns}}){{#domain_entity.sql.nullable_tenant_id}} nulls not distinct{{/domain_entity.sql.nullable_tenant_id}}
 {{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.has_tenant_id}}
 {{^domain_entity.has_tenant_id}}
@@ -150,6 +153,14 @@ on "{{domain_entity.sql_name_base}}_tbl" ({{domain_entity.natural_keys_composite
 {{^domain_entity.has_multiple_natural_keys}}
 {{#domain_entity.natural_keys}}
 
+{{! The single-natural-key branch below scopes the index on has_tenant_in_pk
+    OR nullable_tenant_id, while the composite branch above scopes on
+    has_tenant_id. The two agree for every entity that exists today: a
+    nullable-tenant entity is the only shape that has a tenant, keeps it out of
+    the primary key, and carries a single natural key. They would disagree for
+    a current_state or system_scope entity with one natural key, which would get
+    an unscoped index where its composite sibling would scope it. Read the two
+    branches together before changing either. }}
 -- Unique {{column}} for active records
 {{#domain_entity.has_tenant_in_pk}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
@@ -157,9 +168,20 @@ on "{{domain_entity.sql_name_base}}_tbl" (tenant_id{{#prefix_columns}}, {{prefix
 {{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.has_tenant_in_pk}}
 {{^domain_entity.has_tenant_in_pk}}
+{{#domain_entity.sql.nullable_tenant_id}}
+{{! A nullable tenant column makes NULL a tenant of its own: the system scope.
+    PostgreSQL treats NULLs as distinct in a unique index, so without this clause
+    two system rows could carry the same natural key, which the tenant-scoped
+    index is meant to prevent. }}
+create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
+on "{{domain_entity.sql_name_base}}_tbl" (tenant_id, {{column}}) nulls not distinct
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
+{{/domain_entity.sql.nullable_tenant_id}}
+{{^domain_entity.sql.nullable_tenant_id}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
 on "{{domain_entity.sql_name_base}}_tbl" ({{column}})
 {{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
+{{/domain_entity.sql.nullable_tenant_id}}
 {{/domain_entity.has_tenant_in_pk}}
 {{/domain_entity.natural_keys}}
 {{/domain_entity.has_multiple_natural_keys}}

@@ -1,0 +1,82 @@
+V01 whole-tree build
+====================
+
+Command:  cmake --build build/output/linux-clang-debug-make -j 3
+Revision: 0088c1ff9e, the head after the rebase onto main (tree clean). Two
+commits follow it and both are documentation plus one generated template-doc
+line -- `git diff --stat 0088c1ff9e..HEAD` lists five files, none of them
+compiled -- so this build describes HEAD (916568586e) too.
+Result:   exit 0. 173 targets built, no compiler error in the log.
+
+Why the direct command, and not `compass build`
+------------------------------------------------
+
+`./compass.sh build` was run first, and it failed before reaching the
+compiler:
+
+    systemd-run --user --scope -q --collect ... cmake --build --preset ...
+    Failed to connect to user scope bus via local transport: No data available
+
+The wrapper cannot run in this session. This session's commands execute inside a
+bubblewrap sandbox with an unshared PID namespace -- /proc/1/comm inside it is
+`bwrap`, and /proc/self/ns/pid is not the host namespace -- so systemd-run
+cannot reach the user manager. The manager itself is present on the machine:
+/run/user/1000/systemd exists and `busctl --user list` shows
+org.freedesktop.systemd1. The two commands are the same command: compass runs
+`cmake --build --preset linux-clang-debug-make -j 3`, and
+build/output/linux-clang-debug-make is that preset's binary directory. The
+direct run is recorded because it is the only form the environment allows, not
+because it is a different check.
+
+What it built
+-------------
+
+Every component library, every test binary, the shell executable and the HTTP
+server, from a fully configured tree. The component and its consumer, read from
+the log:
+
+    [  4%] Built target ores.scheduler.api.lib
+    [ 12%] Built target ores.scheduler.core.lib
+    [ 13%] Built target ores.scheduler.service.lib
+    [ 42%] Built target ores.scheduler.service.exe
+    [ 86%] Built target ores.scheduler.api.tests
+    [ 86%] Built target ores.scheduler.service.tests
+    [100%] Built target ores.scheduler.core.tests
+    [ 11%] Built target ores.reporting.api.lib
+    [ 57%] Built target ores.reporting.core.lib
+    [ 80%] Built target ores.reporting.service.lib
+    [ 92%] Built target ores.reporting.service.exe
+    [ 78%] Built target ores.reporting.api.tests
+    [ 78%] Built target ores.reporting.core.tests
+    [ 92%] Built target ores.reporting.service.tests
+    [100%] Built target ores.http.server.exe
+    [100%] Built target ores.shell.exe
+
+ores.reporting is the one consumer outside the component, and its
+report_scheduling_service.cpp carries the migration to the canonical put and
+delete verbs and the per-job reconciliation, so it is compiled by this run.
+
+The runs before this one
+------------------------
+
+Two whole-tree builds of earlier revisions of this branch also exited 0, and a
+third failed for a reason worth keeping. The revisions those runs were made at
+were rewritten by the second rebase, so they are named by subject rather than by
+SHA:
+
+- "[scheduler] Pass V01 on the whole-tree build" -- exit 0.
+- The run before it -- exit 0.
+- The first attempt at this head -- exit 2, twenty errors in
+  job_definition_eventing_integration_tests.cpp, the first of them "#include
+  nested too deeply". It does not reproduce: the same file compiles on its own
+  from the same tree, and the next whole-tree build compiled it. The one
+  difference was that an in-place drift check was regenerating the component's
+  files while the build read them. That is recorded in the task as a caution,
+  not as a proven cause, and it is why the checks that write are run on a still
+  tree.
+- The second attempt at this head -- exit 2, one error:
+  'ores.testing/run_coroutine_test.hpp' file not found. That one is real. The
+  rebase replayed a commit that deleted the header as unused, which was true of
+  main and false of this branch: the three action-handler tests this task added
+  are its consumers. The header was restored with them, and the run recorded
+  above is the one that matters.

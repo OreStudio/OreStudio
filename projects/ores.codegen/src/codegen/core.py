@@ -59,6 +59,9 @@ _ENTITY_STRUCT_FLAGS = (
     # shape the template carries -- trade's product_type, which is
     # nullable precisely so an unset type maps to NULL.
     'render_is_enum',
+    # A value type reaches the struct as the string it wraps, so it is a
+    # member like any other and not a hole.
+    'is_value_type',
     'is_simple',
 )
 
@@ -2359,6 +2362,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     col.get('base64', False) is True and not col.get('nullable', False)
                 )
                 col['is_enum'] = is_enum_type and not col.get('nullable', False)
+                # A value type sqlgen cannot serialise -- a domain class such
+                # as cron_expression that wraps a string behind a validated
+                # constructor. The entity member is that string and the mapper
+                # converts through the type's own to_string()/from_string(),
+                # the same idiom the tenant uuid already uses. The model opts
+                # in with :is_value_type: true, so the std::chrono::year_month_day
+                # columns the date path already handles are left alone.
+                col['is_value_type'] = bool(
+                    col.get('is_value_type', False)
+                    and not col.get('nullable', False)
+                    and not is_enum_type
+                    and not is_uuid_type
+                    and not is_timestamp_type
+                    and not is_already_optional)
                 col['is_nullable_string'] = (
                     col.get('nullable', False)
                     and not is_uuid_type
@@ -2391,6 +2408,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     and not is_enum_type
                     and not is_already_optional
                     and not col['is_base64']
+                    and not col['is_value_type']
                 )
                 # Non-nullable plain std::string columns without an explicit
                 # generator_expr have no safe struct-level default (unlike
@@ -2479,6 +2497,38 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     elif cpp_type == 'int':
                         col['default_value'] = '0'
                 col['iter_var'] = iter_var
+                # A quoted default_value reaches C++ verbatim: the templates
+                # render it with a triple-mustache and no escaping, so a model
+                # that writes :default_value: "true" on a bool produces
+                # `bool x = "true";`. That is a string literal decaying to a
+                # pointer, which the compiler accepts as true with no warning,
+                # so it is silent at every gate. A string default is quoted
+                # because it is a string; a scalar one never is. Refuse rather
+                # than strip the quotes, so the model reads the way the C++
+                # does.
+                # A jsonb column's C++ type is a string, so the generator
+                # templates fall back to a faker word for it -- and a word is
+                # not JSON, so the insert the generated eventing test performs
+                # is refused by PostgreSQL with "invalid input syntax for type
+                # json". Fill an empty object unless the model states how to
+                # build a real payload.
+                if (not col.get('generator_expr')
+                        and str(col.get('type', '')).lower() in ('json', 'jsonb')):
+                    col['generator_expr'] = 'std::string("{}")'
+                dtype = str(col.get('cpp_type', ''))
+                dvalue = str(col.get('default_value', ''))
+                if (dtype in ('bool', 'int', 'double', 'float', 'std::int64_t',
+                              'std::uint64_t', 'std::int32_t', 'std::uint32_t')
+                        and len(dvalue) >= 2
+                        and dvalue[0] == '"' and dvalue[-1] == '"'):
+                    raise ValueError(
+                        f"column '{col.get('name')}' is a {dtype} and its "
+                        f":default_value: is quoted ({dvalue}). Codegen renders "
+                        f"the value verbatim, so the generated C++ would read "
+                        f"`{dtype} ... = {dvalue};` -- a string literal "
+                        f"initialising a scalar, which compiles by decay and is "
+                        f"silent. Write the value unquoted, as the scalar it is."
+                    )
                 # A declared SQL-only column is meant to reach no C++ layer,
                 # so it skips every remaining per-column step, the guard
                 # below included. Keep this continue last in the loop body:
@@ -3257,6 +3307,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['current_state'] = bool(
             sql_section.get('current_state', False))
         current_state = domain_entity['current_state']
+        # Nullable tenant: the table's tenant_id column admits SQL NULL and a
+        # NULL row belongs to no tenant. The C++ projection reflects that --
+        # the domain and entity tenant are an std::optional, and the mapper
+        # maps NULL to an empty optional rather than to the system tenant.
+        # Lifted onto the entity so the C++ templates read one named flag
+        # rather than reaching into the SQL drawer.
+        domain_entity['nullable_tenant_id'] = bool(
+            sql_section.get('nullable_tenant_id', False))
         # A time-series table is read from its newest end. A paged read walks
         # the key in order, so it answers "the first page" and never "the last
         # row"; a caller that wants the latest states the column it is the

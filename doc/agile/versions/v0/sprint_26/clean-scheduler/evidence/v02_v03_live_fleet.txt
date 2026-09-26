@@ -1,0 +1,110 @@
+V02 and V03 against a live environment
+=====================================
+
+Revision: 0088c1ff9e, the head after the rebase onto main. The database was
+dropped and recreated at this revision, and every measurement below is from
+after that recreate, not from an earlier one. Two commits follow it and both
+are documentation plus one generated template-doc line -- no compiled file --
+so the measurements describe HEAD (916568586e) too.
+
+V03, the database and the fleet
+-------------------------------
+
+    ./compass.sh db recreate -y -k
+        exit 0. The whole schema was created from scratch and every populate
+        script ran. The scheduler's generated SQL is part of it: the create
+        script, the version/insert trigger, the notify trigger and the event
+        channel. The run's own output carries the CREATE TABLE, CREATE INDEX,
+        CREATE FUNCTION and CREATE TRIGGER lines for the component, and the
+        populate stage reports the country and business-centre inserts.
+
+    ./compass.sh services start
+        exit 1, and it could not be used as evidence at this revision. The
+        command drives the units through `systemctl --user`, and this session
+        runs inside a bubblewrap sandbox with an unshared PID namespace
+        (/proc/1/comm inside it is `bwrap`), so systemd-run and systemctl --user
+        cannot reach the user manager: "Failed to connect to user scope bus via
+        local transport: No data available". The manager is present on the
+        machine -- /run/user/1000/systemd exists and `busctl --user list` shows
+        org.freedesktop.systemd1 -- but the sandbox cannot drive it. NATS came
+        up on port 21205 in the same run, and an earlier run of this task,
+        before the sandbox's effect was noticed, recorded 22 of 23 units ready
+        with only ores.web.service failing because npm is absent.
+
+        What this means for the item: the database and NATS, which are what
+        every check below needs, serve. The 23 domain units could not be
+        observed from this session, at this revision.
+
+Checked against the live database, not a diff:
+
+    select column_name, data_type, is_nullable
+      from information_schema.columns
+     where table_name = 'ores_scheduler_job_definitions_tbl'
+       and column_name in ('tenant_id', 'job_name', 'is_active');
+      -> is_active  boolean  NO
+         job_name   text     NO
+         tenant_id  uuid     YES
+
+    select indexdef from pg_indexes
+     where tablename = 'ores_scheduler_job_definitions_tbl'
+       and indexname like '%job_name%';
+      -> CREATE UNIQUE INDEX job_definitions_job_name_uniq_idx ON
+         public.ores_scheduler_job_definitions_tbl USING btree
+         (tenant_id, job_name)
+         WHERE (valid_to = ores_utility_infinity_timestamp_fn())
+
+    select tgname from pg_trigger
+     where tgrelid = 'ores_scheduler_job_definitions_tbl'::regclass
+       and not tgisinternal;
+      -> ores_scheduler_job_definitions_insert_trg
+         ores_scheduler_job_definitions_notify_trg
+
+    select polname from pg_policy
+     where polrelid = 'ores_scheduler_job_instances_tbl'::regclass;
+      -> job_instances_party_isolation_policy
+         job_instances_read_policy
+         job_instances_write_policy
+
+So the nullable tenant, the tenant-scoped natural key, both triggers and the
+hand-written job-instance policies are what the recreated database holds, not
+merely what the model renders.
+
+V02, the suites with the database and NATS serving
+--------------------------------------------------
+
+    codegen suite                         608 passed, 0 failed
+    ores.scheduler.api.tests              All tests passed (38 assertions in 8 test cases)
+    ores.scheduler.service.tests          All tests passed (26 assertions in 10 test cases)
+    ores.scheduler.core.tests             All tests passed (84 assertions in 22 test cases)
+
+The core suite was run twice against different database states and passed both
+times: once before the recreate and once after it, with the fresh schema. Its 22
+cases are the generated eventing integration test, three cases for the
+hand-written job-instance repository, three for the job-instance mapper, four
+for the schedule decisions the loop delegates to, three for the SQL action
+handler, four for the NATS-publish handler, and four for the message-queue
+handler.
+
+The generated eventing integration test passes end to end: it writes a job
+definition through the repository, waits for the row's pg_notify to reach the
+event bus and be published on NATS, then asserts the history provider returns
+two versions, that the version's commentary is the one the test wrote, that a
+deleted definition is gone, and that its history count matches the versions it
+saw. It is the check that proves NATS and the database are both serving, which
+is why V03's "serves" clause rests on it as well as on the port checks.
+
+The defect the live run found
+-----------------------------
+
+With the fleet up the test reached the insert and PostgreSQL refused it:
+"invalid input syntax for type json, Token "CD" is invalid". The generated
+sample value for the jsonb column action_payload was a faker word. Codegen now
+fills an empty object for a jsonb column that states no generator expression,
+in one place, so every template site that falls back to a faker word picks it
+up. Regression test: test_jsonb_sample_value.py. The fix is in the commit whose
+subject is "[scheduler] Fill a jsonb column with valid JSON, found by the live run"; it predates the
+rebases, so it is named by subject rather than by SHA.
+
+No build, gate or diff could have found this: the SQL was valid, the model was
+valid, the C++ compiled, and the drift gates compared generated text with
+generated text. Only executing the chain against a real database did.

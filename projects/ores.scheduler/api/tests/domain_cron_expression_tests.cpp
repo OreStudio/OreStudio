@@ -18,7 +18,13 @@
  *
  */
 #include "ores.scheduler.api/domain/cron_expression.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <ctime>
+#include <rfl/json.hpp>
+#include <string>
+#include <vector>
 
 using namespace ores::scheduler::domain;
 
@@ -65,14 +71,33 @@ TEST_CASE("cron_expression::to_string round-trips the input", "[domain][cron_exp
     CHECK(sut->to_string() == expr);
 }
 
-TEST_CASE("cron_expression::next_occurrence returns a future time point",
+TEST_CASE("cron_expression::next_occurrence advances by the expression's interval",
           "[domain][cron_expression]") {
+    // A fixed instant on a minute boundary, so the expectation below is a
+    // literal rather than a measurement of the clock. Asserting only that the
+    // result is in the future passes for any implementation that returns
+    // anything at all, which is what this case used to do.
+    const auto after = std::chrono::system_clock::from_time_t(1700000040);
+
+    auto sut = cron_expression::from_string("* * * * *");
+    REQUIRE(sut.has_value());
+    CHECK(sut->next_occurrence(after) - after == std::chrono::seconds(60));
+}
+
+TEST_CASE("cron_expression::next_occurrence lands on a local midnight",
+          "[domain][cron_expression]") {
+    const auto after = std::chrono::system_clock::from_time_t(1700000040);
+
     auto sut = cron_expression::from_string("0 0 * * *");
     REQUIRE(sut.has_value());
 
-    const auto now = std::chrono::system_clock::now();
-    const auto next = sut->next_occurrence(now);
-    CHECK(next > now);
+    const auto next = sut->next_occurrence(after);
+    CHECK(next > after);
+    const auto as_time_t = std::chrono::system_clock::to_time_t(next);
+    std::tm local{};
+    localtime_r(&as_time_t, &local);
+    CHECK(local.tm_hour == 0);
+    CHECK(local.tm_min == 0);
 }
 
 TEST_CASE("cron_expression equality operator", "[domain][cron_expression]") {
@@ -86,4 +111,21 @@ TEST_CASE("cron_expression equality operator", "[domain][cron_expression]") {
 
     CHECK(*a == *b);
     CHECK_FALSE(*a == *c);
+}
+
+TEST_CASE("cron_expression round-trips through rfl as its string", "[domain][cron_expression]") {
+    const auto parsed = cron_expression::from_string("*/5 * * * *");
+    REQUIRE(parsed.has_value());
+
+    const auto written = rfl::json::write(*parsed);
+    CHECK(written == R"("*/5 * * * *")");
+
+    const auto read = rfl::json::read<cron_expression>(written);
+    REQUIRE(read.has_value());
+    CHECK(*read == *parsed);
+}
+
+TEST_CASE("rfl read refuses a string that is not a cron expression", "[domain][cron_expression]") {
+    const auto read = rfl::json::read<cron_expression>(R"("not a cron")");
+    CHECK_FALSE(read.has_value());
 }

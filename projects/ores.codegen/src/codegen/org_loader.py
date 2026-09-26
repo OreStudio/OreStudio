@@ -950,6 +950,28 @@ def _split_columns_section(cols: OrgNode) -> tuple[
                 f"Column '{child.title}' cannot be both :primary_key: and "
                 ":natural_key:"
             )
+        # A key column is read by renderers that carry their own type
+        # projection: the entity declares the primary key as
+        # sqlgen::PrimaryKey<std::string>, the natural-key block renders the
+        # raw cpp_type, and the mapper's key branches convert by is_text,
+        # is_uuid, is_int and is_timestamp. None of them carries
+        # :is_value_type:, so a value-type key would reach the entity layer as
+        # the domain class and the mapper would leave it unmapped -- silently,
+        # because the value type is a legal column everywhere else. Refuse the
+        # shape rather than generate it wrongly; plain columns carry the
+        # projection (see test_value_type_column.py).
+        if (is_primary_key or is_natural_key) and (
+            _parse_typed(child.properties.get("is_value_type", "false")) is True
+        ):
+            role = "primary key" if is_primary_key else "natural key"
+            raise ValueError(
+                f"Column '{child.title}' is a {role} and opts in as a value "
+                "type. The entity and mapper renderers carry the value-type "
+                "projection for plain columns only, so a key column would be "
+                "generated as the domain class and left unmapped. Model the key "
+                "as the string the type wraps, or drop :is_value_type: from "
+                "this column."
+            )
         if is_primary_key:
             d = _natural_key_node_to_dict(child)
             for flag in _KEY_ROLE_FLAGS:

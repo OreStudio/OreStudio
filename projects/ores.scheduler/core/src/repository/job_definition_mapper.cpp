@@ -17,9 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.scheduler.core/repository/job_definition_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.scheduler.api/domain/job_definition_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -33,25 +37,22 @@ domain::job_definition job_definition_mapper::map(const job_definition_entity& v
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::job_definition r;
+    r.version = v.version;
+    if (v.tenant_id)
+        r.tenant_id = utility::uuid::tenant_id::from_string(*v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
 
-    if (v.tenant_id)
-        r.tenant_id = boost::lexical_cast<boost::uuids::uuid>(*v.tenant_id);
-
-    if (v.party_id)
-        r.party_id = boost::lexical_cast<boost::uuids::uuid>(*v.party_id);
-
     r.job_name = v.job_name;
-    r.description = v.description.value_or("");
+
+    r.party_id = v.party_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.party_id)) :
+                     std::nullopt;
+    r.description = v.description;
     r.command = v.command;
-    auto expr = domain::cron_expression::from_string(v.schedule_expression);
-    if (!expr)
-        throw std::logic_error("Invalid cron expression in database: " + expr.error());
-    r.schedule_expression = std::move(*expr);
+    r.schedule_expression = domain::cron_expression::from_string(v.schedule_expression).value();
     r.action_type = v.action_type;
     r.action_payload = v.action_payload;
     r.is_active = v.is_active;
-    r.version = v.version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -67,17 +68,15 @@ job_definition_entity job_definition_mapper::map(const domain::job_definition& v
 
     job_definition_entity r;
     r.id = boost::uuids::to_string(v.id);
-
     if (v.tenant_id)
-        r.tenant_id = boost::uuids::to_string(*v.tenant_id);
-
+        r.tenant_id = v.tenant_id->to_string();
     r.version = v.version;
 
-    if (v.party_id)
-        r.party_id = boost::uuids::to_string(*v.party_id);
-
     r.job_name = v.job_name;
-    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+
+    r.party_id =
+        v.party_id.has_value() ? std::optional(boost::uuids::to_string(*v.party_id)) : std::nullopt;
+    r.description = v.description;
     r.command = v.command;
     r.schedule_expression = v.schedule_expression.to_string();
     r.action_type = v.action_type;

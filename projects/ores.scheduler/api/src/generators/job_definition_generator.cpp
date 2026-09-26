@@ -17,38 +17,55 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.scheduler.api/generators/job_definition_generator.hpp"
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
-#include <faker-cxx/word.h>
+#include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::scheduler::generators {
 
+using ores::utility::generation::generation_keys;
+
 domain::job_definition
-generate_synthetic_job_definition(const std::optional<boost::uuids::uuid>& tenant_id,
-                                  const std::optional<boost::uuids::uuid>& party_id) {
-    static int counter = 0;
+generate_synthetic_job_definition(utility::generation::generation_context& ctx) {
+    [[maybe_unused]] static std::atomic<int> counter{0};
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str = ctx.env().get_or(std::string(generation_keys::tenant_id), std::string(""));
 
-    utility::uuid::uuid_v7_generator gen;
-
-    // Build a unique job name using faker
-    const auto noun = std::string(faker::word::noun());
-    const std::string job_name = noun + "_job_" + std::to_string(++counter);
-
-    // Use a simple daily schedule for synthetic jobs
-    auto schedule = domain::cron_expression::from_string("0 0 * * *");
-
-    return domain::job_definition{
-        .id = gen(),
-        .tenant_id = tenant_id,
-        .party_id = party_id,
-        .job_name = job_name,
-        .description = "Synthetic job: " + noun,
-        .command = "SELECT 1; -- synthetic no-op",
-        .schedule_expression = std::move(*schedule),
-        .is_active = true,
-        .version = 0,
-        .modified_by = "test_generator",
-    };
+    domain::job_definition r;
+    r.version = 0;
+    if (!tid_str.empty())
+        r.tenant_id = utility::uuid::tenant_id::from_string(tid_str).value();
+    r.id = ctx.generate_uuid();
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.job_name = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.description = std::string(faker::word::noun());
+    r.command = std::string(faker::word::noun());
+    r.action_type = std::string(faker::word::noun());
+    r.action_payload = std::string("{}");
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.test";
+    r.change_commentary = "Synthetic test data";
+    r.recorded_at = ctx.past_timepoint();
+    return r;
 }
 
-} // namespace ores::scheduler::generators
+std::vector<domain::job_definition>
+generate_synthetic_job_definitions(std::size_t n, utility::generation::generation_context& ctx) {
+    std::vector<domain::job_definition> r;
+    r.reserve(n);
+    while (r.size() < n)
+        r.push_back(generate_synthetic_job_definition(ctx));
+    return r;
+}
+
+}

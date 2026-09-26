@@ -180,6 +180,33 @@ Still to do after the migration: regenerate the CMake source lists,
 because =rates_instrument_handler.hpp= is gone; build the whole tree;
 run the four suites; then run the dry run twice for idempotence.
 
+** The first generator defect the build found
+
+The regenerated component does not compile, and the defect is in the
+generator, not in the model. =evidence/pr2_generator_defect_equality.txt=
+holds the error and the templates.
+
+=cpp_domain_type_class.hpp.mustache= emits a defaulted =operator== = for
+every domain class. =cpp_field_group.hpp.mustache= emits no comparison
+for the field-group struct it generates. A domain class whose member is
+a field group therefore has its comparison implicitly deleted, and the
+build treats that as an error under =-Werror=. At 39f99acef3 neither
+file had a comparison, so the committed tree compiled; the current
+templates add one to the domain class and not to the field group.
+
+Every trading entity with a field-group member is affected, which is
+=trade= and the entities that inherit =instrument_identity=. This is
+item G05 work: fix the field-group template at its source in the org
+source that tangles to =cpp_field_group.hpp.mustache=, add a regression
+test to the codegen suite, then regenerate. Item G07 applies while the
+defect is open: do not refresh any other artefact that the same
+generator feeds.
+
+The other field-group models are one in =ores.dq= and one worked
+example in =ores.codegen=. Neither component is in
+=COMPONENTS_UNDER_TEST=, so no registered component changes, but
+=ores.dq='s generated output does and that is recorded here.
+
 
 ** 3. Regenerate
 

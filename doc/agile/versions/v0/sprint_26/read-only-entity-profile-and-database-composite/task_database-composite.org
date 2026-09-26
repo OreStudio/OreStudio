@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 841EA68A-0490-421D-83E4-8C9D01D148EF
+:END:
+#+title: Task: Make ores.database a composite and host the generated entity
+#+description: Prototype the api/core emission under one modelling directory, move the foundation library into a part, and add database.api, database.core and database.service so database_info can be a generated read-only entity without inverting the layering.
+#+type: task
+#+level: s1
+#+filetags: :sprint_26:v0:codegen:composite:read-only-entity-profile-and-database-composite:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AD2B4B61-306D-48A7-9F71-7D9B014F87B9][Add a read-only entity profile and make ores.database hostable]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores.database= can host a generated read-only entity without linking the
+layers above it. The component becomes a composite with =api=, =core= and
+=service= parts, the foundation library moves into a part, and a generated
+=database_info= serves reads over NATS.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:AD2B4B61-306D-48A7-9F71-7D9B014F87B9][Add a read-only entity profile and make ores.database hostable]] |
+| Now          | Not yet started.                       |
+| Waiting on   | The read-only profile task.            |
+| Next         | Prototype the api/core emission.       |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- =compass codegen regenerate= emits into =database.api= and =database.core=
+  from one modelling directory, with no duplicated or misdirected output.
+- No part of =ores.database= links a library that links =ores.database=. The
+  generated =database.api= closure stays inside =ores.utility= and
+  =ores.platform=.
+- The whole tree builds with every consumer of =ores.database= migrated in the
+  same change, and the component's suites pass.
+- =component_architecture.org= is updated, because it names =ores.database= in
+  its simple-components table and says a simple layout suits an infrastructure
+  library with no need to separate public API from DB and service concerns.
+  That sentence becomes wrong when this lands, so the change edits ground
+  truth deliberately.
+- =check_component_drift.py= passes with the component listed, or the reason
+  it still cannot be listed is recorded.
+
+* Plan
+
+1. Prototype first, and prove it, before anything moves. On a throwaway branch
+   or worktree, stand up =projects/ores.database/{api,core}/= with a
+   =modeling/= under the right level, point a copy of the modelling directory
+   at it, and run =compass codegen regenerate=. The question is narrow: does
+   one modelling directory emit into two parts without duplicating output, and
+   does the generated =database.api= link closure hold at =ores.utility= and
+   =ores.platform=? If either answer is no, the shape of this task changes,
+   and no library should have moved yet.
+
+2. Decide where the read surface lives. The table's owner is =ores.database=,
+   but =ores.telemetry= already reports system state over NATS and already
+   links =ores.database=. Record the choice and the reason in the story's
+   Decisions, because a third runnable process for one admin surface is a real
+   cost.
+
+3. Move the foundation library into a part. A composite root holds only
+   =add_subdirectory= lines, so the library cannot stay at the root.
+   =ores.telemetry= is the precedent for a part carrying the library. Roughly
+   30 libraries include =<ores.database/...>=; migrate them in the same change
+   and build the whole tree, not a subset.
+
+4. Re-model =database_info= with the read-only profile, regenerate, wire the
+   registrars at the composition points, and verify the protocol against the
+   running fleet.
+
+5. Update =component_architecture.org=, the System Model layer pages and the
+   component registries in the same change.
+
+* Notes
+
+The layering, measured on 2026-09-26:
+
+=ores.database= sits in the Foundation layer with =ores.logging=,
+=ores.platform=, =ores.security=, =ores.utility=, =ores.nats= and =ores.diff=.
+=ores.service= sits in the Infrastructure layer and links =ores.database.lib=.
+The generated handler needs =ores.service/messaging/handler_helpers.hpp=,
+=ores.service/service/request_context.hpp= and
+=ores.security/jwt/jwt_authenticator.hpp=, so the generated stack placed in the
+component as it stands would make the Foundation layer link Infrastructure.
+That is a layering inversion, not a cycle. A part that links =ores.service= is
+fine, because nothing links the part.
+
+The generated write surface is why this task waits for the profile.
+=database_info= is one immutable row; the generated entity carries =version=,
+four audit columns, =valid_from=/=valid_to=, a GIST exclusion, an insert
+trigger with version management and a delete rule, plus =put_= and =delete_=
+verbs. =:read_only: true= plus =:current_state: true= removes all of it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: 527B8D67-34B0-4B55-B0F3-3525850328BD
+:END:
+#+title: Task: Add a read-only entity profile
+#+description: Extend _FEATURE_NAMESPACE so a profile can carry read_only and current_state, add the profile document, and prove the generated protocol carries list, get and get_many only.
+#+type: task
+#+level: s1
+#+filetags: :sprint_26:v0:codegen:read-only-entity-profile-and-database-composite:
+#+owner: marco
+#+branch: feature/read-only-entity-profile
+#+pr: 2156
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AD2B4B61-306D-48A7-9F71-7D9B014F87B9][Add a read-only entity profile and make ores.database hostable]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A model binds one named profile and gets a read-only entity: the generated
+protocol carries =list=, =get= and =get_many=, and nothing else. No =put_=, no
+=delete_=, no version reads. Models that need the same combination elsewhere
+bind the same profile instead of re-deciding each flag.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AD2B4B61-306D-48A7-9F71-7D9B014F87B9][Add a read-only entity profile and make ores.database hostable]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- A model binds the profile and its emitted protocol carries =list=, =get= and
+  =get_many= only, asserted by a codegen regression test rather than by eye.
+- The regression test fails if a write or version message reappears, so the
+  read-only promise cannot regress in silence.
+- The profile is documented as a named element-scope profile, in the shape of
+  the existing profile pages.
+- =ores.iam.account='s missing generated protocol is explained, because that
+  entity sets =:read_only: true= and does not behave the way the flag says.
+
+* Plan
+
+The mechanism exists. This task makes it bindable and proves it.
+
+1. The two switches are already implemented in
+   =projects/ores.codegen/src/codegen/org_loader.py=:
+   =:read_only: true= sets =wire_write_enabled = false= at lines 2057 to 2067,
+   and the protocol derivation drops every write message and write-only record
+   at lines 3155 to 3159. =:current_state: true= in the model's =* SQL **
+   Flags= drawer selects the non-temporal table shape, read at
+   =core.py:3212-3219=. Neither flag belongs to a profile yet.
+
+2. A profile cannot carry either flag. =_FEATURE_NAMESPACE=
+   (=org_loader.py:51-78=) maps each profile-assignable feature to its
+   namespace, and =_apply_profile= (=org_loader.py:445-455=) skips every
+   feature missing from that map. Add =read_only= at the entity root and
+   =current_state= in the sql namespace.
+
+3. Write the profile page under =projects/modeling/=, in the shape of
+   =variability_table_less_record.org=, with its Purpose, Reference entity and
+   Assignments table.
+
+4. Bind it to a real entity and regenerate. =ores.iam.login_info= is the
+   working reference for the target output: it sets both flags today and its
+   protocol carries exactly the three reads. The proof is that binding the
+   profile reproduces that protocol, and that removing the profile and binding
+   it again changes nothing on the second run.
+
+5. Add the regression test to the codegen suite. It binds the profile, derives
+   the protocol, and asserts the absence of the write and version message
+   names, in the shape of the existing per-entity protocol tests.
+
+6. Resolve the =ores.iam.account= question. Its description says a "one-owner
+   gate" suppresses its generated protocol because a hand-written
+   =get_account_history(username)= would collide with the generated one. That
+   gate is not in =org_loader.py=. Find out whether it is a model property, a
+   template condition, or a stale comment, and record the answer here.
+
+* Notes
+
+Reference implementation, verified on 2026-09-26:
+=compass codegen entity generate login_info --diff= reports no differences,
+and =login_info_protocol.hpp= carries =get_login_info=, =get_many_login_info=
+and =list_login_info= only. =ores.iam.account= differs by being bitemporal,
+which is why it also carries =get_account_version= and
+=list_account_versions=.
+
+** The =ores.iam.account= question, answered
+
+The claim was stale, and the mechanism it describes does not exist. There is
+no one-owner gate in the generator, no model property and no template
+condition that suppresses a generated protocol.
+
+The entity's read surface is generated and composed. Its generated
+=account_protocol.hpp= owns =iam.v1.accounts.list= and
+=iam.v1.accounts.get=, with the version reads beside them, and
+=account_registrar= is called from =ores.iam/core/src/messaging/registrar.cpp=.
+The hand-written =account_operations_protocol.hpp= owns the write subjects:
+=save=, =delete=, =update=, =lock=, =unlock=, =change-password=,
+=reset-password=, =select-party=, =set-default-party=, =switch-party=,
+=update-email= and =publish-from-dq=. The two sets do not overlap, so nothing
+collides and nothing needed suppressing. The split is what =:read_only: true=
+produces: no write verb is generated, and the hand-written half covers the
+writes.
+
+What was real is narrower. Only the generated =CRUD service= was dropped,
+because its =get_account_history(id)= collides in name and signature with the
+hand-written =get_account_history(username)=. The model's description
+conflated that with a suppression of the protocol. Corrected in
+=ores.iam.account.org=, and the generated SQL and C++ comments were
+regenerated from it.
+
+The answer matters for this task because the profile rests on =:read_only:=,
+and a flag whose meaning is undocumented on one of its three real users is a
+flag nobody can rely on. The flag behaves as documented on all three.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2156][#2156]] | [codegen] Add the read-only current-state profile |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Closed 2026-09-26. A model binds =:profile: read-only-current-state= and gets
+a read-only entity: =list=, =get= and =get_many= on the wire, no write verb
+and no version read, over the current-state table shape.
+
+What shipped. Two entries in =_FEATURE_NAMESPACE= make =read_only= and
+=current_state= profile-bindable, the profile
+=variability_read_only_current_state.org= with the two feature pages it links,
+a row in the profile catalogue, and the suite
+=test_readonly_current_state_profile.py=.
+
+Evidence. The suite passes, seven cases. The strongest case is not in the
+suite: binding the profile to =ores.iam.login_info= in place of its two
+explicit flags regenerates byte-identical output, which is what proves the
+profile carries both flags to the places that read them. The suite covers the
+same ground on a model that declares neither flag, so the mechanism is proved
+away from the entity that happened to work already.
+
+Acceptance met. The protocol carries the three reads and no =put_=, no
+=delete_= and no version message; the regression test fails if any of them
+returns; the profile and both features are catalogued and documented; and the
+=ores.iam.account= question is answered above, with the stale claim corrected
+where it lived.
+
+Two things the work found that were not in the plan. The loader rejects a
+=#+profile:= in file frontmatter and requires it in the =* Flags= drawer, and
+the profile filename must be the slug with hyphens turned into underscores.
+Both cost a test iteration and neither is documented where a model author
+would look.

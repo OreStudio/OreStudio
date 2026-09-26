@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: E13F0F34-2407-4C66-92F3-AA09E543377E
+:END:
+#+title: Feature: read_only
+#+description: Read-only repository: suppresses every write and remove verb, leaving reads on the wire.
+#+type: feature
+#+level: cross
+#+filetags: :codegen:variability:feature:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
+this feature's value links here rather than restating its effect.
+
+* Identity
+
+| Field | Value |
+|-------+-------|
+| Literal name | =:read_only:= |
+| Bundle | structural ([[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]]) |
+| Type | bool |
+| Default | false |
+
+* Effect
+
+The table is provisioned outside the application, so the generated code
+offers no way to write it. =org_loader.py= folds the value into
+=wire_write_enabled=, and the protocol derivation drops every message whose
+name starts with a write prefix and every write-only record. The result on
+the wire is =list=, =get= and =get_many=, and nothing else. There is no
+=put_=, no =delete_=, and no create or removal record.
+
+The entity keeps its reads and its version reads where the table has them.
+A read-only bitemporal entity still answers =list_*_versions= and
+=get_*_version=, because those are reads.
+
+The flag is authored at the entity root, in the =* Flags= drawer, alongside
+=:has_tenant_id:=. =:client_read_only:= is the junction-only relative: it
+leaves the repository writable for a server-side producer and suppresses
+only the verbs a client reaches. The loader rejects =:client_read_only:= on
+a =domain_entity= and directs the model to this feature instead.
+
+* Structural consequence
+
+None. No column, member or class appears or disappears. The value suppresses
+messages in the protocol and the handler, which is behaviour rather than
+shape.
+
+* Used by
+
+- [[id:0AB24790-8CF2-466A-9B49-257A1A49C75B][Read-only current-state]]
+
+* See also
+
+- [[id:54EC48CE-B2B1-4A86-BFA1-7B2EB32BBDC3][current_state]] — the table shape this feature is usually paired with.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundle this feature belongs to.

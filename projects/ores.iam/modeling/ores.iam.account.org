@@ -45,18 +45,27 @@ The model describes the table and nothing else. Two columns need care:
   JSON and table tests plus the core repository's five-account round trip
   pass, so the workaround is not needed here.
 
+The generated read surface is live, and it does not collide with the
+hand-written one. The hand-written
+=account_operations_protocol.hpp= owns the writes,
+=iam.v1.accounts.{save,delete,update,lock,unlock,change-password,reset-password,select-party,set-default-party,switch-party,update-email,publish-from-dq}=,
+and the generated =account_protocol.hpp= owns the reads,
+=iam.v1.accounts.list= and =iam.v1.accounts.get=, with the version reads
+alongside them. Both registrars are composed in
+=ores.iam/core/src/messaging/registrar.cpp=. This entity sets
+=:read_only: true=, so the generated half carries no write verb and the split
+falls out of the flag rather than out of a suppression.
+
 Two behavioural facets are switched off, each with a reason:
 
 - The entity's CRUD handler and sub-registrar, because the hand-written
-  =account_operations_handler= already owns every =iam.v1.accounts.*= subject.
+  =account_operations_handler= already owns the write verbs.
 - The generated CRUD service, because the hand-written =account_operations_service=
   is the authentication surface (login, lock, unlock, password change
   and reset, party selection, service-credential check) and the
   generated service's =get_account_history(id)= collides in name and
   signature with the hand-written =get_account_history(username)= while
-  meaning a different read. The generated =account_protocol.hpp= is
-  suppressed by the same one-owner gate that the operation model already
-  satisfies.
+  meaning a different read.
 
 * Flags
 :PROPERTIES:

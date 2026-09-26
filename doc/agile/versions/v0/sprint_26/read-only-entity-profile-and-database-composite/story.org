@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: AD2B4B61-306D-48A7-9F71-7D9B014F87B9
+:END:
+#+title: Story: Add a read-only entity profile and make ores.database hostable
+#+description: Two pieces: a named variability profile that generates read-only entities (list, get, get_many, no writes, no versions), then the ores.database composite that lets the component host a generated entity without inverting the layering.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:codegen:composite:clean_standard:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Two outcomes, in order. First, a named variability profile that produces a
+read-only entity: the generated protocol carries =list=, =get= and =get_many=,
+and no write verb and no version read. Second, =ores.database= becomes a
+composite that can host such an entity, so the database metadata the UI needs
+can travel on the wire without the foundation library linking the layers above
+it.
+
+The first outcome stands alone. Read-only entities are needed beyond this
+component, and the mechanism a profile would carry is already implemented as a
+per-entity flag, so the work is to make it bindable.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing. |
+| Next          | Start the profile task. |
+| Last touched  | 2026-09-26                               |
+
+* Acceptance
+
+- A model binds one named profile and the emitted protocol carries =list=,
+  =get= and =get_many= only: no =put_=, no =delete_=, no =*_versions_*=.
+- A codegen regression test covers the profile, so the read-only promise
+  cannot regress in silence.
+- =ores.database= carries =api=, =core= and =service= parts, and the
+  foundation library lives in a part rather than the composite root.
+- The generated =database.api= link closure stays inside =ores.utility= and
+  =ores.platform=, both of which sit below =ores.database=. No part of the
+  component links a layer that links the component.
+- The whole tree builds and the component's suites pass, with every consumer
+  of =ores.database= migrated in the same change.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:527B8D67-34B0-4B55-B0F3-3525850328BD][Add a read-only entity profile]] | DONE | | 2026-09-26 | Extend _FEATURE_NAMESPACE so a profile can carry read_only and current_state, add the profile document, and prove the generated protocol carries list, get and get_many only. |
+| [[id:841EA68A-0490-421D-83E4-8C9D01D148EF][Make ores.database a composite and host the generated entity]] | BACKLOG | | | Prototype the api/core emission under one modelling directory, move the foundation library into a part, and add database.api, database.core and database.service so database_info can be a generated read-only entity without inverting the layering. |
+
+* Decisions
+
+- The profile comes first. The composite depends on knowing what it hosts, and
+  the profile is needed whether or not the composite happens.
+- The composite task starts with a prototype of the =api=/=core= emission
+  under one modelling directory, not with moving the library. If the generator
+  duplicates output across parts, the shape of the composite changes, and the
+  move would have been wasted.
+- The clean-up story closed without the composite and without this component
+  in =COMPONENTS_UNDER_TEST=. This story is not a continuation of that
+  acceptance criterion; it adds capability the clean-up never had.
+
+* Notes
+
+- The table =ores_database_info_tbl= was moved to hand-written SQL in the
+  clean-up, so this story re-models an existing table rather than inventing
+  one. It reads as operational metadata, and where the read surface lives is
+  a product question this story does not settle: =ores.database= is the
+  table's owner, while =ores.telemetry= already reports system state over
+  NATS.
+- Open question carried from the clean-up: =ores.iam.account= sets
+  =:read_only: true= and generates no protocol. Its description credits a
+  "one-owner gate" that could not be found in =org_loader.py=. Resolve it
+  before the profile rests on the =read_only= flag.
+
+* Out of scope
+
+- Reopening the =ores.database= clean-up story. It closed on the component as
+  it stands, and its record says so.

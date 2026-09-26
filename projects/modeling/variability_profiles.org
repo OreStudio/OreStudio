@@ -39,6 +39,7 @@ abstract.
 | [[id:FF6073E5-876C-4ABF-BE80-4C0F3FA2B5FE][Trading instrument]] | =equity_position_instrument= | Flat ORE instrument sub-type: identity + audit field groups, tenant+workspace scope, =party_id= from session, no UI surface. |
 | [[id:95BF5857-D9DC-40B5-8081-FAB3C24FF0A4][Trading record]] | =trade= | Transactional trading data rather than reference data: tenant+workspace scope and the generated eventing test, leaving party derivation and struct composition to the model. |
 | [[id:60D7964C-49DB-485B-B4FF-D0DA68B2E7FA][Table-less record]] | =diff_span= | Never stored, only carried: a payload type with no table, no key, no repository, no service and no subject. The C++ domain class and its TypeScript twin, and nothing else. |
+| [[id:0AB24790-8CF2-466A-9B49-257A1A49C75B][Read-only current-state]] | =login_info= | One row per key and no history, written by the system and read over the wire: =list=, =get= and =get_many=, with no write verb and no version read. |
 
 * See also
 

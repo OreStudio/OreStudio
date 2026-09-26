@@ -52,9 +52,11 @@ _FEATURE_NAMESPACE: dict[str, str] = {
     "has_tenant_id": "",
     "has_workspace_id": "",
     "has_parent_id": "",
+    "read_only": "",
     "system_scope": "sql",
     "nullable_tenant_id": "sql",
     "no_audit_columns": "sql",
+    "current_state": "sql",
     "extra_checks": "sql",
     "extra_delete_sets": "sql",
     "fk_copy_validations": "sql",
@@ -2065,12 +2067,10 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
     # outside the application. ``client_read_only`` leaves the repository
     # writable for a server-side producer and suppresses only the verbs a
     # client can reach, which the wire templates and the derived TypeScript
-    # list branch on through this derived flag. Derived outside the section
-    # guard: a junction with no C++ drawer declares neither flag, so its wire
-    # writes stay on, and a template that reads a missing key would treat the
-    # absence as off and silently drop the write surface.
-    j["wire_write_enabled"] = not (
-        j.get("read_only") or j.get("client_read_only"))
+    # list branch on through the derived flag computed at the end of this
+    # function. A junction with no C++ drawer declares neither flag, so its
+    # wire writes stay on, and a template that reads a missing key would treat
+    # the absence as off and silently drop the write surface.
     if cpp_section:
         dom = _section(cpp_section, "Domain includes")
         ent = _section(cpp_section, "Entity includes")
@@ -2165,6 +2165,14 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
     # handling: the * Flags drawer's :profile: resolves against the named
     # profile's own Assignments table as feature defaults.
     _apply_profile(j)
+
+    # Derived here rather than beside the flags it reads: a profile can supply
+    # read_only, so the derivation has to follow _apply_profile. Computed
+    # earlier, a profile-bound junction advertises write messages for
+    # repository methods the repository template has already dropped, because
+    # that template reads read_only directly and sees the profile's value.
+    j["wire_write_enabled"] = not (
+        j.get("read_only") or j.get("client_read_only"))
 
     return {"junction": j}
 

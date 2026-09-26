@@ -16,10 +16,16 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_tests.mustache
+# To modify, update the template and regenerate.
 set(files
+    "environment_environment_tests.cpp"
     "filesystem_file_tests.cpp"
+    "filesystem_scoped_temp_file_tests.cpp"
     "main.cpp"
     "net_network_info_tests.cpp"
+    "process_executable_tests.cpp"
     "process_pid_tests.cpp"
     "time_datetime_tests.cpp"
     "time_relative_time_formatter_tests.cpp"

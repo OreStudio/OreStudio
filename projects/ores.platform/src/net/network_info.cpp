@@ -20,6 +20,8 @@
 #include "ores.platform/net/network_info.hpp"
 #include <algorithm>
 #include <array>
+#include <climits>
+#include <cstdint>
 #include <functional>
 #include <iomanip>
 #include <sstream>
@@ -27,7 +29,6 @@
 
 #if defined(__linux__)
 #    include <ifaddrs.h>
-#    include <limits.h>
 #    include <net/if.h>
 #    include <netpacket/packet.h>
 #    include <sys/types.h>
@@ -46,6 +47,85 @@
 #endif
 
 namespace ores::platform::net {
+
+namespace {
+
+std::string format_mac_address(const std::string& mac_bytes) {
+    std::ostringstream oss;
+    oss << std::hex << std::setfill('0');
+    for (std::size_t i = 0; i < mac_bytes.size(); ++i) {
+        if (i > 0)
+            oss << ':';
+        oss << std::setw(2) << static_cast<unsigned>(static_cast<unsigned char>(mac_bytes[i]));
+    }
+    return oss.str();
+}
+
+/**
+ * Returns every non-loopback 6-byte hardware address as sorted raw bytes.
+ * The lexicographic ordering of the raw bytes is what makes the primary
+ * address stable across reboots.
+ */
+std::vector<std::string> enumerate_mac_addresses() {
+    std::vector<std::string> macs;
+
+#if defined(__linux__)
+    struct ifaddrs* ifaddr = nullptr;
+    if (getifaddrs(&ifaddr) == -1)
+        return macs;
+
+    for (auto* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == nullptr || (ifa->ifa_flags & IFF_LOOPBACK) != 0)
+            continue;
+
+        if (ifa->ifa_addr->sa_family == AF_PACKET) {
+            auto* s = reinterpret_cast<struct sockaddr_ll*>(ifa->ifa_addr);
+            if (s->sll_halen == 6)
+                macs.emplace_back(reinterpret_cast<const char*>(s->sll_addr), 6);
+        }
+    }
+
+    freeifaddrs(ifaddr);
+#elif defined(__APPLE__)
+    struct ifaddrs* ifaddr = nullptr;
+    if (getifaddrs(&ifaddr) == -1)
+        return macs;
+
+    for (auto* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == nullptr || (ifa->ifa_flags & IFF_LOOPBACK) != 0)
+            continue;
+
+        if (ifa->ifa_addr->sa_family == AF_LINK) {
+            auto* sdl = reinterpret_cast<struct sockaddr_dl*>(ifa->ifa_addr);
+            if (sdl->sdl_alen == 6)
+                macs.emplace_back(LLADDR(sdl), 6);
+        }
+    }
+
+    freeifaddrs(ifaddr);
+#elif defined(_WIN32)
+    ULONG buf_len = 0;
+    GetAdaptersInfo(nullptr, &buf_len);
+    if (buf_len == 0)
+        return macs;
+
+    std::vector<std::byte> buffer(buf_len);
+    auto* adapter_info = reinterpret_cast<PIP_ADAPTER_INFO>(buffer.data());
+
+    if (GetAdaptersInfo(adapter_info, &buf_len) != ERROR_SUCCESS)
+        return macs;
+
+    for (auto* adapter = adapter_info; adapter != nullptr; adapter = adapter->Next) {
+        if (adapter->AddressLength == 6)
+            macs.emplace_back(reinterpret_cast<const char*>(adapter->Address), 6);
+    }
+#endif
+
+    std::sort(macs.begin(), macs.end());
+    return macs;
+}
+
+}
 
 std::string get_hostname() {
 #if defined(__linux__)
@@ -69,223 +149,19 @@ std::string get_hostname() {
 }
 
 std::optional<std::string> get_primary_mac_address() {
-#if defined(__linux__)
-    struct ifaddrs* ifaddr = nullptr;
-    if (getifaddrs(&ifaddr) == -1) {
+    const auto macs = enumerate_mac_addresses();
+    if (macs.empty())
         return std::nullopt;
-    }
 
-    std::vector<std::string> macs;
-    for (auto* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr == nullptr || (ifa->ifa_flags & IFF_LOOPBACK) != 0) {
-            continue;
-        }
-
-        if (ifa->ifa_addr->sa_family == AF_PACKET) {
-            auto* s = reinterpret_cast<struct sockaddr_ll*>(ifa->ifa_addr);
-            if (s->sll_halen == 6) {
-                std::ostringstream oss;
-                oss << std::hex << std::setfill('0');
-                for (int i = 0; i < 6; ++i) {
-                    if (i > 0)
-                        oss << ':';
-                    oss << std::setw(2) << static_cast<unsigned>(s->sll_addr[i]);
-                }
-                macs.push_back(oss.str());
-            }
-        }
-    }
-
-    freeifaddrs(ifaddr);
-
-    if (macs.empty()) {
-        return std::nullopt;
-    }
-
-    std::sort(macs.begin(), macs.end());
-    return macs.front();
-
-#elif defined(__APPLE__)
-    struct ifaddrs* ifaddr = nullptr;
-    if (getifaddrs(&ifaddr) == -1) {
-        return std::nullopt;
-    }
-
-    std::vector<std::string> macs;
-    for (auto* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr == nullptr || (ifa->ifa_flags & IFF_LOOPBACK) != 0) {
-            continue;
-        }
-
-        if (ifa->ifa_addr->sa_family == AF_LINK) {
-            auto* sdl = reinterpret_cast<struct sockaddr_dl*>(ifa->ifa_addr);
-            if (sdl->sdl_alen == 6) {
-                auto* mac_ptr = reinterpret_cast<unsigned char*>(LLADDR(sdl));
-                std::ostringstream oss;
-                oss << std::hex << std::setfill('0');
-                for (int i = 0; i < 6; ++i) {
-                    if (i > 0)
-                        oss << ':';
-                    oss << std::setw(2) << static_cast<unsigned>(mac_ptr[i]);
-                }
-                macs.push_back(oss.str());
-            }
-        }
-    }
-
-    freeifaddrs(ifaddr);
-
-    if (macs.empty()) {
-        return std::nullopt;
-    }
-
-    std::sort(macs.begin(), macs.end());
-    return macs.front();
-
-#elif defined(_WIN32)
-    ULONG buf_len = 0;
-    GetAdaptersInfo(nullptr, &buf_len);
-    if (buf_len == 0) {
-        return std::nullopt;
-    }
-
-    std::vector<std::byte> buffer(buf_len);
-    auto* adapter_info = reinterpret_cast<PIP_ADAPTER_INFO>(buffer.data());
-
-    if (GetAdaptersInfo(adapter_info, &buf_len) != ERROR_SUCCESS) {
-        return std::nullopt;
-    }
-
-    std::vector<std::string> macs;
-    for (auto* adapter = adapter_info; adapter != nullptr; adapter = adapter->Next) {
-        if (adapter->AddressLength == 6) {
-            std::ostringstream oss;
-            oss << std::hex << std::setfill('0');
-            for (UINT i = 0; i < adapter->AddressLength; ++i) {
-                if (i > 0)
-                    oss << ':';
-                oss << std::setw(2) << static_cast<unsigned>(adapter->Address[i]);
-            }
-            macs.push_back(oss.str());
-        }
-    }
-
-    if (macs.empty()) {
-        return std::nullopt;
-    }
-
-    std::sort(macs.begin(), macs.end());
-    return macs.front();
-#else
-    return std::nullopt;
-#endif
+    return format_mac_address(macs.front());
 }
 
 std::optional<std::string> get_primary_mac_address_bytes() {
-#if defined(__linux__)
-    struct ifaddrs* ifaddr = nullptr;
-    if (getifaddrs(&ifaddr) == -1) {
+    const auto macs = enumerate_mac_addresses();
+    if (macs.empty())
         return std::nullopt;
-    }
 
-    std::vector<std::string> macs;
-    for (auto* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr == nullptr || (ifa->ifa_flags & IFF_LOOPBACK) != 0) {
-            continue;
-        }
-
-        if (ifa->ifa_addr->sa_family == AF_PACKET) {
-            auto* s = reinterpret_cast<struct sockaddr_ll*>(ifa->ifa_addr);
-            if (s->sll_halen == 6) {
-                std::string mac_bytes;
-                mac_bytes.reserve(6);
-                for (int i = 0; i < 6; ++i) {
-                    mac_bytes += static_cast<char>(s->sll_addr[i]);
-                }
-                macs.push_back(mac_bytes);
-            }
-        }
-    }
-
-    freeifaddrs(ifaddr);
-
-    if (macs.empty()) {
-        return std::nullopt;
-    }
-
-    std::sort(macs.begin(), macs.end());
     return macs.front();
-
-#elif defined(__APPLE__)
-    struct ifaddrs* ifaddr = nullptr;
-    if (getifaddrs(&ifaddr) == -1) {
-        return std::nullopt;
-    }
-
-    std::vector<std::string> macs;
-    for (auto* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr == nullptr || (ifa->ifa_flags & IFF_LOOPBACK) != 0) {
-            continue;
-        }
-
-        if (ifa->ifa_addr->sa_family == AF_LINK) {
-            auto* sdl = reinterpret_cast<struct sockaddr_dl*>(ifa->ifa_addr);
-            if (sdl->sdl_alen == 6) {
-                auto* mac_ptr = reinterpret_cast<unsigned char*>(LLADDR(sdl));
-                std::string mac_bytes;
-                mac_bytes.reserve(6);
-                for (int i = 0; i < 6; ++i) {
-                    mac_bytes += static_cast<char>(mac_ptr[i]);
-                }
-                macs.push_back(mac_bytes);
-            }
-        }
-    }
-
-    freeifaddrs(ifaddr);
-
-    if (macs.empty()) {
-        return std::nullopt;
-    }
-
-    std::sort(macs.begin(), macs.end());
-    return macs.front();
-
-#elif defined(_WIN32)
-    ULONG buf_len = 0;
-    GetAdaptersInfo(nullptr, &buf_len);
-    if (buf_len == 0) {
-        return std::nullopt;
-    }
-
-    std::vector<std::byte> buffer(buf_len);
-    auto* adapter_info = reinterpret_cast<PIP_ADAPTER_INFO>(buffer.data());
-
-    if (GetAdaptersInfo(adapter_info, &buf_len) != ERROR_SUCCESS) {
-        return std::nullopt;
-    }
-
-    std::vector<std::string> macs;
-    for (auto* adapter = adapter_info; adapter != nullptr; adapter = adapter->Next) {
-        if (adapter->AddressLength == 6) {
-            std::string mac_bytes;
-            mac_bytes.reserve(6);
-            for (UINT i = 0; i < adapter->AddressLength; ++i) {
-                mac_bytes += static_cast<char>(adapter->Address[i]);
-            }
-            macs.push_back(mac_bytes);
-        }
-    }
-
-    if (macs.empty()) {
-        return std::nullopt;
-    }
-
-    std::sort(macs.begin(), macs.end());
-    return macs.front();
-#else
-    return std::nullopt;
-#endif
 }
 
 std::string derive_machine_id() {

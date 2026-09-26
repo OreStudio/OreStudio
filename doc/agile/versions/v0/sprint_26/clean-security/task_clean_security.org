@@ -57,9 +57,77 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | pass | Baseline before any edit. No catalogue row, so the drift gate cannot name the component. `regenerate_cmake_component_files.py --component ores.security --check` reports 2 stale files, `src/component_files.cmake` and `tests/component_files.cmake`. |
+| B02 | pass | 0 entity, junction, operation and message models. |
+| B03 | pass | 16 production C++ files classified, 11 headers and 5 sources, plus 6 files under `tests/`. `crypto/encryption.cpp` has no consumer outside its own test. `password_hasher.hpp` declares two functions that are never defined. |
+| B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. |
+| B05 | pass | This story is the only live capture naming the component. |
+| M01 to M08 | not applicable | No org model. |
+| M09 | not applicable | No model, so no legacy fragment to find in one. |
+| M10 | fail | `component_overview.org` lists `crypto/`, `jwt/` and `validation/` as entry points while `ores.security.hpp:44` includes only the JWT header, and the umbrella then declares nothing. One of the two must move. |
+| P01 to P06 | not applicable | No entity and no protocol. |
+| G01 | not applicable | No model, so nothing regenerates. |
+| G02 | fail | Three dead artefacts remain: `crypto/encryption.cpp` with no consumer, the two never-defined `base64` declarations, and the `jwt_error::missing_claims` enumerator that no code path produces. |
+| G03 | fail | The two `component_files.cmake` files carry no generated marker. |
+| G04 | not applicable | No generated code. |
+| G05 | fail | The `generate_component_puml.py` brace defect reaches this component. A dry run deletes 2 lines. |
+| G06 | fail | The same two files as G03. |
+| W01 to W04 | not applicable | No entity, registrar, handler, populate script or SQL script. |
+| S01, S02 | not applicable | No entity and no shell unit. |
+| H01 | pass, with findings | `validate_docs.py` passes. No leftover artefact, every file name snake_case, no Qt or Wt reference and no `_WIN32`. The diagram matches the headers and the `.png` was committed with the `.puml`. |
+| H02 | fail | The three dead artefacts above. |
+| H03 | fail | About 15 narration comments in `crypto/encryption.cpp` plus one end-of-line comment, and repeated code restatement in `email_validator.cpp` and `password_hasher.cpp`. |
+| V01 | pending | Whole-tree build, measured after the work. |
+| V02 | fail | The security-weighted test gaps are listed under Notes. The suite passes at 127 assertions in 55 test cases, so the gaps are in what is asserted, not in whether it runs. |
+| V03, V04 | not applicable | No entity, no SQL and no generated shell command. |
+| V05 | pending | Every gate, measured after the work. |
+| V06 | not applicable | No catalogue row and no models, so the component cannot join `COMPONENTS_UNDER_TEST`. Recorded as the programme gap. |
 
 * Notes
+
+Survey, 2026-09-25, at trunk `5de59e3fb8`, by an agent that did not write
+the component. Cryptographic code, so an untested path here carries more
+weight than an untested path elsewhere.
+
+- Scale. 16 production C++ files in 11 headers and 5 sources, with 6 files
+  under `tests/`. 55 test cases, 127 assertions, and 448 files outside the
+  component include it. Consumers include
+  `ores.iam`'s account and signup services and its auth handler.
+- Suites pass. `ores.security.tests` runs green, 127 assertions in 55 test
+  cases.
+- Keep the component. It is the repo's only home for hashing, encryption,
+  JWTs and the OWASP validators.
+
+Work items, in the order they land.
+
+1. Decide `crypto/encryption.cpp`. It has no consumer at all. Only its own
+   test includes it, and it holds three public statics in 194 lines with no
+   failure-path test. Either name a consumer and test it properly, or
+   delete it with its test. This decision comes first, because several of
+   the gaps below go with it.
+2. Delete the two `base64_encode` and `base64_decode` declarations in
+   `password_hasher.hpp`. They are never defined and never called.
+3. Remove `jwt_error::missing_claims`, or add the claim-presence check that
+   produces it. Nothing returns it today.
+4. Forbid a downgraded scrypt cost at verify. `password_hasher.cpp:117`
+   accepts any `ln` from 1 to 31, and `ln=1` is 8192 times weaker than the
+   production factor. Add the test that rejects it.
+5. Pin the stored hash format and the cost parameter. No test asserts the
+   `$scrypt$ln=14,r=8,p=1$` shape, `get_n_parameter()` is untested, and
+   `CMakeLists.txt:137` sets `ORES_TEST_PASSWORD_FAST=1`, so the suite only
+   ever runs the test factor.
+6. Test `validate_allow_expired`. It carries a 100-year leeway, has no test
+   in the component, and `ores.iam`'s refresh path depends on it. Prove it
+   still rejects a bad signature.
+7. Add the failure-path tests for `decrypt`. Tampered ciphertext, tampered
+   tag, truncation and non-base64 input are all unverified, and the wrong
+   password is the only case covered.
+8. Add the JWT cases. Algorithm confusion, wrong issuer, wrong audience and
+   `nbf`.
+9. Decide the empty-input behaviour of `verify_password`, which returns
+   true today, and pin it either way.
+10. Hygiene. Drop the narration comments in `crypto/encryption.cpp` and the
+    end-of-line comment, and align the overview with the umbrella header.
 
 * Test Scenarios
 

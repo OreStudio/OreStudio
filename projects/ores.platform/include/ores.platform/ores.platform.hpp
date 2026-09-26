@@ -29,11 +29,12 @@
  * - Environment: access to environment variables and system information
  * - Filesystem: file operations, path handling, and I/O error types
  * - Network: network interface information and utilities
+ * - Process: process identity, executable location, and shutdown signals
  * - Time: datetime utilities, time point parsing, and relative time formatting
  *
  * The module is organized into namespaces: environment (system environment),
- * filesystem (file operations), net (network utilities), and time (datetime
- * handling).
+ * filesystem (file operations), net (network utilities), process (process
+ * identity and signals), and time (datetime handling).
  */
 namespace ores::platform {}
 

@@ -45,14 +45,6 @@ ORES_PLATFORM_EXPORT std::filesystem::path executable_path();
  */
 ORES_PLATFORM_EXPORT std::string executable_build_time();
 
-/**
- * @brief Returns the hostname of the current machine.
- *
- * Cross-platform wrapper: gethostname on POSIX, GetComputerNameA on Windows.
- * Returns "unknown" on failure.
- */
-ORES_PLATFORM_EXPORT std::string get_hostname();
-
 }
 
 #endif

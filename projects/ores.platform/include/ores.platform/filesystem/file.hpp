@@ -22,13 +22,12 @@
 
 #include "ores.platform/export.hpp"
 #include "ores.platform/filesystem/io_error.hpp"
-#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <list>
-#include <set>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace ores::platform::filesystem {
 
@@ -67,59 +66,9 @@ public:
     }
 
     /**
-     * @brief Returns all files available in all input directories, recursively.
-     *
-     * Returned paths are absolute paths. If you supply the same directory
-     * multiple times, the files will be read multiple times but returned
-     * on once in the set.
-     */
-    /**@{*/
-    static std::set<std::filesystem::path> find_files(const std::filesystem::path& dir);
-    static std::set<std::filesystem::path>
-    find_files(const std::vector<std::filesystem::path>& dirs);
-    static std::set<std::filesystem::path> find_files(const std::list<std::filesystem::path>& dirs);
-    /**@}*/
-
-    /**
-     * @brief Finds the relative path, by searching recursively upwards
-     * from the starting directory.
-     */
-    static std::filesystem::path
-    find_file_recursively_upwards(std::filesystem::path starting_directory,
-                                  const std::filesystem::path& relative_file_path);
-
-    /**
      * @brief Deletes all files in the supplied list.
      */
     static void remove(const std::list<std::filesystem::path>& files);
-
-    /**
-     * @brief Opens a file as a C FILE* in the given mode, cross-platform.
-     *
-     * On Windows, std::filesystem::path::c_str() returns const wchar_t* so
-     * std::fopen cannot be used directly. This function calls _wfopen on
-     * Windows and std::fopen on all other platforms, using the native path
-     * string in both cases.
-     *
-     * Returns nullptr on failure (same semantics as std::fopen).
-     */
-    static FILE* open_c_file(const std::filesystem::path& p, const char* mode);
-
-    /**
-     * @brief Removes all empty directories, recursively.
-     */
-    /**@{*/
-    static void remove_empty_directories(const std::filesystem::path& dir);
-    static void remove_empty_directories(const std::list<std::filesystem::path>& dirs);
-    /**@}*/
-
-    /**
-     * @brief If the directory exists, deletes it and recreates it. Otherwise,
-     * creates it.
-     *
-     * @throws If the path points to a file.
-     */
-    static void recreate_directory(const std::filesystem::path& dir);
 };
 
 }

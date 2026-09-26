@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:codegen:component:checklist:drift:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-09-25
 
 * Summary
 
@@ -60,6 +60,7 @@ a typecheck all missed; only a build and a test run found them.
 | B03 | All | Classify every hand-written C++ file (no generated marker): generatable (domain, repository, mapper, service, handler, registrar, protocol, generator, table and JSON I/O), infrastructure that stays hand-written, or dead. | Survey table on the task |
 | B04 | Protocol | List every NATS subject the component serves or sends, every protocol header, and every raw subject string outside a protocol header. | Survey table on the task |
 | B05 | All | Read the component's open captures and in-flight branches, so that the work does not collide with them. | Links on the task |
+| B06 | All | Classify every public symbol by its consumer: production, test-only, or none. A test-only consumer is dead code, because a test is not a consumer. Name the intended consumer on the task, or delete the symbol with its test. | =git grep= over =projects/= for each public symbol, excluding the component and its own tests |
 
 ** 2. Models
 
@@ -97,6 +98,7 @@ a typecheck all missed; only a build and a test run found them.
 | G04 | Entity | The generated code reads like the component's best hand-written code. A finding is a template defect and is fixed in the template. | Review record on the task |
 | G05 | All | Every generator defect found is fixed at its source with a regression test in the codegen suite. | Codegen test suite |
 | G06 | All | The CMake source lists match the tree. | =regenerate_cmake_component_files.py --all --check= |
+| G07 | All | No generated artefact is refreshed while its generator has a known defect, because a refresh can delete correct content. Fix the generator at its source with a regression test, then refresh. A diagram refresh also honours the two-pass contract: run the automated pass, redo the manual pass below the sentinel, and verify the sentinel section survived. | The generator's own dry run, with its diff read line by line against the committed artefact |
 
 ** 5. Wiring and data
 
@@ -118,9 +120,10 @@ a typecheck all missed; only a build and a test run found them.
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
-| H01 | All | The component passes the Component Architecture Audit, and its record is written. | Audit record; =validate_docs.sh= |
-| H02 | All | No legacy code remains: no Qt or Wt fragment, no dead code, no commented-out code, no hand-written duplicate of a generated artefact. | Review record on the task |
+| H01 | All | The component passes the Component Architecture Audit, and its record is written. The diagram is authored in two passes, never one. The automated pass reads data members and little else, so a class whose content is methods arrives as an empty box, and a facet of free functions does not arrive at all. The manual pass below the sentinel fills those boxes with the API, draws the relationships the automated pass cannot see, and deletes any edge the code does not support. A diagram of empty boxes is a skeleton, not a diagram. | Audit record; =validate_docs.sh=; the rendered image read, not merely regenerated |
+| H02 | All | No legacy code remains: no Qt or Wt fragment, no dead code, no commented-out code, no hand-written duplicate of a generated artefact. Two hand-written implementations of the same behaviour collapse into one, and the survivor keeps the consumers the pair had. | Review record on the task |
 | H03 | All | Comments follow the project comment rules. | compass-code-review-comments pass |
+| H04 | All | No hand-rolled per-platform shim survives where every supported compiler provides the standard facility. Replace the shim with the standard facility, and delete what existed only to carry it. | Review against the three supported compilers: MSVC, AppleClang, and GCC or Clang |
 
 ** 8. Verification
 
@@ -132,6 +135,8 @@ a typecheck all missed; only a build and a test run found them.
 | V04 | Entity | Every generated shell command runs against the live fleet and answers. Record any command that cannot run, with the reason. | Recipe run log on the task |
 | V05 | All | Every codegen gate is green with the component added: component drift, model drift, protocol twin coverage, handler permissions, populate references, recipe inventory and CMake source lists. | Each check script |
 | V06 | All | The component joins =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes with it listed. | =component_registry.py= diff |
+| V07 | All | No vacuous test. Every test fails when its subject does nothing, so a test that asserts only a length, a non-throw, a truthiness, or one production run against another is a finding. Assert a literal expected value. | Stub the subject and re-run. The test must fail |
+| V08 | All | Every source file has a test that exercises it, or is recorded with the reason it does not. The list of source files no test touches is the coverage work item. | Per-file survey under =src/=, against the component's test run |
 
 ** What sprint 25 learned
 
@@ -148,6 +153,63 @@ a typecheck all missed; only a build and a test run found them.
   trigger wiring were found by a running fleet, not by ctest.
 - An unattended replay of commands can destroy an environment. Declare
   destructive commands in their models.
+
+** What the component surveys learned
+
+A survey of four model-free infrastructure components, =ores.platform=,
+=ores.utility=, =ores.security= and =ores.geo=, run on 2026-09-25 by agents
+that did not write them, added items B06, H04, G07, V07 and V08. The
+standard now holds 47 items. The findings behind the new items:
+
+- A component can pass every gate and still be unclean. All four passed
+  =validate_docs.py=, carried no leftover artefact and broke no naming
+  rule, and still held dead public API, an overview that contradicts the
+  tree, and tests that cannot fail. The gates check structure, not truth.
+- A consumer census finds what a compile cannot. Code whose only caller is
+  its own test compiles, links and passes forever. In =ores.utility= six
+  sub-trees, about 1560 lines, exist only to satisfy their own tests.
+- A test that cannot fail is worse than no test, because it reports
+  confidence it did not earn. The =ores.geo= suite passes whenever its
+  lookup fails for any reason, and a backlog capture had already recorded
+  the bug the suite was meant to catch.
+- A generator defect can make the obvious fix destructive. Refreshing
+  =ores.platform='s diagram deletes correct content, because the parser
+  loses brace sync on a one-line =enum class=. Seven components hold a
+  one-line =enum class= in a header, which is what the parser reads, so
+  the defect reaches all seven. Run the generator's dry run and read its
+  diff before accepting a refresh.
+- An automated diagram pass is a skeleton, so the manual pass is not
+  optional polish. The pass reads data members only. An interface, and any
+  class whose content is methods, arrives as an empty box; a class with
+  state arrives with its fields and no API; and a facet of free functions
+  does not arrive at all. The first =ores.platform= diagram passed a
+  refresh check, a render and a file review, and still showed an
+  =environment_provider= with no methods and a class relationship the code
+  does not have. Read the rendered image before calling a diagram done.
+- The same defect recurs across components. 147 =component_files.cmake=
+  files are stale for one reason: the marker template landed in commit
+  =3a40c9c57e= and no component regenerated. Where a defect has one cause,
+  fix it once and record the sweep, rather than 147 times.
+- A registry that admits only model-bearing components excludes the whole
+  infrastructure tier. =COMPONENTS_UNDER_TEST= lists model-bearing
+  catalogue entries, so a component with no models can never join it, and
+  deleting one leaves the same gap. Six components now share it, the two
+  retired by deletion and the four surveyed.
+- Prefer the standard facility. =ORES_NO_UNIQUE_ADDRESS= and a hand-rolled
+  =unreachable()= existed beside =[[no_unique_address]]= and
+  =std::unreachable()=, which MSVC, AppleClang and GCC all provide. A shim
+  that outlives its need is dead weight with a portability excuse.
+- A duplicated implementation is one finding, not two. Two near-identical
+  functions that differ only in the shape they return are one behaviour, so
+  the fix is one helper behind both public functions, and the survivor
+  keeps the consumers the pair had. In =ores.platform= the two MAC
+  enumerators looked test-only from outside, and each was in fact
+  load-bearing through a different production caller, so deleting either
+  half would have broken the telemetry trace identifier.
+- Verify with an agent that did not write the code, and expect it to fail
+  the record rather than the patch. The deletion this standard's first
+  story performed was sound; what the verifier failed was the record's own
+  claims about it.
 
 * See also
 

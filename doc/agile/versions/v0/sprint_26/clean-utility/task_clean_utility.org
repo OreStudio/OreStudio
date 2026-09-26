@@ -57,9 +57,95 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | pass | Baseline before any edit. No catalogue row, so the drift gate cannot name the component. `regenerate_cmake_component_files.py --component ores.utility --check` reports 2 stale files, `src/component_files.cmake` and `tests/component_files.cmake`. |
+| B02 | pass | 0 entity, junction, operation and message models. |
+| B03 | pass | 65 production C++ files classified, 44 headers and 21 sources, plus 15 files under `tests/`. Six sub-trees have no consumer outside their own test, about 1560 lines. Eleven umbrella headers have no consumer at all. |
+| B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. |
+| B05 | pass | This story is the only live capture naming the component. |
+| M01 to M08 | not applicable | No org model. |
+| M09 | not applicable | No model, so no legacy fragment to find in one. |
+| M10 | fail | `component_overview.org` says the component has "no dependencies on any other ORE Studio component", while `src/CMakeLists.txt:104` links `ores.platform.lib` PUBLIC. It lists `include/ores.utility/datetime/`, which does not exist, advertises a geo facet with no code, and omits 8 of its 14 facets including `generation/`, which has 464 external consumers. |
+| P01 to P06 | not applicable | No entity and no protocol. |
+| G01 | not applicable | No model, so nothing regenerates. |
+| G02 | fail | Six dead or test-only sub-trees remain, plus two `Reflector<>` specialisations for `ores::comms::messaging` types, and `ores.comms` does not exist. |
+| G03 | fail | The two `component_files.cmake` files carry no generated marker. |
+| G04 | not applicable | No generated code. |
+| G05 | fail | The `generate_component_puml.py` brace defect reaches this component. A dry run deletes 3 lines. |
+| G06 | fail | The same two files as G03. |
+| W01 to W04 | not applicable | No entity, registrar, handler, populate script or SQL script. |
+| S01, S02 | not applicable | No entity and no shell unit. |
+| H01 | pass, with findings | `validate_docs.py` passes. No leftover artefact, every file and type name snake_case, the CMake lists match the tree, no commented-out code. Complexity is low at 1682 NLOC, 136 functions, average cyclomatic complexity 1.9, with one warning. |
+| H02 | fail | The six sub-trees and the retired reflector specialisations. |
+| H03 | fail | Six end-of-line comments and the `Step 1` to `Step 4` narration in `short_code_generator.cpp`. |
+| V01 | pending | Whole-tree build, measured after the work. |
+| V02 | fail | `gzip` has zero coverage anywhere in the repo and sits on the NATS and storage wire. Three further live files are untested here. About ten assertions are tautological. |
+| V03, V04 | not applicable | No entity, no SQL and no generated shell command. |
+| V05 | pending | Every gate, measured after the work. |
+| V06 | not applicable | No catalogue row and no models, so the component cannot join `COMPONENTS_UNDER_TEST`. Recorded as the programme gap. |
 
 * Notes
+
+Survey, 2026-09-25, at trunk `5de59e3fb8`, by an agent that did not write
+the component.
+
+- Scale. 65 production C++ files in 44 headers and 21 sources, with 15
+  files under `tests/`. 141 test cases, 476 assertions, and 1814 files
+  outside the component include it. The real
+  foundation is `rfl` at 876 files, `generation` at 464, `uuid` at 453,
+  `domain` at 262, `streaming` at 80 and `version` at 45. Everything from
+  `program_options` down is thin, and everything from `convert` down is
+  single-consumer or dead.
+- Suites pass. `ores.utility.tests` runs green, 476 assertions in 141 test
+  cases.
+- Keep the component. The dead sub-trees are a minority. The foundation
+  facets carry the repo.
+
+The six sub-trees, with their external callers.
+
+| Sub-tree | Files | Callers outside its own test |
+|----------+-------+------------------------------|
+| `serialization/reader` and `writer` | 4 | none anywhere |
+| `concurrency/retry_strategy.hpp` | 1 | none anywhere |
+| `streaming/std_optional.hpp` | 1 | none anywhere |
+| `faker/totp` | 3 | none anywhere |
+| `convert/base32_converter` | 3 | none external. One internal caller, which is itself test-only |
+| `string/converter` with `conversion_error` | 4 | none anywhere |
+
+Work items, in the order they land.
+
+1. Decide the six sub-trees as a group. For each, either name the intended
+   consumer in the overview or delete it with its test. Deciding file by
+   file will produce six inconsistent answers.
+2. Delete the two `ores::comms::messaging` reflector specialisations, since
+   the subsystem they marshal no longer exists.
+3. Delete the eleven umbrella headers with no consumer, or keep
+   `ores.utility.hpp` alone and rewrite it. Two pairs are duplicates, and
+   two advertise functions that do not exist.
+4. Rewrite `component_overview.org`. Fix the dependency claim, drop
+   `datetime/` and geo, list every facet, fill `See also`, and bump
+   `#+updated`.
+5. Fix the same false claims in `ores.utility.hpp`.
+6. Add tests for the live untested files, starting with `gzip`, which is on
+   the wire and has no test anywhere in the repo.
+7. Strengthen the tautological assertions, starting with the TOTP test,
+   which checks only length and alphabet, and `tree_builder_tests.cpp`,
+   which compares two production runs to each other.
+8. Regenerate the diagram through both passes, after the generator defect
+   is fixed. Six namespaces are missing, and the hand-authored section
+   below the sentinel is empty.
+9. Move the six end-of-line comments above their code, and drop the
+   `Step` narration.
+10. Rename the `converter` namespace to `convert`, or the folder to
+    `converter`, and fix the call sites.
+11. Record the load-bearing exception for `domain/protocol.hpp`. It is a
+    253-file wire envelope in a foundation library and the codegen
+    templates depend on it, so it cannot be generated per entity. It needs
+    an M06 exception with that reason, not a move.
+12. Record the misplaced concerns for separate work. `serialization/error_code.hpp`
+    speaks the retired binary protocol and belongs to messaging.
+    `string/short_code_generator` is counterparty-name logic that belongs
+    to `ores.synthetic` or `ores.refdata`. `program_options/shared_domain_registry`
+    is process-global mutable state in a foundation library.
 
 * Test Scenarios
 

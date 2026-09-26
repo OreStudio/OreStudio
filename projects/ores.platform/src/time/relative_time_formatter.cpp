@@ -29,9 +29,10 @@ constexpr long long seconds_per_minute = 60;
 constexpr long long seconds_per_hour = 3600;
 constexpr long long seconds_per_day = 86400;
 constexpr long long seconds_per_week = 604800;
-constexpr long long seconds_per_month = 2629746;   // Average month (30.44 days)
-constexpr long long seconds_per_quarter = 7889238; // 3 months
-constexpr long long seconds_per_year = 31556952;   // Average year (365.24 days)
+// Average month, 30.44 days; a literal here would hide that meaning.
+constexpr long long seconds_per_month = 2629746;
+constexpr long long seconds_per_quarter = 7889238;
+constexpr long long seconds_per_year = 31556952;
 
 struct time_unit_boundary {
     long long threshold;
@@ -85,7 +86,6 @@ std::string format_numeric(long long value, time_unit unit) {
 }
 
 std::string format_automatic(long long value, time_unit unit) {
-    // Handle special cases for automatic style
     if (value == 0) {
         switch (unit) {
             case time_unit::second:
@@ -106,7 +106,6 @@ std::string format_automatic(long long value, time_unit unit) {
         }
     }
 
-    // Handle -1 and +1 special cases
     if (value == -1) {
         switch (unit) {
             case time_unit::second:
@@ -149,7 +148,6 @@ std::string format_automatic(long long value, time_unit unit) {
         }
     }
 
-    // Fall back to numeric format for other values
     return format_numeric(value, unit);
 }
 
@@ -170,11 +168,9 @@ relative_time_formatter::format(const std::chrono::system_clock::time_point& tp,
     const auto diff = tp - reference;
     const auto seconds = duration_cast<std::chrono::seconds>(diff).count();
 
-    // Determine the appropriate unit based on the magnitude of the difference
     const auto abs_seconds = std::abs(seconds);
 
     if (abs_seconds < seconds_per_minute) {
-        // Less than a minute
         if (abs_seconds < 10 && style_ == numeric_style::automatic) {
             return "just now";
         }
@@ -187,7 +183,6 @@ relative_time_formatter::format(const std::chrono::system_clock::time_point& tp,
         }
     }
 
-    // One year or more
     return format(seconds / seconds_per_year, time_unit::year);
 }
 

@@ -341,9 +341,9 @@ requires. The story rebound those to =uuid-identified-lookup=.
 
 Platform concerns have one home: =ores.platform=
 ([[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]]). It owns the cross-platform OS abstractions:
-compiler and architecture =attributes.hpp=, environment variables, the
-=filesystem= and =net= facets, process identity and signals, and time
-conversions. A component must not inline the platform itself. Look for
+environment variables, the =filesystem=, =net=, =process= and =time=
+facets, and the signal set a service treats as a shutdown request. A
+component must not inline the platform itself. Look for
 preprocessor conditionals on =_WIN32=, =__linux__=, =__APPLE__=,
 compiler or architecture macros (=__GNUC__=, =_MSC_VER=,
 =__x86_64__=), and for direct OS headers (=unistd.h=, =windows.h=,

@@ -45,9 +45,46 @@ ores.geo meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean St
 
 - Survey on 2026-09-23: 0 entity, junction or operation models; 5 C++ files outside tests, 0 of them generated (0%); 0 messaging headers, 0 of them hand-written.
 - Carries SQL but no models. Decide under B02 whether its tables need models.
+- Survey on 2026-09-25, by an agent that did not write the component. 5
+  production C++ files in 4 headers and 1 source, 2 files under `tests/`, 5
+  test cases, 5 assertions. The suite passes.
+- Keep the component, and do not retire it. The call site is live.
+  `ores.http` builds the service at `application.cpp:86` and calls `lookup`
+  at `iam_routes.cpp:502` inside the login handler, and `ores.http.server`
+  is enabled in the service registry.
+- The use is inert. The geo table is written only by the dq ip2country
+  publish path over NATS, the standalone import script omits the `NOT NULL`
+  `tenant_id` so it cannot succeed, and a database recreated from scratch
+  therefore returns `address_not_found` for every lookup.
+- The suite cannot fail. Three of its five assertions sit inside
+  `if (!result.has_value())`, so it passes whenever the lookup fails for any
+  reason. A backlog capture already records that bug.
+- The overview is a generation out of date. It claims MaxMind GeoLite2-City,
+  city plus coordinates and three `geoip_*` tables, while the service uses
+  ip2country and is country-only. It also names `ores.iam` as the consumer,
+  and the consumer is `ores.http`.
 
 * Decisions
 
+- *Keep the component.* The retirement hypothesis was tested and it failed.
+  The one call site is a live route on an enabled service.
+- *B02 is answered.* The geo tables are hand-managed SQL under `ores.sql`,
+  which is the SQL technical space, so no codegen model is needed and the
+  component correctly has no SQL tree of its own.
+- *Rewrite the tests so they can fail.* Seed a known range, assert a literal
+  country code, and add an `invalid_address` case. Recorded as item V07 of
+  the standard.
+- *The empty data path is a product decision, recorded not fixed here.* Wire
+  the dq publish function into the recreate flow, beside the fpml and iso
+  equivalents, or accept the emptiness and say so in the overview and the
+  service.
+- *Drop the unused `ores.geo.lib` link from `ores.iam.core`.* That component
+  contains no geo symbol.
+
 * Out of scope
 
--
+- Wiring the geo data path. It is a product decision, recorded above.
+- The other 145 stale `component_files.cmake` files, which are one
+  repo-wide sweep. This story fixes only geo's two.
+- The registry gap. geo has no catalogue row and no model, so it cannot
+  join `COMPONENTS_UNDER_TEST`.

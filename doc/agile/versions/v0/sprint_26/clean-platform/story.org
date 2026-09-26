@@ -21,12 +21,12 @@ ores.platform meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
+| Now           | Work done 2026-09-25. Thirteen items landed, plus the shared scoped temp types, across eight commits and the tree is verified. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-25                               |
 
 * Acceptance
 
@@ -39,14 +39,52 @@ ores.platform meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:DE3200A3-7E68-40DE-B2C8-53FAF985B27D][Bring ores.platform to the clean standard]] | BACKLOG | | | Work ores.platform through the Component Clean Standard in order and record each item. |
+| [[id:DE3200A3-7E68-40DE-B2C8-53FAF985B27D][Bring ores.platform to the clean standard]] | DONE | 2026-09-25 | 2026-09-25 | Work ores.platform through the Component Clean Standard in order and record each item. |
 
 * Notes
 
 - Survey on 2026-09-23: 0 entity, junction or operation models; 32 C++ files outside tests, 0 of them generated (0%); 0 messaging headers, 0 of them hand-written.
+- Survey on 2026-09-25, by an agent that did not write the component. 32
+  production C++ files at baseline in 23 headers and 9 sources, 7 files
+  under `tests/`, 88 test cases and 201 assertions. 458 C++ files outside
+  the component reference `ores.platform/`. Both suites pass. Five public
+  artefacts have no consumer, two MAC enumerators duplicate each other,
+  three of the nine source files have no test, ten test cases are vacuous,
+  and the overview is stale. The full findings and the work list are on the
+  task. The deletions leave 30 production files, 21 headers and 9 sources.
+- The diagram cannot be refreshed until its generator is fixed.
+  `build/scripts/generate_component_puml.py` loses brace sync on a
+  one-line `enum class`, so a refresh deletes the `time_unit` members and
+  the whole `relative_time_formatter` class. A dry run reproduces it.
+- The component is widely reachable. The largest surface is time, where
+  383 C++ files outside the component include
+  `ores.platform/time/datetime.hpp`.
 
 * Decisions
 
+- *Delete code with no consumer, and code whose only consumer is its own
+  test.* H02 forbids dead code, and a test is not a consumer. Recorded as
+  item B06 of the standard.
+- *Prefer the standard facility over a hand-rolled shim when every
+  supported compiler has one.* `ORES_NO_UNIQUE_ADDRESS` gives way to
+  `[[no_unique_address]]`, and `ores::platform::unreachable()` to
+  `std::unreachable()`. Recorded as item H04.
+- *Fix a generator before refreshing what it generates.* A refresh that
+  deletes correct content is worse than a stale diagram. Recorded as item
+  G07.
+- *A test that passes when its subject does nothing is a finding.*
+  Recorded as item V07.
+- *A source file no test touches is the coverage work item.* Recorded as
+  item V08.
+
 * Out of scope
 
--
+- The other 145 stale `component_files.cmake` files. They are one
+  repo-wide sweep, and this story fixes only platform's two.
+- The registry gap. platform has no catalogue row and no model, so it
+  cannot join `COMPONENTS_UNDER_TEST`. That needs one programme decision,
+  and six components now share it.
+- The generator fix reaches seven components, because seven contain a
+  one-line `enum class` in a header, which is what the parser reads. Two
+  more declare one in a source file the parser never reads. It is fixed here because platform's diagram
+  depends on it, and the regression test goes in the codegen suite.

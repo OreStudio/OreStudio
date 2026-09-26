@@ -508,6 +508,40 @@ TEST_CASE("round_trip_index_cds_tranche", tags) {
              oresmd_projections::to_curve_key(original).has_value()));
 }
 
+TEST_CASE("round_trip_cds_with_restructuring_clause", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://credit/025adx?ccy=usd&type=quote&quote=cds&point=snrfor,xr14,10y"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_recovery_rate_with_restructuring_clause", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://credit/025adx?ccy=usd&type=quote&quote=recovery_rate&point=snrfor,mr14"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
 TEST_CASE("round_trip_commodity", tags) {
     const auto original =
         oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote&quote=spot"));

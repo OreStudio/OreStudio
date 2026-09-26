@@ -126,9 +126,12 @@ enum class index_family {
  * METRIC column. Credit-only; only meaningful when `type=quote`.
  */
 enum class credit_quote_type {
-    cds,              ///< CDS/CREDIT_SPREAD (single-name CDS spread).
-    hazard_rate,      ///< HAZARD_RATE/RATE (bootstrapped hazard rate).
-    recovery_rate,    ///< RECOVERY_RATE/RATE (recovery rate assumption).
+    cds, ///< CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/TENOR, and the seven-segment form carrying the
+         ///< restructuring clause between the currency and the tenor (XR14, MR14)
+    hazard_rate,      ///< HAZARD_RATE/RATE/ENTITY/SENIORITY/CCY/TENOR, with the same optional
+                      ///< restructuring clause
+    recovery_rate,    ///< RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY, plus the restructuring clause on
+                      ///< the keys that name one
     cds_index,        ///< CDS_INDEX/BASE_CORRELATION (index base correlation).
     index_cds_tranche ///< INDEX_CDS_TRANCHE/BASE_CORRELATION (tranche base correlation).
     // rating descoped — RATING/TRANSITION_PROBABILITY needs provider/from_rating/to_rating

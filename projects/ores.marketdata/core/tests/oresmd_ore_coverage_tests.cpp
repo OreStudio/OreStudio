@@ -66,6 +66,10 @@ struct type_coverage {
     /// One key that projected and did not read back, with what it became. A
     /// count says a gap exists; the example says what it is.
     std::string mismatch;
+    /// One key that did not project at all. The shape of the failing key is the
+    /// difference between a mis-modelled family and a missing one, and a count
+    /// alone cannot tell them apart.
+    std::string unprojected;
 };
 
 /// A corpus file that carries market data. The corpus names its own files, and
@@ -141,8 +145,11 @@ std::map<std::string, type_coverage> survey() {
             ++c.keys;
 
             const auto id = oresmd_projections::from_ore_key(*key);
-            if (!id)
+            if (!id) {
+                if (c.unprojected.empty())
+                    c.unprojected = *key;
                 continue;
+            }
             ++c.named;
             const auto back = oresmd_projections::to_quote_key(*id);
             if (back && *back == *key) {
@@ -211,6 +218,8 @@ TEST_CASE("no_series_type_oresmd_cannot_name_has_gone_unrecorded", tags) {
         // worse than none.
         if (!c.mismatch.empty())
             WARN(std::format("  {} first loss: {}", type, c.mismatch));
+        if (!c.unprojected.empty())
+            WARN(std::format("  {} first unprojected: {}", type, c.unprojected));
     }
     WARN(std::format("{:<26} {:>7} keys, {:>7} named, {:>7} round-tripped",
                      "TOTAL", keys, named, round_tripped));
@@ -249,7 +258,7 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
     // those are in the round-trip gap list above, not here.
     const std::set<std::string> expected_fully_named{
         "BMA_SWAP", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
-        "CC_FIX_FLOAT_SWAP", "CDS_INDEX", "COMMODITY", "COMMODITY_FWD",
+        "CC_FIX_FLOAT_SWAP", "CDS", "CDS_INDEX", "COMMODITY", "COMMODITY_FWD",
         "CORRELATION", "DISCOUNT", "EQUITY", "EQUITY_DIVIDEND", "EQUITY_FWD",
         "EQUITY_OPTION", "FRA",
         "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
@@ -259,7 +268,7 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
 
     const std::set<std::string> expected_fully_round_tripped{
         "BMA_SWAP", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
-        "CC_FIX_FLOAT_SWAP", "CDS_INDEX", "COMMODITY", "DISCOUNT", "EQUITY_DIVIDEND",
+        "CC_FIX_FLOAT_SWAP", "CDS", "CDS_INDEX", "COMMODITY", "DISCOUNT", "EQUITY_DIVIDEND",
         "FRA", "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
         "INDEX_CDS_TRANCHE", "IR_SWAP", "MM_FUTURE", "OI_FUTURE", "SEASONALITY",
         "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",

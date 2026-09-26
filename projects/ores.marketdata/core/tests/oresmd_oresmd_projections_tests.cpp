@@ -378,6 +378,18 @@ TEST_CASE("recovery_rate_quote_key", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "RECOVERY_RATE/RATE/VOD/SR/EUR");
 }
 
+TEST_CASE("cds_quote_key_carries_the_restructuring_clause", tags) {
+    const auto id =
+        parse("oresmd://credit/025adx?ccy=usd&type=quote&quote=cds&point=snrfor,xr14,10y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "CDS/CREDIT_SPREAD/025ADX/SNRFOR/USD/XR14/10Y");
+}
+
+TEST_CASE("recovery_rate_quote_key_carries_the_restructuring_clause", tags) {
+    const auto id =
+        parse("oresmd://credit/025adx?ccy=usd&type=quote&quote=recovery_rate&point=snrfor,mr14");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "RECOVERY_RATE/RATE/025ADX/SNRFOR/USD/MR14");
+}
+
 TEST_CASE("cds_index_base_correlation_quote_key_no_ccy", tags) {
     const auto id =
         parse("oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1");
@@ -644,6 +656,15 @@ TEST_CASE("from_ore_key_credit", tags) {
             parse("oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=sr,5y"));
     REQUIRE(oresmd_projections::from_ore_key("RECOVERY_RATE/RATE/VOD/SR/EUR") ==
             parse("oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&point=sr"));
+    // A restructuring clause sits between the currency and the tenor, and the
+    // corpus writes it on almost every CDS key. Both readings are pinned: the
+    // point carries the clause when it is there and stays two parts when not.
+    REQUIRE(oresmd_projections::from_ore_key("CDS/CREDIT_SPREAD/025ADX/SNRFOR/USD/XR14/10Y") ==
+            parse("oresmd://credit/"
+                  "025adx?ccy=usd&type=quote&quote=cds&point=snrfor,xr14,10y"));
+    REQUIRE(oresmd_projections::from_ore_key("RECOVERY_RATE/RATE/025ADX/SNRFOR/USD/MR14") ==
+            parse("oresmd://credit/"
+                  "025adx?ccy=usd&type=quote&quote=recovery_rate&point=snrfor,mr14"));
     // CDS_INDEX/INDEX_CDS_TRANCHE keys carry no ccy segment (the forward drops it), so
     // the inverse cannot recover one -- the comparison target is a ccy-less identifier.
     credit_market_data_identifier index_id;

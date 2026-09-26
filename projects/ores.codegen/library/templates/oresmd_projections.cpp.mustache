@@ -548,8 +548,17 @@ std::optional<std::string> quote_key_credit(const {{asset_class}}_market_data_id
 
     const auto parts = split_point(*id.point);
 
-    // RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY — point is just the seniority.
+    // RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY — point is just the seniority, and
+    // the restructuring clause when the producer writes one.
     if (qt == credit_quote_type::recovery_rate) {
+        if (parts.size() == 2)
+            return std::format("{}/{}/{}/{}/{}/{}",
+                               ore_type(qt),
+                               qm,
+                               id.reference_entity,
+                               parts[0],
+                               id.ccy,
+                               parts[1]);
         if (parts.size() != 1)
             return std::nullopt;
         return std::format(
@@ -567,6 +576,18 @@ std::optional<std::string> quote_key_credit(const {{asset_class}}_market_data_id
 
     // CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/TENOR — point=seniority,tenor (2 parts).
     // HAZARD_RATE/RATE/ENTITY/SENIORITY/CCY/TENOR — same 6-segment shape.
+    // A third part is the credit derivatives' restructuring clause, which ORE
+    // writes between the currency and the tenor:
+    // CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/XR14/10Y.
+    if (parts.size() == 3)
+        return std::format("{}/{}/{}/{}/{}/{}/{}",
+                           ore_type(qt),
+                           qm,
+                           id.reference_entity,
+                           parts[0],
+                           id.ccy,
+                           parts[1],
+                           parts[2]);
     if (parts.size() != 2)
         return std::nullopt;
     return std::format(
@@ -1175,29 +1196,38 @@ std::optional<market_data_identifier>
 from_credit_curve(credit_quote_type qt, const std::vector<std::string>& parts) {
     // CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/TENOR,
     // HAZARD_RATE/RATE/ENTITY/SENIORITY/CCY/TENOR — point = seniority,tenor.
+    // ORE also writes a seven-segment form with the credit derivatives'
+    // restructuring clause between the currency and the tenor -- the corpus
+    // carries XR14 and MR14, and 1,717 of its 2,324 CDS keys -- so the point
+    // carries the clause when it is there.
     const auto expected = (qt == credit_quote_type::cds) ? ore_metric_spec::credit_spread
                                                          : ore_metric_spec::rate;
-    if (parts.size() != 6 || !metric_is(parts[1], expected))
+    if ((parts.size() != 6 && parts.size() != 7) || !metric_is(parts[1], expected))
         return std::nullopt;
     credit_market_data_identifier id;
     id.reference_entity = parts[2];
     id.ccy = to_upper(parts[4]);
     id.type = instrument_type::quote;
     id.quote_type = qt;
-    id.point = to_lower(parts[3]) + "," + to_lower(parts[5]);
+    if (parts.size() == 7)
+        id.point = to_lower(parts[3]) + "," + to_lower(parts[5]) + "," + to_lower(parts[6]);
+    else
+        id.point = to_lower(parts[3]) + "," + to_lower(parts[5]);
     return id;
 }
 
 std::optional<market_data_identifier> from_credit_recovery(const std::vector<std::string>& parts) {
-    // RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY — scalar; point is just the seniority.
-    if (parts.size() != 5 || !metric_is(parts[1], ore_metric_spec::rate))
+    // RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY — scalar; point is just the
+    // seniority, plus the restructuring clause on the keys that name one.
+    if ((parts.size() != 5 && parts.size() != 6) || !metric_is(parts[1], ore_metric_spec::rate))
         return std::nullopt;
     credit_market_data_identifier id;
     id.reference_entity = parts[2];
     id.ccy = to_upper(parts[4]);
     id.type = instrument_type::quote;
     id.quote_type = credit_quote_type::recovery_rate;
-    id.point = to_lower(parts[3]);
+    id.point = parts.size() == 6 ? to_lower(parts[3]) + "," + to_lower(parts[5])
+                                 : to_lower(parts[3]);
     return id;
 }
 

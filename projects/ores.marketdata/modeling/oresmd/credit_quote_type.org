@@ -18,9 +18,9 @@
 
 | enum_name | ore_type | ore_constant       | ore_metric | point_semantics | qualifier_shape | comment |
 |-----------+----------+--------------------+------------+-----------------+-----------------+--------------------------------------------------------------|
-| cds | CDS | cds | CREDIT_SPREAD | composite | with_ccy | CDS/CREDIT_SPREAD (single-name CDS spread). |
-| hazard_rate | HAZARD_RATE | hazard_rate | RATE | composite | with_ccy | HAZARD_RATE/RATE (bootstrapped hazard rate). |
-| recovery_rate | RECOVERY_RATE | recovery_rate | RATE | single | with_ccy | RECOVERY_RATE/RATE (recovery rate assumption). |
+| cds | CDS | cds | CREDIT_SPREAD | composite | with_ccy | CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/TENOR, and the seven-segment form carrying the restructuring clause between the currency and the tenor (XR14, MR14) | CDS (single-name CDS spread). |
+| hazard_rate | HAZARD_RATE | hazard_rate | RATE | composite | with_ccy | HAZARD_RATE/RATE/ENTITY/SENIORITY/CCY/TENOR, with the same optional restructuring clause | HAZARD_RATE/RATE (bootstrapped hazard rate). |
+| recovery_rate | RECOVERY_RATE | recovery_rate | RATE | composite | with_ccy | RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY, plus the restructuring clause on the keys that name one | RECOVERY_RATE/RATE (recovery rate assumption). |
 | cds_index | CDS_INDEX | cds_index | BASE_CORRELATION | composite | no_ccy | CDS_INDEX/BASE_CORRELATION (index base correlation). |
 | index_cds_tranche | INDEX_CDS_TRANCHE | index_cds_tranche | BASE_CORRELATION | composite | no_ccy | INDEX_CDS_TRANCHE/BASE_CORRELATION (tranche base correlation). |
 
@@ -83,6 +83,8 @@ A logical, possibly-partial oresmd requirement for a credit instrument.
 | oresmd://credit/itraxx-europe?ccy=eur&type=quote&point=sr,5y | CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y | cds_quote_key_defaults_when_quote_absent |
 | oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=sr,5y | HAZARD_RATE/RATE/VOD/SR/EUR/5Y | hazard_rate_quote_key_matches_ore_format_6_segments |
 | oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&point=sr | RECOVERY_RATE/RATE/VOD/SR/EUR | recovery_rate_quote_key |
+| oresmd://credit/025adx?ccy=usd&type=quote&quote=cds&point=snrfor,xr14,10y | CDS/CREDIT_SPREAD/025ADX/SNRFOR/USD/XR14/10Y | cds_quote_key_carries_the_restructuring_clause |
+| oresmd://credit/025adx?ccy=usd&type=quote&quote=recovery_rate&point=snrfor,mr14 | RECOVERY_RATE/RATE/025ADX/SNRFOR/USD/MR14 | recovery_rate_quote_key_carries_the_restructuring_clause |
 | oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1 | CDS_INDEX/BASE_CORRELATION/CDX-NA-IG/5Y/0.1 | cds_index_base_correlation_quote_key_no_ccy |
 | oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&point=5y,0.07 | INDEX_CDS_TRANCHE/BASE_CORRELATION/2I65BYEG6/5Y/0.07 | index_cds_tranche_base_correlation_quote_key_no_ccy |
 
@@ -95,6 +97,8 @@ A logical, possibly-partial oresmd requirement for a credit instrument.
 | oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&point=sr | round_trip_recovery_rate |
 | oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1 | round_trip_cds_index |
 | oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&point=5y,0.07 | round_trip_index_cds_tranche |
+| oresmd://credit/025adx?ccy=usd&type=quote&quote=cds&point=snrfor,xr14,10y | round_trip_cds_with_restructuring_clause |
+| oresmd://credit/025adx?ccy=usd&type=quote&quote=recovery_rate&point=snrfor,mr14 | round_trip_recovery_rate_with_restructuring_clause |
 
 ** Rejection
 

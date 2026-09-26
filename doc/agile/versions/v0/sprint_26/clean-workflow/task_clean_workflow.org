@@ -653,6 +653,25 @@ the remaining work is upstream of this component.
 Recorded with the exact message, because the message names the file and the
 condition and is the whole brief for the fix.
 
+** G05 the conversion has its regression test
+
+The fix is in =command_token.hpp= and so is its test, in
+=ores.shell/api/tests/app_command_token_tests.cpp=. The case parses two distinct
+instants and asserts both round-trip through =to_iso8601_utc= to the literal
+tokens they came from, plus that the two differ.
+
+That last check is the one that matters. Without it the test would pass against a
+=from_token= that returned a constant, which is the vacuous-test shape V07 names,
+and the assertion is a literal string rather than one production call compared
+against another.
+
+The test compiles -- =ores.shell.api.tests= reaches "Built target" -- but it has
+not been run. The binary refuses to start without the test database environment
+and the harness opens a connection before any case executes, so running it needs
+=compass test run= with the fleet up, which is V02's territory rather than this
+item's. Recording that gap rather than reporting the item as verified: a test that
+has never executed is not evidence.
+
 ** H01 the diagrams are skeletons
 
 The item asks for two passes and says why: the automated pass reads data members

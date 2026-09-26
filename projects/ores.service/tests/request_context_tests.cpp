@@ -68,11 +68,17 @@ using ores::service::service::make_request_context;
 TEST_CASE("a request without a verifier keeps the base context", tags) {
     ores::testing::database_helper h;
     ores::nats::message msg;
+    // A base context with known values, so an implementation that returned a
+    // fresh or empty context fails on the literals below rather than passing on
+    // a comparison of two production accessors.
+    const auto base = h.context().with_tenant(h.tenant_id(), "alice").with_roles({"r1", "r2"});
 
-    const auto result = make_request_context(h.context(), msg, std::nullopt);
+    const auto result = make_request_context(base, msg, std::nullopt);
 
     REQUIRE(result.has_value());
-    REQUIRE(result->tenant_id().to_string() == h.context().tenant_id().to_string());
+    REQUIRE(result->tenant_id().to_string() == h.tenant_id().to_string());
+    REQUIRE(result->actor() == "alice");
+    REQUIRE(result->roles() == std::vector<std::string>{"r1", "r2"});
 }
 
 TEST_CASE("a request without an authorization header is unauthorized", tags) {

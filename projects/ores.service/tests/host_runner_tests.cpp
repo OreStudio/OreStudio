@@ -98,8 +98,12 @@ TEST_CASE("sync host run stops at the parse when the parser defers", tags) {
         output,
         output,
         lg,
+        // The early exit is reached only after the logging lifecycle starts, so
+        // a code of 99 here would mean the runner ignored the parse result. The
+        // assertion below is EXIT_SUCCESS, which is what a runner that honours
+        // the deferring parse returns.
         [](const fake_config&) -> std::optional<int> {
-            return std::nullopt;
+            return 99;
         },
         [&ran](const fake_config&) {
             ran = true;

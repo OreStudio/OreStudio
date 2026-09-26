@@ -96,8 +96,29 @@ class ores::service::config::standard_service_options {
 }
 note right of "ores::service::config::standard_service_options"
 The one place a domain service reads its shared options.
-It is also the single call site for
-nats_configuration::register_shared_domain().
+make_options_description() also registers the NATS shared
+config domain. The two tools that build their own parsers
+instead of using this class call register_shared_domain()
+themselves, so it is the main call site and not the only one.
+end note
+
+class ores::service::service::host_runner_options {
+    +on_before_log : function<void()>
+    +on_success : function<void()>
+}
+note right of "ores::service::service::host_runner_options"
+The automated pass skips the two std::function members: its
+field pattern reads a parenthesis as a method signature, and
+both members have one in their type.
+end note
+
+class ores::service::messaging::cached_step_result {
+    +outcome : step_outcome
+}
+note right of "ores::service::messaging::cached_step_result"
+The automated pass misses outcome because its declaration
+wraps across two lines and the field pattern reads one line
+at a time. The default matters, so it is drawn.
 end note
 
 class ores::service::service::heartbeat_publisher {
@@ -136,6 +157,18 @@ note as OresServiceLifecycle
     overload scopes every request from the JWT; the signing
     overload mints its own tokens for IAM; all three share one
     registration-and-drain tail.
+
+    The tail and the startup phase live in service_lifecycle.hpp,
+    which the automated pass does not draw because it holds no
+    type:
+    detail::add_shutdown_signals(signals) : void
+    detail::arm_startup_cancellation(signals, startup_cancel) : void
+    detail::fetch_public_key_or_shutdown(io_ctx, nats, startup_cancel, name, lg) : awaitable<optional<string>>
+    detail::announce_ready_and_drain(io_ctx, nats, name, signals, register_fn, on_started, on_shutdown, lg) : awaitable<void>
+    detail::runner_logger(), detail::signing_runner_logger() : logger_t&
+    add_shutdown_signals fills a set the caller constructs,
+    because boost::asio::signal_set is not movable and cannot be
+    returned from a factory.
 end note
 
 note as OresServiceHostRunner

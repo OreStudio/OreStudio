@@ -75,8 +75,13 @@ TEST_CASE("has_permission accepts a component wildcard but not another component
 TEST_CASE("has_permission accepts the global wildcard", tags) {
     ores::testing::database_helper h;
     const auto ctx = h.context().with_roles({"*"});
+    // The same call against a context holding one unrelated permission, so the
+    // test fails if the check ever answers true without reading the list.
+    const auto limited = h.context().with_roles({"refdata::parties:delete"});
 
     REQUIRE(has_permission(ctx, "refdata::parties:delete"));
+    REQUIRE(has_permission(ctx, "iam::accounts:create"));
+    REQUIRE_FALSE(has_permission(limited, "iam::accounts:create"));
 }
 
 // A token minted before RBAC carries no permission list. The handler treats
@@ -85,8 +90,12 @@ TEST_CASE("has_permission accepts the global wildcard", tags) {
 TEST_CASE("has_permission passes a token that carries no permissions at all", tags) {
     ores::testing::database_helper h;
     const auto ctx = h.context().with_roles({});
+    // A context with an unrelated permission is refused, which separates the
+    // documented empty-list pass-through from a check that always answers true.
+    const auto limited = h.context().with_roles({"refdata::parties:delete"});
 
     REQUIRE(has_permission(ctx, "iam::accounts:create"));
+    REQUIRE_FALSE(has_permission(limited, "iam::accounts:create"));
 }
 
 TEST_CASE("stamp writes the context tenant and the acting user onto the object", tags) {

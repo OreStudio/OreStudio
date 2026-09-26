@@ -31,8 +31,10 @@ handler helpers that stamp server-authoritative fields, check
 permissions, reply and decode.
 
 The component is model-free. It carries no entity, junction or operation
-model, so nothing in it is generated, it appears in no SQL or shell
-output, and every file is hand-written.
+model, so no C++ or SQL is generated from it and it appears in no shell
+output. Every source file is hand-written. The only generated artefacts it
+owns are its two =component_files.cmake= source lists, which codegen
+renders from a directory scan and which carry the generated marker.
 
 The two runners are the reason the component exists. Before them, each
 service carried its own copy of the same fifty-line host body and the
@@ -51,9 +53,12 @@ it declares no subject and produces no protocol header of its own.
 
 - =config/= — =standard_service_options=, the one place a domain service
   builds and parses the shared common/logging/database/NATS option set,
-  and =standard_options=, the struct it reads them into. It is also the
-  single call site for
-  =nats_configuration::register_shared_domain()=.
+  and =standard_options=, the struct it reads them into. Its
+  =make_options_description()= also registers the NATS shared config domain.
+  The two tools that build their own parsers instead of using this class,
+  =ores.http.server= and =ores.compute.wrapper=, call
+  =register_shared_domain()= themselves, so this is the main call site
+  rather than the only one.
 - =messaging/= — the handler surface. =handler_helpers.hpp= holds
   =stamp=, =has_permission=, =reply=, =error_reply=, =decode= and
   =log_handler_entry=; =workflow_helpers.hpp= holds the workflow step
@@ -90,6 +95,10 @@ it declares no subject and produces no protocol header of its own.
 
 - =include/ores.service/service/domain_service_runner.hpp= — =run=, the
   database-backed service lifecycle.
+- =include/ores.service/service/service_lifecycle.hpp= — the pieces that
+  lifecycle is built from: =add_shutdown_signals=,
+  =arm_startup_cancellation=, =fetch_public_key_or_shutdown= and
+  =announce_ready_and_drain=.
 - =include/ores.service/service/signing_service_runner.hpp= —
   =run_signing=, the IAM variant that signs rather than verifies.
 - =include/ores.service/service/host_runner.hpp= — =run_host_async=,
@@ -101,6 +110,8 @@ it declares no subject and produces no protocol header of its own.
 - =include/ores.service/service/systemd_notify.hpp= —
   =notify_systemd_ready=.
 - =include/ores.service/service/exit_codes.hpp= — =exit_code=.
+- =include/ores.service/error_code.hpp= — =error_code=, the reply error the
+  request context and the handler helpers answer with.
 - =include/ores.service/config/standard_service_options.hpp= — the shared
   option set.
 - =include/ores.service/messaging/handler_helpers.hpp= — the handler

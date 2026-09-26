@@ -18,18 +18,23 @@
  */
 #include "ores.platform/environment/environment.hpp"
 #include "ores.service/service/systemd_notify.hpp"
+#include <boost/asio/local/datagram_protocol.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
 // The notification travels over an AF_UNIX datagram socket, which boost::asio
 // exposes only where BOOST_ASIO_HAS_LOCAL_SOCKETS is defined. On the platforms
 // that lack it, notify_systemd_ready() is the documented no-op overload.
+//
+// The include above is deliberately outside the guard, and deliberately first:
+// the macro is defined by boost/asio's own configuration header, so a guard
+// that precedes every asio include is never true and silently compiles the
+// whole file away.
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 
 #    include <boost/asio/buffer.hpp>
 #    include <boost/asio/error.hpp>
 #    include <boost/asio/io_context.hpp>
-#    include <boost/asio/local/datagram_protocol.hpp>
 #    include <cstdio>
 #    include <unistd.h>
 

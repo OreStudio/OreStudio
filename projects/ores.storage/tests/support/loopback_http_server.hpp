@@ -70,6 +70,14 @@ public:
         // listening socket -- so wake the loop through a real connection
         // while the acceptor is still open. The loop leaves on stopped_
         // instead of serving this connection.
+        //
+        // The connect is deliberately unchecked. It succeeds while this object
+        // holds a listening loopback socket on the port it just bound, and if
+        // it ever did fail, no portable call would unblock the accept(): the
+        // alternatives are a platform socket option or an async_accept loop,
+        // and platform code belongs in ores.platform. A helper reused outside
+        // a test process should take the async_accept route, which close()
+        // cancels.
         boost::system::error_code ec;
         boost::asio::io_context wake;
         boost::asio::ip::tcp::socket socket(wake);

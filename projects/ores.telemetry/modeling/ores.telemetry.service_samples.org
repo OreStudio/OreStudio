@@ -90,6 +90,7 @@ is a row a caller reaches by primary key.
 ** service_heartbeat_message
 :PROPERTIES:
 :subject: telemetry.v1.services.heartbeat
+:auth: none
 :END:
 
 #+begin_src cpp :name comment

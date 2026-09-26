@@ -222,5 +222,5 @@ export const subjects = {
  */
 export const requiresSession = {
     get_telemetry_logs_request: true,
-    publish_log_entries_request: true,
+    publish_log_entries_request: false,
 } as const;

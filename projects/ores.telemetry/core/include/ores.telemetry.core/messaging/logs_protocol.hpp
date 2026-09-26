@@ -228,7 +228,7 @@ struct publish_log_entries_request {
      * An operation that produces the session cannot present one, so a client
      * reads this rather than assuming every call carries a token.
      */
-    static constexpr bool requires_session = true;
+    static constexpr bool requires_session = false;
     /**
      * @brief Name of the source application that emitted the entries.
      */

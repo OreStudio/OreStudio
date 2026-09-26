@@ -103,6 +103,6 @@ export const subjects = {
  * assuming every call carries a token.
  */
 export const requiresSession = {
-    service_heartbeat_message: true,
+    service_heartbeat_message: false,
     get_service_samples_request: true,
 } as const;

@@ -70,7 +70,7 @@ struct service_heartbeat_message {
      * An operation that produces the session cannot present one, so a client
      * reads this rather than assuming every call carries a token.
      */
-    static constexpr bool requires_session = true;
+    static constexpr bool requires_session = false;
     /**
      * @brief Canonical service name, for example @c ores.compute.service.
      */

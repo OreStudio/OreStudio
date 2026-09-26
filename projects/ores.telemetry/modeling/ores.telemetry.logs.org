@@ -466,6 +466,7 @@ stored as it arrives, so neither is a row a caller reaches by primary key.
 ** publish_log_entries_request
 :PROPERTIES:
 :subject: telemetry.v1.logs.publish
+:auth: none
 :END:
 
 #+begin_src cpp :name comment

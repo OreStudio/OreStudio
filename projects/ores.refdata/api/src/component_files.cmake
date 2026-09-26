@@ -20,7 +20,6 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
-    "csv/exporter.cpp"
     "domain/asset_class_code_json_io.cpp"
     "domain/asset_class_code_table.cpp"
     "domain/asset_class_code_table_io.cpp"
@@ -102,7 +101,6 @@ set(files
     "domain/currency_group_json_io.cpp"
     "domain/currency_group_table.cpp"
     "domain/currency_group_table_io.cpp"
-    "domain/currency_json.cpp"
     "domain/currency_json_io.cpp"
     "domain/currency_market_tier_json_io.cpp"
     "domain/currency_market_tier_table.cpp"
@@ -323,8 +321,6 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/csv/exporter.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/csv/ores.risk.csv.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/asset_class_code.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/asset_class_code_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/asset_class_code_table.hpp"
@@ -435,7 +431,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/currency_group_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/currency_group_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/currency_group_table_io.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/currency_json.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/currency_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/currency_market_tier.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/currency_market_tier_json_io.hpp"

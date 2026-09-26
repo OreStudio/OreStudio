@@ -21,7 +21,6 @@
 # To modify, update the template and regenerate.
 set(files
     "calendar_event_schedule_fomc_tests.cpp"
-    "csv_exporter_tests.cpp"
     "domain_currency_tests.cpp"
     "domain_entity_type_tests.cpp"
     "domain_tenor_resolution_fomc_tests.cpp"

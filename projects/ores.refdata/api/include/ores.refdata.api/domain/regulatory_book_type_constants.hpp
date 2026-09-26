@@ -21,46 +21,23 @@
 #ifndef ORES_REFDATA_API_DOMAIN_REGULATORY_BOOK_TYPE_CONSTANTS_HPP
 #define ORES_REFDATA_API_DOMAIN_REGULATORY_BOOK_TYPE_CONSTANTS_HPP
 
-#include "ores.refdata.api/domain/book.hpp"
-#include <array>
 #include <string_view>
 
 namespace ores::refdata::domain::regulatory_book_type_constants {
 
 /**
- * @brief Regulatory book type codes used throughout the system.
+ * @brief The regulatory book type code the code compares.
  *
- * These codes must match entries in the
- * ores_refdata_regulatory_book_types_tbl table (see
- * refdata_regulatory_book_types_populate.sql). See the FRTB trading
- * book / banking book boundary knowledge note for the Basel III/IV
- * background.
+ * The full vocabulary lives in the ores_refdata_regulatory_book_types_tbl
+ * table, which refdata_regulatory_book_types_populate.sql seeds. This holds
+ * only the code a caller has to name. See the FRTB trading book / banking
+ * book boundary knowledge note for the Basel III/IV background.
  */
 namespace codes {
 
 constexpr std::string_view trading = "Trading";
-constexpr std::string_view banking = "Banking";
 
 } // namespace codes
-
-constexpr std::array<std::string_view, 2> all = {
-    codes::trading,
-    codes::banking,
-};
-
-/**
- * @brief Whether a book's regulatory classification is Trading Book.
- */
-[[nodiscard]] inline bool is_trading_book(const ores::refdata::domain::book& b) {
-    return b.regulatory_book_type == codes::trading;
-}
-
-/**
- * @brief Whether a book's regulatory classification is Banking Book.
- */
-[[nodiscard]] inline bool is_banking_book(const ores::refdata::domain::book& b) {
-    return b.regulatory_book_type == codes::banking;
-}
 
 } // namespace ores::refdata::domain::regulatory_book_type_constants
 

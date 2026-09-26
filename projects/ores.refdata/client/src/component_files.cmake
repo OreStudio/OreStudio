@@ -24,7 +24,6 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.client/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.client/ores.refdata.client.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.client/presentation/currency_pair_rate_formatter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.client/service/cache/currency_pair_convention_cache.hpp"

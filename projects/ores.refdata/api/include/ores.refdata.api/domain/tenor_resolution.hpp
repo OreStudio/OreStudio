@@ -75,17 +75,6 @@ ORES_REFDATA_API_EXPORT std::chrono::year_month_day resolve_end_date(
     const std::optional<std::vector<std::chrono::year_month_day>>& schedule_dates = std::nullopt);
 
 /**
- * @brief Resolves a (horizon, tenor, convention) triple into its [start, end) date window, where
- * start is the horizon date itself. See resolve_end_date() for the parameters and error modes.
- */
-ORES_REFDATA_API_EXPORT tenor_window
-resolve_window(const tenor& t,
-               const tenor_convention& convention,
-               const std::optional<tenor_convention_resolution>& resolution,
-               std::chrono::year_month_day horizon,
-               std::chrono::year_month_day spot);
-
-/**
  * @brief Whether two half-open date windows [a.start, a.end) and [b.start, b.end) overlap.
  */
 ORES_REFDATA_API_EXPORT bool windows_overlap(const tenor_window& a, const tenor_window& b);

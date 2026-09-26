@@ -221,14 +221,6 @@ resolve_end_date(const tenor& t,
     return resolve_offset_date(t, resolution, convention, anchor_date);
 }
 
-tenor_window resolve_window(const tenor& t,
-                            const tenor_convention& convention,
-                            const std::optional<tenor_convention_resolution>& resolution,
-                            std::chrono::year_month_day horizon,
-                            std::chrono::year_month_day spot) {
-    return tenor_window{horizon, resolve_end_date(t, convention, resolution, horizon, spot)};
-}
-
 bool windows_overlap(const tenor_window& a, const tenor_window& b) {
     return a.start < b.end && b.start < a.end;
 }

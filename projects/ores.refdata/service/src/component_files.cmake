@@ -96,7 +96,6 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/app/application.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/app/application_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/app/host.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/config/options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/config/parser.hpp"

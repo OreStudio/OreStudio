@@ -441,8 +441,6 @@ drop function if exists ores_refdata_validate_currency_fn;
 :has_pagination:              true
 :delete_request_id_field:     iso_codes
 :history_request_id_field:    iso_code
-:csv_export_include:          ores.refdata.api/csv/exporter.hpp
-:csv_export_class:            refdata::csv::exporter
 :xml_export_include:          ores.ore.core/xml/exporter.hpp
 :xml_export_class:            ore::xml::exporter
 :xml_import_include:          ores.ore.core/xml/importer.hpp

@@ -114,13 +114,20 @@ to it.
 
 **What is left**
 
-- =ores.compute.wrapper= keeps its own HTTP client and archiver, and its download
-  still opens the destination before it reads the status.
+- No caller sends a token. =ores.storage.core= has no =Authorization= support, so
+  every shell upload and download and every service-side blob transfer answers
+  401 while the bus interface works. This is the blocker for the round trips
+  below; the capture
+  [[id:15062C8E-3282-4A84-B3BC-40C286388993][Storage routes demand a token no C++
+  caller sends]] holds the reproducer and the fix.
 - The raw shell surface -- a bucket, a key and a path -- is not built, so the
-  consumer verbs remain the only way to reach storage from the shell, and the
-  base URL is still plumbed more than one way.
-- A live =compute publish-package= run and an ORE import round trip were not
-  driven. The suites and the seeded URIs are the evidence so far.
+  consumer verbs remain the only way to reach storage from the shell.
+- =ores.compute.wrapper= already links the component and uses its client and
+  archiver; no wrapper-local copies remain, and the base URL is plumbed one way
+  to =ORES_HTTP_PORT=, the port the server listens on.
+- A live =compute publish-package= run and an ORE import round trip still have not
+  completed, for the token reason above. The suites and the seeded URIs are the
+  evidence so far.
 
 **Evidence**
 

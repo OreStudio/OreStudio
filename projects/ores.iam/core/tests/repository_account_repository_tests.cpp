@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.assets.core/generators/image_generator.hpp"
+#include "ores.assets.api/generators/image_generator.hpp"
 #include "ores.assets.core/repository/image_repository.hpp"
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
@@ -271,7 +271,7 @@ TEST_CASE("write_and_read_account_with_image_id", tags) {
 
     account_repository repo;
     auto acc = generate_synthetic_account(ctx);
-    acc.image_id = image.image_id;
+    acc.image_id = image.id;
     BOOST_LOG_SEV(lg, debug) << "Account: " << acc;
 
     repo.write(h.context(), acc);
@@ -280,7 +280,7 @@ TEST_CASE("write_and_read_account_with_image_id", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     REQUIRE(read_accounts.size() == 1);
-    CHECK(read_accounts[0].image_id == image.image_id);
+    CHECK(read_accounts[0].image_id == image.id);
 }
 
 TEST_CASE("write_account_with_nonexistent_image_id_throws", tags) {

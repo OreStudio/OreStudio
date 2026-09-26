@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,18 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ASSETS_DOMAIN_TAG_HPP
-#define ORES_ASSETS_DOMAIN_TAG_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_ASSETS_API_DOMAIN_TAG_HPP
+#define ORES_ASSETS_API_DOMAIN_TAG_HPP
 
-#include <optional>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <string>
+#include <string_view>
 
 namespace ores::assets::domain {
 
 /**
- * @brief Represents a category tag for images.
+ * @brief Categories for images, for example flag, currency or commodity.
  *
- * Tags are used to categorize images (e.g., 'flag', 'currency', 'commodity').
+ * A tag classifies an image. A tag belongs to one tenant, names a single
+ * category such as flag, currency or commodity, and its name is unique
+ * within that tenant. Images carry tags through the image_tag junction, so
+ * a tag has no lifecycle of its own beyond its own version history.
  */
 struct tag final {
     /**
@@ -39,27 +48,34 @@ struct tag final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique identifier for the tag (UUID).
+     * @brief Surrogate identifier for the tag, because a tag's name may be corrected without
+     * breaking the images that reference it.
      */
-    std::string tag_id;
+    boost::uuids::uuid id;
 
     /**
-     * @brief Unique name of the tag (e.g., 'flag', 'currency', 'commodity').
+     * @brief Human-meaningful category name, unique within the tenant. Examples: flag, currency,
+     * commodity.
      */
     std::string name;
 
     /**
-     * @brief Human-readable description of the tag.
+     * @brief What the tag means and which images belong under it.
      */
     std::string description;
 
     /**
-     * @brief Username of the person who recorded this version in the system.
+     * @brief Username of the person who last modified this asset tag.
      */
     std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
 
     /**
      * @brief Code identifying the reason for the change.
@@ -74,15 +90,38 @@ struct tag final {
     std::string change_commentary;
 
     /**
-     * @brief Username of the account that performed this operation.
+     * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
      */
-    std::string performed_by;
+    std::chrono::system_clock::time_point recorded_at;
 
     /**
-     * @brief Timestamp when this version of the record was recorded in the system.
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
      */
-    std::string recorded_at;
+    friend bool operator==(const tag&, const tag&) = default;
 };
+
+/**
+ * @brief Dispatch-key identifier for tag, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const tag&) {
+    return "ores.assets.tag";
+}
 
 }
 

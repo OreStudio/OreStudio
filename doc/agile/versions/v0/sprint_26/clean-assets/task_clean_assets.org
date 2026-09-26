@@ -7,35 +7,35 @@
 #+level: s1
 #+filetags: :clean-assets:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/clean-assets
+#+pr: 2152
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:28A846EC-8222-4941-8B29-F8F2C0CF231A][Clean ores.assets to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-ores.assets passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] for a component of kind *Protocol*.
+ores.assets passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] for a component of kind *Entity*.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:28A846EC-8222-4941-8B29-F8F2C0CF231A][Clean ores.assets to the component clean standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing external. The next unit is the generation apply plus the consumer migration it forces, which must land together. |
+| Next         | Nothing. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
 
-- Every checklist item that applies to a component of kind *Protocol* passes, with its evidence recorded on the task.
+- Every checklist item that applies to a component of kind *Entity* passes, with its evidence recorded on the task.
 - Every item that does not apply is recorded as not applicable, with the reason.
 - Every generator defect found is fixed at its source, with a regression test.
 - ores.assets is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
@@ -57,9 +57,35 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | Baseline captured before any edit. Four read-only gates green; the CMake source-list gate is red repo-wide and is recorded as an exception under G06. | =.audit/clean-assets/B01_*.txt=, =.audit/clean-assets/A2_*.txt= |
+| B02 | 1 model, metatype =component=, carries no variability. Models live under a new root =modeling/=; the =api/=, =core/= and =service/= directories hold sub-component docs, not models. | =.audit/clean-assets/B02_B03_B04_survey_assets.txt= |
+| B03 | 62 C++ files outside tests, 0 generated (0%). The domain types, JSON I/O, entity, mapper, repository, service, handler, registrar, protocol and generator families are all generatable. | =.audit/clean-assets/B02_B03_B04_survey_assets.txt= |
+| B04 | 4 distinct subjects in code (=assets.v1.images.get=, =.list=, =.save=, =.publish-from-dq=), 0 declared in a model, 4 of 4 with no model source. 1 hand-written protocol header. | =.audit/clean-assets/B02_B03_B04_survey_assets.txt= |
+| B05 | No open capture and no in-flight branch for assets. The only =feature/clean-*= branches are analytics and compute, both at main tip with no work. | =git branch --list "feature/clean-*"= |
+| — | Component kind corrected: assets has SQL tables, repositories and a service for tag, image and image_tag, so the Entity items apply as well as All and Protocol. The story's Protocol label understates the work. | =projects/ores.sql/create/assets/= |
+| — | Scaffold done: =assets-cpp= registered in the catalogue, the component given a composite model declaring its three parts, and the hand-written root =CMakeLists.txt= replaced by the generated one. Regeneration is byte-identical and idempotent. | commits =e0311e6996=..=f10c821606= |
+| G06 | Reverted to the component. Adding the three-line generated marker to the stale source lists made =--all --check= exit 0, but it edited 141 lists belonging to thirty other components, which this task has no business changing. The CMake source-list gate is therefore red repo-wide, as it is on main; it is recorded as a pre-existing exception rather than fixed here. Assets' own eight lists are regenerated and current. | =git diff --name-only origin/main -- '*component_files.cmake'= |
+| M01, M02 | Three models on the current org format, each bound to a matched profile: =tag= and =image= to =uuid-identified-lookup=, =image_tag= to =tenant-scoped-junction=. Both entities carry a natural key, so the surrogate profile would have been a forced bind. | =projects/ores.assets/modeling/ores.assets.{tag,image,image_tag}.org= |
+| M03 to M08 | No model restates a feature its profile fixes. =image.data= is modelled as canonical =text= because the surface stores SVG markup in a text column and the mapper base64-encodes a byte vector into it; text is the honest spelling and the base64 hop disappears. Junctions name their singular and their key columns' real types. | survey; =projects/ores.assets/core/src/repository/image_mapper.cpp= |
+| M06, P01, P04 | Model source now exists for all four subjects. The generated canonical protocol introduces =assets.v1.tags.*= and =assets.v1.image_tags.*= and replaces the hand-written =assets_protocol.hpp=, which today covers images only and carries a hand-written =image_info= wire type. | =.audit/clean-assets/A6_all_models_dryrun.txt= |
+| G01 | Previewed, not applied: the generation would change 32 hand-written files and create 63. Applying it demands a consumer migration across the component and the shell in the same unit, because the stale =assets_service=, =registrar=, =publish_from_dq_handler=, =assets_protocol.hpp=, the core generators and the old domain tests stop compiling. Left as an in-flight draft so the branch stays buildable. | commit =9763c95466=; =.audit/clean-assets/A7_apply_generation.txt= |
+| V05 | Superseded by the rows below: assets now is in =COMPONENTS_UNDER_TEST= and every gate is green with it listed. | =.audit/clean-assets/A2[3-6]*= |
+| G01, G02 | Applied, not previewed: the generation owns the component's domain, repository, mapper, entity, service, handler, registrar, protocol, presentation, generator, shell and SQL output, and the 21 hand-written files it supersedes are deleted. Regeneration is byte-identical on a committed tree. | =.audit/clean-assets/A24_all_gate_clean.txt= |
+| B03, G02 | The hand-written C++ that remains is infrastructure, not a duplicate: the export and umbrella headers, the service app and config files, the component registrar the standard requires by hand, and the publish-from-dq workflow participant. None of them is a generated artefact kept by hand. | =.audit/clean-assets/A2[3-6]*=; =git ls-files projects/ores.assets= |
+| P04 | Not applicable, with the reason. The publish-from-dq step is an =ores.dq= workflow operation: the assets handler decodes =ores::dq::messaging::publish_from_dq_command= and replies with the DQ result, and it declares no wire type of its own. DQ documents the pipeline and the per-service handler, naming the assets SQL function. Modelling it in assets would duplicate a wire type another component owns. | =projects/ores.dq/modeling/publication_pipeline.org=; =projects/ores.assets/core/src/messaging/publish_from_dq_handler.cpp:23,77,104= |
+| V01 | The whole tree builds. This is the only check that sees every consumer of a deleted header, and it found four across three components after every component-scoped build was green. | =compass build= exit 0 |
+| V03 | The database recreates from scratch in 26 seconds. It found four defects no other check saw: a notify-trigger variable collision, a non-idempotent RLS policy, and stale column names in three seed scripts and the refdata publish function. | =.audit/clean-assets/A22_db_recreate.txt= |
+| V04 | Every generated shell recipe runs against the live fleet and answers: 29 of 29, in three groups. The first sweep found the nine =image_tags= recipes unserved, because the junction model disabled its handler, registrar and service while enabling its shell commands, so the shell published to subjects no service owned. Making codegen own the junction closed it. | =projects/ores.codegen/scripts/check_shell_recipes.py=; commit =8377b9d941= |
+| V05, V06 | Every gate is green with the component listed, and =check_component_drift.py --all= passes for assets-cpp and iam. The handler-permission gate was green while examining a different component, because it keeps a private registry; it now covers assets and reports two components and 150 codes. | =.audit/clean-assets/A2[4-6]*=; =projects/ores.codegen/scripts/component_registry.py= |
+| — | The image natural key was renamed from =key= to =code= to clear a notify-trigger template collision. That defect is filed; the rename then had to be followed into three Acme seed scripts, the refdata publish-from-dq function, the iam provisioning handler and its test, and the http assets route. Fixing the template instead would have cost one tree-wide regeneration. | =.audit/clean-assets.tsv=; =doc/agile/product_backlog/inbox/notify_trigger_changed_key_collides_with_natural_key.org= |
+| V02, H01 to H03 | The codegen suite passes, 538 tests, and the component's suites pass with the fleet up: =ctest -R assets= is 4 of 4 and the core eventing tests run, each image write and each tag write publishing an event. H01 and H03 are recorded above. | =pytest projects/ores.codegen/tests=; =ctest -R assets= |
+| H01, H02 | The three class diagrams were stale, describing the superseded hand-written component, and could not be regenerated because =generate_component_puml.py= only resolved =projects/<name>/include=. It gained a composite-part fallback; the auto sections were refreshed and then tidied by hand to the conventions, so the diagrams now name only types that exist, every class carries a note, and each test suite the component compiles appears. | =projects/ores.assets/{api,core,service}/modeling/*.puml= and their =.png=; =build/scripts/generate_component_puml.py= |
+| — | Coverage regression repaired: the rollout superseded the hand-written implementation and the nine suites written against it went with it, leaving the api suite compiling zero cases and still reporting success, because ctest runs with =--allow-running-no-tests=. The nine suites are restored against the generated API, 40 cases, and the api suite now asserts something. A junction eventing test is correctly absent: no notify trigger, no event registrar. | =projects/ores.assets/{api,core}/tests/=; =git diff --name-status origin/main...HEAD= |
+| — | The synthetic image generator discarded the model's declared =mime_type= default and wrote a random noun, because the template honours =default_value= only when the column also declares a generator block. Fixed for assets by declaring the literal; the template defect is filed and would touch all 53 models that declare =default_value=. | =projects/ores.assets/modeling/ores.assets.image.org=; =doc/agile/product_backlog/inbox/generator_ignores_declared_default_value.org= |
 
 * Notes
+
+The raw audit evidence — the =A1=..=A30= captures, the per-recipe transcripts and the append-only =.audit/clean-assets.tsv= decision trail — lives under =.audit/=, which is not committed. The item table above is the committed record: each row names the unit, what it decided and why, and the artefact that proves it. The two levers a reviewer can rerun are committed: =projects/ores.codegen/scripts/survey_component.py= produces the B02 to B04 survey, and =projects/ores.codegen/scripts/check_shell_recipes.py= replays every generated shell recipe against a live fleet for V04.
 
 * Test Scenarios
 
@@ -76,12 +102,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2152][#2152]] | [assets] Bring ores.assets to the Component Clean Standard |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Regenerated components outside =ores.assets= | =projects/*/component_files.cmake= | Fixed | One commit had added the generated marker to 141 CMake source lists belonging to thirty other components, and had also reverted main's =ores.orgmode= work. Reverted: the foreign lists and the five orgmode and system-model files are back to main's content, and the six orphan lists it created are deleted. |
+| 2 | =.audit= looks like it should be git-ignored | =.gitignore= | Fixed | =.audit/= is ignored in full. The 48 captures and the decision trail stay on disk untracked; the one reusable artefact, the V04 shell sweep, moved to =projects/ores.codegen/scripts/check_shell_recipes.py=. |
 
 * Result
+
+Delivered on =feature/clean-assets=, rebased onto main with a linear history and no merge commits.
+
+=tag=, =image= and =image_tag= are modelled and generated together with their messages, shell surface, SQL and the publish-from-dq operation. The 21 hand-written files the generation supersedes are deleted, and the hand-written C++ that remains is infrastructure only. =assets-cpp= is in =COMPONENTS_UNDER_TEST=. The nine test suites the rollout had removed with the implementation they tested are restored, 40 cases, and the three class diagrams are refreshed.
+
+Two review findings were fixed: the tree-wide CMake marker change and the committed audit trail. One conflict with main was decided rather than merged quietly: main generalised images from SVG-only to binary-agnostic, so =image.data= is modelled as bytes whose text column holds the base64 spelling, through a new =base64= column property in codegen.
+
+Verification: =compass build= exits 0; =ctest -R assets= is 4 of 4; the 29 generated shell recipes answer against the live fleet; =check_component_drift.py --all= reports no drift; model drift, populate references, handler permissions, protocol twin coverage, recipe inventory, the assets CMake source lists and the backlog index are green; =pytest projects/ores.codegen/tests= is 562 passed; CI is 10 of 10.
+
+Two defects found by the gates were found rather than filed: the junction's missing service, which left nine shell recipes unserved, and a blank-line leak in the junction column branches that made =ores.compute= drift. Three template defects remain filed because each is a tree-wide change on its own scale: the notify-trigger collision, the generator ignoring a declared =default_value=, and the CMake marker staleness that main is now fixing incrementally.

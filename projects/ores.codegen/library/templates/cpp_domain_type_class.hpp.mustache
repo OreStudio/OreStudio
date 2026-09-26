@@ -7,6 +7,10 @@
 {{#cpp.includes.domain}}
 #include {{{.}}}
 {{/cpp.includes.domain}}
+{{#has_base64_columns}}
+#include <cstdint>
+#include <vector>
+{{/has_base64_columns}}
 {{^has_domain_groups}}
 {{^has_identity_group}}
 {{#has_tenant_id}}
@@ -173,6 +177,10 @@ struct {{entity_singular}} final {
 {{#cpp.includes.domain}}
 #include {{{.}}}
 {{/cpp.includes.domain}}
+{{#has_base64_columns}}
+#include <cstdint>
+#include <vector>
+{{/has_base64_columns}}
 #include <string_view>
 
 namespace ores::{{component}}::domain {

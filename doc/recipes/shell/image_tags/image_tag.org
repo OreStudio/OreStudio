@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ID: 83E84B75-637A-5B86-A308-7FD495BFD81E
+:END:
+#+title: How do I run the image_tags commands from the shell?
+#+description: Every command the image_tags submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:image_tags:
+
+This file documents the image_tags resource at the shell, one section per command. Every command is a subcommand of =image_tags=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 90326854-5566-529B-A360-C4FD384A2490
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+image_tags list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =assets.v1.image_tags.list=.
+
+#+name: image_tags-list
+#+begin_src ores-shell :tangle image_tags-list.ores :exports none
+image_tags list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: F70B2DFD-D359-5EA0-8632-5CB2E19F2B6F
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+image_tags get <image_id> <tag_id>
+#+end_example
+
+It is addressed at =assets.v1.image_tags.get=.
+
+#+name: image_tags-get
+#+begin_src ores-shell :tangle image_tags-get.ores :exports none
+image_tags get 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 21C649B0-861B-56DE-9BAD-DC035D9F0F8E
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+image_tags get-many <image_id> <tag_id>
+#+end_example
+
+It is addressed at =assets.v1.image_tags.get_many=.
+
+#+name: image_tags-get-many
+#+begin_src ores-shell :tangle image_tags-get-many.ores :exports none
+image_tags get-many 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 80BEFDB2-C74A-5229-B0CF-94A4D205A599
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+image_tags add <image_id> <tag_id> <assigned_by> <assigned_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =assets.v1.image_tags.put=.
+
+#+name: image_tags-add
+#+begin_src ores-shell :tangle image_tags-add.ores :exports none
+image_tags add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01T00:00:00Z system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: AA8CBBB7-4141-5050-9FFC-408B71045C80
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+image_tags set <image_id> <tag_id> <assigned_by> <assigned_at> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =assets.v1.image_tags.put=.
+
+#+name: image_tags-set
+#+begin_src ores-shell :tangle image_tags-set.ores :exports none
+image_tags set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01T00:00:00Z system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: CC2E33FD-4332-5FAF-81AD-8AF0210C4FA2
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+image_tags put-many --count <n> <image_id> <tag_id> <assigned_by> <assigned_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =assets.v1.image_tags.put_many=.
+
+#+name: image_tags-put-many
+#+begin_src ores-shell :tangle image_tags-put-many.ores :exports none
+image_tags put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01T00:00:00Z system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 4B88CF71-5C28-58F6-850E-2551C4136BDD
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+image_tags delete <image_id> <tag_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =assets.v1.image_tags.delete=.
+
+#+name: image_tags-delete
+#+begin_src ores-shell :tangle image_tags-delete.ores :exports none
+image_tags delete 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 6E3F1279-104A-53A8-A733-E2298F2C73B5
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+image_tags delete-many <image_id> <tag_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =assets.v1.image_tags.delete_many=.
+
+#+name: image_tags-delete-many
+#+begin_src ores-shell :tangle image_tags-delete-many.ores :exports none
+image_tags delete-many 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-image-id=
+:PROPERTIES:
+:ID: 9FAC9655-8528-59C9-A0FD-DA9E5C2710FA
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+image_tags by-image-id <image_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =assets.v1.image_tags.list_by_image_id=.
+
+#+name: image_tags-by-image-id
+#+begin_src ores-shell :tangle image_tags-by-image-id.ores :exports none
+image_tags by-image-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+

@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: B631A4E0-4B74-574C-9C61-DEC4597C2710
+:END:
+#+title: How do I run the images commands from the shell?
+#+description: Every command the images submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:images:
+
+This file documents the images resource at the shell, one section per command. Every command is a subcommand of =images=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: B7DFAD26-5AA6-5EC6-ACC4-1E3A6BC17F3B
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+images list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =assets.v1.images.list=.
+
+#+name: images-list
+#+begin_src ores-shell :tangle images-list.ores :exports none
+images list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 4FCB98F6-20A3-5C2B-ACAA-729F4736F4C1
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+images get <code>
+#+end_example
+
+It is addressed at =assets.v1.images.get=.
+
+#+name: images-get
+#+begin_src ores-shell :tangle images-get.ores :exports none
+images get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 85FA161B-60A1-54EA-844D-9BD239E07023
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+images get-many <code>
+#+end_example
+
+It is addressed at =assets.v1.images.get_many=.
+
+#+name: images-get-many
+#+begin_src ores-shell :tangle images-get-many.ores :exports none
+images get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 6A4A9E23-42AA-52E4-A3DE-60203DB0E675
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+images add <code> <description> <mime_type> <data> <reason> <commentary>
+#+end_example
+
+It is addressed at =assets.v1.images.put=.
+
+#+name: images-add
+#+begin_src ores-shell :tangle images-add.ores :exports none
+images add __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: BB09BF39-CB13-5BD4-B680-08002FE106F6
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+images set <id> <code> <description> <mime_type> <data> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =assets.v1.images.put=.
+
+#+name: images-set
+#+begin_src ores-shell :tangle images-set.ores :exports none
+images set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B8801B69-4E8F-533D-ABF1-BB2F31E7A74C
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+images put-many --count <n> <id> <code> <description> <mime_type> <data> <reason> <commentary>
+#+end_example
+
+It is addressed at =assets.v1.images.put_many=.
+
+#+name: images-put-many
+#+begin_src ores-shell :tangle images-put-many.ores :exports none
+images put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: CF3E6716-B89D-526D-95DC-F695773D914D
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+images delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =assets.v1.images.delete=.
+
+#+name: images-delete
+#+begin_src ores-shell :tangle images-delete.ores :exports none
+images delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 5CF1A8EB-0C22-5727-B425-420A75892FA4
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+images delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =assets.v1.images.delete_many=.
+
+#+name: images-delete-many
+#+begin_src ores-shell :tangle images-delete-many.ores :exports none
+images delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: E743598C-6791-5C55-B249-50621AB71E94
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+images versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =assets.v1.images_versions.list=.
+
+#+name: images-versions
+#+begin_src ores-shell :tangle images-versions.ores :exports none
+images versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 89D2B99E-2571-5CA4-BC57-9B4307BD28BD
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+images version <code> --version <n>
+#+end_example
+
+It is addressed at =assets.v1.images_versions.get=.
+
+#+name: images-version
+#+begin_src ores-shell :tangle images-version.ores :exports none
+images version __none__ --version 1
+#+end_src
+

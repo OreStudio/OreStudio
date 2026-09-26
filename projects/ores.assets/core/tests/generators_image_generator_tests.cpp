@@ -19,7 +19,7 @@
  */
 #include "ores.assets.api/domain/image.hpp"         // IWYU pragma: keep.
 #include "ores.assets.api/domain/image_json_io.hpp" // IWYU pragma: keep.
-#include "ores.assets.core/generators/image_generator.hpp"
+#include "ores.assets.api/generators/image_generator.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -44,8 +44,8 @@ TEST_CASE("generate_single_image", tags) {
     auto image = generate_synthetic_image(ctx);
     BOOST_LOG_SEV(lg, debug) << "Generated image: " << image;
 
-    CHECK(!image.image_id.is_nil());
-    CHECK(!image.key.empty());
+    CHECK(!image.id.is_nil());
+    CHECK(!image.code.empty());
     CHECK(!image.description.empty());
     CHECK(!image.data.empty());
     CHECK(image.mime_type == "image/svg+xml");
@@ -63,19 +63,20 @@ TEST_CASE("generate_multiple_images", tags) {
     CHECK(images.size() == 3);
 }
 
-TEST_CASE("generate_unique_images", tags) {
+TEST_CASE("generate_images_with_distinct_codes", tags) {
     auto lg(make_logger(test_suite));
 
     generation_context ctx;
-    auto images = generate_unique_synthetic_images(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated unique images: " << images;
+    auto images = generate_synthetic_images(3, ctx);
+    BOOST_LOG_SEV(lg, debug) << "Generated images: " << images;
 
     CHECK(images.size() == 3);
 
-    // Verify all keys are unique
-    std::set<std::string> keys;
+    // The code is the natural key and carries a unique index, so a batch the
+    // generator hands back must not collide with itself.
+    std::set<std::string> codes;
     for (const auto& img : images)
-        keys.insert(img.key);
+        codes.insert(img.code);
 
-    CHECK(keys.size() == 3);
+    CHECK(codes.size() == 3);
 }

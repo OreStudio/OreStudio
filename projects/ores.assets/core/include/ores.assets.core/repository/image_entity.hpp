@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,40 +17,46 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ASSETS_REPOSITORY_IMAGE_ENTITY_HPP
-#define ORES_ASSETS_REPOSITORY_IMAGE_ENTITY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_ASSETS_CORE_REPOSITORY_IMAGE_ENTITY_HPP
+#define ORES_ASSETS_CORE_REPOSITORY_IMAGE_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
-#include "ores.database/repository/helpers.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 #include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::assets::repository {
 
 using db_timestamp = ores::database::repository::db_timestamp;
-using ores::database::repository::MAX_TIMESTAMP_NAIVE;
 
 /**
- * @brief Represents an image in the database.
+ * @brief Represents a image in the database.
  */
 struct image_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_assets_images_tbl";
 
-    sqlgen::PrimaryKey<std::string> image_id;
+    sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
-    std::string key;
+
+    std::string code;
+
     std::string description;
-    std::string mime_type;
+    std::string mime_type = "image/svg+xml";
     std::string data;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = MAX_TIMESTAMP_NAIVE;
-    db_timestamp valid_to = MAX_TIMESTAMP_NAIVE;
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const image_entity& v);

@@ -16,15 +16,20 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "app/application.cpp"
     "app/host.cpp"
     "config/options.cpp"
     "config/parser.cpp"
     "main.cpp"
+    "messaging/image_event_registrar.cpp"
+    "messaging/tag_event_registrar.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.service/app/application.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.service/app/application_exception.hpp"
@@ -33,5 +38,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.service/config/parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.service/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.service/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.service/messaging/image_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.service/messaging/tag_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.service/ores.assets.service.hpp"
 )

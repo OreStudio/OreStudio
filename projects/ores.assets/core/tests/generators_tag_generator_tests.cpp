@@ -19,7 +19,7 @@
  */
 #include "ores.assets.api/domain/tag.hpp"         // IWYU pragma: keep.
 #include "ores.assets.api/domain/tag_json_io.hpp" // IWYU pragma: keep.
-#include "ores.assets.core/generators/tag_generator.hpp"
+#include "ores.assets.api/generators/tag_generator.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -44,11 +44,11 @@ TEST_CASE("generate_single_tag", tags) {
     auto tag = generate_synthetic_tag(ctx);
     BOOST_LOG_SEV(lg, debug) << "Generated tag: " << tag;
 
-    CHECK(!tag.tag_id.empty());
+    CHECK(!tag.id.is_nil());
     CHECK(!tag.name.empty());
     CHECK(!tag.description.empty());
     CHECK(!tag.modified_by.empty());
-    CHECK(!tag.recorded_at.empty());
+    CHECK(tag.recorded_at != std::chrono::system_clock::time_point{});
 }
 
 TEST_CASE("generate_multiple_tags", tags) {
@@ -61,16 +61,17 @@ TEST_CASE("generate_multiple_tags", tags) {
     CHECK(tags_list.size() == 3);
 }
 
-TEST_CASE("generate_unique_tags", tags) {
+TEST_CASE("generate_tags_with_distinct_names", tags) {
     auto lg(make_logger(test_suite));
 
     generation_context ctx;
-    auto tags_list = generate_unique_synthetic_tags(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated unique tags: " << tags_list;
+    auto tags_list = generate_synthetic_tags(3, ctx);
+    BOOST_LOG_SEV(lg, debug) << "Generated tags: " << tags_list;
 
     CHECK(tags_list.size() == 3);
 
-    // Verify all names are unique
+    // The name is the natural key and carries a unique index, so a batch the
+    // generator hands back must not collide with itself.
     std::set<std::string> names;
     for (const auto& t : tags_list) {
         names.insert(t.name);

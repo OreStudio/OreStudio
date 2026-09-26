@@ -44,6 +44,11 @@ _ENTITY_STRUCT_FLAGS = (
     'is_optional_timestamp',
     'is_required_timestamp',
     'is_required_inet',
+    # A base64 column's domain member is a byte vector, but the entity member
+    # is the base64 std::string the text column holds. The template pairs this
+    # flag with a std::string member, so without the entry here the guard
+    # would refuse a shape the template carries.
+    'is_base64',
     'is_nullable_string',
     'is_nullable_numeric',
     'is_already_optional',
@@ -2342,6 +2347,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # no conversion, while a boost::asio::ip::address member
                 # breaks sqlgen whatever SQL type it is declared under.
                 col['is_required_inet'] = is_inet_address_type and not col.get('nullable', False)
+                # A base64 column's domain member is a byte vector while the
+                # database column is text holding its base64 spelling. The
+                # entity layer therefore carries the std::string the column
+                # stores and the mapper does the base64 hop -- the same shape a
+                # required timestamp gets, with the encoding in place of the
+                # datetime conversion. The property is explicit, not derived
+                # from ':type:', because a text column that is already text is
+                # indistinguishable from this one by type alone.
+                col['is_base64'] = (
+                    col.get('base64', False) is True and not col.get('nullable', False)
+                )
                 col['is_enum'] = is_enum_type and not col.get('nullable', False)
                 col['is_nullable_string'] = (
                     col.get('nullable', False)
@@ -2374,6 +2390,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     and not is_inet_address_type
                     and not is_enum_type
                     and not is_already_optional
+                    and not col['is_base64']
                 )
                 # Non-nullable plain std::string columns without an explicit
                 # generator_expr have no safe struct-level default (unlike
@@ -2509,6 +2526,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # from the domain header.
             domain_entity['has_inet_columns'] = any(
                 c.get('is_required_inet') for c in domain_entity['columns']
+            )
+            # The mapper's own include gate for the base64 hop, and the
+            # synthetic generator's: both emit bytes work only when a column
+            # asks for it, so neither drags the conversion in for every entity.
+            domain_entity['has_base64_columns'] = any(
+                c.get('is_base64') for c in domain_entity['columns']
             )
         # Field-group contract: detect identity/audit group annotations and
         # mark each column so templates can emit nested-struct form.
@@ -4330,7 +4353,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 col['is_optional_uuid'] = is_uuid_type and col.get('nullable', False)
                 col['is_date'] = (col.get('type') == 'date' or
                                   col.get('cpp_type') == 'std::chrono::year_month_day')
+                is_timestamp_type = col.get('type') in (
+                    'timestamp', 'timestamptz', 'timestamp with time zone'
+                )
+                col['is_timestamp'] = is_timestamp_type
+                col['is_optional_timestamp'] = is_timestamp_type and col.get('nullable', False)
+                col['is_required_timestamp'] = is_timestamp_type and not col.get('nullable', False)
+                col['is_base64'] = (
+                    col.get('base64', False) is True and not col.get('nullable', False)
+                )
                 col['iter_var'] = iter_var
+            junction['has_base64_columns'] = any(
+                c.get('is_base64') for c in junction.get('columns', [])
+            )
         # Add lowercase versions and UUID/date flags for left/right columns
         if 'left' in junction:
             if 'column_title' in junction['left']:

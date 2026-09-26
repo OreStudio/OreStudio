@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: BA19985D-DB6D-4E55-972B-18DBC3E556EE
+:END:
+#+title: ores.assets.tag
+#+description: Codegen entity model for the assets =tag= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: assets
+#+filetags: :model:entity:assets:
+#+brief: Categories for images, for example flag, currency or commodity.
+#+entity_singular: tag
+#+entity_plural: tags
+#+entity_title: Tag
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+A tag classifies an image. A tag belongs to one tenant, names a single
+category such as =flag=, =currency= or =commodity=, and its name is unique
+within that tenant. Images carry tags through the =image_tag= junction, so
+a tag has no lifecycle of its own beyond its own version history.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: assets
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate identifier for the tag, because a tag's name may be corrected
+without breaking the images that reference it.
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-meaningful category name, unique within the tenant. Examples:
+=flag=, =currency=, =commodity=.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the tag means and which images belong under it.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " image category"
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_assets_tags_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: tag
+:entity_plural_short:   tags
+:entity_singular_words: asset tag
+:entity_plural_words:   asset tags
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: t
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| id          | ID          |
+| name        | Name        |
+| description | Description |
+| modified_by | Modified By |
+| recorded_at | Recorded At |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.assets.api/domain/tag.hpp
+:domain_class:            assets::domain::tag
+:protocol_include:        ores.assets.api/messaging/tag_protocol.hpp
+:collection_name:         tags
+:item_var:                tag
+:key_field:               name
+:get_request_class:       assets::messaging::get_tags_request
+:get_response_class:      assets::messaging::get_tags_response
+:get_message_type:        get_tags_request
+:save_request_class:      assets::messaging::save_tag_request
+:save_response_class:     assets::messaging::save_tag_response
+:save_message_type:       save_tag_request
+:delete_request_class:    assets::messaging::delete_tag_request
+:delete_response_class:   assets::messaging::delete_tag_response
+:delete_message_type:     delete_tag_request
+:history_request_class:   assets::messaging::get_tag_history_request
+:history_response_class:  assets::messaging::get_tag_history_response
+:history_message_type:    get_tag_history_request
+:changed_event_class:     assets::eventing::tag_changed_event
+:changed_event_include:   ores.assets.api/eventing/tag_changed_event.hpp
+:END:
+
+* See also
+
+- [[id:8C604D55-6F20-41D2-A66A-12A767B81D07][ores.assets]] — component group overview.

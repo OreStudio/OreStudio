@@ -27,6 +27,10 @@ Usage: imported by the check scripts, never run.
 # its shell, sql and web derivatives into this branch's diff. main had it
 # listed; that belongs to the refdata work, not here.
 #
+# The ores.assets clean-standard task adds assets-cpp on the same terms: the
+# component regenerates byte for byte, every codegen gate passes with it
+# listed, and the whole tree builds with it.
+#
 # compute-cpp joins it for the clean-compute task. Its regeneration leaves the
 # tree clean at every address, every protocol header has its TypeScript twin,
 # and its seeds are complete. The hand-written files that remain are the
@@ -49,4 +53,4 @@ Usage: imported by the check scripts, never run.
 # messaging reference is stale; V04, no live fleet). The standard keeps a
 # component out until every item passes or its exceptions are accepted, so add
 # it once they are.
-COMPONENTS_UNDER_TEST = ("iam", "compute-cpp", "ore")
+COMPONENTS_UNDER_TEST = ("iam", "assets-cpp", "compute-cpp", "ore")

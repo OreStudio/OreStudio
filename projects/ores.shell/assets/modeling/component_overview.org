@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: B0DDDB9D-2855-46D6-8832-0300BA9B4410
+:END:
+#+title: ores.shell.assets
+#+description: The shell's assets adapter part. Holds the generated command units that project the assets domain onto the REPL menu.
+#+type: ores.codegen.component
+#+component_kind: adapter
+#+level: cross
+#+filetags: :shell:repl:assets:component:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+name: assets
+#+full_name: ores.shell.assets
+#+brief: Shell assets command units
+
+* Summary
+
+=ores.shell.assets= is the adapter part that projects the assets domain onto
+the shell's REPL menu. It holds the generated command units for the assets
+models that opt in, and each unit owns one submenu.
+
+Assets' models opt in through the profiles they bind to, because every one of
+them takes the same two facets: the command unit itself, and the literate recipe
+the =ores.doc.shell-recipe= facet writes beside it. A model that needs neither
+can bind a profile that does not carry them.
+
+The part declares =#+component_kind: adapter=. Its =CMakeLists.txt= files are
+hand-authored, because the link libraries belong to the shell surface rather
+than to the domain, and codegen writes only the two =component_files.cmake=
+lists. A regeneration therefore never writes over the build.
+
+The units are output of the =ores.cpp.shell-command= facet, which is opt-in per
+model. The facet writes here because the part is named after the domain the
+units project, which is the fractal naming rule in
+[[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]].
+
+* Inputs
+
+- Free-form token vectors from the command layer, parsed by =parse_args=.
+- The logged-in NATS session, passed by reference into every helper.
+- The assets models under =projects/ores.assets/modeling/= whose profiles opt
+  in to the =ores.cpp.shell-command= facet.
+
+* Outputs
+
+- One command unit per opted-in model, at
+  =src/app/commands/assets/<unit>_commands.cpp= and
+  =include/ores.shell/app/commands/assets/<unit>_commands.hpp=.
+- One literate recipe per unit, under =doc/recipes/shell/=, whose scripts
+  tangle into =projects/ores.shell/scripts/library/=.
+- NATS request messages to the assets service, one per command.
+- Formatted text output of query results to stdout.
+
+* Entry points
+
+- =include/ores.shell/app/commands/assets/= -- the generated unit headers.
+- =src/app/commands/assets/= -- the generated unit implementations.
+- =image_commands=, =image_tag_commands= and =tag_commands= -- the unit-level
+  entries the host calls to install each submenu below the assets root menu.
+
+* Dependencies
+
+- =ores.shell.api= -- argument parsing, feedback, pagination, request helpers.
+- =ores.nats= -- NATS transport for service calls.
+- =ores.assets.api= -- the domain types and protocol messages the units send.
+- =ores.utility= -- the rfl reflectors a response is printed with.
+- =ores.platform= -- the date and time formatting a recipe reads back.
+- =ores.logging= -- logger factory.
+- =cli= -- the menu and handler types the units register against.
+
+* See also
+
+- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] -- the composite this part belongs to.
+- [[id:9533D9D5-2928-4DC3-A39B-B48155B855EA][ores.shell.api]] -- the shared shell plumbing.
+- [[id:35C549C4-A6C0-4037-84DF-63E677C8C61E][ores.shell.application]] -- the runnable host.
+- [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] -- the facet that emits the units.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] -- the composite and adapter kinds.
+- [[id:8C604D55-6F20-41D2-A66A-12A767B81D07][ores.assets]] -- the domain this part projects.

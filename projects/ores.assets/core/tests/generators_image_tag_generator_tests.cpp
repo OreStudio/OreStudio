@@ -19,13 +19,13 @@
  */
 #include "ores.assets.api/domain/image_tag.hpp"         // IWYU pragma: keep.
 #include "ores.assets.api/domain/image_tag_json_io.hpp" // IWYU pragma: keep.
-#include "ores.assets.core/generators/image_tag_generator.hpp"
+#include "ores.assets.api/generators/image_tag_generator.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <set>
+#include <utility>
 
 namespace {
 
@@ -51,23 +51,6 @@ TEST_CASE("generate_single_image_tag", tags) {
     CHECK(image_tag.assigned_at != std::chrono::system_clock::time_point{});
 }
 
-TEST_CASE("generate_image_tag_with_params", tags) {
-    auto lg(make_logger(test_suite));
-
-    static boost::uuids::string_generator gen;
-    const auto test_image_id = gen("00000000-0000-0000-0000-000000000001");
-    const auto test_tag_id = gen("00000000-0000-0000-0000-000000000002");
-
-    generation_context ctx;
-    auto image_tag = generate_synthetic_image_tag(ctx, test_image_id, test_tag_id);
-    BOOST_LOG_SEV(lg, debug) << "Generated image_tag with params: " << image_tag;
-
-    CHECK(image_tag.image_id == test_image_id);
-    CHECK(image_tag.tag_id == test_tag_id);
-    CHECK(!image_tag.assigned_by.empty());
-    CHECK(image_tag.assigned_at != std::chrono::system_clock::time_point{});
-}
-
 TEST_CASE("generate_multiple_image_tags", tags) {
     auto lg(make_logger(test_suite));
 
@@ -76,4 +59,12 @@ TEST_CASE("generate_multiple_image_tags", tags) {
     BOOST_LOG_SEV(lg, debug) << "Generated image_tags: " << image_tags;
 
     CHECK(image_tags.size() == 3);
+
+    // Each row names a distinct (image, tag) pair: that pair is the junction's
+    // key, so a batch that repeated a pair would be a batch of duplicates.
+    std::set<std::pair<boost::uuids::uuid, boost::uuids::uuid>> pairs;
+    for (const auto& it : image_tags)
+        pairs.insert({it.image_id, it.tag_id});
+
+    CHECK(pairs.size() == 3);
 }

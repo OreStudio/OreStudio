@@ -8,6 +8,9 @@
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.{{component}}.{{subcomponent}}/messaging/{{entity_singular}}_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+{{#has_base64_columns}}
+#include "ores.utility/convert/base64_converter.hpp"
+{{/has_base64_columns}}
 #include "ores.platform/time/datetime.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -69,6 +72,10 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
             }
         }
         target.push_back(current);
+{{#has_base64_columns}}
+    } else if constexpr (std::is_same_v<T, std::vector<std::uint8_t>>) {
+        target = ores::utility::convert::base64_converter::convert(raw);
+{{/has_base64_columns}}
     } else {
         target = ores::shell::app::from_token<T>(raw, name);
     }

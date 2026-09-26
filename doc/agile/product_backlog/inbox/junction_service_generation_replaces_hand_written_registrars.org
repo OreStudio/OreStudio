@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 549C6EE0-E4E9-4A30-9109-E0ED23A1E8E5
+:END:
+#+title: Codegen can own a junction's service, so the hand-written junction registrars are duplicates
+#+description: A junction model whose nats-handler, nats-sub-registrar and service flags are nil generates no handler, yet its shell-command flag generates commands that publish to per-operation subjects. Nothing serves them. Setting the three flags to true makes codegen emit the handler, the registrar and the service, as ores.assets.image_tag now proves. ores.iam.account_party carries the same nil flags and is served by a hand-written registrar in ores.iam/core/src/messaging/registrar.cpp, so that registrar is a hand-written duplicate of a generatable artefact.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:junction:tech_debt:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Teach the junction models that service their own shell commands to name the generated handler, registrar and service, and delete the hand-written registrar that duplicates them.
+
+* Why
+
+The assets story found the gap the hard way. Its junction model set =ores.cpp.nats-handler.enabled=, =ores.cpp.nats-sub-registrar.enabled= and =ores.cpp.service.enabled= to nil while setting =ores.cpp.shell-command.enabled= to true. Codegen therefore emitted shell commands for =assets.v1.image_tags.*= and a protocol declaring eight per-operation subjects, but no service to answer them: all nine image_tags recipes failed with "no service is handling subject". Flipping the three flags to true made codegen emit =image_tag_handler.hpp=, =image_tag_registrar.{hpp,cpp}= and =image_tag_service.{hpp,cpp}=, and the service went from 19 to 27 subscriptions. All 29 recipes then answered.
+
+=ores.iam.account_party_junction.org= carries the identical nil flags with its shell command enabled, and it works only because =ores.iam/core/src/messaging/registrar.cpp= hand-writes the handler for the same eight subjects. That hand-written registrar is now a duplicate of what codegen can produce.
+
+* References
+
+- =projects/ores.assets/modeling/ores.assets.image_tag.org= — the junction whose flags were enabled.
+- =projects/ores.assets/core/src/messaging/registrar.cpp= — the aggregator that folds the generated registrar in.
+- =projects/ores.iam/modeling/ores.iam.account_party_junction.org= and =projects/ores.iam/core/src/messaging/registrar.cpp= — the same shape, still hand-written.
+- =.audit/clean-assets/A30_v04_recipes.tsv= — the sweep that found it: 29 of 29 answer after the fix.
+
+* See also
+
+- [[id:50148376-3D8B-44A9-A851-2D38CE997B9B][A notify trigger collides when a natural key is called key]]

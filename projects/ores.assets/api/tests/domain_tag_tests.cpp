@@ -56,8 +56,8 @@ TEST_CASE("default_constructed_tag_has_zero_version", tags) {
     CHECK(sut.version == 0);
     CHECK(sut.name.empty());
     CHECK(sut.description.empty());
-    CHECK(sut.tag_id.empty());
-    CHECK(sut.tenant_id.empty());
+    CHECK(sut.id.is_nil());
+    CHECK(sut.tenant_id.is_system());
 }
 
 TEST_CASE("tag_provenance_fields_can_be_set", tags) {
@@ -93,5 +93,5 @@ TEST_CASE("tag_json_output_contains_name", tags) {
     BOOST_LOG_SEV(lg, info) << "JSON output: " << json_output;
 
     CHECK(!json_output.empty());
-    CHECK(json_output.find("commodity") != std::string::npos);
+    CHECK(json_output.find("\"name\":\"commodity\"") != std::string::npos);
 }

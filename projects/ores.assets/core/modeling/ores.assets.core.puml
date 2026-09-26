@@ -21,26 +21,131 @@ title ores.assets.core Component
 
 set namespaceSeparator ::
 
+left to right direction
+
 namespace ores #F2F2F2 {
     namespace assets #F2F2F2 {
         namespace messaging #F2F2F2 {
-            class image_handler {
+            class image_handler #ECECEC {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
-            class registrar {
-                +verifier : optional<ores::security::jwt::jwt_authenticator>
+            note top of image_handler
+            NATS adapter that serves the asset image subjects.
+            -nats_ : client& // publish connection for replies
+            -ctx_ : context // database context the handler is built with
+            -verifier_ : optional<jwt_authenticator> // token verifier, empty when auth is off
+            end note
+            class image_tag_handler #ECECEC {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
+            note top of image_tag_handler
+            NATS adapter that serves the image_tag junction subjects.
+            -nats_ : client& // publish connection for replies
+            -ctx_ : context // database context the handler is built with
+            -verifier_ : optional<jwt_authenticator> // token verifier, empty when auth is off
+            end note
+            class tag_handler #ECECEC {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            note top of tag_handler
+            NATS adapter that serves the asset tag subjects.
+            -nats_ : client& // publish connection for replies
+            -ctx_ : context // database context the handler is built with
+            -verifier_ : optional<jwt_authenticator> // token verifier, empty when auth is off
+            end note
+            class publish_from_dq_handler #ECECEC {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+            }
+            note top of publish_from_dq_handler
+            Handles the assets publish-from-dq workflow step.
+            -nats_ : client& // publish connection for the step reply
+            -ctx_ : context // database context the handler is built with
+            end note
+            image_handler -[hidden]down- image_tag_handler
+            image_tag_handler -[hidden]down- tag_handler
+            tag_handler -[hidden]down- publish_from_dq_handler
+
+            class registrar #ECECEC {
+                {static} +register_handlers(nats : ores::nats::service::client&, ctx : ores::database::context, verifier : optional<ores::security::jwt::jwt_authenticator>) : vector<ores::nats::service::subscription>
+            }
+            note top of registrar
+            Aggregates every generated per-entity registrar into one subscription set.
+            -register_handlers : vector<subscription> // static; folds the image, image_tag and tag registrars, then adds the publish-from-dq step
+            end note
+            class image_registrar #ECECEC {
+                {static} +register_image_handlers(nats : ores::nats::service::client&, ctx : ores::database::context, verifier : optional<ores::security::jwt::jwt_authenticator>) : vector<ores::nats::service::subscription>
+            }
+            note top of image_registrar
+            Header free function that subscribes the asset image subjects.
+            -register_image_handlers : vector<subscription> // creates one image_handler and one queue subscription per image subject
+            end note
+            class image_tag_registrar #ECECEC {
+                {static} +register_image_tag_handlers(nats : ores::nats::service::client&, ctx : ores::database::context, verifier : optional<ores::security::jwt::jwt_authenticator>) : vector<ores::nats::service::subscription>
+            }
+            note top of image_tag_registrar
+            Header free function that subscribes the image_tag junction subjects.
+            -register_image_tag_handlers : vector<subscription> // creates one image_tag_handler and one queue subscription per junction subject
+            end note
+            class tag_registrar #ECECEC {
+                {static} +register_tag_handlers(nats : ores::nats::service::client&, ctx : ores::database::context, verifier : optional<ores::security::jwt::jwt_authenticator>) : vector<ores::nats::service::subscription>
+            }
+            note top of tag_registrar
+            Header free function that subscribes the asset tag subjects.
+            -register_tag_handlers : vector<subscription> // creates one tag_handler and one queue subscription per tag subject
+            end note
+            registrar -[hidden]down- image_registrar
+            image_registrar -[hidden]down- image_tag_registrar
+            image_tag_registrar -[hidden]down- tag_registrar
+
+            class image_history_provider_registrar #ECECEC {
+                {static} +register_image_history_provider(registry : ores::history::service::dispatch_registry&)
+            }
+            note top of image_history_provider_registrar
+            Header free function that answers history requests for images.
+            -register_image_history_provider : void // registers a callback that reads image history through image_service and renders it with image_history_field_mapper
+            end note
+            class tag_history_provider_registrar #ECECEC {
+                {static} +register_tag_history_provider(registry : ores::history::service::dispatch_registry&)
+            }
+            note top of tag_history_provider_registrar
+            Header free function that answers history requests for tags.
+            -register_tag_history_provider : void // registers a callback that reads tag history through tag_service and renders it with tag_history_field_mapper
+            end note
+            image_history_provider_registrar -[hidden]down- tag_history_provider_registrar
+        }
+        namespace presentation #F2F2F2 {
+            class image_history_field_mapper #ECECEC {
+                {static} +render_image_fields(v : ores::assets::domain::image) : vector<ores::diff::domain::field_value>
+            }
+            note top of image_history_field_mapper
+            Header free function that renders an image as an ordered history-diff field list.
+            -render_image_fields : vector<field_value> // one line per field, in mapper order; no runtime reflection
+            end note
+            class tag_history_field_mapper #ECECEC {
+                {static} +render_tag_fields(v : ores::assets::domain::tag) : vector<ores::diff::domain::field_value>
+            }
+            note top of tag_history_field_mapper
+            Header free function that renders a tag as an ordered history-diff field list.
+            -render_tag_fields : vector<field_value> // one line per field, in mapper order; no runtime reflection
+            end note
+            image_history_field_mapper -[hidden]down- tag_history_field_mapper
         }
         namespace repository #F2F2F2 {
-            class image_entity <<struct>> {
-                +schema : constexpr static const char*
-                +tablename : constexpr static const char*
-                +image_id : sqlgen::PrimaryKey<string>
+            note top of repository
+            Database persistence layer for asset domain types.
+            end note
+            class image_entity <<orm>> #99CB99 {
+                +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
                 +version : int
-                +key : string
+                +code : string
                 +description : string
                 +mime_type : string
                 +data : string
@@ -48,32 +153,94 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
-            class image_mapper {
+            note top of image_entity
+            Persisted image row: an SVG document with a tenant-unique code.
+            ORM Settings:
+            - Schema:    public
+            - Tablename: ores_assets_images_tbl
+            +id : PrimaryKey<string> // surrogate identifier
+            +tenant_id : string // owning tenant
+            +version : int // temporal version number
+            +code : string // natural key, human-meaningful image code
+            +description : string // what the image depicts
+            +mime_type : string // media type of the stored document
+            +data : string // the SVG document itself
+            +modified_by : string // account that last changed the row
+            +performed_by : string // account that performed the change
+            +change_reason_code : string // coded reason for the change
+            +change_commentary : string // free-text change note
+            +valid_from : db_timestamp // start of the validity window
+            +valid_to : db_timestamp // end of the validity window
+            end note
+            class image_mapper #ECECEC {
             }
-            class image_repository {
+            note top of image_mapper
+            Maps image domain objects to and from the image entity.
+            No data members; every method is static.
+            end note
+            class image_repository <<orm>> #99CB99 {
             }
-            class image_tag_entity <<struct>> {
-                +schema : constexpr static const char*
-                +tablename : constexpr static const char*
-                +tenant_id : string
+            note top of image_repository
+            Reads and writes asset images to data storage.
+            All state arrives in the database context passed per call.
+            (also declares a nested remove_status enum: removed, conflicting, missing, unsupported)
+            end note
+            image_entity -[hidden]down- image_mapper
+            image_mapper -[hidden]down- image_repository
+
+            class image_tag_entity <<orm>> #99CB99 {
                 +image_id : sqlgen::PrimaryKey<string>
-                +tag_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +tag_id : string
+                +version : int
                 +assigned_by : string
-                +assigned_at : optional<db_timestamp>
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +assigned_at : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
-            class image_tag_mapper {
+            note top of image_tag_entity
+            Persisted junction row that links an image to a tag.
+            ORM Settings:
+            - Schema:    public
+            - Tablename: ores_assets_image_tags_tbl
+            +image_id : PrimaryKey<string> // left half of the junction key
+            +tenant_id : string // owning tenant
+            +tag_id : string // right half of the junction key
+            +version : int // temporal version number
+            +assigned_by : string // trigger-stamped account that made the link
+            +assigned_at : string // trigger-stamped time the link was made
+            +modified_by : string // account that last changed the row
+            +performed_by : string // account that performed the change
+            +change_reason_code : string // coded reason for the change
+            +change_commentary : string // free-text change note
+            +valid_from : db_timestamp // start of the validity window
+            +valid_to : db_timestamp // end of the validity window
+            end note
+            class image_tag_mapper #ECECEC {
             }
-            class image_tag_repository {
+            note top of image_tag_mapper
+            Maps image_tag domain objects to and from the junction entity.
+            No data members; every method is static.
+            end note
+            class image_tag_repository <<orm>> #99CB99 {
+                -ctx_ : context
             }
-            class tag_entity <<struct>> {
-                +schema : constexpr static const char*
-                +tablename : constexpr static const char*
-                +tag_id : sqlgen::PrimaryKey<string>
+            note top of image_tag_repository
+            Reads and writes image_tag junction rows to data storage.
+            -ctx_ : context // database context held for the repository lifetime
+            end note
+            image_tag_entity -[hidden]down- image_tag_mapper
+            image_tag_mapper -[hidden]down- image_tag_repository
+
+            class tag_entity <<orm>> #99CB99 {
+                +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -82,22 +249,225 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
-            class tag_mapper {
+            note top of tag_entity
+            Persisted tag row: a tenant-unique category name.
+            ORM Settings:
+            - Schema:    public
+            - Tablename: ores_assets_tags_tbl
+            +id : PrimaryKey<string> // surrogate identifier
+            +tenant_id : string // owning tenant
+            +version : int // temporal version number
+            +name : string // natural key, tenant-unique category name
+            +description : string // what the tag means
+            +modified_by : string // account that last changed the row
+            +performed_by : string // account that performed the change
+            +change_reason_code : string // coded reason for the change
+            +change_commentary : string // free-text change note
+            +valid_from : db_timestamp // start of the validity window
+            +valid_to : db_timestamp // end of the validity window
+            end note
+            class tag_mapper #ECECEC {
             }
-            class tag_repository {
+            note top of tag_mapper
+            Maps tag domain objects to and from the tag entity.
+            No data members; every method is static.
+            end note
+            class tag_repository <<orm>> #99CB99 {
             }
+            note top of tag_repository
+            Reads and writes asset tags to data storage.
+            All state arrives in the database context passed per call.
+            end note
+            tag_entity -[hidden]down- tag_mapper
+            tag_mapper -[hidden]down- tag_repository
         }
         namespace service #F2F2F2 {
-            class assets_service {
+            class image_service #ECECEC {
                 -ctx_ : context
-                -image_repo_ : repository::image_repository
+                -repo_ : repository::image_repository
             }
+            note top of image_service
+            Higher-level image operations that wrap image_repository.
+            -ctx_ : context // database context for every operation
+            -repo_ : image_repository // storage the service reads and writes
+            end note
+            class image_tag_service #ECECEC {
+                -ctx_ : context
+                -repo_ : repository::image_tag_repository
+            }
+            note top of image_tag_service
+            Higher-level junction operations that wrap image_tag_repository.
+            -ctx_ : context // database context for every operation
+            -repo_ : image_tag_repository // storage the service reads and writes
+            end note
+            class tag_service #ECECEC {
+                -ctx_ : context
+                -repo_ : repository::tag_repository
+            }
+            note top of tag_service
+            Higher-level tag operations that wrap tag_repository.
+            -ctx_ : context // database context for every operation
+            -repo_ : tag_repository // storage the service reads and writes
+            end note
+            image_service -[hidden]down- image_tag_service
+            image_tag_service -[hidden]down- tag_service
+        }
+        namespace tests #F2F2F2 {
+            class image_eventing_integration_tests <<test suite>> #C5E1A5 {
+                +write_image_publishes_an_event() : void
+            }
+            note top of image_eventing_integration_tests
+            Covers image_eventing_integration_tests.cpp: one end-to-end image eventing and CRUD case against a real database.
+            +write_image_publishes_an_event : void // writes an image, observes its NATS changed notification, then does a CRUD round trip
+            end note
+            class tag_eventing_integration_tests <<test suite>> #C5E1A5 {
+                +write_tag_publishes_an_event() : void
+            }
+            note top of tag_eventing_integration_tests
+            Covers tag_eventing_integration_tests.cpp: one end-to-end tag eventing and CRUD case against a real database.
+            +write_tag_publishes_an_event : void // writes a tag, observes its NATS changed notification, then does a CRUD round trip
+            end note
+            class generators_image_generator_tests <<test suite>> #C5E1A5 {
+                +generate_single_image() : void
+                +generate_multiple_images() : void
+                +generate_images_with_distinct_codes() : void
+            }
+            note top of generators_image_generator_tests
+            Covers generators_image_generator_tests.cpp: the codegen image generator, which lives in the sibling api component, so no arrow crosses into it.
+            +generate_single_image : void // one synthetic image carries a non-empty code
+            +generate_multiple_images : void // a batch request yields that many images
+            +generate_images_with_distinct_codes : void // a batch yields distinct codes
+            end note
+            class generators_tag_generator_tests <<test suite>> #C5E1A5 {
+                +generate_single_tag() : void
+                +generate_multiple_tags() : void
+                +generate_tags_with_distinct_names() : void
+            }
+            note top of generators_tag_generator_tests
+            Covers generators_tag_generator_tests.cpp: the codegen tag generator, which lives in the sibling api component, so no arrow crosses into it.
+            +generate_single_tag : void // one synthetic tag carries a non-empty name
+            +generate_multiple_tags : void // a batch request yields that many tags
+            +generate_tags_with_distinct_names : void // a batch yields distinct names
+            end note
+            class generators_image_tag_generator_tests <<test suite>> #C5E1A5 {
+                +generate_single_image_tag() : void
+                +generate_multiple_image_tags() : void
+            }
+            note top of generators_image_tag_generator_tests
+            Covers generators_image_tag_generator_tests.cpp: the codegen image_tag generator, which lives in the sibling api component, so no arrow crosses into it.
+            +generate_single_image_tag : void // one synthetic link names both halves of the pair
+            +generate_multiple_image_tags : void // a batch request yields that many links
+            end note
+            class repository_image_repository_tests <<test suite>> #C5E1A5 {
+                +write_single_image() : void
+                +write_multiple_images() : void
+                +read_latest_images() : void
+                +read_latest_image_by_id() : void
+                +read_latest_image_by_code() : void
+                +read_all_image_versions() : void
+                +read_nonexistent_image_id() : void
+            }
+            note top of repository_image_repository_tests
+            Covers repository_image_repository_tests.cpp: image_repository against a real database.
+            +write_single_image : void // one image round-trips through write and read
+            +write_multiple_images : void // a batch write is readable as written
+            +read_latest_images : void // the paged read returns the live rows
+            +read_latest_image_by_id : void // the primary-key read finds the row
+            +read_latest_image_by_code : void // the natural-key read finds the row
+            +read_all_image_versions : void // two writes leave two versions, newest first
+            +read_nonexistent_image_id : void // an unknown id yields no rows
+            end note
+            class repository_tag_repository_tests <<test suite>> #C5E1A5 {
+                +write_single_tag() : void
+                +write_multiple_tags() : void
+                +read_latest_tags() : void
+                +read_latest_tag_by_id() : void
+                +read_latest_tag_by_name() : void
+                +read_all_tag_versions() : void
+                +read_nonexistent_tag_id() : void
+            }
+            note top of repository_tag_repository_tests
+            Covers repository_tag_repository_tests.cpp: tag_repository against a real database.
+            +write_single_tag : void // one tag round-trips through write and read
+            +write_multiple_tags : void // a batch write is readable as written
+            +read_latest_tags : void // the paged read returns the live rows
+            +read_latest_tag_by_id : void // the primary-key read finds the row
+            +read_latest_tag_by_name : void // the natural-key read finds the row
+            +read_all_tag_versions : void // two writes leave two versions, newest first
+            +read_nonexistent_tag_id : void // an unknown id yields no rows
+            end note
+            class repository_image_tag_repository_tests <<test suite>> #C5E1A5 {
+                +write_single_image_tag() : void
+                +write_multiple_image_tags() : void
+                +read_latest_image_tags() : void
+                +read_latest_image_tags_by_image() : void
+                +read_latest_image_tags_by_tag() : void
+                +read_nonexistent_image_tag() : void
+                +update_image_tag() : void
+            }
+            note top of repository_image_tag_repository_tests
+            Covers repository_image_tag_repository_tests.cpp: image_tag_repository against a real database, seeding a real image and tag first.
+            +write_single_image_tag : void // one link round-trips through write and read
+            +write_multiple_image_tags : void // a batch write is readable as written
+            +read_latest_image_tags : void // the paged read returns the live links
+            +read_latest_image_tags_by_image : void // the left-half filter finds the links
+            +read_latest_image_tags_by_tag : void // the right-half filter finds the links
+            +read_nonexistent_image_tag : void // an unknown pair yields no rows
+            +update_image_tag : void // a re-write leaves one live row and a version behind
+            end note
+            image_eventing_integration_tests -[hidden]down- tag_eventing_integration_tests
+            tag_eventing_integration_tests -[hidden]down- generators_image_generator_tests
+            generators_image_generator_tests -[hidden]down- generators_tag_generator_tests
+            generators_tag_generator_tests -[hidden]down- generators_image_tag_generator_tests
+            generators_image_tag_generator_tests -[hidden]down- repository_image_repository_tests
+            repository_image_repository_tests -[hidden]down- repository_tag_repository_tests
+            repository_tag_repository_tests -[hidden]down- repository_image_tag_repository_tests
         }
     }
 }
+
+registrar ..> ores::assets::messaging::image_registrar : uses
+registrar ..> ores::assets::messaging::image_tag_registrar : uses
+registrar ..> ores::assets::messaging::tag_registrar : uses
+registrar ..> ores::assets::messaging::publish_from_dq_handler : creates
+image_registrar ..> ores::assets::messaging::image_handler : creates
+image_tag_registrar ..> ores::assets::messaging::image_tag_handler : creates
+tag_registrar ..> ores::assets::messaging::tag_handler : creates
+
+ores::assets::messaging::image_handler ..> ores::assets::service::image_service : uses
+ores::assets::messaging::image_tag_handler ..> ores::assets::service::image_tag_service : uses
+ores::assets::messaging::tag_handler ..> ores::assets::service::tag_service : uses
+
+image_history_provider_registrar ..> ores::assets::service::image_service : uses
+image_history_provider_registrar ..> ores::assets::presentation::image_history_field_mapper : uses
+tag_history_provider_registrar ..> ores::assets::service::tag_service : uses
+tag_history_provider_registrar ..> ores::assets::presentation::tag_history_field_mapper : uses
+
+ores::assets::service::image_service ..> ores::assets::repository::image_repository : uses
+ores::assets::service::image_tag_service ..> ores::assets::repository::image_tag_repository : uses
+ores::assets::service::tag_service ..> ores::assets::repository::tag_repository : uses
+
+ores::assets::repository::image_repository ..> ores::assets::repository::image_mapper : uses
+ores::assets::repository::image_tag_repository ..> ores::assets::repository::image_tag_mapper : uses
+ores::assets::repository::tag_repository ..> ores::assets::repository::tag_mapper : uses
+
+ores::assets::repository::image_mapper ..> ores::assets::repository::image_entity : maps
+ores::assets::repository::image_tag_mapper ..> ores::assets::repository::image_tag_entity : maps
+ores::assets::repository::tag_mapper ..> ores::assets::repository::tag_entity : maps
+
+ores::assets::tests::image_eventing_integration_tests ..> ores::assets::service::image_service : tests
+ores::assets::tests::image_eventing_integration_tests ..> ores::assets::repository::image_repository : tests
+ores::assets::tests::tag_eventing_integration_tests ..> ores::assets::service::tag_service : tests
+ores::assets::tests::tag_eventing_integration_tests ..> ores::assets::repository::tag_repository : tests
+
+ores::assets::tests::repository_image_repository_tests ..> ores::assets::repository::image_repository : tests
+ores::assets::tests::repository_tag_repository_tests ..> ores::assets::repository::tag_repository : tests
+ores::assets::tests::repository_image_tag_repository_tests ..> ores::assets::repository::image_tag_repository : tests
+ores::assets::tests::repository_image_tag_repository_tests ..> ores::assets::repository::image_repository : tests
+ores::assets::tests::repository_image_tag_repository_tests ..> ores::assets::repository::tag_repository : tests
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
 

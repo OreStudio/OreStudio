@@ -20,7 +20,7 @@
 #ifndef ORES_IAM_MESSAGING_TENANT_PROVISIONING_HANDLER_HPP
 #define ORES_IAM_MESSAGING_TENANT_PROVISIONING_HANDLER_HPP
 
-#include "ores.assets.api/messaging/assets_protocol.hpp"
+#include "ores.assets.api/messaging/image_protocol.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
@@ -1033,12 +1033,11 @@ private:
     std::optional<boost::uuids::uuid> copy_template_image(internal_request_client& client,
                                                           ores::database::context& ctx,
                                                           const std::string& tenant_id,
-                                                          const std::string& key,
-                                                          const std::string& username) {
+                                                          const std::string& key) {
         auto existing = execute_parameterized_string_query(
             ctx,
-            "SELECT image_id::text FROM ores_assets_images_tbl WHERE tenant_id = $1::uuid AND "
-            "key = $2 AND valid_to = ores_utility_infinity_timestamp_fn()",
+            "SELECT id::text FROM ores_assets_images_tbl WHERE tenant_id = $1::uuid AND "
+            "code = $2 AND valid_to = ores_utility_infinity_timestamp_fn()",
             {tenant_id, key},
             tenant_provisioning_handler_lg(),
             "copy_template_image");
@@ -1058,28 +1057,30 @@ private:
             return std::nullopt;
         }
 
-        ores::assets::domain::image img;
-        img.tenant_id =
-            ores::utility::uuid::tenant_id::from_string(tenant_id).value_or(img.tenant_id);
-        img.image_id = boost::uuids::random_generator{}();
-        img.key = key;
-        img.description = *rows.front()[0];
-        img.mime_type = *rows.front()[1];
-        const auto& base64_data = *rows.front()[2];
-        img.data = ores::utility::convert::base64_converter::convert(base64_data);
-        img.modified_by = username;
-        img.performed_by = username;
-        img.change_reason_code = "system.external_data_import";
-        img.change_commentary = "Copied from system-tenant template: " + key;
+        // A write carries the user-owned fields alone. The tenant, the actor
+        // and the provenance are the assets service's to derive from the
+        // authenticated context, and the version is the database's.
+        ores::assets::messaging::put_image_request req;
+        const auto new_image_id = boost::uuids::random_generator{}();
+        req.change.write.id = new_image_id;
+        req.change.write.code = key;
+        req.change.write.description = *rows.front()[0];
+        req.change.write.mime_type = *rows.front()[1];
+        // The template function returns the column as stored: base64 text.
+        // The write record carries raw bytes, so decode that hop here.
+        req.change.write.data =
+            ores::utility::convert::base64_converter::convert(*rows.front()[2]);
+        req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
+        req.intent.reason_code = "system.external_data_import";
+        req.intent.commentary = "Copied from system-tenant template: " + key;
 
-        ores::assets::messaging::save_image_request req{.data = std::move(img)};
         auto resp = client.request(req);
-        if (!resp.success) {
+        if (resp.result.outcome != ores::utility::domain::outcome::ok) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "Failed to copy template image " << key << ": " << resp.message;
+                << "Failed to copy template image " << key << ": " << resp.result.message;
             return std::nullopt;
         }
-        return img.image_id;
+        return new_image_id;
     }
 
     // Attaches a profile picture to every staff account in one office that
@@ -1095,7 +1096,7 @@ private:
                              ores::database::context& ctx,
                              const std::string& tenant_id,
                              const std::string& office_code,
-                             const std::string& username) {
+                             [[maybe_unused]] const std::string& username) {
         auto dataset = execute_parameterized_string_query(
             ctx,
             "SELECT id::text FROM ores_dq_datasets_tbl WHERE code = $1 "
@@ -1131,7 +1132,7 @@ private:
             if (it == photo_key_by_username.end() || a.image_id.has_value())
                 continue;
 
-            auto image_id = copy_template_image(client, ctx, tenant_id, it->second, username);
+            auto image_id = copy_template_image(client, ctx, tenant_id, it->second);
             if (!image_id)
                 continue;
 
@@ -1161,7 +1162,7 @@ private:
                       ores::database::context& ctx,
                       const std::string& tenant_id,
                       const boost::uuids::uuid& account_id,
-                      const std::string& username,
+                      [[maybe_unused]] const std::string& username,
                       ores::refdata::domain::party party,
                       bool set_default) {
         bool changed = false;
@@ -1171,7 +1172,7 @@ private:
         }
         if (!party.image_id) {
             auto image_id =
-                copy_template_image(client, ctx, tenant_id, "acme_party_logo", username);
+                copy_template_image(client, ctx, tenant_id, "acme_party_logo");
             if (image_id) {
                 party.image_id = image_id;
                 changed = true;

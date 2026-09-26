@@ -122,6 +122,10 @@ node_modules/
 # ores.shell runtime log, written at the repo root
 /log/
 
+# audit evidence: raw captures, transcripts and the per-unit decision trail
+# (clean-assets.tsv). Kept on disk for the task, never committed.
+/.audit/
+
 # LaTeX intermediate artefacts from deploy_manual
 doc/manual/user_guide/user_manual.tex
 doc/manual/user_guide/user_manual.aux

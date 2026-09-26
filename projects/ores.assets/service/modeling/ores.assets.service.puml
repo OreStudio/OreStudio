@@ -21,27 +21,126 @@ title ores.assets.service Component
 
 set namespaceSeparator ::
 
+left to right direction
+
 namespace ores #F2F2F2 {
     namespace assets #F2F2F2 {
         namespace service #F2F2F2 {
+            note top of service
+            Asset management service.
+            end note
             namespace app #F2F2F2 {
-                class application {
+                class application #ECECEC {
                 }
-                class host {
+                note top of application
+                Entry point for the ores.assets.service service.
+                No data members; run() is const and carries all state in its arguments.
+                end note
+                class application_exception <<exception>> #D6B19F {
+                    -message_ : string
                 }
+                note top of application_exception
+                Fatal error raised while the application runs.
+                -message_ : string // the message carried to what()
+                end note
+                class host #ECECEC {
+                }
+                note top of host
+                Provides hosting services to the application.
+                No data members; execute() is static.
+                end note
+                application -[hidden]down- application_exception
+                application_exception -[hidden]down- host
             }
             namespace config #F2F2F2 {
-                class options <<struct>> {
+                class options <<struct>> #F7E5FF {
                     +logging : optional<ores::logging::logging_options>
                     +nats : ores::nats::config::nats_options
                     +database : ores::database::database_options
                 }
-                class parser {
+                note top of options
+                All of the configuration options required by the service.
+                +logging : optional<logging_options> // logging configuration, if any
+                +nats : nats_options // NATS transport configuration
+                +database : database_options // database connection configuration
+                end note
+                class parser #ECECEC {
                 }
+                note top of parser
+                Command-line parser for ores.assets.service.
+                No data members; parse() is const.
+                end note
+                class parser_exception <<exception>> #D6B19F {
+                    -message_ : string
+                }
+                note top of parser_exception
+                Fatal error raised while parsing the command line.
+                -message_ : string // the message carried to what()
+                end note
+                options -[hidden]down- parser
+                parser -[hidden]down- parser_exception
             }
+            namespace messaging #F2F2F2 {
+                class image_event_registrar #ECECEC {
+                    {static} +register_image_event_mapping(event_source : ores::eventing::service::postgres_event_source&, event_bus : ores::eventing::service::event_bus&, nats : ores::nats::service::client&) : ores::eventing::service::subscription
+                }
+                note top of image_event_registrar
+                Header free function that maps the image table's notifications onto the event bus.
+                -register_image_event_mapping : subscription // maps the image table to the image changed event and publishes it to NATS
+                end note
+                class tag_event_registrar #ECECEC {
+                    {static} +register_tag_event_mapping(event_source : ores::eventing::service::postgres_event_source&, event_bus : ores::eventing::service::event_bus&, nats : ores::nats::service::client&) : ores::eventing::service::subscription
+                }
+                note top of tag_event_registrar
+                Header free function that maps the tag table's notifications onto the event bus.
+                -register_tag_event_mapping : subscription // maps the tag table to the tag changed event and publishes it to NATS
+                end note
+                image_event_registrar -[hidden]down- tag_event_registrar
+            }
+        }
+        namespace tests #F2F2F2 {
+            class config_parser_tests <<test suite>> #C5E1A5 {
+                +parse_defaults_returns_expected_values() : void
+                +parse_custom_nats_url() : void
+                +parse_nats_subject_prefix() : void
+                +parse_custom_database_host_and_port() : void
+                +parse_custom_database_name() : void
+                +parse_custom_log_level() : void
+                +parse_custom_log_filename() : void
+                +parse_help_returns_empty() : void
+                +parse_version_returns_empty() : void
+                +parse_unknown_option_throws() : void
+            }
+            note top of config_parser_tests
+            Covers config_parser_tests.cpp: the command-line parser, ten cases.
+            +parse_defaults_returns_expected_values : void // an empty argument list yields the compiled-in defaults
+            +parse_custom_nats_url : void // --nats-url overrides the NATS URL
+            +parse_nats_subject_prefix : void // --nats-subject-prefix overrides the subject prefix
+            +parse_custom_database_host_and_port : void // the database host and port flags are read
+            +parse_custom_database_name : void // the database name flag is read
+            +parse_custom_log_level : void // the log level flag is read
+            +parse_custom_log_filename : void // the log filename flag is read
+            +parse_help_returns_empty : void // --help prints and yields no options
+            +parse_version_returns_empty : void // --version prints and yields no options
+            +parse_unknown_option_throws : void // an unknown option raises parser_exception
+            end note
         }
     }
 }
+
+host ..> ores::assets::service::app::application : uses
+host ..> ores::assets::service::config::parser : uses
+application ..> ores::assets::service::config::options : uses
+ores::assets::service::config::parser ..> ores::assets::service::config::options : parses into
+ores::assets::service::config::parser ..> ores::assets::service::config::parser_exception : throws
+application ..> ores::assets::service::app::application_exception : throws
+application ..> ores::assets::messaging::registrar : uses
+ores::assets::service::messaging::image_event_registrar ..> ores::assets::messaging::registrar : uses
+ores::assets::service::messaging::tag_event_registrar ..> ores::assets::messaging::registrar : uses
+
+ores::assets::tests::config_parser_tests ..> ores::assets::service::config::parser : tests
+ores::assets::tests::config_parser_tests ..> ores::assets::service::config::options : tests
+ores::assets::tests::config_parser_tests ..> ores::assets::service::config::parser_exception : tests
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
 

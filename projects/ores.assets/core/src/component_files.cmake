@@ -16,12 +16,19 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
-    "generators/image_generator.cpp"
-    "generators/image_tag_generator.cpp"
-    "generators/tag_generator.cpp"
+    "messaging/image_history_provider_registrar.cpp"
+    "messaging/image_registrar.cpp"
+    "messaging/image_tag_registrar.cpp"
     "messaging/publish_from_dq_handler.cpp"
     "messaging/registrar.cpp"
+    "messaging/tag_history_provider_registrar.cpp"
+    "messaging/tag_registrar.cpp"
+    "presentation/image_history_field_mapper.cpp"
+    "presentation/tag_history_field_mapper.cpp"
     "repository/image_entity.cpp"
     "repository/image_mapper.cpp"
     "repository/image_repository.cpp"
@@ -31,20 +38,27 @@ set(files
     "repository/tag_entity.cpp"
     "repository/tag_mapper.cpp"
     "repository/tag_repository.cpp"
-    "service/assets_service.cpp"
+    "service/image_service.cpp"
+    "service/image_tag_service.cpp"
+    "service/tag_service.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/export.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/generators/image_generator.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/generators/image_tag_generator.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/generators/ores.assets.generators.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/generators/tag_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_history_provider_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_tag_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_tag_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/publish_from_dq_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/tag_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/tag_history_provider_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/tag_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/ores.assets.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/presentation/image_history_field_mapper.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/presentation/tag_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/repository/image_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/repository/image_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/repository/image_repository.hpp"
@@ -55,5 +69,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/repository/tag_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/repository/tag_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/repository/tag_repository.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/service/assets_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/service/image_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/service/image_tag_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/service/tag_service.hpp"
 )

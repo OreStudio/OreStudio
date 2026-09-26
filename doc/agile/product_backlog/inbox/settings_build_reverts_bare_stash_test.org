@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 29892436-DF05-4EB8-B2DE-C8724211ACEB
+:END:
+#+title: The settings build reverts a hand-added compass test
+#+description: compass build --direct settings tangles doc/llm/claude_code_settings.org, which regenerates projects/ores.compass/tests/test_deny_bare_stash_hook.py. Commit 20cd5089d5 hand-added test_compass_does_not_run_a_denied_stash to that generated file without adding it to the org source at line 996, so every settings refresh silently deletes the test. Reproduced twice on 2026-09-23 from feature/clean-assets: run the build, the test disappears (grep count 1 to 0); git checkout restores it. Fix by adding the test block to the org source and re-tangling, or the drift returns on the next bearings next-action.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:drift:compass:tech_debt:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=compass build --direct settings= tangles =doc/llm/claude_code_settings.org=,
+and one of its seven code blocks writes
+=projects/ores.compass/tests/test_deny_bare_stash_hook.py=. Commit
+=20cd5089d5= added =test_compass_does_not_run_a_denied_stash= to the generated
+file directly and never added it to the org source (the block at
+=claude_code_settings.org:996=), so the generated file and its source drifted.
+Every settings refresh re-tangles and deletes the test. The org source is the
+single source of truth and the generated file is the one that must lose.
+
+* Why
+
+=compass bearings= reports "settings.json is stale versus
+claude_code_settings.org" and tells the agent to refresh it, so the destructive
+step is on the default path for any session that does what bearings asks. The
+loss is silent: the build prints "Tangled 7 code blocks" and "Settings
+deployed", with no warning that a tracked file was reverted. It was found on
+2026-09-23 from =feature/clean-assets=, where the refresh was run to clear the
+bearings next-action and left an unrelated modified file in the tree.
+
+Reproduced twice: run the build and =grep -c
+test_compass_does_not_run_a_denied_stash= goes from 1 to 0;
+=git checkout -- <file>= restores it. The file's own history confirms the
+drift, =20cd5089d5 [compass] Stop the capture PR flow popping a shared stash=
+is the commit that added the test to the generated file.
+
+Fix: add the test block to =claude_code_settings.org= beside the rest of
+=test_deny_bare_stash_hook.py= and re-tangle, so the build reproduces the
+checked-in file. This is the same class of defect as the codegen artefact
+drift the rest of the tree already guards with a gate; the settings source
+has no such gate.
+
+* References
+
+- =doc/llm/claude_code_settings.org:996= — the tangle block missing the test.
+- =projects/ores.compass/tests/test_deny_bare_stash_hook.py= — the generated file.
+- commit =20cd5089d5= — added the test to the generated file only.
+- =projects/ores.codegen/scripts/check_model_drift.py= — the closest existing
+  gate of this shape, for models against profiles.
+
+* See also
+
+- [[id:9297CB27-F58B-4AF7-9F56-5E077778773A][Fix repo-wide component_overview.org drift]] — the same
+  "a generated artefact drifted from its source" family.

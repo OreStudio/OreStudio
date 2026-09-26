@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,12 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ASSETS_REPOSITORY_IMAGE_TAG_ENTITY_HPP
-#define ORES_ASSETS_REPOSITORY_IMAGE_TAG_ENTITY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_ASSETS_CORE_REPOSITORY_IMAGE_TAG_ENTITY_HPP
+#define ORES_ASSETS_CORE_REPOSITORY_IMAGE_TAG_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 #include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::assets::repository {
@@ -30,19 +36,24 @@ namespace ores::assets::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents an image-tag association in the database.
+ * @brief Represents a image tag in the database.
  *
- * Junction table entity for many-to-many relationship between images and tags.
+ * Junction table with composite primary key (image_id, tag_id, valid_from).
  */
 struct image_tag_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_assets_image_tags_tbl";
 
-    std::string tenant_id;
     sqlgen::PrimaryKey<std::string> image_id;
-    sqlgen::PrimaryKey<std::string> tag_id;
+    std::string tenant_id;
+    std::string tag_id;
+    int version = 0;
     std::string assigned_by;
-    db_timestamp assigned_at = "9999-12-31 23:59:59";
+    std::string assigned_at;
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
 };

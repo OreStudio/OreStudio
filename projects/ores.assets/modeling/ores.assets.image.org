@@ -1,0 +1,175 @@
+:PROPERTIES:
+:ID: 5A1C7E93-2B48-4D61-9F03-8C6E5A2D7149
+:END:
+#+title: ores.assets.image
+#+description: Codegen entity model for the assets =image= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: assets
+#+filetags: :model:entity:assets:
+#+brief: An image published to the platform.
+#+entity_singular: image
+#+entity_plural: images
+#+entity_title: Image
+#+created: 2026-09-23
+#+updated: 2026-09-26
+
+An image is a named document the platform renders, such as a currency flag
+or a commodity icon. The bytes are format-agnostic: an SVG document, a
+JPEG, or any other media type =mime_type= names. The database stores them
+base64-encoded in a =text= column, and the domain type carries the raw
+bytes. Images carry tags through the =image_tag= junction, and an image
+arrives either by upload or from the data-quality publish path.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: assets
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate identifier for the image.
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-meaningful image code, unique within the tenant. Callers ask for an
+image by this code, for example =GBP= or =gold=. The column is named
+=code= rather than =key= because the notify-trigger template derives a
+=changed_<natural key>= variable from the column name and already holds a
+=changed_key= of its own, so a natural key called =key= declares the name
+twice and the trigger fails to create.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the image depicts.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " image"
+#+end_src
+
+** mime_type
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       'image/svg+xml'
+:default_value: "image/svg+xml"
+:END:
+
+Media type of the image data, for example =image/svg+xml= or =image/jpeg=.
+SVG is the default because most published images are SVG, but an image may
+carry any media type. The generator block restates the default because the
+generator template only honours =default_value= when a column also declares
+a generator, and otherwise invents a random word.
+
+#+begin_src cpp :name generator
+std::string("image/svg+xml")
+#+end_src
+
+** data
+:PROPERTIES:
+:type:     text
+:cpp_type: std::vector<std::uint8_t>
+:base64:   true
+:nullable: false
+:END:
+
+Raw image bytes: SVG markup as UTF-8 bytes, or a binary format such as
+JPEG. The database column is =text= and holds the bytes base64-encoded;
+the domain member is the raw byte vector, and the mapper performs the
+base64 hop in both directions.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_assets_images_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: image
+:entity_plural_short:   images
+:entity_singular_words: asset image
+:entity_plural_words:   asset images
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: i
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| id          | ID          |
+| code        | Code        |
+| description | Description |
+| mime_type   | Media Type  |
+| modified_by | Modified By |
+| recorded_at | Recorded At |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.assets.api/domain/image.hpp
+:domain_class:            assets::domain::image
+:protocol_include:        ores.assets.api/messaging/image_protocol.hpp
+:collection_name:         images
+:item_var:                image
+:key_field:               code
+:get_request_class:       assets::messaging::get_images_request
+:get_response_class:      assets::messaging::get_images_response
+:get_message_type:        get_images_request
+:save_request_class:      assets::messaging::save_image_request
+:save_response_class:     assets::messaging::save_image_response
+:save_message_type:       save_image_request
+:delete_request_class:    assets::messaging::delete_image_request
+:delete_response_class:   assets::messaging::delete_image_response
+:delete_message_type:     delete_image_request
+:history_request_class:   assets::messaging::get_image_history_request
+:history_response_class:  assets::messaging::get_image_history_response
+:history_message_type:    get_image_history_request
+:changed_event_class:     assets::eventing::image_changed_event
+:changed_event_include:   ores.assets.api/eventing/image_changed_event.hpp
+:END:
+
+* See also
+
+- [[id:8C604D55-6F20-41D2-A66A-12A767B81D07][ores.assets]] — component group overview.

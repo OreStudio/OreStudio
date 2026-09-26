@@ -33,16 +33,16 @@ const std::string tags("[domain][image]");
 using ores::assets::domain::image;
 using namespace ores::logging;
 
-TEST_CASE("create_image_with_key_and_description", tags) {
+TEST_CASE("create_image_with_code_and_description", tags) {
     auto lg(make_logger(test_suite));
 
     image sut;
-    sut.key = "gb";
+    sut.code = "gb";
     sut.description = "Flag for country code GB (United Kingdom)";
     sut.modified_by = "admin";
-    BOOST_LOG_SEV(lg, info) << "Image key: " << sut.key;
+    BOOST_LOG_SEV(lg, info) << "Image code: " << sut.code;
 
-    CHECK(sut.key == "gb");
+    CHECK(sut.code == "gb");
     CHECK(sut.description == "Flag for country code GB (United Kingdom)");
     CHECK(sut.modified_by == "admin");
 }
@@ -54,7 +54,7 @@ TEST_CASE("default_constructed_image_has_zero_version", tags) {
     BOOST_LOG_SEV(lg, info) << "Default image version: " << sut.version;
 
     CHECK(sut.version == 0);
-    CHECK(sut.key.empty());
+    CHECK(sut.code.empty());
     CHECK(sut.description.empty());
     CHECK(sut.data.empty());
     CHECK(sut.mime_type == "image/svg+xml");
@@ -65,7 +65,7 @@ TEST_CASE("image_version_can_be_set", tags) {
 
     image sut;
     sut.version = 3;
-    sut.key = "ro";
+    sut.code = "ro";
     sut.description = "Flag for country code RO (Romania)";
     sut.modified_by = "admin";
     BOOST_LOG_SEV(lg, info) << "Image version: " << sut.version;
@@ -73,12 +73,12 @@ TEST_CASE("image_version_can_be_set", tags) {
     CHECK(sut.version == 3);
 }
 
-TEST_CASE("image_json_output_contains_key_and_description", tags) {
+TEST_CASE("image_json_output_contains_code_and_description", tags) {
     auto lg(make_logger(test_suite));
 
     image sut;
     sut.version = 1;
-    sut.key = "us";
+    sut.code = "us";
     sut.description = "Flag for country code US (United States)";
     sut.modified_by = "admin";
     sut.recorded_at = std::chrono::system_clock::now();
@@ -90,6 +90,7 @@ TEST_CASE("image_json_output_contains_key_and_description", tags) {
     BOOST_LOG_SEV(lg, info) << "JSON output: " << json_output;
 
     CHECK(!json_output.empty());
-    CHECK(json_output.find("us") != std::string::npos);
-    CHECK(json_output.find("United States") != std::string::npos);
+    CHECK(json_output.find("\"code\":\"us\"") != std::string::npos);
+    CHECK(json_output.find("\"description\":\"Flag for country code US (United States)\"") !=
+          std::string::npos);
 }

@@ -1,0 +1,184 @@
+:PROPERTIES:
+:ores.cpp.nats-handler.enabled: true
+:ores.cpp.nats-sub-registrar.enabled: true
+:ores.cpp.service.enabled: true
+:ores.cpp.shell-command.enabled: true
+:ID: 7E4B2D18-9C63-4A05-B781-3F5D9E2C6A47
+:END:
+#+title: ores.assets.image_tag
+#+description: Codegen junction model for image_tags. Renders the generic junction protocol itself.
+#+type: ores.codegen.junction
+#+component: assets
+#+filetags: :model:junction:assets:
+#+name: image_tags
+#+name_singular: image_tag
+#+name_title: Image Tag
+#+name_singular_words: image tag association
+#+brief: Links an image to a tag.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+Junction table linking images to tags. An image carries any number of
+tags, and a tag classifies any number of images. The association itself
+has no natural key: a row is identified by the image and tag pair it
+links, and the row records who made the association and when.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:END:
+
+* Left
+:PROPERTIES:
+:column:        image_id
+:column_short:  image
+:column_title:  Image
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for looking up tags for an image
+:list_by:       true
+:END:
+
+ID of the tagged image.
+
+References ores_assets_images_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        tag_id
+:column_short:  tag
+:column_title:  Tag
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for finding images carrying a tag
+:END:
+
+ID of the tag applied to the image.
+
+References ores_assets_tags_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Columns
+
+** assigned_by
+:PROPERTIES:
+:type:       text
+:cpp_type:   std::string
+:read_only:  true
+:END:
+
+Username of the account that made the association. The insert trigger
+stamps it from the acting user, so a client never sets it.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "-user"
+#+end_src
+
+** assigned_at
+:PROPERTIES:
+:type:       timestamp with time zone
+:cpp_type:   std::chrono::system_clock::time_point
+:read_only:  true
+:END:
+
+When the association was made. The insert trigger stamps it, so a client
+never sets it.
+
+#+begin_src cpp :name generator
+ctx.past_timepoint()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_assets_image_tags_tbl
+:END:
+
+* Foreign keys
+
+** image_id
+:PROPERTIES:
+:table:         ores_assets_images_tbl
+:error_message: Invalid image_id: %. No image found with this id.
+:END:
+
+ID of the tagged image; must exist in ores_assets_images_tbl.
+
+** tag_id
+:PROPERTIES:
+:table:         ores_assets_tags_tbl
+:error_message: Invalid tag_id: %. No tag found with this id.
+:END:
+
+ID of the tag applied to the image; must exist in ores_assets_tags_tbl.
+
+* Repository
+:PROPERTIES:
+:name_singular_short: image_tag
+:name_short:          image_tags
+:name_singular_words: image tag
+:name_words:          image tags
+:order_column:        tag_id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: it
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| image_id    | Image       |
+| tag_id      | Tag         |
+| assigned_by | Assigned By |
+| assigned_at | Assigned At |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name: image_tags
+:END:
+
+The screen's declaration. An association has no key field to name: the model
+declares none, because an association is identified by the pair it links and a
+single field cannot state half of a pair.
+
+* See also
+
+- [[id:8C604D55-6F20-41D2-A66A-12A767B81D07][ores.assets]] — component group overview.

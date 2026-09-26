@@ -128,9 +128,9 @@ begin
         end if;
 
         if r.image_id is not null then
-            select assets.image_id into v_resolved_image_id
+            select assets.id into v_resolved_image_id
             from ores_dq_images_artefact_tbl dq_img
-            join ores_assets_images_tbl assets on assets.key = dq_img.key
+            join ores_assets_images_tbl assets on assets.code = dq_img.key
               and assets.tenant_id = p_target_tenant_id
             where dq_img.image_id = r.image_id
               and dq_img.tenant_id = ores_utility_system_tenant_id_fn()
@@ -266,9 +266,9 @@ begin
         end if;
 
         if r.image_id is not null then
-            select assets.image_id into v_resolved_image_id
+            select assets.id into v_resolved_image_id
             from ores_dq_images_artefact_tbl dq_img
-            join ores_assets_images_tbl assets on assets.key = dq_img.key
+            join ores_assets_images_tbl assets on assets.code = dq_img.key
               and assets.tenant_id = p_target_tenant_id
             where dq_img.image_id = r.image_id
               and dq_img.tenant_id = ores_utility_system_tenant_id_fn()
@@ -2359,10 +2359,10 @@ begin
                 continue;
             end if;
 
-            select image_id into v_image_id
+            select id into v_image_id
             from ores_assets_images_tbl
             where tenant_id = p_target_tenant_id
-              and key = v_logo_map.image_key
+              and code = v_logo_map.image_key
               and valid_to = ores_utility_infinity_timestamp_fn();
 
             if v_image_id is null then
@@ -2372,7 +2372,7 @@ begin
                 if v_template is not null then
                     v_image_id := gen_random_uuid();
                     insert into ores_assets_images_tbl (
-                        image_id, tenant_id, version, key, description, mime_type, data,
+                        id, tenant_id, version, code, description, mime_type, data,
                         modified_by, performed_by, change_reason_code, change_commentary
                     ) values (
                         v_image_id, p_target_tenant_id, 0, v_logo_map.image_key,

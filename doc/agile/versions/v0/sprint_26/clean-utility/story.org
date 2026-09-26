@@ -70,7 +70,7 @@ ores.utility meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
   documentation headers, 346 lines, on the reading that a header nothing
   includes is dead. They are restored with their claims corrected, so the
   component is 16 files and 1526 lines lighter rather than 27 and 1872. See
-  Review row 18 on the task and G08 of the standard.
+  Review row 18 on the task and G08 of the standard, which PR #2162 adds.
 - Verified PASS on `3d1a31520f` over four independent rounds, and merged as
   `9b2427bfca` in PR #2155 on 2026-09-26 with every CI check green. The
   verifier found no code defect; the findings and their dispositions are in

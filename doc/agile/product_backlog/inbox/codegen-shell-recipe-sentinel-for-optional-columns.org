@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 90BDBB0E-45D6-4B38-A2F2-5573306E0B1B
+:END:
+#+title: Fix the shell recipe sentinel for optional columns
+#+description: _sentinel_value in org_loader.py falls back to __none__ for a cpp_type it does not know, and std::optional<...> has no entry. The shell's absent-value token is '-' (ores.shell.api command_token.hpp absent_token), so a generated recipe script for an optional uuid aborts with 'Invalid value for <field>: __none__' before it reaches the service. Observed on pricing_model_product_parameters put-many during the ores.analytics clean pass (one of 40 commands). iam carries seven optional uuid columns, so the fix changes iam's committed recipes and script library too and belongs on a codegen story, with a regression test.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:shell:recipe:tech_debt:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -26,12 +26,12 @@ ores.analytics passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2525D39D-91BB-49A7-B6FE-3276D253F86E][Clean ores.analytics to the component clean standard]] |
-| Now          | Sections B to H are done and committed. V01, V03, V05 and V06 pass; V02's codegen suite passes. V02's component suites and V04's live run are blocked on a fleet that cannot be brought up in this sandbox. |
-| Waiting on   | A host with no stale services from an earlier session attached, and a reachable systemd user bus. |
-| Next         | Run =compass test run= and the analytics recipe set against a clean fleet, record V02 and V04, then close the task and raise the PR. |
-| Last touched | 2026-09-23                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-26                               |
 
 * Acceptance
 
@@ -94,9 +94,9 @@ record each item's result in the table below.
 | H02  | Pass. The retired event headers are deleted and the registrar's duplicate history providers are removed; no dead or commented-out code remains. | commit a74ebddd1e |
 | H03  | Pass. The comment pass over the changed and added comments found no clutter, no narration and no end-of-line comment. | Comment note below |
 | V01  | Pass. The whole tree builds, the shell adapter part and =ores.shell.exe= included. | =compass build= (exit 0) |
-| V02  | Partial. The codegen suite passes (537 tests). The component suites did not run: the fleet cannot be brought up cleanly here. | =pytest projects/ores.codegen/tests= (537 passed); blocker note below |
+| V02  | Pass. The codegen suite passes, and all five analytics test suites pass against the running fleet. | =pytest projects/ores.codegen/tests= (523 passed); =ctest -R analytics= (5/5 passed) |
 | V03  | Pass. The database recreates from scratch and the analytics layer populates. | =compass db recreate -y -k= (exit 0, 44 pricing engine types) |
-| V04  | Blocked. The live recipe run needs a fleet that serves, and it cannot be trusted with the old services still attached. | blocker note below |
+| V04  | Pass with one recorded exception. All 40 generated analytics scripts ran against the live fleet; 39 answered, one aborted in the client. | live run log; V04 note below |
 | V05  | Pass. component drift, model drift, protocol twin coverage (24 headers, 2 components), handler permissions (2 components, 152 codes), populate references, recipe inventory and the CMake source lists are all clean. | each check script, exit 0 |
 | V06  | Pass. =analytics-cpp= is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= reports no drift. | =component_registry.py=; =check_component_drift.py --all= (exit 0) |
 
@@ -244,53 +244,59 @@ regression test is in =test_org_loader_keys.py=.
 The build then completed clean, and =check_component_drift.py --all=
 reports no drift.
 
-** V02 and V04 blocker
+** Live verification (V02 and V04)
 
-The live half of verification could not run in this sandbox, for two
-reasons that are environmental rather than component defects.
+The first attempt was blocked. Nine services from an earlier session were
+still running pre-change binaries on the same subjects, and the sandbox
+has no systemd user bus, so =compass services start= needs =--use-busctl=
+and the stale services could not be stopped from inside. A host restart
+cleared both.
 
-- The sandbox has no systemd user bus. =compass services start= fails
-  with "Failed to connect to user scope bus" unless it is given
-  =--use-busctl=.
-- Nine services from an earlier session are still alive in a different
-  process namespace and still connected to this environment's database
-  and NATS subjects: the analytics, compute, dq, marketdata, refdata,
-  reporting, synthetic, trading and workspace services. They were started
-  from binaries that predate this change, so they hold subscriptions on
-  the same subjects the new shell commands address, and they cannot be
-  killed from here: =ps= does not see their PIDs, no systemd unit matches
-  them, and there is no bus to stop them through. Their log lines are the
-  source of the "Failed to deserialize notification payload" errors in
-  =ores.analytics.service.0.log=: those channels are registered
-  canonically by the new binary and were not by the old one.
+After the restart the environment was refreshed to format version 23, the
+database was already current, and the fleet started with 22 of 23 units
+ready. Only the web BFF failed, and the analytics surface does not use it.
 
-  The database was recreated underneath them and they reconnected
-  (V03 passed). A fresh fleet was then started: NATS came up on port
-  20205 and 11 of 24 units ran, but 13 never reached the ready marker, so
-  neither =compass test run= nor the recipe run has a trustworthy fleet to
-  speak to. That fleet was stopped again after the attempt.
+- V02. Five suites ran, all passed: =ores.shell.analytics.tests=,
+  =ores.analytics.api.tests=, =ores.analytics.core.tests=,
+  =ores.analytics.quant.tests= and =ores.analytics.service.tests=.
+- V04. All 40 generated analytics scripts ran against the live fleet as
+  the bootstrapped =super_admin=. Ten answered =ok=. Twenty-nine answered
+  with a service verdict: a generated script sends sentinel values, so the
+  service answers =failed= on validation or =missing= for a key that
+  addresses nothing. That is the command working, not failing. One aborted
+  in the client, =pricing_model_product_parameters put-many=, recorded
+  below.
 
-The remaining work is to re-run V02's component suites and V04's recipe
-run on a host where the stale services are gone. Nothing in this change
-is left unverified by that: the regeneration identity (V06), the build
-(V01), every codegen gate (V05) and the database bring-up (V03) all pass
-on the real artifacts.
+** V04 recorded exception
+
+=pricing_model_product_parameters put-many= aborts before it leaves the
+client: its optional =pricing_model_product_id= receives =__none__=, and
+=command_token.hpp= reserves ='-'= for an absent optional, so the token
+does not parse. This is a generator defect in
+=org_loader._sentinel_value=, which carries no =std::optional= entry and
+falls back to =__none__=. iam declares seven optional uuid columns, so the
+fix changes iam's committed recipes and its script library as well. That
+makes it a codegen-round change rather than one this story can carry
+without editing a closed component's tree, so it is recorded as
+[[id:90BDBB0E-45D6-4B38-A2F2-5573306E0B1B][Fix the shell recipe sentinel for optional columns]].
+V04's own rule allows a command that cannot run to be recorded with its
+reason, which is what this is; the other 39 answered.
 
 ** Rebases and re-verification
 
 The branch was cut from =main= at 8d2565db07. =main= then took PR #2138
-(the Qt remnants, which rewrites the same four analytics models) and PR
-#2140 (which deletes =ores.cli=), so the branch was rebased onto
-388a90445f. Two conflicts resolved: the model Presentation drawers keep
-this pass's two keys, and the two deleted =ores.cli= file lists stay
+(the Qt remnants, which rewrites the same four analytics models), PR
+#2140 (which deletes =ores.cli=) and PR #2139 (which deletes
+=ores.connections=), so the branch was rebased twice, onto 388a90445f and
+then onto 5de59e3fb8. Three conflicts resolved: the model Presentation
+drawers keep this pass's two keys, and the two deleted file lists stay
 deleted.
 
-Everything was re-verified on the new base. =check_component_drift.py
---all= reports no drift, the CMake file lists, protocol twin coverage,
-handler permissions, populate references, recipe inventory and model
-drift are all clean, and the codegen suite passes (523; the count fell
-with the CLI component's tests). The whole-tree build follows the same
-rebase.
+Everything was re-verified on each base. =check_component_drift.py --all=
+reports no drift, the CMake file lists, protocol twin coverage, handler
+permissions, populate references, recipe inventory and model drift are all
+clean, and the codegen suite passes (523; the count fell with the CLI
+component's tests). The whole-tree build follows the last rebase.
 
 * Test Scenarios
 
@@ -316,3 +322,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores.analytics= meets the Component Clean Standard and joins
+=COMPONENTS_UNDER_TEST=, so the shared gates cover it from now on.
+
+What changed. The four entity models lost the retired Presentation keys
+and gained the =Table display= section the generator reads for list
+output, which their absence had rendered empty. The component was
+regenerated onto the canonical NATS protocol: nine subjects per entity
+with the versions sub-resource, canonical =*_event= eventing, SQL and
+TypeScript twins, four literate shell recipes, and a new
+=ores.shell.analytics= adapter part holding a generated command unit,
+source and test per entity.
+
+The wiring moved to the generated families. The core registrar composes
+the generated =*_history_provider= family instead of repeating it inline,
+and a new =event_registrar= aggregate replaced the hand-rolled event
+pipeline in =application.cpp=. Four retired =*_changed_event.hpp= headers
+are deleted. Read the two together: the duplication was the reason the
+event channels were registered by hand, and the aggregate is what makes
+the generated mapping the only call site.
+
+Evidence. The whole tree builds. =check_component_drift.py --all= reports
+no drift, which proves the regeneration is byte-identical and idempotent.
+The codegen suite passes (523), all five analytics test suites pass against
+the running fleet, and every other codegen gate is clean. The database
+recreates from scratch. All 40 generated analytics scripts ran against the
+live fleet; 39 answered, and one aborted in the client with its reason
+recorded.
+
+One generator defect was fixed at source. The first build failed because
+the service called =repo.read_latest_by_name= while the repository
+declared only =read_latest_by_code=. =key_finders= deduplicated a legacy
+finder against the declared key by column alone, and the two are one
+method only when the suffix agrees. =org_loader.py= now compares column
+and suffix together, with a regression test; an entity whose key is =code=
+stays byte-identical, so iam is unchanged.

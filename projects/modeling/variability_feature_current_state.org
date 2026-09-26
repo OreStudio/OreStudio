@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 54EC48CE-B2B1-4A86-BFA1-7B2EB32BBDC3
+:END:
+#+title: Feature: current_state
+#+description: Current-state table shape: one row per key, no valid_from and valid_to axis, no audit tail and no versions sub-resource.
+#+type: feature
+#+level: cross
+#+filetags: :codegen:variability:feature:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
+this feature's value links here rather than restating its effect.
+
+* Identity
+
+| Field | Value |
+|-------+-------|
+| Literal name | =:current_state:= |
+| Bundle | =ores.sql.schema= |
+| Type | bool |
+| Default | false |
+
+* Effect
+
+The table holds one row per key and no history. The value is read from the
+model's =* SQL ** Flags= drawer and selects the current-state DDL in place of
+the bi-temporal shape: no =version= column, no =valid_from=/=valid_to= pair,
+no GIST exclusion, no insert trigger doing version management and no delete
+rule that soft-closes a row.
+
+The rest of the surface follows the same flag. A current-state entity has no
+versions sub-resource, so no version records, no version operations and no
+version subscription are generated. That covers the NATS handler and its
+registrar, the C++ protocol header and the TypeScript twin. An ordinary
+entity keeps every one of them.
+
+* Structural consequence
+
+The table shape, and through it the entity struct: the audit tail and the
+temporal columns are absent, so the generated sqlgen entity carries neither.
+A current-state model and a bi-temporal model of the same columns therefore
+do not produce the same table.
+
+* Used by
+
+- [[id:0AB24790-8CF2-466A-9B49-257A1A49C75B][Read-only current-state]]
+
+* See also
+
+- [[id:E13F0F34-2407-4C66-92F3-AA09E543377E][read_only]] — the wire surface this feature is usually paired with.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundle this feature belongs to.

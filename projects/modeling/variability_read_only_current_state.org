@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 0AB24790-8CF2-466A-9B49-257A1A49C75B
+:END:
+#+title: Profile: Read-only current-state
+#+description: Read-only entity over a current-state table: list, get and get_many on the wire, no write verb and no version read, and the non-temporal table shape.
+#+type: profile
+#+level: cross
+#+filetags: :codegen:variability:profile:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a named element-scope [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD profile]] instantiating [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
+Studio Variability Model]] § "Profiles: naming a recurring configuration point". A model file binds to
+this profile (rather than authoring each feature individually) to
+guarantee the exact feature combination below, with no ad hoc variation.
+
+* Purpose
+
+Some tables are written by the system and read by everyone else. A bootstrap
+record, a derived state row, a projection the application never edits: each
+is read over the wire and never written through it, and each holds one row
+per key rather than a history.
+
+Before this profile the two facts were authored per entity, as
+=:read_only: true= and =:current_state: true= in two different drawers, and
+each new model re-decided a combination the codebase had already settled. The
+combination is what makes it a profile: =ores.iam.login_info= set it first,
+and the database metadata table and the next such entity need the same
+answer.
+
+Binding it is enough. The profile carries both flags through the Assignments
+table. =read_only= reaches the entity root, where =wire_write_enabled= reads
+it, and =current_state= reaches the SQL namespace, where the table shape is
+decided.
+
+* Reference entity
+
+[[id:8A507DA9-1FFE-4DD3-992F-7359F5531253][ores.iam.login_info]] — login
+tracking and security state, one row per account, written by the login flow
+and read by the administration surface. Its protocol carries
+=list_login_info=, =get_login_info= and =get_many_login_info=, and nothing
+else.
+
+* Assignments
+
+One row per feature this profile fixes a value for — any feature not listed
+here is left to the model's own choice:
+
+| Feature | Value |
+|------+-------|
+| [[id:E13F0F34-2407-4C66-92F3-AA09E543377E][read_only]] | true |
+| [[id:54EC48CE-B2B1-4A86-BFA1-7B2EB32BBDC3][current_state]] | true |
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the model this profile instantiates.
+- [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]] — the catalogue of named profiles.

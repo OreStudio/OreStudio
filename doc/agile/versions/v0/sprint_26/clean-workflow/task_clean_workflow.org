@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-workflow:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-workflow
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ ores.workflow passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -57,9 +57,102 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | Baseline recorded: 65 files of pre-existing drift, and nothing generated. | =check_component_drift.py --component workflow-cpp --dry-run= reports 15 would change and 50 would be created; =check_model_drift.py= reports no model drift, with one known exception in =ores.reporting= that is not this component. Taken on 2026-09-26 at =dd47be8831=. |
+| B02 | Two entity models, one module and four component overviews. Component and module carry no entity variability, so they are excluded from the entity survey. | Table below. |
+| B03 | 53 hand-written C++ files outside tests, none carrying the generated marker. 29 are generatable and 24 are infrastructure that stays hand-written. | Table below. |
+| B04 | Deferred to the Protocol section: the component serves no entity protocol yet, and all eight messaging headers are hand-written. | Recorded here; the subject inventory is P02's evidence. |
+| B05 | No open capture and no in-flight branch touches =ores.workflow=. | =doc/agile/product_backlog/inbox= holds no =workflow= capture; =git branch -a= holds no other =workflow= branch. |
+| B06 | One dead symbol group. Everything else is production-consumed, and nothing is test-only. =workflow_instance_changed_event= and its =event_traits= specialisation have no consumer at all: nothing constructs one, publishes one, or subscribes to one. | =git grep= over =projects/=: the only hits are the definition itself, the component's own =.puml=, and its =component_files.cmake=. Table below. |
 
 * Notes
+
+** B01 baseline detail
+
+Against an unmodified tree, =check_component_drift.py --component workflow-cpp
+--dry-run= reports 65 files in total: 15 that would change and 50 that would be
+created.
+
+The 15 that would change are 12 hand-written repository files under =core/= (the
+two entities' entity, mapper and repository headers and sources), the component
+=CMakeLists.txt=, and 2 SQL drop scripts under =projects/ores.sql/drop/workflow/=.
+
+The 50 that would be created are 14 under =api/include=, 10 under
+=core/include=, 8 under =core/src=, 8 under =api/src=, 6 SQL scripts, 2 under
+=service/src= and 2 under =service/include=.
+
+This baseline is expected rather than a regression. The story's 2026-09-23
+survey found 0 of 53 C++ files generated, so nothing has ever been regenerated
+for this component.
+
+** B02 metatype survey
+
+| File | Metatype | Variability |
+|------+----------+-------------|
+| =ores.workflow.workflow_instance.org= | =ores.codegen.entity= | Yes |
+| =ores.workflow.workflow_step.org= | =ores.codegen.entity= | Yes |
+| =ores.workflow.module.org= | =ores.codegen.module= | No |
+| =component_overview.org= (component root) | =ores.codegen.component= | No |
+| =api/modeling/component_overview.org= | =ores.codegen.component= | No |
+| =core/modeling/component_overview.org= | =ores.codegen.component= | No |
+| =service/modeling/component_overview.org= | =ores.codegen.component= | No |
+
+** B03 hand-written C++ survey
+
+53 files in total: 10 under =api/include=, 17 under =core/include=, 13 under
+=core/src=, 8 under =service/include= and 5 under =service/src=.
+
+Generatable, because generation supersedes them (29):
+
+- Repository, 12: the two entities' entity, mapper and repository headers and
+  sources. These are the files the B01 baseline says would change.
+- Messaging, 11: the 5 protocol headers under =api/include=, plus
+  =registrar=, =workflow_handler= and =workflow_query_handler= as headers and
+  sources under =core=.
+- Domain, 6: =workflow_instance.hpp= and =workflow_step.hpp= with their
+  =_json_io= headers, and the two =_json_io.cpp= sources.
+
+Infrastructure that stays hand-written (24):
+
+- =service/=, 13: =app/=, =config/=, =main.cpp= and the module headers.
+- Umbrella and export headers, 5, across the three modules. G08 covers them
+  again.
+- =core/*/service/*=, 4: =workflow_engine= and =fsm_state_map=, headers and
+  sources. Workflows are operations rather than entity verbs (P04), so the
+  engine is genuine logic.
+- =api/*/service/*=, 2: =workflow_definition.hpp= and =workflow_registry.hpp=.
+- =api/*/eventing/workflow_instance_changed_event.hpp=, 1. The baseline creates
+  the event *registrar* under =service/=, not this header.
+
+Nothing is classified dead yet. B06 owns that call, and it needs the consumer
+census rather than a reading of each file.
+
+** B06 consumer census
+
+| Symbol | Consumer | Verdict |
+|--------+----------+---------|
+| =workflow_instance_changed_event= and =event_traits= | None | Dead |
+| =workflow_definition=, =workflow_registry= | =ores.dq=, =ores.ore=, =ores.refdata=, =ores.reporting= | Production |
+| =fsm_state_map= | =ores.reporting= (=report_execution_handler=, =report_instance_trigger_handler=, =registrar.cpp=) | Production |
+| =workflow_engine= | The component's own =messaging/registrar.cpp= | Production |
+| Service shell (=application=, =host=, =options=, =parser=) | The component's own =main.cpp= | Production |
+
+The dead group. =workflow_instance_changed_event= has three references in the
+whole tree: its own definition, the component's hand-written
+=ores.workflow.api.puml=, and =api/src/component_files.cmake=. No other component
+includes it, and nothing in =ores.workflow= constructs or publishes one. It is
+dead on the census, and it is also superseded: the =nats-eventing= facet writes
+=eventing/{entity}_event.hpp=, so generation will produce
+=workflow_instance_event.hpp= and =workflow_step_event.hpp= in its place. It
+therefore falls under both B06 (no consumer) and G02 (superseded by generation),
+and the deletion belongs with the regeneration rather than before it.
+
+A caveat on the raw counts. Searching for =workflow_engine= outside the
+component returns one hit, in
+=projects/ores.dsh_kanban/test/fixtures/sprint_25/=, which is an org fixture
+holding sprint prose rather than C++ that consumes the symbol. The census counts
+consumers, not mentions, so that hit is not one.
+
+Nothing is test-only, so no symbol is deleted for having only a test behind it.
 
 * Test Scenarios
 

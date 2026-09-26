@@ -418,8 +418,10 @@ row is updated as each PR lands.
   builds a =trade_removal= whose key is that identifier. Because the
   field now carries a key and not a uuid, the ores.ore model renames it
   =saved_trade_external_ids=, and its generated C++ and TypeScript and
-  the hand-drawn diagram follow it. No trading model and no trading
-  protocol change. The other two options stay recorded: declaring the
+  the hand-drawn diagram follow it. The trading protocol does not change.
+  The trading model changes in one place: the trade key's fixture
+  generator gains a value, which is defect 17's PR 2 half; no column and
+  no shape change. The other two options stay recorded: declaring the
   storage key as the wire key is PR 3 model work, and a removal by
   storage key is a generator change. If PR 3 settles the key the other
   way, the handler change is what reverts, and it is one line. The key's

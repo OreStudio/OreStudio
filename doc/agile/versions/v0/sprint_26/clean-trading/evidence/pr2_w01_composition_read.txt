@@ -10,6 +10,15 @@ trusting the drift gate.
 | History provider            |       31 |       31 | the same registrar sources                     |
 | Event mapping               |       61 |       61 | service/src/app/application.cpp                |
 
+Correction, same day
+--------------------
+The first read of this table counted history provider *declarations* and
+their presence in the registrar sources, not their call sites, and so
+called 31 of 31 composed when 21 were never called: the bond families,
+the instrument children and ascot. The independent verification caught
+it. The 21 are now composed in registrar.cpp, and the count above is by
+call site.
+
 The handler registrars are reached from the component's single
 composition entry point, ores::trading::messaging::registrar::register_handlers,
 which service/src/app/application.cpp and the core registrar detail both

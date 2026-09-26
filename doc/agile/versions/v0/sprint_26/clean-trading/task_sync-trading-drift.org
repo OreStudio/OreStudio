@@ -537,6 +537,45 @@ component joins the registry and which are still vacuous.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Verification, round 1
+
+An independent verifier read the diff against the six claims the task
+makes. It confirmed D1, the trade eventing change, the header deletion and
+the trade key record, found the codemod a genuine no-op, and raised four
+findings. All four are answered here.
+
+1. *Blocker: four dead subjects in the bond shell unit.*
+   =bond_instrument_commands.cpp= handed =save_row= the literals
+   =trading.v1.bond_issues.save= and three siblings. The migration
+   renamed the types but not a literal that a helper forwards, and no
+   handler answers =...save=, so =bond add= would time out.
+   Fixed: =save_row= derives the subject from the request,
+   =std::string(request.nats_subject)=, so the row cannot be sent to a
+   subject no handler answers. The codemod now reports a subject literal
+   that survives a migration, because a literal a helper forwards is
+   beyond a textual pass; the four reports that remain are the four
+   families with no model, whose consolidated subjects are still correct.
+2. *Should-fix: the W01 history provider count was wrong.*
+   The first read called 31 of 31 composed; it counted declarations, not
+   call sites, and 21 were never composed. Caught by the verification and
+   fixed: the 21 are composed in =registrar.cpp=, and the read is 31 of
+   31 by call site. The correction is written into
+   =evidence/pr2_w01_composition_read.txt=.
+3. *Note: the trading diagram still declared the deleted type.*
+   =ores.trading.api.puml= showed =trade_changed_event=. It now shows the
+   canonical =trade_event= with its own members.
+4. *Note: the decision said no model changed, and one did.*
+   D8 now states what changed: the trading protocol does not change, and
+   the trade model changes only in the key's fixture generator, which is
+   defect 17's PR 2 half.
+
+Two claims the verifier could not re-derive are recorded as derived by
+script here: the three nullable declared keys (a script over every
+modeling directory found exactly =business_unit.unit_code=,
+=account_contact_information.email= and =trade.external_id=), and the
+database trigger counts, read with =compass sql= before and after the
+environment's refresh.
+
 * Result
 
 PR 2 is done. The evidence is =evidence/pr2_acceptance_checks.txt=.

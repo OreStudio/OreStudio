@@ -227,7 +227,9 @@ with check (
 -- party isolation). The row carries no party_id of its own -- its scope
 -- comes from its parent config, exactly as the config's own party policy
 -- works: reads and writes require the parent config to be visible to /
--- owned by the current party.
+-- owned by the current party. A session with no party restriction passes
+-- through: the row has no party_id to compare, so the join alone would
+-- hide every value row from a service context or a test helper.
 -- -----------------------------------------------------------------------------
 alter table ores_synthetic_config_process_parameter_values_tbl enable row level security;
 
@@ -249,7 +251,8 @@ create policy ir_curve_generation_config_process_parameter_values_party_isolatio
 on ores_synthetic_config_process_parameter_values_tbl
 as restrictive
 for select using (
-    exists (
+    ores_iam_visible_party_ids_fn() is null
+    or exists (
         select 1 from ores_synthetic_ir_curve_generation_configs_tbl c
         where c.id = ores_synthetic_config_process_parameter_values_tbl.config_id
           and c.valid_to = ores_utility_infinity_timestamp_fn()

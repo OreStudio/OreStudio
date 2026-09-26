@@ -599,6 +599,13 @@ def migrate(text: str, path: Path, report: list[str]) -> str:
     report.append(f"{path}: {renamed} declaration(s) renamed, "
                   f"{fields} field access(es), {expanded} whole-object site(s), "
                   f"{successes} response check(s)")
+    # A subject literal that a helper forwards, rather than one a call
+    # states inline, is beyond a textual pass. Report it so a person reads
+    # it: a renamed type beside a stale subject sends nowhere.
+    leftovers = sorted(set(re.findall(r'"(trading\.v1\.[a-z0-9_.]*)"', text)))
+    if leftovers:
+        report.append(f"{path}: {len(leftovers)} subject literal(s) survive: "
+                      + ", ".join(leftovers))
     return text
 
 

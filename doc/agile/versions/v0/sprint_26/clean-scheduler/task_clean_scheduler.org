@@ -63,10 +63,10 @@ well as the All items.
 |------+--------+----------|
 | B01 | Done. Baseline taken at =f7fc9396b7= before any edit: the component drift dry run reports 19 files would change and 12 would be created — the component predates the current templates. Model drift is clean: the only exception is =ores.reporting.report_definition=, which is not scheduler. | =evidence/b01_component_drift_dry_run.txt=, =evidence/b01_model_drift.txt= |
 | B02 | Done. Two model files are visible to codegen and carry variability: =component_overview.org= (=ores.codegen.component=) and =ores.scheduler.job_definition.org= (=ores.codegen.entity=, one table). =ores.scheduler.module.org= declares =ores.codegen.module=, a metatype the loader never admits, so it is catalogue-only and carries no variability: excluded. The api, core and service =modeling/component_overview.org= files and =core/modeling/ores.scheduler.protocol.org= (no =#+type:=) are invisible to codegen because the catalogue's =modeling_dir= is only =projects/ores.scheduler/modeling=; they are documentation, excluded. | Model inventory |
-| B03 | Done. 39 public headers, 59 public symbols. Hand-written and now superseded by generation: the job_definition domain json_io, table, table_io, entity, mapper, repository, service, handler and protocol; =api/src/generators=, which the model already describes but under the wrong facet name. Hand-written infrastructure that stays: =cron_expression=, =job_instance= and =job_status= domain types, the job-instance and status handlers, =scheduler_loop=, =cron_scheduler=, the action handlers, the registrars and the service app. Dead: =core/builder/job_definition_builder= (test-only), the second =rfl::Reflector<cron_expression>= in the handler. | Consumer census; =evidence/b01_component_drift_dry_run.txt= |
+| B03 | Done. Before any edit, 39 public headers and 59 public symbols (43 headers after generation added the protocol, the change event, the registrars and the presentation mapper, and deletion removed the old protocol, the builder and the dead reflector). Hand-written and now superseded by generation: the job_definition domain json_io, table, table_io, entity, mapper, repository, service, handler and protocol; =api/src/generators=, which the model already describes but under the wrong facet name. Hand-written infrastructure that stays: =cron_expression=, =job_instance= and =job_status= domain types, the job-instance and status handlers, =scheduler_loop=, =cron_scheduler=, the action handlers, the registrars and the service app. Dead: =core/builder/job_definition_builder= (test-only), the second =rfl::Reflector<cron_expression>= in the handler. | Consumer census; =evidence/b01_component_drift_dry_run.txt= |
 | B04 | Done. Eight subject literals in code today, all in the hand-written =scheduler_protocol.hpp= except the last: =scheduler.v1.job-definitions.list=, =.schedule=, =.unschedule=, =.schedule-batch=, =.history=, =scheduler.v1.job-instances.list=, =scheduler.v1.status=, and =scheduler.v1.job-instance-events=, published by =scheduler_loop= and declared nowhere else. | Subject inventory |
 | B05 | Done. Nothing in flight for ores.scheduler: no =clean-scheduler= or scheduler branch exists on the remote or in any worktree, and no worktree holds an uncommitted ores.scheduler change. | =git worktree list=; =git status= in every worktree |
-| B06 | Done. 9 of 59 symbols have a production consumer outside the component, and every one is in =api/=: =cron_expression=, =job_definition=, =Reflector<cron_expression>= and six protocol structs, all consumed by =projects/ores.reporting=. No symbol is test-only except =job_definition_builder=, whose only caller is its own test, so it is dead. =core/= and =service/= are component-private: no file outside ores.scheduler includes any of their headers. The intended consumer of both modules is =ores.scheduler.service=, which instantiates the loop. | Consumer census |
+| B06 | Done. 9 of 59 symbols have a production consumer outside the component, and every one is in =api/=: =cron_expression=, =job_definition=, =Reflector<cron_expression>= and six protocol structs, all consumed by =projects/ores.reporting=. =core/= and =service/= are component-private: no file outside ores.scheduler includes any of their headers. The intended consumer of both modules is =ores.scheduler.service=, which instantiates the loop. The census classified by external consumer only, so it left two dead symbols standing and the verification pass found them: =job_definition_builder=, whose only caller was its own test, and =cron_scheduler=, which had no caller at all -- not a test, not the service, only its own source and the CMake list -- and whose four methods duplicated what the generated service and repository already do. Both are deleted, with the builder's test. | Consumer census; the verification pass |
 | M01 | Pass. The one model visible to codegen is on the current org format; no legacy JSON model remains. =check_model_drift.py= reports no scheduler drift. | =evidence/b01_model_drift.txt= |
 | M02 | Pass. =job_definition= binds =uuid-identified-lookup=, whose assignments it satisfies: UUID surrogate key, tenant scope, no workspace, no parent, standard presentation tier. The profile leaves =nullable_tenant_id= to the model, which is why the system-scope job row can be modelled without contradicting it. | Model; =variability_uuid_identified_lookup.org= |
 | M03 | Pass. Binding the profile removed the redundant =has_tenant_id= and =has_uuid_primary_key= statements, and the old Presentation drawer that carried them is gone. | =check_model_drift.py= |
@@ -77,7 +77,7 @@ well as the All items.
 | M08 | Pass. The one custom C++ type, =cron_expression=, is bound to =ores.scheduler.api/domain/cron_expression.hpp= in =projects/modeling/cpp_custom_types.org=, and the type now carries its own =rfl= reflector and stream operator so the generated JSON, table and mapper layers can use it. Flags are booleans. | Registry; regeneration |
 | M09 | Pass. The Presentation drawer is deleted rather than repaired: it named Qt widgets, a =database_name= field that is not a column, and the request and response classes of the retired hand-written protocol, and no live template reads those knobs. The model prose no longer instructs the generator, and no longer names deleted Qt classes. | Model diff |
 | M10 | Pass. The component overview declares =component_kind: composite= and its three parts, and regeneration produces the composite root =CMakeLists.txt=. | Regeneration |
-| G01 | Pass for what is generated: regeneration is idempotent and the component's generated tree matches its models once the artefacts are committed. | =evidence/g01_regeneration.txt=, run twice |
+| G01 | Pass. Regeneration is idempotent, and the component's generated tree matches its models from the committed tree: the in-place check reports no drift and leaves `git status` empty. The shared list reports no drift either, which is the evidence that the three template fixes are inert for =iam= and =compute-cpp=. | =evidence/g01_regeneration.txt= (run twice), =evidence/g01_clean_tree_check.txt= |
 | G02 | Pass. The hand-written protocol header, the =builder= facet, its test and the dead =rfl/reflectors.hpp= are deleted; the entity's domain, JSON, table, table-I/O, entity, mapper, repository, service and handler are now generated. | Deletion list |
 | G03 | Pass. Every generated file carries the marker and no hand-written file does. The =component_files.cmake= files dropped their stale AUTOMOC comment, which the current generator does not emit. | =grep= for =AUTO-GENERATED FILE= against the survey |
 | G04 | Pass. The generated code reads like the component's own: the generated table renders values where the hand-written one rendered an empty header and empty rows, and the generated handler reports a failure through the request context rather than swallowing it. | Review record |
@@ -89,7 +89,7 @@ well as the All items.
 | P02 | Pass, with one recorded exception: the scheduler loop's =scheduler.v1.job-instance-events= is published but declared in no model, because the entity it reports on is not modelled yet. It is declared the moment =job_instance= is. | Subject inventory |
 | P03 | Pass. The three legacy subjects =schedule=, =unschedule= and =schedule-batch= are retired as duplicates of the canonical put, put_many and delete verbs; =job-instances.list= and =status= now have rows in the messaging reference, as does the execution event; the =history= row no longer describes a history the handler did not return. | Messaging reference diff |
 | P04 | Pass. The job-instance and status views are operation models, and their messages generate from them. | =ores.scheduler.scheduling_operations.org= |
-| P05 | Pass. The one consumer, =ores.reporting=, moves to the canonical verbs in the same change; nothing is carried for backwards compatibility. | =report_scheduling_service.cpp= |
+| P05 | Pass, after one correction the verification pass forced. The one consumer, =ores.reporting=, moves to the canonical verbs in the same change and nothing is carried for backwards compatibility. That move cost a behaviour the record did not originally admit: the retired =schedule-batch= saved each definition in its own transaction and reported failures by id, while the canonical =put_many= is all-or-nothing -- the generated service stops at the first change it cannot prepare -- so reconciliation would have failed a whole tenant's batch for one bad row. Reconciliation now sends one =put= per definition, which restores the per-job behaviour against the canonical protocol rather than carrying the old subject. | =report_scheduling_service.cpp=; the verification pass |
 | P06 | Not applicable. The component has no event cache. | Model inventory |
 | W01 | Pass. The generated job-definition sub-registrar and history provider are composed at the component's composition point, =core/src/messaging/registrar.cpp=, together with the two hand-written view handlers. | Registrar review |
 | W02 | Pass. The generated handler checks =scheduler::job_definitions:read=, =:write= and =:delete=, and all three are seeded and granted to the scheduler and reporting roles. | =check_handler_permissions.py= |
@@ -103,7 +103,7 @@ well as the All items.
 | V06 | Held. =ores.scheduler= does not join =COMPONENTS_UNDER_TEST= yet, because =job_instance= is still unmodelled. The registry entry is the closing act of that unit, and the reason is recorded below. | Registry |
 | S01 | Held, with the reason recorded in the model. The profile enables =ores.cpp.shell-command=, and the model disables it in its =* Physical space= table because the =ores.shell= composite carries no scheduler part yet and its command registry is hand-written. Enabling the facet before the part exists would generate command units and a recipe for a module no build reaches. Adding the part, registering its commands and then enabling the facet is the third unit of this task. | Model =* Physical space= |
 | S02 | Held with S01. No recipe is generated while the facet is off, and the recipe inventory is unchanged. | =regenerate_shell_recipe_inventory.py= |
-| H01 | Pass. All three diagrams are hand-authored above and below the sentinel: the api diagram carries the canonical protocol types and the two operation views, the core diagram drops the deleted builder and carries the generated registrar, history provider, presentation mapper and handler, and the service diagram carries the event mapping the application now wires. Each rendered image was read, not merely regenerated. | The three =.puml= files and their rendered =.png= files |
+| H01 | Pass, after correction. All three diagrams are hand-authored above and below the sentinel: the api diagram carries the canonical protocol types and the two operation views, the core diagram carries the generated registrar, history provider, presentation mapper and handler, and the service diagram carries the event mapping the application now wires. The existing api, core and service images were read when the pass was made; the =png= is the rendering, so the =.puml= is the artefact a reviewer can check, and the verification pass read it and found three inaccuracies, all now fixed: the presentation mapper was drawn as =render(v)= when the function is =render_job_definition_fields(v)=, the repository's method list was abbreviated into names the code does not have, and =application_exception= was an empty box. The verification pass also caught the deleted =cron_scheduler= still drawn, and the diagrams no longer carry it. | The three =.puml= files and their rendered =.png= files; the verification pass |
 
 * Notes
 
@@ -116,9 +116,10 @@ The defects the survey found, each with the item that fixes it.
    generator belongs in a task, never in the model. (M01, M09)
 2. =generator_facet_name= said =generator= where the tree says =generators/=
    and the codegen default is plural. A regeneration would have created a
-   second generator folder beside the real one. 26 models carry each spelling,
-   so this is a latent defect in =ores.trading= as well; it is recorded here
-   and fixed in scheduler only. (G07)
+   second generator folder beside the real one. 25 models say =generator= and 26
+   say =generators=, so this is a latent defect in =ores.trading= as well -- all
+   25 singular spellings are its -- and it is recorded here and fixed in
+   scheduler only. (G07)
 3. =nullable_tenant_id: true= makes the SQL column nullable but leaves the C++
    projection non-optional, so a nullable-tenant entity cannot be generated at
    all: the domain carries a =tenant_id::system()= default and the mapper parses
@@ -229,6 +230,33 @@ to be exercised at all, and they are the V08 work item.
 | =service/src/config/parser.cpp= | =config_parser_tests.cpp= |
 | =service/src/main.cpp= | No test. Process entry point |
 | =service/src/messaging/job_definition_event_registrar.cpp= | Generated; the eventing integration test assembles the same chain directly |
+
+* Defects the verification pass found in this change
+
+Recorded because they were mine, not the generator's, and because two of the
+three were silent.
+
+1. *=default_value: "true"= on a boolean column.* The model quoted the value,
+   and the generator renders ={{default_value}}= verbatim, so both generated
+   headers carried =bool is_active = "true";= -- a string literal initialising a
+   bool. It compiles by pointer-to-bool conversion, with no diagnostic under
+   this project's flags, and happens to mean =true=, which is why no gate saw
+   it. The sibling model =ores.marketdata.feed_binding= writes the value
+   unquoted and generates the clean =bool enabled = true;=. The scheduler model
+   now does the same. No check in the codegen suite covers the class -- a string
+   default on a scalar column -- so the defect reached the tree twice over, once
+   through the model and once through the absence of a guard.
+2. *A dead symbol the census missed.* =cron_scheduler= had no consumer
+   anywhere: not the service, not a test, only its own source and the CMake
+   file list. The census classified symbols by their consumer outside the
+   component, so a public class with no consumer at all still read as
+   "component infrastructure". Its four methods duplicated the generated
+   service and repository, so it is deleted.
+3. *A behaviour the protocol move cost.* Reconciliation lost per-job failure
+   reporting: the retired batch subject reported failures by id, and the
+   canonical =put_many= is all-or-nothing. Reconciliation now sends one =put=
+   per definition. Neither the task nor the PR description admitted this before
+   the verification pass named it.
 
 * Generator defects found
 

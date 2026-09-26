@@ -61,8 +61,8 @@ namespace ores #F2F2F2 {
             }
         }
         namespace presentation #F2F2F2 {
-            class job_definition_history_field_mapper <<free functions>> {
-                +render(v) : vector<field>
+            class job_definition_history_field_mapper <<free function>> {
+                +render_job_definition_fields(v) : vector<diff::domain::field_value>
             }
         }
         namespace repository #F2F2F2 {
@@ -93,17 +93,22 @@ namespace ores #F2F2F2 {
             }
             class job_definition_repository {
                 +sql() : string
+                +write(ctx, v)
+                +write(ctx, vs)
                 +write(ctx, v, claim)
                 +write(ctx, vs, claims)
-                +read_latest(ctx, offset, limit) : vector<domain::job_definition>
+                +read_latest(ctx) : vector<domain::job_definition>
                 +read_latest(ctx, id)
+                +read_latest(ctx, ids)
                 +read_all(ctx, id)
-                +read_at_version(ctx, key, version)
-                +read_latest_by_job_name(ctx, name)
-                +remove(ctx, id, claim) : remove_status
+                +read_at_version(ctx, id, version) : optional<domain::job_definition>
+                +read_latest(ctx, offset, limit)
+                +get_total_definition_count(ctx) : uint32_t
+                +remove(ctx, id)
+                +remove(ctx, id, version) : remove_status
                 +remove(ctx, ids)
-                +get_total_definition_count(ctx)
                 +read_all_active(ctx)
+                +remove_status : enum class
             }
             class job_instance_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -142,15 +147,6 @@ namespace ores #F2F2F2 {
             class action_handler {
                 +action_type() : string_view
                 +execute(ctx) : awaitable<expected<void, string>>
-            }
-            class cron_scheduler {
-                -ctx_ : context
-                -repo_ : repository::job_definition_repository
-                -inst_repo_ : repository::job_instance_repository
-                +schedule(def)
-                +unschedule(id, modified_by, reason, commentary)
-                +get_all_definitions() : vector<domain::job_definition>
-                +get_job_history(id, limit) : vector<domain::job_instance>
             }
             class job_definition_service {
                 -ctx_ : context
@@ -228,8 +224,6 @@ ores::scheduler::repository::job_instance_repository ..> ores::scheduler::reposi
 ores::scheduler::service::scheduler_loop o-- ores::scheduler::service::action_handler : fires
 ores::scheduler::service::scheduler_loop --> ores::scheduler::repository::job_definition_repository : read_all_active
 ores::scheduler::service::scheduler_loop --> ores::scheduler::repository::job_instance_repository : records
-ores::scheduler::service::cron_scheduler --> ores::scheduler::repository::job_definition_repository : uses
-ores::scheduler::service::cron_scheduler --> ores::scheduler::repository::job_instance_repository : uses
 
 ores::scheduler::service::action_handler <|-- ores::scheduler::service::sql_action_handler
 ores::scheduler::service::action_handler <|-- ores::scheduler::service::mq_action_handler
@@ -287,10 +281,6 @@ note top of scheduler_loop
   the tree subscribes to that subject today.
 end note
 
-note bottom of cron_scheduler
-  Marking a job inactive writes is_active = false on the
-  current row rather than creating a bitemporal version.
-end note
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.scheduler.core.puml"

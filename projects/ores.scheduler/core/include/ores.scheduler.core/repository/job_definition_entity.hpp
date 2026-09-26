@@ -54,7 +54,7 @@ struct job_definition_entity {
     std::string schedule_expression;
     std::string action_type = "execute_sql";
     std::string action_payload = "{}";
-    bool is_active = "true";
+    bool is_active = true;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

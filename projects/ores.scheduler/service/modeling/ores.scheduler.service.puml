@@ -30,6 +30,7 @@ namespace ores #F2F2F2 {
                     -make_context(db_opts) : context
                 }
                 class application_exception {
+                    +what() : const char* noexcept
                 }
                 class host {
                     +run() : int
@@ -62,6 +63,8 @@ namespace ores #F2F2F2 {
 ' Relationships.
 ' ---------------------------------------------------------------------------
 
+ores::scheduler::service::app::application_exception --|> std::exception : inherits
+ores::scheduler::service::config::parser_exception --|> std::exception : inherits
 ores::scheduler::service::app::host --> ores::scheduler::service::app::application : runs
 ores::scheduler::service::app::application --> ores::scheduler::service::config::parser : parses options
 ores::scheduler::service::config::parser ..> ores::scheduler::service::config::parser_exception : throws

@@ -94,6 +94,12 @@ struct workflow_step final {
     std::string error;
 
     /**
+     * @brief Opaque log entries emitted while the step ran, held as serialised JSON. The query
+     * surface returns them beside the step's result.
+     */
+    std::string step_log_json;
+
+    /**
      * @brief NATS subject to which the step command was published.
      */
     std::string command_subject;

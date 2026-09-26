@@ -48,6 +48,7 @@ struct workflow_step_write {
     std::string request_json;
     std::string response_json;
     std::string error;
+    std::string step_log_json;
     std::string command_subject;
     std::string command_json;
     std::optional<std::chrono::system_clock::time_point> command_published_at;

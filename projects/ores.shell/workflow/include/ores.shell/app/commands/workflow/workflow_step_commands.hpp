@@ -88,8 +88,9 @@ public:
 
     /**
      * @brief add <workflow_id> <step_index> <name> <state_id> <request_json> <response_json>
-     * <error> <command_subject> <command_json> <command_published_at> <idempotency_key>
-     * <compensation_subject> <compensation_json> <started_at> <completed_at> <reason> <commentary>
+     * <error> <step_log_json> <command_subject> <command_json> <command_published_at>
+     * <idempotency_key> <compensation_subject> <compensation_json> <started_at> <completed_at>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -97,9 +98,9 @@ public:
 
     /**
      * @brief set <id> <workflow_id> <step_index> <name> <state_id> <request_json> <response_json>
-     * <error> <command_subject> <command_json> <command_published_at> <idempotency_key>
-     * <compensation_subject> <compensation_json> <started_at> <completed_at> <reason> <commentary>
-     * [--version <n>]
+     * <error> <step_log_json> <command_subject> <command_json> <command_published_at>
+     * <idempotency_key> <compensation_subject> <compensation_json> <started_at> <completed_at>
+     * <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -107,9 +108,9 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <workflow_id> <step_index> <name> <state_id> <request_json>
-     * <response_json> <error> <command_subject> <command_json> <command_published_at>
-     * <idempotency_key> <compensation_subject> <compensation_json> <started_at> <completed_at>
-     * <reason> <commentary>
+     * <response_json> <error> <step_log_json> <command_subject> <command_json>
+     * <command_published_at> <idempotency_key> <compensation_subject> <compensation_json>
+     * <started_at> <completed_at> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

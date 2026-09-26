@@ -90,6 +90,7 @@ domain::workflow_step to_domain(const messaging::workflow_step_write& write) {
     v.request_json = write.request_json;
     v.response_json = write.response_json;
     v.error = write.error;
+    v.step_log_json = write.step_log_json;
     v.command_subject = write.command_subject;
     v.command_json = write.command_json;
     v.command_published_at = write.command_published_at;

@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-workflow_steps add <workflow_id> <step_index> <name> <state_id> <request_json> <response_json> <error> <command_subject> <command_json> <command_published_at> <idempotency_key> <compensation_subject> <compensation_json> <started_at> <completed_at> <reason> <commentary>
+workflow_steps add <workflow_id> <step_index> <name> <state_id> <request_json> <response_json> <error> <step_log_json> <command_subject> <command_json> <command_published_at> <idempotency_key> <compensation_subject> <compensation_json> <started_at> <completed_at> <reason> <commentary>
 #+end_example
 
 It is addressed at =workflow.v1.workflow_steps.put=.
 
 #+name: workflow_steps-add
 #+begin_src ores-shell :tangle workflow_steps-add.ores :exports none
-workflow_steps add 00000000-0000-0000-0000-000000000000 0 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+workflow_steps add 00000000-0000-0000-0000-000000000000 0 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -106,14 +106,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-workflow_steps set <id> <workflow_id> <step_index> <name> <state_id> <request_json> <response_json> <error> <command_subject> <command_json> <command_published_at> <idempotency_key> <compensation_subject> <compensation_json> <started_at> <completed_at> <reason> <commentary> [--version <n>]
+workflow_steps set <id> <workflow_id> <step_index> <name> <state_id> <request_json> <response_json> <error> <step_log_json> <command_subject> <command_json> <command_published_at> <idempotency_key> <compensation_subject> <compensation_json> <started_at> <completed_at> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =workflow.v1.workflow_steps.put=.
 
 #+name: workflow_steps-set
 #+begin_src ores-shell :tangle workflow_steps-set.ores :exports none
-workflow_steps set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+workflow_steps set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -127,14 +127,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-workflow_steps put-many --count <n> <id> <workflow_id> <step_index> <name> <state_id> <request_json> <response_json> <error> <command_subject> <command_json> <command_published_at> <idempotency_key> <compensation_subject> <compensation_json> <started_at> <completed_at> <reason> <commentary>
+workflow_steps put-many --count <n> <id> <workflow_id> <step_index> <name> <state_id> <request_json> <response_json> <error> <step_log_json> <command_subject> <command_json> <command_published_at> <idempotency_key> <compensation_subject> <compensation_json> <started_at> <completed_at> <reason> <commentary>
 #+end_example
 
 It is addressed at =workflow.v1.workflow_steps.put_many=.
 
 #+name: workflow_steps-put-many
 #+begin_src ores-shell :tangle workflow_steps-put-many.ores :exports none
-workflow_steps put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+workflow_steps put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

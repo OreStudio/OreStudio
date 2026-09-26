@@ -141,7 +141,7 @@ void workflow_step_commands::register_commands(cli::Menu& root_menu, nats_client
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <workflow_id> <step_index> <name> <state_id> <request_json> <response_json> <error> "
-        "<command_subject> <command_json> <command_published_at> <idempotency_key> "
+        "<step_log_json> <command_subject> <command_json> <command_published_at> <idempotency_key> "
         "<compensation_subject> <compensation_json> <started_at> <completed_at> <reason> "
         "<commentary>");
 
@@ -151,9 +151,9 @@ void workflow_step_commands::register_commands(cli::Menu& root_menu, nats_client
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <workflow_id> <step_index> <name> <state_id> <request_json> <response_json> "
-        "<error> <command_subject> <command_json> <command_published_at> <idempotency_key> "
-        "<compensation_subject> <compensation_json> <started_at> <completed_at> <reason> "
-        "<commentary> [--version <n>]");
+        "<error> <step_log_json> <command_subject> <command_json> <command_published_at> "
+        "<idempotency_key> <compensation_subject> <compensation_json> <started_at> <completed_at> "
+        "<reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -161,9 +161,9 @@ void workflow_step_commands::register_commands(cli::Menu& root_menu, nats_client
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <workflow_id> <step_index> <name> <state_id> <request_json> "
-        "<response_json> <error> <command_subject> <command_json> <command_published_at> "
-        "<idempotency_key> <compensation_subject> <compensation_json> <started_at> <completed_at> "
-        "<reason> <commentary>");
+        "<response_json> <error> <step_log_json> <command_subject> <command_json> "
+        "<command_published_at> <idempotency_key> <compensation_subject> <compensation_json> "
+        "<started_at> <completed_at> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -364,8 +364,8 @@ void workflow_step_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 16 + 2) {
+            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -377,6 +377,7 @@ void workflow_step_commands::process_add(std::ostream& out,
         read_token(req.change.write.request_json, parsed->positionals[next++], "request_json");
         read_token(req.change.write.response_json, parsed->positionals[next++], "response_json");
         read_token(req.change.write.error, parsed->positionals[next++], "error");
+        read_token(req.change.write.step_log_json, parsed->positionals[next++], "step_log_json");
         read_token(
             req.change.write.command_subject, parsed->positionals[next++], "command_subject");
         read_token(req.change.write.command_json, parsed->positionals[next++], "command_json");
@@ -434,8 +435,8 @@ void workflow_step_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 16 + 2) {
-            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 17 + 2) {
+            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -447,6 +448,7 @@ void workflow_step_commands::process_set(std::ostream& out,
         read_token(req.change.write.request_json, parsed->positionals[next++], "request_json");
         read_token(req.change.write.response_json, parsed->positionals[next++], "response_json");
         read_token(req.change.write.error, parsed->positionals[next++], "error");
+        read_token(req.change.write.step_log_json, parsed->positionals[next++], "step_log_json");
         read_token(
             req.change.write.command_subject, parsed->positionals[next++], "command_subject");
         read_token(req.change.write.command_json, parsed->positionals[next++], "command_json");
@@ -516,8 +518,8 @@ void workflow_step_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 16 + 2) {
-            fail(out) << "Expected " << (change_count * 16 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 17 + 2) {
+            fail(out) << "Expected " << (change_count * 17 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -531,6 +533,7 @@ void workflow_step_commands::process_put_many(std::ostream& out,
             read_token(change.write.request_json, parsed->positionals[next++], "request_json");
             read_token(change.write.response_json, parsed->positionals[next++], "response_json");
             read_token(change.write.error, parsed->positionals[next++], "error");
+            read_token(change.write.step_log_json, parsed->positionals[next++], "step_log_json");
             read_token(
                 change.write.command_subject, parsed->positionals[next++], "command_subject");
             read_token(change.write.command_json, parsed->positionals[next++], "command_json");

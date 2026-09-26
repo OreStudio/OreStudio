@@ -42,6 +42,7 @@ render_workflow_step_fields(const domain::workflow_step& v) {
     fields.push_back({.name = "Request Json", .value = v.request_json});
     fields.push_back({.name = "Response Json", .value = v.response_json});
     fields.push_back({.name = "Error", .value = v.error});
+    fields.push_back({.name = "Step Log Json", .value = v.step_log_json});
     fields.push_back({.name = "Command Subject", .value = v.command_subject});
     fields.push_back({.name = "Command Json", .value = v.command_json});
     fields.push_back(

@@ -98,8 +98,8 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
 
     const int limit = std::clamp(req->limit, 1, 1000);
 
-    // read() uses ctx.tenant_id() for RLS filtering.
-    auto instances = instance_repo_.read(req_ctx);
+    // read_latest uses ctx.tenant_id() for RLS filtering.
+    auto instances = instance_repo_.read_latest(req_ctx);
 
     // Apply optional status filter client-side (avoids a custom repo method).
     if (req->status_filter && !req->status_filter->empty()) {
@@ -108,9 +108,9 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
                       [&](const auto& inst) { return state_name(inst.state_id) != filter; });
     }
 
-    // Sort by created_at descending (most recent first).
+    // Sort by the audit timestamp descending (most recent first).
     std::sort(instances.begin(), instances.end(), [](const auto& a, const auto& b) {
-        return a.created_at > b.created_at;
+        return a.recorded_at > b.recorded_at;
     });
 
     // Trim to limit.
@@ -130,7 +130,7 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
         s.step_count = inst.step_count;
         s.correlation_id = inst.correlation_id;
         s.created_by = inst.created_by;
-        s.created_at = fmt_tp(inst.created_at);
+        s.created_at = fmt_tp(inst.recorded_at);
         s.completed_at = fmt_opt_tp(inst.completed_at);
         s.error = inst.error;
         resp.instances.push_back(std::move(s));
@@ -182,17 +182,19 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
     }
 
     // Load the instance (service-account context — no tenant filter).
-    auto instance = instance_repo_.find_by_id(ctx_, instance_id);
-    if (!instance) {
+    const auto instances =
+        instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
+    if (instances.empty()) {
         reply(nats_,
               msg,
               get_workflow_steps_response{.success = false,
                                           .message = "Workflow instance not found."});
         return;
     }
+    const auto* instance = &instances.front();
 
     // Tenant isolation guard: verify the instance belongs to the caller.
-    if (instance->tenant_id != req_ctx.tenant_id().to_uuid()) {
+    if (instance->tenant_id != req_ctx.tenant_id()) {
         reply(nats_,
               msg,
               get_workflow_steps_response{.success = false,
@@ -200,8 +202,10 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
         return;
     }
 
-    // Load all steps (ordered by step_index ascending by the repository).
-    const auto raw_steps = step_repo_.find_by_workflow_id(ctx_, instance_id);
+    // Load the steps, ordered by step_index ascending by the repository. A
+    // workflow's step count is bounded by its definition, so one page covers it.
+    const auto raw_steps = step_repo_.read_latest_by_workflow_id(
+        ctx_, boost::uuids::to_string(instance_id), 0, 1000);
 
     get_workflow_steps_response resp;
     resp.success = true;
@@ -221,7 +225,7 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
         ws.name = s.name;
         ws.status = state_name(s.state_id);
         ws.step_index = s.step_index;
-        ws.created_at = fmt_tp(s.created_at);
+        ws.created_at = fmt_tp(s.recorded_at);
         ws.started_at = fmt_opt_tp(s.started_at);
         ws.completed_at = fmt_opt_tp(s.completed_at);
         ws.error = s.error;
@@ -299,11 +303,12 @@ void workflow_query_handler::get_step_result(ores::nats::message msg) {
         return;
     }
 
-    const auto step = step_repo_.find_by_id(ctx_, step_uuid);
-    if (!step) {
+    const auto steps = step_repo_.read_latest(ctx_, boost::uuids::to_string(step_uuid));
+    if (steps.empty()) {
         reply(nats_, msg, get_step_result_response{.found = false});
         return;
     }
+    const auto* step = &steps.front();
 
     // Return cached result only for terminal states; in_progress means the
     // previous execution is still in flight (or was interrupted mid-publish).

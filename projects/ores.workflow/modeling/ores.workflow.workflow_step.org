@@ -101,6 +101,16 @@ Serialised JSON response received from the downstream service.
 
 Human-readable error message if the step failed.
 
+** step_log_json
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Opaque log entries emitted while the step ran, held as serialised JSON. The
+query surface returns them beside the step's result.
+
 ** command_subject
 :PROPERTIES:
 :type:     text

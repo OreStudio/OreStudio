@@ -47,6 +47,7 @@ domain::workflow_step workflow_step_mapper::map(const workflow_step_entity& v) {
     r.request_json = v.request_json;
     r.response_json = v.response_json.value_or("");
     r.error = v.error.value_or("");
+    r.step_log_json = v.step_log_json.value_or("");
     r.command_subject = v.command_subject;
     r.command_json = v.command_json;
     r.command_published_at = v.command_published_at.has_value() ?
@@ -84,6 +85,7 @@ workflow_step_entity workflow_step_mapper::map(const domain::workflow_step& v) {
     r.request_json = v.request_json;
     r.response_json = v.response_json.empty() ? std::nullopt : std::optional(v.response_json);
     r.error = v.error.empty() ? std::nullopt : std::optional(v.error);
+    r.step_log_json = v.step_log_json.empty() ? std::nullopt : std::optional(v.step_log_json);
     r.command_subject = v.command_subject;
     r.command_json = v.command_json;
     r.command_published_at =

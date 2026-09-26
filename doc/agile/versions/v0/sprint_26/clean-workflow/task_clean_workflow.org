@@ -626,6 +626,37 @@ linkage -- arriving as a compile error, which is better evidence than the guess 
 replaces. The answer is that it must, because the component's query surface reads
 steps by their workflow.
 
+** G02 the port, and what the compiler found next
+
+The query handler is ported and compiles. Four call sites moved to the generated
+API: =read= to =read_latest=, two =find_by_id= calls to =read_latest= with the id
+as a string, and =find_by_workflow_id= to =read_latest_by_workflow_id=, which is
+the method the parent declaration above made possible.
+
+Three things fell out of the port that the model, not the code, had wrong.
+
+A missing column. The handler reads =step_log_json=, which no model declares. It
+is real domain data rather than a phantom field: a second SQL script,
+=projects/ores.sql/create/workflow/workflow_workflow_step_create.sql= -- singular,
+hand-written, and superseded by the generated plural one -- carries the column as
+=jsonb null=. So the column was added to =workflow_step='s model rather than
+dropped from the handler, and generation now emits it.
+
+A missing timestamp. The handler sorted instances by =created_at=, which the
+generated type does not have. The profile provides =recorded_at= instead, so the
+sort moved to that.
+
+An empty placeholder. Both models carry a =** Custom repository methods= section
+and neither declares anything in it, and the codegen has no handling for the
+section at all. The engine calls =update_state=, =create= and
+=find_by_workflow_id= on the repositories -- custom methods that were hand-written
+and are gone now that the repository is generated. They were never modelled, so
+nothing regenerates them. The engine has to express them with the generated API:
+=write= for the two mutations, and the scoped read for the third.
+
+This is the next and last piece of the G02 wave, and it is engine work rather
+than model work, which is why the model sections are empty and can stay so.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

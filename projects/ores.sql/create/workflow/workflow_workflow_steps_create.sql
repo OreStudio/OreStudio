@@ -40,6 +40,7 @@ create table if not exists "ores_workflow_workflow_steps_tbl" (
     "request_json" jsonb not null,
     "response_json" jsonb null,
     "error" text null,
+    "step_log_json" jsonb null,
     "command_subject" text not null default '',
     "command_json" text not null default '',
     "command_published_at" timestamp with time zone null,

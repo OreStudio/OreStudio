@@ -98,14 +98,14 @@ def test_closure_seeds_ancestors_before_the_rows_that_reference_them(
         "batch", "app", "app_version"]
     batch, app, app_version = items
     assert batch["parent_var"] == "workunit_id_parent"
-    assert batch["var"] == "batch_parent"
+    assert batch["var"] == "workunit_id_parent_batch_parent"
     # The app row patches the app_version row that references it, and the
     # app_version row patches the workunit row.
-    assert app["parent_var"] == "app_version_parent"
-    assert app["var"] == "app_parent"
+    assert app["parent_var"] == "workunit_id_parent_app_version_parent"
+    assert app["var"] == "workunit_id_parent_app_version_parent_app_parent"
     assert app["column"] == "app_id"
     assert app_version["parent_var"] == "workunit_id_parent"
-    assert app_version["var"] == "app_version_parent"
+    assert app_version["var"] == "workunit_id_parent_app_version_parent"
 
 
 def test_ancestor_variables_stay_distinct_when_a_fk_column_repeats(
@@ -126,11 +126,27 @@ def test_ancestor_variables_stay_distinct_when_a_fk_column_repeats(
     items = _call(org_infos, parent_var="config_id_parent")
     assert [i["parent_entity_singular"] for i in items] == ["app", "batch"]
     app, batch = items
-    assert app["var"] == "app_parent"
-    assert batch["var"] == "batch_parent"
+    assert app["var"] == "config_id_parent_batch_parent_app_parent"
+    assert batch["var"] == "config_id_parent_batch_parent"
     assert batch["parent_var"] == "config_id_parent"
-    assert app["parent_var"] == "batch_parent"
+    assert app["parent_var"] == "config_id_parent_batch_parent"
     assert len({i["var"] for i in items} | {"config_id_parent"}) == 3
+
+
+def test_ancestor_variables_stay_distinct_when_two_roots_reach_one_ancestor(
+        org_infos):
+    # Two roots whose chains reach the same ancestor. Naming the ancestor
+    # after its entity alone declared app_parent in both chains, so the
+    # generated test compiled two different rows into one variable.
+    batch_chain = _call(org_infos, parent_var="batch_id_parent")
+    host_chain = _call(org_infos, parent_var="host_id_parent")
+    batch_app = next(i for i in batch_chain
+                     if i["parent_entity_singular"] == "app")
+    host_app = next(i for i in host_chain
+                    if i["parent_entity_singular"] == "app")
+    assert batch_app["var"] != host_app["var"]
+    assert batch_app["var"].endswith("_app_parent")
+    assert host_app["var"].endswith("_app_parent")
 
 
 def test_ancestor_carries_its_system_tenant_flag(org_infos):

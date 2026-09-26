@@ -1594,11 +1594,11 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
             continue
         if mfk.get('table') in path:
             continue
-        # Name the ancestor variable after its entity, not its FK column: a
-        # chain step whose FK column repeats an earlier step's column
-        # (config_id -> config_id) would otherwise declare the same
-        # variable twice and mix the two types up.
-        var = grandparent['entity_singular'] + '_parent'
+        # Name the ancestor after the row that references it and its entity,
+        # not after its FK column alone: two root FKs whose chains reach the
+        # same entity would otherwise declare the same variable twice, and so
+        # would a chain step whose FK column repeats an earlier step's column.
+        var = f"{parent_var}_{grandparent['entity_singular']}_parent"
         items.extend(_plan_required_seeds(
             grandparent['mandatory_fks'], var, org_by_table, component,
             path | {mfk.get('table')}))

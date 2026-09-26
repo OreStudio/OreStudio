@@ -174,8 +174,9 @@ TEST_CASE("jwt_authenticator_validate_invalid_hs256_signature", tags) {
 
     auto validated = auth2.validate(*token);
     REQUIRE_FALSE(validated.has_value());
-    REQUIRE((validated.error() == jwt_error::invalid_signature ||
-             validated.error() == jwt_error::invalid_token));
+    // The signature exception has its own type and maps to one code, so this
+    // asserts the code rather than accepting the generic fallback too.
+    CHECK(validated.error() == jwt_error::invalid_signature);
 }
 
 TEST_CASE("jwt_authenticator_validate_malformed_token", tags) {

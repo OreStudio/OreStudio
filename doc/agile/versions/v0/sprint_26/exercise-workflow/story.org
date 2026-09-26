@@ -8,7 +8,7 @@
 #+filetags: :workflow:testing:shell:story:sprint_26:v0:
 #+created: 2026-09-26
 #+updated: 2026-09-26
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][Story]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ The workflow component can be driven end to end from ores.shell, against the liv
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][Story]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -40,7 +40,7 @@ The workflow component can be driven end to end from ores.shell, against the liv
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:D01518D5-D5D1-4BB9-814E-4A848633AD76][Finish the workflow fixture]] | STARTED | 2026-09-26 | | Task for: Exercise the workflow engine end to end |
 
 * Decisions
 

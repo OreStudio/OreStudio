@@ -1,0 +1,280 @@
+:PROPERTIES:
+:ID: D01518D5-D5D1-4BB9-814E-4A848633AD76
+:END:
+#+title: Task: Finish the workflow fixture
+#+description: Task for: Exercise the workflow engine end to end
+#+type: task
+#+level: s1
+#+filetags: :exercise-workflow:sprint_26:v0:
+#+owner: marco
+#+branch: feature/workflow-mop-up
+#+pr: 2207
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every path the identity fixture can reach is trustworthy: a step that completes always advances its instance, each configuration is a named script that asserts its own terminal state, and a start the engine refuses is an error at the shell rather than a plausible instance id.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] |
+| Now          | Nothing is implemented. The evidence for all three workstreams was gathered while building the fixture and is recorded on [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][the identity workflow task]]. |
+| Waiting on   | Nothing.                               |
+| Next         | The step-row race, because the other two cannot be verified on top of it. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- Two engine handlers can no longer lose each other's write on a step row, so a step that reports completion always advances its instance whatever the timing.
+- The start path reports whether the engine accepted the run, so an unregistered type or a request with no steps fails at the shell instead of printing an instance id to follow.
+- Each configuration has a name and a script that asserts its terminal state, and each script fails when the path it covers does nothing.
+- The repeat-instance-id behaviour survives the race fix: supplying an id twice still leaves exactly one run.
+
+* Plan
+
+Three workstreams, in this order, because each is what makes the next one
+trustworthy.
+
+** 1. The step-row race
+
+=on_start_workflow= calls =stamp_command_published= after it publishes, and
+=on_step_completed= calls =set_step_state= when the answer arrives. Both are a
+read-modify-write of the same row under optimistic locking, and the two
+subscriptions are not serialised against each other, whatever the engine's own
+header claims. The fixture answers in about two milliseconds, so the two
+overlap; the three-millisecond window is the whole bug.
+
+Reproduce it against a live fleet before changing anything. What it looks like
+when it lands, from =ores.workflow.service='s log on the rebased #2184:
+
+#+begin_example
+Publishing step command:  step_index=0 step_name=one step_id=c3f1d1ce-...
+Step-completed event received: step=c3f1d1ce-... outcome=completed
+Workflow STARTED: step_count=2 first_step=one
+ERROR Executing INSERT failed: Version conflict: expected version 1, but current version is 2
+ERROR Unhandled exception in NATS message handler for subject '...events.step-completed'
+#+end_example
+
+and =workflow wait= then reports =[1/1] one: in_progress= until it times out,
+with nothing the shell can report as an error.
+
+The fix is not a mutex bolted on. If a publish can re-enter a handler on the
+same thread, a non-recursive =std::mutex= deadlocks and a recursive one hides
+the re-entrancy rather than removing it. Establish which of the two it is
+first: the timestamps above say the completion is processed inside the start,
+which is what a synchronous delivery on one thread would also look like, and
+the two want opposite fixes.
+
+** 2. A start that reports acceptance
+
+=workflow start= prints "Dispatched", an instance id and a follow-up command
+whatever happens. It did so for an unregistered type, for a request with no
+steps, and while every workflow in the product was failing to insert. Three of
+the four defects found on #2184 were invisible at the shell for exactly that
+reason, and were read out of a log instead.
+
+The reply must report acceptance and not completion. The start is a durable
+JetStream publish and callers still poll for the terminal state, so this must
+not quietly turn a crash-safe publish into a request/response transaction.
+Record that where the reply is defined.
+
+** 3. The configurations
+
+Named, one script each, asserting terminal state rather than printing it. The
+set designed on the identity workflow task: =happy_path=, =fan_out=,
+=with_warnings=, =fail_fast=, =saga=, =long_running=, =recovery=, =empty= and
+=unknown_type=.
+
+=--instance-id= is what makes this one invocation per configuration rather than
+two, so a script can start a run under a name it chose and then wait on it.
+
+Each script must fail when the path it covers does nothing. That is the point of
+the task, and it is why the race comes first: a configuration written on top of
+it would pass whenever it happened to win.
+
+* Notes
+
+** The per-test watchdog cost a second per case
+
+Found while measuring the suite. =test_timeout_listener=, registered by twenty
+test mains, slept in one-second ticks and =testCaseEnded= joined it, so every
+case that finished inside a tick waited out the rest of it. =ores.shell.workflow.tests=
+reported 34 cases at almost exactly 1.000s each -- 34.17s for tests whose work is
+milliseconds -- and =ores.shell.application.tests= took 22.23s the same way.
+
+It reached this branch by rebase: the shell workflow tests used to register
+=database_lifecycle_listener=, and another environment's commit swapped it for
+this one, which is why the same target went from 1.3s to 34s at the rebase. The
+watchdog now waits on a condition variable, so teardown is immediate:
+34.17s to 0.11s and 22.23s to 0.69s.
+
+Worth knowing: changing that listener's members is an ABI break for every test
+binary that instantiates it. Building only the target under test leaves the
+others linking the new =libores.testing.so= with the old layout, which aborts
+with "terminate called without an active exception". All twenty were rebuilt.
+
+** Running a configuration
+
+The fixture needs no other component's data, so every configuration runs as
+=super_admin= in the system tenant. Drive it from =ores.shell=:
+
+#+begin_example
+compass shell -l <script>.ores
+#+end_example
+
+=--load= runs a script non-interactively and exits. A script cannot read a
+command's output back, which is why a run that has to be followed is named by
+its caller:
+
+#+begin_example
+workflow start identity_workflow '{"steps":[{"name":"one"}]}' --instance-id <uuid>
+workflow wait <uuid> --expect-steps 1
+#+end_example
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2207][#2207]] | [workflow] Serialise the engine handlers; wake the test watchdog |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+** 1. The step-row race -- done
+
+Measured first, because the two candidate causes want opposite fixes. Both engine
+handlers were given a log line carrying =std::this_thread::get_id()=, the service
+was restarted and a two-step identity run was started. They are on different
+threads:
+
+#+begin_example
+on_start_workflow   thread=140192874710720
+on_step_completed   thread=140192883103424
+#+end_example
+
+and the interleaving reproduced on the same run:
+
+#+begin_example
+23:13:26.802333 Publishing step command: step_index=0 step_id=7f7da171-...
+23:13:26.804214 Step-completed event received: step=7f7da171-... outcome=completed
+23:13:26.816318 Workflow STARTED: step_count=2 first_step=one
+23:13:26.820405 ERROR Executing INSERT failed: Version conflict: expected version 1, but current version is 2
+#+end_example
+
+So it is true concurrency, not re-entrancy, and the engine's own header claim
+that the callbacks are "protected by the NATS library's serialisation
+guarantees" is simply false. That is what made the fix safe to pick: a plain
+=std::mutex= cannot deadlock, because a publish is asynchronous and the handler
+it provokes never re-enters this one on the same thread.
+
+The engine now holds a =std::mutex= for the whole of =on_start_workflow=,
+=on_step_completed= and =recover_in_progress=, and the header says what is
+actually true, with the measurement in it. Held for the whole handler rather
+than around the write, because the read-modify-write is the thing that has to be
+atomic.
+
+Verified on the same probe, a fresh id, with the fix in:
+
+#+begin_example
+Start-workflow request received: instance_id=eeeeeeee-1111-2222-3333-444444444444
+Publishing step command: step_index=0 step_name=one
+Workflow STARTED: step_count=2 first_step=one
+Step-completed event received: step=0 outcome=completed
+Publishing step command: step_index=1 step_name=two
+Dispatched step 1/1 (two)
+Step-completed event received: step=1 outcome=completed
+Workflow COMPLETED: steps=2
+#+end_example
+
+Zero version conflicts in the whole log, and the shell agrees:
+
+#+begin_example
+workflow wait eeeeeeee-... --timeout 60 --expect-steps 2
+  [1/2] one: completed
+  [2/2] two: completed
+✓ All 2 step(s) completed.
+#+end_example
+
+All four workflow test targets pass.
+
+** 2. A start that reports acceptance -- done
+
+=workflow start= now matches the type against the registered definitions before
+it dispatches anything, and then waits for the instance row the engine creates.
+What it reports is acceptance, not completion: the publish stays a durable
+JetStream publish and callers still follow the run with =workflow wait=.
+
+Verified against the live fleet:
+
+#+begin_example
+workflow start no_such_workflow '{"steps":[{"name":"one"}]}'
+✗ No workflow type named 'no_such_workflow' is registered.
+✗ Registered types: bundle_publish_workflow identity_workflow ore_import_workflow
+  provision_parties_workflow report_execution_workflow
+✗ Script aborted at line 1
+
+workflow start identity_workflow '{"steps":[{"name":"one"}]}' --instance-id ffffffff-...
+Started identity_workflow.
+workflow_instance_id: ffffffff-1111-2222-3333-444444444444
+#+end_example
+
+** Still open: 3. The configurations
+
+Nine names are designed and none is scripted. The blocker is not the scripts but
+the assertion: =workflow wait= calls =fail()= on any outcome that is not "all
+steps completed", so a script for =fail_fast= or =saga= -- whose correct
+terminal state is =failed= or =compensated= -- aborts, and an aborted script
+cannot be told from a broken one. The shell has no assertion verb and the script
+runner has no negation.
+
+The way through is =workflow wait --expect-state <completed|failed|compensated|absent>=
+as the assertion primitive, with =absent= covering the refusal paths. The
+acceptance also allows the refusal paths to be covered by integration tests
+instead ("a configuration or an integration test"), which handles =empty= and
+=unknown_type= but not the two compensating ones.
+
+The start acceptance above is what makes the refusal configurations checkable at
+all, which is why it came first.
+
+
+** Follow-ups from the review on #2207
+
+Two notes, neither a blocker, both recorded rather than acted on.
+
+The engine-wide lock has a throughput ceiling: unrelated instances serialise
+behind each other's database writes and publishes. A lock keyed by instance id
+would remove it, but every writer of one instance would still have to share a
+critical section, so it is a piece of design rather than a mechanical change.
+The engine has never run enough concurrent instances for this to bite.
+
+The non-recursive lock is safe because the client dispatches asynchronously,
+which is measured behaviour and not a guarantee the library makes. The header
+now names the behaviour it relies on and says that a synchronous delivery would
+deadlock, so whoever changes the NATS client next has the warning in front of
+them rather than a silent hang to debug.

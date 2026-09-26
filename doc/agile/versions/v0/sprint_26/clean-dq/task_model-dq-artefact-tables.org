@@ -34,7 +34,7 @@ The design question is already answered: an artefact table *can* generate from t
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
 | Now          | All fifteen entities are canonical and =ores.shell.dq= is wired. =check_component_drift.py --component dq= reports no drift twice in a row, so dq regenerates cleanly. |
 | Waiting on   | Nothing.                              |
-| Next         | Model the twelve entities whose protocol headers are still hand-written, which is what keeps dq out of =COMPONENTS_UNDER_TEST=; see Step 9 part six. |
+| Next         | Model the twelve entities whose protocol headers are still hand-written, which is what keeps dq out of =COMPONENTS_UNDER_TEST=; the grouped work list is Step 8 in progress above. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -71,7 +71,7 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 5. Derivable tables | PARTIAL | 4 of 5 switched; =coding_schemes= needs a model; see Step 5 results |
 | 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
 | 7. Publication template | DONE | The template generated a retired design; deleted with 21 dead files; see Step 7 results |
-| 8. Remaining models | TODO | The FPML family is blocked; the rest is unblocked |
+| 8. Remaining models | IN PROGRESS | The twelve remaining protocols are surveyed and grouped by the work each needs; the FPML family is blocked; see Step 8 in progress |
 | 9. Regenerate C++ | DONE | Four facets byte-identical; all 15 entities canonical and =ores.shell.dq= wired; =--component dq= reports no drift twice in a row; see Step 9 parts one to six |
 | 10. Eventing headers | TODO | |
 | 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
@@ -105,6 +105,35 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 - The umbrella headers and the bespoke handlers they carry (=badge_handler=, =badge_service=, =data_organization_handler=, =dimension_handler=) are consumed only by =registrar.cpp=, so they can go. But each carries registrations for entities that are not modelled yet — methodologies, dimensions, datasets, coding schemes, publications — and those have to move before the umbrella can be deleted.
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
+
+* Step 8 in progress: the twelve protocols that keep dq out of the test list
+
+Run on 2026-09-26. Part six found that dq regenerates cleanly and still cannot join =COMPONENTS_UNDER_TEST=, because twelve of its protocol headers are hand-written for entities that have no model and so can have no TypeScript twin. This is what those twelve are, grouped by what modelling each needs, because the groups are not the same job.
+
+| Hand-written header | Entities it serves | Subjects |
+|---------------------+--------------------+----------|
+| =data_organization_protocol.hpp= | methodology, nature/origin/treatment dimension | list, save, delete, history each |
+| =dimension_protocol.hpp= | none of its own | re-exports the header above |
+| =coding_scheme_protocol.hpp= | coding_scheme, coding_scheme_authority_type | list, save, delete, history each |
+| =fsm_protocol.hpp= | fsm_state, fsm_transition | list only |
+| =dataset_protocol.hpp= | dataset | list, save, delete, history, and a bespoke =publish= |
+| =dataset_dependency_protocol.hpp= | dataset_dependency | by-dataset, resolve |
+| =lei_entity_summary_protocol.hpp= | a summary over lei_entity | summary |
+| =report_definition_template_protocol.hpp= | a projection over report_definition | list |
+| =publication_protocol.hpp= | publication | list |
+| =publish_bundle_protocol.hpp= | the bundle publish operation | publish |
+| =publish_from_dq_protocol.hpp= | the publish-from-dq workflow step | none of its own; =registrar.cpp= registers it on hard-coded subjects |
+| =badge_protocol.hpp= | the badge mapping read | list |
+
+**Group one, plain lookups (six entities, three headers).** =methodology=, =nature_dimension=, =origin_dimension=, =treatment_dimension=, =coding_scheme_authority_type= and =coding_scheme= are ordinary tenant-scoped entities with list, save, delete and history. The first five are simple: =methodology= keys on =name= with two nullable columns, and the other four key on =code= with a name and a description. =coding_scheme= is the one with work in it — it carries an authority-type reference and a composite reference to =subject_area=, the entity whose history identity part six records as composite, so its model has to say how that key is expressed. Modelling the six retires =data_organization_protocol.hpp=, =dimension_protocol.hpp= (a one-line re-export of it) and =coding_scheme_protocol.hpp=.
+
+**Group two, read-only projections (four entities, four headers).** =fsm_state=, =fsm_transition=, =lei_entity_summary= and =report_definition_template= are declarative or frozen views: two serve only a list, one a summary of another entity, one a list of templates. They are the reason the archetype's write verbs cannot simply be switched on for every model, and the read-only profile exists for exactly this shape.
+
+**Group three, operations (four headers).** =dataset_protocol.hpp=, =dataset_dependency_protocol.hpp=, =publication_protocol.hpp= and =publish_bundle_protocol.hpp= serve behaviour rather than rows: publishing a dataset, resolving dependencies across them, listing publications, publishing a bundle. =publish_from_dq_protocol.hpp= is the extreme case, with no subjects at all — the registrar subscribes its handler to literal strings. These are the candidates for the operation model the operation-protocol-ownership gate already knows about, and they are last because they are the least like the entities modelled so far.
+
+**What the scaffold does, and what it leaves.** =compass add entity_org --component dq --slug <entity> --shape simple-text-key= writes a skeleton at =projects/ores.dq/modeling/ores.dq.<entity>.org=: the frontmatter, the table name, the presentation knobs and the section headings. It does not fill the primary key, the natural keys, the columns or the presentation tables — those are the author's, and the skeleton carries a =TODO= at each. The hand-written =create/dq/dq_<entity>_create.sql= is the specification for them: it states the columns, the primary-key tuple and the partial unique indexes, so the model has to reproduce that table or the regeneration rewrites it. That is the per-entity work this section exists to size.
+
+**Order.** The three dimensions first, because they are one shape written three times, so they prove the pattern and retire two headers at once. Then =methodology=, which shares its header with them and retires the rest of it. Then =coding_scheme_authority_type= and =coding_scheme=, which are the same shape plus the composite key decision. Then the read-only group. Then the operations. Adding dq to =COMPONENTS_UNDER_TEST= is the last step, once every header has a model behind it.
 
 * Step 9 part six: the dq shell adapter, and the end of the protocol migration
 

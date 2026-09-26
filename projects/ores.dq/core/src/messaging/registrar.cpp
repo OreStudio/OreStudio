@@ -22,9 +22,7 @@
 #include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.dq.api/messaging/change_reason_category_protocol.hpp"
 #include "ores.dq.api/messaging/change_reason_protocol.hpp"
-#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq.api/messaging/data_domain_protocol.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_dependency_protocol.hpp"
@@ -33,47 +31,50 @@
 #include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
+#include "ores.dq.core/messaging/artefact_type_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/artefact_type_registrar.hpp"
+#include "ores.dq.core/messaging/badge_definition_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/badge_definition_registrar.hpp"
 #include "ores.dq.core/messaging/badge_handler.hpp"
+#include "ores.dq.core/messaging/badge_severity_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/badge_severity_registrar.hpp"
+#include "ores.dq.core/messaging/catalog_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/catalog_registrar.hpp"
+#include "ores.dq.core/messaging/change_reason_category_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/change_reason_category_registrar.hpp"
+#include "ores.dq.core/messaging/change_reason_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/change_reason_registrar.hpp"
+#include "ores.dq.core/messaging/coding_scheme_authority_type_registrar.hpp"
+#include "ores.dq.core/messaging/coding_scheme_registrar.hpp"
+#include "ores.dq.core/messaging/code_domain_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/code_domain_registrar.hpp"
-#include "ores.dq.core/messaging/coding_scheme_handler.hpp"
+#include "ores.dq.core/messaging/data_domain_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/data_domain_registrar.hpp"
-#include "ores.dq.core/messaging/data_organization_handler.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_handler.hpp"
+#include "ores.dq.core/messaging/dataset_bundle_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_member_handler.hpp"
+#include "ores.dq.core/messaging/dataset_bundle_member_registrar.hpp"
+#include "ores.dq.core/messaging/dataset_bundle_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_dependency_handler.hpp"
 #include "ores.dq.core/messaging/dataset_handler.hpp"
-#include "ores.dq.core/messaging/dimension_handler.hpp"
 #include "ores.dq.core/messaging/fsm_handler.hpp"
+#include "ores.dq.core/messaging/lei_entity_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/lei_entity_registrar.hpp"
+#include "ores.dq.core/messaging/lei_relationship_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/lei_relationship_registrar.hpp"
+#include "ores.dq.core/messaging/methodology_registrar.hpp"
+#include "ores.dq.core/messaging/nature_dimension_registrar.hpp"
+#include "ores.dq.core/messaging/origin_dimension_registrar.hpp"
+#include "ores.dq.core/messaging/treatment_dimension_registrar.hpp"
 #include "ores.dq.core/messaging/publication_handler.hpp"
 #include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.dq.core/messaging/report_definition_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/report_definition_registrar.hpp"
 #include "ores.dq.core/messaging/report_definition_template_handler.hpp"
+#include "ores.dq.core/messaging/subject_area_registrar.hpp"
+#include "ores.dq.core/messaging/synthetic_fx_spot_config_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/synthetic_fx_spot_config_registrar.hpp"
-#include "ores.dq.core/presentation/artefact_type_history_field_mapper.hpp"
-#include "ores.dq.core/presentation/badge_definition_history_field_mapper.hpp"
-#include "ores.dq.core/presentation/badge_severity_history_field_mapper.hpp"
-#include "ores.dq.core/presentation/catalog_history_field_mapper.hpp"
-#include "ores.dq.core/presentation/change_reason_category_history_field_mapper.hpp"
-#include "ores.dq.core/presentation/change_reason_history_field_mapper.hpp"
-#include "ores.dq.core/presentation/data_domain_history_field_mapper.hpp"
-#include "ores.dq.core/presentation/dataset_bundle_history_field_mapper.hpp"
 #include "ores.dq.core/presentation/subject_area_history_field_mapper.hpp"
-#include "ores.dq.core/service/artefact_type_service.hpp"
-#include "ores.dq.core/service/badge_definition_service.hpp"
-#include "ores.dq.core/service/badge_severity_service.hpp"
-#include "ores.dq.core/service/catalog_service.hpp"
-#include "ores.dq.core/service/change_reason_category_service.hpp"
-#include "ores.dq.core/service/change_reason_service.hpp"
-#include "ores.dq.core/service/data_domain_service.hpp"
-#include "ores.dq.core/service/dataset_bundle_service.hpp"
 #include "ores.dq.core/service/subject_area_service.hpp"
 #include "ores.history.api/service/version_builder.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
@@ -169,116 +170,49 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
 
     // =========================================================================
-    // Data Organization (methodologies, subject-areas)
+    // Methodologies are on the standard generated stack (see
+    // methodology_handler/_registrar).
     // =========================================================================
 
-    auto do_ = std::make_shared<data_organization_handler>(nats, ctx, verifier);
-
-    subs.push_back(nats.queue_subscribe(
-        get_methodologies_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->list_methodologies(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_methodology_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->save_methodology(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_methodology_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->delete_methodologies(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_methodology_history_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->methodology_history(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_subject_areas_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->list_subject_areas(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_subject_area_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->save_subject_area(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_subject_area_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->delete_subject_areas(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_subject_area_history_request::nats_subject,
-        queue_group,
-        [do_](ores::nats::message msg) { do_->subject_area_history(std::move(msg)); }));
+    {
+        auto methodology_subs = register_methodology_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(methodology_subs.begin()),
+                    std::make_move_iterator(methodology_subs.end()));
+    }
 
     // =========================================================================
-    // Dimensions (nature, origin, treatment)
+    // Subject areas are on the standard generated stack (see
+    // subject_area_handler/_registrar). Their history provider stays
+    // hand-written, because the entity's history identity is composite.
     // =========================================================================
 
-    auto dim = std::make_shared<dimension_handler>(nats, ctx, verifier);
+    {
+        auto subject_area_subs = register_subject_area_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(subject_area_subs.begin()),
+                    std::make_move_iterator(subject_area_subs.end()));
+    }
 
-    subs.push_back(nats.queue_subscribe(
-        get_nature_dimensions_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
-            dim->list_nature_dimensions(std::move(msg));
-        }));
+    // =========================================================================
+    // Dimensions are on the standard generated stack; see each entity's own
+    // _handler/_registrar pair. nature_dimension is registered above with the
+    // other generated registrars.
+    // =========================================================================
 
-    subs.push_back(nats.queue_subscribe(
-        save_nature_dimension_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
-            dim->save_nature_dimension(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_nature_dimension_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
-            dim->delete_nature_dimensions(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_nature_dimension_history_request::nats_subject,
-        queue_group,
-        [dim](ores::nats::message msg) { dim->nature_dimension_history(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_origin_dimensions_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
-            dim->list_origin_dimensions(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_origin_dimension_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
-            dim->save_origin_dimension(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_origin_dimension_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
-            dim->delete_origin_dimensions(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_origin_dimension_history_request::nats_subject,
-        queue_group,
-        [dim](ores::nats::message msg) { dim->origin_dimension_history(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_treatment_dimensions_request::nats_subject,
-        queue_group,
-        [dim](ores::nats::message msg) { dim->list_treatment_dimensions(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_treatment_dimension_request::nats_subject,
-        queue_group,
-        [dim](ores::nats::message msg) { dim->save_treatment_dimension(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_treatment_dimension_request::nats_subject,
-        queue_group,
-        [dim](ores::nats::message msg) { dim->delete_treatment_dimensions(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_treatment_dimension_history_request::nats_subject,
-        queue_group,
-        [dim](ores::nats::message msg) { dim->treatment_dimension_history(std::move(msg)); }));
+    {
+        auto origin_dimension_subs = register_origin_dimension_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(origin_dimension_subs.begin()),
+                    std::make_move_iterator(origin_dimension_subs.end()));
+    }
+    {
+        auto treatment_dimension_subs =
+            register_treatment_dimension_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(treatment_dimension_subs.begin()),
+                    std::make_move_iterator(treatment_dimension_subs.end()));
+    }
 
     // =========================================================================
     // Datasets
@@ -311,47 +245,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
             ds->publish(std::move(msg));
         }));
 
-    // =========================================================================
-    // Dataset Bundles
-    // =========================================================================
-
-    auto db = std::make_shared<dataset_bundle_handler>(nats, ctx, verifier);
-
-    subs.push_back(nats.queue_subscribe(
-        get_dataset_bundles_request::nats_subject, queue_group, [db](ores::nats::message msg) {
-            db->list(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_dataset_bundle_request::nats_subject, queue_group, [db](ores::nats::message msg) {
-            db->save(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_dataset_bundle_request::nats_subject, queue_group, [db](ores::nats::message msg) {
-            db->remove(std::move(msg));
-        }));
-
-    subs.push_back(
-        nats.queue_subscribe(get_dataset_bundle_history_request::nats_subject,
-                             queue_group,
-                             [db](ores::nats::message msg) { db->history(std::move(msg)); }));
-
-    // =========================================================================
-    // Dataset Bundle Members
-    // =========================================================================
-
-    auto dbm = std::make_shared<dataset_bundle_member_handler>(nats, ctx, verifier);
-
-    subs.push_back(
-        nats.queue_subscribe(get_dataset_bundle_members_request::nats_subject,
-                             queue_group,
-                             [dbm](ores::nats::message msg) { dbm->list(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_dataset_bundle_members_by_bundle_request::nats_subject,
-        queue_group,
-        [dbm](ores::nats::message msg) { dbm->list_by_bundle(std::move(msg)); }));
+    // Dataset bundles and their members moved to the standard generated
+    // stack; see register_dataset_bundle_handlers below alongside the other
+    // generated registrars.
 
     // =========================================================================
     // Dataset Dependencies
@@ -391,50 +287,23 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // =========================================================================
-    // Coding Schemes
+    // Coding scheme authority types and coding schemes are on the standard
+    // generated stack; see each entity's own _handler/_registrar pair.
     // =========================================================================
 
-    auto cs = std::make_shared<coding_scheme_handler>(nats, ctx, verifier);
-
-    subs.push_back(nats.queue_subscribe(
-        get_coding_scheme_authority_types_request::nats_subject,
-        queue_group,
-        [cs](ores::nats::message msg) { cs->list_authority_types(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_coding_scheme_authority_type_request::nats_subject,
-        queue_group,
-        [cs](ores::nats::message msg) { cs->save_authority_type(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_coding_scheme_authority_type_request::nats_subject,
-        queue_group,
-        [cs](ores::nats::message msg) { cs->delete_authority_types(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_coding_scheme_authority_type_history_request::nats_subject,
-        queue_group,
-        [cs](ores::nats::message msg) { cs->authority_type_history(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_coding_schemes_request::nats_subject, queue_group, [cs](ores::nats::message msg) {
-            cs->list(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_coding_scheme_request::nats_subject, queue_group, [cs](ores::nats::message msg) {
-            cs->save(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_coding_scheme_request::nats_subject, queue_group, [cs](ores::nats::message msg) {
-            cs->remove(std::move(msg));
-        }));
-
-    subs.push_back(
-        nats.queue_subscribe(get_coding_scheme_history_request::nats_subject,
-                             queue_group,
-                             [cs](ores::nats::message msg) { cs->history(std::move(msg)); }));
+    {
+        auto coding_scheme_authority_type_subs =
+            register_coding_scheme_authority_type_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(coding_scheme_authority_type_subs.begin()),
+                    std::make_move_iterator(coding_scheme_authority_type_subs.end()));
+    }
+    {
+        auto coding_scheme_subs = register_coding_scheme_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(coding_scheme_subs.begin()),
+                    std::make_move_iterator(coding_scheme_subs.end()));
+    }
 
     // =========================================================================
     // LEI Entities, LEI Relationships, Report Definitions, Synthetic FX Spot
@@ -502,6 +371,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.insert(subs.end(),
                     std::make_move_iterator(code_domain_subs.begin()),
                     std::make_move_iterator(code_domain_subs.end()));
+
+        auto dataset_bundle_subs = register_dataset_bundle_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(dataset_bundle_subs.begin()),
+                    std::make_move_iterator(dataset_bundle_subs.end()));
+
+        auto dataset_bundle_member_subs =
+            register_dataset_bundle_member_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(dataset_bundle_member_subs.begin()),
+                    std::make_move_iterator(dataset_bundle_member_subs.end()));
     }
 
     // ----------------------------------------------------------------
@@ -513,83 +393,26 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     {
         auto& hist_registry = history_registry();
-        hist_registry.register_history_provider(
-            "ores.dq.badge_definition",
-            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-                service::badge_definition_service svc(scoped_ctx);
-                auto versions = svc.get_definition_history(entity_id);
-                return ores::history::service::build_entity_history_versions(
-                    versions, presentation::render_badge_definition_fields);
-            });
 
-        hist_registry.register_history_provider(
-            "ores.dq.badge_severity",
-            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-                service::badge_severity_service svc(scoped_ctx);
-                auto versions = svc.get_severity_history(entity_id);
-                return ores::history::service::build_entity_history_versions(
-                    versions, presentation::render_badge_severity_fields);
-            });
+        register_artefact_type_history_provider(hist_registry);
+        register_badge_definition_history_provider(hist_registry);
+        register_badge_severity_history_provider(hist_registry);
+        register_catalog_history_provider(hist_registry);
+        register_change_reason_category_history_provider(hist_registry);
+        register_change_reason_history_provider(hist_registry);
+        register_code_domain_history_provider(hist_registry);
+        register_data_domain_history_provider(hist_registry);
+        register_dataset_bundle_history_provider(hist_registry);
+        register_lei_entity_history_provider(hist_registry);
+        register_lei_relationship_history_provider(hist_registry);
+        register_report_definition_history_provider(hist_registry);
+        register_synthetic_fx_spot_config_history_provider(hist_registry);
 
-        hist_registry.register_history_provider(
-            "ores.dq.artefact_type",
-            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-                service::artefact_type_service svc(scoped_ctx);
-                auto versions = svc.get_type_history(entity_id);
-                return ores::history::service::build_entity_history_versions(
-                    versions, presentation::render_artefact_type_fields);
-            });
-
-        hist_registry.register_history_provider(
-            "ores.dq.catalog",
-            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-                service::catalog_service svc(scoped_ctx);
-                auto versions = svc.get_catalog_history(entity_id);
-                return ores::history::service::build_entity_history_versions(
-                    versions, presentation::render_catalog_fields);
-            });
-
-        hist_registry.register_history_provider(
-            "ores.dq.change_reason",
-            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-                service::change_reason_service svc(scoped_ctx);
-                auto versions = svc.get_reason_history(entity_id);
-                return ores::history::service::build_entity_history_versions(
-                    versions, presentation::render_change_reason_fields);
-            });
-
-        hist_registry.register_history_provider(
-            "ores.dq.change_reason_category",
-            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-                service::change_reason_category_service svc(scoped_ctx);
-                auto versions = svc.get_category_history(entity_id);
-                return ores::history::service::build_entity_history_versions(
-                    versions, presentation::render_change_reason_category_fields);
-            });
-
-        hist_registry.register_history_provider(
-            "ores.dq.data_domain",
-            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-                service::data_domain_service svc(scoped_ctx);
-                auto versions = svc.get_domain_history(entity_id);
-                return ores::history::service::build_entity_history_versions(
-                    versions, presentation::render_data_domain_fields);
-            });
-
-        hist_registry.register_history_provider(
-            "ores.dq.dataset_bundle",
-            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-                service::dataset_bundle_service svc(scoped_ctx);
-                auto versions = svc.get_bundle_history(entity_id);
-                return ores::history::service::build_entity_history_versions(
-                    versions, presentation::render_dataset_bundle_fields);
-            });
-
-        // subject_area has a compound (name, domain_name) natural key and no
-        // surrogate -- entity_id arrives as "name|domain_name" from the Qt
-        // client (SubjectAreaController::showHistoryWindow), split back
-        // apart here rather than adding surrogate-key support this has
-        // never needed otherwise.
+        // subject_area keeps a hand-written provider. Its history identity is
+        // the composite (name, domain_name) that the Qt client sends as
+        // "name|domain_name" (SubjectAreaController::showHistoryWindow), and
+        // the generated registrar declines to register one for a compound key.
+        // So the bridge stays here rather than moving with the rest.
         hist_registry.register_history_provider(
             "ores.dq.subject_area",
             [](const ores::database::context& scoped_ctx, const std::string& entity_id) {

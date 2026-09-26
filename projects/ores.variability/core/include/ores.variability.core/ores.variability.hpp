@@ -22,22 +22,21 @@
 /**
  * @brief System variability and configuration management module for ORE Studio.
  *
- * This module provides infrastructure for managing system configurability and
- * runtime behavior variation. It serves as the foundation for all aspects of
- * system adaptability. Key features include:
+ * This module holds the platform's typed runtime configuration as one
+ * bitemporal table of named settings. A setting is named by a dotted string
+ * such as =system.bootstrap_mode=, carries a type and a value, and is scoped
+ * to a tenant and a party. Key features include:
  *
- * - Feature flags: runtime toggles for controlling system features and behavior
- * - Temporal versioning: bitemporal tracking of configuration changes
- * - Configuration management: centralized storage of system settings
- * - Audit support: tracking who changed what and when
- * - Repository pattern: ORM-based persistence with database integration
+ * - Typed configuration: boolean, integer, string and json settings in one
+ *   table, with the type stored beside the value
+ * - Temporal versioning: bitemporal tracking of every configuration change
+ * - Audit support: tracking who changed what, when, and why
+ * - Two ways in: the canonical entity protocol over NATS, and the typed
+ *   accessors components read in process
  *
- * The module is designed to be a dependency for other ORE Studio components
- * that need runtime configurability. It provides a clean separation between
- * system configuration concerns and domain-specific business logic.
- *
- * The module is organized into namespaces: domain (core entities) and
- * repository (ORM and persistence).
+ * The module is organised into namespaces: domain (the setting and its wire
+ * types), repository (the generated store) and service (the typed accessors
+ * components depend on).
  */
 namespace ores::variability {}
 

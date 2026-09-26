@@ -50,14 +50,14 @@ TEST_CASE("write_single_origin_dimension", tags) {
     database_helper h;
 
     generation_context ctx;
-    origin_dimension_repository repo(h.context());
+    origin_dimension_repository repo;
     auto origin_dimension = generate_synthetic_origin_dimension(ctx);
-    origin_dimension.tenant_id = h.tenant_id().to_string();
+    origin_dimension.tenant_id = h.tenant_id();
     origin_dimension.code =
         origin_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Origin dimension: " << origin_dimension;
-    CHECK_NOTHROW(repo.write(origin_dimension));
+    CHECK_NOTHROW(repo.write(h.context(), origin_dimension));
 }
 
 TEST_CASE("write_multiple_origin_dimensions", tags) {
@@ -65,16 +65,16 @@ TEST_CASE("write_multiple_origin_dimensions", tags) {
 
     database_helper h;
 
-    origin_dimension_repository repo(h.context());
+    origin_dimension_repository repo;
     generation_context ctx;
     auto origin_dimensions = generate_synthetic_origin_dimensions(3, ctx);
     for (auto& o : origin_dimensions) {
-        o.tenant_id = h.tenant_id().to_string();
+        o.tenant_id = h.tenant_id();
         o.code = o.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Origin dimensions: " << origin_dimensions;
 
-    CHECK_NOTHROW(repo.write(origin_dimensions));
+    CHECK_NOTHROW(repo.write(h.context(), origin_dimensions));
 }
 
 TEST_CASE("read_latest_origin_dimensions", tags) {
@@ -82,18 +82,18 @@ TEST_CASE("read_latest_origin_dimensions", tags) {
 
     database_helper h;
 
-    origin_dimension_repository repo(h.context());
+    origin_dimension_repository repo;
     generation_context ctx;
     auto written_origin_dimensions = generate_synthetic_origin_dimensions(3, ctx);
     for (auto& o : written_origin_dimensions) {
-        o.tenant_id = h.tenant_id().to_string();
+        o.tenant_id = h.tenant_id();
         o.code = o.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Written origin dimensions: " << written_origin_dimensions;
 
-    repo.write(written_origin_dimensions);
+    repo.write(h.context(), written_origin_dimensions);
 
-    auto read_origin_dimensions = repo.read_latest();
+    auto read_origin_dimensions = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read origin dimensions: " << read_origin_dimensions;
 
     CHECK(!read_origin_dimensions.empty());
@@ -105,21 +105,21 @@ TEST_CASE("read_latest_origin_dimension_by_code", tags) {
 
     database_helper h;
 
-    origin_dimension_repository repo(h.context());
+    origin_dimension_repository repo;
     generation_context ctx;
     auto origin_dimensions = generate_synthetic_origin_dimensions(3, ctx);
     for (auto& o : origin_dimensions) {
-        o.tenant_id = h.tenant_id().to_string();
+        o.tenant_id = h.tenant_id();
         o.code = o.code + "_" + std::string(faker::string::alphanumeric(8));
     }
 
     const auto target = origin_dimensions.front();
     BOOST_LOG_SEV(lg, debug) << "Write origin dimensions: " << origin_dimensions;
-    repo.write(origin_dimensions);
+    repo.write(h.context(), origin_dimensions);
 
     BOOST_LOG_SEV(lg, debug) << "Target origin dimension: " << target;
 
-    auto read_origin_dimensions = repo.read_latest(target.code);
+    auto read_origin_dimensions = repo.read_latest(h.context(), target.code);
     BOOST_LOG_SEV(lg, debug) << "Read origin dimensions: " << read_origin_dimensions;
 
     REQUIRE(read_origin_dimensions.size() == 1);

@@ -34,28 +34,6 @@
 namespace ores::service::messaging {
 
 /**
- * @brief NATS header name for the workflow step idempotency key.
- *
- * Domain services extract this from inbound commands to detect re-dispatched
- * commands (idempotency check) and echo it back in the step-completed event.
- */
-inline constexpr std::string_view workflow_step_id_header = "X-Workflow-Step-Id";
-
-/**
- * @brief NATS header name for the parent workflow instance.
- */
-inline constexpr std::string_view workflow_instance_id_header = "X-Workflow-Instance-Id";
-
-/**
- * @brief NATS header name for the tenant that owns the workflow instance.
- *
- * Set by the workflow engine on all step-command publishes. Domain service
- * handlers use this to build the correct tenant-scoped database context when
- * processing a workflow step command (i.e. when is_workflow_command() is true).
- */
-inline constexpr std::string_view workflow_tenant_id_header = "X-Tenant-Id";
-
-/**
  * @brief Returns true if the inbound message is part of a workflow execution.
  *
  * A message is a workflow step command if it carries the X-Workflow-Step-Id
@@ -63,7 +41,7 @@ inline constexpr std::string_view workflow_tenant_id_header = "X-Tenant-Id";
  * workflow-driven execution paths.
  */
 inline bool is_workflow_command(const ores::nats::message& msg) {
-    return msg.headers.contains(std::string(workflow_step_id_header));
+    return msg.headers.contains(std::string(ores::workflow::messaging::step_id_header));
 }
 
 /**
@@ -118,9 +96,10 @@ struct workflow_step_context {
         if (!is_workflow_command(msg))
             return std::nullopt;
         return workflow_step_context{
-            .step_id = extract_workflow_header(msg, workflow_step_id_header),
-            .instance_id = extract_workflow_header(msg, workflow_instance_id_header),
-            .tenant_id = extract_workflow_header(msg, workflow_tenant_id_header),
+            .step_id = extract_workflow_header(msg, ores::workflow::messaging::step_id_header),
+            .instance_id =
+                extract_workflow_header(msg, ores::workflow::messaging::instance_id_header),
+            .tenant_id = extract_workflow_header(msg, ores::workflow::messaging::tenant_id_header),
             .nats = &nats};
     }
 

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,18 +17,32 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_DOMAIN_METHODOLOGY_HPP
 #define ORES_DQ_API_DOMAIN_METHODOLOGY_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::dq::domain {
 
 /**
- * @brief Describes a methodology for data processing or transformation.
+ * @brief Describes transformation and derivation logic.
+ *
+ * Describes transformation/derivation logic. Links to documentation and
+ * implementation.
+ *
+ * A methodology is a named body of logic that a value is produced by, with an
+ * optional pointer to where the logic is written down and an optional note on how
+ * it is implemented. Rows are authored directly rather than mirrored from an
+ * external source.
  */
 struct methodology final {
     /**
@@ -39,36 +53,34 @@ struct methodology final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief UUID uniquely identifying this methodology.
      *
-     * This is the surrogate key for the methodology.
+     * The surrogate key; the name is the natural one.
      */
     boost::uuids::uuid id;
 
     /**
-     * @brief Human-readable name for the methodology.
+     * @brief Unique name for the methodology.
      */
     std::string name;
 
     /**
-     * @brief Detailed description of the methodology's purpose and approach.
+     * @brief Detailed description of what the methodology does.
      */
     std::string description;
 
     /**
-     * @brief Optional reference to external documentation of the methodology logic.
-     *
-     * Typically a URL or document reference.
+     * @brief Where the logic is documented, when it is documented somewhere.
      */
-    std::optional<std::string> logic_reference;
+    std::string logic_reference;
 
     /**
-     * @brief Optional details about how the methodology is implemented.
+     * @brief How the logic is implemented, when that is worth recording.
      */
-    std::optional<std::string> implementation_details;
+    std::string implementation_details;
 
     /**
      * @brief Username of the person who last modified this methodology.
@@ -76,20 +88,55 @@ struct methodology final {
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
 
     /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
-
-    /**
      * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const methodology&, const methodology&) = default;
 };
+
+/**
+ * @brief Dispatch-key identifier for methodology, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const methodology&) {
+    return "ores.dq.methodology";
+}
 
 }
 

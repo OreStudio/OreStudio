@@ -35,7 +35,7 @@
  *
  * The module is organized into namespaces: domain (core entities), repository
  * (ORM and persistence), service (business logic), messaging (API handlers),
- * security (password management), and generators (test data).
+ * and presentation (history field mappers).
  */
 namespace ores::iam {}
 

@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ID: CC9EBC52-9E51-59B8-AFD5-526B2DD40E08
+:END:
+#+title: How do I run the dataset_bundle_members commands from the shell?
+#+description: Every command the dataset_bundle_members submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:dataset_bundle_members:
+
+This file documents the dataset_bundle_members resource at the shell, one section per command. Every command is a subcommand of =dataset_bundle_members=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: DFE44A9F-3187-58F4-9D1F-F5E9AF1390C8
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundle_members list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundle_members.list=.
+
+#+name: dataset_bundle_members-list
+#+begin_src ores-shell :tangle dataset_bundle_members-list.ores :exports none
+dataset_bundle_members list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 5E1B35F4-D019-5CC5-96B6-24906A115068
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundle_members get <bundle_code> <dataset_code>
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundle_members.get=.
+
+#+name: dataset_bundle_members-get
+#+begin_src ores-shell :tangle dataset_bundle_members-get.ores :exports none
+dataset_bundle_members get __none__ __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 89918FAC-F300-5CF7-8371-0ECEDDE2E9DB
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundle_members get-many <bundle_code> <dataset_code>
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundle_members.get_many=.
+
+#+name: dataset_bundle_members-get-many
+#+begin_src ores-shell :tangle dataset_bundle_members-get-many.ores :exports none
+dataset_bundle_members get-many __none__ __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: C435C96F-3303-56F0-9371-C3B62EA955CA
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundle_members add <bundle_code> <dataset_code> <display_order> <optional> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundle_members.put=.
+
+#+name: dataset_bundle_members-add
+#+begin_src ores-shell :tangle dataset_bundle_members-add.ores :exports none
+dataset_bundle_members add __none__ __none__ 0 false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: A5569757-B16D-5574-88A9-768DC86886EF
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundle_members set <bundle_code> <dataset_code> <display_order> <optional> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundle_members.put=.
+
+#+name: dataset_bundle_members-set
+#+begin_src ores-shell :tangle dataset_bundle_members-set.ores :exports none
+dataset_bundle_members set __none__ __none__ 0 false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 9B0E6F5B-22AE-510A-AF11-0C157887F5D6
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundle_members put-many --count <n> <bundle_code> <dataset_code> <display_order> <optional> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundle_members.put_many=.
+
+#+name: dataset_bundle_members-put-many
+#+begin_src ores-shell :tangle dataset_bundle_members-put-many.ores :exports none
+dataset_bundle_members put-many --count 1 __none__ __none__ 0 false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 54FA08E5-CA48-5070-9E6F-EDD6AB680B4A
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundle_members delete <bundle_code> <dataset_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundle_members.delete=.
+
+#+name: dataset_bundle_members-delete
+#+begin_src ores-shell :tangle dataset_bundle_members-delete.ores :exports none
+dataset_bundle_members delete __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: FBC626A9-6CB4-5169-A1C1-DE442E17FC1D
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundle_members delete-many <bundle_code> <dataset_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundle_members.delete_many=.
+
+#+name: dataset_bundle_members-delete-many
+#+begin_src ores-shell :tangle dataset_bundle_members-delete-many.ores :exports none
+dataset_bundle_members delete-many __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =by-bundle-code=
+:PROPERTIES:
+:ID: 6D15B59F-2C7F-5B53-81EE-BCFAF96013A5
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundle_members by-bundle-code <bundle_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundle_members.list_by_bundle_code=.
+
+#+name: dataset_bundle_members-by-bundle-code
+#+begin_src ores-shell :tangle dataset_bundle_members-by-bundle-code.ores :exports none
+dataset_bundle_members by-bundle-code __none__ --limit 1
+#+end_src
+

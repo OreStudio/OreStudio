@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 3CA50A73-FC43-5732-AB09-F173214574E4
+:END:
+#+title: How do I run the code_domains commands from the shell?
+#+description: Every command the code_domains submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:code_domains:
+
+This file documents the code_domains resource at the shell, one section per command. Every command is a subcommand of =code_domains=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 53A6D4C3-6574-551E-9F13-EA6610CFF2A3
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+code_domains list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.code_domains.list=.
+
+#+name: code_domains-list
+#+begin_src ores-shell :tangle code_domains-list.ores :exports none
+code_domains list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 733B131A-0698-5C75-B0BF-95AF101F1A2B
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+code_domains get <code>
+#+end_example
+
+It is addressed at =dq.v1.code_domains.get=.
+
+#+name: code_domains-get
+#+begin_src ores-shell :tangle code_domains-get.ores :exports none
+code_domains get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: E327CC31-65A6-5C44-ABA7-8F19C081E3A7
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+code_domains get-many <code>
+#+end_example
+
+It is addressed at =dq.v1.code_domains.get_many=.
+
+#+name: code_domains-get-many
+#+begin_src ores-shell :tangle code_domains-get-many.ores :exports none
+code_domains get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: E571B219-3DDA-5207-9671-668E781E2635
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+code_domains add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.code_domains.put=.
+
+#+name: code_domains-add
+#+begin_src ores-shell :tangle code_domains-add.ores :exports none
+code_domains add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: B7230A7F-98DD-5CAC-9E46-A067A8FAA22B
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+code_domains set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.code_domains.put=.
+
+#+name: code_domains-set
+#+begin_src ores-shell :tangle code_domains-set.ores :exports none
+code_domains set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: CDC098D1-7608-5D9E-B473-2621FDC0EB75
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+code_domains put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.code_domains.put_many=.
+
+#+name: code_domains-put-many
+#+begin_src ores-shell :tangle code_domains-put-many.ores :exports none
+code_domains put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: EB9BB33F-88C6-53CF-B19B-296809E8011E
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+code_domains delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.code_domains.delete=.
+
+#+name: code_domains-delete
+#+begin_src ores-shell :tangle code_domains-delete.ores :exports none
+code_domains delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 6DE5D276-25CF-5C7F-8CA1-7BDE53C33B1C
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+code_domains delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.code_domains.delete_many=.
+
+#+name: code_domains-delete-many
+#+begin_src ores-shell :tangle code_domains-delete-many.ores :exports none
+code_domains delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 505C371C-1F32-5399-947F-CA9A287935E0
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+code_domains versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.code_domains_versions.list=.
+
+#+name: code_domains-versions
+#+begin_src ores-shell :tangle code_domains-versions.ores :exports none
+code_domains versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: FC6C2015-9A83-536D-9587-5952CE3B6287
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+code_domains version <code> --version <n>
+#+end_example
+
+It is addressed at =dq.v1.code_domains_versions.get=.
+
+#+name: code_domains-version
+#+begin_src ores-shell :tangle code_domains-version.ores :exports none
+code_domains version __none__ --version 1
+#+end_src
+

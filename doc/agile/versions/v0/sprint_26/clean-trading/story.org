@@ -7,8 +7,8 @@
 #+level: s2
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
-#+updated: 2026-09-23
-#+environment:
+#+updated: 2026-09-26
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -17,16 +17,24 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 ores.trading meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]: every item: All, Protocol and Entity pass, each item that does not apply is recorded with its reason, and ores.trading joins =COMPONENTS_UNDER_TEST=. Order 32 of 35 in the sprint 26 component clean-up, tier 3 (domain component).
 
+ores.trading is the largest component in the tree and the last one
+whose regeneration no gate has ever measured. It cannot pass the
+standard by running the same pass the smaller components ran, because a
+single regeneration touches 1751 files and the component's data model
+still carries an unresolved identity question inherited from sprint 25.
+This story therefore lands in six PRs, and it records the decisions
+that bound each one.
+
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
-| Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Now           | PR 1 is complete: the analysis, the evidence and the seven decisions. |
+| Waiting on    | Nothing. |
+| Next          | Raise and merge PR 1, then start PR 2. |
+| Last touched  | 2026-09-26                               |
 
 * Acceptance
 
@@ -39,15 +47,393 @@ ores.trading meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:AC960907-8838-4254-9C45-F5E48FA8840C][Bring ores.trading to the clean standard]] | BACKLOG | | | Work ores.trading through the Component Clean Standard in order and record each item. |
+| [[id:AC960907-8838-4254-9C45-F5E48FA8840C][Baseline, decisions and evidence for ores.trading]] | DONE | 2026-09-26 | 2026-09-26 | PR 1. Record the B01 to B06 baseline, the consumer census, the open work and the seven decisions, with the evidence files. No code change. |
+| [[id:14795122-7D5B-442E-9B2A-E7517632F612][Sync the ores.trading tree to its models]] | BACKLOG | | | PR 2. Regenerate the modelled component, land the canonical protocol and the canonical notify triggers, delete the hand consolidation and the superseded hand-written twins, and make the tree build and test green. |
+| [[id:13217FCC-66E9-4887-B950-8C73FFC8D067][Model the unmodelled trading families and bind the unbound]] | BACKLOG | | | PR 3. Author the missing entity models, bind the 26 unbound entities to profiles or record the no-match, clear the legacy model fragments, and close the type defects the trade model investigation lists. |
+| [[id:8EB4DE8E-1A9B-40CB-9B61-2918F778557C][Collapse the instrument identity into the trade and split the bond security]] | BACKLOG | | | PR 4. One trade identity, one instrument identity and one security identity, with a real foreign key where a soft link sits today, regenerated. |
+| [[id:E586441E-B73E-4E8C-917F-50161B05588D][Finish the bond pilot]] | BACKLOG | | | PR 5. Re-model the bond future against the current ORE schema, add the missing constraints and child tables, fix the delete and add paths, and run the corpus-wide round trip. |
+| [[id:F97FF3C0-EB21-4076-B23C-4AAA77F13BC3][Shell, wiring, hygiene and verification for ores.trading]] | BACKLOG | | | PR 6. Generate the shell units and recipes, seed the permissions, run the audits and the per-file survey, and enter the component in the registry. |
 
-* Notes
+* Where ores.trading stands (measured 2026-09-26)
 
-- Survey on 2026-09-23: 57 entity, junction or operation models; 1705 C++ files outside tests, 34 of them generated (1%); 244 messaging headers, 239 of them hand-written.
-- The largest component. Bound to profiles in sprint 25, but not regenerated since the generated marker landed (#2087), and most messaging headers are hand-written. Expect to split this story by instrument family once B01 to B05 are done.
+Every figure below was measured on 2026-09-26 at commit =b79609d808=,
+on a still tree, with the codegen virtual environment. The commands and
+their raw output are in the task's =evidence/= folder.
+
+** Size and shape
+
+| Measure | Value |
+|---------+-------|
+| C++ files in the component | 1763, of which 35 carry the generated marker (2.0%) |
+| Non-test C++ sources | 732, of which 12 are generated |
+| Test sources | 58 files, 215 test cases across three executables |
+| Models under =projects/ores.trading/modeling/= | 65: 57 entity, 6 field group, 1 module, 1 component overview |
+| Tables owned | 65, declared by 137 scripts under =ores.sql/create/trading/= |
+| Protocol headers | 49, of which 1 is generated (=trade_protocol.hpp=) |
+| TypeScript twins | 0 |
+| Raw NATS subject literals in the component | 249 distinct, none declared in a model |
+| Consumers outside the component | 38 files in ores.shell, 17 in ores.ore, 1 in ores.reporting, 126 distinct headers |
+| Web consumers | 0 |
+
+** The drift is mostly a banner
+
+=check_component_drift.py --component trading-cpp --dry-run= reports
+1636 files that would change and 115 that would be created, 1751 in
+total. Every block was classified by cause:
+
+| Cause | Files |
+|-------+-------|
+| The generated-file banner and its template note, and nothing else | 1434 |
+| The eventing rename: =entity_change_event= to =entity_event_traits=, =*_changed_event.hpp= to =*_event.hpp= | 78 |
+| Substantive template change | 123 |
+| The root =CMakeLists.txt= | 1 |
+
+The evidence file groups the banner and the root =CMakeLists.txt= into
+one bucket and reports 1435 marker-only files; the table above splits
+them. The two views are the same 1636 changes.
+
+The 123 substantive changes are the 114 database scripts under
+=ores.sql/create/trading/= plus the =trade= protocol, handler,
+registrar, repository and service. The 114 are the trigger and
+notify-trigger templates: the write-path version rule and the canonical
+change payload.
+
+The 115 creates are 57 event headers, 9 per-family instrument
+protocols, 9 handler headers, 9 registrar headers, 9 registrar sources
+and 22 shell recipes.
+
+The conclusion that matters: the generator already reproduces the tree
+for the modelled families apart from the banner. The sprint 25 design
+predicted that a regeneration would "flatten and drop tree semantics".
+That is no longer true. The bond pilot, the regenerable trade entity
+and later template work removed the semantic gap, and what remains is
+stale template output.
+
+** The test suite fails for one reason
+
+=ctest -R "ores.trading.core.tests"= reports 102 cases, 81 pass and 21
+fail. =ores.trading.api.tests= and =ores.trading.service.tests= pass.
+All 21 failures are =*_publishes_nats_changed_event= cases in the
+eventing integration tests. The cause is already captured at
+[[id:80C846D1-4A13-4331-A88C-727D6C3D861C][Finish the eventing payload migration]]:
+123 of the repository's 209 notify triggers emit
+={entity, timestamp, entity_ids, tenant_id}=, the reader in
+=postgres_event_source.cpp= requires ={event_id, entity, key, action,
+version, occurred_at, tenant_id}=, the parse fails and the
+notification is dropped. Trading owns 114 of those trigger files, which
+is why its share of the drift includes them and why its suite fails.
+
+** The gates read green for the wrong reason
+
+| Gate | Output today | What it means |
+|------+--------------+---------------|
+| =check_component_drift.py --component trading-cpp --dry-run= | 1751 files differ, exit 1 | The only honest failure |
+| =check_model_drift.py --summary= | 164 of 309 models bound, no drift | ores.trading's unbound entities are invisible to it |
+| =check_handler_permissions.py= | 174 codes seeded across 4 components, exit 0 | Trading is not in the script's =REGISTRY=, so the gate does not read trading's 98 permission codes at all, and 92 of them are unseeded |
+| =check_protocol_twin_coverage.py= | 38 headers in 6 components, exit 0 | Trading is not counted; it has 0 TypeScript twins |
+| =regenerate_shell_recipe_inventory.py --check= | silent, exit 0 | Trading has no recipes, so nothing can be stale |
+| =validate_docs.py= | 40 components pass | Genuine |
+| =check_populate_references.py= | references resolve | Genuine |
+| =regenerate_physical_space_inventories.py --check= | 42 tables current | Genuine |
+| =regenerate_cmake_component_files.py --component ores.trading.<sub> --check= | 2 stale lists per subproject, exit 1 | Six stale lists in total |
+
+* The threads inherited from sprint 25
+
+The refactor the user asked about is four threads, and sprint 25 closed
+all of them as story wrappers rather than as work. Thirteen of twenty
+tasks in the first story are DONE, and every task in the second is
+DONE. What was abandoned is the part that changed the shape of the
+data.
+
+** Thread 1: the data-oriented redesign
+
+Story [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]], ABANDONED
+2026-09-23. Its design
+=doc/agile/versions/v0/sprint_25/data-oriented-trading-model/design_trading_data_oriented_model.org=
+scored the component 2 of 5 on the persisted-data regime and 2 of 5 on
+the wire regime, and named 13 findings. Its September 8 regeneration
+oracle produced 47 modified and 65 untracked files; the same check
+today produces 1751, but 88 per cent of the 1636 changes are the banner.
+
+Landed: the bond relational family, a regenerable =trade= entity with
+five field groups and org-declared foreign keys, insert trigger and
+indexes (=2478b1f879=), its generated service layer (=30a7cfbb2f=), the
+generated-file marker (=e7e9491467=), the product identity document
+(=e1ef999975=, PR #2085), the untagged-variant fix, and the ORE
+import, export and round-trip shell verbs.
+
+Abandoned and still open: =7B23DB0F= collapse the instrument identity
+into the trade, =0C525D24= split the bond security from the trade,
+=A3DA0BB5= keep stated but default-valued elements in the export,
+=F628C22E= product short code, =27FC1760= retire the rfl complexity
+flags. Two more, =3E14AEC0= and =5A01EEBC=, are moot because the whole
+=ores.qt= tree was deleted at =af67db3062=.
+
+** Thread 2: the linkage between trade and instrument
+
+The design question is already answered in the repository.
+=doc/knowledge/architecture/trade_modeling.org=, lines 152 to 166,
+states that the economics vary by product type, that they belong to one
+agreement, and then:
+
+#+begin_quote
+The relationship between trade and instrument is therefore one to one,
+and the trade id identifies both.
+#+end_quote
+
+=doc/knowledge/domain/trade.org= repeats it: a trade is four entities,
+the product type, the security issue where one exists, the trade and
+the instrument carrying the economic terms.
+
+The code carries three identities instead of two:
+
+- =instrument_identity_field_group.org= declares =instrument_id= as a
+  key and =trade_id= as an optional soft back-reference. Twenty-six
+  models inherit the group.
+- =ores.trading.trade.org= adds =instrument_id= to the trade, and
+  =trading_trades_create.sql= declares it =uuid null=.
+- The declaration carries 91 =instrument_id= columns, and no foreign
+  key anywhere targets an instrument table. Two nullable pointers face
+  each other and nothing can make them agree.
+- There is no instrument table at all. The apparent =instrument= entity
+  is type glue: a concept, an alias and a nine-alternative variant.
+
+Two smaller defects sit on the same ground.
+=trade_classification.hpp= documents =instrument_id= as a soft foreign
+key to =ores_refdata_instruments_tbl=, which does not exist. That file
+also cites =trade_identity_field_group.json=, which does not exist
+either.
+
+The independent investigation
+=doc/agile/versions/v0/sprint_25/ore_trade_generator_trade_populations/trade_model_defects.org=
+reaches the same place from the persistence side, as its defect 13:
+twenty-five instrument tables are keyed on =instrument_id= and five are
+keyed on =id=, together with =trades=, =swap_legs=, =composite_legs=,
+=trade_identifiers= and =party_roles=.
+
+So =7B23DB0F= and =0C525D24= are not an open design question. They are
+the implementation of a decision the knowledge base already records,
+and the abandoned split task left the reason to do the collapse first:
+doing the security split first reshapes the same tables twice.
+
+** Thread 3: the bond pilot
+
+The pilot proved its claim for the bond products and the trade
+envelope. The zero-loss gate read 0 lost and 0 unexplained over 1566
+documents. The mapper is a hand-written 1694-line
+=bond_instrument_mapper.cpp= over a hand-written container of 241 and
+425 lines. Forty-seven cases in six =ores.ore= test files cover it,
+plus eleven cases in =service_bond_instrument_reader_tests.cpp=.
+
+What silently stopped, with no task and no decision recorded:
+
+- The design's =instrument_underlyings= table was never built.
+- =bond_legs= and its rate, amount and amortization children are still
+  keyed by =instrument_id=, so bond static data is stored once per
+  trade rather than once per security.
+- No =REFERENCES= constraint exists in any bond script, so the design's
+  foreign key for =issue_id= is a comment rather than a constraint.
+- Eight =bondData= elements still have no column: CreditGroup,
+  VolatilityCurveId, PriceQuoteMethod, PriceQuoteBaseValue, PriceType,
+  Payer, CreditRisk and SubType.
+- =bond_futures= is a pre-v17 table with 15 columns while the current
+  =instruments.xsd= declares 5 members. =ApplyConversionFactor= and
+  =UseFuturePrice= have nowhere to go. The zero-loss gate cannot see
+  this because no ORE example contains a bond future.
+- The corpus-wide sweep over the roughly 50 bond documents never ran.
+  Two documents were checked live.
+- Deleting a bond instrument over the shell removes the header row and
+  leaves the facts and the issue behind.
+- Adding a bond is three saves with no transaction.
+- Default-valued but stated elements are still dropped on export.
+
+** Thread 4: the trade model cleanup
+
+=trade_model_defects.org= records sixteen defects found by loading every
+table rather than by reading the model. The story that would have
+consumed it, =trading_model_cleanup=, was scaffolded on the unmerged
+branch =feature/trading-model-cleanup= and never landed. The defects
+belong to this story:
+
+| # | Defect | Owner here |
+|---+--------+------------|
+| 1 | Schedules and collections held as JSON text | PR 3 |
+| 2 | Dates held as text, 58 fields | PR 3 |
+| 3 | Monetary amounts held as double, 18 fields | PR 3 |
+| 4 | Enumerations held as free text with no reference table | PR 3 |
+| 5 | Code fields whose reference table does not exist | PR 3 |
+| 6 | One concept under two names | PR 3 |
+| 7 | Referential integrity in PL/pgSQL; 866 check constraints and no foreign keys | PR 4 |
+| 8 | Enumerations enforced in PL/pgSQL, 27 of them | PR 3 |
+| 9 | One table holding two products, five equity tables | PR 4 |
+| 10 | Product type names an asset class | PR 4 |
+| 11 | Staged reference data is never published | Out of scope, dq work |
+| 12 | The publish guard collapses every office onto one party | Out of scope, dq work |
+| 13 | Two names for an instrument's identity | PR 4 |
+| 14 | Declared coverage is incomplete, and elsewhere undeclared | PR 3 |
+| 15 | An underlying is an unqualified name | PR 3 |
+| 16 | No observation schedule | PR 3 |
+
+** Open work that could collide
+
+Checked 2026-09-26. No worktree is working on ores.trading. The open
+pull requests are clean-marketdata, workflow-identity, clean-iam,
+clean-variability and clean-service. One remote branch touches trading,
+=origin/feature/trading-model-cleanup=, and it holds a single unmerged
+commit from 2026-09-08 that scaffolds the sprint 25
+=trading_model_cleanup= story. This story supersedes it. The branch is
+not ours, so the PR 1 task records it rather than deletes it.
+
+The backlog captures that touch this work are listed in the PR 1 task.
+
+* Target shape
+
+- One trade identity, one instrument identity and one security issue
+  identity, per =trade_modeling.org=: the trade id identifies the trade
+  and its instrument, and the security issue is a separate reference
+  datum where the product has one.
+- Every table that carries persisted trading data has an org model, and
+  every model is on the current format and bound to a profile or
+  recorded as a no-match.
+- Every wire type is a projection of a model. The nine rates families
+  ship as generated per-family protocols. Hand consolidation is
+  deleted. Expressing consolidation in the model is a later option,
+  recorded as a decision.
+- The database declares its relationships. A foreign key replaces every
+  soft link the schema can hold.
+- Regeneration is byte-identical and idempotent across SQL, C++, shell
+  units, shell recipes and the CMake source lists.
+
+* Checklist
+
+One row per item of the
+[[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]],
+with the result measured on 2026-09-26 and the task that owns it. The
+row is updated as each PR lands.
+
+| Id | Applies | State 2026-09-26 | Owner |
+|----+---------+------------------+-------|
+| B01 | All | Met: =evidence/b01_component_drift_dry_run.txt= and =b01_model_drift.txt= | PR 1 |
+| B02 | All | Met: =evidence/b02_b03_b04_survey.md= | PR 1 |
+| B03 | All | Met: =evidence/b02_b03_b04_survey.md= | PR 1 |
+| B04 | Protocol | Met: =evidence/b02_b03_b04_survey.md= | PR 1 |
+| B05 | All | Met in PR 1 | PR 1 |
+| B06 | All | Not met; census in PR 6 | PR 6 |
+| M01 | Entity | Met: no legacy JSON model, no =lookup_entity= | - |
+| M02 | Entity | Not met: 26 of 57 entities bind no profile | PR 3 |
+| M03 | Entity | Met: no model drift, one known exception elsewhere | - |
+| M04 | Entity | Cannot tell; verify each model in PR 3 | PR 3 |
+| M05 | Entity | Not met in places: joined shapes and two products in one table | PR 3, PR 4 |
+| M06 | Protocol | Not met: 48 hand-written protocol headers, 0 TypeScript twins | PR 2, PR 6 |
+| M07 | Entity | Not applicable: no junction metatype exists | Recorded in PR 1 |
+| M08 | Entity | Mostly met; defects 2, 3, 4 and 6 are this item | PR 3 |
+| M09 | All | Not met: 5 presentation drawers, 25 singular generator facet names | PR 3 |
+| M10 | All | Met: composite overview with three parts; validate_docs passes | - |
+| P01 | Protocol | Not met: only =trade= speaks the canonical protocol | PR 2 |
+| P02 | Protocol | Not met: 249 raw subject literals, none declared in a model | PR 2, PR 3 |
+| P03 | Protocol | Cannot tell until the B04 inventory is complete | PR 2 |
+| P04 | Protocol | Partly: no operation models; two hand-written operations | PR 2, PR 6 |
+| P05 | Protocol | Not met: consumers not migrated | PR 2 |
+| P06 | Protocol | Not applicable: no warmed event cache | Recorded in PR 1 |
+| G01 | Entity | Not met: 1751 files | PR 2 |
+| G02 | All | Not met: 48 protocol headers and 732 hand-written sources remain | PR 2 |
+| G03 | All | Partly: 35 marked files; correctness follows G01 | PR 2 |
+| G04 | Entity | Not met: no review record | PR 2, PR 6 |
+| G05 | All | Not started: no generator defect found yet | Every PR |
+| G06 | All | Not met: 6 stale CMake source lists | PR 2 |
+| G07 | All | To honour: dry run first, never refresh while a defect is open | Policy |
+| G08 | All | Met: core and service namespace headers; no api header, as in iam | - |
+| W01 | Entity | Cannot tell; read the composition points in PR 2 | PR 2 |
+| W02 | Entity | Not met: 98 codes checked, 6 seeded | PR 6 |
+| W03 | Entity | Met: populate references resolve | - |
+| W04 | Entity | Partly: aggregator reachable; grants need a live run | PR 6 |
+| S01 | Entity | Not met: 22 of 57 entities have shell commands | PR 6 |
+| S02 | Entity | Not met: 0 trading recipes, 22 wanted | PR 6 |
+| H01 | All | Not met: no audit record; three diagrams carry a sentinel | PR 6 |
+| H02 | All | To review: no Qt code; two generator trees; 24 unmodelled domain types | PR 6 |
+| H03 | All | To review: comment pass | PR 6 |
+| H04 | All | Met: only the standard =_WIN32= export macro | - |
+| H05 | All | Structure met; the ER diagram is stale | PR 6 |
+| V01 | All | Not met: to run the whole-tree build | PR 2, PR 6 |
+| V02 | All | Not met: core suite 21 failures, all eventing | PR 2 |
+| V03 | Entity | To run: database recreate and fleet start | PR 6 |
+| V04 | Entity | Depends on S01 and S02 | PR 6 |
+| V05 | All | Not met: 6 stale CMake lists, other gates green only by exclusion | PR 2, PR 6 |
+| V06 | All | Not met: absent from =COMPONENTS_UNDER_TEST= | PR 6 |
+| V07 | All | To run: vacuous-test review | PR 6 |
+| V08 | All | Not met: 732 sources and 58 test files | PR 6 |
 
 * Decisions
 
+- *D1, the rates wire.* The nine consolidated rates families ship as
+  generated per-family protocols. The hand consolidation is deleted:
+  the per-family sections of =instrument_protocol.hpp=,
+  =rates_instrument_handler.hpp= and =registrar_rates.cpp=. The subject
+  names do not change, so no consumer changes. The alternative, making
+  consolidation a model decision, needs generator work and is recorded
+  as a later option rather than taken here. Reason: the generator
+  already emits the per-family shape, and leaving both shapes in place
+  registers the same subjects twice.
+- *D2, the instrument identity.* Implement the documented rule. The
+  trade id identifies the trade and its instrument. The security issue
+  is a separate reference datum. Collapse the identity first, then
+  split the bond security, in that order, because the reverse reshapes
+  the same tables twice.
+- *D3, the unmodelled families.* Model all of them in PR 3: commodity,
+  composite, composite leg, credit, scripted, swap legs and product
+  type. The registry entry depends on it. Record each as a profile
+  no-match with its feature values where no profile fits.
+- *D4, M07.* Record the item as not applicable, because the component
+  has no junction metatype. Record that =bond_leg=,
+  =trade_party_role=, =trade_identifier= and =instrument_option= are
+  junction shaped, so a later reclassification opens the item rather
+  than leaving it silently skipped.
+- *D5, the sixteen trade model defects.* Fold the model-shape defects
+  into PR 3 and PR 4 as the table above assigns them. Leave defect 11
+  and defect 12 with the reference-data and dq work and record them as
+  out of scope here.
+- *D6, the stale remote branch.* Record =feature/trading-model-cleanup=
+  and do not delete it. It is not this worktree's branch, and the story
+  it scaffolds is superseded.
+- *D7, the shape of PR 1.* Documentation and evidence only, so that the
+  decisions are on the record before 1751 files move.
+
+* Delivery plan
+
+| PR | Task | Lands | Gate |
+|----+------+-------+------|
+| 1 | [[id:AC960907-8838-4254-9C45-F5E48FA8840C][Baseline, decisions and evidence for ores.trading]] | The analysis, the B01 to B06 evidence and the decisions | =compass lint=, =validate_docs.sh=, drift unchanged |
+| 2 | [[id:14795122-7D5B-442E-9B2A-E7517632F612][Sync the ores.trading tree to its models]] | The generated tree, the canonical protocol, the canonical triggers, the deletions | Whole-tree build, four suites green, drift dry run empty, D1 applied |
+| 3 | [[id:13217FCC-66E9-4887-B950-8C73FFC8D067][Model the unmodelled trading families and bind the unbound]] | The missing orgs, the profile bindings, the type repairs | Drift stays empty with the new entities, model drift clean |
+| 4 | [[id:8EB4DE8E-1A9B-40CB-9B61-2918F778557C][Collapse the instrument identity into the trade and split the bond security]] | One identity, real foreign keys, the security split | Drift empty, round trip at zero loss, suites green |
+| 5 | [[id:E586441E-B73E-4E8C-917F-50161B05588D][Finish the bond pilot]] | The v17 bond future, the missing child table and constraints, the delete and add paths, the corpus sweep | The corpus-wide round trip, drift empty |
+| 6 | [[id:F97FF3C0-EB21-4076-B23C-4AAA77F13BC3][Shell, wiring, hygiene and verification for ores.trading]] | Shell units and recipes, permissions, audits, surveys, the registry entry | Every gate green with the component listed, =--all= passes |
+
+* Risks
+
+- The PR 2 regeneration is large. A whole-tree build and the four
+  suites, not the diff, are the evidence that it is safe.
+- Regenerating the nine rates families while the consolidated handler
+  remains would register the same NATS subjects twice. D1 must be
+  applied inside PR 2, not after it.
+- The identity reshape in PR 4 is the largest model change. It must
+  land in one PR with its regeneration, and the ORE round trip must
+  stay at zero loss.
+- The in-place drift check diffs the whole repository, so any untracked
+  file makes it fail. Use =--dry-run=, keep the tree still, and never
+  run a writing gate while a build reads the tree.
+- Eleven untracked shell library directories exist from the scheduler
+  pass. They are the recorded open item 10 of that task and they break
+  an in-place drift check until they are swept.
+
 * Out of scope
 
--
+- The reference-data and publish defects 11 and 12 of
+  =trade_model_defects.org=. They belong to the dq and reference-data
+  work.
+- The Qt estate. It was deleted at =af67db3062=.
+- Numerical kernels. Trading consumes their results.
+- The models of other components, except the org keys the trading
+  models need.
+- The stale =ores_schema.puml= ER diagram, which is a repository-wide
+  sweep and not a trading fix. PR 6 records it.

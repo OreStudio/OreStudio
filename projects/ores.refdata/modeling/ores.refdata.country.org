@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.country
 #+description: Codegen entity model for the refdata =country= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -120,6 +121,51 @@ Optional coding scheme code for the country.
 #+begin_src cpp :name generator
 std::nullopt
 #+end_src
+
+* Artefact columns
+
+The staging table is the import contract, not a copy of the country table.
+=ores_refdata_publish_countries_from_dq_fn= takes =coding_scheme_code= from the
+dataset it is publishing, so a row-level copy here would be a second source of
+truth that nothing reads.
+
+** alpha2_code
+:PROPERTIES:
+:type: text
+:END:
+
+The staging key.
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** alpha3_code
+:PROPERTIES:
+:type: text
+:END:
+
+** numeric_code
+:PROPERTIES:
+:type: text
+:END:
+
+** name
+:PROPERTIES:
+:type: text
+:END:
+
+** official_name
+:PROPERTIES:
+:type: text
+:END:
+
+** image_id
+:PROPERTIES:
+:type:     uuid
+:nullable: true
+:END:
 
 * SQL
 

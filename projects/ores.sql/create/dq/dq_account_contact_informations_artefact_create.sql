@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
 
 -- =============================================================================
--- Staging table for generated account contact information (e.g. Acme Corporation
--- staff real names), consumed by a publish-from-dq function (see the
--- server-side-orchestration follow-up task) that creates rows in
--- ores_iam_account_contact_informations_tbl. account_username identifies the
--- owning account by username (not id) since the id is only known once the
--- account itself is published from its own artefact rows.
+-- An account's address/phone/email/web page fields. The account's real name lives on ores_iam_accounts_tbl itself (full_name), not here — this entity is purely "how to reach them", not "who they are". One contact record per account (unlike party contact information, which allows several by contact_type — a person doesn't need a Legal/ Operations/Settlement/Billing split). - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_account_contact_informations_artefact_tbl" (
@@ -44,11 +44,44 @@ create table if not exists "ores_dq_account_contact_informations_artefact_tbl" (
     "web_page" text null
 );
 
-create index if not exists account_contact_informations_artefact_dataset_idx
-on "ores_dq_account_contact_informations_artefact_tbl" (dataset_id);
+create index if not exists dq_account_contact_informations_artefact_dataset_idx
+on ores_dq_account_contact_informations_artefact_tbl (dataset_id);
 
-create index if not exists account_contact_informations_artefact_tenant_idx
-on "ores_dq_account_contact_informations_artefact_tbl" (tenant_id);
+create index if not exists dq_account_contact_informations_artefact_tenant_idx
+on ores_dq_account_contact_informations_artefact_tbl (tenant_id);
 
-create index if not exists account_contact_informations_artefact_id_idx
-on "ores_dq_account_contact_informations_artefact_tbl" (id);
+create index if not exists dq_account_contact_informations_artefact_id_idx
+on ores_dq_account_contact_informations_artefact_tbl (id);
+
+create index if not exists dq_account_contact_informations_artefact_id_idx
+on ores_dq_account_contact_informations_artefact_tbl (id);
+
+create index if not exists dq_account_contact_informations_artefact_id_idx
+on ores_dq_account_contact_informations_artefact_tbl (id);
+
+create index if not exists dq_account_contact_informations_artefact_id_idx
+on ores_dq_account_contact_informations_artefact_tbl (id);
+
+create index if not exists dq_account_contact_informations_artefact_id_idx
+on ores_dq_account_contact_informations_artefact_tbl (id);
+
+create index if not exists dq_account_contact_informations_artefact_id_idx
+on ores_dq_account_contact_informations_artefact_tbl (id);
+
+create index if not exists dq_account_contact_informations_artefact_id_idx
+on ores_dq_account_contact_informations_artefact_tbl (id);
+
+create index if not exists dq_account_contact_informations_artefact_id_idx
+on ores_dq_account_contact_informations_artefact_tbl (id);
+
+create index if not exists dq_account_contact_informations_artefact_id_idx
+on ores_dq_account_contact_informations_artefact_tbl (id);
+
+create index if not exists dq_account_contact_informations_artefact_id_idx
+on ores_dq_account_contact_informations_artefact_tbl (id);
+
+create index if not exists dq_account_contact_informations_artefact_id_idx
+on ores_dq_account_contact_informations_artefact_tbl (id);
+
+create index if not exists dq_account_contact_informations_artefact_id_idx
+on ores_dq_account_contact_informations_artefact_tbl (id);

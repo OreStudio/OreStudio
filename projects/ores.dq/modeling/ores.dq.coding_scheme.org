@@ -1,0 +1,231 @@
+:PROPERTIES:
+:ID: A3A60323-522E-4EC4-9B3F-A771B928DFAC
+:END:
+#+title: ores.dq.coding_scheme
+#+description: Codegen entity model for the dq =coding_scheme= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: A published code list a subject area's values come from.
+#+entity_singular: coding_scheme
+#+entity_plural: coding_schemes
+#+entity_title: Coding Scheme
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+A published code list that a subject area's values come from, such as an ISO
+currency list or an FpML codelist.
+
+The scheme names the authority that publishes it and the subject area it
+applies to, and may point at the document that defines it. The authority and
+the subject-area columns are plain text rather than declared foreign keys,
+because the table has never carried a constraint and adding one would refuse
+rows the platform accepts today.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
+:END:
+
+Unique code identifying this coding scheme.
+
+Examples: 'ISO_4217', 'FpML_currency'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_scheme"
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable name for the coding scheme.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " " + std::string(faker::word::noun())
+#+end_src
+
+** authority_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The authority that publishes the scheme.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** subject_area_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The subject area the scheme's values belong to.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** domain_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The domain half of the subject area's composite key.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** uri
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Where the published list is defined, when there is a document for it.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "://scheme"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the scheme and what its codes mean.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_coding_schemes_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: scheme
+:entity_plural_short:   schemes
+:entity_singular_words: coding scheme
+:entity_plural_words:   coding schemes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: s
+:END:
+
+** Table display
+
+| column         | header         |
+|----------------+----------------|
+| code           | Code           |
+| name           | Name           |
+| authority_type | Authority      |
+| domain_name    | Domain         |
+| modified_by    | Modified By    |
+| version        | Version        |
+
+** Custom repository methods
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.dq.api/domain/coding_scheme.hpp
+:domain_class:           dq::domain::coding_scheme
+:protocol_include:       ores.dq.api/messaging/coding_scheme_protocol.hpp
+:collection_name:        schemes
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      dq::messaging::list_coding_schemes_request
+:get_response_class:     dq::messaging::list_coding_schemes_response
+:get_message_type:       list_coding_schemes_request
+:save_request_class:     dq::messaging::put_coding_scheme_request
+:save_response_class:    dq::messaging::put_coding_scheme_response
+:save_message_type:      put_coding_scheme_request
+:delete_request_class:   dq::messaging::delete_coding_scheme_request
+:delete_response_class:  dq::messaging::delete_coding_scheme_response
+:delete_message_type:    delete_coding_scheme_request
+:has_change_reason_cache: true
+:has_pagination:         true
+:END:
+
+*** Detail fields
+
+| field              | label              | widget                    | type      | is_key | is_required | placeholder                   |
+|--------------------+--------------------+---------------------------+-----------+--------+-------------+-------------------------------|
+| code               | Code               | codeEdit                  | line_edit | true   | true        | Enter coding scheme code      |
+| name               | Name               | nameEdit                  | line_edit |        | true        | Enter coding scheme name      |
+| authority_type     | Authority          | authorityTypeEdit         | line_edit |        | true        | Enter the authority           |
+| subject_area_name  | Subject Area       | subjectAreaNameEdit       | line_edit |        | true        | Enter the subject area        |
+| domain_name        | Domain             | domainNameEdit            | line_edit |        | true        | Enter the domain              |
+| uri                | URI                | uriEdit                   | line_edit |        |             | Where the list is defined     |
+| description        | Description        | descriptionEdit           | text_edit |        |             | Enter a description           |
+
+*** Columns
+
+| enum_name       | field             | header      | type      | width |
+|-----------------+-------------------+-------------+-----------+-------|
+| Code            | code              | Code        | string    | 150   |
+| Name            | name              | Name        | string    | 200   |
+| AuthorityType   | authority_type    | Authority   | string    | 150   |
+| SubjectAreaName | subject_area_name | Subject Area| string    | 200   |
+| DomainName      | domain_name       | Domain      | string    | 200   |
+| Uri             | uri               | URI         | string    | 250   |
+| Description     | description       | Description | string    | 300   |
+| ModifiedBy      | modified_by       | Modified By | string    | 120   |
+| RecordedAt      | recorded_at       | Recorded At | timestamp | 150   |
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

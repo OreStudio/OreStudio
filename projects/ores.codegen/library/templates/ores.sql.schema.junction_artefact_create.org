@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 73EA7D0A-7BD6-4A0C-930F-3DD3A2694B60
+:END:
+#+title: ores.sql.schema.junction_artefact_create
+#+description: Staging table for a junction's imported artefacts: the header, the junction's two key columns, its extra columns and a version. The junction counterpart of ores.sql.schema.domain_entity_artefact_create, which a junction cannot use because the two model shapes are different.
+#+type: archetype
+#+model_types: junction
+#+output: projects/ores.sql/create/dq/dq_{entity_plural}_artefact_create.sql
+#+facet: ores.sql.schema
+#+default: disabled
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+Staging table for a junction's imported artefacts: the header, the junction's two key columns, its extra columns and a version. The junction counterpart of [[id:5B8F3C2A-6E1D-4A9F-8C3B-1D7A9E2F4B6C][ores.sql.schema.domain_entity_artefact_create]].
+
+A junction cannot reach the domain_entity archetype: =load_org_junction_model= returns a ={junction: ...}= model whose columns live under =left=, =right= and =columns=, where an entity's live under =natural_keys= and =columns=. So an entity's staging table generated for a junction would read fields that do not exist. This archetype is the same projection expressed against the junction shape.
+
+A junction's staging table is usually a projection too, and it is not always. =ores.assets.image_tag= stages only its two keys, while the projection would also carry =version=, =assigned_by= and =assigned_at= as NOT NULL — columns its upsert function does not supply. So a junction declares its staging body in a =* Artefact columns= section exactly as an entity does: absent, this archetype projects as before; present, the section replaces the body after the =dataset_id=/=tenant_id= header. A section must keep both key columns under the names the junction's =left= and =right= declare, because the generated key indexes are built on those names.
+
+Always lands under the =dq= product regardless of the owning component, for the same reason as the domain_entity variant: the staging table is DQ's infrastructure for that entity's import pipeline, not the owning component's.
+
+=#+default: disabled=: most junctions have no staging table at all. A junction opts in with =:ores.sql.schema.junction_artefact_create.enabled: true= in its property drawer.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/sql_schema_junction_artefact_create.mustache=.
+
+#+begin_src mustache :tangle sql_schema_junction_artefact_create.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/sql_schema.org. Edit the org source. }}
+{{! Template to generate SQL schema for a junction's artefact/staging table }}
+{{{sql_license}}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_junction_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- {{junction.name_title}} - Artefact Table
+-- =============================================================================
+
+create table if not exists "ores_dq_{{junction.name}}_artefact_tbl" (
+    "dataset_id" uuid not null,
+    "tenant_id" uuid not null,
+{{^junction.artefact_columns}}
+    "{{junction.left.column}}" {{junction.left.type}} not null,
+    "{{junction.right.column}}" {{junction.right.type}} not null,
+{{#junction.columns}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}},
+{{/junction.columns}}
+    "version" integer not null
+{{/junction.artefact_columns}}
+{{#junction.artefact_columns}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
+{{/junction.artefact_columns}}
+);
+
+create index if not exists dq_{{junction.name}}_artefact_dataset_idx
+on ores_dq_{{junction.name}}_artefact_tbl (dataset_id);
+
+create index if not exists dq_{{junction.name}}_artefact_tenant_idx
+on ores_dq_{{junction.name}}_artefact_tbl (tenant_id);
+
+create index if not exists dq_{{junction.name}}_artefact_{{junction.left.column_short}}_idx
+on ores_dq_{{junction.name}}_artefact_tbl ({{junction.left.column}});
+
+create index if not exists dq_{{junction.name}}_artefact_{{junction.right.column_short}}_idx
+on ores_dq_{{junction.name}}_artefact_tbl ({{junction.right.column}});
+#+end_src
+
+* See also
+
+- Parent facet: [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]]
+- [[id:5B8F3C2A-6E1D-4A9F-8C3B-1D7A9E2F4B6C][ores.sql.schema.domain_entity_artefact_create]] — the domain_entity counterpart.
+- [[id:1AB594D5-0BDF-4E79-B698-3877B9B6041D][ores.sql.schema.junction_create]] — the junction's own table.
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

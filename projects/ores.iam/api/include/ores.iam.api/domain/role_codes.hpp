@@ -25,12 +25,11 @@ namespace ores::iam::domain {
 /**
  * @brief Well-known role names used throughout the system.
  *
- * These names must match the rows seeded in ores_iam_roles_tbl. They lived in
- * the hand-written role.hpp; that header is now generated from the role
- * entity model, and codegen has no way to express "also emit this extra
- * namespace of constants", so a regeneration would silently drop them. They
- * therefore live in this own hand-maintained header, beside the generated
- * role.hpp, following the permission_codes.hpp precedent.
+ * These names must match the rows seeded in ores_iam_roles_tbl. They live in
+ * this hand-maintained header, beside the generated role.hpp, because codegen
+ * cannot express "also emit this extra namespace of constants" and a
+ * regeneration would silently drop them. permission_codes.hpp follows the
+ * same pattern.
  */
 namespace roles {
 constexpr auto super_admin = "SuperAdmin";

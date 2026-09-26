@@ -7,8 +7,8 @@
 #+level: s2
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
-#+updated: 2026-09-23
-#+environment:
+#+updated: 2026-09-26
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -17,16 +17,18 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 ores.dq meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]: every item: All, Protocol and Entity pass, each item that does not apply is recorded with its reason, and ores.dq joins =COMPONENTS_UNDER_TEST=. Order 30 of 35 in the sprint 26 component clean-up, tier 3 (domain component).
 
+The component needs two passes. The first gives a model to the SQL that has none, because the standard reads a tree that regenerates cleanly. The second runs the checklist over that tree. The analysis behind the split is the [[id:C8E3E017-6B93-47E0-B680-55F640F2B0A7][investigation]].
+
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
-| Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Now           | Pass 1 is nearly done: every dq entity is on the canonical protocol stack, the shell adapter is wired, and the component regenerates with no drift. What is left is the entities that still have no model. |
+| Waiting on    | Nothing. Pass 1 continues.             |
+| Next          | Finish pass 1: the last six entities, the shell wiring and =COMPONENTS_UNDER_TEST=. See the [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][pass 1 task]]. |
+| Last touched  | 2026-09-26                               |
 
 * Acceptance
 
@@ -37,17 +39,29 @@ ores.dq meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Sta
 
 * Tasks
 
-| Task | State | Start | End | Description |
-|------+-------+-------+-----+-------------|
-| [[id:43AF9F63-5764-4F8E-A8D0-38454B2FD199][Bring ores.dq to the clean standard]] | BACKLOG | | | Work ores.dq through the Component Clean Standard in order and record each item. |
+Pass 1 models the handcrafted SQL. Pass 2 runs the standard. Pass 1 is first, because pass 2 verifies a tree that regenerates.
+
+| Task | Pass | State | Start | End | Description |
+|------+------+-------+-------+-----+-------------|
+| [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][Model the handcrafted ores.dq code and generate the artefact tables]] | 1 | STARTED | 2026-09-26 | | Author models for every handcrafted ores.dq table and function, automate the artefact tables, and reach byte-identical regeneration. |
+| [[id:43AF9F63-5764-4F8E-A8D0-38454B2FD199][Bring ores.dq to the clean standard]] | 2 | BACKLOG | | | Work ores.dq through the Component Clean Standard in order and record each item. |
 
 * Notes
 
 - Survey on 2026-09-23: 16 entity, junction or operation models; 614 C++ files outside tests, 1 of them generated (0%); 84 messaging headers, 84 of them hand-written.
 - Bound to profiles in sprint 25, but not regenerated since the generated marker landed (#2087), so almost no file carries the marker (G03).
+- Analysis on 2026-09-26, recorded in the [[id:C8E3E017-6B93-47E0-B680-55F640F2B0A7][investigation]]: =create/dq= declares 74 tables, 49 of them artefact tables; 84 handcrafted SQL files; drift is 517 files.
+- The census ran to ground on 2026-09-26 and is now 41 generated, 1 derivable, 0 divergent, 7 orphan — 49 artefact tables, all of them live, so no table is a deletion candidate. Divergent went to zero because the projection is declared in the model rather than reconciled by hand. Progress is on the [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][pass 1 task]].
+- The design question is answered: an artefact table generates from the same entity model as its base table, and 19 of the 49 already do. The archetypes drop the audit and bitemporal columns and add =dataset_id=, and codegen forces the =dq_= output prefix for an entity any component owns.
+- The largest automation gain is the publication functions. 21 files implement them by hand, and their template is wired to no facet.
+- 13 of the 19 generated artefact tables have no entity in the 295-entity registry. The drift check cannot see them. =asset_classes= is one, and it is live.
 
 * Decisions
 
+- *Split the work into two passes.* Pass 1 models the handcrafted SQL; pass 2 runs the standard. Rationale: the standard's generation items (G01 to G03) cannot pass while 84 handcrafted SQL files have no model, and running the protocol and shell items first would touch code that pass 1 replaces.
+- *Pair an artefact table with its base by entity name, not by prefix.* DQ stages entities other components own, so =ores_dq_currencies_artefact_tbl= pairs with =ores_refdata_currencies_tbl=. A prefix rule reports false orphans.
+- *Do not treat the generated marker as proof of a live model.* 13 generated tables have no model. Delete a table only after a consumer census, never on the marker.
+
 * Out of scope
 
--
+- The publish-path decoupling. [[proj:doc/plans/2026-05-14-dq-publish-pattern.org][The DQ publish pattern plan]] moved publish ownership to the target services. This story keeps =publish-from-dq= working; it does not revisit where the functions live.

@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 44815F8D-7A5E-5C03-AC60-5120CF939A1B
+:END:
+#+title: How do I run the catalogs commands from the shell?
+#+description: Every command the catalogs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:catalogs:
+
+This file documents the catalogs resource at the shell, one section per command. Every command is a subcommand of =catalogs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 2D20C11A-74EE-5892-9B59-AB1CDFDC5D62
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+catalogs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.catalogs.list=.
+
+#+name: catalogs-list
+#+begin_src ores-shell :tangle catalogs-list.ores :exports none
+catalogs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0FB5CB78-8B0B-5577-ADC7-12E7A43CD792
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+catalogs get <name>
+#+end_example
+
+It is addressed at =dq.v1.catalogs.get=.
+
+#+name: catalogs-get
+#+begin_src ores-shell :tangle catalogs-get.ores :exports none
+catalogs get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 12A1DA04-626A-5CCE-B1F4-C12D691985CB
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+catalogs get-many <name>
+#+end_example
+
+It is addressed at =dq.v1.catalogs.get_many=.
+
+#+name: catalogs-get-many
+#+begin_src ores-shell :tangle catalogs-get-many.ores :exports none
+catalogs get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: A244B3B5-33BA-5151-A8BB-E3B2A3B53F64
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+catalogs add <name> <description> <owner> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.catalogs.put=.
+
+#+name: catalogs-add
+#+begin_src ores-shell :tangle catalogs-add.ores :exports none
+catalogs add __none__ __none__ - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 498F200E-3E28-56E7-B4C4-B1F868B06F5F
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+catalogs set <name> <description> <owner> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.catalogs.put=.
+
+#+name: catalogs-set
+#+begin_src ores-shell :tangle catalogs-set.ores :exports none
+catalogs set __none__ __none__ - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 622981B9-52EC-553A-BE91-5A6F996A93DB
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+catalogs put-many --count <n> <name> <description> <owner> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.catalogs.put_many=.
+
+#+name: catalogs-put-many
+#+begin_src ores-shell :tangle catalogs-put-many.ores :exports none
+catalogs put-many --count 1 __none__ __none__ - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: E0958100-1DE6-58C8-8CB8-02D4E74CF8C2
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+catalogs delete <name> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.catalogs.delete=.
+
+#+name: catalogs-delete
+#+begin_src ores-shell :tangle catalogs-delete.ores :exports none
+catalogs delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: D6CA2DA3-F7C1-5E5D-9E4E-FC651F875EAB
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+catalogs delete-many <name> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.catalogs.delete_many=.
+
+#+name: catalogs-delete-many
+#+begin_src ores-shell :tangle catalogs-delete-many.ores :exports none
+catalogs delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: F3A62799-62F6-5A43-92AB-B995CA750788
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+catalogs versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.catalogs_versions.list=.
+
+#+name: catalogs-versions
+#+begin_src ores-shell :tangle catalogs-versions.ores :exports none
+catalogs versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: FA201959-84EF-5627-9EA8-61F0E5AD67F0
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+catalogs version <name> --version <n>
+#+end_example
+
+It is addressed at =dq.v1.catalogs_versions.get=.
+
+#+name: catalogs-version
+#+begin_src ores-shell :tangle catalogs-version.ores :exports none
+catalogs version __none__ --version 1
+#+end_src
+

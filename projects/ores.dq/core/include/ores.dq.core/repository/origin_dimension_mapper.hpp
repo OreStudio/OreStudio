@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,10 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_REPOSITORY_ORIGIN_DIMENSION_MAPPER_HPP
 #define ORES_DQ_CORE_REPOSITORY_ORIGIN_DIMENSION_MAPPER_HPP
 
 #include "ores.dq.api/domain/origin_dimension.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/origin_dimension_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -29,7 +35,7 @@ namespace ores::dq::repository {
 /**
  * @brief Maps origin_dimension domain entities to data storage layer and vice-versa.
  */
-class origin_dimension_mapper {
+class ORES_DQ_CORE_EXPORT origin_dimension_mapper {
 private:
     inline static std::string_view logger_name = "ores.dq.repository.origin_dimension_mapper";
 

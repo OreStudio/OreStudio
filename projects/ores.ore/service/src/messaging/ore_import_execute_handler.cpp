@@ -28,7 +28,7 @@
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
-#include "ores.storage/net/storage_transfer.hpp"
+#include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/ascot_protocol.hpp"
 #include "ores.trading.api/messaging/bond_forward_protocol.hpp"
 #include "ores.trading.api/messaging/bond_future_delivery_basket_protocol.hpp"
@@ -1005,8 +1005,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     using ores::ore::messaging::ore_import_execute_request;
     using ores::ore::messaging::ore_import_execute_result;
 
-    const auto step_id = extract_workflow_header(msg, workflow_step_id_header);
-    const auto inst_id = extract_workflow_header(msg, workflow_instance_id_header);
+    const auto step_id = extract_workflow_header(msg, ores::workflow::messaging::step_id_header);
+    const auto inst_id = extract_workflow_header(msg, ores::workflow::messaging::instance_id_header);
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<ore_import_execute_request>(sv);
@@ -1615,8 +1615,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
 void ore_import_execute_handler::rollback(ores::nats::message msg) {
     using ores::ore::messaging::ore_import_rollback_request;
 
-    const auto step_id = extract_workflow_header(msg, workflow_step_id_header);
-    const auto inst_id = extract_workflow_header(msg, workflow_instance_id_header);
+    const auto step_id = extract_workflow_header(msg, ores::workflow::messaging::step_id_header);
+    const auto inst_id = extract_workflow_header(msg, ores::workflow::messaging::instance_id_header);
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<ore_import_rollback_request>(sv);

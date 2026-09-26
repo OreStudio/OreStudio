@@ -54,7 +54,7 @@ target_link_libraries(${lib_target_name}
         ores.diff.lib
     PRIVATE
         ores.service.lib
-        ores.storage.lib
+        ores.storage.core.lib
         ores.database.lib
         ores.dq.api.lib
         ores.history.core.lib

@@ -66,6 +66,28 @@ enum class step_outcome : std::uint8_t { completed = 0, completed_with_warnings 
 }
 
 /**
+ * @brief NATS header carrying the workflow step id on a step command.
+ *
+ * The engine sets it when it dispatches a step command. A domain service reads
+ * it to recognise a workflow command and to key its idempotency check, and
+ * echoes it in the completion event.
+ */
+inline constexpr std::string_view step_id_header = "X-Workflow-Step-Id";
+
+/**
+ * @brief NATS header carrying the parent workflow instance id.
+ */
+inline constexpr std::string_view instance_id_header = "X-Workflow-Instance-Id";
+
+/**
+ * @brief NATS header carrying the tenant that owns the workflow instance.
+ *
+ * Set by the engine on every step command, so the receiving service can build
+ * the tenant-scoped database context the step runs under.
+ */
+inline constexpr std::string_view tenant_id_header = "X-Tenant-Id";
+
+/**
  * @brief Fire-and-forget event published by domain services on step completion.
  *
  * Published to workflow.v1.events.step-completed by any domain service that

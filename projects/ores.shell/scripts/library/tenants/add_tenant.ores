@@ -1,7 +1,0 @@
-# Add Tenant
-#
-# GENERATED from doc/recipes/shell/tenants/add_tenant.org — do not edit by hand.
-# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
-#
-tenants add acme "Acme Corp" organisation acme.com "Acme Corporation tenant"
-tenants add example "Example Corp" organisation example.com "Example Corporation tenant"

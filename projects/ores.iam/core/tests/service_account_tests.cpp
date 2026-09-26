@@ -46,10 +46,11 @@ TEST_CASE("create_service_account_with_no_password", tags) {
     sut.version = 1;
     sut.modified_by = "system";
     sut.id = boost::uuids::random_generator()();
-    sut.tenant_id = tenant_id::system(); // System tenant (max UUID)
+    // System tenant (max UUID).
+    sut.tenant_id = tenant_id::system();
     sut.account_type = "service";
     sut.username = "ores.service.binary";
-    sut.password_hash = ""; // Service accounts have no password
+    sut.password_hash = "";
     sut.password_salt = "";
     sut.totp_secret = "";
     sut.email = "binary@system.ores";
@@ -68,7 +69,8 @@ TEST_CASE("create_algorithm_account", tags) {
     sut.version = 1;
     sut.modified_by = "system";
     sut.id = boost::uuids::random_generator()();
-    sut.tenant_id = tenant_id::system(); // System tenant (max UUID)
+    // System tenant (max UUID).
+    sut.tenant_id = tenant_id::system();
     sut.account_type = "algorithm";
     sut.username = "algo.risk.calc";
     sut.password_hash = "";
@@ -88,7 +90,8 @@ TEST_CASE("create_llm_account", tags) {
     sut.version = 1;
     sut.modified_by = "system";
     sut.id = boost::uuids::random_generator()();
-    sut.tenant_id = tenant_id::system(); // System tenant (max UUID)
+    // System tenant (max UUID).
+    sut.tenant_id = tenant_id::system();
     sut.account_type = "llm";
     sut.username = "claude.agent";
     sut.password_hash = "";
@@ -109,7 +112,7 @@ TEST_CASE("user_account_requires_password", tags) {
     sut.modified_by = "admin";
     sut.id = boost::uuids::random_generator()();
     sut.tenant_id = tenant_id::from_uuid(boost::uuids::random_generator()()).value();
-    sut.account_type = "user"; // Default type
+    sut.account_type = "user";
     sut.username = "john.doe";
     sut.password_hash = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8";
     sut.password_salt = "salt_value";

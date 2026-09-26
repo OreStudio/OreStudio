@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5A63B4D1-0F55-468B-B734-A5DC37B26DC4
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.book
 #+description: Codegen entity model for the refdata =book= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -237,6 +238,70 @@ value the FK-validation trigger accepts.
 #+begin_src cpp :name generator
 std::string("WRLD")
 #+end_src
+
+
+* Artefact columns
+
+The import permits a null =rates_centre_code=, which the publish reads as "region-agnostic" and replaces with the publishing party's own business centre. The store's column is NOT NULL because the publish always supplies one.
+
+** id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** name
+:PROPERTIES:
+:type: text
+:END:
+
+** parent_portfolio_id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** functional_currency
+:PROPERTIES:
+:type: text
+:END:
+
+** gl_account_ref
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** cost_center
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** book_status
+:PROPERTIES:
+:type: text
+:END:
+
+** regulatory_book_type
+:PROPERTIES:
+:type: text
+:END:
+
+** is_sweepable
+:PROPERTIES:
+:type: boolean
+:default: false
+:END:
+
+** rates_centre_code
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
 
 * SQL
 

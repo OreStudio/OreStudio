@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,27 +17,56 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger.mustache
+ * To modify, update the template and regenerate.
+ */
+
 create or replace function ores_dq_origin_dimensions_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.dq.origin_dimension';
-    change_timestamp timestamptz := NOW();
+    change_action text;
+    changed_version integer := 0;
     changed_code text;
+    changed_key jsonb;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
+        change_action := 'deleted';
         changed_code := OLD.code;
+        changed_version := OLD.version;
         changed_tenant_id := OLD.tenant_id::text;
+    elsif TG_OP = 'UPDATE' then
+        -- A versioned table's update is the internal close of the current
+        -- row; the insert that follows it carries the change. Announcing
+        -- both would report one change twice, so the close announces
+        -- nothing.
+        return null;
     else
+        -- The first version of a row is a create; every later one is an
+        -- update, because the row it replaces was already there.
+        if NEW.version <= 1 then
+            change_action := 'created';
+        else
+            change_action := 'updated';
+        end if;
+        changed_version := NEW.version;
         changed_code := NEW.code;
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 
+    changed_key := jsonb_build_object('code', changed_code);
+
     notification_payload := jsonb_build_object(
-        'entity', entity_name,
-        'timestamp', ores_utility_iso8601_timestamp_fn(change_timestamp),
-        'entity_ids', jsonb_build_array(changed_code),
+        'event_id', gen_random_uuid()::text,
+        'entity', 'ores.dq.origin_dimension',
+        'key', changed_key::text,
+        'action', change_action,
+        'version', changed_version,
+        'occurred_at', ores_utility_iso8601_timestamp_fn(clock_timestamp()),
+        'correlation_id', nullif(current_setting('ores.request.correlation_id', true), ''),
         'tenant_id', changed_tenant_id
     );
 

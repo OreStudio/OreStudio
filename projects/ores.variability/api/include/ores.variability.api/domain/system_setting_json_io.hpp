@@ -17,29 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_VARIABILITY_DOMAIN_SYSTEM_SETTING_JSON_IO_HPP
-#define ORES_VARIABILITY_DOMAIN_SYSTEM_SETTING_JSON_IO_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_json_io.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_VARIABILITY_API_DOMAIN_SYSTEM_SETTING_JSON_IO_HPP
+#define ORES_VARIABILITY_API_DOMAIN_SYSTEM_SETTING_JSON_IO_HPP
 
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.api/export.hpp"
 #include <iosfwd>
-#include <string>
-#include <vector>
 
 namespace ores::variability::domain {
 
 /**
- * @brief Dumps a system_setting object to a stream in JSON format.
+ * @brief Dumps the system_setting to a stream in JSON format.
  */
 ORES_VARIABILITY_API_EXPORT std::ostream& operator<<(std::ostream& s, const system_setting& v);
-
-/**
- * @brief Converts a system_setting to a JSON string.
- */
-/**@{*/
-ORES_VARIABILITY_API_EXPORT std::string convert_to_json(const system_setting& v);
-ORES_VARIABILITY_API_EXPORT std::string convert_to_json(const std::vector<system_setting>& v);
-/**@}*/
 
 }
 

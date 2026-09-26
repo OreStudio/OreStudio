@@ -169,6 +169,10 @@ route_builder router::delete_(const std::string& pattern) {
     return route_builder(domain::http_method::delete_, pattern);
 }
 
+route_builder router::head(const std::string& pattern) {
+    return route_builder(domain::http_method::head, pattern);
+}
+
 void router::add_route(const domain::route& route) {
     BOOST_LOG_SEV(lg(), info) << "Registered route: " << static_cast<int>(route.method) << " "
                               << route.pattern;

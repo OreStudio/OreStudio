@@ -38,9 +38,26 @@ the evidence that proves it. The kinds are:
 
 An item that does not apply to a component is recorded as "not
 applicable" with the reason, never skipped in silence. An item that
-cannot pass is recorded as an exception with its reason, and the
-component stays out of the registry until the exception is resolved or
-accepted.
+cannot pass is recorded as an accepted exception: the component joins
+the registry, every gate runs against it, and the item it does not pass
+is named in =ACCEPTED_EXCEPTIONS= in
+=projects/ores.codegen/scripts/component_registry.py= with its reason and
+the person who accepted it.
+
+Keeping the component out until every item passes is the alternative, and
+it withholds every gate from the component in the meantime. A component
+with one unverifiable item is then checked by nothing at all, which is
+worse than the gap it was excluded for. So the registry records the gap
+instead, and =check_registry_exceptions.py= refuses an exception that
+names an item the standard does not define, states no reason, names
+nobody or carries no date, against the standard's own item list. What it
+cannot do is decide whether a reason is good enough; that is the
+reviewer's, and the record is written so the reviewer can see it.
+
+Take an exception only when the item cannot be made to pass where the
+work is done -- a check that needs a live fleet, a tool that cannot draw
+what the item asks for. An item that is merely unfinished is not an
+exception; it is unfinished work, and the component waits.
 
 Work in the order of the sections. Fix every defect at its source: a
 template, =org_loader.py=, a profile or a model. Never edit generated

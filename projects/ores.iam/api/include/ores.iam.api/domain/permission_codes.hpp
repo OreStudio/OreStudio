@@ -178,6 +178,20 @@ constexpr auto dataset_bundle_members_delete = "dq::dataset_bundle_members:delet
 constexpr auto dq_all = "dq::*";
 
 // =========================================================================
+// Storage Component (storage::)
+// =========================================================================
+
+// Objects: one permission per operation, never shared between a read and a
+// write, so read access cannot be widened into write access by naming a
+// different verb.
+constexpr auto objects_read = "storage::objects:read";
+constexpr auto objects_write = "storage::objects:write";
+constexpr auto objects_delete = "storage::objects:delete";
+
+// Storage component wildcard
+constexpr auto storage_all = "storage::*";
+
+// =========================================================================
 // Global Wildcard
 // =========================================================================
 

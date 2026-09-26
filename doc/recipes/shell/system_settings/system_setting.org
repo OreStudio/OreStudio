@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 1AE52616-1E2F-5164-9765-76457B907EF3
+:END:
+#+title: How do I run the system_settings commands from the shell?
+#+description: Every command the system_settings submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:system_settings:
+
+This file documents the system_settings resource at the shell, one section per command. Every command is a subcommand of =system_settings=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 2FCF1402-9CCD-59B1-9B60-D7322BCCE002
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+system_settings list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =variability.v1.system_settings.list=.
+
+#+name: system_settings-list
+#+begin_src ores-shell :tangle system_settings-list.ores :exports none
+system_settings list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 53BC4EA4-AF54-500B-8A34-7EF0DCEF67F1
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+system_settings get <name>
+#+end_example
+
+It is addressed at =variability.v1.system_settings.get=.
+
+#+name: system_settings-get
+#+begin_src ores-shell :tangle system_settings-get.ores :exports none
+system_settings get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 24674BDD-D6B3-5A9E-903D-B6AC07224C28
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+system_settings get-many <name>
+#+end_example
+
+It is addressed at =variability.v1.system_settings.get_many=.
+
+#+name: system_settings-get-many
+#+begin_src ores-shell :tangle system_settings-get-many.ores :exports none
+system_settings get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 0E34DCD9-A849-50B1-A39B-D31EF26BAB60
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+system_settings add <name> <party_id> <value> <data_type> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =variability.v1.system_settings.put=.
+
+#+name: system_settings-add
+#+begin_src ores-shell :tangle system_settings-add.ores :exports none
+system_settings add __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 637C0D31-8E64-5A79-A83C-474E97166782
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+system_settings set <id> <name> <party_id> <value> <data_type> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =variability.v1.system_settings.put=.
+
+#+name: system_settings-set
+#+begin_src ores-shell :tangle system_settings-set.ores :exports none
+system_settings set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 3663411D-C095-5FAA-805D-26352A14B37B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+system_settings put-many --count <n> <id> <name> <party_id> <value> <data_type> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =variability.v1.system_settings.put_many=.
+
+#+name: system_settings-put-many
+#+begin_src ores-shell :tangle system_settings-put-many.ores :exports none
+system_settings put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: D0B5D2FA-79E5-56F6-B8CC-09FA5F6B4ADD
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+system_settings delete <name> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =variability.v1.system_settings.delete=.
+
+#+name: system_settings-delete
+#+begin_src ores-shell :tangle system_settings-delete.ores :exports none
+system_settings delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 049B6029-1858-5A48-B833-D38E39F41661
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+system_settings delete-many <name> <reason> <commentary>
+#+end_example
+
+It is addressed at =variability.v1.system_settings.delete_many=.
+
+#+name: system_settings-delete-many
+#+begin_src ores-shell :tangle system_settings-delete-many.ores :exports none
+system_settings delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: F941189E-5BF9-534B-A76C-1BD7229228FA
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+system_settings versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =variability.v1.system_settings_versions.list=.
+
+#+name: system_settings-versions
+#+begin_src ores-shell :tangle system_settings-versions.ores :exports none
+system_settings versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 06127BBA-DED7-5F07-A4C1-3D9CC52C2AD8
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+system_settings version <name> --version <n>
+#+end_example
+
+It is addressed at =variability.v1.system_settings_versions.get=.
+
+#+name: system_settings-version
+#+begin_src ores-shell :tangle system_settings-version.ores :exports none
+system_settings version __none__ --version 1
+#+end_src
+

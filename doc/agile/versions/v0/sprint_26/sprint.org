@@ -67,13 +67,14 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:C649F853-C3F9-47E1-AF47-EB84DD27EC2F][Clean ores.service to the component clean standard]] | BACKLOG | | | Bring ores.service to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
 | [[id:90EC913A-72AB-4D39-B432-B351C1FC965C][Clean ores.telemetry to the component clean standard]] | DONE | | 2026-09-26 | Bring ores.telemetry to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
 | [[id:3EF24442-FC51-4024-8E3C-70C814C71BCA][Clean ores.geo to the component clean standard]] | DONE | | 2026-09-26 | Bring ores.geo to the Component Clean Standard (All items): tier 2, higher infrastructure. |
-| [[id:BE43B02A-BBD7-426E-8803-722506B0D51B][Clean ores.variability to the component clean standard]] | BACKLOG | | | Bring ores.variability to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
+| [[id:BE43B02A-BBD7-426E-8803-722506B0D51B][Clean ores.variability to the component clean standard]] | DONE | | | Bring ores.variability to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
 | [[id:E3A24286-B923-4DAB-9F18-6555217004BB][Clean ores.fpml to the component clean standard]] | DONE | | 2026-09-26 | Bring ores.fpml to the Component Clean Standard (All items): tier 2, higher infrastructure. |
 | [[id:28A846EC-8222-4941-8B29-F8F2C0CF231A][Clean ores.assets to the component clean standard]] | DONE | 2026-09-23 | 2026-09-26 | Bring ores.assets to the Component Clean Standard (Entity items): tier 2, higher infrastructure. |
 | [[id:94270E62-3F0F-42BB-B421-735A1D9966CC][Clean ores.http to the component clean standard]] | BACKLOG | | | Bring ores.http to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
 | [[id:C4D6F313-B475-4E81-B743-268050B25430][Clean ores.scheduler to the component clean standard]] | BACKLOG | | | Bring ores.scheduler to the Component Clean Standard (Entity items): tier 2, higher infrastructure. |
 | [[id:86ECC459-36B7-4521-91EB-DDD83534CFA3][Clean ores.workspace to the component clean standard]] | BACKLOG | | | Bring ores.workspace to the Component Clean Standard (Entity items): tier 2, higher infrastructure. |
 | [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]] | BACKLOG | | | Bring ores.workflow to the Component Clean Standard (Entity items): tier 2, higher infrastructure. |
+| [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] | BACKLOG | | | Give the workflow component a fixture it can run against itself, so every engine path is drivable and assertable from ores.shell without another component's data. |
 | [[id:D65BA4A2-8FBD-429D-B2AD-697D4F66C20A][Clean ores.iam to the component clean standard]] | BACKLOG | | | Bring ores.iam to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:70CC87FB-BA24-4B22-827F-F4F42C1F5A1B][Clean ores.refdata to the component clean standard]] | BACKLOG | | | Bring ores.refdata to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:2525D39D-91BB-49A7-B6FE-3276D253F86E][Clean ores.analytics to the component clean standard]] | DONE | 2026-09-23 | 2026-09-26 | Bring ores.analytics to the Component Clean Standard (Entity items): tier 3, domain component. |
@@ -81,7 +82,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] | BACKLOG | | | Bring ores.reporting to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:45455A9E-2DED-4101-8CF4-A520D7C3D364][Clean ores.synthetic to the component clean standard]] | BACKLOG | | | Bring ores.synthetic to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] | BACKLOG | | | Bring ores.marketdata to the Component Clean Standard (Entity items): tier 3, domain component. |
-| [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] | BACKLOG | | | Bring ores.dq to the Component Clean Standard (Entity items): tier 3, domain component. |
+| [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] | STARTED | 2026-09-26 | | Bring ores.dq to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:873B0E5C-BDDE-40DE-9729-F0278D0F8EC2][Clean ores.ore to the component clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Bring ores.ore to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] | BACKLOG | | | Bring ores.trading to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:2EF0EF31-6FED-48C7-BA6F-7006D29EFE60][Clean ores.testing to the component clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Bring ores.testing to the Component Clean Standard (All items): tier 4, client or test support. |
@@ -91,6 +92,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] | STARTED | 2026-09-23 | | Second pass of the sprint 26 mission: document the user journeys of every component that had a UX, including its legacy ores.qt screens. |
 | [[id:3085B911-3030-4AB8-976F-0F037D4332E7][Show the current agile work item inside DSH]] | DONE | 2026-09-23 | 2026-09-23 | A DSH plugin that renders the sprint's stories and tasks as a kanban board, read from the org tree, with the work tree properties visible on every card. |
 | [[id:83339FFC-6314-443F-893D-BA053EEC9379][Reach systemd from a sandboxed compass session]] | DONE | | 2026-09-26 | Make the busctl transport the default so a sandboxed compass session can see and change the systemd fleet, give the systemd pillar the flag the services pillar has, and stop the deploy hiding a failed daemon-reload. |
+| [[id:5EA439A5-43AE-4223-9026-6B3D8C91AEEA][Give object storage a NATS and HTTP interface with authentication]] | STARTED | 2026-09-26 | | Model the storage operation set so that put, get, delete, exists and list are reachable over both NATS and HTTP, authenticated on both, and exercisable from the shell and the test suite. |
 
 ** Hotfixes
 

@@ -73,11 +73,12 @@ void workflow_engine::publish_command(const domain::workflow_step& step,
 
     const auto data = std::as_bytes(std::span{step.command_json.data(), step.command_json.size()});
 
+    using namespace ores::workflow::messaging;
     nats_.publish(step.command_subject,
                   data,
-                  {{"X-Workflow-Step-Id", step_id_str},
-                   {"X-Workflow-Instance-Id", inst_id_str},
-                   {"X-Tenant-Id", tenant_id_str}});
+                  {{std::string(step_id_header), step_id_str},
+                   {std::string(instance_id_header), inst_id_str},
+                   {std::string(tenant_id_header), tenant_id_str}});
 }
 
 void workflow_engine::publish_status_event(const boost::uuids::uuid& instance_id,
@@ -221,6 +222,7 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
     next_step.idempotency_key = boost::uuids::to_string(next_id);
     next_step.compensation_subject = step_def.compensation_subject;
     next_step.recorded_at = std::chrono::system_clock::now();
+    next_step.modified_by = ctx_.service_account();
 
     // Persist before publishing (ensures restart can re-dispatch).
     step_repo_.write(ctx_, next_step);
@@ -301,6 +303,7 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
         comp_step.command_json = comp_json;
         comp_step.idempotency_key = boost::uuids::to_string(comp_id);
         comp_step.recorded_at = std::chrono::system_clock::now();
+        comp_step.modified_by = ctx_.service_account();
         step_repo_.write(ctx_, comp_step);
 
         // Publish compensation command with tenant header.
@@ -494,6 +497,27 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     } else {
         instance_id = boost::uuids::random_generator()();
     }
+
+    // A caller may supply the id, which is what makes a retried start address
+    // the run it already asked for. Recognise the repeat here rather than let
+    // the store's create-over-live-row guard refuse it, because a refusal the
+    // caller cannot see is worse than the no-op the repeat actually is.
+    try {
+        const auto existing =
+            instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
+        if (!existing.empty()) {
+            BOOST_LOG_SEV(lg(), info)
+                << "Workflow already started; leaving it alone:" << " type=" << req.type
+                << " workflow=" << boost::uuids::to_string(instance_id);
+            return;
+        }
+    } catch (const std::exception& e) {
+        // The read is a courtesy and the write is the authority, so a read that
+        // fails must not stop a start that would otherwise succeed.
+        BOOST_LOG_SEV(lg(), warn)
+            << "Could not check for an existing workflow instance: " << e.what();
+    }
+
     domain::workflow_instance instance;
     instance.id = instance_id;
     instance.tenant_id = utility::uuid::tenant_id::from_uuid(tenant_id).value();
@@ -502,6 +526,11 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     instance.request_json = req.request_json;
     instance.correlation_id = req.correlation_id;
     instance.created_by = ctx_.service_account();
+    // The insert trigger resolves modified_by as an account username and
+    // raises once the tenant holds one, so every insert sets it. Attribution
+    // to the caller behind the request is a separate change: the request
+    // carries no identity and this service holds no verifier.
+    instance.modified_by = ctx_.service_account();
     instance.current_step_index = 0;
     instance.step_count = static_cast<int>(steps.size());
     instance.materialised_steps_json = materialise_steps_json(steps);
@@ -531,6 +560,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         step.idempotency_key = boost::uuids::to_string(step_id);
         step.compensation_subject = step_def.compensation_subject;
         step.recorded_at = std::chrono::system_clock::now();
+        step.modified_by = ctx_.service_account();
 
         step_repo_.write(ctx_, step);
         step_created = true;

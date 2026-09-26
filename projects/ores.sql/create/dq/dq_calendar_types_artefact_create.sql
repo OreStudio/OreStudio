@@ -17,6 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- Reference data classifying what a calendar represents. Values include: public_holiday, central_bank_meeting, financial_centre, data_release, other. Lets a single calendar table hold heterogeneous entries (a national holiday calendar, a central bank's meeting schedule, a financial-centre business-day calendar) without collapsing their distinct provenance. - Artefact Table
+-- =============================================================================
+
 create table if not exists "ores_dq_calendar_types_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
@@ -24,14 +34,14 @@ create table if not exists "ores_dq_calendar_types_artefact_tbl" (
     "version" integer not null,
     "name" text not null,
     "description" text not null,
-    "display_order" integer not null
+    "display_order" integer not null default 0
 );
 
-create index if not exists calendar_types_artefact_dataset_idx
-on "ores_dq_calendar_types_artefact_tbl" (dataset_id);
+create index if not exists dq_calendar_types_artefact_dataset_idx
+on ores_dq_calendar_types_artefact_tbl (dataset_id);
 
-create index if not exists calendar_types_artefact_tenant_idx
-on "ores_dq_calendar_types_artefact_tbl" (tenant_id);
+create index if not exists dq_calendar_types_artefact_tenant_idx
+on ores_dq_calendar_types_artefact_tbl (tenant_id);
 
-create index if not exists calendar_types_artefact_code_idx
-on "ores_dq_calendar_types_artefact_tbl" (code);
+create index if not exists dq_calendar_types_artefact_code_idx
+on ores_dq_calendar_types_artefact_tbl (code);

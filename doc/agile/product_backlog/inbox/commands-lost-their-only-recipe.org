@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: E41CD358-0942-432D-8989-A0FCBCA59BD1
+:END:
+#+title: Four iam shell commands have no recipe after the stale documents were deleted
+#+description: Deleting seventeen stale hand-written recipe documents left accounts info, accounts history, accounts logout and tenants history with no recipe at all, because each was documented only by one of the deleted pages. Their commands work; what is missing is a recipe written against current fixtures.
+#+type: capture
+#+level: cross
+#+filetags: :iam:shell:docs:recipe:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Four iam shell commands now have no recipe at all: =accounts info=, =accounts
+history=, =accounts logout= and =tenants history=. Each was documented only by
+one of the seventeen stale hand-written recipe documents deleted on 2026-09-26,
+so removing the stale pages took the only literate description of these four
+with them. The commands themselves work; what is missing is a recipe.
+
+* Why
+
+The deletion was right -- those pages carried the sign-in and the fixtures of
+the 2026-05 session they were captured in, so a fresh environment refused every
+one of them, and a recipe that cannot be replayed is not documentation. But the
+cost is real and was recorded rather than glossed: the iam commands without a
+recipe went from six to ten.
+
+The replacement is not a copy of the deleted page. A recipe that survives a
+fresh database has to create what it reads -- the account it inspects, the
+tenant whose history it lists -- or read something the seeds guarantee, which
+is the shape the surviving generated recipes already have: one command, signed
+in through =accounts login=, carrying no fixtures of its own.
+
+* References
+
+- The deletion and the resulting census: the S02 and V04 rows of [[id:DDAB54CA-B987-433B-AACD-87B0B8A32D2A][Bring ores.iam to the clean standard]], and =build/audit_iam/command_recipe_census.py=, which lists every registered command with no recipe invoking it.
+- =projects/ores.shell/application/src/app/commands/accounts_commands.cpp= and =tenants_commands.cpp= -- the hand-written units that own these four commands.
+
+* See also
+
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] -- S02 asks for a recipe per command, which is the gap this records.
+
+-

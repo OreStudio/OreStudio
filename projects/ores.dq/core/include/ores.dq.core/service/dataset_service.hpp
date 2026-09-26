@@ -22,10 +22,8 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/dataset.hpp"
-#include "ores.dq.api/domain/methodology.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/dataset_repository.hpp"
-#include "ores.dq.core/repository/methodology_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -35,11 +33,10 @@
 namespace ores::dq::service {
 
 /**
- * @brief Service for managing datasets and methodologies.
+ * @brief Service for managing datasets.
  *
  * This service provides functionality for:
  * - Managing datasets (CRUD operations)
- * - Managing methodologies (CRUD operations)
  */
 class ORES_DQ_CORE_EXPORT dataset_service {
 private:
@@ -114,62 +111,8 @@ public:
      */
     std::vector<domain::dataset> get_dataset_history(const boost::uuids::uuid& id);
 
-    // ========================================================================
-    // Methodology Management
-    // ========================================================================
-
-    /**
-     * @brief Lists all methodologies.
-     */
-    std::vector<domain::methodology> list_methodologies();
-
-    /**
-     * @brief Lists methodologies with pagination.
-     */
-    std::vector<domain::methodology> list_methodologies(std::uint32_t offset, std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active methodologies.
-     */
-    std::uint32_t get_methodology_count();
-
-    /**
-     * @brief Finds a methodology by its ID.
-     */
-    std::optional<domain::methodology> find_methodology(const boost::uuids::uuid& id);
-
-    /**
-     * @brief Saves a methodology (creates or updates).
-     *
-     * @param methodology The methodology to save
-     */
-    void save_methodology(const domain::methodology& methodology);
-
-    /**
-     * @brief Saves multiple methodologies (creates or updates).
-     *
-     * @param methodologies The methodologies to save
-     */
-    void save_methodologies(const std::vector<domain::methodology>& methodologies);
-
-    /**
-     * @brief Removes a methodology.
-     *
-     * @param id The ID of the methodology to remove
-     */
-    void remove_methodology(const boost::uuids::uuid& id);
-
-    /**
-     * @brief Gets the version history for a methodology.
-     *
-     * @param id The methodology ID
-     * @return Vector of all versions, newest first
-     */
-    std::vector<domain::methodology> get_methodology_history(const boost::uuids::uuid& id);
-
 private:
     repository::dataset_repository dataset_repo_;
-    repository::methodology_repository methodology_repo_;
 };
 
 }

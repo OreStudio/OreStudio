@@ -1,0 +1,69 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.storage.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace storage #F2F2F2 {
+        namespace net #F2F2F2 {
+            class storage_paths <<struct>> {
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass reads data members and nothing else, so the class arrives
+' as an empty box: it is a static-method surface. The block below fills it in
+' and gives it the colour the conventions table asks for.
+
+class ores::storage::net::storage_paths <<struct>> #F7E5FF {
+    {static} +prefix : string_view
+    {static} +make_object_path(bucket : string_view, key : string_view) : string
+    {static} +make_object_url(base_url : string_view, bucket : string_view, key : string_view) : string
+}
+note right of "ores::storage::net::storage_paths"
+Header-only. It builds the /api/v1/storage/{bucket}/{key}
+shape and nothing else, and it is the one part of the
+component the domain libraries call directly: ores.compute
+and ores.ore build their own bucket keys with it. The part
+is an INTERFACE library, because it has no translation unit.
+end note
+
+together {
+    class ores::storage::tests::storage_paths_tests <<test suite>> #C5E1A5 {
+        +make_object_path_uses_the_storage_api_prefix() : void
+        +make_object_url_prepends_the_base_url() : void
+        +prefix_matches_the_storage_api_path() : void
+        +key_with_slashes_survives_unchanged() : void
+    }
+    note bottom of "ores::storage::tests::storage_paths_tests"
+    The path shape, asserted as exact strings.
+    end note
+}
+
+ores::storage::tests::storage_paths_tests ..> ores::storage::net::storage_paths : tests
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.storage.api.puml"
+' End:
+@enduml

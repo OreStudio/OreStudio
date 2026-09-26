@@ -50,7 +50,7 @@
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
-#include "ores.variability.api/messaging/system_settings_protocol.hpp"
+#include "ores.variability.api/messaging/operations_protocol.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -163,13 +163,15 @@ public:
                                                          std::move(hdrs),
                                                          std::chrono::seconds(5));
                 const auto resp = codec.decode<clear_bootstrap_mode_response>(resp_msg.data);
-                if (resp && resp->success) {
+                if (resp
+                    && resp->result.outcome
+                           == ores::utility::domain::outcome::ok) {
                     BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                         << "Bootstrap mode cleared for tenant: " << ids.front();
                 } else {
                     BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
                         << "Failed to clear bootstrap mode for tenant " << ids.front() << ": "
-                        << (resp ? resp->message : "malformed response");
+                        << (resp ? resp->result.message : "malformed response");
                 }
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
@@ -648,11 +650,11 @@ public:
                             add_step(bind_label, "completed");
 
                         // Start the theme's feeds from the system party's
-                        // folders, via the same folder-scoped mechanism PR
-                        // #1741 introduced for the Qt Market Simulator, so
-                        // provisioning and manual start share one path. The
-                        // folder cascade starts no feeds for offices -- they
-                        // have no configs of their own.
+                        // folders via one folder-scoped request the server
+                        // cascades across asset classes, so provisioning and
+                        // manual start share one path. The folder cascade
+                        // starts no feeds for offices -- they have no
+                        // configs of their own.
                         const std::string feeds_label = "system_market_data.synthetic_feeds";
                         add_step(feeds_label, "starting", 0);
                         if (start_synthetic_theme_feeds(system_client,
@@ -778,17 +780,16 @@ private:
     // Starts every feed under the calling party's (client's) theme
     // collection folder for the given dq dataset code (e.g.
     // "synthetic.themes.realistic_2026") via one folder-scoped request
-    // the server cascades across asset classes -- the same mechanism the
-    // Qt Market Simulator's "Start at Root -> pick a theme" flow uses (PR
-    // #1741), resolved server-side from synthetic_publish_from_dq's
-    // container-per-(tenant, party, dataset) convention rather than by
-    // matching on display name. Best-effort: logs and returns false on any
-    // resolution miss (dataset/config/folder not found, or a list request
-    // itself failing server-side) rather than failing provisioning over a
-    // cosmetic follow-on step -- the party itself is already fully
-    // provisioned by this point. Returns whether resolution succeeded far
-    // enough to attempt starting feeds, so the caller can surface a miss in
-    // its own step list rather than reporting "completed" for a no-op.
+    // the server cascades across asset classes, resolved server-side from
+    // synthetic_publish_from_dq's container-per-(tenant, party, dataset)
+    // convention rather than by matching on display name. Best-effort: logs
+    // and returns false on any resolution miss (dataset/config/folder not
+    // found, or a list request itself failing server-side) rather than
+    // failing provisioning over a cosmetic follow-on step -- the party
+    // itself is already fully provisioned by this point. Returns whether
+    // resolution succeeded far enough to attempt starting feeds, so the
+    // caller can surface a miss in its own step list rather than reporting
+    // "completed" for a no-op.
     static bool start_synthetic_theme_feeds(internal_request_client& client,
                                             const std::string& dataset_code) {
         std::optional<boost::uuids::uuid> dataset_id;
@@ -951,7 +952,8 @@ private:
             return false;
         }
 
-        std::vector<std::pair<std::string, std::string>> sources; // (source_name, ore_key)
+        // Each pair is (source_name, ore_key).
+        std::vector<std::pair<std::string, std::string>> sources;
         {
             synthetic::messaging::list_fx_spot_generation_configs_request req;
             req.limit = 1000;
@@ -1202,7 +1204,7 @@ private:
         }
 
         ores::variability::messaging::complete_party_onboarding_request onboarding_req;
-        onboarding_req.party_id = boost::uuids::to_string(party.id);
+        onboarding_req.party_id = party.id;
         client.request(onboarding_req);
 
         ores::iam::messaging::put_many_account_parties_request assoc_req;

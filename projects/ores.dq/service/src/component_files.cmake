@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "app/application.cpp"
     "app/host.cpp"
@@ -29,17 +32,23 @@ set(files
     "messaging/change_reason_category_event_registrar.cpp"
     "messaging/change_reason_event_registrar.cpp"
     "messaging/code_domain_event_registrar.cpp"
+    "messaging/coding_scheme_authority_type_event_registrar.cpp"
+    "messaging/coding_scheme_event_registrar.cpp"
     "messaging/data_domain_event_registrar.cpp"
     "messaging/dataset_bundle_event_registrar.cpp"
     "messaging/event_registrar.cpp"
     "messaging/lei_entity_event_registrar.cpp"
     "messaging/lei_relationship_event_registrar.cpp"
+    "messaging/methodology_event_registrar.cpp"
+    "messaging/nature_dimension_event_registrar.cpp"
+    "messaging/origin_dimension_event_registrar.cpp"
     "messaging/report_definition_event_registrar.cpp"
     "messaging/subject_area_event_registrar.cpp"
     "messaging/synthetic_fx_spot_config_event_registrar.cpp"
+    "messaging/treatment_dimension_event_registrar.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/app/application.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/app/application_exception.hpp"
@@ -55,13 +64,19 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/change_reason_category_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/change_reason_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/code_domain_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/coding_scheme_authority_type_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/coding_scheme_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/data_domain_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/dataset_bundle_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/lei_entity_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/lei_relationship_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/methodology_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/nature_dimension_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/origin_dimension_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/report_definition_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/subject_area_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/synthetic_fx_spot_config_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/treatment_dimension_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/ores.dq.service.hpp"
 )

@@ -17,29 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
 -- =============================================================================
--- Badge Severities Artefact Table
---
--- Staging table for badge severities before publication into a tenant's own
--- copy of dq_badge_severities_tbl. Supports the DQ artefact pipeline pattern
--- (self-referential: DQ publishing into its own table, like coding_schemes).
+-- Reference data defining severity levels used to classify badges. Codes align with Bootstrap 5 contextual classes so browser rendering requires no translation layer. Values: secondary, info, success, warning, danger, primary. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_badge_severities_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
     "code" text not null,
-    "version" integer not null default 0,
+    "version" integer not null,
     "name" text not null,
     "description" text not null,
     "display_order" integer not null
 );
 
-create index if not exists badge_severities_artefact_dataset_idx
-on "ores_dq_badge_severities_artefact_tbl" (dataset_id);
+create index if not exists dq_badge_severities_artefact_dataset_idx
+on ores_dq_badge_severities_artefact_tbl (dataset_id);
 
-create index if not exists badge_severities_artefact_tenant_idx
-on "ores_dq_badge_severities_artefact_tbl" (tenant_id);
+create index if not exists dq_badge_severities_artefact_tenant_idx
+on ores_dq_badge_severities_artefact_tbl (tenant_id);
 
-create index if not exists badge_severities_artefact_code_idx
-on "ores_dq_badge_severities_artefact_tbl" (code);
+create index if not exists dq_badge_severities_artefact_code_idx
+on ores_dq_badge_severities_artefact_tbl (code);

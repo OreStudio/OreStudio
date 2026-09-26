@@ -376,7 +376,6 @@ def get_schema_template_mappings():
         ("sql_schema_table_create.mustache", "_create.sql"),
         ("sql_schema_notify_trigger.mustache", "_notify_trigger.sql"),
         ("sql_schema_artefact_create.mustache", "_artefact_create.sql"),
-        ("sql_populate_function_refdata.mustache", "_population_functions.sql"),
     ]
 
 
@@ -1165,6 +1164,24 @@ def _mark_last_item(data_list):
         # Only add if it's a list of dictionaries
         if isinstance(data_list[-1], dict):
             data_list[-1]['last'] = True
+
+
+def _mark_artefact_natural_keys(owner):
+    """Mark the natural-keys list for the two artefact/staging templates.
+
+    An artefact table renders its natural keys before its plain columns,
+    so the two lists have to join into one valid column list. A natural
+    key therefore keeps its trailing comma whenever any plain column
+    follows it, which is exactly when it is not the last column overall.
+    Without this the last natural key would lose its comma and the CREATE
+    TABLE would not parse; with the plain columns absent it must lose it.
+    """
+    keys = owner.get('natural_keys')
+    if not keys:
+        return
+    _mark_last_item(keys)
+    if owner.get('columns'):
+        keys[-1]['last'] = False
 
 
 def _format_description_as_comment(description):
@@ -2216,6 +2233,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Mark last item in artefact_indexes list
         if 'artefact_indexes' in entity:
             _mark_last_item(entity['artefact_indexes'])
+        # Mark last item in artefact_columns list, so the declared staging
+        # body renders its commas correctly.
+        if 'artefact_columns' in entity:
+            _mark_last_item(entity['artefact_columns'])
+        _mark_artefact_natural_keys(entity)
         # Derive component paths from component + subcomponent
         if 'component' in entity:
             component = entity['component']
@@ -2288,6 +2310,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['has_nullable_coding_scheme'] = False
         if 'artefact_indexes' in domain_entity:
             _mark_last_item(domain_entity['artefact_indexes'])
+        if 'artefact_columns' in domain_entity:
+            _mark_last_item(domain_entity['artefact_columns'])
         if any(
             v.get('cardinality_limit_table')
             for v in domain_entity.get('insert_trigger', {}).get('validations', [])
@@ -2841,7 +2865,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 injected.extend(g['header'] for g in domain_groups)
             includes_dict['domain'] = sorted(injected) + existing_domain
         if 'natural_keys' in domain_entity:
-            _mark_last_item(domain_entity['natural_keys'])
+            _mark_artefact_natural_keys(domain_entity)
             # Add iterator_var and is_uuid/is_int to natural_keys for protocol serialization
             for key in domain_entity['natural_keys']:
                 key['iter_var'] = iter_var
@@ -4401,6 +4425,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Special processing for junction models
     if is_junction and isinstance(model, dict) and 'junction' in model:
         junction = model['junction']
+        # The junction artefact template renders a declared staging body the
+        # way the domain_entity one does, so its commas need the same mark.
+        if 'artefact_columns' in junction:
+            _mark_last_item(junction['artefact_columns'])
         # Get iterator_var from cpp section for column processing
         iter_var = junction.get('cpp', {}).get('iterator_var', 'm')
         if 'columns' in junction:

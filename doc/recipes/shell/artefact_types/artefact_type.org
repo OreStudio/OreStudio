@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 91845E51-131E-5C5A-89A3-1261457C1A17
+:END:
+#+title: How do I run the artefact_types commands from the shell?
+#+description: Every command the artefact_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:artefact_types:
+
+This file documents the artefact_types resource at the shell, one section per command. Every command is a subcommand of =artefact_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 2B3F19CF-EFBD-555D-A62D-BAE234C19357
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+artefact_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.artefact_types.list=.
+
+#+name: artefact_types-list
+#+begin_src ores-shell :tangle artefact_types-list.ores :exports none
+artefact_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0F3E497B-B86A-5BD5-AECD-700D35EF1571
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+artefact_types get <code>
+#+end_example
+
+It is addressed at =dq.v1.artefact_types.get=.
+
+#+name: artefact_types-get
+#+begin_src ores-shell :tangle artefact_types-get.ores :exports none
+artefact_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 911F3C0D-2B87-5FC6-AA85-50F18EFDA274
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+artefact_types get-many <code>
+#+end_example
+
+It is addressed at =dq.v1.artefact_types.get_many=.
+
+#+name: artefact_types-get-many
+#+begin_src ores-shell :tangle artefact_types-get-many.ores :exports none
+artefact_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 88062174-60AF-5F40-94BA-8DAAF2153368
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+artefact_types add <code> <name> <description> <artefact_table> <target_table> <target_subject> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.artefact_types.put=.
+
+#+name: artefact_types-add
+#+begin_src ores-shell :tangle artefact_types-add.ores :exports none
+artefact_types add __none__ __none__ - - - - 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: D1B9689A-311B-57AD-95EF-9D7895BF33D4
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+artefact_types set <code> <name> <description> <artefact_table> <target_table> <target_subject> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.artefact_types.put=.
+
+#+name: artefact_types-set
+#+begin_src ores-shell :tangle artefact_types-set.ores :exports none
+artefact_types set __none__ __none__ - - - - 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: A3E0F8B5-EFC0-5D1E-A43E-804F04BC1414
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+artefact_types put-many --count <n> <code> <name> <description> <artefact_table> <target_table> <target_subject> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.artefact_types.put_many=.
+
+#+name: artefact_types-put-many
+#+begin_src ores-shell :tangle artefact_types-put-many.ores :exports none
+artefact_types put-many --count 1 __none__ __none__ - - - - 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 7F0EB796-6809-597D-B7B9-1688633378A8
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+artefact_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.artefact_types.delete=.
+
+#+name: artefact_types-delete
+#+begin_src ores-shell :tangle artefact_types-delete.ores :exports none
+artefact_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 47F12C78-D2D2-5229-AEF9-B1BC1D77A4E3
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+artefact_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.artefact_types.delete_many=.
+
+#+name: artefact_types-delete-many
+#+begin_src ores-shell :tangle artefact_types-delete-many.ores :exports none
+artefact_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 7DCDBC30-0993-534A-B384-2E04C6AB9D69
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+artefact_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.artefact_types_versions.list=.
+
+#+name: artefact_types-versions
+#+begin_src ores-shell :tangle artefact_types-versions.ores :exports none
+artefact_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 34781021-709B-5BFC-9B10-14CC86063761
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+artefact_types version <code> --version <n>
+#+end_example
+
+It is addressed at =dq.v1.artefact_types_versions.get=.
+
+#+name: artefact_types-version
+#+begin_src ores-shell :tangle artefact_types-version.ores :exports none
+artefact_types version __none__ --version 1
+#+end_src
+

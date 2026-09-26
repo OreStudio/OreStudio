@@ -24,7 +24,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
-#include "ores.shell/app/commands/workflow/workflow_wait_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <chrono>
@@ -66,10 +66,10 @@ void bundles_commands::register_commands(cli::Menu& root_menu, nats_client& sess
 }
 
 void bundles_commands::process_list(std::ostream& out, nats_client& session) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get dataset bundles request.";
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list dataset bundles request.";
 
-    dq::messaging::get_dataset_bundles_request req;
-    auto result = do_auth_request<dq::messaging::get_dataset_bundles_response>(
+    dq::messaging::list_dataset_bundles_request req;
+    auto result = do_auth_request<dq::messaging::list_dataset_bundles_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -167,7 +167,7 @@ void bundles_commands::process_publish(std::ostream& out,
         out << "Follow progress with: workflow wait " << result->instance_id << std::endl;
         return;
     }
-    workflow_wait_commands::wait_for_instance(out,
+    workflow_operation_commands::wait_for_instance(out,
                                          session,
                                          result->instance_id,
                                          *wait_timeout,

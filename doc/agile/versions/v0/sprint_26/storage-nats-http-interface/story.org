@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 5EA439A5-43AE-4223-9026-6B3D8C91AEEA
+:END:
+#+title: Story: Give object storage a NATS and HTTP interface with authentication
+#+description: Split ores.storage into an api, a core and a service, model the object surface so put, get, delete and list are reachable and authenticated over both NATS and HTTP, migrate every consumer onto it, and make both surfaces exercisable from the shell and the test suite.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Object storage is reachable, and authenticated, on both interfaces the
+[[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] target state names.
+A caller puts, gets, deletes, tests existence and lists an object over HTTP when
+it is moving bytes, and over NATS when it is sending a command, and the two
+agree: the same bucket and key name the same object, the same failure is
+reported the same way, and the same identity is required.
+
+Storage becomes generatable in the process, and only as far as the generator
+reaches. The target state's claim is that modelling the operation set produces
+the protocol, the handler, the permission codes, the shell verbs and the
+TypeScript twin, the way an entity's model produces its own. Reading the facets
+against an operation model shows the claim is half true: the protocol header,
+the TypeScript twin and the shell commands generate, while the handler, the
+service and the registrar do not, and the permission codes are hand-maintained
+constants with hand-written SQL seeds. This story is where that claim is tested,
+and where the part that does not hold is recorded rather than papered over.
+
+None of that fits a flat library, so the component gets a service of its own: an
+api holding the contract its consumers link, a core holding the implementation
+both interfaces call, and a service holding the handler and the entry point. And
+the interface is only half of it — the codebase then moves onto it, which is
+where the wrapper's second HTTP client and archiver, the hand-built keys and the
+consumer-named shell verbs go.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Design settled and the four open decisions taken: buckets stay a caller concern, existence is a read, storage gets a service, and the consumers migrate onto it. |
+| Waiting on    | Nothing.                               |
+| Next          | Split the component into api, core and service parts. |
+| Last touched  | 2026-09-26                               |
+
+* Acceptance
+
+- The component is split into api, core and service parts, and its consumers
+  link the public API rather than one flat library.
+- The operation set is modelled, and the generator produces its protocol header,
+  TypeScript twin, shell verbs and shell recipes from the model rather than by
+  hand. The handler, service and registrar are hand-written, because no facet
+  admits an operation model, and the task says which artefact is which.
+- Every storage route authenticates before it acts, and each operation is gated
+  by its own permission code rather than by a valid token alone.
+- NATS carries the same operation set as HTTP: the same bucket and key leave the
+  same object, and the same failure is reported the same way, so a caller can
+  move between the two without relearning the error set.
+- A raw surface exists in the shell — one verb per operation over a bucket, a
+  key and a local path — so a caller that only wants bytes somewhere does not
+  have to learn a domain verb.
+- Storage holds no bucket name, no bucket registry and no allow-list. The bucket
+  is part of the key, which buckets exist is the caller's concern, and the
+  =report-data= class of drift cannot recur because the server has no list to
+  fall behind.
+- Every consumer is on the interface and the duplicates are gone: one HTTP
+  client, one archiver, one set of key builders.
+- The surface is exercisable end to end: a shell session and an automated test
+  each prove the put, get, list and delete round trip on both interfaces, and
+  the refusal path of each.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F7564B4B-EDCF-46F4-BB8B-DE88449BEC70][Add the NATS and HTTP interface to ores.storage, with authentication]] | STARTED | 2026-09-26 | | Split the component into api, core and service parts, model the storage surface as an operation model so its protocol, TypeScript twin and shell commands generate, hand-write the handler and service no facet will generate, and give both the NATS handler and the existing HTTP routes real authentication and per-operation permission checks. |
+| [[id:97D5B848-DCF9-4E10-B71A-0F8BA866AE8F][Migrate the storage consumers onto the shared interface]] | BACKLOG | | | Move ores.compute.wrapper, ores.ore, ores.reporting and the shell verbs onto the storage service contract, and delete the duplicate HTTP client, archiver and key builders the migration leaves behind. |
+
+* Decisions
+
+- *Buckets belong to the caller.* Storage holds no bucket names, no registry and
+  no allow-list. The bucket is part of the object key, the server validates it as
+  a path segment and authorises the operation rather than the name, and each
+  domain component names its own. The hardcoded pair goes, and the =report-data=
+  404 with it.
+- *Existence is a read.* There is no =exists= verb. =get= answers =missing= and
+  HTTP answers =HEAD=, so the surface stays inside the canonical verb set.
+- *Storage gets a service.* The component splits into api, core and service
+  parts, which is what gives the operation set a home and its consumers a public
+  API to link.
+- *The consumers migrate in this story.* =ores.compute.wrapper=, =ores.ore=,
+  =ores.reporting= and the shell verbs move onto the interface, and the
+  duplicates the move leaves behind are deleted rather than kept beside it.
+
+* Out of scope
+
+- The backend. The filesystem behind the HTTP server stays the implementation;
+  replacing it with Redis, an S3 bucket or a table is the target state's
+  separate concern, and the contract is what has to survive the swap.
+- Compression and archiving as wire conventions. Archiving a directory before a
+  put is a wrapper's business, and nothing on the wire may mark an object as
+  compressed.
+- Each consumer's own domain design: which bucket it names, the compute package,
+  input and output keys, the ore import bundle and the report package. The
+  migration moves them onto the shared interface; what they store stays theirs.
+- The tenancy model. Whether a bucket is global with keys namespaced per tenant
+  or tenants get buckets of their own is open in the target state, and this
+  story must not settle it by accident: it authenticates the caller and gates
+  the operation, and leaves the isolation question where the target state
+  leaves it.

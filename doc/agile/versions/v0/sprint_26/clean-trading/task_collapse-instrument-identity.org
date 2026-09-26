@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: 8EB4DE8E-1A9B-40CB-9B61-2918F778557C
+:END:
+#+title: Task: Collapse the instrument identity into the trade and split the bond security
+#+description: PR 4. One trade identity, one instrument identity and one security identity, with a real foreign key where a soft link sits today, regenerated.
+#+type: task
+#+level: s1
+#+filetags: :clean-trading:sprint_26:v0:
+#+owner: marco
+#+branch: feature/collapse-instrument-identity
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the component two identities where it carries three, and give the
+database the relationships the schema can hold. This is item M05 and
+the identity half of M07, and it implements decision D2: the trade id
+identifies the trade and its instrument, and the security issue is a
+separate reference datum.
+
+The rule is already written down.
+=doc/knowledge/architecture/trade_modeling.org= says that the economic
+terms belong to one agreement, that the trade and instrument
+relationship is one to one, and that "the trade id identifies both".
+=doc/knowledge/domain/trade.org= names the four entities: the product
+type, the security issue where one exists, the trade, and the
+instrument carrying the economic terms.
+
+The code disagrees. =instrument_identity_field_group.org= declares
+=instrument_id= as a key and =trade_id= as an optional soft
+back-reference, and 26 models inherit the group. =trade= adds a second
+nullable pointer back at the instrument. The declaration carries 91
+=instrument_id= columns and no foreign key targets an instrument table,
+so the two directions of a one-to-one relationship are two nullable
+pointers that nothing can make agree.
+
+This re-opens two tasks the sprint 25 story abandoned:
+=trading_model_cleanup= task =7B23DB0F=, collapse the instrument
+identity into the trade, and task =0C525D24=, split the bond security
+from the trade. The order is the order the abandoned split task gave:
+collapse first, because the reverse reshapes the same tables twice.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | PR 3 merged, so every family has a model to reshape. |
+| Next         | Model the collapse, regenerate, then split the security. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- =instrument_id= is gone from =instrument_identity_field_group= and
+  from every entity that inherits or references it.
+- =trade.instrument_id= is gone, so the two directions of a one-to-one
+  relationship cannot disagree.
+- Instrument tables are keyed by =trade_id=, not null, with a real
+  foreign key to the trade rather than a soft link.
+- An instrument with no real trade is a trade of a reserved type, so
+  there is one shape rather than two.
+- The bond security split follows: the shared entities are keyed by the
+  ORE reference datum id, which is SecurityId for a bond and
+  ContractName for a bond future; =bond_future= keeps only what ORE
+  keeps on the trade; =bond_leg= and its rate, amount and amortization
+  children hang off the security; =bond_issue= gains the fields ORE has
+  and we lack, and loses =bond_notional=, which ORE holds on the trade;
+  and the fields duplicated against the leg tables are held once.
+- Defect 7 of the trade model investigation closes: the schema declares
+  the relationships it enforces, instead of 866 check constraints and
+  no foreign keys.
+- Defect 9 closes or is recorded: five equity tables hold two products
+  each behind a =trade_type_code= discriminator.
+- Defect 10 closes or is recorded: =product_type= stops being a database
+  enum on the trades table and becomes the modelled entity.
+- Defect 13 closes: one key name for an instrument's identity.
+- A trade that states its bond inline rather than by reference still
+  round-trips, so the ORE round trip stays at zero loss across the bond
+  products and the trade envelope.
+- =check_component_drift.py --component trading-cpp --dry-run= reports
+  nothing, and the four suites pass.
+
+* Plan
+
+** 1. Model the collapse
+
+=instrument_identity_field_group= is the leverage point. It declares
+=instrument_id=, =trade_type_code=, =party_id= and =trade_id=, and 26
+models inherit it. Removing =instrument_id= there and making =trade_id=
+the non-nullable key carries most of the change. The remaining entities
+keyed on =instrument_id= are the per-product and child tables. The
+sprint 25 analysis counted 47 of them; re-count at this head, because
+PR 3 adds more.
+
+=trade.instrument_id= goes with it. The link becomes the child's
+=trade_id=, and a real foreign key replaces the soft one.
+
+** 2. Sequence so nothing breaks in the middle
+
+Model first, then regenerate, then the hand-written callers, then the
+SQL. No commit removes a column before its replacement exists. The
+component audit runs before the task closes.
+
+** 3. Split the security, after the collapse
+
+Apply the split plan from the abandoned task, which is written against
+ORE's schema rather than invented:
+
+- =bondReferenceDatum= is exactly =bondData= minus =SecurityId=,
+  =BondNotional=, =Payer= and =CreditRisk=. Everything else on a bond is
+  static data about the security, and the four exceptions are the
+  trade's own: which security, how much, which side, and whether credit
+  risk applies.
+- The key is the datum id, so a bond's is its =SecurityId= and a bond
+  future's is its =ContractName=. No entity needs the words "reference
+  data" in its name; =bond_issue= is already the shape to follow.
+- =bond_issue= gains the six fields ORE has and we lack, and loses
+  =bond_notional=.
+- A trade may state its bond inline or by reference. Normalising on the
+  security is right, and the inline case then populates the security
+  rather than bypassing it.
+
+** 4. Regenerate and repair the callers
+
+Regenerate the component and the SQL, then repair every hand-written
+caller: the mappers, the readers, the import path and the shell
+commands. The ORE mapper and its container are hand-written and will
+need a pass.
+
+** 5. Prove
+
+Run the ORE round trip through the shell over the bond documents and
+require zero loss. Then the whole-tree build, the four suites and the
+drift dry run.
+
+** 6. Record
+
+Update the story's checklist rows for M05 and M07, and record the
+closure of defects 7, 9, 10 and 13.
+
+* Notes
+
+- Two documents already describe this change and both are stale in
+  detail only. Read =trade_modeling.org= for the rule and the abandoned
+  task bodies =7B23DB0F= and =0C525D24= for the plan; both are under
+  =doc/agile/versions/v0/sprint_25/data-oriented-trading-model/=.
+- The design's ER page names =ores_trading_schedules_tbl= while the code
+  ships =instrument_schedules=. Reconcile the names in the same pass, or
+  record the difference.
+- The design's =instrument_underlyings= table was never built. PR 5
+  owns that.
+- =trade_classification.hpp= cites =ores_refdata_instruments_tbl= and
+  =trade_identity_field_group.json=, and neither exists. Correct the
+  comments here.
+- The bond family's facts and legs are still per trade, so the security
+  split is the largest part of the diff. If it cannot land in one PR
+  with the collapse, stop after the collapse with the tree green and
+  open a follow-up rather than leaving the component mid-reshape.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    | Collapse the instrument identity into the trade and split the bond security |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

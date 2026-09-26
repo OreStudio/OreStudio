@@ -17,28 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table_io.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.variability.api/domain/system_setting_table_io.hpp"
-#include <fort.hpp>
+#include "ores.variability.api/domain/system_setting_table.hpp"
 #include <ostream>
 
 namespace ores::variability::domain {
 
-std::string convert_to_table(const std::vector<system_setting>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
+namespace {
 
-    table << fort::header << "Name" << "Type" << "Value" << "Version" << "Description"
-          << "Change Reason" << "Modified By" << "Recorded At" << fort::endr;
+void print_system_setting_table(std::ostream& s, const std::vector<system_setting>& v) {
+    s << std::endl << convert_to_table(v) << std::endl;
+}
 
-    for (const auto& s : v) {
-        table << s.name << s.data_type << s.value << s.version << s.description
-              << s.change_reason_code << s.modified_by << s.recorded_at << fort::endr;
-    }
-    return table.to_string();
 }
 
 std::ostream& operator<<(std::ostream& s, const std::vector<system_setting>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
+    print_system_setting_table(s, v);
     return s;
 }
 

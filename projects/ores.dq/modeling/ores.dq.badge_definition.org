@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 7BEB786A-A573-474E-9677-64C869A64E47
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.dq.badge_definition
 #+description: Codegen entity model for the dq =badge_definition= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

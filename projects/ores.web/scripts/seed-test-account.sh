@@ -195,14 +195,14 @@ login_tracking as (
   )
   select
     ia.tenant_id, ia.id, '0.0.0.0', '0.0.0.0',
-    0, 0, now(), 0, 0
+    0, false, now(), false, false
   from inserted_account ia
   on conflict (account_id) do update
     set tenant_id = excluded.tenant_id,
         failed_logins = 0,
-        locked = 0,
-        online = 0,
-        password_reset_required = 0
+        locked = false,
+        online = false,
+        password_reset_required = false
   returning 1
 )
 select

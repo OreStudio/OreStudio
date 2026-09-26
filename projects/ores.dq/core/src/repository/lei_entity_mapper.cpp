@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.core/repository/lei_entity_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/lei_entity_json_io.hpp" // IWYU pragma: keep.
@@ -105,21 +110,24 @@ lei_entity_entity lei_entity_mapper::map(const domain::lei_entity& v) {
     r.entity_headquarters_address_region = v.entity_headquarters_address_region;
     r.entity_headquarters_address_country = v.entity_headquarters_address_country;
     r.entity_headquarters_address_postal_code = v.entity_headquarters_address_postal_code;
-    r.entity_entity_creation_date =
-        v.entity_entity_creation_date.has_value() ?
-            std::optional(timepoint_to_timestamp(*v.entity_entity_creation_date, lg())) :
-            std::nullopt;
+    r.entity_entity_creation_date = v.entity_entity_creation_date.has_value() ?
+                                        std::optional(ores::platform::time::datetime::to_db_string(
+                                            *v.entity_entity_creation_date)) :
+                                        std::nullopt;
     r.registration_initial_registration_date =
         v.registration_initial_registration_date.has_value() ?
-            std::optional(timepoint_to_timestamp(*v.registration_initial_registration_date, lg())) :
+            std::optional(ores::platform::time::datetime::to_db_string(
+                *v.registration_initial_registration_date)) :
             std::nullopt;
     r.registration_last_update_date =
         v.registration_last_update_date.has_value() ?
-            std::optional(timepoint_to_timestamp(*v.registration_last_update_date, lg())) :
+            std::optional(
+                ores::platform::time::datetime::to_db_string(*v.registration_last_update_date)) :
             std::nullopt;
     r.registration_next_renewal_date =
         v.registration_next_renewal_date.has_value() ?
-            std::optional(timepoint_to_timestamp(*v.registration_next_renewal_date, lg())) :
+            std::optional(
+                ores::platform::time::datetime::to_db_string(*v.registration_next_renewal_date)) :
             std::nullopt;
     r.registration_registration_status = v.registration_registration_status;
     r.entity_transliterated_name_1 = v.entity_transliterated_name_1;

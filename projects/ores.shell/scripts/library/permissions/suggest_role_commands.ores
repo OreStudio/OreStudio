@@ -1,7 +1,0 @@
-# Suggest Role Commands
-#
-# GENERATED from doc/recipes/shell/permissions/suggest_role_commands.org — do not edit by hand.
-# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
-#
-permissions suggest newuser60 example.com
-permissions suggest newuser61 acme.com

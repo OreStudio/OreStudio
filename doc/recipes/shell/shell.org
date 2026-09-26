@@ -78,45 +78,21 @@ tangled into the runnable script library
 - [[id:35555992-6F01-40F5-A1A7-1EF0FA6FCAB3][Account Permissions]]
 - [[id:F5B4CC6B-0602-4023-9EB1-B941FB333061][Account Roles]]
 - [[id:67378649-0C9D-40D0-B348-DBC83AC90928][Assign Role]]
-- [[id:E0BF1E20-9CEE-43BB-9C0E-325088DE368C][Assign Role By Name]]
 - [[id:28B359CC-1D56-4347-96EC-5D244C1FCAA7][Auto connect]]
 - [[id:CA27A829-0A1C-2C44-9AE3-D389D3898C4E][Auto login]]
-- [[id:67362277-05E4-4FA6-8420-51C97236DF61][Basic connect]]
-- [[id:A89F12B0-C212-4FD4-B034-F102FC6CFF68][Bootstrap]]
-- [[id:EEC4F8BE-26BB-42A6-9C60-E65AC9CEFC41][Create]]
 - [[id:1FBC2C1E-1BB2-44EA-AC40-26A9F9750636][Help Menu]]
-- [[id:887AF33E-E237-417A-9636-5006881A6790][History]]
 - [[id:5CE9A9DA-423C-55CD-A7CD-8CC84F89813E][How do I run the accounts commands from the shell?]]
-- [[id:6BA720D5-1F2E-475B-ACB0-477F516EA8C9][Info]]
 - [[id:E706EF2D-00BA-44A1-BC3F-E206EF6ECA30][List]]
 - [[id:784CD3C0-1267-4B0A-AC31-4E3AE8794E6F][List Login Info]]
 - [[id:2D8ECBDF-6896-4DC1-B38E-CC7CFC479FE2][Lock]]
-- [[id:92E184F9-0A3D-44B5-BD4C-9521B818A69F][Login]]
-- [[id:E8DA8B33-81D9-4F22-8439-216D7D916093][Login logout]]
-- [[id:0E9D3DCD-0E8D-4F5A-A675-C88E9BC125D1][Logout]]
 - [[id:AD073CBD-91A1-47D7-B0FB-26492327DED1][Revoke Role]]
-- [[id:A330AEFF-E2AB-43BC-A3F7-4427CA47C8CC][Revoke Role By Name]]
 - [[id:6906C683-5D50-464E-9520-FE5199136AB1][Unlock]]
 
 * Tenants
 
-- [[id:D7D6BCCB-26CC-47C9-B763-220C07062939][Add Tenant]]
-- [[id:B7B55734-CD7D-4EAA-B0D2-5262A05C6438][Create Account on Tenant]]
-- [[id:74A76D6B-FF31-42F6-8E1D-09501F09FA9F][Delete Tenant]]
-- [[id:E40F0DAB-8E2F-4F2E-BF0A-CA1DFD9A681E][Get All Tenants]]
-- [[id:691AEA4F-4CB2-425D-8231-FD47EFA16B71][Get Tenants]]
 - [[id:6BA77EF7-5F06-48CB-8BE9-A4E9B670E910][Help Menu]]
 - [[id:C22B769D-A74A-552A-9519-5DCF1D14A469][How do I run the tenants commands from the shell?]]
 - [[id:41576369-A684-4BC4-AF5E-32ECDAADAA7C][List accounts on Tenant]]
-- [[id:4406CC4D-23BF-4A8F-AB95-FFED42437ED7][Tenant History]]
-
-* Variability
-
-- [[id:E53146D5-0B0C-4760-BBCC-400AA9C445CA][Add Feature Flag]]
-- [[id:61B7F668-5B49-4470-9C52-4BC547E3AB4F][Delete Feature Flag]]
-- [[id:660DD54D-8319-4508-B398-C02AA956C979][Feature Flag History]]
-- [[id:1CA91A21-F6F3-4089-9C36-DED598DBB19E][Help Menu]]
-- [[id:0DA49716-852D-4814-AA83-13452DB3FAE4][List Feature Flags]]
 
 * Currencies
 
@@ -134,7 +110,6 @@ tangled into the runnable script library
 - [[id:329950A6-28DF-4A63-AC55-12286FEDFFBB][Help Permissions]]
 - [[id:ADCE3FA3-359E-503C-9F11-8DD2E01DA71E][How do I run the permissions commands from the shell?]]
 - [[id:E864DC84-A0DF-4997-ACED-E69C870F0AFE][List Permissions]]
-- [[id:AFDD8573-8D4F-4B2F-8246-23F68D2E304D][Suggest Role Commands]]
 
 * Events
 
@@ -163,6 +138,7 @@ tangled into the runnable script library
 - [[id:FB4F43FF-90FF-4E67-8BD0-C6DB47DD6E69][Get]]
 - [[id:3A94A1CC-9134-494C-A036-A1DDBF3E0D5F][Help]]
 - [[id:C82409F0-2DED-4134-B5E2-98E51AD9CFCF][History]]
+- [[id:D4465BCE-68AE-5C66-B36C-642843F1843E][How do I run the change_reasons commands from the shell?]]
 
 * Change Reason Categories
 
@@ -171,14 +147,11 @@ tangled into the runnable script library
 - [[id:D6C9B1A7-E6AB-4847-9DB8-65DDAEE9C5C2][Get]]
 - [[id:7459C714-AD65-4BE9-84C8-249A4D56231E][Help]]
 - [[id:4E1B0644-98DE-480C-A63B-92E0A5153957][History]]
+- [[id:EA683935-8199-50E5-A58B-B2E05B1C6266][How do I run the change_reason_categories commands from the shell?]]
 
 * Account Contact Informations
 
 - [[id:04C8F03D-5BB8-58F2-A556-63A54274108F][How do I run the account_contact_informations commands from the shell?]]
-
-* Account History
-
-- [[id:2F99474E-6068-5415-BB56-40DD110CA312][How do I run the account_history commands from the shell?]]
 
 * Account Operations
 
@@ -631,3 +604,51 @@ tangled into the runnable script library
 * Scheduler
 
 - [[id:FFE1A375-412F-4557-883F-586460533BA4][How do I schedule a job from the shell, and watch it fire?]]
+
+* System Settings
+
+- [[id:1AE52616-1E2F-5164-9765-76457B907EF3][How do I run the system_settings commands from the shell?]]
+
+* Artefact Types
+
+- [[id:91845E51-131E-5C5A-89A3-1261457C1A17][How do I run the artefact_types commands from the shell?]]
+
+* Badge Definitions
+
+- [[id:38F4CD93-7F57-5E27-A586-0EEBBB7A86ED][How do I run the badge_definitions commands from the shell?]]
+
+* Catalogs
+
+- [[id:44815F8D-7A5E-5C03-AC60-5120CF939A1B][How do I run the catalogs commands from the shell?]]
+
+* Code Domains
+
+- [[id:3CA50A73-FC43-5732-AB09-F173214574E4][How do I run the code_domains commands from the shell?]]
+
+* Data Domains
+
+- [[id:B143485D-670C-5438-A9A2-DD5D89FA9F93][How do I run the data_domains commands from the shell?]]
+
+* Dataset Bundle Members
+
+- [[id:CC9EBC52-9E51-59B8-AFD5-526B2DD40E08][How do I run the dataset_bundle_members commands from the shell?]]
+
+* Dataset Bundles
+
+- [[id:30419F02-F572-5155-ACF9-B2781E00F441][How do I run the dataset_bundles commands from the shell?]]
+
+* Lei Entities
+
+- [[id:EBAD9DD1-95BB-527F-B0E0-B09E3A02A925][How do I run the lei_entities commands from the shell?]]
+
+* Lei Relationships
+
+- [[id:1874CC7F-A727-5FFD-A98E-5FE54754EB1E][How do I run the lei_relationships commands from the shell?]]
+
+* Report Definitions
+
+- [[id:2780B6E3-0EBE-5518-9134-B6EA0294A5C9][How do I run the report_definitions commands from the shell?]]
+
+* Synthetic Fx Spot Configs
+
+- [[id:433F316B-EEFE-5C37-B7C8-2C6DA4D0B817][How do I run the synthetic_fx_spot_configs commands from the shell?]]

@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: BA9B89D7-D96D-49A8-A821-215103DDF768
+:END:
+#+title: A record's measured numbers go stale when trunk moves under the branch
+#+description: Two independent verification rounds failed the ores.service record for the same reason: counts measured on a tree that trunk then moved out from under. The branch was rebased four times while it waited, and each advance changed a consumer count, a gate's component count or a suite's size. Nothing in the record said which tree a number was measured on, so the drift was silent until a verifier re-ran the commands.
+#+type: capture
+#+level: cross
+#+filetags: :agile:process:verification:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two changes, smallest first.
+
+1. Require every measured number in a task record to name the command that
+   produced it and the commit it was measured at. The task template's Evidence
+   column says "kept on the task" today, which is not the same claim.
+2. Optional, and only if it earns its place: a =compass task verify <task>= that
+   re-runs the commands a record declares and reports any that no longer produce
+   the number beside them.
+
+* Why
+
+A clean-standard record is a claim about a tree, and its numbers are the part a
+reviewer checks least and a verifier re-runs first. When trunk moves under a
+branch, a count of consumers, a gate's component count and a suite's size all
+change without any code changing, and the record goes quietly wrong.
+
+The measured case is the =ores.service= task. Trunk advanced four times while the
+branch waited, and the record was failed twice by independent verifiers for
+exactly this. Five of ten census counts, the codegen suite count, the
+handler-permission component count, the refdata drift count and the Notes' suite
+size had all been taken on an earlier head. Both rounds confirmed the code was
+sound and failed the record, which cost two extra verification rounds on work
+that was already correct.
+
+Naming the commit turns that from a discovery into a visible statement. A reader
+sees "measured at 1a2b3c4" and knows whether the base has moved since. The
+verifier command would close the loop, but the template change is what makes the
+answer checkable.
+
+* References
+
+- =doc/agile/versions/v0/sprint_26/clean-service/task_clean_service.org= -- the
+  record, its Review table with both rounds, and the note that now says the
+  numbers describe the patch rather than a trunk base.
+- =projects/ores.codegen/library/templates/= -- the task template the Evidence
+  column comes from, so the change belongs there rather than in each record.
+- The two verdicts on PR #2175, comments 5849632345 and 5849857072, and the third
+  at 5850249111, which returned PASS+NOTES after the numbers were re-measured.
+
+* See also
+
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] -- the
+  evidence column every item's row quotes.
+- [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][Component Architecture Audit]] --
+  the audit's own triage rules, which the same discipline would serve.

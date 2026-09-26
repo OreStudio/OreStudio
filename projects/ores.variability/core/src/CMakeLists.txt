@@ -47,6 +47,11 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.security.lib
         ores.dq.api.lib
-        libfort::fort)
+        ores.history.core.lib
+        ores.diff.lib
+        ores.eventing.core.lib
+        faker-cxx::faker-cxx
+        libfort::fort
+        Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

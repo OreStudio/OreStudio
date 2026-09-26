@@ -14,8 +14,12 @@
 create table if not exists "ores_dq_{{domain_entity.entity_plural}}_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
+{{^domain_entity.artefact_columns}}
     "{{domain_entity.primary_key.column}}" {{domain_entity.primary_key.type}} not null,
     "version" integer not null,
+{{#domain_entity.natural_keys}}
+    "{{column}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
+{{/domain_entity.natural_keys}}
 {{#domain_entity.columns}}
     "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
 {{/domain_entity.columns}}
@@ -25,6 +29,10 @@ create table if not exists "ores_dq_{{domain_entity.entity_plural}}_artefact_tbl
 {{#domain_entity.has_coding_scheme}}
     ,"coding_scheme_code" text not null
 {{/domain_entity.has_coding_scheme}}
+{{/domain_entity.artefact_columns}}
+{{#domain_entity.artefact_columns}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
+{{/domain_entity.artefact_columns}}
 );
 
 create index if not exists dq_{{domain_entity.entity_plural}}_artefact_dataset_idx
@@ -32,9 +40,16 @@ on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl (dataset_id);
 
 create index if not exists dq_{{domain_entity.entity_plural}}_artefact_tenant_idx
 on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl (tenant_id);
+{{^domain_entity.artefact_columns}}
 
 create index if not exists dq_{{domain_entity.entity_plural}}_artefact_{{domain_entity.primary_key.column}}_idx
 on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl ({{domain_entity.primary_key.column}});
+{{/domain_entity.artefact_columns}}
+{{#domain_entity.artefact_columns}}
+
+create index if not exists dq_{{domain_entity.entity_plural}}_artefact_{{domain_entity.artefact_key_column}}_idx
+on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl ({{domain_entity.artefact_key_column}});
+{{/domain_entity.artefact_columns}}
 {{#domain_entity.artefact_indexes}}
 
 create index if not exists dq_{{domain_entity.entity_plural}}_artefact_{{name}}_idx

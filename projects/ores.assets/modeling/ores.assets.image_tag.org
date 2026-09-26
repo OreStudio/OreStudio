@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.nats-handler.enabled: true
+:ores.sql.schema.junction_artefact_create.enabled: true
 :ores.cpp.nats-sub-registrar.enabled: true
 :ores.cpp.service.enabled: true
 :ores.cpp.shell-command.enabled: true
@@ -97,6 +98,21 @@ never sets it.
 #+begin_src cpp :name generator
 ctx.past_timepoint()
 #+end_src
+
+
+* Artefact columns
+
+The projection would carry =version=, =assigned_by= and =assigned_at= as NOT NULL, and =ores_dq_image_tags_artefact_upsert_fn= supplies none of them. The staging table is the two keys and nothing else.
+
+** image_id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** tag_id
+:PROPERTIES:
+:type: uuid
+:END:
 
 * SQL
 

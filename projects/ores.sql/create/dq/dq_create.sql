@@ -26,7 +26,7 @@
 \ir ./dq_change_reason_functions_create.sql
 
 -- Catalogs and dataset dependencies
-\ir ./dq_catalog_create.sql
+\ir ./dq_catalogs_create.sql
 \ir ./dq_catalogs_notify_trigger_create.sql
 \ir ./dq_dataset_dependency_create.sql
 
@@ -38,13 +38,13 @@
 -- Data domains and subject areas
 \ir ./dq_data_domains_create.sql
 \ir ./dq_data_domains_notify_trigger_create.sql
-\ir ./dq_subject_area_create.sql
+\ir ./dq_subject_areas_create.sql
 \ir ./dq_subject_areas_notify_trigger_create.sql
 
 -- Coding schemes
-\ir ./dq_coding_scheme_authority_type_create.sql
+\ir ./dq_coding_scheme_authority_types_create.sql
 \ir ./dq_coding_scheme_authority_types_notify_trigger_create.sql
-\ir ./dq_coding_scheme_create.sql
+\ir ./dq_coding_schemes_create.sql
 \ir ./dq_coding_schemes_notify_trigger_create.sql
 \ir ./dq_coding_schemes_artefact_create.sql
 
@@ -62,15 +62,15 @@
 \ir ./dq_badge_mappings_artefact_create.sql
 
 -- Dimensions
-\ir ./dq_origin_dimension_create.sql
+\ir ./dq_origin_dimensions_create.sql
 \ir ./dq_origin_dimensions_notify_trigger_create.sql
-\ir ./dq_nature_dimension_create.sql
+\ir ./dq_nature_dimensions_create.sql
 \ir ./dq_nature_dimensions_notify_trigger_create.sql
-\ir ./dq_treatment_dimension_create.sql
+\ir ./dq_treatment_dimensions_create.sql
 \ir ./dq_treatment_dimensions_notify_trigger_create.sql
 
 -- Methodologies
-\ir ./dq_methodology_create.sql
+\ir ./dq_methodologies_create.sql
 \ir ./dq_methodologies_notify_trigger_create.sql
 
 -- Artefact Types (must precede datasets for FK validation)
@@ -148,21 +148,6 @@
 \ir ./dq_population_functions_create.sql
 
 -- FPML entity population functions
-\ir ./dq_account_types_population_functions_create.sql
-\ir ./dq_asset_classes_population_functions_create.sql
-\ir ./dq_asset_measures_population_functions_create.sql
-\ir ./dq_benchmark_rates_population_functions_create.sql
-\ir ./dq_business_centres_population_functions_create.sql
-\ir ./dq_business_processes_population_functions_create.sql
-\ir ./dq_cashflow_types_population_functions_create.sql
-\ir ./dq_entity_classifications_population_functions_create.sql
-\ir ./dq_local_jurisdictions_population_functions_create.sql
-\ir ./dq_party_relationships_population_functions_create.sql
-\ir ./dq_party_roles_population_functions_create.sql
-\ir ./dq_person_roles_population_functions_create.sql
-\ir ./dq_regulatory_corporate_sectors_population_functions_create.sql
-\ir ./dq_reporting_regimes_population_functions_create.sql
-\ir ./dq_supervisory_bodies_population_functions_create.sql
 \ir ./dq_coding_schemes_population_functions_create.sql
 \ir ./dq_badge_severities_population_functions_create.sql
 \ir ./dq_badge_definitions_population_functions_create.sql

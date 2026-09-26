@@ -55,16 +55,19 @@ target_link_libraries(${lib_target_name}
         ores.refdata.api.lib
         ores.reporting.api.lib
         ores.scheduler.api.lib
-        ores.storage.lib
+        ores.storage.core.lib
         ores.synthetic.api.lib
         ores.shell.trading.lib
         ores.shell.iam.lib
         ores.shell.synthetic.lib
         ores.shell.assets.lib
         ores.shell.refdata.lib
+        ores.shell.dq.lib
         ores.shell.compute.lib
         ores.shell.analytics.lib
         ores.shell.workflow.lib
+        ores.shell.variability.lib
+        ores.shell.storage.lib
         ores.trading.api.lib
         ores.workflow.api.lib
         ores.logging.lib

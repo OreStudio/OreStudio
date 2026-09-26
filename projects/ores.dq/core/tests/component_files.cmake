@@ -16,9 +16,25 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_tests.mustache
+# To modify, update the template and regenerate.
 set(files
+    "artefact_type_eventing_integration_tests.cpp"
+    "badge_definition_eventing_integration_tests.cpp"
+    "catalog_eventing_integration_tests.cpp"
+    "change_reason_category_eventing_integration_tests.cpp"
+    "change_reason_eventing_integration_tests.cpp"
+    "code_domain_eventing_integration_tests.cpp"
+    "coding_scheme_authority_type_eventing_integration_tests.cpp"
+    "coding_scheme_eventing_integration_tests.cpp"
+    "data_domain_eventing_integration_tests.cpp"
     "generators_tests.cpp"
+    "lei_entity_eventing_integration_tests.cpp"
+    "lei_relationship_eventing_integration_tests.cpp"
     "main.cpp"
+    "nature_dimension_eventing_integration_tests.cpp"
+    "origin_dimension_eventing_integration_tests.cpp"
     "repository_artefact_type_repository_tests.cpp"
     "repository_catalog_repository_tests.cpp"
     "repository_change_reason_category_repository_tests.cpp"
@@ -34,4 +50,5 @@ set(files
     "repository_origin_dimension_repository_tests.cpp"
     "repository_subject_area_repository_tests.cpp"
     "repository_treatment_dimension_repository_tests.cpp"
+    "treatment_dimension_eventing_integration_tests.cpp"
 )

@@ -21,18 +21,22 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.service.lib
         ores.security.lib
         {{core_full_name}}.lib
-        ores.eventing.lib
         ores.nats.lib
         ores.database.lib
         ores.utility.lib
-        ores.telemetry.lib)
+        ores.telemetry.core.lib)
+
+# A component declares here what the profile cannot know: the libraries it
+# needs beyond the baseline above, and the find_package calls they bring.
+
+{{{extra_dependencies}}}
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,21 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.api/domain/coding_scheme_table.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
 namespace ores::dq::domain {
+
 
 std::string convert_to_table(const std::vector<coding_scheme>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Code" << "Name" << "Authority Type" << "Subject Area" << "Domain"
-          << "Description" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Code" << "Name" << "Authority" << "Domain" << "Modified By"
+          << "Version" << fort::endr;
 
-    for (const auto& c : v) {
-        table << c.code << c.name << c.authority_type << c.subject_area_name << c.domain_name
-              << c.description << c.modified_by << c.version << fort::endr;
+    for ([[maybe_unused]] const auto& s : v) {
+        table << s.code << s.name << s.authority_type << s.domain_name << s.modified_by << s.version
+              << fort::endr;
     }
     return table.to_string();
 }

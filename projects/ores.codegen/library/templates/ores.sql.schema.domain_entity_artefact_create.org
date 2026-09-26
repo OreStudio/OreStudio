@@ -2,7 +2,7 @@
 :ID: 5B8F3C2A-6E1D-4A9F-8C3B-1D7A9E2F4B6C
 :END:
 #+title: ores.sql.schema.domain_entity_artefact_create
-#+description: Staging table for a domain_entity's imported artefacts: entity columns plus artefact bookkeeping (={{#domain_entity.has_coding_scheme}}=, ={{#domain_entity.has_image_id}}=, artefact indexes, optional insert function via ={{#domain_entity.has_artefact_insert_fn}}=). Ported from the lookup_entity-only sql_schema_artefact_create.mustache so migrating a lookup_entity model to domain_entity (see the entity-classification-drift-baseline rollout) doesn't strand its artefact/staging table with no regeneration path.
+#+description: Staging table for a domain_entity's imported artefacts: entity columns plus artefact bookkeeping (={{#domain_entity.has_coding_scheme}}=, ={{#domain_entity.has_image_id}}=, artefact indexes, optional insert function via ={{#domain_entity.has_artefact_insert_fn}}=), or an explicitly declared staging body via =* Artefact columns= when the staging shape is not a plain projection of the entity table. Ported from the lookup_entity-only sql_schema_artefact_create.mustache so migrating a lookup_entity model to domain_entity (see the entity-classification-drift-baseline rollout) doesn't strand its artefact/staging table with no regeneration path.
 #+type: archetype
 #+model_types: domain_entity
 #+output: projects/ores.sql/create/dq/dq_{entity_plural}_artefact_create.sql
@@ -11,9 +11,11 @@
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-08-04
-#+updated: 2026-08-04
+#+updated: 2026-09-26
 
 Staging table for a domain_entity's imported artefacts: entity columns plus artefact bookkeeping (={{#domain_entity.has_coding_scheme}}=, ={{#domain_entity.has_image_id}}=, artefact indexes, optional insert function via ={{#domain_entity.has_artefact_insert_fn}}=). Ported from the lookup_entity-only =sql_schema_artefact_create.mustache= so migrating a lookup_entity model to domain_entity doesn't strand its artefact/staging table with no regeneration path. Always lands under the =dq= product regardless of the owning component -- the artefact table is DQ's staging infrastructure for that entity's import pipeline, not the entity's own component.
+
+A staging table is usually a projection of the entity table, but not always. Reading the 12 divergent staging tables in =ores.dq= against their publish functions showed five deliberate differences that no projection can derive: the staging table renames its key, carries a natural key where the store holds a uuid, redacts a secret, redacts a field the publisher supplies, and adds a field only the import needs. An entity that needs one of those declares its staging body in a =* Artefact columns= section: a top-level heading, one =** <column>= child per staging column in order, each read exactly like a =* Columns= entry. Absent, this archetype projects the entity columns as before. Present, the section replaces the staging body after its =dataset_id=/=tenant_id= header, and the first entry is the staging key unless the section's own =:key:= property names another. A model may not declare both the section and ={{#domain_entity.has_artefact_insert_fn}}=, because the generated insert helper is built from the entity's own columns and would insert the wrong shape.
 
 =#+default: disabled=: most domain_entity models (=catalog=, =change_reason=, ...) have no artefact/staging table at all -- only entities that actually import via the DQ artefact pipeline need one. An entity opts in with =:ores.sql.schema.domain_entity_artefact_create.enabled: true= in its =* Flags= drawer.
 
@@ -43,8 +45,12 @@ The full template source. Edit here and re-tangle with
 create table if not exists "ores_dq_{{domain_entity.entity_plural}}_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
+{{^domain_entity.artefact_columns}}
     "{{domain_entity.primary_key.column}}" {{domain_entity.primary_key.type}} not null,
     "version" integer not null,
+{{#domain_entity.natural_keys}}
+    "{{column}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
+{{/domain_entity.natural_keys}}
 {{#domain_entity.columns}}
     "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
 {{/domain_entity.columns}}
@@ -54,6 +60,10 @@ create table if not exists "ores_dq_{{domain_entity.entity_plural}}_artefact_tbl
 {{#domain_entity.has_coding_scheme}}
     ,"coding_scheme_code" text not null
 {{/domain_entity.has_coding_scheme}}
+{{/domain_entity.artefact_columns}}
+{{#domain_entity.artefact_columns}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
+{{/domain_entity.artefact_columns}}
 );
 
 create index if not exists dq_{{domain_entity.entity_plural}}_artefact_dataset_idx
@@ -61,9 +71,16 @@ on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl (dataset_id);
 
 create index if not exists dq_{{domain_entity.entity_plural}}_artefact_tenant_idx
 on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl (tenant_id);
+{{^domain_entity.artefact_columns}}
 
 create index if not exists dq_{{domain_entity.entity_plural}}_artefact_{{domain_entity.primary_key.column}}_idx
 on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl ({{domain_entity.primary_key.column}});
+{{/domain_entity.artefact_columns}}
+{{#domain_entity.artefact_columns}}
+
+create index if not exists dq_{{domain_entity.entity_plural}}_artefact_{{domain_entity.artefact_key_column}}_idx
+on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl ({{domain_entity.artefact_key_column}});
+{{/domain_entity.artefact_columns}}
 {{#domain_entity.artefact_indexes}}
 
 create index if not exists dq_{{domain_entity.entity_plural}}_artefact_{{name}}_idx

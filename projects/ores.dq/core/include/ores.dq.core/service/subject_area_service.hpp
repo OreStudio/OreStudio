@@ -17,11 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_SERVICE_SUBJECT_AREA_SERVICE_HPP
 #define ORES_DQ_CORE_SERVICE_SUBJECT_AREA_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/subject_area.hpp"
+#include "ores.dq.api/messaging/subject_area_protocol.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/subject_area_repository.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -60,6 +66,36 @@ public:
     explicit subject_area_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_subject_areas_response
+    list_subject_areas(const messaging::list_subject_areas_request& request);
+    messaging::get_subject_area_response
+    get_subject_area(const messaging::get_subject_area_request& request);
+    messaging::get_many_subject_areas_response
+    get_many_subject_areas(const messaging::get_many_subject_areas_request& request);
+    messaging::put_subject_area_response
+    put_subject_area(const messaging::put_subject_area_request& request);
+    messaging::put_many_subject_areas_response
+    put_many_subject_areas(const messaging::put_many_subject_areas_request& request);
+    messaging::delete_subject_area_response
+    delete_subject_area(const messaging::delete_subject_area_request& request);
+    messaging::delete_many_subject_areas_response
+    delete_many_subject_areas(const messaging::delete_many_subject_areas_request& request);
+    messaging::list_subject_area_versions_response
+    list_subject_area_versions(const messaging::list_subject_area_versions_request& request);
+    messaging::get_subject_area_version_response
+    get_subject_area_version(const messaging::get_subject_area_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists subject areas with pagination support.
      *
      * @param offset Number of records to skip.
@@ -96,6 +132,12 @@ public:
                                                  const std::string& domain_name);
 
     /**
+     * @brief Retrieves a batch of subject areas by primary key.
+     */
+    std::vector<domain::subject_area> get_areas(const std::vector<std::string>& names,
+                                                const std::vector<std::string>& domain_names);
+
+    /**
      * @brief Saves a subject area (creates or updates).
      *
      * @param area The subject area to save.
@@ -126,6 +168,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a subject area.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::subject_area> get_area_history(const std::string& name,
                                                        const std::string& domain_name);
@@ -133,6 +177,23 @@ public:
 private:
     context ctx_;
     repository::subject_area_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::subject_area_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::subject_area& out);
 };
 
 }

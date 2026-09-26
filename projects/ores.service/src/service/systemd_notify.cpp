@@ -33,7 +33,7 @@
 #    include <boost/asio/io_context.hpp>
 #    include <string>
 
-namespace ores::service {
+namespace ores::service::service {
 
 void notify_systemd_ready() noexcept {
     // ores::platform::environment::get_value() rather than std::getenv()
@@ -69,7 +69,7 @@ void notify_systemd_ready() noexcept {
 
 #else
 
-namespace ores::service {
+namespace ores::service::service {
 
 void notify_systemd_ready() noexcept {}
 

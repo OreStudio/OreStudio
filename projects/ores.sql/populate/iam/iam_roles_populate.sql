@@ -187,6 +187,13 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'TelemetryService', 'telemetry::*');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'TelemetryService', 'iam::tenants:read');
 
+    -- Storage service: full own-component + tenant read. It needs the database
+    -- only to build the request context the shared service runner hands to a
+    -- handler; it holds no tables and touches none.
+    PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'StorageService', 'Object storage service');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'StorageService', 'storage::*');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'StorageService', 'iam::tenants:read');
+
     -- Trading service: full own-component + all refdata reads + change reasons
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'TradingService', 'Trading domain service');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'TradingService', 'trading::*');

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,6 +16,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/methodology_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
@@ -33,14 +38,17 @@ domain::methodology methodology_mapper::map(const methodology_entity& v) {
 
     domain::methodology r;
     r.version = v.version;
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+
     r.name = v.name;
+
     r.description = v.description;
-    r.logic_reference = v.logic_reference;
-    r.implementation_details = v.implementation_details;
+    r.logic_reference = v.logic_reference.value_or("");
+    r.implementation_details = v.implementation_details.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
@@ -53,14 +61,18 @@ methodology_entity methodology_mapper::map(const domain::methodology& v) {
 
     methodology_entity r;
     r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
     r.name = v.name;
+
     r.description = v.description;
-    r.logic_reference = v.logic_reference;
-    r.implementation_details = v.implementation_details;
+    r.logic_reference = v.logic_reference.empty() ? std::nullopt : std::optional(v.logic_reference);
+    r.implementation_details =
+        v.implementation_details.empty() ? std::nullopt : std::optional(v.implementation_details);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

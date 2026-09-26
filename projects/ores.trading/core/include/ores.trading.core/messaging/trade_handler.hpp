@@ -35,7 +35,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.storage/net/storage_transfer.hpp"
+#include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/export.hpp"

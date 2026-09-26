@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "messaging/identity_step_handler.cpp"
     "messaging/registrar.cpp"
     "messaging/workflow_handler.cpp"
     "messaging/workflow_instance_history_provider_registrar.cpp"
@@ -44,6 +45,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/messaging/identity_step_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/messaging/registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/messaging/workflow_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/messaging/workflow_instance_handler.hpp"

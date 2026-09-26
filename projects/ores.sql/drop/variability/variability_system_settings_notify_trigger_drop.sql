@@ -18,5 +18,5 @@
  *
  */
 
-drop trigger if exists ores_variability_system_settings_notify_trg on ores_variability_system_settings_tbl;
+drop trigger if exists ores_variability_system_settings_notify_trg on "ores_variability_system_settings_tbl";
 drop function if exists ores_variability_system_settings_notify_fn;

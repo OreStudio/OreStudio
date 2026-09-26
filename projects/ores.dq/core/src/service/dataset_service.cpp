@@ -26,8 +26,7 @@ namespace ores::dq::service {
 using namespace ores::logging;
 
 dataset_service::dataset_service(context ctx)
-    : dataset_repo_(ctx)
-    , methodology_repo_(ctx) {}
+    : dataset_repo_(ctx) {}
 
 // ============================================================================
 // Dataset Management
@@ -86,66 +85,6 @@ void dataset_service::remove_dataset(const boost::uuids::uuid& id) {
 std::vector<domain::dataset> dataset_service::get_dataset_history(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for dataset: " << id;
     return dataset_repo_.read_all(id);
-}
-
-// ============================================================================
-// Methodology Management
-// ============================================================================
-
-std::vector<domain::methodology> dataset_service::list_methodologies() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all methodologies";
-    return methodology_repo_.read_latest();
-}
-
-std::vector<domain::methodology> dataset_service::list_methodologies(std::uint32_t offset,
-                                                                     std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing methodologies with pagination: offset=" << offset
-                               << ", limit=" << limit;
-    return methodology_repo_.read_latest(offset, limit);
-}
-
-std::uint32_t dataset_service::get_methodology_count() {
-    return methodology_repo_.get_total_count();
-}
-
-std::optional<domain::methodology> dataset_service::find_methodology(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding methodology: " << id;
-    auto methodologies = methodology_repo_.read_latest(id);
-    if (methodologies.empty()) {
-        return std::nullopt;
-    }
-    return methodologies.front();
-}
-
-void dataset_service::save_methodology(const domain::methodology& methodology) {
-    if (methodology.id.is_nil()) {
-        throw std::invalid_argument("Methodology ID cannot be nil.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving methodology: " << methodology.id;
-    methodology_repo_.write(methodology);
-    BOOST_LOG_SEV(lg(), info) << "Saved methodology: " << methodology.id;
-}
-
-void dataset_service::save_methodologies(const std::vector<domain::methodology>& methodologies) {
-    for (const auto& m : methodologies) {
-        if (m.id.is_nil()) {
-            throw std::invalid_argument("Methodology ID cannot be nil.");
-        }
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << methodologies.size() << " methodologies";
-    methodology_repo_.write(methodologies);
-}
-
-void dataset_service::remove_methodology(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing methodology: " << id;
-    methodology_repo_.remove(id);
-    BOOST_LOG_SEV(lg(), info) << "Removed methodology: " << id;
-}
-
-std::vector<domain::methodology>
-dataset_service::get_methodology_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for methodology: " << id;
-    return methodology_repo_.read_all(id);
 }
 
 }

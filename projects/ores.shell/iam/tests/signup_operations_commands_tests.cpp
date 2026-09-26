@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/iam/signup_operations_commands.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
 #include <sstream>
@@ -58,8 +59,15 @@ TEST_CASE("signup_operations_registers_every_declared_command", tags) {
 
     signup_operations_commands::register_commands(root_menu, session);
 
+    // The menu's completion list is the only public view of its children, so a
+    // command that is missing from it was never registered.
+    const auto completions = root_menu.GetCompletions("signup ");
+    for (const auto& verb : {
+             std::string{"signup signup"},
+         })
+        CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
+
     BOOST_LOG_SEV(lg, debug) << "Registered 1 command(s).";
-    CHECK(true);
 }
 
 TEST_CASE("signup_operations_process_signup_reports_the_expected_count", tags) {

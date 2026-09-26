@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: BA19985D-DB6D-4E55-972B-18DBC3E556EE
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.assets.tag
 #+description: Codegen entity model for the assets =tag= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -64,6 +65,31 @@ What the tag means and which images belong under it.
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + " image category"
 #+end_src
+
+
+* Artefact columns
+
+The import names the key =tag_id= where the store's own key is =id=. Both =ores_dq_tags_artefact_upsert_fn= and the seed upsert write =tag_id=.
+
+** tag_id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** name
+:PROPERTIES:
+:type: text
+:END:
+
+** description
+:PROPERTIES:
+:type: text
+:END:
 
 * SQL
 

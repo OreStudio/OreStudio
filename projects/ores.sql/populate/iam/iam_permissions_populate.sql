@@ -705,6 +705,19 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::*', 'Full access to all analytics operations');
 
     -- =============================================================================
+    -- Storage Component Permissions
+    -- =============================================================================
+
+    -- Object storage. One code per operation, and a read is never the same code
+    -- as a write. Buckets are the caller's concern: there is no per-bucket code
+    -- and no bucket name in this file, so the server holds no list to fall
+    -- behind.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'storage::objects:read',   'Read and list stored objects');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'storage::objects:write',  'Create and replace stored objects');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'storage::objects:delete', 'Delete stored objects');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'storage::*', 'Full access to all storage operations');
+
+    -- =============================================================================
     -- Global Wildcard Permission
     -- =============================================================================
 

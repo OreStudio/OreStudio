@@ -1,0 +1,727 @@
+:PROPERTIES:
+:ID: 686E9BB0-5A38-4E72-93B8-65CF76B35710
+:END:
+#+title: Task: Model the handcrafted ores.dq code and generate the artefact tables
+#+description: Author models for every handcrafted ores.dq table and function, automate the artefact tables, and reach byte-identical regeneration.
+#+type: task
+#+level: s1
+#+filetags: :clean-dq:sprint_26:v0:
+#+owner: marco
+#+branch: feature/model-dq-artefact-tables
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every ores.dq table, view and SQL function has a model, or a recorded reason for having none. Regeneration becomes byte-identical, so the tree stops carrying handcrafted SQL that no model owns.
+
+This is pass 1 of two. Pass 2 runs the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] over the tree this task leaves behind.
+
+The design question is already answered: an artefact table *can* generate from the same entity model as its base table, and 19 of the 49 artefact tables already do. See the [[id:C8E3E017-6B93-47E0-B680-55F640F2B0A7][investigation]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
+| Now          | All fifteen entities are canonical and =ores.shell.dq= is wired. =check_component_drift.py --component dq= reports no drift twice in a row, so dq regenerates cleanly. |
+| Waiting on   | Nothing.                              |
+| Next         | Model the twelve entities whose protocol headers are still hand-written, which is what keeps dq out of =COMPONENTS_UNDER_TEST=; the grouped work list is Step 8 in progress above. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- Every table in =projects/ores.sql/create/dq= is generated from a model, or recorded with the reason it is not.
+- Every handcrafted =*_artefact_create.sql= file is either generated from a model or deleted.
+- The publication and preview functions generate from a template, or the dead template is deleted with the reason recorded.
+- The two shadowed table pairs and their drop scripts are collapsed to one owner each.
+- =check_component_drift.py --component dq --dry-run= reports no drift, twice in a row.
+- Every generator defect found is fixed at its source with a regression test in the codegen suite.
+- No table is deleted without a consumer census recorded on this task.
+
+* Plan
+
+Work in verifiable units. Run the census and the drift check after each unit, and record the result here.
+
+1. *Baseline.* Re-run =survey_sql_artefacts.py=, =survey_component.py= and the drift check. Keep the three outputs on this task.
+2. *Liveness census.* For each of the 7 orphan tables and the 13 generated tables with no model, list every reader and every writer: populate scripts, publish functions, RLS policies, drop scripts and C++ consumers. Decide keep, model, or delete. Record one row per table.
+3. *Reconcile the 12 divergent tables.* For each, decide whether the artefact table or the projection is wrong. Record the decision and the reason.
+4. *Extend the 6 foreign models.* Add the artefact facet in the owning component. Do not create a DQ model.
+5. *Switch the 5 derivable tables* to the archetype. Delete the handcrafted twins.
+6. *Collapse the two shadowed pairs.* Keep the generated file, rewire =dq_create.sql= and =dq_drop.sql=, delete the handcrafted twin.
+7. *Decide the publication-function template.* Either wire =sql_populate_function_refdata.mustache= into the =ores.sql.populate= facet and absorb the 21 handcrafted files, or delete the template and record why. This is the largest automation gain, so take it before the mechanical steps if time is short.
+8. *Author the remaining models:* the 10 handcrafted notify triggers, the FSM family, =publication=, =bundle_publication=, =rls_policies= and =functions=.
+9. *Regenerate the C++ tree* and reach byte-identical.
+10. *Resolve the 21 hand-written eventing headers* (=*_changed_event.hpp=). G01 treats eventing as generatable.
+
+| Step | State | Evidence |
+|------+-------+----------|
+| 1. Baseline | DONE | Census and drift captured; see Notes |
+| 2. Liveness census | DONE | 49 tables, 0 deletion candidates; see Step 2 results |
+| 3. Divergent tables | DONE | 12 tables, 6 difference classes, 0 defects; see Step 3 results |
+| 4. Foreign models | DONE | All 6 switched, 3 as entities and 3 as junctions; see Step 4 results |
+| 5. Derivable tables | PARTIAL | 4 of 5 switched; =coding_schemes= needs a model; see Step 5 results |
+| 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
+| 7. Publication template | DONE | The template generated a retired design; deleted with 21 dead files; see Step 7 results |
+| 8. Remaining models | IN PROGRESS | The twelve remaining protocols are surveyed and grouped by the work each needs; the FPML family is blocked; see Step 8 in progress |
+| 9. Regenerate C++ | DONE | Four facets byte-identical; all 15 entities canonical and =ores.shell.dq= wired; =--component dq= reports no drift twice in a row; see Step 9 parts one to six |
+| 10. Eventing headers | TODO | |
+| 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
+| 12. Divergent tables: declare the projection | DONE | All 11 landed; divergent is 0; see Step 12 results |
+
+* Step 9 in progress: the C++ facet is a protocol migration, not a refresh
+
+Run on 2026-09-26. Four facets are now byte-identical and committed; the fifth is not mechanical, and this section records why.
+
+**Four facets landed.** SQL (11 files), cmake (1), doc (14 recipes plus their tangled scripts), ts.protocol (1). The SQL facet carried the version-conflict guard and the canonical event payload; the cmake facet the generated marker; the doc facet the fourteen shell recipes dq's entities never had.
+
+**The C++ facet is three changes at once.** Its dry run is 480 files, and applying it produced 18 compile errors. Reading them:
+
+| Error | What it really is |
+|-------+-------------------|
+| =badge_definition_protocol.hpp= redefines =delete_badge_definition_request=, also in =badge_protocol.hpp= | The generated protocol has moved to the canonical verbs, and two hand-written umbrella headers define the same structs. G02's "hand-written protocol umbrella". |
+| =registrar.cpp= uses =get_dataset_bundles_request=, and =dataset_bundle_handler::list= | The hand-written registrar registers dataset bundles against type names the migration renames, duplicating the generated registrars. W01. |
+| =subject_area_key= redefined | Same umbrella collision, in =data_organization_protocol.hpp=. |
+
+So the facet performs the canonical NATS entity protocol migration (P01) for all fourteen entities, removes the hand-written umbrellas (G02), and rewires the registrar's composition points (W01) — and the last two only make sense entity by entity. The clean standard says so directly: "Work one entity at a time. Regenerate, build and test after each one."
+
+**The blanket apply was reverted, not committed.** A half-migrated tree with 480 uncommitted files is worse than a clean one. The findings above are the round's real product.
+
+**=artefact_type= is migrated and builds.** 29 files regenerated, four created (the event header, the history provider registrar pair, and the eventing integration test), four =component_files.cmake= lists refreshed. Its protocol now states =list=, =get=, =get_many=, =put=, =delete=, =history= and the point-in-time read with the =key=, =write=, =change=, =removal=, =lookup=, =event=, =version_key= and =versions_filter= types. Nothing outside =ores.dq= consumes its protocol, so the migration is self-contained.
+
+One hand-written fix was needed on the way: dq's core tests target did not link =ores.eventing.api.lib= or =ores.eventing.core.lib=, and the generated eventing integration test includes a header from the latter. =ores.synthetic='s equivalent target links both, so this is a gap in dq's CMakeLists rather than a template defect. The suite itself needs a live database, which this sandbox does not have, so the build and link are the available evidence.
+
+**Two findings recorded.**
+
+- =projects/ores.shell/dq= is a directory that is not a catalogue component and is not added by =ores.shell/CMakeLists.txt=, unlike =ores.shell.analytics=, =.assets=, =.iam=, =.refdata=, =.synthetic= and =.trading=. The shell command units the facet generates for dq are therefore compiled by nothing. =ores.shell.workflow= has the same shape, and =validate_docs.sh= already reports it.
+- The umbrella headers and the bespoke handlers they carry (=badge_handler=, =badge_service=, =data_organization_handler=, =dimension_handler=) are consumed only by =registrar.cpp=, so they can go. But each carries registrations for entities that are not modelled yet — methodologies, dimensions, datasets, coding schemes, publications — and those have to move before the umbrella can be deleted.
+
+**Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
+
+* Step 8 part four: the coding scheme pair, and a corrected count
+
+Run on 2026-09-26. =coding_scheme_authority_type= and =coding_scheme= are modelled, so another protocol leaves the hand-written list.
+
+**A correction first.** Part three's pull request said eight hand-written protocols remained and then listed ten; the count was wrong, and the list was right. Counting by hand is what failed. The reliable test is the generated marker, and the figure it gives is stated at the end of this section, from that check rather than from memory.
+
+**The pair.** =coding_scheme_authority_type= is a code-keyed lookup and =coding_scheme= is the same shape plus an authority, a subject area and an optional uri, so both follow the dimension pattern. The authority and subject-area columns stay **plain text**: the hand-written table never carried a constraint, and declaring a foreign key would refuse rows the platform accepts today. The generated tables match column for column -- the authority type exactly, and the scheme modulo the explicit null on =uri= and the redundant index the profile adds on the primary key.
+
+**=coding_scheme_protocol.hpp= is now generated, so it leaves the hand-written list** rather than being deleted: the model writes the canonical protocol to the same path, and the old structs go with the overwrite. That is the third way a header leaves the list, after deletion (=dimension_protocol.hpp=, =data_organization_protocol.hpp=) and shrinking (=badge_protocol.hpp=).
+
+**What else the pair retired.** The registrar composes =register_coding_scheme_authority_type_handlers= and =register_coding_scheme_handlers=; the four hand-written singular SQL files give way to the generated plural forms in =dq_create.sql= and =dq_drop.sql=; both repository tests move to the stateless API; and both shell units are wired into the aggregator and the part's file lists.
+
+**Where the list stands.** Measured immediately after this change, with the command that measures it rather than by eye:
+
+#+begin_src sh
+for f in projects/ores.dq/api/include/ores.dq.api/messaging/*_protocol.hpp; do
+    [ "$(grep -c AUTO-GENERATED $f)" = 0 ] && basename $f
+done
+#+end_src
+
+That gives **nine** hand-written dq protocol headers: =badge_protocol.hpp= (the mapping projection, hand-written by design), =dataset_protocol.hpp=, =dataset_dependency_protocol.hpp=, =fsm_protocol.hpp=, =lei_entity_summary_protocol.hpp=, =publication_protocol.hpp=, =publish_bundle_protocol.hpp=, =publish_from_dq_protocol.hpp= and =report_definition_template_protocol.hpp=. Three of the original twelve are gone: =dimension_protocol.hpp= and =data_organization_protocol.hpp= deleted, =coding_scheme_protocol.hpp= replaced by its generated twin. The next part re-measures rather than trusting this line.
+
+**Evidence.** Codegen suite 709 passing; dq drift clean twice in a row and =--all= clean; the six affected targets build and link including =ores.shell.exe=; the script tangle produces no change; every other gate passes.
+
+* Step 8 part three: methodology, and the end of the data organization layer
+
+Run on 2026-09-26. =methodology= is modelled and the hand-written layer that served it is gone, so two more headers leave the list.
+
+**The model.** A =uuid-surrogate-lookup=: a surrogate =id=, a =name= natural key, a description and two optional text columns, =logic_reference= and =implementation_details=. The generated table matches the hand-written one except for the redundant unique index the profile adds on the surrogate key; no column, primary key or exclusion constraint moved.
+
+**What it retired.** =data_organization_protocol.hpp= and =data_organization_handler.hpp= are both deleted — once the dimensions left, methodology was all either of them still held. The registrar composes =register_methodology_handlers=; =dataset_service= loses the methodology section it duplicated, because the generated =methodology_service= owns those verbs; and the two hand-written singular SQL files give way to the generated plural forms in =dq_create.sql= and =dq_drop.sql=.
+
+**A third rule the generated repository imposes.** The stateless API, as with the dimensions, and =boost::uuids::to_string(...)= on lookups that pass a surrogate key: the generated =read_latest(ctx, id)= takes the id as a string, so both id lookups in the hand-written test needed the conversion.
+
+**A lesson worth keeping: a mem-initializer line can carry the constructor body.** Twice now a constructor has been edited by deleting a line from its initializer list, and twice the result did not compile — once because the list then began with a comma, and once because the deleted line ended in ={}=. The second is the dangerous one, because the damage surfaces as a syntax error far from the edit.
+
+**Evidence.** Codegen suite 706 passing; dq drift clean twice in a row and =--all= clean; the six affected targets build and link including =ores.shell.exe=; the script tangle produces no change; model drift, protocol twin coverage, handler permissions, populate references, registry exceptions, both inventories, =compass lint= and =validate_docs.sh= all pass.
+
+* Step 8 part two: the other two dimensions, and the shell unit nobody registered
+
+Run on 2026-09-26. =origin_dimension= and =treatment_dimension= are modelled, so the dimension family is done and the hand-written layer it needed is gone.
+
+**One shape, three times.** The models are the nature model with the names, titles and generator suffixes changed, which is what the survey predicted: three identical code-keyed lookups. The generated tables match the hand-written ones column for column.
+
+**What the pair retired.**
+
+- =data_organization_protocol.hpp= loses its Origin and Treatment sections and now holds only methodologies, so it leaves the twelve-header list when =methodology= is modelled rather than now.
+- =dimension_protocol.hpp= is deleted. It was a one-line re-export with no consumers, so the twin gate's list is one shorter.
+- =dimension_handler.hpp= and =dimension_service.{hpp,cpp}= are deleted; the registrar was their last consumer.
+- Four hand-written singular SQL files, with =dq_create.sql= and =dq_drop.sql= taking the generated plural forms.
+- The two repository tests, rewritten to the stateless API like nature's.
+
+**A generated unit that compiled and reached nothing.** The generator emitted a shell command unit for each dimension, but the aggregator that registers them, =dq_commands=, is hand-written, so nobody added them. =nature_dimension_commands.cpp= had been inert since part one for the same reason. The gap was invisible until the shell binary was linked, where the three symbols were undefined — and the component library did not hold them either, because =ores.shell.dq='s =component_files.cmake= had not been regenerated since the entities were modelled.
+
+**What that means for the remaining entities.** A newly modelled dq entity generates a shell unit that the build will not compile and the REPL will not register until two hand-written steps happen: regenerate =ores.shell.dq='s file lists, and add the unit to =dq_commands=. Every remaining entity in the survey needs both. A check comparing the aggregate against the units on disk would catch the omission, and it is recorded rather than written because it belongs to the shell component and not to this task.
+
+**Evidence.** Codegen suite 706 passing; =check_component_drift.py --component dq= reports no drift twice in a row and =--all= reports none; =ores.dq.core.tests=, =ores.dq.api.tests=, =ores.dq.service.tests=, =ores.shell.dq.tests= build and link and =ores.shell.exe= links; the script tangle produces no change; model drift, protocol twin coverage, handler permissions, populate references, registry exceptions, both inventories, =compass lint= and =validate_docs.sh= all pass.
+
+* Step 8 part one: nature_dimension, and what authoring a model costs
+
+Run on 2026-09-26. =nature_dimension= is modelled, so the first of the twelve hand-written protocols is gone and the survey above has been executed once end to end.
+
+**The model is small and the table did not move.** =projects/ores.dq/modeling/ores.dq.nature_dimension.org= is a 167-line code-keyed =simple-lookup=: a =code= primary key, a name and a description. The regenerated =dq_nature_dimensions_create.sql= is structurally identical to the hand-written =dq_nature_dimension_create.sql= it replaces — same columns, same primary-key tuple, same partial unique indexes, same exclusion constraint. Only the generated banner and the copyright year differ. Modelling a table does not have to change it.
+
+**Two rules the templates impose, found by breaking them.** A =#+begin_src cpp :name generator= expression has to yield =std::string=. The template appends ="-" + std::to_string(idx)= to the =code= generator and concatenates the =name= one, and =faker::word::noun()= returns =std::string_view=, so =string_view + const char* = does not compile. Every migrated sibling wraps with =std::string(...)=; the reason is now written down instead of copied.
+
+**What the migration touched besides the model.**
+
+- =data_organization_protocol.hpp=: the 50-line Nature section, and its =nature_dimension.hpp= include.
+- =dimension_handler.hpp=: the 120-line Nature block.
+- =dimension_service.{hpp,cpp}=: 48 lines of declaration and 55 of definition, plus the repository member and its include.
+- =registrar.cpp=: the four hand-written nature subscribes replaced by =register_nature_dimension_handlers=.
+- =dq_create.sql= and =dq_drop.sql=: now include the generated plural files, and the two hand-written singular files are deleted.
+- =repository_nature_dimension_repository_tests.cpp=: hand-written, not generated, and it had to follow.
+
+**The generated repository is stateless, and every remaining entity's hand-written test will need the same edit.** The old repository held a context and took =write(v)=; the generated one is default-constructed and takes =write(ctx, v)=, =read_latest(ctx)= and so on. The test was rewritten to that API, and its =tenant_id= assignment dropped =.to_string()= because the domain member is now the typed =utility::uuid::tenant_id= rather than a string. The generated domain also gained the =change_reason_code= member the hand-written type never had, which is a column the table always carried — so the migration removed a divergence rather than introducing one.
+
+**Evidence.** Codegen suite 706 passing; =check_component_drift.py --component dq= reports no drift twice in a row; =ores.dq.core.tests=, =ores.dq.api.tests=, =ores.dq.service.tests= and =ores.shell.dq.tests= build and link; model drift, protocol twin coverage, handler permissions, populate references and registry exceptions all pass.
+
+* Step 8 in progress: the twelve protocols that keep dq out of the test list
+
+Run on 2026-09-26. Part six found that dq regenerates cleanly and still cannot join =COMPONENTS_UNDER_TEST=, because twelve of its protocol headers are hand-written for entities that have no model and so can have no TypeScript twin. This is what those twelve are, grouped by what modelling each needs, because the groups are not the same job.
+
+| Hand-written header | Entities it serves | Subjects |
+|---------------------+--------------------+----------|
+| =data_organization_protocol.hpp= | methodology, nature/origin/treatment dimension | list, save, delete, history each |
+| =dimension_protocol.hpp= | none of its own | re-exports the header above |
+| =coding_scheme_protocol.hpp= | coding_scheme, coding_scheme_authority_type | list, save, delete, history each |
+| =fsm_protocol.hpp= | fsm_state, fsm_transition | list only |
+| =dataset_protocol.hpp= | dataset | list, save, delete, history, and a bespoke =publish= |
+| =dataset_dependency_protocol.hpp= | dataset_dependency | by-dataset, resolve |
+| =lei_entity_summary_protocol.hpp= | a summary over lei_entity | summary |
+| =report_definition_template_protocol.hpp= | a projection over report_definition | list |
+| =publication_protocol.hpp= | publication | list |
+| =publish_bundle_protocol.hpp= | the bundle publish operation | publish |
+| =publish_from_dq_protocol.hpp= | the publish-from-dq workflow step | none of its own; =registrar.cpp= registers it on hard-coded subjects |
+| =badge_protocol.hpp= | the badge mapping read | list |
+
+**Group one, plain lookups (six entities, three headers).** =methodology=, =nature_dimension=, =origin_dimension=, =treatment_dimension=, =coding_scheme_authority_type= and =coding_scheme= are ordinary tenant-scoped entities with list, save, delete and history. The first five are simple: =methodology= keys on =name= with two nullable columns, and the other four key on =code= with a name and a description. =coding_scheme= is the one with work in it — it carries an authority-type reference and a composite reference to =subject_area=, the entity whose history identity part six records as composite, so its model has to say how that key is expressed. Modelling the six retires =data_organization_protocol.hpp=, =dimension_protocol.hpp= (a one-line re-export of it) and =coding_scheme_protocol.hpp=.
+
+**Group two, read-only projections (four entities, four headers).** =fsm_state=, =fsm_transition=, =lei_entity_summary= and =report_definition_template= are declarative or frozen views: two serve only a list, one a summary of another entity, one a list of templates. They are the reason the archetype's write verbs cannot simply be switched on for every model, and the read-only profile exists for exactly this shape.
+
+**Group three, operations (four headers).** =dataset_protocol.hpp=, =dataset_dependency_protocol.hpp=, =publication_protocol.hpp= and =publish_bundle_protocol.hpp= serve behaviour rather than rows: publishing a dataset, resolving dependencies across them, listing publications, publishing a bundle. =publish_from_dq_protocol.hpp= is the extreme case, with no subjects at all — the registrar subscribes its handler to literal strings. These are the candidates for the operation model the operation-protocol-ownership gate already knows about, and they are last because they are the least like the entities modelled so far.
+
+**What the scaffold does, and what it leaves.** =compass add entity_org --component dq --slug <entity> --shape simple-text-key= writes a skeleton at =projects/ores.dq/modeling/ores.dq.<entity>.org=: the frontmatter, the table name, the presentation knobs and the section headings. It does not fill the primary key, the natural keys, the columns or the presentation tables — those are the author's, and the skeleton carries a =TODO= at each. The hand-written =create/dq/dq_<entity>_create.sql= is the specification for them: it states the columns, the primary-key tuple and the partial unique indexes, so the model has to reproduce that table or the regeneration rewrites it. That is the per-entity work this section exists to size.
+
+**Order.** The three dimensions first, because they are one shape written three times, so they prove the pattern and retire two headers at once. Then =methodology=, which shares its header with them and retires the rest of it. Then =coding_scheme_authority_type= and =coding_scheme=, which are the same shape plus the composite key decision. Then the read-only group. Then the operations. Adding dq to =COMPONENTS_UNDER_TEST= is the last step, once every header has a model behind it.
+
+* Step 9 part six: the dq shell adapter, and the end of the protocol migration
+
+Run on 2026-09-26, on a branch off the merged =main=. =change_reason=, =change_reason_category= and =subject_area= are migrated, so all fifteen entities are canonical, and the generated dq shell units compile because =ores.shell.dq= is now a component the build adds.
+
+**The three entities and the shell had to move together.** The generated shell unit includes the entity's protocol header, so a unit cannot compile until that entity's protocol is canonical; and =component_files.cmake= lists every file in the part's directory, so a part cannot compile thirteen units and skip a fourteenth. That is why the last protocol migration and the shell wiring are one change rather than two.
+
+**Wiring the part.** =ores.shell.dq= is an adapter in the =ores.shell.refdata= shape: hand-authored =CMakeLists.txt= files, because an adapter's link libraries belong to the shell surface and not to the domain; two generated =component_files.cmake= lists; a =component_overview.org= and a diagram; and one hand-written aggregator, =dq_commands=, that lists the units for the REPL to call. The thirteen submenus replace the two hand-written change-reason commands, and those four files — the two headers and their two implementations — are deleted.
+
+**The composite root is declared, not discovered.** Adding the directory to =projects/ores.shell= was not enough, because the generated root adds one =add_subdirectory= per part in =#+parts:=, and CMake never learns an undeclared directory exists: configure succeeds and the part is silently absent from the binary. =#+parts:= gained =dq= and the root was regenerated. The generator refuses to render a part its composite does not build, so the mistake surfaces where it is made rather than in a binary that quietly lacks a feature.
+
+**=subject_area= keeps a hand-written history bridge, and that is the decision the task was waiting on.** Its history identity is the composite =(name, domain_name)=, which the Qt client sends as =name|domain_name=. The generated history-provider registrar declines to register a provider for a compound key — it says so in the generated source — so the hand-written provider that splits the string stays, with the reason recorded beside it. The alternative was to change the wire identity a shipped client uses, which is not a codegen decision. Everything else about the entity is generated.
+
+**Three deletions the migration required, measured.** =data_organization_protocol.hpp= lost its whole subject-area section: 55 lines, and the =subject_area.hpp= include with it. =data_organization_handler.hpp= lost 131 lines — the four subject-area handlers. The bespoke =data_organization_service= lost 62 lines of declaration and 79 of definition, keeping only what =dataset_dependency_handler= reads. The umbrella could not be deleted outright because methodologies and the three dimensions are still hand-written; it shrank to what it still owns.
+
+**A generator defect, found because the shell facet finally compiled.** =ores.shell.dq= has a unit for =badge_mapping= that includes =badge_mapping_protocol.hpp=, and nothing generates that header. =badge_mapping= is the only model in the tree that sets =:ores.cpp.protocol.enabled: false= — it suppresses the protocol, handler and service because a hand-written read-only handler serves the badge lookup — and the shell facet ignored the opt-out and emitted a unit that could not compile. It is the same dependency the operation-owner gate already encodes, missing for the model's own opt-out, so the fix is one constant: =_PROTOCOL_DEPENDENT_FACETS= names the facets that carry the protocol's request types — the shell unit, the eventing facets, and the literate recipe that documents the shell unit's commands — and they are dropped when the protocol is not rendered. Two tests pin it: the live =badge_mapping= junction resolves none of them and keeps its SQL, and a junction that keeps its protocol keeps its shell unit, so the gate cannot pass by dropping the shell facet everywhere.
+
+**What follows the unit it documented.** The =badge_mappings= shell recipe and its eight tangled library scripts are views of a unit that no longer exists, so they are deleted with it and the recipe inventory drops the category. The recipe is in the gate rather than left to a model opt-out because a recipe is where its command unit is: the dependency is resolved, not restated per model.
+
+**The drift claim, and the gate dq still cannot join.** =check_component_drift.py --component dq= reports no drift twice in a row, which is the property the whole task was aimed at. That makes dq look ready for =COMPONENTS_UNDER_TEST=, and it is not: =check_protocol_twin_coverage.py= demands a TypeScript twin for every protocol header of a listed component, and twelve dq headers are hand-written for entities that have no model — datasets, coding schemes, publications, the FSM family, dimensions, methodologies, report-definition templates, and the badge mapping projection. None of those twelve can have a twin generated, so listing dq would fail that gate on all twelve. The reason is recorded in =component_registry.py= beside the list, so the next reader meets the blocker rather than rediscovering it. Modelling those entities is step 8's remaining work, and it is what admits dq to the list.
+
+**Evidence.** Codegen suite 706 passing; =check_component_drift.py --all= green; =check_component_drift.py --component dq= green twice in a row; model drift, protocol twin coverage, handler permissions, populate references, registry exceptions, cmake file lists, physical-space inventories and the recipe inventory all pass; =ores.dq.core.tests=, =ores.dq.api.tests=, =ores.dq.service.tests=, =ores.shell.dq.tests= and =ores.shell.application.lib= build and link, and =ores.shell.exe= links with the dq part in it; =compass lint= and =validate_docs.sh= clean.
+
+* Step 9 part five: the badge family, and the history providers nobody called
+
+Run on 2026-09-26, on a branch off the merged =main=. =badge_definition=, =badge_severity= and =code_domain= are migrated: twelve of fifteen entities are canonical.
+
+**Nothing was modelled.** Part four found that regenerating dq already emits a canonical protocol, handler, registrar, repository, service, event header, history-provider registrar and integration test for all six remaining entities. This unit took the three that no external consumer blocks. The change is the regeneration plus the deletion of what it supersedes, exactly as part four predicted.
+
+**Three hand-written files shrank to what the generator does not own.**
+
+- =badge_protocol.hpp= went from 213 lines to 45. It kept =badge_mapping=, the junction projection that has no generated protocol of its own, and lost the legacy =badge_definition=, =badge_severity= and =code_domain= protocols that the generated headers now define. It no longer includes a domain header.
+- =badge_handler.hpp= went from 439 lines to 97. Twelve of its thirteen methods served subjects the generated handlers now own; only =list_mappings= remains.
+- =badge_service= went from 232 lines to 63 across its two files, for the same reason. It is now a read-only service over the badge mapping junction.
+
+**The larger find is that eleven generated history providers existed and only nine hand-written ones were wired.** Part three migrated eight entities and committed a generated =register_<entity>_history_provider= for each, but =registrar.cpp= kept registering nine providers by hand. The generated units were therefore dead code, and four entities — =lei_entity=, =lei_relationship=, =report_definition= and =synthetic_fx_spot_config= — had no history provider at all, because the hand-written list never named them. This unit replaces the hand-written blocks with the generated calls. That makes eight previously inert units live, adds the three badge entities, and wires the four that had none. The three deferred entities keep their hand-written providers.
+
+**Evidence.** Codegen suite 701 passing; =check_component_drift.py --all= green; model drift, protocol twin coverage, handler permissions, populate references, registry exceptions, cmake file lists, physical-space inventories and the recipe inventory all pass; =ores.dq.core.tests=, =ores.dq.api.tests= and =ores.dq.service.tests= build and link; =compass lint= and =validate_docs.sh= clean.
+
+**What re-running the generator showed, and what it did not.** Regenerating after the unit moved nothing among the twelve migrated entities, which is the byte-identical claim for them. It did move the three deferred entities, because their canonical output is still in the tree's future. So =check_component_drift.py --component dq= still reports drift, twice over: the deferred entities' output, and the untracked generated units for them and for the shell facet. The unit that lands the last three entities is the one that can claim dq regenerates cleanly, and dq is not in =COMPONENTS_UNDER_TEST= until then, which is why no gate is red in the meantime.
+
+* Step 9 part four: the last six entities are a deletion problem, not a modelling problem
+
+Run on 2026-09-26. The branch merged =origin/main= (120 commits) and the drift gate it brought in was read for what it actually guards. Nothing in the remaining six entities has to be modelled.
+
+**The generator already emits all six.** Regenerating dq produces a canonical protocol, handler, registrar, repository, service, event header, history-provider registrar and integration test for =badge_definition=, =badge_severity=, =code_domain=, =change_reason=, =change_reason_category= and =subject_area=. The committed =*_protocol.hpp= of each is a legacy 84- to 86-line file that the generator owns and overwrites. So the remaining work is to delete the hand-written duplicates and commit the regeneration, not to author models. Part two read the same group as blocked on missing models; the regeneration shows the blocker is narrower.
+
+**Three deletions, named.** The three are mechanical once the regeneration lands:
+
+- =badge_protocol.hpp= (213 lines) defines the legacy =badge_severity=, =code_domain= and =badge_definition= protocols a second time, and =badge_mapping=, which is a junction with no generated handler of its own. The file shrinks to the =badge_mapping= projection and its read-only list subject. =badge_handler.hpp= loses twelve of its thirteen methods in the same change.
+- =data_organization_protocol.hpp= (292 lines) covers methodologies and the three dimensions, none of them modelled, and =subject_area=. Part two's finding stands for the first four; only the =subject_area= block goes.
+- The generated =*_history_provider_registrar= units duplicate the =hist_registry.register_history_provider= calls that =registrar.cpp= makes by hand. Both sides must go in one change or a provider registers twice.
+
+**=subject_area= needs a decision first, and it is the only one.** It has a composite =(name, domain_name)= natural key and no surrogate, and the Qt client addresses its history as =name|domain_name=; =registrar.cpp= splits that string apart by hand. The generated stack has no equivalent for a composite history identity, so migrating it either changes the wire identity that client uses or keeps a hand-written bridge. Recorded rather than guessed at.
+
+**What the drift gate actually guards, and what it does not.** =COMPONENTS_UNDER_TEST= in =component_registry.py= lists eight components: iam, analytics-cpp, assets-cpp, compute-cpp, ore, telemetry-cpp, workflow-cpp and variability-cpp. dq is not among them, and neither is refdata. That is why a committed dq tree can lag its own generator without any gate noticing, and it is why this task's acceptance says "twice in a row" — the property is not yet enforced. Adding dq to that list is the last step, because it is what turns byte-identical regeneration from a claim into a check.
+
+**One consequence of that gap, measured.** =check_component_drift.py --all= fails on this branch until two workflow recipes are refreshed: =workflow_instances/workflow_instance.org= and =workflow_steps/workflow_step.org=. Both carry optional columns, so the shell sentinel fix writes =-= where the committed recipes still say =__none__=. Six lines across two files, committed with the fix. This is the gate working as intended, and it is the only thing standing between the branch and a green drift job.
+
+**Regeneration writes into the tree, and that is not free.** The gate materializes the output it compares, so running it leaves untracked generated files behind. For dq those are the six entities' event headers, history-provider registrars and eventing tests, and the 42 shell units under =projects/ores.shell/dq=. They were reverted rather than committed, because they belong with the deletion work above. A reader who finds them untracked has run the gate, not a broken tree.
+
+**Also out of scope, and pre-existing.** =check_component_drift.py --component refdata= reports drift on =main= independent of this branch — upstream template prose and a defaulted =operator=== that were never regenerated into refdata. refdata is outside =COMPONENTS_UNDER_TEST=, so no gate sees it. It is not this task's to fix and is not fixed here.
+
+**Figures.** Codegen suite 700 passing after the merge, up from 687; =check_component_drift.py --all= green once the two recipes are refreshed; model drift, protocol twin coverage, handler permissions, populate references and registry exceptions all pass; the recipe inventory regenerates to 222 recipes in 143 categories.
+
+* Step 9 part three: the dataset bundles, and a generator defect wider than this task
+
+Run on 2026-09-26. =dataset_bundle= and =dataset_bundle_member= are migrated; nine of fourteen entities are canonical.
+
+**Rewiring the registrar was the point.** =registrar.cpp= registered both entities by hand against type names the migration renames, duplicating the generated registrars it already composes. The hand-written blocks are gone and =register_dataset_bundle_handlers= and =register_dataset_bundle_member_handlers= are composed with the rest.
+
+**A generator defect surfaced, and it is not dq's.** The junction branch of =cpp_service.cpp.mustache= populated its response with =response.{{name_short}}=, while =org_loader= builds the junction protocol's collection member from =entity_plural_short= — which for a junction is the *full* name. The two disagree whenever a model declares a shorter =:name_short:=:
+
+| Model | name | name_short |
+|-------+------+------------|
+| =ores.dq.dataset_bundle_member= | =dataset_bundle_members= | =members= |
+| =ores.dq.badge_mapping= | =badge_mappings= | =mappings= |
+| =ores.refdata.currency_currency_group= | =currency_currency_groups= | =currency_groups= |
+| =ores.refdata.tenor_convention_resolution= | =tenor_convention_resolutions= | =resolutions= |
+
+The result is a compile error rather than a wrong value, which is why the stale committed copies hid it: refdata's own C++ facet carries 479 files of drift, so its services predate the mismatch and still name the full member.
+
+Fixed at source in =ores.cpp.service.service_impl.org= with a regression test that renders a junction whose =:name_short:= differs from its name and asserts the response member is the full name. Reverting the template makes exactly that test fail. The repository's own =name_short= parameter is a different thing and keeps its meaning.
+
+**One hand-written consumer followed**, as P05 requires: =ores.shell/application/src/app/commands/bundles_commands.cpp= called =get_dataset_bundles_request= and now calls =list_dataset_bundles_request=. Its response member was already =bundles= — which is =dataset_bundle='s =name_short= — so nothing else moved.
+
+**The shell-application consumers are now the whole critical path.** Three of them block the remaining five entities: =bundles_commands.cpp= (migrated here), =change_reasons_commands.cpp= and =change_reason_categories_commands.cpp=. Each is a hand-written command that duplicates a unit the facet generates into =projects/ores.shell/dq=, which is compiled by nothing. So the remaining work is: register =ores.shell.dq=, wire it into the shell's CMake, delete the hand-written triples, and migrate the four entities. That is one coherent unit and it is next.
+
+**Verified by build:** =ores.dq.core.tests=, =ores.dq.api.tests=, =ores.dq.service.tests= and =ores.shell.application.lib= all link. Codegen suite 687 passing; validator 0 warnings; =component_files= lists up to date.
+
+* Step 9 part two: six more entities, and the two that must wait
+
+Run on 2026-09-26. =catalog=, =data_domain=, =lei_entity=, =lei_relationship=, =report_definition= and =synthetic_fx_spot_config= are migrated: 155 files regenerated, 22 created, three =component_files= lists refreshed. Seven of fourteen entities are canonical.
+
+**=report_definition= is ambiguous by name.** =ores.dq= and =ores.reporting= both declare one, so =compass codegen entity generate report_definition= refuses. It is generated by org-roam ID instead — what the CLI's "entity name or org-roam ID prefix" wording is for.
+
+**=change_reason= and =change_reason_category= are held back, and the reason matters.** Both are consumed outside dq by hand-written shell commands (=ores.shell/application/src/app/commands/change_reasons_commands.cpp= and =change_reason_categories_commands.cpp=) that use the legacy verbs the migration removes. Those commands duplicate the units the facet generates into =projects/ores.shell/dq= — which, as part one found, is compiled by nothing. So migrating the two means wiring the generated shell unit into the build and deleting the hand-written pair. That is a coherent piece of work and it is the next one; folding it into this commit would have mixed a shell restructuring into a protocol migration.
+
+**The other three external consumers are safe, and checking why was the work.** =ores.synthetic= includes dq's =catalog.hpp= and =data_domain.hpp=; =ores.compute= includes =change_reason.hpp=. All three include the *domain class* and not the protocol, and the domain diff is the generated marker, documentation, and a defaulted =operator===. The equality operator is the only semantic addition and it cannot break a consumer; it exists because the round-trip test needs it. Both components build after the migration.
+
+**Verified by build:** =ores.dq.core.tests=, =ores.dq.api.tests=, =ores.dq.service.tests=, =ores.shell.application.lib= and =ores.synthetic.core.lib= all link. Codegen suite 686 passing; validator 0 warnings.
+
+**Seven entities remain**, in three groups: the two held back above; =dataset_bundle= and =dataset_bundle_member=, whose registrations are hand-written in =registrar.cpp= against renamed types; and =badge_definition=, =badge_severity=, =code_domain= and =subject_area=, whose types the hand-written umbrella headers =badge_protocol.hpp= and =data_organization_protocol.hpp= also define.
+
+* A generator defect fixed before step 9: the shell sentinel for an optional field
+
+Run on 2026-09-26, while testing whether step 9's drift is safe to apply. It was not, and this is why.
+
+**The defect.** =_sentinel_value= in =org_loader.py= maps a C++ type to "a well-formed value that addresses no row", so a generated script reaches the service instead of failing in the client's parser. It had no entry for any =std::optional<T>=, so an optional field fell through to the =__none__= fallback. The shell cannot read =__none__= as =T=, so the script aborted at the client and checked nothing — the opposite of what it exists for. The absent token is the shell's own: =ores.shell.api/app/command_token.hpp= defines =absent_token = "-"= and =from_token= maps it to =nullopt=.
+
+**It was live, and it was measured.** =pricing_model_product_parameters add= sent =__none__= where its optional UUID member is:
+
+#+begin_example
+-pricing_model_product_parameters add 00000000-... __none__ __none__ __none__ __none__ system.new_record generated_script
++pricing_model_product_parameters add 00000000-... - __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_example
+
+=add=, =set= and =put-many= each sent one wrong token. The scope was tree-wide rather than one entity: 325 fields across the models use one of the six =std::optional<...>= forms.
+
+**The blast radius is exactly that entity.** Tangling every recipe in the tree — 1186 scripts — changed three, all of them =pricing_model_product_parameters=. No other recipe carries such a field, so nothing else needs refreshing.
+
+**The first attempt was wrong, and the tests said so.** The obvious fix was to refuse an unmapped type, on the argument that a silent =__none__= is worse than a loud failure. That broke 14 tests. Reading them showed why: the project *already* refuses a command whose field a token cannot fill, through =unsupported= on the projection and the guard at =org_loader.py:3884= ("the renderer emits the command regardless, so an unfillable field fails the build"). A second refusal inside =_sentinel_value= duplicated a better-placed guard and fired on paths that never build a script. The fix is therefore narrow: handle =std::optional<...>=, add the three scalar types that were also unmapped (=utility::uuid::tenant_id=, =std::size_t=, =std::chrono::year_month_day=), and leave the fallback permissive.
+
+**Why it belongs on this task.** G07 forbids refreshing a generated artefact while its generator has a known defect, because a refresh bakes the defect in. Six =ores.dq= models carry =std::optional<std::string>= columns, so refreshing step 9's drift before this fix would have written the abort into dq's own shell recipes. The fix and its regression test land here as the prerequisite.
+
+**Verification.** =tests/test_shell_recipes.py= gains a case per optional form and one end-to-end at =_entity_shell_invocation=; the existing =test_an_unknown_type_still_gets_a_value= keeps the fallback's behaviour pinned. Codegen suite 686 passing; validator 0 warnings; inventories 42 up to date; analytics-cpp reports no drift once its recipe is refreshed, and dq, iam and refdata are unmoved.
+
+* Step 7 results: the publication functions are not an automation opportunity
+
+Run on 2026-09-26. Step 7 said "either absorb the 21 handcrafted files into =sql_populate_function_refdata.mustache=, or delete the template and record why". The answer is delete, and the 21 files go with it.
+
+**The template generates a retired design.** It emits =ores_dq_preview_<singular>_population= and =ores_dq_populate_<plural>=, the second writing into =ores_refdata_<plural>_tbl=. Both halves are gone from the architecture: [[proj:doc/plans/2026-05-14-dq-publish-pattern.org][the DQ publish pattern]] moved publish ownership into the target services as =<service>_publish_<entity>_from_dq_fn=, and the DQ-side publish functions that wrote to non-DQ tables were deleted. The artefact-type registry records this: =ores_dq_artefact_types_tbl= carries =target_subject= where it once carried =populate_function=, so nothing dispatches to a function by name any more. The one artefact still using the template's own naming, =ores_dq_preview_ip2country_population_fn=, was a leftover from when the template was wired.
+
+**The preview functions have no caller.** For all 21, the only reference in the tree is a =drop function if exists= statement. =publish_from_dq_handler.cpp= dispatches exactly six functions by subject, all of them publish functions, none a preview. So the previews are dead code, not an unwired feature.
+
+**What was removed**, in full: the template and its org source; the legacy =get_schema_template_mappings= entry that named it; 15 files that held nothing but a preview; the four previews in =dq_population_functions_create.sql=; the preview in each of the five files that also hold a live publish function; and every stale =drop function if exists= those left behind. Six files remain, holding exactly the six functions the handler and the DQ service call: =ores_dq_datasets_list_publishable_fn=, =ores_dq_ip2country_publish_fn=, and the four DQ-owned publishes for badges, code domains and coding schemes.
+
+**A serious defect surfaced while doing this.** =ores_dq_coding_schemes_publish_fn= was defined **twice**, in =dq_population_functions_create.sql= and =dq_coding_schemes_population_functions_create.sql=, and =dq_create.sql= includes both. The first definition expires **every** active coding scheme for the target tenant before inserting; the second scopes =replace_all= to the rows that dataset published, validates the mode, and is =security definer=. The second include wins, so the live behaviour was always the safe one — but which definition was live depended entirely on line order in an aggregator, and the destructive copy sat one reorder away from production. The duplicate is gone; the surviving definition is unchanged, so behaviour is unchanged.
+
+**Two smaller findings recorded, not fixed:**
+
+- =ores_dq_bundle_preview_fn=, in =dq_bundle_publication_create.sql=, is also uncalled. It is a different function from the ones above — bundle-level rather than per-artefact — and it lives in hand-written SQL that step 8 owns.
+- =dq_population_functions_create.sql='s own usage comment advertised the removed preview step. Corrected, and it now records why the previews went.
+
+**Figures.** Codegen suite 684 passing; validator 0 warnings; inventories 42 up to date. 47 files changed: 2 template deletions, 1 source edit, 21 create files and 21 drop files, plus the two aggregators.
+
+* Step 12 results (part two)
+
+Run on 2026-09-26. The last five moved, and =divergent= is now empty.
+
+| Table | Contract the pipeline needs |
+|-------+----------------------------|
+| =account_contact_information= | =account_username=, resolved to =account_id= by looking the account up by username |
+| =account= | =business_unit_code=, =role=, =reports_to_username= and =photo_key=; the password salt, the service password hash and the TOTP secret stay out of staging |
+| =image= | the key renamed to =image_id=, =code= to =key=, and the SVG as plain text in =svg_data= |
+| =tag= | the key named =tag_id= |
+| =image_tag= | the two keys only |
+
+All four domain-entity bodies come out byte-identical to the hand-written column block. No notify trigger changed this time, so no component drift moved with them.
+
+**The junction template needed the same switch, and finding that took two tries.** =image_tag= is a junction, and the junction artefact template did not read =* Artefact columns= at all. The switch itself was straightforward — the section replaces the body, and the key indexes still come from the junction's =left= and =right= names. What the first attempt missed is that a junction is loaded by a *third* loader: =* Artefact columns= was parsed for domain entities and for lookup entities, but not by =load_org_junction_model=. The template rendered the projection and the test failed, rather than the section being silently inert — which is the outcome worth having, and the reason the test was written before the model used it.
+
+**Two dead helpers went with them**, both confirmed dead by a repo-wide search before removal:
+
+- =ores_dq_image_tags_artefact_insert_fn=, whose only remaining reference was a =drop function if exists=.
+- =ores_dq_countries_artefact_insert_fn=, removed in the previous batch the same way.
+
+**Two latent findings recorded, not fixed.** Both sit in hand-written SQL that step 8 owns, and neither is on a live path:
+
+- =ores_dq_image_tags_artefact_upsert_fn= inserts =(dataset_id, image_id, tag_id)= while =tenant_id= is NOT NULL, so it would fail if anything called it. Nothing does; the census found it write-only and uncalled in step 2.
+- =accounts.photo_key= is written by all four Acme populate scripts and read by nothing. =business_unit_code= looks the same but is not: =iam_publish_from_dq_create.sql= documents it as "informational only today", with no business-unit FK on =ores_iam_accounts_tbl=.
+
+**Figures.** Census: generated 36 to 41, divergent 5 to 0. The remaining buckets are 1 derivable (=coding_schemes=, which needs a model) and 7 orphan. Validator 0 warnings; codegen suite 684 passing; iam, assets-cpp, refdata and dq all report the same drift as before, because a hand-written staging table was never in the drift and no notify trigger changed this time — refdata stays at 513 and dq at 507.
+
+* Step 12 results (part one)
+
+Run on 2026-09-26. Six staging tables moved to generated: =business_units=, =books=, =currencies=, =currency_pair_conventions= and =portfolio=, each with a declared =* Artefact columns= section, and =calendar= with none.
+
+**When a section is required, and when it is a choice.** An artefact table must carry every column a populate script writes and every column a publish function reads. Its own base table is not the test — that is what made the census read as 12 divergences when some were only staleness.
+
+- *Required* when the default projection drops or mistypes something the pipeline uses. Five of the six below are this case.
+- *Optional* when the projection only adds columns nothing reads. Adding them is harmless and keeps the artefact in step with its base, so the default is left alone. A section may still pin the exact contract, and =countries= does: its exclusion of =coding_scheme_code= is load-bearing documentation, because the publish takes that value from the dataset rather than the row.
+
+That distinction is why =calendar= takes no section and =countries= does, even though both are the "the hand-written file was merely stale" case.
+
+**The six, and what the pipeline needs:**
+
+| Table | Column | Who needs it |
+|-------+--------+--------------|
+| =business_units= | =unit_type_code= | Populate writes it; the publish joins =business_unit_types= on =code= to get =unit_type_id= |
+| =books= | =rates_centre_code= | The publish reads it and coalesces it with the publishing party's centre, so null must stay legal |
+| =currencies= | =holiday_calendar= | The ISO populate writes it; =refdata_currency_calendars_seed_populate.sql= reads it |
+| =currency_pair_conventions= | =advance_calendar= | The seed populate writes it; the publish explodes it into convention-calendar rows |
+| =portfolio= | =is_virtual= | The import carries =0=/=1= and the publish converts with =(m.is_virtual != 0)=, so the staging column stays integer |
+| =calendar= | none | The projection only adds =source=, =is_editable= and =base_calendar_code=, all defaulted or nullable, and the populate names the columns it supplies |
+
+**Two difference classes step 3 did not have.** Both surfaced here, and both are cases where the import contract is deliberately not the store contract:
+
+- *Type translation.* =portfolios= carries =is_virtual= as =integer= in the import and =boolean= in the store. =ores_refdata_publish_portfolios_from_dq_fn= converts with =(m.is_virtual != 0)=, so the artefact must stay integer and the populate scripts' =1=/=0= literals keep working.
+- *Nullability divergence.* =books= permits a null =rates_centre_code= and the store does not. The publish implements the difference with =coalesce(a.rates_centre_code, v_root_party.business_center_code)=, so making the artefact column NOT NULL would leave that fallback unreachable and a future dataset could no longer say "region-agnostic".
+
+Step 3's six classes stand; these are a seventh and an eighth.
+
+**A lever for the transcription.** =scripts/emit_artefact_section.py= turns a hand-written =CREATE TABLE= into the model section. It prints and never writes, so the section is reviewed before it is inserted. It exists because transcribing by eye loses a ==null== silently: the SQL still parses and a nullable column quietly becomes NOT NULL. The script is a transcription aid, not a verdict — a stale hand-written table transcribed faithfully is still stale, which is why each of the four was checked against its populate and publish first.
+
+**All six bodies carry the hand-written contract.** =books=, =business_units= and =portfolio= come out byte-identical to the hand-written column block. =currencies= and =currency_pair_conventions= differ only by an explicit =null= on columns that were already nullable, and =calendar= only by the defaults and extra nullable columns described above.
+
+**Figures.** Census: generated 30 to 36, divergent 11 to 5. Validator 0 warnings; codegen suite 681 passing; refdata drift 516 to 513, exactly the three notify triggers that regenerated, and dq drift unchanged at 507 because a hand-written staging table was never in the drift. Regenerating also applied the pending drift to the =books=, =business_units= and =portfolios= notify triggers, whose event payload becomes canonical — G01 work the same touch required. =calendars=' trigger was already current, which is why four staging tables added one drift file rather than two.
+
+**The five that remain, with their verdict already taken:**
+
+| Table | Verdict | Reason |
+|-------+---------+--------|
+| =account_contact_information= | section | =account_username= is a natural key the publish resolves |
+| =account= | section | =business_unit_code=, =role=, =reports_to_username= and =photo_key= are written by the Acme populate; the passwords and TOTP secret must stay out of staging |
+| =image= | section | the import renames =id= to =image_id=, =code= to =key= and =data= to =svg_data= |
+| =image_tag= | section, and the junction template needs the switch | the generated table makes =version=, =assigned_by= and =assigned_at= NOT NULL, and the upsert function omits all three |
+| =tag= | section | the import renames =id= to =tag_id= |
+
+The one =image_tag= entry needs the junction artefact template to read =* Artefact columns= the way the domain_entity one does; it does not yet.
+
+* Step 3 revisited: a real divergence versus a stale file
+
+Run on 2026-09-26, while working step 4. Step 3 classified 12 tables as =divergent= because the hand-written artefact differs from its base table. That measurement is against the *hand-written file*, and a hand-written file can differ because nobody regenerated it rather than because the import contract genuinely differs. The census cannot tell the two apart. **The authoritative test is to enable the facet and read the diff**, and it splits the 12 in two.
+
+| Case | Example | What the diff shows | What it needs |
+|------+---------+---------------------+---------------|
+| Genuine divergence | =currencies= | the projection drops a column the artefact needs | a =* Artefact columns= section that keeps it |
+| Stale hand-written file | =countries= | the projection changes only what was already wrong | the facet switched on, and no section |
+
+**=countries= is landed, and it is the stale-file case.** Its hand-written artefact was missing =coding_scheme_code= and carried a dead =ores_dq_countries_artefact_insert_fn=. Switching the facet on wanted to add the column back. Adding it would have created a dead column, because =ores_refdata_publish_countries_from_dq_fn= takes =coding_scheme_code= from the dataset it publishes rather than from the staged row. So the model declares an =* Artefact columns= section that lists the staging columns and leaves =coding_scheme_code= out. That is the feature built in step 11 earning its place: the diff is now =image_id uuid= becoming =image_id uuid null= plus the removal of the dead insert function, and not one column changes.
+
+Nothing calls =ores_dq_countries_artefact_insert_fn=; the only reference left is a =drop function if exists= in the drop script, which is a no-op once the function is gone. Emptying it is H02 dead-code removal, not a loss.
+
+**=currencies= is the genuine-divergence case, and it is next.** Its artefact carries =holiday_calendar=, which the base table does not have. That column is live: =populate/iso/iso_currencies_artefact_populate.sql= writes it and =populate/refdata/refdata_currency_calendars_seed_populate.sql= reads it from the artefact to derive currency-to-calendar assignments. So the projection must be told to keep it, exactly as step 3 said an import-only extra requires.
+
+**Consequence for the plan.** The remaining =divergent= count overstates the work. Each of the 11 needs the same five-minute test, and only some will need a section. Step 3's six difference classes stand as the vocabulary for writing one; they are not a prediction that all 12 need one.
+
+* Step 4 results (part two): the junction archetype
+
+Run on 2026-09-26. Step 4's page said "the owning component's model gains the artefact facet" for all six. That holds for the three domain entities and is impossible for the three junctions, because no junction could reach a staging table at all. This part builds the missing route.
+
+**Why the domain_entity archetype cannot serve a junction.** =load_org_junction_model= returns a ={junction: ...}= model whose columns live under =left=, =right= and =columns=. An entity's columns live under =natural_keys= and =columns= at the model root. So the entity archetype read fields that do not exist on a junction, and the first attempt to opt a junction in produced nothing rather than an error — the inert assignment M04 warns about. That property was reverted in part one.
+
+**What was added.**
+
+| Part | File | What it does |
+|------+------+--------------|
+| Archetype | =library/templates/ores.sql.schema.junction_artefact_create.org= | The projection expressed against the junction shape: header, both key columns, the junction's extra columns, then version, with an index on each key named after its =column_short=. |
+| Output routing | the archetype's =#+output= | =projects/ores.sql/create/dq/dq_{entity_plural}_artefact_create.sql=, which resolves to the same filename the hand-written file already had. |
+| Registration | =library/templates/ores.sql.schema.org= | Regenerated by =regenerate_physical_space_inventories.py=, which also picked up the description change from step 11. |
+| Test | =tests/test_junction_artefact.py= | Five tests, mutation-proven: dropping the extra-columns block fails the one test that asserts it. |
+
+**The regenerated tables are byte-identical in body.** For =currency_calendars= the diff is the generated banner, the section comment, the index names gaining their =dq_= prefix, and the table name being quoted — not one column changes. The other two currency junctions are the same. =badge_mappings= differs only by =version integer not null default 0= becoming =version integer not null=, which is safe because =dq_badge_mappings_artefact_populate.sql= names =version= explicitly.
+
+**Four tables landed here, not three.** =badge_mappings= was sitting in the =derivable= bucket for the same reason: it is a junction, so it had no route either. Opting it in closes it.
+
+**Figures.** Census: generated 25 to 29; =foreign= 6 to 0; =derivable= 2 to 1. The one that remains is =coding_schemes=, which needs a model rather than a flag. Validator 0 warnings; codegen suite 681 passing; refdata drift 516 and dq drift 507, both unchanged, because a hand-written staging table was never in the drift.
+
+* Step 4 results (part)
+
+Run on 2026-09-26. The =foreign= bucket held six staging tables whose base table belongs to refdata. Three are now generated; the other three turn out to be a different shape entirely.
+
+| Entity | Model type | Outcome |
+|--------+------------+---------|
+| =calendar_type= | domain_entity | generated from =ores.refdata.calendar_type= |
+| =currency_pair= | domain_entity | generated from =ores.refdata.currency_pair= |
+| =payment_frequency= | domain_entity | generated from =ores.refdata.payment_frequency= |
+| =currency_calendar= | junction | needs a junction artefact archetype, which does not exist |
+| =currency_country= | junction | same |
+| =currency_pair_convention_calendar= | junction | same |
+
+**The three domain entities are one-liners.** Each gained =:ores.sql.schema.domain_entity_artefact_create.enabled: true= in its property drawer. The generated staging table is a pure projection of the refdata table, as step 3's census already said.
+
+Two of the three carry a natural key, so this step also depended on the template fix from step 5. Nothing structural changed in the swap. The differences are the generated banner, the model's prose, the index names gaining their =dq_= prefix and the table name being quoted, =period_multiplier integer= becoming =period_multiplier integer null=, and =display_order= gaining =default 0= from the model. The last is a widening, not a break: an insert that omitted the column used to fail and now takes the model's default.
+
+The refdata side did not move. The regeneration rewrote 15 files across the three entities and only the three dq staging tables differ, so refdata's own create, drop and notify-trigger files were already current. Both drift figures confirm it: refdata stays at 516 and dq stays at 507, because a hand-written staging table was never in the drift in the first place.
+
+**The three junctions are not one-liners, and the property is inert on them.** =get_junction_template_mappings= maps a junction to exactly one archetype, =sql_schema_junction_create.mustache=, and no junction artefact archetype exists. So a junction cannot reach the staging path at all today. Their hand-written staging tables are simple — =dataset_id=, =tenant_id=, the two key columns, =version=, with an index on each key — so the shape is a clean projection of a junction too, but it needs an archetype written for it.
+
+The property was therefore reverted on all three. Leaving it in place would have been the M04 failure this task is meant to remove: an assignment that is inert without any error.
+
+**Figures.** Census: generated 22 to 25, foreign 6 to 3. Validator 0 warnings; codegen suite 676 passing; refdata drift 516 and dq drift 507, both unchanged.
+
+* Step 5 results (part)
+
+Run on 2026-09-26. Three of the five derivable tables are now generated.
+
+| Entity | Model | Was | Now |
+|--------+-------+-----+-----|
+| =badge_definition= | =ores.dq.badge_definition= | hand-written staging table | generated |
+| =badge_severity= | =ores.dq.badge_severity= | hand-written staging table | generated |
+| =code_domain= | =ores.dq.code_domain= | hand-written staging table | generated |
+
+Each needed one line, not a model: =:ores.sql.schema.domain_entity_artefact_create.enabled: true= in the model's property drawer. Step 3 had already classified all three as pure projections.
+
+**A template defect blocked them, and it is now fixed.** Both artefact archetypes rendered only the plain columns, never the natural keys, and all three entities have exactly one natural key. Switching the archetype on before the fix dropped the =name= column — the column that =dq_badge_definitions_artefact_populate.sql=, =dq_badge_severities_artefact_populate.sql= and =dq_code_domains_artefact_populate.sql= all insert. The gap was latent because every model already using the archetype had zero natural keys. Fixed at source with a regression test, per G05.
+
+**The swap is safe.** The regenerated staging tables carry the same columns in the same order as the hand-written ones. The differences are the generated banner, the model's description prose, the index names gaining their =dq_= prefix and the table name being quoted, and =version integer not null default 0= becoming =version integer not null=. The default is safe to drop because every populate script names =version= explicitly.
+
+The create and notify-trigger files for the three entities also picked up drift they already carried: the version-conflict guard and the canonical event payload. That is G01 work the entity's touch required anyway.
+
+**Figures.** Census: generated 19 to 22, derivable 5 to 2. Component drift for dq: 513 files to 507, exactly the six create and notify-trigger files. iam still reports no drift and refdata still reports 516, so the shared natural-keys marking changed nothing else.
+
+**What remains in step 5.** =badge_mappings= is a junction, not an entity, so it takes the junction pathway. =coding_schemes= has no model at all and needs one authored.
+
+* Step 11 results
+
+Run on 2026-09-26. This is the generator work step 3 called for, and it unblocks steps 4, 5, 7 and 8.
+
+**What was added.** The optional =* Artefact columns= section, read by both artefact archetypes:
+
+| Part | File | What it does |
+|------+------+--------------|
+| Reader | =src/codegen/org_loader.py=, =_artefact_columns= | Parses the section into =artefact_columns= and =artefact_key_column=. Called by both the domain-entity loader and the lookup-entity loader. |
+| Comma marking | =src/codegen/core.py= | Marks the last declared column in both normalisation passes, so the body renders its commas. |
+| Archetypes | =ores.sql.schema.domain_entity_artefact_create.org=, =sql_schema_artefact_create.org= | Render the declared body instead of the projection when the section is present. Both re-tangled from their org sources. |
+
+**Semantics.** Absent, both archetypes render exactly what they rendered before. Present, the section replaces the staging table's body after its =dataset_id=/=tenant_id= header, in the order written. The first entry is the staging key, and the generated key index is built on it; a section-level =:key:= property overrides that when the key is not written first. Two shapes are refused rather than rendered wrongly:
+
+- an empty section, because a section that declares nothing is a mistake, not a request for the default;
+- a section together with =:has_artefact_insert_fn: true=, because the generated insert helper is built from the entity's own columns and would insert the wrong shape into a table that declares its own. No current model wants both, so the pair is refused instead of guessed at.
+
+**Evidence that the default path is untouched.** The change is byte-identical for every existing model, which three independent checks agree on:
+
+- =compass codegen entity generate account_type --address ores.sql.schema --diff= reports no differences. =account_type= is a generated DQ artefact table.
+- =check_component_drift.py --component iam --dry-run= still reports no drift at all.
+- =check_component_drift.py --component dq --dry-run= still reports 513 files, unchanged from before the template edit.
+
+**Evidence that the new path works.** =tests/test_artefact_columns.py= adds 10 tests: the default projection and its key index; the declared body replacing it; the entity columns the section omits being dropped; the key index following the declared key; =:key:= overriding the first column; the header indexes surviving; both refusals; and the lookup-entity archetype honouring the section too.
+
+The tests are mutation-proven. Neutering =_artefact_columns= to return nothing fails exactly the 7 section-dependent tests while the 3 default-path tests still pass, so the tests exercise the new behaviour rather than passing alongside it. The tangle is stable: re-tangling produces no further change to either =.mustache=, so the template-drift gate's =git diff --exit-code= holds.
+
+* The FPML family: why 13 tables have no model, and what blocks them
+
+Found on 2026-09-26 while scoping steps 4, 5 and 8. It refines Finding 1 of the investigation and re-scopes three plan steps.
+
+*The 13 generated artefact tables with no model are exactly the FPML codelist entities.* The evidence is an exact match, not a resemblance:
+
+- =scripts/fpml_parser.py= declares 15 entities in =ENTITY_FILE_PATTERNS=: account-types, asset-classes, asset-measures, benchmark-rates, business-centres, business-processes, cashflow-types, entity-classifications, local-jurisdictions, party-relationships, party-roles, person-roles, regulatory-corporate-sectors, reporting-regimes, supervisory-bodies.
+- 2 of the 15 have an org model today: =account_types= in =ores.iam.account_type= and =business_centres= in =ores.refdata.business_centre=.
+- The other 13 are precisely the 13 tables that carry the generated marker with no entity in the 295-entity registry.
+
+*The pathway that produced them is retired.* =fpml_parser.py= does not render SQL directly. =generate_entity_model= writes =<plural>_entity.json=, a JSON entity model, and the schema templates render from that. Codegen no longer discovers JSON models: =manifest.py= records that "JSON model support was decommissioned (all models migrated to org)". Nothing in the repository regenerates these files.
+
+*The output is stale, and the staleness is visible.* =refdata_asset_classes_create.sql= carries the =AUTO-GENERATED= marker, but its insert trigger still uses the pre-codegen shape: =new.= in lower case, =current_timestamp= instead of =clock_timestamp()=, and the old =if new.version != 0 and new.version != current_version= guard with no version-replace check. Every genuinely generated table has the new guard. A second signal says the same thing: the Feb 2026 commit =157f0b6c3c= ("Regenerate SQL files with generation headers") added the marker to 113 files by prepending a header, and its diff shows the marker landing on a file whose body it did not rewrite.
+
+*Consequence for the plan.* The FPML family is not pass 1 work. Authoring its org models needs the dataset archetypes that do not exist yet, and that work is already claimed:
+
+- [[id:44B275EC-DC37-4961-80EF-9D79D4C186FB][Migrate FPML, crypto, flags and ip2country onto the org dataset pipeline]] (backlog, next bucket) owns the migration, and its step 4 deletes the old generators once the new output is byte-identical.
+- Its step 3 depends on [[id:9B900D8C-8F98-4733-96AF-2C838370ED9C][Add the dataset archetypes the four-dataset migration needs]], which includes "FPML per-entity refdata".
+
+So steps 4, 5 and 8 proceed without the FPML family, and the 13 entities are recorded here as a dependency rather than duplicated as work. =account_types= and =business_centres= are already generated from org models and stay in scope.
+
+This also corrects the language of Finding 1. Those tables are not unmodelled; they are modelled by a retired generator. The distinction matters, because it changes the fix from "delete an orphan" to "port a model", and it names the port rather than inventing it.
+
+* Step 6 results
+
+Run on 2026-09-26. The step was named "the two shadowed pairs". The debt register named 49 files, not 2. =projects/ores.sql/utility/validation_ignore.txt= already recorded them as WIRE_001 with the instruction that "each class is cleared by the component drift story that wires the files into its aggregator and removes the entries". That story is this task, so step 6 cleared all 49.
+
+| Group | Files | What was wrong |
+|-------+-------+----------------|
+| Plural-era create residue | 2 | =dq_create.sql= wired the singular =dq_catalog_create.sql= and =dq_subject_area_create.sql=; the generated plurals sat unwired |
+| Plural-era drop residue | 3 | Same inversion on the drop side, for catalogs, subject areas and dataset bundles |
+| Artefact drops | 23 | =dq_drop.sql= never wired them |
+| Population-function drops | 16 | =dq_drop.sql= wired 5 of the 21 on disk |
+| Notify-trigger drops | 5 | The sibling table drop was wired, the trigger drop was not |
+
+What changed:
+
+1. Regenerated =dq_catalogs_create.sql= and =dq_subject_areas_create.sql= with =compass codegen entity generate <entity> --address ores.sql.schema=. Both were stale by one template change, the version-conflict guard in the insert trigger.
+2. Rewired =create/dq/dq_create.sql= and =drop/dq/dq_drop.sql= to the generated plurals.
+3. Deleted the five redundant twins: =dq_catalog_create.sql=, =dq_catalog_drop.sql=, =dq_subject_area_create.sql=, =dq_subject_area_drop.sql=, =dq_dataset_bundle_drop.sql=.
+4. Wired the 44 remaining drops into =drop/dq/dq_drop.sql=, population functions before their staging table.
+5. Removed all 49 WIRE_001 entries and their section comments.
+
+Nothing was lost by the swap. The twins differ only in ways the generated file wins: the generated create carries the version guard and the current description prose, the generated drops are leaner because a table drop already drops its indexes, and the one index whose name differed (=subject_areas_name_uniq_idx= versus =subject_areas_name_domain_name_uniq_idx=) is on identical columns, so the generated name is the one that reflects the compound key.
+
+**Evidence.** =validate_schemas.sh= reports 0 warnings, and it reports them with the 49 entries *deleted* from the ignore file rather than suppressed. That is the proof: an unwired file cannot pass silently, because the check that would name it is live. The artefact census also reports 0 duplicated declarations, down from 2. The component drift fell from 517 files to 513: the four regenerated files (two creates, two notify triggers) no longer drift, and =ores.sql/create= fell from 21 to 17.
+
+**Correction to Finding 3 of the investigation.** That finding said the generated drop scripts were unreachable. The files are generated, but neither drop template emits an =AUTO-GENERATED= marker, so a drop file's provenance cannot be read from its header at all. This is a G03 defect in the two drop archetypes (=sql_schema_domain_entity_drop.mustache= and =sql_schema_notify_trigger_drop.mustache=), and step 8 carries it.
+
+* Step 3 results
+
+Run on 2026-09-26. Each of the 12 divergent tables was read against its base table *and* against the publish function that fills the base from it. =refdata_publish_from_dq_create.sql= carries the evidence for most of them.
+
+*The artefact table is the import contract, not a projection of the store.* The projection is right by default and wrong in six specific ways, and every one of the six is deliberate. No divergence is a defect.
+
+| Class | What it means | Columns | Who resolves it |
+|-------+---------------+---------+-----------------|
+| Key rename | The staging table names the entity key after the entity. | =tag_id=, =image_id= versus base =id= | The template |
+| Natural key | The staging table carries a code or a name where the store carries a uuid. | =unit_type_code= versus =unit_type_id=; =account_username= versus =account_id=; =reports_to_username=; =business_unit_code= | The publish function, by joining the referenced table |
+| Secret redaction | Credentials are never staged. | =password_salt=, =service_password_hash=, =totp_secret= | Nothing. They are generated at publish. |
+| Target-state redaction | The publisher supplies the field. | =party_id=, =status=, =workspace_id=, =owner_unit_id=, =default_party_id=, =assigned_by=, =assigned_at=, =version= | The publish function, from =p_params= or the target party |
+| Import-only extra | A field only the import needs. | =holiday_calendar=, =advance_calendar=, =role=, =photo_key=, =key=, =svg_data= | The publish function maps it or drops it |
+| Dataset-supplied | The value belongs to the dataset, not to the row. | =coding_scheme_code=, =source=, =is_editable=, =base_calendar_code= | =ores_dq_datasets_tbl=, or the table default |
+
+The evidence for the two classes that are easy to mistake for defects:
+
+- *Natural key.* =ores_refdata_publish_business_units_from_dq_fn= inserts =unit_type_id= by joining =ores_refdata_business_unit_types_tbl= on =code = m.unit_type_code=. The staging table holds the code, and the publish resolves it.
+- *Dataset-supplied.* =ores_refdata_publish_currencies_from_dq_fn= reads =coding_scheme_code= from =ores_dq_datasets_tbl=, not from the artefact table, and inserts that value. So the staging table has no business carrying the column. The same function shows =party_id= arriving from =p_params= rather than from the row, which is the target-state redaction.
+- *Not a latent break.* =refdata_calendars_tbl.source= and =.is_editable= carry defaults, and =base_calendar_code= and =coding_scheme_code= are nullable, so the publish's shorter column list is sound.
+
+**Decision: the model declares the artefact projection explicitly.**
+
+The clean standard forbids two sources of truth, so the import contract belongs in the entity model that already owns the table. Add a =* Artefact columns= section, the sibling of the =* Artefact indexes= section that already exists:
+
+- *Absent section* means the current projection. The 11 pure-projection tables need no change, and neither does any entity whose staging table mirrors it.
+- *Present section* lists the staging columns in order. Each column carries =:maps_to:= when the publish translates it, naming the base column it becomes, and =:source:= of =row=, =dataset=, =publish= or =default= to record where the value comes from.
+
+The section is what makes the difference reviewable. A reader sees the redaction and the translation in the model rather than only inside a PL/pgSQL body, which is the same objection the publish-pattern plan raised about cross-service writes.
+
+| Table | Differences | Classes |
+|-------+-------------+---------|
+| =accounts= | 4 extra, 6 missing | Secret redaction, target-state redaction, natural key, import-only |
+| =account_contact_informations= | 1 extra, 1 missing | Natural key |
+| =books= | 4 missing | Target-state redaction |
+| =business_units= | 1 extra, 3 missing | Natural key, target-state redaction |
+| =calendars= | 4 missing | Dataset-supplied, target-state redaction |
+| =countries= | 1 missing | Dataset-supplied |
+| =currencies= | 1 extra, 1 missing | Import-only, dataset-supplied |
+| =currency_pair_conventions= | 1 extra | Import-only |
+| =image_tags= | 3 missing | Target-state redaction |
+| =images= | 3 extra, 4 missing | Key rename, import-only |
+| =portfolios= | 4 missing | Target-state redaction |
+| =tags= | 1 extra, 1 missing | Key rename |
+
+*Step 4 and step 5 are unblocked.* Both now reduce to declaring the projection for each entity once, rather than 11 separate special cases.
+
+* Step 2 results
+
+Run on 2026-09-26 with =scripts/survey_table_consumers.py --product dq=. It scanned 33,010 files and reported every reader, writer, registration, drop and C++ consumer of each of the 49 artefact tables.
+
+| Verdict | Tables |
+|---------+--------|
+| keep: writes, reads and registration | 42 |
+| keep: writes and reads, no registration | 3 |
+| keep: reads and registration, no writer | 1 |
+| keep: writes only | 1 |
+| DELETE CANDIDATE | 0 |
+
+*No artefact table is dead.* Every table is written, read or registered by something in the tree, so step 2 deletes nothing. The three earlier findings said the same thing from the other direction: a generated file with no model is still a live table.
+
+The four tables that depart from the common shape:
+
+- =ores_dq_image_tags_artefact_tbl=. Only =ores_dq_image_tags_artefact_upsert_fn= writes it, and nothing calls that function. It is never read, and it is not registered. It is the closest to dead of the family, but the function snapshots =ores_assets_image_tags_tbl= at dataset load, so it is retired only once nothing loads that dataset. Record the decision in step 3; do not delete it here.
+- =ores_dq_payment_frequencies_artefact_tbl=. Registered and read by =refdata.v1.payment-frequencies.publish-from-dq=, but no populate script in the repository writes it. Either the data is loaded outside the tree, or the pipeline is incomplete. Record which.
+- =ores_dq_synthetic_gmm_components_artefact_tbl=, =ores_dq_synthetic_ir_curve_template_entries_artefact_tbl= and =ores_dq_tags_artefact_tbl=. Written and read, but absent from =dq_artefact_types_populate.sql=, so the bundle publisher cannot dispatch them on their own. The synthetic pair are published through the config that owns them; =tags= is published through =sql_tag_populate.mustache=. Confirm that is intended, then either register or record the reason.
+
+The commit to keep, model or retire each table is step 3, which now starts from a clean sheet: nothing is dead, so every table has a model to gain rather than a deletion to earn.
+
+* Notes
+
+*Analysis, 2026-09-26.* The full record is the [[id:C8E3E017-6B93-47E0-B680-55F640F2B0A7][investigation]]. The figures this task works from:
+
+- =create/dq= declares 74 tables, 49 of them artefact tables: 19 generated, 5 derivable, 12 divergent, 6 foreign, 7 orphan.
+- 13 of the 19 generated artefact tables have no entity in the 295-entity registry. =asset_classes= is live, so these are not dead by default.
+- 84 handcrafted SQL files: 30 artefact, 20 population function, 10 notify trigger, 24 other.
+- 21 handcrafted =*_population_functions_create.sql= files. The template for them is wired to no facet.
+- 2 tables declared twice; in both pairs the generated file is unreachable from the aggregators.
+- Drift is 517 files: 410 change, 107 create. =ores.dq/core= 236, =ores.dq/api= 174, =ores.shell/dq= 42, =ores.dq/service= 28, =ores.sql/create= 21.
+- The C++ is generated, not handcrafted: 575 of 651 non-test files are generatable, but only 1 carries the marker.
+
+*Levers.* Two read-only scripts produce the evidence, and both have a regression test.
+
+- =scripts/survey_sql_artefacts.py= answers what shape the artefact family has. It pairs a table with its base by entity name across every SQL product. Test: =tests/test_survey_sql_artefacts.py=.
+- =scripts/survey_table_consumers.py= answers who touches each table. It scans the tree once and records the relation each file has to each name, reading the relation from the statement rather than from the directory. Test: =tests/test_survey_table_consumers.py=.
+
+Both tests lock a defect that produced a wrong answer first. The census paired =tags= with =image_tags= under a suffix rule; the consumer scan missed =join= reads and the short names in the artefact-type registry. The codegen suite is green at 662 tests.
+
+*Open question.* The population-function template names its output =_population_functions.sql=, while the 21 handcrafted files are =_population_functions_create.sql=. Settle the intended name in step 7.
+
+*Trunk condition, not fixed here.* =regenerate_backlog_indexes.py --check= reports =doc/agile/product_backlog/inbox.org= stale on an unmodified =main=: six captures exist on disk and are absent from the index. No CI job runs that check. The refresh is unrelated to this task and was left out of the branch.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| https://github.com/OreStudio/OreStudio/pull/2189 | [dq] Generate the ores.dq artefact tables from the entity models |
+| https://github.com/OreStudio/OreStudio/pull/2190 | [dq] Put the badge family on the generated stack and wire its history |
+| https://github.com/OreStudio/OreStudio/pull/2193 | [dq] Migrate the last three entities and wire the shell adapter |
+| https://github.com/OreStudio/OreStudio/pull/2196 | [dq] Model nature_dimension and delete its hand-written protocol |
+| https://github.com/OreStudio/OreStudio/pull/2198 | [dq] Model the origin and treatment dimensions, retiring the dimension layer |
+| https://github.com/OreStudio/OreStudio/pull/2200 | [dq] Model methodology, retiring the data organization layer |
+| https://github.com/OreStudio/OreStudio/pull/2203 | [dq] Model the coding scheme pair, retiring its hand-written protocol |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Pass 1 is not finished, so this task is not done. What is done is the part the story was built on: artefact tables generate from the same entity model as their base table, the projection is declared in the model, and the handcrafted SQL that no model owned is either gone or has a recorded reason for staying.
+
+The design question is answered affirmatively and the answer is enforced by templates rather than by convention. The census reads 41 generated, 1 derivable, 0 divergent and 7 orphan across 49 artefact tables, and none of the 49 is a deletion candidate — so the component shrank in handcrafted SQL without losing a table.
+
+The remaining work is named: six entities whose canonical output the generator already emits and whose hand-written duplicates must be deleted, the shell unit that must be wired before the change-reason pair can move, one decision about `subject_area`'s composite history identity, and the line that adds dq to =COMPONENTS_UNDER_TEST=. Each is recorded above with the evidence that it is a deletion problem rather than a modelling problem.
+
+Landed as https://github.com/OreStudio/OreStudio/pull/2189, https://github.com/OreStudio/OreStudio/pull/2190, https://github.com/OreStudio/OreStudio/pull/2193 https://github.com/OreStudio/OreStudio/pull/2196 and https://github.com/OreStudio/OreStudio/pull/2198 and https://github.com/OreStudio/OreStudio/pull/2200 and https://github.com/OreStudio/OreStudio/pull/2203.

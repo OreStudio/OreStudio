@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 433F316B-EEFE-5C37-B7C8-2C6DA4D0B817
+:END:
+#+title: How do I run the synthetic_fx_spot_configs commands from the shell?
+#+description: Every command the synthetic_fx_spot_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:synthetic_fx_spot_configs:
+
+This file documents the synthetic_fx_spot_configs resource at the shell, one section per command. Every command is a subcommand of =synthetic_fx_spot_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 4A236181-ACCE-595E-95EE-BAAAE827553D
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+synthetic_fx_spot_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.synthetic_fx_spot_configs.list=.
+
+#+name: synthetic_fx_spot_configs-list
+#+begin_src ores-shell :tangle synthetic_fx_spot_configs-list.ores :exports none
+synthetic_fx_spot_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 98567E62-49DF-5016-AF48-F59A8235DFD0
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+synthetic_fx_spot_configs get <id>
+#+end_example
+
+It is addressed at =dq.v1.synthetic_fx_spot_configs.get=.
+
+#+name: synthetic_fx_spot_configs-get
+#+begin_src ores-shell :tangle synthetic_fx_spot_configs-get.ores :exports none
+synthetic_fx_spot_configs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 8CB4F76B-7CCD-5DD3-B1F0-56ADF2CE3BC5
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+synthetic_fx_spot_configs get-many <id>
+#+end_example
+
+It is addressed at =dq.v1.synthetic_fx_spot_configs.get_many=.
+
+#+name: synthetic_fx_spot_configs-get-many
+#+begin_src ores-shell :tangle synthetic_fx_spot_configs-get-many.ores :exports none
+synthetic_fx_spot_configs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B2309669-AF9C-54FF-9A1B-52D6DB51F3F4
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+synthetic_fx_spot_configs add <name> <description> <enabled> <auto_start> <base_currency_code> <quote_currency_code> <gmm_initial_price> <ticks_per_hour> <process_type> <price_source> <vintage_source> <vintage_date> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.synthetic_fx_spot_configs.put=.
+
+#+name: synthetic_fx_spot_configs-add
+#+begin_src ores-shell :tangle synthetic_fx_spot_configs-add.ores :exports none
+synthetic_fx_spot_configs add __none__ - false false __none__ __none__ 0 0 __none__ __none__ - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: B8A67D53-E066-52ED-9ED7-E9E98AAD8CB6
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+synthetic_fx_spot_configs set <id> <name> <description> <enabled> <auto_start> <base_currency_code> <quote_currency_code> <gmm_initial_price> <ticks_per_hour> <process_type> <price_source> <vintage_source> <vintage_date> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.synthetic_fx_spot_configs.put=.
+
+#+name: synthetic_fx_spot_configs-set
+#+begin_src ores-shell :tangle synthetic_fx_spot_configs-set.ores :exports none
+synthetic_fx_spot_configs set 00000000-0000-0000-0000-000000000000 __none__ - false false __none__ __none__ 0 0 __none__ __none__ - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 201766DE-3835-529A-92E1-17AF2F91CCA8
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+synthetic_fx_spot_configs put-many --count <n> <id> <name> <description> <enabled> <auto_start> <base_currency_code> <quote_currency_code> <gmm_initial_price> <ticks_per_hour> <process_type> <price_source> <vintage_source> <vintage_date> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.synthetic_fx_spot_configs.put_many=.
+
+#+name: synthetic_fx_spot_configs-put-many
+#+begin_src ores-shell :tangle synthetic_fx_spot_configs-put-many.ores :exports none
+synthetic_fx_spot_configs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ - false false __none__ __none__ 0 0 __none__ __none__ - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 00503B13-C542-5943-A67B-6C03ECD5B95B
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+synthetic_fx_spot_configs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.synthetic_fx_spot_configs.delete=.
+
+#+name: synthetic_fx_spot_configs-delete
+#+begin_src ores-shell :tangle synthetic_fx_spot_configs-delete.ores :exports none
+synthetic_fx_spot_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: B2FC2A0E-FBDF-53C5-B227-89222B7F4FCE
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+synthetic_fx_spot_configs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.synthetic_fx_spot_configs.delete_many=.
+
+#+name: synthetic_fx_spot_configs-delete-many
+#+begin_src ores-shell :tangle synthetic_fx_spot_configs-delete-many.ores :exports none
+synthetic_fx_spot_configs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 626EB086-FAE2-5419-BF05-653F1CB8AB97
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+synthetic_fx_spot_configs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.synthetic_fx_spot_configs_versions.list=.
+
+#+name: synthetic_fx_spot_configs-versions
+#+begin_src ores-shell :tangle synthetic_fx_spot_configs-versions.ores :exports none
+synthetic_fx_spot_configs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 72D57020-4EEE-5F5E-B551-98FC3827228C
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+synthetic_fx_spot_configs version <id> --version <n>
+#+end_example
+
+It is addressed at =dq.v1.synthetic_fx_spot_configs_versions.get=.
+
+#+name: synthetic_fx_spot_configs-version
+#+begin_src ores-shell :tangle synthetic_fx_spot_configs-version.ores :exports none
+synthetic_fx_spot_configs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

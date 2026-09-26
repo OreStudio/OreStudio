@@ -88,23 +88,14 @@ inline constexpr std::string_view update = "system.update";
  * All field assignments are guarded by if constexpr so the function compiles
  * for any domain type regardless of which fields it declares.
  *
- * @warning This is a match-by-field-name reflection helper: it treats
- * ANY field named tenant_id or party_id as "the scope this row
- * belongs to" and always overwrites it from the caller's context.
- * That is correct for the overwhelming majority of domain types, but
- * wrong for any type whose party_id/tenant_id-named field actually
- * means something else — e.g. the *target* of an operation rather
- * than the row's own scope. ores::iam::domain::account_party is
- * exactly this case: its party_id is a client-supplied association
- * target, not an ownership boundary, and calling this generic stamp()
- * on it silently discarded the client's requested party in favour of
- * the caller's own current party (see
- * ores.iam.core/messaging/account_party_handler.hpp's
- * stamp_account_party() and its doc comment for the full story).
- * Before calling this on a new domain type, check whether any of its
- * fields have a security-boundary NAME but a different MEANING; if
- * so, write a small explicit stamp function for that type instead of
- * reaching for this one.
+ * @warning This is a match-by-field-name reflection helper: it treats any
+ * field named tenant_id or party_id as "the scope this row belongs to" and
+ * overwrites it from the caller's context. That is right for almost every
+ * domain type, and wrong for a type whose similarly named field means
+ * something else, such as the target of an operation. Check a new type's
+ * fields for a security-boundary name with a different meaning, and write an
+ * explicit stamp function for that type instead of reaching for this one;
+ * ores.iam.core/messaging/account_party_handler.hpp is the worked case.
  *
  * @param obj           Domain object to stamp (modified in place).
  * @param ctx           Per-request database context derived from the JWT.
@@ -201,11 +192,9 @@ inline bool has_permission(const ores::database::context& ctx,
     // Empty list: token predates RBAC — allow to preserve backward compat.
     if (perms.empty())
         return true;
-    // Exact match or component-level wildcard
     for (const auto& p : perms) {
         if (p == "*" || p == required_permission)
             return true;
-        // Component-level wildcard: "iam::*" satisfies "iam::accounts:create"
         if (p.size() >= 2 && p.ends_with("::*")) {
             const auto prefix = std::string_view(p).substr(0, p.size() - 1);
             if (required_permission.starts_with(prefix))
@@ -215,8 +204,11 @@ inline bool has_permission(const ores::database::context& ctx,
     return false;
 }
 
-// Publish an error reply with an X-Error header.
-// The reply subject is used if present; no-op otherwise.
+/**
+ * @brief Publishes an error reply carrying the X-Error header.
+ *
+ * The reply subject is used if present, and the call is a no-op otherwise.
+ */
 inline void error_reply(ores::nats::service::client& nats,
                         const ores::nats::message& msg,
                         ores::service::error_code code) {

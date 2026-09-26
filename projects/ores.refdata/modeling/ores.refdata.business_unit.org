@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: ADC87ED3-153E-4FD9-BB87-DC9E184DA315
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.business_unit
 #+description: Codegen entity model for the refdata =business_unit= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -149,6 +150,50 @@ Current lifecycle status (Active, Inactive, Closed).
 #+begin_src cpp :name generator
 std::string("Active")
 #+end_src
+
+
+* Artefact columns
+
+The import carries =unit_type_code=, a natural key; =ores_refdata_publish_business_units_from_dq_fn= resolves it to =unit_type_id= by joining =business_unit_types= on =code=. =party_id= and =status= are the publisher's to supply, not the dataset's.
+
+** id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** unit_name
+:PROPERTIES:
+:type: text
+:END:
+
+** parent_business_unit_id
+:PROPERTIES:
+:type: uuid
+:nullable: true
+:END:
+
+** unit_code
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** business_centre_code
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** unit_type_code
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
 
 * SQL
 

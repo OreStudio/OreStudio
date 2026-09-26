@@ -149,7 +149,7 @@ public:
     /**
      * @brief Polls a dq.v1.bundles.publish / dq.v1.datasets.publish workflow
      * instance until it reaches a terminal state, mirroring
-     * ores.shell's workflow_wait_commands::wait_for_instance (client-type-coupled,
+     * ores.shell's workflow_operation_commands::wait_for_instance (client-type-coupled,
      * so not directly reusable here).
      *
      * @param on_progress Called with a human-readable line each time a

@@ -56,7 +56,8 @@ domain::account account_operations_service::create_account(const std::string& us
 
     throw_if_empty("Username", username);
     throw_if_empty("Email", email);
-    throw_if_empty("Password", password); // FIXME: do not log
+    // FIXME: do not log
+    throw_if_empty("Password", password);
 
     // Generate a new UUID for the account
     boost::uuids::random_generator gen;
@@ -69,12 +70,14 @@ domain::account account_operations_service::create_account(const std::string& us
     // Create the account object with computed fields
     // Note: Administrative privileges are now managed through RBAC roles.
     domain::account new_account;
-    new_account.version = 0; // will be set by the insert trigger
+    // The insert trigger sets the version.
+    new_account.version = 0;
     new_account.id = id;
     new_account.username = username;
     new_account.account_type = "user";
     new_account.password_hash = password_hash;
-    new_account.password_salt = ""; // FIXME remove
+    // FIXME remove
+    new_account.password_salt = "";
     new_account.totp_secret = "";
     new_account.email = email;
     new_account.modified_by = modified_by;
@@ -129,11 +132,12 @@ account_operations_service::create_service_account(const std::string& username,
 
     // Create the service account - no password required
     domain::account new_account;
-    new_account.version = 0; // will be set by the insert trigger
+    // The insert trigger sets the version.
+    new_account.version = 0;
     new_account.id = id;
     new_account.username = username;
     new_account.account_type = account_type;
-    new_account.password_hash = ""; // Service accounts have no password
+    new_account.password_hash = "";
     new_account.password_salt = "";
     new_account.totp_secret = "";
     new_account.email = email;
@@ -211,7 +215,8 @@ domain::account account_operations_service::login(const std::string& username,
                                                   const boost::asio::ip::address& ip_address) {
 
     throw_if_empty("Username", username);
-    throw_if_empty("Password", password); // FIXME: do not log
+    // FIXME: do not log
+    throw_if_empty("Password", password);
 
     BOOST_LOG_SEV(lg(), debug) << "Login attempt for username: " << username
                                << " from IP: " << ip_address;
@@ -522,7 +527,8 @@ std::string account_operations_service::change_password(const boost::uuids::uuid
     BOOST_LOG_SEV(lg(), info) << "Successfully changed password for account: "
                               << boost::uuids::to_string(account_id);
 
-    return ""; // Empty string indicates success
+    // An empty string indicates success.
+    return "";
 }
 
 domain::login_info
@@ -577,7 +583,8 @@ std::string account_operations_service::update_my_email(const boost::uuids::uuid
     BOOST_LOG_SEV(lg(), info) << "Successfully updated email for account: "
                               << boost::uuids::to_string(account_id);
 
-    return ""; // Empty string indicates success
+    // An empty string indicates success.
+    return "";
 }
 
 std::string account_operations_service::set_my_default_party(const boost::uuids::uuid& account_id,
@@ -613,7 +620,8 @@ std::string account_operations_service::set_my_default_party(const boost::uuids:
     BOOST_LOG_SEV(lg(), info) << "Successfully set default party for account: "
                               << boost::uuids::to_string(account_id);
 
-    return ""; // Empty string indicates success
+    // An empty string indicates success.
+    return "";
 }
 
 }

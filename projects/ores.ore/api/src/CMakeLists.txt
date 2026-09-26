@@ -39,7 +39,7 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.platform.lib
-        ores.storage.lib
+        ores.storage.api.lib
         ores.logging.lib
         ores.workflow.api.lib
         ores.eventing.api.lib

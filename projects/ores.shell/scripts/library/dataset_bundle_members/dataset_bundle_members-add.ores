@@ -1,0 +1,6 @@
+# =add=
+#
+# GENERATED from doc/recipes/shell/dataset_bundle_members/dataset_bundle_member.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+dataset_bundle_members add __none__ __none__ 0 false system.new_record generated_script

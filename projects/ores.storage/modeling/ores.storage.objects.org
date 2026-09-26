@@ -1,0 +1,385 @@
+:PROPERTIES:
+:ID: D469834F-DB7C-4486-B43F-CBD984744C36
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.storage.objects
+#+description: Codegen operation model for object storage: put, get, delete and list over a bucket and an opaque key, the surface both the NATS service and the HTTP routes serve.
+#+type: ores.codegen.operation
+#+component: storage
+#+subcomponent: api
+#+entity_singular: objects
+#+namespace: ores::storage::messaging
+#+brief: Object storage operations.
+#+filetags: :model:operation:storage:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+Object storage has no entity: an object is a bucket, an opaque key and a byte
+string, and the store never parses any of the three. That is why the surface is
+an operation model rather than an entity model, and why the messages below carry
+no tenancy and no server-owned field.
+
+Four operations are modelled. There is deliberately no =exists= operation: the
+protocol has no such verb, and existence is a read, so =get= reports absence in
+its own reply and the HTTP projection answers =HEAD= without a body. There is no
+=counter= either, because a count is a property of a list.
+
+The bucket is the caller's concern. Storage holds no bucket name, no registry
+and no allow-list, so the bucket arrives as part of the request and the server
+validates it as a key segment rather than checking it against a list.
+
+The handler that serves these operations stays hand-written beside this model,
+because an operation model generates no service handler. It authenticates the
+caller, checks the operation's permission code, and calls =ores.storage.core=.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** put_objects_request
+:PROPERTIES:
+:subject: storage.v1.objects.put
+:response: put_objects_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Writes one object, replacing whatever was at the key.
+ *
+ * A put carries the whole object: there is no append and no partial write, so
+ * an object is either the old value or the new one. The content travels in the
+ * message only when it is small enough to; the bulk path is HTTP, and the two
+ * leave the same object at the same bucket and key.
+ */
+#+end_src
+
+*** bucket
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The allocation the object lives in. Named by the caller.
+ */
+#+end_src
+
+*** key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The object's name within the bucket. Opaque: storage never parses it.
+ */
+#+end_src
+
+*** content
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The object's bytes.
+ */
+#+end_src
+
+*** content_encoding
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Empty for raw bytes, or the encoding the caller applied.
+ *
+ * A caller may compress before it puts, and it must say so here, because
+ * nothing on the wire marks an object as compressed.
+ */
+#+end_src
+
+** put_objects_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The outcome of the write.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  true
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** size_bytes
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many bytes the store now holds under the key.
+ */
+#+end_src
+
+** get_objects_request
+:PROPERTIES:
+:subject: storage.v1.objects.get
+:response: get_objects_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads one object's metadata, and its value when asked for.
+ *
+ * The same operation answers existence: a key that is not there comes back as
+ * a reply that says so, which is why the surface needs no separate verb for it.
+ */
+#+end_src
+
+*** bucket
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** include_content
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the reply should carry the object's bytes.
+ */
+#+end_src
+
+** get_objects_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The object, or the news that it is not there.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  true
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** found
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief False when the bucket holds no object at the key.
+ */
+#+end_src
+
+*** size_bytes
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+*** content
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The object's bytes, present only when the request asked for them.
+ */
+#+end_src
+
+** delete_objects_request
+:PROPERTIES:
+:subject: storage.v1.objects.delete
+:response: delete_objects_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Removes one object.
+ */
+#+end_src
+
+*** bucket
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** delete_objects_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The outcome of the removal.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  true
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** removed
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief False when there was nothing at the key to remove.
+ */
+#+end_src
+
+** list_objects_request
+:PROPERTIES:
+:subject: storage.v1.objects.list
+:response: list_objects_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for a page of the objects in one bucket.
+ *
+ * The prefix is a filter over keys, not a directory: storage treats a key as
+ * opaque, so a caller that wants everything under a prefix asks for it by
+ * prefix and never by path.
+ */
+#+end_src
+
+*** bucket
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** prefix
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Only keys that start with this are returned. Empty means every key.
+ */
+#+end_src
+
+*** offset
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default:  0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default:  100
+:END:
+
+** object_summary
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One object in a listing, without its value.
+ */
+#+end_src
+
+*** key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** size_bytes
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+** list_objects_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The page of objects, with the total the caller is paging through.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  true
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** objects
+:PROPERTIES:
+:cpp_type: std::vector<object_summary>
+:END:
+
+*** total_available_count
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+* See also
+
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the target state these operations implement.
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the verb set, the envelope and the security rules the messages follow.

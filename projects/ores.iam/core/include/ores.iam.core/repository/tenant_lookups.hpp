@@ -30,13 +30,12 @@
 namespace ores::iam::repository {
 
 // Hand-authored counterpart of tenant_repository: reads that must see every
-// tenant, not only the caller's. The C3 rebind made tenant_repository
-// tenant-scoped (every read filters on the tenant carried by the context),
-// which serves the CRUD flows but not login (hostname resolution happens
-// before any tenant context exists) or the registrar party-cache warm-up
-// (system tenant acting for all tenants). These functions keep the
-// pre-rebind, unfiltered queries. No codegen template emits this file, so
-// regeneration leaves it alone.
+// tenant, not only the caller's. tenant_repository is tenant-scoped (every
+// read filters on the tenant carried by the context), which serves the CRUD
+// flows but not login (hostname resolution happens before any tenant context
+// exists) or the registrar party-cache warm-up (system tenant acting for all
+// tenants). These functions query without that filter. No codegen template
+// emits this file, so regeneration leaves it alone.
 //
 // The reads are plain queries, so row-level security still applies: a
 // session resolves what the tenants_read_policy admits -- the system

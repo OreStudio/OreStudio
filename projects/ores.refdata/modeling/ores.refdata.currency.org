@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 035402B2-0136-44A5-BDB0-601F6864A9FA
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.currency
 #+description: Codegen entity model for the refdata =currency= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -246,6 +247,101 @@ base currency).
 #+begin_src cpp :name generator
 faker::number::integer(1, 100)
 #+end_src
+
+
+* Artefact columns
+
+The ISO import carries =holiday_calendar=, which =refdata_currency_calendars_seed_populate.sql= reads from this table to derive currency-to-calendar assignments. =coding_scheme_code= is left out: the publish takes it from the dataset it is publishing.
+
+** iso_code
+:PROPERTIES:
+:type: text
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** name
+:PROPERTIES:
+:type: text
+:END:
+
+** numeric_code
+:PROPERTIES:
+:type: text
+:END:
+
+** symbol
+:PROPERTIES:
+:type: text
+:END:
+
+** fraction_symbol
+:PROPERTIES:
+:type: text
+:END:
+
+** fractions_per_unit
+:PROPERTIES:
+:type: integer
+:END:
+
+** rounding_type
+:PROPERTIES:
+:type: text
+:END:
+
+** rounding_precision
+:PROPERTIES:
+:type: integer
+:END:
+
+** format
+:PROPERTIES:
+:type: text
+:END:
+
+** monetary_nature
+:PROPERTIES:
+:type: text
+:END:
+
+** market_tier
+:PROPERTIES:
+:type: text
+:END:
+
+** image_id
+:PROPERTIES:
+:type: uuid
+:nullable: true
+:END:
+
+** spot_days
+:PROPERTIES:
+:type: integer
+:default: 2
+:END:
+
+** day_basis
+:PROPERTIES:
+:type: text
+:default: 'ACT/360'
+:END:
+
+** base_precedence
+:PROPERTIES:
+:type: integer
+:default: 100
+:END:
+
+** holiday_calendar
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
 
 * SQL
 

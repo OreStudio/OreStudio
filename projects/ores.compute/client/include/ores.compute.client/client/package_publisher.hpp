@@ -21,7 +21,7 @@
 #define ORES_COMPUTE_CLIENT_CLIENT_PACKAGE_PUBLISHER_HPP
 
 #include "ores.compute.client/export.hpp"
-#include "ores.storage/net/storage_transfer.hpp"
+#include "ores.storage.core/net/storage_transfer.hpp"
 #include <filesystem>
 #include <string>
 

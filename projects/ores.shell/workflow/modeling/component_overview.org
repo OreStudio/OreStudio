@@ -31,7 +31,7 @@ moves when the model moves. The part declares =#+component_kind: adapter=, and
 its =CMakeLists.txt= files are hand-authored because the link libraries belong
 to the shell surface rather than to the domain.
 
-It also holds one hand-written unit, =workflow_wait_commands=, and the reason is
+It also holds one hand-written unit, =workflow_operation_commands=, and the reason is
 worth stating here rather than only in the code. The other components commission
 workflows and then need to block until a run finishes: bundle publication, ORE
 import and party provisioning each dispatch a workflow and wait on it, and a run

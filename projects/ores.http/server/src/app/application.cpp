@@ -39,7 +39,7 @@
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
-#include "ores.variability.api/eventing/system_setting_changed_event.hpp"
+#include "ores.variability.api/eventing/system_setting_event.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -89,15 +89,16 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     eventing::service::event_bus event_bus;
     eventing::service::postgres_event_source event_source(ctx, event_bus);
 
-    eventing::service::registrar::register_mapping<
-        variability::eventing::system_setting_changed_event>(
-        event_source, "ores.variability.system_setting", "ores_variability_system_settings");
+    // The canonical mapping, not the legacy one: the notify trigger publishes
+    // the specification's event fields, and the event's own traits convert them.
+    event_source.register_entity_event_mapping<
+        variability::messaging::system_setting_event>("ores_variability_system_settings");
 
-    auto flags_sub = event_bus.subscribe<variability::eventing::system_setting_changed_event>(
-        [&system_flags](const variability::eventing::system_setting_changed_event& e) {
+    auto flags_sub = event_bus.subscribe<variability::messaging::system_setting_event>(
+        [&system_flags](const variability::messaging::system_setting_event& e) {
             BOOST_LOG_SEV(lg(), info)
-                << "System settings changed notification received, "
-                << "refreshing settings cache (" << e.setting_names.size() << " settings changed)";
+                << "System setting changed: " << e.key.name << " (" << e.action
+                << "), refreshing the settings cache";
             system_flags->refresh();
         });
 
@@ -159,7 +160,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     routes::assets_routes assets(ctx, sessions);
     assets.register_routes(router, registry);
 
-    routes::storage_routes storage(cfg.storage_dir);
+    routes::storage_routes storage(cfg.storage_dir, auth_service);
     storage.register_routes(router, registry);
 
     BOOST_LOG_SEV(lg(), info) << "API routes registered.";

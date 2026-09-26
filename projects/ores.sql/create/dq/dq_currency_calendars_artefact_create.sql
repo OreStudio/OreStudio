@@ -17,6 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_junction_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- Currency Calendar - Artefact Table
+-- =============================================================================
+
 create table if not exists "ores_dq_currency_calendars_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
@@ -25,14 +35,14 @@ create table if not exists "ores_dq_currency_calendars_artefact_tbl" (
     "version" integer not null
 );
 
-create index if not exists currency_calendars_artefact_dataset_idx
-on "ores_dq_currency_calendars_artefact_tbl" (dataset_id);
+create index if not exists dq_currency_calendars_artefact_dataset_idx
+on ores_dq_currency_calendars_artefact_tbl (dataset_id);
 
-create index if not exists currency_calendars_artefact_tenant_idx
-on "ores_dq_currency_calendars_artefact_tbl" (tenant_id);
+create index if not exists dq_currency_calendars_artefact_tenant_idx
+on ores_dq_currency_calendars_artefact_tbl (tenant_id);
 
-create index if not exists currency_calendars_artefact_currency_idx
-on "ores_dq_currency_calendars_artefact_tbl" (currency_iso_code);
+create index if not exists dq_currency_calendars_artefact_currency_idx
+on ores_dq_currency_calendars_artefact_tbl (currency_iso_code);
 
-create index if not exists currency_calendars_artefact_calendar_idx
-on "ores_dq_currency_calendars_artefact_tbl" (calendar_code);
+create index if not exists dq_currency_calendars_artefact_calendar_idx
+on ores_dq_currency_calendars_artefact_tbl (calendar_code);

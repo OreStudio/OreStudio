@@ -17,9 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_event_registrar.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.service/messaging/data_domain_event_registrar.hpp"
-#include "ores.dq.api/eventing/data_domain_changed_event.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.dq.api/eventing/data_domain_event.hpp"
+#include "ores.dq.api/messaging/data_domain_protocol.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
 
@@ -33,19 +39,17 @@ namespace ev = ores::eventing;
 register_data_domain_event_mapping(ev::service::postgres_event_source& event_source,
                                    ev::service::event_bus& event_bus,
                                    ores::nats::service::client& nats) {
-    ev::service::registrar::register_mapping<dq::eventing::data_domain_changed_event>(
-        event_source, "ores.dq.data_domain", "ores_dq_data_domains");
+    // The trigger publishes on the table's own channel, and the mapping turns
+    // what it says into this entity's event.
+    event_source.register_entity_event_mapping<dq::messaging::data_domain_event>(
+        "ores_dq_data_domains");
 
-    return event_bus.subscribe<dq::eventing::data_domain_changed_event>(
-        [&nats](const dq::eventing::data_domain_changed_event& e) {
+    return event_bus.subscribe<dq::messaging::data_domain_event>(
+        [&nats](const dq::messaging::data_domain_event& e) {
+            // One payload is addressed by three subjects, so the subject is
+            // the collection's prefix and the action the event reports.
             ev::service::publish_entity_event(
-                nats,
-                std::string(
-                    ev::domain::event_traits<dq::eventing::data_domain_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.dq.data_domain",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.names,
-                                                .tenant_id = e.tenant_id});
+                nats, ev::domain::event_subject<dq::messaging::data_domain_event>(e.action), e);
         });
 }
 

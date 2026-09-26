@@ -17,67 +17,255 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_MESSAGING_DATASET_BUNDLE_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_DATASET_BUNDLE_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/dataset_bundle.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::dq::messaging {
 
-struct get_dataset_bundles_request {
-    using response_type = struct get_dataset_bundles_response;
+struct dataset_bundle_key {
+    std::string code;
+};
+
+struct dataset_bundle_write {
+    boost::uuids::uuid id;
+    std::string code;
+    std::string name;
+    std::string description;
+};
+
+struct dataset_bundle_change {
+    dataset_bundle_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct dataset_bundle_removal {
+    dataset_bundle_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct dataset_bundle_lookup {
+    dataset_bundle_key key;
+    std::optional<ores::dq::domain::dataset_bundle> dataset_bundle;
+};
+
+struct dataset_bundle_event {
+    boost::uuids::uuid event_id;
+    dataset_bundle_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct dataset_bundle_version_key {
+    dataset_bundle_key dataset_bundle;
+    std::uint32_t version;
+};
+
+struct dataset_bundle_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_dataset_bundles_request {
+    using response_type = struct list_dataset_bundles_response;
     static constexpr std::string_view nats_subject = "dq.v1.dataset_bundles.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
 };
 
-struct get_dataset_bundles_response {
+struct list_dataset_bundles_response {
+    ores::utility::domain::result result;
     std::vector<ores::dq::domain::dataset_bundle> bundles;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_dataset_bundle_request {
-    using response_type = struct save_dataset_bundle_response;
-    static constexpr std::string_view nats_subject = "dq.v1.dataset_bundles.save";
-    ores::dq::domain::dataset_bundle data;
-
-    static save_dataset_bundle_request from(ores::dq::domain::dataset_bundle v) {
-        return {.data = std::move(v)};
-    }
+struct get_dataset_bundle_request {
+    using response_type = struct get_dataset_bundle_response;
+    static constexpr std::string_view nats_subject = "dq.v1.dataset_bundles.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    dataset_bundle_key key;
 };
 
-struct save_dataset_bundle_response {
-    bool success = false;
-    std::string message;
+struct get_dataset_bundle_response {
+    ores::utility::domain::result result;
+    std::optional<ores::dq::domain::dataset_bundle> dataset_bundle;
+};
+
+struct get_many_dataset_bundles_request {
+    using response_type = struct get_many_dataset_bundles_response;
+    static constexpr std::string_view nats_subject = "dq.v1.dataset_bundles.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<dataset_bundle_key> keys;
+};
+
+struct get_many_dataset_bundles_response {
+    ores::utility::domain::result result;
+    std::vector<dataset_bundle_lookup> entries;
+};
+
+struct put_dataset_bundle_request {
+    using response_type = struct put_dataset_bundle_response;
+    static constexpr std::string_view nats_subject = "dq.v1.dataset_bundles.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    dataset_bundle_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_dataset_bundle_response {
+    ores::utility::domain::result result;
+    ores::dq::domain::dataset_bundle dataset_bundle;
+};
+
+struct put_many_dataset_bundles_request {
+    using response_type = struct put_many_dataset_bundles_response;
+    static constexpr std::string_view nats_subject = "dq.v1.dataset_bundles.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<dataset_bundle_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_dataset_bundles_response {
+    ores::utility::domain::result result;
+    std::vector<ores::dq::domain::dataset_bundle> bundles;
 };
 
 struct delete_dataset_bundle_request {
     using response_type = struct delete_dataset_bundle_response;
     static constexpr std::string_view nats_subject = "dq.v1.dataset_bundles.delete";
-    std::vector<std::string> ids;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    dataset_bundle_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_dataset_bundle_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_dataset_bundle_history_request {
-    using response_type = struct get_dataset_bundle_history_response;
-    static constexpr std::string_view nats_subject = "dq.v1.dataset_bundles.history";
-    std::string id;
+struct delete_many_dataset_bundles_request {
+    using response_type = struct delete_many_dataset_bundles_response;
+    static constexpr std::string_view nats_subject = "dq.v1.dataset_bundles.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<dataset_bundle_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_dataset_bundle_history_response {
-    std::vector<ores::dq::domain::dataset_bundle> history;
-    bool success = false;
-    std::string message;
+struct delete_many_dataset_bundles_response {
+    ores::utility::domain::result result;
 };
+
+struct list_dataset_bundle_versions_request {
+    using response_type = struct list_dataset_bundle_versions_response;
+    static constexpr std::string_view nats_subject = "dq.v1.dataset_bundles_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    dataset_bundle_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<dataset_bundle_versions_filter> filter;
+};
+
+struct list_dataset_bundle_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::dq::domain::dataset_bundle> versions;
+    std::uint64_t total;
+};
+
+struct get_dataset_bundle_version_request {
+    using response_type = struct get_dataset_bundle_version_response;
+    static constexpr std::string_view nats_subject = "dq.v1.dataset_bundles_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    dataset_bundle_version_key key;
+};
+
+struct get_dataset_bundle_version_response {
+    ores::utility::domain::result result;
+    ores::dq::domain::dataset_bundle version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace dataset_bundle_event_subjects {
+inline constexpr std::string_view created = "dq.v1.dataset_bundles_events.created";
+inline constexpr std::string_view updated = "dq.v1.dataset_bundles_events.updated";
+inline constexpr std::string_view deleted = "dq.v1.dataset_bundles_events.deleted";
+}
 
 }
 

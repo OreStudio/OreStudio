@@ -26,15 +26,17 @@ namespace ores #F2F2F2 {
         namespace domain #F2F2F2 {
             class system_setting <<struct>> {
                 +version : int
-                +tenant_id : string
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
                 +name : string
+                +party_id : boost::uuids::uuid
                 +value : string
                 +data_type : string
                 +description : string
                 +modified_by : string
+                +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +performed_by : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class system_setting_definition <<struct>> {
@@ -44,40 +46,130 @@ namespace ores #F2F2F2 {
                 +description : string_view
             }
         }
-        namespace eventing #F2F2F2 {
-            class system_setting_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +setting_names : vector<string>
-                +tenant_id : string
-            }
-        }
         namespace messaging #F2F2F2 {
-            class list_settings_request <<struct>> {
+            class clear_bootstrap_mode_request <<struct>> {
             }
-            class list_settings_response <<struct>> {
+            class clear_bootstrap_mode_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class complete_party_onboarding_request <<struct>> {
+                +party_id : boost::uuids::uuid
+            }
+            class complete_party_onboarding_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class system_setting_key <<struct>> {
+                +name : string
+            }
+            class system_setting_write <<struct>> {
+                +id : boost::uuids::uuid
+                +name : string
+                +party_id : boost::uuids::uuid
+                +value : string
+                +data_type : string
+                +description : string
+            }
+            class system_setting_change <<struct>> {
+                +write : system_setting_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class system_setting_removal <<struct>> {
+                +key : system_setting_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class system_setting_lookup <<struct>> {
+                +key : system_setting_key
+                +system_setting : optional<ores::variability::domain::system_setting>
+            }
+            class system_setting_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : system_setting_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class system_setting_version_key <<struct>> {
+                +system_setting : system_setting_key
+                +version : uint32_t
+            }
+            class system_setting_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_system_settings_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_system_settings_response <<struct>> {
+                +result : ores::utility::domain::result
+                +settings : vector<ores::variability::domain::system_setting>
+                +total : uint64_t
+            }
+            class get_system_setting_request <<struct>> {
+                +key : system_setting_key
+            }
+            class get_system_setting_response <<struct>> {
+                +result : ores::utility::domain::result
+                +system_setting : optional<ores::variability::domain::system_setting>
+            }
+            class get_many_system_settings_request <<struct>> {
+                +keys : vector<system_setting_key>
+            }
+            class get_many_system_settings_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<system_setting_lookup>
+            }
+            class put_system_setting_request <<struct>> {
+                +change : system_setting_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_system_setting_response <<struct>> {
+                +result : ores::utility::domain::result
+                +system_setting : ores::variability::domain::system_setting
+            }
+            class put_many_system_settings_request <<struct>> {
+                +changes : vector<system_setting_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_system_settings_response <<struct>> {
+                +result : ores::utility::domain::result
                 +settings : vector<ores::variability::domain::system_setting>
             }
-            class save_setting_request <<struct>> {
-                +data : ores::variability::domain::system_setting
+            class delete_system_setting_request <<struct>> {
+                +removal : system_setting_removal
+                +intent : ores::utility::domain::change_intent
             }
-            class save_setting_response <<struct>> {
-                +success : bool
-                +message : string
+            class delete_system_setting_response <<struct>> {
+                +result : ores::utility::domain::result
             }
-            class delete_setting_request <<struct>> {
-                +name : string
+            class delete_many_system_settings_request <<struct>> {
+                +removals : vector<system_setting_removal>
+                +intent : ores::utility::domain::change_intent
             }
-            class delete_setting_response <<struct>> {
-                +success : bool
-                +error_message : string
+            class delete_many_system_settings_response <<struct>> {
+                +result : ores::utility::domain::result
             }
-            class get_setting_history_request <<struct>> {
-                +name : string
+            class list_system_setting_versions_request <<struct>> {
+                +key : system_setting_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<system_setting_versions_filter>
             }
-            class get_setting_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::variability::domain::system_setting>
+            class list_system_setting_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::variability::domain::system_setting>
+                +total : uint64_t
+            }
+            class get_system_setting_version_request <<struct>> {
+                +key : system_setting_version_key
+            }
+            class get_system_setting_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::variability::domain::system_setting
             }
         }
     }

@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 97D5B848-DCF9-4E10-B71A-0F8BA866AE8F
+:END:
+#+title: Task: Migrate the storage consumers onto the shared interface
+#+description: Move ores.compute.wrapper, ores.ore, ores.reporting and the shell verbs onto the storage service contract, and delete the duplicate HTTP client, archiver and key builders the migration leaves behind.
+#+type: task
+#+level: s1
+#+filetags: :storage-nats-http-interface:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5EA439A5-43AE-4223-9026-6B3D8C91AEEA][Give object storage a NATS and HTTP interface with authentication]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every component that moves bytes calls the storage interface rather than its own
+copy of it, and the copies go. One HTTP client, one archiver and one set of key
+builders remain in the tree, the shell's storage verbs are the raw surface rather
+than five verbs named after their callers, and no consumer reaches storage
+through a hand-rolled path, key or retry loop.
+
+The buckets stay the consumers' business: each names its own, and nothing in
+storage needs to learn the names for the migration to work.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:5EA439A5-43AE-4223-9026-6B3D8C91AEEA][Give object storage a NATS and HTTP interface with authentication]] |
+| Now          | Not yet started.                       |
+| Waiting on   | The interface task: the api, core and service split and the modelled surface. |
+| Next         | Inventory the consumers and their duplicate machinery. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- =ores.compute.wrapper= links the storage interface and its own HTTP client and
+  archiver are deleted, including the download path that opens its destination
+  before it reads the status.
+- =ores.ore= and =ores.reporting= reach storage through the interface, and the
+  =report-data= bucket name each of them duplicates lives in one place per
+  component rather than in two anonymous namespaces.
+- The shell exposes the raw surface — a bucket, a key and a local path — and the
+  consumer verbs (=ore upload=, =compute publish-package=, =compute
+  download-input=, =compute download-output=) are thin wrappers over it.
+- The base URL is plumbed one way, not three, and no service defaults to a port
+  the server does not listen on.
+- A grep for a second Beast client, a second libarchive archiver or a hand-built
+  storage path outside the component returns nothing.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

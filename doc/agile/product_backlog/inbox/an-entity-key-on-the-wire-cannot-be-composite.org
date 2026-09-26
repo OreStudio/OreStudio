@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: E48F9C2E-E0FB-4B60-A0D5-A43E732B5FC5
+:END:
+#+title: An entity's key on the wire cannot be composite
+#+description: declared_key_field returns one field, so an entity whose identity is a pair cannot address a row and its by-key reads ignore half the key.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:protocol:keys:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A model declares the key its callers address with `:key_field:`, one field
+name. `declared_key_field` returns that one string, and every consumer renders
+a single-member key record from it. An entity whose identity is a pair of
+columns therefore cannot be addressed as the specification requires.
+
+A junction already emits a composite key, because its two sides are structural
+and the key record is built from them
+(=streaming/src/codegen/org_loader.py=, `junction` branch; a generated example
+is =projects/ores.assets/api/include/ores.assets.api/messaging/image_tag_protocol.hpp=,
+`image_tag_key { image_id; tag_id; }`). The =domain_entity= path has no
+equivalent.
+
+* Why
+
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] § "Keys" is explicit: a key is a record
+with one field per identifying column, each carrying the column's own type; an
+entity whose identity is composite carries all of its columns in every
+operation; a composite key is never flattened into a single string and never
+partially sent, because a partial key addresses a row that need not exist.
+
+The concrete case is =ores.variability.system_setting=. A setting is named
+within a tenant *and a party*: the same name may hold different values for two
+parties, so =party_id= is a natural key beside =name=, and the table says so —
+the generated composite unique index is on =(tenant_id, name, party_id)=.
+
+Because only one field can be declared, the generated surface is inconsistent
+with the table it was generated from:
+
+- the key record carries =name= alone
+  (=.audit/clean-variability/render=, the rendered =system_setting_key=);
+- the by-key read filters =tenant_id= and =name= and not =party_id=
+  (=read_latest_by_name=), so a name shared by two parties returns both rows
+  and the service takes an arbitrary one;
+- =delete= resolves through that same read, so a removal can close another
+  party's row.
+
+The last two are the defect the hand-written code carried and worked around:
+`remove(ctx, name, party_id)` exists only because name-only deletion closes
+every party's row sharing the name in the tenant, and the comment there says so.
+
+This is not a modelling error. The model states the identity correctly and the
+storage layer enforces it; the wire layer cannot express it.
+
+* References
+
+- =projects/ores.codegen/src/codegen/org_loader.py=, `declared_key_field`,
+  `declared_key_column`, `key_is_primary`, `key_finders`
+- =projects/ores.codegen/src/codegen/org_loader.py=, the `domain_entity`
+  protocol builder, where the single declared key becomes the key record
+- =projects/ores.assets/api/include/ores.assets.api/messaging/image_tag_protocol.hpp=
+  — the composite key record a junction already emits
+- =doc/agile/versions/v0/sprint_26/clean-variability/task_clean_variability.org=
+  — D1 and D4, where this was found
+- =projects/ores.variability/modeling/ores.variability.system_setting.org= —
+  the model that exposes it
+
+* Proposed direction
+
+Add =key_fields= (a list) beside =key_field=, defaulting to the one-element
+list, so no existing model's output changes. The key record then carries one
+member per declared field, the by-key reads take every field, and the
+addresses that name a key follow. Single-key entities must render byte for
+byte as they do today, which =check_component_drift.py --all= proves.
+
+* See also
+
+- [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]]

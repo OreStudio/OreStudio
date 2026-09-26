@@ -20,7 +20,7 @@
 #ifndef ORES_ORE_API_NET_ORE_STORAGE_HPP
 #define ORES_ORE_API_NET_ORE_STORAGE_HPP
 
-#include "ores.storage/net/storage_paths.hpp"
+#include "ores.storage.api/net/storage_paths.hpp"
 #include <string>
 #include <string_view>
 

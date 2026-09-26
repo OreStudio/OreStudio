@@ -17,10 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.variability.core/repository/system_setting_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.variability.api/domain/system_setting_json_io.hpp" // IWYU pragma: keep.
-#include <algorithm>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::variability::repository {
 
@@ -32,9 +38,13 @@ domain::system_setting system_setting_mapper::map(const system_setting_entity& v
 
     domain::system_setting r;
     r.version = v.version;
-    r.tenant_id = v.tenant_id;
-    r.party_id = v.party_id;
-    r.name = v.name.value();
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+
+    r.name = v.name;
+
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+
     r.value = v.value;
     r.data_type = v.data_type;
     r.description = v.description;
@@ -52,10 +62,14 @@ system_setting_entity system_setting_mapper::map(const domain::system_setting& v
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     system_setting_entity r;
-    r.name = v.name;
-    r.tenant_id = v.tenant_id;
-    r.party_id = v.party_id;
+    r.id = boost::uuids::to_string(v.id);
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
+    r.name = v.name;
+
+    r.party_id = boost::uuids::to_string(v.party_id);
+
     r.value = v.value;
     r.data_type = v.data_type;
     r.description = v.description;
@@ -63,7 +77,6 @@ system_setting_entity system_setting_mapper::map(const domain::system_setting& v
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    // Note: recorded_at is read-only; valid_from/valid_to are managed by triggers
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

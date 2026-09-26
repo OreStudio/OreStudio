@@ -29,6 +29,8 @@ set_target_properties(${tests_target_name}
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
+        ores.eventing.api.lib
+        ores.eventing.core.lib
         ores.utility.lib
         ores.testing.lib
         ores.openssl_cleanup

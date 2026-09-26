@@ -1,0 +1,1596 @@
+Regenerating component 'iam' at address 'ores.cmake'...
+INFO Regenerating 21 models for component 'iam' (address: ores.cmake)...
+Generated projects/ores.iam/CMakeLists.txt
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/CMakeLists.txt
+INFO Regeneration complete.
+Regenerating component 'iam' at address 'ores.cpp'...
+INFO Regenerating 21 models for component 'iam' (address: ores.cpp)...
+WARNING component_overview.org: nothing to generate for 'ores.cpp' (model type 'component')
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account.hpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account_json_io.hpp
+Generated projects/ores.iam/api/src/domain/account_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/account_json_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account_table.hpp
+Generated projects/ores.iam/api/src/domain/account_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/account_table.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account_table_io.hpp
+Generated projects/ores.iam/api/src/domain/account_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/account_table_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/generators/account_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/generators/account_generator.hpp
+Generated projects/ores.iam/api/src/generators/account_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/generators/account_generator.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/account_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/account_history_provider_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/account_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/account_history_provider_registrar.cpp
+Generated projects/ores.iam/service/include/ores.iam.service/messaging/account_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/include/ores.iam.service/messaging/account_event_registrar.hpp
+Generated projects/ores.iam/service/src/messaging/account_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/src/messaging/account_event_registrar.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/eventing/account_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/eventing/account_event.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/account_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/account_handler.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/account_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/account_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/account_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/account_registrar.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/presentation/account_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/presentation/account_history_field_mapper.hpp
+Generated projects/ores.iam/core/src/presentation/account_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/presentation/account_history_field_mapper.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/account_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/account_protocol.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/account_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/account_entity.hpp
+Generated projects/ores.iam/core/src/repository/account_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/account_entity.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/account_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/account_mapper.hpp
+Generated projects/ores.iam/core/src/repository/account_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/account_mapper.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/account_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/account_repository.hpp
+Generated projects/ores.iam/core/src/repository/account_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/account_repository.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/service/account_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/service/account_service.hpp
+Generated projects/ores.iam/core/src/service/account_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/service/account_service.cpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/account_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/account_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/account_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/account_commands.cpp
+Generated projects/ores.shell/iam/tests/account_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/account_commands_tests.cpp
+INFO clang-formatted 31 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account_contact_information.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account_contact_information.hpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account_contact_information_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account_contact_information_json_io.hpp
+Generated projects/ores.iam/api/src/domain/account_contact_information_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/account_contact_information_json_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account_contact_information_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account_contact_information_table.hpp
+Generated projects/ores.iam/api/src/domain/account_contact_information_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/account_contact_information_table.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account_contact_information_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account_contact_information_table_io.hpp
+Generated projects/ores.iam/api/src/domain/account_contact_information_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/account_contact_information_table_io.cpp
+Generated projects/ores.iam/core/tests/account_contact_information_eventing_integration_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/tests/account_contact_information_eventing_integration_tests.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/generators/account_contact_information_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/generators/account_contact_information_generator.hpp
+Generated projects/ores.iam/api/src/generators/account_contact_information_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/generators/account_contact_information_generator.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/account_contact_information_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/account_contact_information_history_provider_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/account_contact_information_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/account_contact_information_history_provider_registrar.cpp
+Generated projects/ores.iam/service/include/ores.iam.service/messaging/account_contact_information_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/include/ores.iam.service/messaging/account_contact_information_event_registrar.hpp
+Generated projects/ores.iam/service/src/messaging/account_contact_information_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/src/messaging/account_contact_information_event_registrar.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/eventing/account_contact_information_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/eventing/account_contact_information_event.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/account_contact_information_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/account_contact_information_handler.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/account_contact_information_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/account_contact_information_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/account_contact_information_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/account_contact_information_registrar.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/presentation/account_contact_information_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/presentation/account_contact_information_history_field_mapper.hpp
+Generated projects/ores.iam/core/src/presentation/account_contact_information_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/presentation/account_contact_information_history_field_mapper.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/account_contact_information_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/account_contact_information_protocol.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/account_contact_information_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/account_contact_information_entity.hpp
+Generated projects/ores.iam/core/src/repository/account_contact_information_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/account_contact_information_entity.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/account_contact_information_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/account_contact_information_mapper.hpp
+Generated projects/ores.iam/core/src/repository/account_contact_information_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/account_contact_information_mapper.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/account_contact_information_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/account_contact_information_repository.hpp
+Generated projects/ores.iam/core/src/repository/account_contact_information_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/account_contact_information_repository.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/service/account_contact_information_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/service/account_contact_information_service.hpp
+Generated projects/ores.iam/core/src/service/account_contact_information_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/service/account_contact_information_service.cpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/account_contact_information_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/account_contact_information_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/account_contact_information_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/account_contact_information_commands.cpp
+Generated projects/ores.shell/iam/tests/account_contact_information_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/account_contact_information_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/account_operations_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/account_operations_protocol.hpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/account_operations_operations_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/account_operations_operations_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/account_operations_operations_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/account_operations_operations_commands.cpp
+Generated projects/ores.shell/iam/tests/account_operations_operations_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/account_operations_operations_commands_tests.cpp
+INFO clang-formatted 4 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account_party.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account_party.hpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account_party_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account_party_json_io.hpp
+Generated projects/ores.iam/api/src/domain/account_party_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/account_party_json_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account_party_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account_party_table.hpp
+Generated projects/ores.iam/api/src/domain/account_party_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/account_party_table.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account_party_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account_party_table_io.hpp
+Generated projects/ores.iam/api/src/domain/account_party_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/account_party_table_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/generators/account_party_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/generators/account_party_generator.hpp
+Generated projects/ores.iam/api/src/generators/account_party_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/generators/account_party_generator.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/account_party_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/account_party_protocol.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/account_party_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/account_party_entity.hpp
+Generated projects/ores.iam/core/src/repository/account_party_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/account_party_entity.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/account_party_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/account_party_mapper.hpp
+Generated projects/ores.iam/core/src/repository/account_party_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/account_party_mapper.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/account_party_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/account_party_repository.hpp
+Generated projects/ores.iam/core/src/repository/account_party_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/account_party_repository.cpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/account_party_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/account_party_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/account_party_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/account_party_commands.cpp
+Generated projects/ores.shell/iam/tests/account_party_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/account_party_commands_tests.cpp
+INFO clang-formatted 19 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account_type.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account_type.hpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account_type_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account_type_json_io.hpp
+Generated projects/ores.iam/api/src/domain/account_type_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/account_type_json_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account_type_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account_type_table.hpp
+Generated projects/ores.iam/api/src/domain/account_type_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/account_type_table.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/account_type_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/account_type_table_io.hpp
+Generated projects/ores.iam/api/src/domain/account_type_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/account_type_table_io.cpp
+Generated projects/ores.iam/core/tests/account_type_eventing_integration_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/tests/account_type_eventing_integration_tests.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/generators/account_type_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/generators/account_type_generator.hpp
+Generated projects/ores.iam/api/src/generators/account_type_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/generators/account_type_generator.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/account_type_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/account_type_history_provider_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/account_type_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/account_type_history_provider_registrar.cpp
+Generated projects/ores.iam/service/include/ores.iam.service/messaging/account_type_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/include/ores.iam.service/messaging/account_type_event_registrar.hpp
+Generated projects/ores.iam/service/src/messaging/account_type_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/src/messaging/account_type_event_registrar.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/eventing/account_type_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/eventing/account_type_event.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/account_type_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/account_type_handler.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/account_type_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/account_type_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/account_type_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/account_type_registrar.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/presentation/account_type_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/presentation/account_type_history_field_mapper.hpp
+Generated projects/ores.iam/core/src/presentation/account_type_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/presentation/account_type_history_field_mapper.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/account_type_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/account_type_protocol.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/account_type_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/account_type_entity.hpp
+Generated projects/ores.iam/core/src/repository/account_type_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/account_type_entity.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/account_type_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/account_type_mapper.hpp
+Generated projects/ores.iam/core/src/repository/account_type_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/account_type_mapper.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/account_type_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/account_type_repository.hpp
+Generated projects/ores.iam/core/src/repository/account_type_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/account_type_repository.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/service/account_type_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/service/account_type_service.hpp
+Generated projects/ores.iam/core/src/service/account_type_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/service/account_type_service.cpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/account_type_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/account_type_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/account_type_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/account_type_commands.cpp
+Generated projects/ores.shell/iam/tests/account_type_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/account_type_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/authorization_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/authorization_protocol.hpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/authorization_operations_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/authorization_operations_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/authorization_operations_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/authorization_operations_commands.cpp
+Generated projects/ores.shell/iam/tests/authorization_operations_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/authorization_operations_commands_tests.cpp
+INFO clang-formatted 4 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/bootstrap_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/bootstrap_protocol.hpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/bootstrap_operations_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/bootstrap_operations_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/bootstrap_operations_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/bootstrap_operations_commands.cpp
+Generated projects/ores.shell/iam/tests/bootstrap_operations_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/bootstrap_operations_commands_tests.cpp
+INFO clang-formatted 4 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/domain/login_info.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/login_info.hpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/login_info_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/login_info_json_io.hpp
+Generated projects/ores.iam/api/src/domain/login_info_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/login_info_json_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/login_info_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/login_info_table.hpp
+Generated projects/ores.iam/api/src/domain/login_info_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/login_info_table.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/login_info_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/login_info_table_io.hpp
+Generated projects/ores.iam/api/src/domain/login_info_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/login_info_table_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/generators/login_info_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/generators/login_info_generator.hpp
+Generated projects/ores.iam/api/src/generators/login_info_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/generators/login_info_generator.cpp
+Generated projects/ores.iam/service/include/ores.iam.service/messaging/login_info_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/include/ores.iam.service/messaging/login_info_event_registrar.hpp
+Generated projects/ores.iam/service/src/messaging/login_info_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/src/messaging/login_info_event_registrar.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/eventing/login_info_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/eventing/login_info_event.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/login_info_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/login_info_handler.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/login_info_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/login_info_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/login_info_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/login_info_registrar.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/login_info_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/login_info_protocol.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/login_info_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/login_info_entity.hpp
+Generated projects/ores.iam/core/src/repository/login_info_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/login_info_entity.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/login_info_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/login_info_mapper.hpp
+Generated projects/ores.iam/core/src/repository/login_info_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/login_info_mapper.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/login_info_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/login_info_repository.hpp
+Generated projects/ores.iam/core/src/repository/login_info_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/login_info_repository.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/service/login_info_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/service/login_info_service.hpp
+Generated projects/ores.iam/core/src/service/login_info_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/service/login_info_service.cpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/login_info_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/login_info_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/login_info_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/login_info_commands.cpp
+Generated projects/ores.shell/iam/tests/login_info_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/login_info_commands_tests.cpp
+INFO clang-formatted 27 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/login_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/login_protocol.hpp
+INFO clang-formatted 1 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/domain/permission.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/permission.hpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/permission_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/permission_json_io.hpp
+Generated projects/ores.iam/api/src/domain/permission_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/permission_json_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/permission_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/permission_table.hpp
+Generated projects/ores.iam/api/src/domain/permission_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/permission_table.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/permission_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/permission_table_io.hpp
+Generated projects/ores.iam/api/src/domain/permission_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/permission_table_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/generators/permission_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/generators/permission_generator.hpp
+Generated projects/ores.iam/api/src/generators/permission_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/generators/permission_generator.cpp
+Generated projects/ores.iam/service/include/ores.iam.service/messaging/permission_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/include/ores.iam.service/messaging/permission_event_registrar.hpp
+Generated projects/ores.iam/service/src/messaging/permission_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/src/messaging/permission_event_registrar.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/eventing/permission_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/eventing/permission_event.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/permission_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/permission_handler.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/permission_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/permission_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/permission_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/permission_registrar.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/presentation/permission_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/presentation/permission_history_field_mapper.hpp
+Generated projects/ores.iam/core/src/presentation/permission_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/presentation/permission_history_field_mapper.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/permission_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/permission_protocol.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/permission_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/permission_entity.hpp
+Generated projects/ores.iam/core/src/repository/permission_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/permission_entity.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/permission_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/permission_mapper.hpp
+Generated projects/ores.iam/core/src/repository/permission_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/permission_mapper.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/permission_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/permission_repository.hpp
+Generated projects/ores.iam/core/src/repository/permission_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/permission_repository.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/service/permission_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/service/permission_service.hpp
+Generated projects/ores.iam/core/src/service/permission_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/service/permission_service.cpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/permission_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/permission_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/permission_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/permission_commands.cpp
+Generated projects/ores.shell/iam/tests/permission_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/permission_commands_tests.cpp
+INFO clang-formatted 29 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/reset_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/reset_protocol.hpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/reset_operations_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/reset_operations_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/reset_operations_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/reset_operations_commands.cpp
+Generated projects/ores.shell/iam/tests/reset_operations_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/reset_operations_commands_tests.cpp
+INFO clang-formatted 4 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/domain/role.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/role.hpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/role_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/role_json_io.hpp
+Generated projects/ores.iam/api/src/domain/role_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/role_json_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/role_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/role_table.hpp
+Generated projects/ores.iam/api/src/domain/role_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/role_table.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/role_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/role_table_io.hpp
+Generated projects/ores.iam/api/src/domain/role_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/role_table_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/generators/role_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/generators/role_generator.hpp
+Generated projects/ores.iam/api/src/generators/role_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/generators/role_generator.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/role_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/role_history_provider_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/role_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/role_history_provider_registrar.cpp
+Generated projects/ores.iam/service/include/ores.iam.service/messaging/role_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/include/ores.iam.service/messaging/role_event_registrar.hpp
+Generated projects/ores.iam/service/src/messaging/role_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/src/messaging/role_event_registrar.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/eventing/role_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/eventing/role_event.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/role_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/role_handler.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/role_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/role_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/role_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/role_registrar.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/presentation/role_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/presentation/role_history_field_mapper.hpp
+Generated projects/ores.iam/core/src/presentation/role_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/presentation/role_history_field_mapper.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/role_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/role_protocol.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/role_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/role_entity.hpp
+Generated projects/ores.iam/core/src/repository/role_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/role_entity.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/role_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/role_mapper.hpp
+Generated projects/ores.iam/core/src/repository/role_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/role_mapper.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/role_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/role_repository.hpp
+Generated projects/ores.iam/core/src/repository/role_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/role_repository.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/service/role_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/service/role_service.hpp
+Generated projects/ores.iam/core/src/service/role_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/service/role_service.cpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/role_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/role_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/role_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/role_commands.cpp
+Generated projects/ores.shell/iam/tests/role_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/role_commands_tests.cpp
+INFO clang-formatted 31 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/domain/session.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/session.hpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/session_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/session_json_io.hpp
+Generated projects/ores.iam/api/src/domain/session_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/session_json_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/session_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/session_table.hpp
+Generated projects/ores.iam/api/src/domain/session_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/session_table.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/session_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/session_table_io.hpp
+Generated projects/ores.iam/api/src/domain/session_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/session_table_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/generators/session_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/generators/session_generator.hpp
+Generated projects/ores.iam/api/src/generators/session_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/generators/session_generator.cpp
+Generated projects/ores.iam/service/include/ores.iam.service/messaging/session_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/include/ores.iam.service/messaging/session_event_registrar.hpp
+Generated projects/ores.iam/service/src/messaging/session_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/src/messaging/session_event_registrar.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/eventing/session_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/eventing/session_event.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/session_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/session_handler.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/session_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/session_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/session_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/session_registrar.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/session_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/session_protocol.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/session_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/session_entity.hpp
+Generated projects/ores.iam/core/src/repository/session_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/session_entity.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/session_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/session_mapper.hpp
+Generated projects/ores.iam/core/src/repository/session_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/session_mapper.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/session_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/session_repository.hpp
+Generated projects/ores.iam/core/src/repository/session_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/session_repository.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/service/session_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/service/session_service.hpp
+Generated projects/ores.iam/core/src/service/session_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/service/session_service.cpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/session_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/session_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/session_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/session_commands.cpp
+Generated projects/ores.shell/iam/tests/session_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/session_commands_tests.cpp
+INFO clang-formatted 27 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/session_operations_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/session_operations_protocol.hpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/session_operations_operations_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/session_operations_operations_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/session_operations_operations_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/session_operations_operations_commands.cpp
+Generated projects/ores.shell/iam/tests/session_operations_operations_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/session_operations_operations_commands_tests.cpp
+INFO clang-formatted 4 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/session_samples_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/session_samples_protocol.hpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/session_samples_operations_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/session_samples_operations_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/session_samples_operations_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/session_samples_operations_commands.cpp
+Generated projects/ores.shell/iam/tests/session_samples_operations_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/session_samples_operations_commands_tests.cpp
+INFO clang-formatted 4 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/signup_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/signup_protocol.hpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/signup_operations_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/signup_operations_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/signup_operations_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/signup_operations_commands.cpp
+Generated projects/ores.shell/iam/tests/signup_operations_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/signup_operations_commands_tests.cpp
+INFO clang-formatted 4 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/domain/tenant.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/tenant.hpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/tenant_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/tenant_json_io.hpp
+Generated projects/ores.iam/api/src/domain/tenant_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/tenant_json_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/tenant_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/tenant_table.hpp
+Generated projects/ores.iam/api/src/domain/tenant_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/tenant_table.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/tenant_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/tenant_table_io.hpp
+Generated projects/ores.iam/api/src/domain/tenant_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/tenant_table_io.cpp
+Generated projects/ores.iam/core/tests/tenant_eventing_integration_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/tests/tenant_eventing_integration_tests.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/generators/tenant_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/generators/tenant_generator.hpp
+Generated projects/ores.iam/api/src/generators/tenant_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/generators/tenant_generator.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/tenant_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/tenant_history_provider_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/tenant_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/tenant_history_provider_registrar.cpp
+Generated projects/ores.iam/service/include/ores.iam.service/messaging/tenant_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/include/ores.iam.service/messaging/tenant_event_registrar.hpp
+Generated projects/ores.iam/service/src/messaging/tenant_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/src/messaging/tenant_event_registrar.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/eventing/tenant_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/eventing/tenant_event.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/tenant_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/tenant_handler.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/tenant_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/tenant_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/tenant_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/tenant_registrar.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/presentation/tenant_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/presentation/tenant_history_field_mapper.hpp
+Generated projects/ores.iam/core/src/presentation/tenant_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/presentation/tenant_history_field_mapper.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/tenant_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/tenant_protocol.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/tenant_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/tenant_entity.hpp
+Generated projects/ores.iam/core/src/repository/tenant_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/tenant_entity.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/tenant_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/tenant_mapper.hpp
+Generated projects/ores.iam/core/src/repository/tenant_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/tenant_mapper.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/tenant_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/tenant_repository.hpp
+Generated projects/ores.iam/core/src/repository/tenant_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/tenant_repository.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/service/tenant_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/service/tenant_service.hpp
+Generated projects/ores.iam/core/src/service/tenant_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/service/tenant_service.cpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/tenant_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/tenant_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/tenant_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/tenant_commands.cpp
+Generated projects/ores.shell/iam/tests/tenant_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/tenant_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/tenant_provisioning_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/tenant_provisioning_protocol.hpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/tenant_provisioning_operations_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/tenant_provisioning_operations_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/tenant_provisioning_operations_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/tenant_provisioning_operations_commands.cpp
+Generated projects/ores.shell/iam/tests/tenant_provisioning_operations_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/tenant_provisioning_operations_commands_tests.cpp
+INFO clang-formatted 4 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/domain/tenant_status.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/tenant_status.hpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/tenant_status_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/tenant_status_json_io.hpp
+Generated projects/ores.iam/api/src/domain/tenant_status_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/tenant_status_json_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/tenant_status_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/tenant_status_table.hpp
+Generated projects/ores.iam/api/src/domain/tenant_status_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/tenant_status_table.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/tenant_status_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/tenant_status_table_io.hpp
+Generated projects/ores.iam/api/src/domain/tenant_status_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/tenant_status_table_io.cpp
+Generated projects/ores.iam/core/tests/tenant_status_eventing_integration_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/tests/tenant_status_eventing_integration_tests.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/generators/tenant_status_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/generators/tenant_status_generator.hpp
+Generated projects/ores.iam/api/src/generators/tenant_status_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/generators/tenant_status_generator.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/tenant_status_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/tenant_status_history_provider_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/tenant_status_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/tenant_status_history_provider_registrar.cpp
+Generated projects/ores.iam/service/include/ores.iam.service/messaging/tenant_status_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/include/ores.iam.service/messaging/tenant_status_event_registrar.hpp
+Generated projects/ores.iam/service/src/messaging/tenant_status_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/src/messaging/tenant_status_event_registrar.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/eventing/tenant_status_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/eventing/tenant_status_event.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/tenant_status_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/tenant_status_handler.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/tenant_status_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/tenant_status_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/tenant_status_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/tenant_status_registrar.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/presentation/tenant_status_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/presentation/tenant_status_history_field_mapper.hpp
+Generated projects/ores.iam/core/src/presentation/tenant_status_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/presentation/tenant_status_history_field_mapper.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/tenant_status_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/tenant_status_protocol.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/tenant_status_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/tenant_status_entity.hpp
+Generated projects/ores.iam/core/src/repository/tenant_status_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/tenant_status_entity.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/tenant_status_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/tenant_status_mapper.hpp
+Generated projects/ores.iam/core/src/repository/tenant_status_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/tenant_status_mapper.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/tenant_status_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/tenant_status_repository.hpp
+Generated projects/ores.iam/core/src/repository/tenant_status_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/tenant_status_repository.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/service/tenant_status_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/service/tenant_status_service.hpp
+Generated projects/ores.iam/core/src/service/tenant_status_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/service/tenant_status_service.cpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/tenant_status_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/tenant_status_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/tenant_status_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/tenant_status_commands.cpp
+Generated projects/ores.shell/iam/tests/tenant_status_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/tenant_status_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.iam/api/include/ores.iam.api/domain/tenant_type.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/tenant_type.hpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/tenant_type_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/tenant_type_json_io.hpp
+Generated projects/ores.iam/api/src/domain/tenant_type_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/tenant_type_json_io.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/tenant_type_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/tenant_type_table.hpp
+Generated projects/ores.iam/api/src/domain/tenant_type_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/tenant_type_table.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/domain/tenant_type_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/domain/tenant_type_table_io.hpp
+Generated projects/ores.iam/api/src/domain/tenant_type_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/domain/tenant_type_table_io.cpp
+Generated projects/ores.iam/core/tests/tenant_type_eventing_integration_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/tests/tenant_type_eventing_integration_tests.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/generators/tenant_type_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/generators/tenant_type_generator.hpp
+Generated projects/ores.iam/api/src/generators/tenant_type_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/src/generators/tenant_type_generator.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/tenant_type_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/tenant_type_history_provider_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/tenant_type_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/tenant_type_history_provider_registrar.cpp
+Generated projects/ores.iam/service/include/ores.iam.service/messaging/tenant_type_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/include/ores.iam.service/messaging/tenant_type_event_registrar.hpp
+Generated projects/ores.iam/service/src/messaging/tenant_type_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/service/src/messaging/tenant_type_event_registrar.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/eventing/tenant_type_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/eventing/tenant_type_event.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/tenant_type_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/tenant_type_handler.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/messaging/tenant_type_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/messaging/tenant_type_registrar.hpp
+Generated projects/ores.iam/core/src/messaging/tenant_type_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/messaging/tenant_type_registrar.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/presentation/tenant_type_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/presentation/tenant_type_history_field_mapper.hpp
+Generated projects/ores.iam/core/src/presentation/tenant_type_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/presentation/tenant_type_history_field_mapper.cpp
+Generated projects/ores.iam/api/include/ores.iam.api/messaging/tenant_type_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/api/include/ores.iam.api/messaging/tenant_type_protocol.hpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/tenant_type_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/tenant_type_entity.hpp
+Generated projects/ores.iam/core/src/repository/tenant_type_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/tenant_type_entity.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/tenant_type_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/tenant_type_mapper.hpp
+Generated projects/ores.iam/core/src/repository/tenant_type_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/tenant_type_mapper.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/repository/tenant_type_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/repository/tenant_type_repository.hpp
+Generated projects/ores.iam/core/src/repository/tenant_type_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/repository/tenant_type_repository.cpp
+Generated projects/ores.iam/core/include/ores.iam.core/service/tenant_type_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/include/ores.iam.core/service/tenant_type_service.hpp
+Generated projects/ores.iam/core/src/service/tenant_type_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.iam/core/src/service/tenant_type_service.cpp
+Generated projects/ores.shell/iam/include/ores.shell/app/commands/iam/tenant_type_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/include/ores.shell/app/commands/iam/tenant_type_commands.hpp
+Generated projects/ores.shell/iam/src/app/commands/iam/tenant_type_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/src/app/commands/iam/tenant_type_commands.cpp
+Generated projects/ores.shell/iam/tests/tenant_type_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/iam/tests/tenant_type_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+INFO Regeneration complete.
+Regenerating component 'iam' at address 'ores.doc'...
+INFO Regenerating 21 models for component 'iam' (address: ores.doc)...
+WARNING component_overview.org: nothing to generate for 'ores.doc' (model type 'component')
+Generated doc/recipes/shell/accounts/account.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/accounts/account.org
+Generated doc/recipes/shell/account_contact_informations/account_contact_information.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/account_contact_informations/account_contact_information.org
+Generated doc/recipes/shell/account_operations/account_operations.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/account_operations/account_operations.org
+Generated doc/recipes/shell/account_parties/account_party.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/account_parties/account_party.org
+Generated doc/recipes/shell/account_types/account_type.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/account_types/account_type.org
+Generated doc/recipes/shell/authorization/authorization.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/authorization/authorization.org
+Generated doc/recipes/shell/bootstrap/bootstrap.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/bootstrap/bootstrap.org
+Generated doc/recipes/shell/login_info/login_info.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/login_info/login_info.org
+WARNING ores.iam.login_messages.org: nothing to generate for 'ores.doc' (model type 'operation')
+Generated doc/recipes/shell/permissions/permission.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/permissions/permission.org
+Generated doc/recipes/shell/reset/reset.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/reset/reset.org
+Generated doc/recipes/shell/roles/role.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/roles/role.org
+Generated doc/recipes/shell/sessions/session.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/sessions/session.org
+Generated doc/recipes/shell/session_operations/session_operations.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/session_operations/session_operations.org
+Generated doc/recipes/shell/session_samples/session_samples.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/session_samples/session_samples.org
+Generated doc/recipes/shell/signup/signup.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/signup/signup.org
+Generated doc/recipes/shell/tenants/tenant.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/tenants/tenant.org
+Generated doc/recipes/shell/tenant_provisioning/tenant_provisioning.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/tenant_provisioning/tenant_provisioning.org
+Generated doc/recipes/shell/tenant_statuses/tenant_status.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/tenant_statuses/tenant_status.org
+Generated doc/recipes/shell/tenant_types/tenant_type.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/tenant_types/tenant_type.org
+INFO Regeneration complete.
+Regenerating component 'iam' at address 'ores.plantuml'...
+INFO Regenerating 21 models for component 'iam' (address: ores.plantuml)...
+INFO Regeneration complete.
+Regenerating component 'iam' at address 'ores.shell'...
+INFO Regenerating 21 models for component 'iam' (address: ores.shell)...
+INFO Regeneration complete.
+Regenerating component 'iam' at address 'ores.sql'...
+INFO Regenerating 21 models for component 'iam' (address: ores.sql)...
+Generated projects/ores.sql/create/iam/iam_accounts_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_accounts_create.sql
+Generated projects/ores.sql/drop/iam/iam_accounts_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_accounts_drop.sql
+Generated projects/ores.sql/create/iam/iam_accounts_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_accounts_notify_trigger_create.sql
+Generated projects/ores.sql/drop/iam/iam_accounts_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_accounts_notify_trigger_drop.sql
+Generated projects/ores.sql/create/iam/iam_account_contact_informations_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_account_contact_informations_create.sql
+Generated projects/ores.sql/drop/iam/iam_account_contact_informations_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_account_contact_informations_drop.sql
+Generated projects/ores.sql/create/iam/iam_account_contact_informations_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_account_contact_informations_notify_trigger_create.sql
+Generated projects/ores.sql/drop/iam/iam_account_contact_informations_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_account_contact_informations_notify_trigger_drop.sql
+Generated projects/ores.sql/create/iam/iam_account_party_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_account_party_create.sql
+Generated projects/ores.sql/create/iam/iam_account_types_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_account_types_create.sql
+Generated projects/ores.sql/drop/iam/iam_account_types_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_account_types_drop.sql
+Generated projects/ores.sql/create/iam/iam_account_types_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_account_types_notify_trigger_create.sql
+Generated projects/ores.sql/drop/iam/iam_account_types_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_account_types_notify_trigger_drop.sql
+Generated projects/ores.sql/create/iam/iam_login_info_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_login_info_create.sql
+Generated projects/ores.sql/drop/iam/iam_login_info_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_login_info_drop.sql
+Generated projects/ores.sql/create/iam/iam_login_info_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_login_info_notify_trigger_create.sql
+Generated projects/ores.sql/drop/iam/iam_login_info_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_login_info_notify_trigger_drop.sql
+Generated projects/ores.sql/create/iam/iam_permissions_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_permissions_create.sql
+Generated projects/ores.sql/drop/iam/iam_permissions_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_permissions_drop.sql
+Generated projects/ores.sql/create/iam/iam_permissions_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_permissions_notify_trigger_create.sql
+Generated projects/ores.sql/drop/iam/iam_permissions_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_permissions_notify_trigger_drop.sql
+Generated projects/ores.sql/create/iam/iam_roles_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_roles_create.sql
+Generated projects/ores.sql/drop/iam/iam_roles_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_roles_drop.sql
+Generated projects/ores.sql/create/iam/iam_roles_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_roles_notify_trigger_create.sql
+Generated projects/ores.sql/drop/iam/iam_roles_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_roles_notify_trigger_drop.sql
+Generated projects/ores.sql/create/iam/iam_sessions_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_sessions_create.sql
+Generated projects/ores.sql/drop/iam/iam_sessions_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_sessions_drop.sql
+Generated projects/ores.sql/create/iam/iam_sessions_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_sessions_notify_trigger_create.sql
+Generated projects/ores.sql/drop/iam/iam_sessions_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_sessions_notify_trigger_drop.sql
+Generated projects/ores.sql/create/iam/iam_tenants_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_tenants_create.sql
+Generated projects/ores.sql/drop/iam/iam_tenants_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_tenants_drop.sql
+Generated projects/ores.sql/create/iam/iam_tenants_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_tenants_notify_trigger_create.sql
+Generated projects/ores.sql/drop/iam/iam_tenants_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_tenants_notify_trigger_drop.sql
+Generated projects/ores.sql/create/iam/iam_tenant_statuses_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_tenant_statuses_create.sql
+Generated projects/ores.sql/drop/iam/iam_tenant_statuses_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_tenant_statuses_drop.sql
+Generated projects/ores.sql/create/iam/iam_tenant_statuses_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_tenant_statuses_notify_trigger_create.sql
+Generated projects/ores.sql/drop/iam/iam_tenant_statuses_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_tenant_statuses_notify_trigger_drop.sql
+Generated projects/ores.sql/create/iam/iam_tenant_types_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_tenant_types_create.sql
+Generated projects/ores.sql/drop/iam/iam_tenant_types_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_tenant_types_drop.sql
+Generated projects/ores.sql/create/iam/iam_tenant_types_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/iam/iam_tenant_types_notify_trigger_create.sql
+Generated projects/ores.sql/drop/iam/iam_tenant_types_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/iam/iam_tenant_types_notify_trigger_drop.sql
+INFO Regeneration complete.
+Regenerating component 'iam' at address 'ores.ts.domain'...
+INFO Regenerating 21 models for component 'iam' (address: ores.ts.domain)...
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/domain/account.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/domain/account.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/domain/account_contact_information.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/domain/account_contact_information.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/domain/account_party.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/domain/account_party.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/domain/account_type.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/domain/account_type.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/domain/login_info.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/domain/login_info.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/domain/permission.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/domain/permission.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/domain/role.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/domain/role.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/domain/session.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/domain/session.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/domain/tenant.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/domain/tenant.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/domain/tenant_status.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/domain/tenant_status.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/domain/tenant_type.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/domain/tenant_type.ts
+INFO Regeneration complete.
+Regenerating component 'iam' at address 'ores.ts.protocol'...
+INFO Regenerating 21 models for component 'iam' (address: ores.ts.protocol)...
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/account_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/account_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/account_contact_information_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/account_contact_information_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/account_operations_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/account_operations_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/account_party_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/account_party_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/account_type_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/account_type_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/authorization_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/authorization_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/bootstrap_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/bootstrap_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/login_info_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/login_info_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/login_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/login_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/permission_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/permission_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/reset_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/reset_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/role_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/role_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/session_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/session_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/session_operations_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/session_operations_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/session_samples_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/session_samples_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/signup_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/signup_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/tenant_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/tenant_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/tenant_provisioning_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/tenant_provisioning_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/tenant_status_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/tenant_status_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/tenant_type_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/tenant_type_protocol.ts
+INFO Regeneration complete.
+Regenerating component 'compute-cpp' at address 'ores.cmake'...
+INFO Regenerating 11 models for component 'compute-cpp' (address: ores.cmake)...
+Generated projects/ores.compute/CMakeLists.txt
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/CMakeLists.txt
+INFO Regeneration complete.
+Regenerating component 'compute-cpp' at address 'ores.cpp'...
+INFO Regenerating 11 models for component 'compute-cpp' (address: ores.cpp)...
+WARNING component_overview.org: nothing to generate for 'ores.cpp' (model type 'component')
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app.hpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_json_io.hpp
+Generated projects/ores.compute/api/src/domain/app_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_json_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_table.hpp
+Generated projects/ores.compute/api/src/domain/app_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_table.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_table_io.hpp
+Generated projects/ores.compute/api/src/domain/app_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_table_io.cpp
+Generated projects/ores.compute/core/tests/app_eventing_integration_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/tests/app_eventing_integration_tests.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/generators/app_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/generators/app_generator.hpp
+Generated projects/ores.compute/api/src/generators/app_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/generators/app_generator.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_history_provider_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/app_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/app_history_provider_registrar.cpp
+Generated projects/ores.compute/service/include/ores.compute.service/messaging/app_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/include/ores.compute.service/messaging/app_event_registrar.hpp
+Generated projects/ores.compute/service/src/messaging/app_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/src/messaging/app_event_registrar.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/eventing/app_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/eventing/app_event.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_handler.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/app_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/app_registrar.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/presentation/app_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/presentation/app_history_field_mapper.hpp
+Generated projects/ores.compute/core/src/presentation/app_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/presentation/app_history_field_mapper.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/app_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/app_protocol.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_entity.hpp
+Generated projects/ores.compute/core/src/repository/app_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_entity.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_mapper.hpp
+Generated projects/ores.compute/core/src/repository/app_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_mapper.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_repository.hpp
+Generated projects/ores.compute/core/src/repository/app_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_repository.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/service/app_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/service/app_service.hpp
+Generated projects/ores.compute/core/src/service/app_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/service/app_service.cpp
+Generated projects/ores.shell/compute/include/ores.shell/app/commands/compute/app_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/include/ores.shell/app/commands/compute/app_commands.hpp
+Generated projects/ores.shell/compute/src/app/commands/compute/app_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/src/app/commands/compute/app_commands.cpp
+Generated projects/ores.shell/compute/tests/app_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/tests/app_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version.hpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version_json_io.hpp
+Generated projects/ores.compute/api/src/domain/app_version_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_version_json_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version_table.hpp
+Generated projects/ores.compute/api/src/domain/app_version_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_version_table.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version_table_io.hpp
+Generated projects/ores.compute/api/src/domain/app_version_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_version_table_io.cpp
+Generated projects/ores.compute/core/tests/app_version_eventing_integration_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/tests/app_version_eventing_integration_tests.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/generators/app_version_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/generators/app_version_generator.hpp
+Generated projects/ores.compute/api/src/generators/app_version_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/generators/app_version_generator.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_version_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_version_history_provider_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/app_version_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/app_version_history_provider_registrar.cpp
+Generated projects/ores.compute/service/include/ores.compute.service/messaging/app_version_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/include/ores.compute.service/messaging/app_version_event_registrar.hpp
+Generated projects/ores.compute/service/src/messaging/app_version_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/src/messaging/app_version_event_registrar.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/eventing/app_version_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/eventing/app_version_event.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_version_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_version_handler.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_version_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_version_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/app_version_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/app_version_registrar.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/presentation/app_version_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/presentation/app_version_history_field_mapper.hpp
+Generated projects/ores.compute/core/src/presentation/app_version_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/presentation/app_version_history_field_mapper.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/app_version_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/app_version_protocol.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_version_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_version_entity.hpp
+Generated projects/ores.compute/core/src/repository/app_version_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_version_entity.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_version_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_version_mapper.hpp
+Generated projects/ores.compute/core/src/repository/app_version_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_version_mapper.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_version_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_version_repository.hpp
+Generated projects/ores.compute/core/src/repository/app_version_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_version_repository.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/service/app_version_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/service/app_version_service.hpp
+Generated projects/ores.compute/core/src/service/app_version_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/service/app_version_service.cpp
+Generated projects/ores.shell/compute/include/ores.shell/app/commands/compute/app_version_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/include/ores.shell/app/commands/compute/app_version_commands.hpp
+Generated projects/ores.shell/compute/src/app/commands/compute/app_version_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/src/app/commands/compute/app_version_commands.cpp
+Generated projects/ores.shell/compute/tests/app_version_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/tests/app_version_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform_json_io.hpp
+Generated projects/ores.compute/api/src/domain/app_version_platform_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_version_platform_json_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform_table.hpp
+Generated projects/ores.compute/api/src/domain/app_version_platform_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_version_platform_table.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform_table_io.hpp
+Generated projects/ores.compute/api/src/domain/app_version_platform_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_version_platform_table_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/generators/app_version_platform_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/generators/app_version_platform_generator.hpp
+Generated projects/ores.compute/api/src/generators/app_version_platform_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/generators/app_version_platform_generator.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_version_platform_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_version_platform_handler.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_version_platform_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_version_platform_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/app_version_platform_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/app_version_platform_registrar.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/app_version_platform_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/app_version_platform_protocol.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_version_platform_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_version_platform_entity.hpp
+Generated projects/ores.compute/core/src/repository/app_version_platform_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_version_platform_entity.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_version_platform_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_version_platform_mapper.hpp
+Generated projects/ores.compute/core/src/repository/app_version_platform_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_version_platform_mapper.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_version_platform_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_version_platform_repository.hpp
+Generated projects/ores.compute/core/src/repository/app_version_platform_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_version_platform_repository.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/service/app_version_platform_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/service/app_version_platform_service.hpp
+Generated projects/ores.compute/core/src/service/app_version_platform_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/service/app_version_platform_service.cpp
+Generated projects/ores.shell/compute/include/ores.shell/app/commands/compute/app_version_platform_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/include/ores.shell/app/commands/compute/app_version_platform_commands.hpp
+Generated projects/ores.shell/compute/src/app/commands/compute/app_version_platform_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/src/app/commands/compute/app_version_platform_commands.cpp
+Generated projects/ores.shell/compute/tests/app_version_platform_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/tests/app_version_platform_commands_tests.cpp
+INFO clang-formatted 24 generated C++ file(s) (two passes)
+Generated projects/ores.compute/api/include/ores.compute.api/domain/batch.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/batch.hpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/batch_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/batch_json_io.hpp
+Generated projects/ores.compute/api/src/domain/batch_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/batch_json_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/batch_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/batch_table.hpp
+Generated projects/ores.compute/api/src/domain/batch_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/batch_table.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/batch_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/batch_table_io.hpp
+Generated projects/ores.compute/api/src/domain/batch_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/batch_table_io.cpp
+Generated projects/ores.compute/core/tests/batch_eventing_integration_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/tests/batch_eventing_integration_tests.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/generators/batch_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/generators/batch_generator.hpp
+Generated projects/ores.compute/api/src/generators/batch_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/generators/batch_generator.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/batch_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/batch_history_provider_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/batch_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/batch_history_provider_registrar.cpp
+Generated projects/ores.compute/service/include/ores.compute.service/messaging/batch_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/include/ores.compute.service/messaging/batch_event_registrar.hpp
+Generated projects/ores.compute/service/src/messaging/batch_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/src/messaging/batch_event_registrar.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/eventing/batch_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/eventing/batch_event.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/batch_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/batch_handler.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/batch_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/batch_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/batch_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/batch_registrar.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/presentation/batch_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/presentation/batch_history_field_mapper.hpp
+Generated projects/ores.compute/core/src/presentation/batch_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/presentation/batch_history_field_mapper.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/batch_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/batch_protocol.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/batch_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/batch_entity.hpp
+Generated projects/ores.compute/core/src/repository/batch_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/batch_entity.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/batch_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/batch_mapper.hpp
+Generated projects/ores.compute/core/src/repository/batch_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/batch_mapper.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/batch_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/batch_repository.hpp
+Generated projects/ores.compute/core/src/repository/batch_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/batch_repository.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/service/batch_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/service/batch_service.hpp
+Generated projects/ores.compute/core/src/service/batch_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/service/batch_service.cpp
+Generated projects/ores.shell/compute/include/ores.shell/app/commands/compute/batch_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/include/ores.shell/app/commands/compute/batch_commands.hpp
+Generated projects/ores.shell/compute/src/app/commands/compute/batch_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/src/app/commands/compute/batch_commands.cpp
+Generated projects/ores.shell/compute/tests/batch_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/tests/batch_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.compute/api/include/ores.compute.api/domain/host.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/host.hpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/host_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/host_json_io.hpp
+Generated projects/ores.compute/api/src/domain/host_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/host_json_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/host_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/host_table.hpp
+Generated projects/ores.compute/api/src/domain/host_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/host_table.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/host_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/host_table_io.hpp
+Generated projects/ores.compute/api/src/domain/host_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/host_table_io.cpp
+Generated projects/ores.compute/core/tests/host_eventing_integration_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/tests/host_eventing_integration_tests.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/generators/host_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/generators/host_generator.hpp
+Generated projects/ores.compute/api/src/generators/host_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/generators/host_generator.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/host_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/host_history_provider_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/host_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/host_history_provider_registrar.cpp
+Generated projects/ores.compute/service/include/ores.compute.service/messaging/host_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/include/ores.compute.service/messaging/host_event_registrar.hpp
+Generated projects/ores.compute/service/src/messaging/host_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/src/messaging/host_event_registrar.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/eventing/host_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/eventing/host_event.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/host_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/host_handler.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/host_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/host_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/host_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/host_registrar.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/presentation/host_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/presentation/host_history_field_mapper.hpp
+Generated projects/ores.compute/core/src/presentation/host_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/presentation/host_history_field_mapper.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/host_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/host_protocol.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/host_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/host_entity.hpp
+Generated projects/ores.compute/core/src/repository/host_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/host_entity.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/host_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/host_mapper.hpp
+Generated projects/ores.compute/core/src/repository/host_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/host_mapper.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/host_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/host_repository.hpp
+Generated projects/ores.compute/core/src/repository/host_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/host_repository.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/service/host_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/service/host_service.hpp
+Generated projects/ores.compute/core/src/service/host_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/service/host_service.cpp
+Generated projects/ores.shell/compute/include/ores.shell/app/commands/compute/host_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/include/ores.shell/app/commands/compute/host_commands.hpp
+Generated projects/ores.shell/compute/src/app/commands/compute/host_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/src/app/commands/compute/host_commands.cpp
+Generated projects/ores.shell/compute/tests/host_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/tests/host_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.compute/api/include/ores.compute.api/domain/platform.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/platform.hpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/platform_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/platform_json_io.hpp
+Generated projects/ores.compute/api/src/domain/platform_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/platform_json_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/platform_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/platform_table.hpp
+Generated projects/ores.compute/api/src/domain/platform_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/platform_table.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/platform_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/platform_table_io.hpp
+Generated projects/ores.compute/api/src/domain/platform_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/platform_table_io.cpp
+Generated projects/ores.compute/core/tests/platform_eventing_integration_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/tests/platform_eventing_integration_tests.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/generators/platform_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/generators/platform_generator.hpp
+Generated projects/ores.compute/api/src/generators/platform_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/generators/platform_generator.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/platform_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/platform_history_provider_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/platform_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/platform_history_provider_registrar.cpp
+Generated projects/ores.compute/service/include/ores.compute.service/messaging/platform_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/include/ores.compute.service/messaging/platform_event_registrar.hpp
+Generated projects/ores.compute/service/src/messaging/platform_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/src/messaging/platform_event_registrar.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/eventing/platform_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/eventing/platform_event.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/platform_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/platform_handler.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/platform_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/platform_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/platform_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/platform_registrar.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/presentation/platform_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/presentation/platform_history_field_mapper.hpp
+Generated projects/ores.compute/core/src/presentation/platform_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/presentation/platform_history_field_mapper.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/platform_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/platform_protocol.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/platform_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/platform_entity.hpp
+Generated projects/ores.compute/core/src/repository/platform_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/platform_entity.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/platform_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/platform_mapper.hpp
+Generated projects/ores.compute/core/src/repository/platform_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/platform_mapper.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/platform_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/platform_repository.hpp
+Generated projects/ores.compute/core/src/repository/platform_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/platform_repository.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/service/platform_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/service/platform_service.hpp
+Generated projects/ores.compute/core/src/service/platform_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/service/platform_service.cpp
+Generated projects/ores.shell/compute/include/ores.shell/app/commands/compute/platform_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/include/ores.shell/app/commands/compute/platform_commands.hpp
+Generated projects/ores.shell/compute/src/app/commands/compute/platform_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/src/app/commands/compute/platform_commands.cpp
+Generated projects/ores.shell/compute/tests/platform_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/tests/platform_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.compute/api/include/ores.compute.api/domain/result.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/result.hpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/result_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/result_json_io.hpp
+Generated projects/ores.compute/api/src/domain/result_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/result_json_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/result_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/result_table.hpp
+Generated projects/ores.compute/api/src/domain/result_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/result_table.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/result_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/result_table_io.hpp
+Generated projects/ores.compute/api/src/domain/result_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/result_table_io.cpp
+Generated projects/ores.compute/core/tests/result_eventing_integration_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/tests/result_eventing_integration_tests.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/generators/result_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/generators/result_generator.hpp
+Generated projects/ores.compute/api/src/generators/result_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/generators/result_generator.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/result_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/result_history_provider_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/result_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/result_history_provider_registrar.cpp
+Generated projects/ores.compute/service/include/ores.compute.service/messaging/result_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/include/ores.compute.service/messaging/result_event_registrar.hpp
+Generated projects/ores.compute/service/src/messaging/result_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/src/messaging/result_event_registrar.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/eventing/result_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/eventing/result_event.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/result_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/result_handler.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/result_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/result_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/result_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/result_registrar.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/presentation/result_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/presentation/result_history_field_mapper.hpp
+Generated projects/ores.compute/core/src/presentation/result_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/presentation/result_history_field_mapper.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/result_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/result_protocol.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/result_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/result_entity.hpp
+Generated projects/ores.compute/core/src/repository/result_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/result_entity.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/result_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/result_mapper.hpp
+Generated projects/ores.compute/core/src/repository/result_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/result_mapper.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/result_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/result_repository.hpp
+Generated projects/ores.compute/core/src/repository/result_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/result_repository.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/service/result_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/service/result_service.hpp
+Generated projects/ores.compute/core/src/service/result_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/service/result_service.cpp
+Generated projects/ores.shell/compute/include/ores.shell/app/commands/compute/result_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/include/ores.shell/app/commands/compute/result_commands.hpp
+Generated projects/ores.shell/compute/src/app/commands/compute/result_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/src/app/commands/compute/result_commands.cpp
+Generated projects/ores.shell/compute/tests/result_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/tests/result_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/telemetry_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/telemetry_protocol.hpp
+INFO clang-formatted 1 generated C++ file(s) (two passes)
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/work_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/work_protocol.hpp
+INFO clang-formatted 1 generated C++ file(s) (two passes)
+Generated projects/ores.compute/api/include/ores.compute.api/domain/workunit.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/workunit.hpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/workunit_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/workunit_json_io.hpp
+Generated projects/ores.compute/api/src/domain/workunit_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/workunit_json_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/workunit_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/workunit_table.hpp
+Generated projects/ores.compute/api/src/domain/workunit_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/workunit_table.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/workunit_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/workunit_table_io.hpp
+Generated projects/ores.compute/api/src/domain/workunit_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/workunit_table_io.cpp
+Generated projects/ores.compute/core/tests/workunit_eventing_integration_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/tests/workunit_eventing_integration_tests.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/generators/workunit_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/generators/workunit_generator.hpp
+Generated projects/ores.compute/api/src/generators/workunit_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/generators/workunit_generator.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/workunit_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/workunit_history_provider_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/workunit_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/workunit_history_provider_registrar.cpp
+Generated projects/ores.compute/service/include/ores.compute.service/messaging/workunit_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/include/ores.compute.service/messaging/workunit_event_registrar.hpp
+Generated projects/ores.compute/service/src/messaging/workunit_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/src/messaging/workunit_event_registrar.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/eventing/workunit_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/eventing/workunit_event.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/workunit_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/workunit_handler.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/workunit_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/workunit_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/workunit_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/workunit_registrar.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/presentation/workunit_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/presentation/workunit_history_field_mapper.hpp
+Generated projects/ores.compute/core/src/presentation/workunit_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/presentation/workunit_history_field_mapper.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/workunit_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/workunit_protocol.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/workunit_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/workunit_entity.hpp
+Generated projects/ores.compute/core/src/repository/workunit_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/workunit_entity.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/workunit_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/workunit_mapper.hpp
+Generated projects/ores.compute/core/src/repository/workunit_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/workunit_mapper.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/workunit_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/workunit_repository.hpp
+Generated projects/ores.compute/core/src/repository/workunit_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/workunit_repository.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/service/workunit_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/service/workunit_service.hpp
+Generated projects/ores.compute/core/src/service/workunit_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/service/workunit_service.cpp
+Generated projects/ores.shell/compute/include/ores.shell/app/commands/compute/workunit_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/include/ores.shell/app/commands/compute/workunit_commands.hpp
+Generated projects/ores.shell/compute/src/app/commands/compute/workunit_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/src/app/commands/compute/workunit_commands.cpp
+Generated projects/ores.shell/compute/tests/workunit_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/tests/workunit_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+INFO Regeneration complete.
+Regenerating component 'compute-cpp' at address 'ores.doc'...
+INFO Regenerating 11 models for component 'compute-cpp' (address: ores.doc)...
+WARNING component_overview.org: nothing to generate for 'ores.doc' (model type 'component')
+Generated doc/recipes/shell/apps/app.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/apps/app.org
+Generated doc/recipes/shell/app_versions/app_version.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/app_versions/app_version.org
+Generated doc/recipes/shell/app_version_platforms/app_version_platform.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/app_version_platforms/app_version_platform.org
+Generated doc/recipes/shell/batches/batch.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/batches/batch.org
+Generated doc/recipes/shell/hosts/host.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/hosts/host.org
+Generated doc/recipes/shell/platforms/platform.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/platforms/platform.org
+Generated doc/recipes/shell/results/result.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/results/result.org
+WARNING ores.compute.telemetry.org: nothing to generate for 'ores.doc' (model type 'operation')
+WARNING ores.compute.work.org: nothing to generate for 'ores.doc' (model type 'operation')
+Generated doc/recipes/shell/workunits/workunit.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/workunits/workunit.org
+INFO Regeneration complete.
+Regenerating component 'compute-cpp' at address 'ores.plantuml'...
+INFO Regenerating 11 models for component 'compute-cpp' (address: ores.plantuml)...
+INFO Regeneration complete.
+Regenerating component 'compute-cpp' at address 'ores.shell'...
+INFO Regenerating 11 models for component 'compute-cpp' (address: ores.shell)...
+INFO Regeneration complete.
+Regenerating component 'compute-cpp' at address 'ores.sql'...
+INFO Regenerating 11 models for component 'compute-cpp' (address: ores.sql)...
+Generated projects/ores.sql/create/compute/compute_apps_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_apps_create.sql
+Generated projects/ores.sql/drop/compute/compute_apps_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_apps_drop.sql
+Generated projects/ores.sql/create/compute/compute_apps_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_apps_notify_trigger_create.sql
+Generated projects/ores.sql/drop/compute/compute_apps_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_apps_notify_trigger_drop.sql
+Generated projects/ores.sql/create/compute/compute_app_versions_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_app_versions_create.sql
+Generated projects/ores.sql/drop/compute/compute_app_versions_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_app_versions_drop.sql
+Generated projects/ores.sql/create/compute/compute_app_versions_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_app_versions_notify_trigger_create.sql
+Generated projects/ores.sql/drop/compute/compute_app_versions_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_app_versions_notify_trigger_drop.sql
+Generated projects/ores.sql/create/compute/compute_app_version_platform_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_app_version_platform_create.sql
+Generated projects/ores.sql/create/compute/compute_batches_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_batches_create.sql
+Generated projects/ores.sql/drop/compute/compute_batches_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_batches_drop.sql
+Generated projects/ores.sql/create/compute/compute_batches_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_batches_notify_trigger_create.sql
+Generated projects/ores.sql/drop/compute/compute_batches_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_batches_notify_trigger_drop.sql
+Generated projects/ores.sql/create/compute/compute_hosts_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_hosts_create.sql
+Generated projects/ores.sql/drop/compute/compute_hosts_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_hosts_drop.sql
+Generated projects/ores.sql/create/compute/compute_hosts_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_hosts_notify_trigger_create.sql
+Generated projects/ores.sql/drop/compute/compute_hosts_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_hosts_notify_trigger_drop.sql
+Generated projects/ores.sql/create/compute/compute_platforms_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_platforms_create.sql
+Generated projects/ores.sql/drop/compute/compute_platforms_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_platforms_drop.sql
+Generated projects/ores.sql/create/compute/compute_platforms_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_platforms_notify_trigger_create.sql
+Generated projects/ores.sql/drop/compute/compute_platforms_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_platforms_notify_trigger_drop.sql
+Generated projects/ores.sql/create/compute/compute_results_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_results_create.sql
+Generated projects/ores.sql/drop/compute/compute_results_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_results_drop.sql
+Generated projects/ores.sql/create/compute/compute_results_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_results_notify_trigger_create.sql
+Generated projects/ores.sql/drop/compute/compute_results_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_results_notify_trigger_drop.sql
+Generated projects/ores.sql/create/compute/compute_workunits_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_workunits_create.sql
+Generated projects/ores.sql/drop/compute/compute_workunits_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_workunits_drop.sql
+Generated projects/ores.sql/create/compute/compute_workunits_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_workunits_notify_trigger_create.sql
+Generated projects/ores.sql/drop/compute/compute_workunits_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_workunits_notify_trigger_drop.sql
+INFO Regeneration complete.
+Regenerating component 'compute-cpp' at address 'ores.ts.domain'...
+INFO Regenerating 11 models for component 'compute-cpp' (address: ores.ts.domain)...
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/domain/app.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/domain/app.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/domain/app_version.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/domain/app_version.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/domain/app_version_platform.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/domain/app_version_platform.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/domain/batch.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/domain/batch.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/domain/host.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/domain/host.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/domain/platform.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/domain/platform.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/domain/result.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/domain/result.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/domain/workunit.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/domain/workunit.ts
+INFO Regeneration complete.
+Regenerating component 'compute-cpp' at address 'ores.ts.protocol'...
+INFO Regenerating 11 models for component 'compute-cpp' (address: ores.ts.protocol)...
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_version_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_version_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_version_platform_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_version_platform_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/batch_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/batch_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/host_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/host_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/platform_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/platform_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/result_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/result_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/telemetry_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/telemetry_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/work_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/work_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/workunit_protocol.ts
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/workunit_protocol.ts
+INFO Regeneration complete.
+No drift: regenerated output matches the checked-in tree.

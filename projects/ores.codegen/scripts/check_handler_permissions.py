@@ -32,7 +32,7 @@ POPULATE = (
 # Components whose handler permission codes are all seeded. A component joins
 # this registry once its seeds are complete; until then its gap stays a known
 # one rather than a surprise in a gate.
-REGISTRY = ("refdata",)
+REGISTRY = ("refdata", "compute")
 
 # has_permission takes the request context first, so the code is the string
 # literal argument. A helper that passes the code through a variable is not

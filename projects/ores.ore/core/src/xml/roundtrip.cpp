@@ -23,8 +23,6 @@
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <chrono>
-#include <cctype>
-#include <fstream>
 #include <stdexcept>
 #include <string>
 #include <variant>
@@ -41,68 +39,6 @@ auto& lg() {
     using namespace ores::logging;
     static auto instance = make_logger(logger_name);
     return instance;
-}
-
-/// How much of a document is read to find its root element.
-constexpr std::size_t kPeek = 4096;
-
-std::string read_header(const std::filesystem::path& file) {
-    std::ifstream ifs(file, std::ios::binary);
-    if (!ifs)
-        return {};
-    std::string buf(kPeek, '\0');
-    ifs.read(buf.data(), static_cast<std::streamsize>(kPeek));
-    buf.resize(static_cast<std::size_t>(ifs.gcount()));
-    return buf;
-}
-
-/**
- * @brief Reads the name of a document's root element.
- *
- * The reader is chosen from the root element alone. Searching the header
- * for a keyword instead would read a curve configuration that names a
- * conventions block in its opening lines as a conventions document, and
- * rewrite it as an empty one: the generated loader accepts any document
- * whose root element is one of the schema's, leaves the unmatched members
- * default-empty, and the export then writes that emptiness out.
- */
-std::string read_root_element(const std::filesystem::path& file) {
-    const auto header = read_header(file);
-    auto at = header.find('<');
-    while (at != std::string::npos) {
-        if (header.compare(at, 4, "<!--") == 0) {
-            const auto end = header.find("-->", at + 4);
-            if (end == std::string::npos)
-                return {};
-            at = header.find('<', end + 3);
-            continue;
-        }
-        if (header.compare(at, 2, "<?") == 0 || header.compare(at, 2, "<!") == 0) {
-            const auto end = header.find('>', at + 2);
-            if (end == std::string::npos)
-                return {};
-            at = header.find('<', end + 1);
-            continue;
-        }
-        auto end = at + 1;
-        while (end < header.size() && (std::isalpha(static_cast<unsigned char>(header[end])) ||
-                                       header[end] == '_' || header[end] == ':'))
-            ++end;
-        return header.substr(at + 1, end - at - 1);
-    }
-    return {};
-}
-
-std::optional<document_kind> kind_of(const std::string& root) {
-    if (root == "Portfolio")
-        return document_kind::portfolio;
-    if (root == "CurrencyConfig")
-        return document_kind::currency_config;
-    if (root == "CalendarAdjustments")
-        return document_kind::calendar_adjustments;
-    if (root == "Conventions")
-        return document_kind::conventions;
-    return std::nullopt;
 }
 
 using clock_type = std::chrono::steady_clock;
@@ -189,10 +125,6 @@ std::string convert(const std::filesystem::path& file,
 }
 
 } // namespace
-
-std::optional<document_kind> detect_document_kind(const std::filesystem::path& path) {
-    return kind_of(read_root_element(path));
-}
 
 roundtrip_summary roundtrip(const std::filesystem::path& input_dir,
                             const std::filesystem::path& output_dir) {

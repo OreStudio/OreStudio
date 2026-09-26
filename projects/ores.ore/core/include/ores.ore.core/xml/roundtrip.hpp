@@ -20,37 +20,12 @@
 #define ORES_ORE_CORE_XML_ROUNDTRIP_HPP
 
 #include "ores.ore.core/export.hpp"
+#include "ores.ore.core/xml/document_kind.hpp"
 #include <filesystem>
-#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::ore::xml {
-
-/**
- * @brief The ORE document kinds the XML facet reads and writes.
- */
-enum class document_kind {
-    portfolio,
-    currency_config,
-    calendar_adjustments,
-    conventions,
-};
-
-/**
- * @brief Names the document kind a file holds, from its root element.
- *
- * The root element alone decides. Searching the header for a keyword
- * instead would read a curve configuration that names a conventions block
- * in its opening lines as a conventions document, and rewrite it as an
- * empty one.
- *
- * @param path Path to the file
- * @return The kind, or @c std::nullopt when the root element is not one of
- * them
- */
-ORES_ORE_CORE_EXPORT std::optional<document_kind>
-detect_document_kind(const std::filesystem::path& path);
 
 /**
  * @brief What one walk over a directory did.

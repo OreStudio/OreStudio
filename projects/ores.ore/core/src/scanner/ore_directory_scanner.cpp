@@ -18,8 +18,7 @@
  *
  */
 #include "ores.ore.core/scanner/ore_directory_scanner.hpp"
-#include <array>
-#include <fstream>
+#include "ores.ore.core/xml/document_kind.hpp"
 
 namespace ores::ore::scanner {
 
@@ -66,20 +65,15 @@ scan_result ore_directory_scanner::scan() {
             continue;
         }
 
-        // Peek at the first 512 bytes to identify the root element.
-        // Portfolio files have <Portfolio> and currency files have
-        // <CurrencyConfig> as their root — both appear within the first
-        // two lines regardless of whether an XML declaration is present.
-        std::array<char, 512> buf{};
-        std::ifstream f(entry.path(), std::ios::binary);
-        const auto n = static_cast<std::size_t>(
-            f.read(buf.data(), static_cast<std::streamsize>(buf.size())).gcount());
-        const std::string_view head(buf.data(), n);
-
-        if (head.find("<Portfolio>") != std::string_view::npos) {
+        // The round trip asks the same question of the same files, so the
+        // rule lives in one place. A substring match here used to miss a
+        // root element carrying attributes and match a keyword inside a
+        // comment.
+        const auto kind = xml::detect_document_kind(entry.path());
+        if (kind == xml::document_kind::portfolio) {
             BOOST_LOG_SEV(lg(), debug) << "Portfolio file: " << entry.path();
             result.portfolio_files.push_back(entry.path());
-        } else if (head.find("<CurrencyConfig>") != std::string_view::npos) {
+        } else if (kind == xml::document_kind::currency_config) {
             BOOST_LOG_SEV(lg(), debug) << "Currency file: " << entry.path();
             result.currency_files.push_back(entry.path());
         } else {

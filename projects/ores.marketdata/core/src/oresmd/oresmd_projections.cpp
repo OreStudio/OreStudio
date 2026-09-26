@@ -283,6 +283,22 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
                            point);
     }
 
+    // A cross-currency swap quotes two currencies against two index tenors:
+    // ccy1/tenor1/ccy2/tenor2, with the maturity after them. The entity path
+    // segment carries the first currency.
+    if (qt == ir_quote_type::cc_basis_swap || qt == ir_quote_type::cc_fix_float_swap) {
+        if (!id.second_ccy || !id.second_tenor)
+            return std::nullopt;
+        return std::format("{}/{}/{}/{}/{}/{}/{}",
+                           ore_type(qt),
+                           ore_metric(m),
+                           id.ccy,
+                           t,
+                           *id.second_ccy,
+                           to_upper(*id.second_tenor),
+                           point);
+    }
+
     if (qualifier_includes_index(qt)) {
         if (qt == ir_quote_type::ir_swap)
             return std::format("{}/{}/{}/2D/{}/{}", ore_type(qt), ore_metric(m), id.ccy, t, point);
@@ -724,6 +740,27 @@ std::optional<market_data_identifier> from_ir_basis_swap(const std::vector<std::
     return id;
 }
 
+std::optional<market_data_identifier>
+from_ir_cross_currency(ir_quote_type qt, const std::vector<std::string>& parts) {
+    // TYPE/METRIC/CCY1/TENOR1/CCY2/TENOR2/MATURITY -- two currencies and two
+    // index tenors, then the maturity (CC_BASIS_SWAP, CC_FIX_FLOAT_SWAP).
+    if (parts.size() != 7)
+        return std::nullopt;
+    const auto m = parse_metric(parts[1]);
+    if (!m)
+        return std::nullopt;
+    ir_market_data_identifier id;
+    id.type = instrument_type::quote;
+    id.quote_type = qt;
+    id.metric = *m;
+    id.ccy = to_upper(parts[2]);
+    id.tenor = to_lower(parts[3]);
+    id.second_ccy = to_upper(parts[4]);
+    id.second_tenor = to_lower(parts[5]);
+    id.point = to_lower(parts[6]);
+    return id;
+}
+
 std::optional<market_data_identifier> from_ir_no_index(ir_quote_type qt,
                                                        const std::vector<std::string>& parts) {
     // TYPE/METRIC/CCY/TENOR/POINT — the xccy/BMA families whose qualifier is just
@@ -929,6 +966,10 @@ inverse_projection(const std::vector<std::string>& parts,
     }
     if (type == ore_type_spec::basis_swap)
         return from_ir_basis_swap(parts);
+    if (type == ore_type_spec::cc_basis_swap || type == ore_type_spec::cc_fix_float_swap) {
+        const auto qt = parse_enum_lower<ir_quote_type>(type);
+        return qt ? from_ir_cross_currency(*qt, parts) : std::nullopt;
+    }
     if (type == ore_type_spec::zero || type == ore_type_spec::mm_future ||
         type == ore_type_spec::oi_future) {
         const auto qt = parse_enum_lower<ir_quote_type>(type);
@@ -937,8 +978,7 @@ inverse_projection(const std::vector<std::string>& parts,
     // FRA and IMM_FRA carry no index: ORE writes ccy/start/length, where the
     // start is a tenor or an IMM date. The registry's shape table states the
     // same, and the corpus agrees with it.
-    if (type == ore_type_spec::cc_basis_swap || type == ore_type_spec::cc_fix_float_swap ||
-        type == ore_type_spec::bma_swap || type == ore_type_spec::fra ||
+    if (type == ore_type_spec::bma_swap || type == ore_type_spec::fra ||
         type == ore_type_spec::imm_fra) {
         const auto qt = parse_enum_lower<ir_quote_type>(type);
         return qt ? from_ir_no_index(*qt, parts) : std::nullopt;

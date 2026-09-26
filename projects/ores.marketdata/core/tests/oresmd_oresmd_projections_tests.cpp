@@ -172,16 +172,18 @@ TEST_CASE("ir_basis_swap_spread_quote_key_matches_the_corpus", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y");
 }
 
-TEST_CASE("ir_cc_basis_swap_spread_quote_key", tags) {
-    const auto id = parse(
-        "oresmd://ir/eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "CC_BASIS_SWAP/BASIS_SPREAD/EUR/3M/5Y");
+TEST_CASE("ir_cc_basis_swap_spread_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://ir/"
+                          "usd?tenor=3m&second_tenor=3m&second_ccy=eur&type=quote&quote=cc_basis_"
+                          "swap&metric=basis_spread&point=10y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "CC_BASIS_SWAP/BASIS_SPREAD/USD/3M/EUR/3M/10Y");
 }
 
-TEST_CASE("ir_cc_fix_float_swap_rate_quote_key", tags) {
-    const auto id =
-        parse("oresmd://ir/usd?tenor=3m&type=quote&quote=cc_fix_float_swap&metric=rate&point=5y");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "CC_FIX_FLOAT_SWAP/RATE/USD/3M/5Y");
+TEST_CASE("ir_cc_fix_float_swap_rate_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://ir/"
+                          "usd?tenor=3m&second_tenor=1y&second_ccy=try&type=quote&quote=cc_fix_"
+                          "float_swap&metric=rate&point=1y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "CC_FIX_FLOAT_SWAP/RATE/USD/3M/TRY/1Y/1Y");
 }
 
 TEST_CASE("ir_bma_swap_ratio_quote_key", tags) {
@@ -482,12 +484,15 @@ TEST_CASE("from_ore_key_ir_indexed_families", tags) {
 }
 
 TEST_CASE("from_ore_key_ir_no_index_families", tags) {
-    REQUIRE(oresmd_projections::from_ore_key("CC_BASIS_SWAP/BASIS_SPREAD/EUR/3M/5Y") ==
+    // A cross-currency swap carries two currencies and two index tenors.
+    REQUIRE(oresmd_projections::from_ore_key("CC_BASIS_SWAP/BASIS_SPREAD/USD/3M/EUR/3M/10Y") ==
             parse("oresmd://ir/"
-                  "eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y"));
-    REQUIRE(
-        oresmd_projections::from_ore_key("CC_FIX_FLOAT_SWAP/RATE/USD/3M/5Y") ==
-        parse("oresmd://ir/usd?tenor=3m&type=quote&quote=cc_fix_float_swap&metric=rate&point=5y"));
+                  "usd?tenor=3m&second_tenor=3m&second_ccy=eur&type=quote&quote=cc_basis_swap&"
+                  "metric=basis_spread&point=10y"));
+    REQUIRE(oresmd_projections::from_ore_key("CC_FIX_FLOAT_SWAP/RATE/USD/3M/TRY/1Y/1Y") ==
+            parse("oresmd://ir/"
+                  "usd?tenor=3m&second_tenor=1y&second_ccy=try&type=quote&quote=cc_fix_float_swap&"
+                  "metric=rate&point=1y"));
     REQUIRE(oresmd_projections::from_ore_key("BMA_SWAP/RATIO/USD/3M/5Y") ==
             parse("oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y"));
     // FRA and IMM_FRA carry no index: ORE writes ccy/start/length, and the

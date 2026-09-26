@@ -51,6 +51,7 @@ A logical, possibly-partial oresmd requirement for an inflation instrument.
 | index |
 | tenor |
 | second_tenor |
+| second_ccy |
 | role |
 | metric |
 

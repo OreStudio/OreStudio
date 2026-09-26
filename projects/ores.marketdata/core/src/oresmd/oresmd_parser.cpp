@@ -53,6 +53,7 @@ struct query_params final {
     std::optional<std::string> index;
     std::optional<std::string> tenor;
     std::optional<std::string> second_tenor;
+    std::optional<std::string> second_ccy;
     std::optional<std::string> role;
     std::optional<std::string> type;
     std::optional<std::string> metric;
@@ -71,6 +72,8 @@ struct query_params final {
                 qp.tenor = p.value;
             else if (p.key == "second_tenor")
                 qp.second_tenor = p.value;
+            else if (p.key == "second_ccy")
+                qp.second_ccy = p.value;
             else if (p.key == "role")
                 qp.role = p.value;
             else if (p.key == "type")
@@ -126,6 +129,7 @@ void validate_fx(const query_params& qp) {
     reject_if_present("fx", "index", qp.index);
     reject_if_present("fx", "tenor", qp.tenor);
     reject_if_present("fx", "second_tenor", qp.second_tenor);
+    reject_if_present("fx", "second_ccy", qp.second_ccy);
     reject_if_present("fx", "role", qp.role);
     reject_if_present("fx", "metric", qp.metric);
 }
@@ -190,6 +194,8 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
         id.tenor = to_lower(*qp.tenor);
     if (qp.second_tenor)
         id.second_tenor = to_lower(*qp.second_tenor);
+    if (qp.second_ccy)
+        id.second_ccy = to_upper(*qp.second_ccy);
     if (qp.role)
         id.role = parse_enum<curve_role>("role", *qp.role);
     if (qp.metric)
@@ -262,6 +268,7 @@ market_data_identifier parse_correlation(const boost::urls::url_view& u, const q
     reject_if_present("correlation", "index", qp.index);
     reject_if_present("correlation", "tenor", qp.tenor);
     reject_if_present("correlation", "second_tenor", qp.second_tenor);
+    reject_if_present("correlation", "second_ccy", qp.second_ccy);
     reject_if_present("correlation", "role", qp.role);
     reject_if_present("correlation", "metric", qp.metric);
     reject_if_present("correlation", "point", qp.point);
@@ -283,6 +290,7 @@ market_data_identifier parse_inflation(const boost::urls::url_view& u, const que
     reject_if_present("inflation", "index", qp.index);
     reject_if_present("inflation", "tenor", qp.tenor);
     reject_if_present("inflation", "second_tenor", qp.second_tenor);
+    reject_if_present("inflation", "second_ccy", qp.second_ccy);
     reject_if_present("inflation", "role", qp.role);
     reject_if_present("inflation", "metric", qp.metric);
     inflation_market_data_identifier id;
@@ -422,6 +430,7 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 append_enum_if(u, "index", id.index);
                 append_if(u, "tenor", id.tenor);
                 append_if(u, "second_tenor", id.second_tenor);
+                append_if(u, "second_ccy", id.second_ccy);
                 append_enum_if(u, "role", id.role);
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "metric", id.metric);

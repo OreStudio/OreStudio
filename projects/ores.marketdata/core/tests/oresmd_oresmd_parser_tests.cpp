@@ -339,9 +339,11 @@ TEST_CASE("round_trip_ir_basis_swap_spread", tags) {
     REQUIRE(original == roundtripped);
 }
 
-TEST_CASE("round_trip_ir_cc_basis_swap_no_index", tags) {
-    const auto original = oresmd_parser::parse(uri(
-        "oresmd://ir/eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y"));
+TEST_CASE("round_trip_ir_cc_basis_swap", tags) {
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://ir/"
+                                 "usd?tenor=3m&second_tenor=3m&second_ccy=eur&type=quote&quote=cc_"
+                                 "basis_swap&metric=basis_spread&point=10y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
@@ -385,8 +387,10 @@ TEST_CASE("round_trip_ir_bma_swap_ratio", tags) {
 }
 
 TEST_CASE("round_trip_ir_cc_fix_float_swap", tags) {
-    const auto original = oresmd_parser::parse(
-        uri("oresmd://ir/usd?tenor=3m&type=quote&quote=cc_fix_float_swap&metric=rate&point=5y"));
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://ir/"
+                                 "usd?tenor=3m&second_tenor=1y&second_ccy=try&type=quote&quote=cc_"
+                                 "fix_float_swap&metric=rate&point=1y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }

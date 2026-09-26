@@ -65,7 +65,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Engine-dispatched step handlers: execute and rollback.
     // ----------------------------------------------------------------
     auto eh = std::make_shared<ore_import_execute_handler>(
-        nats, std::move(outbound_nats), std::move(http_base_url), std::move(work_dir));
+        // Not std::move: the report package handler below takes the same
+        // base URL, and moving it here leaves that one empty, so every
+        // prepare_ore_package call builds a relative storage URL and fails.
+        nats, std::move(outbound_nats), http_base_url, std::move(work_dir));
 
     subs.push_back(nats.queue_subscribe(
         std::string(ores::ore::messaging::ore_import_execute_request::nats_subject),

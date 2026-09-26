@@ -25,6 +25,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
+#include "ores.reporting.core/service/execution_storage_plan.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
@@ -71,19 +72,6 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
 
 } // namespace
 
-namespace {
-
-constexpr std::string_view report_data_bucket = "report-data";
-
-std::string trades_storage_key(const std::string& instance_id) {
-    return instance_id + "/trades.msgpack";
-}
-
-std::string market_data_storage_key(const std::string& instance_id) {
-    return instance_id + "/market_data.msgpack";
-}
-
-} // namespace
 
 void report_execution_handler::mark_instance_failed(const std::string& tenant_id,
                                                     const std::string& instance_id,
@@ -178,10 +166,10 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         inst_svc.save_instance(*inst);
 
         // ── Ask trading service to export trades to storage ──────────
-        const auto key = trades_storage_key(req.report_instance_id);
+        const auto key = service::trades_storage_key(req.report_instance_id);
         ores::trading::messaging::export_trades_to_storage_request exp_req;
         exp_req.book_ids = book_ids;
-        exp_req.storage_bucket = std::string(report_data_bucket);
+        exp_req.storage_bucket = std::string(service::report_data_bucket);
         exp_req.storage_key = key;
 
         std::string err;
@@ -233,9 +221,9 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
 
     try {
         // Ask marketdata service to export all series to storage.
-        const auto key = market_data_storage_key(req.report_instance_id);
+        const auto key = service::market_data_storage_key(req.report_instance_id);
         ores::marketdata::messaging::export_market_data_to_storage_request md_req;
-        md_req.storage_bucket = std::string(report_data_bucket);
+        md_req.storage_bucket = std::string(service::report_data_bucket);
         md_req.storage_key = key;
 
         std::string err;

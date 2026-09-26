@@ -4448,6 +4448,7 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
 # decoded -- which is what the script exists to check.
 _SENTINEL_VALUES = {
     "boost::uuids::uuid": "00000000-0000-0000-0000-000000000000",
+    "utility::uuid::tenant_id": "00000000-0000-0000-0000-000000000000",
     "std::string": "__none__",
     "bool": "false",
     "int": "0",
@@ -4456,11 +4457,19 @@ _SENTINEL_VALUES = {
     "std::uint16_t": "0",
     "std::uint32_t": "0",
     "std::uint64_t": "0",
+    "std::size_t": "0",
     "double": "0",
     "std::chrono::system_clock::time_point": "1970-01-01T00:00:00Z",
+    "std::chrono::year_month_day": "1970-01-01",
     "boost::asio::ip::address": "0.0.0.0",
     "std::vector<std::string>": "__none__",
 }
+
+# An optional field's own absent token. ``ores.shell.api``'s
+# ``command_token.hpp`` parses this to ``nullopt``, so it is what a script
+# sends when it has no value to state -- which is the common case, because a
+# generated script says only what a command requires.
+_ABSENT_TOKEN = "-"
 
 # A write states an intent, and the reason code is an enum value on the wire
 # rather than free text, so the script sends a code the schema seeds.
@@ -4469,8 +4478,25 @@ _SENTINEL_COMMENTARY = "generated_script"
 
 
 def _sentinel_value(cpp_type: str) -> str:
-    """A well-formed value of ``cpp_type`` that addresses no row."""
-    return _SENTINEL_VALUES.get((cpp_type or "").strip(), "__none__")
+    """A well-formed value of ``cpp_type`` that addresses no row.
+
+    An optional field carries no value rather than a wrong one, so it gets
+    the shell's own absent token. Before this, every ``std::optional<T>``
+    fell through to the unknown-type fallback and the script sent
+    ``__none__``, which the shell cannot parse as ``T``: the script aborted
+    at the client and checked nothing, which is the opposite of what it
+    exists for. ``pricing_model_product_parameters set`` sent ``__none__``
+    for its optional UUID member until this.
+
+    A type that is neither optional nor mapped still falls back rather than
+    raising, because the unfillable-field refusal upstream is what decides
+    whether a model may generate a shell command at all; this function only
+    supplies a value once that decision is made.
+    """
+    kind = (cpp_type or "").strip()
+    if kind.startswith("std::optional<"):
+        return _ABSENT_TOKEN
+    return _SENTINEL_VALUES.get(kind, "__none__")
 
 
 def _sentinel_for_field(name: str, cpp_type: str) -> str:

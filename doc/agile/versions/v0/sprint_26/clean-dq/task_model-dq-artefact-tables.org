@@ -72,10 +72,33 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
 | 7. Publication template | DONE | The template generated a retired design; deleted with 21 dead files; see Step 7 results |
 | 8. Remaining models | TODO | The FPML family is blocked; the rest is unblocked |
-| 9. Regenerate C++ | TODO | |
+| 9. Regenerate C++ | TODO | Now unblocked: the optional-field sentinel defect is fixed; see the prerequisite section |
 | 10. Eventing headers | TODO | |
 | 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
 | 12. Divergent tables: declare the projection | DONE | All 11 landed; divergent is 0; see Step 12 results |
+
+* A generator defect fixed before step 9: the shell sentinel for an optional field
+
+Run on 2026-09-26, while testing whether step 9's drift is safe to apply. It was not, and this is why.
+
+**The defect.** =_sentinel_value= in =org_loader.py= maps a C++ type to "a well-formed value that addresses no row", so a generated script reaches the service instead of failing in the client's parser. It had no entry for any =std::optional<T>=, so an optional field fell through to the =__none__= fallback. The shell cannot read =__none__= as =T=, so the script aborted at the client and checked nothing — the opposite of what it exists for. The absent token is the shell's own: =ores.shell.api/app/command_token.hpp= defines =absent_token = "-"= and =from_token= maps it to =nullopt=.
+
+**It was live, and it was measured.** =pricing_model_product_parameters add= sent =__none__= where its optional UUID member is:
+
+#+begin_example
+-pricing_model_product_parameters add 00000000-... __none__ __none__ __none__ __none__ system.new_record generated_script
++pricing_model_product_parameters add 00000000-... - __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_example
+
+=add=, =set= and =put-many= each sent one wrong token. The scope was tree-wide rather than one entity: 325 fields across the models use one of the six =std::optional<...>= forms.
+
+**The blast radius is exactly that entity.** Tangling every recipe in the tree — 1186 scripts — changed three, all of them =pricing_model_product_parameters=. No other recipe carries such a field, so nothing else needs refreshing.
+
+**The first attempt was wrong, and the tests said so.** The obvious fix was to refuse an unmapped type, on the argument that a silent =__none__= is worse than a loud failure. That broke 14 tests. Reading them showed why: the project *already* refuses a command whose field a token cannot fill, through =unsupported= on the projection and the guard at =org_loader.py:3884= ("the renderer emits the command regardless, so an unfillable field fails the build"). A second refusal inside =_sentinel_value= duplicated a better-placed guard and fired on paths that never build a script. The fix is therefore narrow: handle =std::optional<...>=, add the three scalar types that were also unmapped (=utility::uuid::tenant_id=, =std::size_t=, =std::chrono::year_month_day=), and leave the fallback permissive.
+
+**Why it belongs on this task.** G07 forbids refreshing a generated artefact while its generator has a known defect, because a refresh bakes the defect in. Six =ores.dq= models carry =std::optional<std::string>= columns, so refreshing step 9's drift before this fix would have written the abort into dq's own shell recipes. The fix and its regression test land here as the prerequisite.
+
+**Verification.** =tests/test_shell_recipes.py= gains a case per optional form and one end-to-end at =_entity_shell_invocation=; the existing =test_an_unknown_type_still_gets_a_value= keeps the fallback's behaviour pinned. Codegen suite 686 passing; validator 0 warnings; inventories 42 up to date; analytics-cpp reports no drift once its recipe is refreshed, and dq, iam and refdata are unmoved.
 
 * Step 7 results: the publication functions are not an automation opportunity
 

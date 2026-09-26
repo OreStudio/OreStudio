@@ -13,10 +13,13 @@ the unit it documents.
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.org_loader import (  # noqa: E402
+    _entity_shell_invocation,
     _sentinel_for_field,
     _sentinel_value,
     recipe_org_id,
@@ -165,8 +168,10 @@ class TestTheSentinel:
         # parser accepts rather than an empty string.
         for cpp_type in ("std::string", "bool", "int", "std::int32_t",
                          "std::int64_t", "std::uint16_t", "std::uint32_t",
-                         "std::uint64_t", "double", "boost::uuids::uuid",
+                         "std::uint64_t", "std::size_t", "double",
+                         "boost::uuids::uuid", "utility::uuid::tenant_id",
                          "std::chrono::system_clock::time_point",
+                         "std::chrono::year_month_day",
                          "boost::asio::ip::address"):
             value = _sentinel_value(cpp_type)
             assert value != "", cpp_type
@@ -174,8 +179,43 @@ class TestTheSentinel:
         assert _sentinel_value("bool") == "false"
         assert _sentinel_value("int") == "0"
 
+    def test_an_optional_field_sends_the_absent_token(self):
+        # The shell parses '-' to nullopt for an optional field, so that is
+        # what a script sends when it has no value to state. Sending
+        # __none__ instead aborts at the client, because the shell cannot
+        # read it as the underlying type -- which is what every one of these
+        # did before.
+        for cpp_type in ("std::optional<std::string>",
+                         "std::optional<boost::uuids::uuid>",
+                         "std::optional<double>",
+                         "std::optional<int>",
+                         "std::optional<bool>",
+                         "std::optional<std::int64_t>",
+                         "std::optional<std::chrono::system_clock::time_point>"):
+            assert _sentinel_value(cpp_type) == "-", cpp_type
+
     def test_an_unknown_type_still_gets_a_value(self):
+        # The fallback stays permissive: whether a model may generate a shell
+        # command for an unfillable field is the upstream refusal's decision,
+        # and this function only supplies a value once that decision is made.
         assert _sentinel_value("some::unmapped::type") == "__none__"
+
+    def test_a_write_states_the_absent_token_for_an_optional_member(self):
+        # End to end at the point a script is built: the line a reader runs
+        # carries '-' where the record's optional member is, so the command
+        # reaches the service instead of aborting in the client's parser.
+        command = _entity_command(
+            "add", "add", "add",
+            kind="put", verb="put",
+            put_writes=[
+                {"name": "code", "cpp_type": "std::string"},
+                {"name": "image_id",
+                 "cpp_type": "std::optional<boost::uuids::uuid>"},
+            ],
+            has_intent=False, has_order=False,
+        )
+
+        assert _entity_shell_invocation(command) == "add __none__ -"
 
     def test_an_intent_field_is_named_not_shaped(self):
         # A reason code is an enum the schema seeds, so a generic string
@@ -248,8 +288,6 @@ class TestTheDestructiveMarker:
         assert "DESTRUCTIVE" in text
 
     def test_a_value_other_than_true_is_refused(self, tmp_path):
-        import pytest
-
         from codegen.org_loader import load_org_operation_model
 
         model = tmp_path / "probe.org"

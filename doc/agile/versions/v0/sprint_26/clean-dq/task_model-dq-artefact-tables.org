@@ -87,9 +87,11 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 - Drift is 517 files: 410 change, 107 create. =ores.dq/core= 236, =ores.dq/api= 174, =ores.shell/dq= 42, =ores.dq/service= 28, =ores.sql/create= 21.
 - The C++ is generated, not handcrafted: 575 of 651 non-test files are generatable, but only 1 carries the marker.
 
-*Lever.* =projects/ores.codegen/scripts/survey_sql_artefacts.py= produces the artefact census. It is read-only, and it pairs a table with its base by entity name across every SQL product. Add it to the codegen suite if it earns its place.
+*Lever.* =projects/ores.codegen/scripts/survey_sql_artefacts.py= produces the artefact census. It is read-only, and it pairs a table with its base by entity name across every SQL product. Its regression test is =projects/ores.codegen/tests/test_survey_sql_artefacts.py=, and it locks the pairing rule specifically: reverting the lever to the suffix rule makes the =tags= case fail. The codegen suite is green at 648 tests.
 
 *Open question.* The population-function template names its output =_population_functions.sql=, while the 21 handcrafted files are =_population_functions_create.sql=. Settle the intended name in step 7.
+
+*Trunk condition, not fixed here.* =regenerate_backlog_indexes.py --check= reports =doc/agile/product_backlog/inbox.org= stale on an unmodified =main=: six captures exist on disk and are absent from the index. No CI job runs that check. The refresh is unrelated to this task and was left out of the branch.
 
 * Test Scenarios
 

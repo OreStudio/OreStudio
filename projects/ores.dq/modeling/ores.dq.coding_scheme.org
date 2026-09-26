@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: A3A60323-522E-4EC4-9B3F-A771B928DFAC
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.dq.coding_scheme
 #+description: Codegen entity model for the dq =coding_scheme= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

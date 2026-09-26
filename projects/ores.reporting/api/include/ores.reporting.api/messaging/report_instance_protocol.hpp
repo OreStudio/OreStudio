@@ -26,63 +26,251 @@
 #define ORES_REPORTING_API_MESSAGING_REPORT_INSTANCE_PROTOCOL_HPP
 
 #include "ores.reporting.api/domain/report_instance.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::reporting::messaging {
 
-struct get_report_instances_request {
-    using response_type = struct get_report_instances_response;
+struct report_instance_key {
+    std::string name;
+};
+
+struct report_instance_write {
+    boost::uuids::uuid id;
+    std::string name;
+    std::string description;
+    boost::uuids::uuid definition_id;
+    std::optional<boost::uuids::uuid> fsm_state_id;
+    std::int64_t trigger_run_id;
+    std::string output_message;
+    std::optional<std::chrono::system_clock::time_point> started_at;
+    std::optional<std::chrono::system_clock::time_point> completed_at;
+};
+
+struct report_instance_change {
+    report_instance_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct report_instance_removal {
+    report_instance_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct report_instance_lookup {
+    report_instance_key key;
+    std::optional<ores::reporting::domain::report_instance> report_instance;
+};
+
+struct report_instance_event {
+    boost::uuids::uuid event_id;
+    report_instance_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct report_instance_version_key {
+    report_instance_key report_instance;
+    std::uint32_t version;
+};
+
+struct report_instance_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_report_instances_request {
+    using response_type = struct list_report_instances_response;
     static constexpr std::string_view nats_subject = "reporting.v1.report_instances.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
 };
 
-struct get_report_instances_response {
+struct list_report_instances_response {
+    ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_instance> instances;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_report_instance_request {
-    using response_type = struct save_report_instance_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.report_instances.save";
-    ores::reporting::domain::report_instance data;
-
-    static save_report_instance_request from(ores::reporting::domain::report_instance v) {
-        return {.data = std::move(v)};
-    }
+struct get_report_instance_request {
+    using response_type = struct get_report_instance_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.report_instances.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    report_instance_key key;
 };
 
-struct save_report_instance_response {
-    bool success = false;
-    std::string message;
+struct get_report_instance_response {
+    ores::utility::domain::result result;
+    std::optional<ores::reporting::domain::report_instance> report_instance;
+};
+
+struct get_many_report_instances_request {
+    using response_type = struct get_many_report_instances_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.report_instances.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<report_instance_key> keys;
+};
+
+struct get_many_report_instances_response {
+    ores::utility::domain::result result;
+    std::vector<report_instance_lookup> entries;
+};
+
+struct put_report_instance_request {
+    using response_type = struct put_report_instance_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.report_instances.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    report_instance_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_report_instance_response {
+    ores::utility::domain::result result;
+    ores::reporting::domain::report_instance report_instance;
+};
+
+struct put_many_report_instances_request {
+    using response_type = struct put_many_report_instances_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.report_instances.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<report_instance_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_report_instances_response {
+    ores::utility::domain::result result;
+    std::vector<ores::reporting::domain::report_instance> instances;
 };
 
 struct delete_report_instance_request {
     using response_type = struct delete_report_instance_response;
     static constexpr std::string_view nats_subject = "reporting.v1.report_instances.delete";
-    std::vector<std::string> ids;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    report_instance_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_report_instance_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_report_instance_history_request {
-    using response_type = struct get_report_instance_history_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.report_instances.history";
-    std::string id;
+struct delete_many_report_instances_request {
+    using response_type = struct delete_many_report_instances_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.report_instances.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<report_instance_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_report_instance_history_response {
-    std::vector<ores::reporting::domain::report_instance> history;
-    bool success = false;
-    std::string message;
+struct delete_many_report_instances_response {
+    ores::utility::domain::result result;
 };
+
+struct list_report_instance_versions_request {
+    using response_type = struct list_report_instance_versions_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.report_instances_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    report_instance_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<report_instance_versions_filter> filter;
+};
+
+struct list_report_instance_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::reporting::domain::report_instance> versions;
+    std::uint64_t total;
+};
+
+struct get_report_instance_version_request {
+    using response_type = struct get_report_instance_version_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.report_instances_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    report_instance_version_key key;
+};
+
+struct get_report_instance_version_response {
+    ores::utility::domain::result result;
+    ores::reporting::domain::report_instance version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace report_instance_event_subjects {
+inline constexpr std::string_view created = "reporting.v1.report_instances_events.created";
+inline constexpr std::string_view updated = "reporting.v1.report_instances_events.updated";
+inline constexpr std::string_view deleted = "reporting.v1.report_instances_events.deleted";
+}
 
 }
 

@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: C6D0B07C-5C48-5AC1-8053-2D0B36A2D3CD
+:END:
+#+title: How do I run the report_operations commands from the shell?
+#+description: Every command the report_operations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:report_operations:
+
+This file documents declared operations at the shell. Its one command is =ores-shell> report_operations trigger-report-instance=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+
+* Commands
+
+** =trigger-report-instance=
+:PROPERTIES:
+:ID: CD0F47D1-595B-5A99-BEF6-45C37904DB63
+:END:
+
+Sends =trigger_report_instance_request= and prints =trigger_report_instance_response=, so the shape is the protocol's and the meaning is the service's. It reads =report_definition_id=, =tenant_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations trigger-report-instance <report_definition_id> <tenant_id> [--job_instance_id <v>]
+#+end_example
+
+It is addressed at =reporting.v1.ops.trigger_report_instance=.
+
+#+name: report_operations-trigger-report-instance
+#+begin_src ores-shell :tangle report_operations-trigger-report-instance.ores :exports none
+report_operations trigger-report-instance 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000
+#+end_src
+

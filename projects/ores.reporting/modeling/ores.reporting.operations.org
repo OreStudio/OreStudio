@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ores.cpp.shell-command.enabled: true
+:ID: beeec4a7-537c-4d14-afd2-446012b81eed
+:END:
+#+title: ores.reporting.operations
+#+description: Codegen operation model for the reporting component's domain operations: messages that are not entity verbs and so do not belong in the common resource grammar.
+#+type: ores.codegen.operation
+#+component: reporting
+#+subcomponent: api
+#+entity_singular: report_operations
+#+namespace: ores::reporting::messaging
+#+brief: The reporting component's domain operations.
+#+filetags: :model:operation:reporting:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The reporting component's domain operations, as the
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] § "Domain operations" defines for
+entities.
+
+=trigger_report_instance= starts one execution of a report definition. It is
+not a write of one entity: it creates a =report_instance=, applies the
+definition's concurrency policy, and dispatches the report execution workflow.
+It is also not a user action. The scheduler sends it when a job fires, so the
+caller is a service rather than a person, and the message names the tenant the
+definition belongs to rather than deriving it from the caller's own privilege.
+
+The acting identity is still the caller's. The scheduler presents its own
+service account, and the permission check reads that account's roles.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#+end_src
+
+* Messages
+
+** trigger_report_instance_request
+:PROPERTIES:
+:subject: reporting.v1.ops.trigger_report_instance
+:response: trigger_report_instance_response
+:END:
+
+*** report_definition_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The report definition to run.
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The tenant that owns the definition. It is stated rather than derived because
+the scheduler runs as one service account in one tenant, while definitions
+belong to the tenants that scheduled them. The handler scopes the definition
+lookup to this tenant, and the caller's permission check decides whether the
+caller may act in it.
+
+*** job_instance_id
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+The scheduler's job instance that caused this trigger, copied to the report
+instance's =trigger_run_id=. Zero when a caller triggers a report by hand.
+
+** trigger_report_instance_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+Outcome of the operation, in the same shape every entity operation answers
+with, so a caller reads one result convention across the component.
+
+* See also
+
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the operation rules this model follows.
+- [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] — the work this model belongs to.

@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 189AF09C-4D20-5F21-A7BD-D0254585EC6C
+:END:
+#+title: How do I run the report_types commands from the shell?
+#+description: Every command the report_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:report_types:
+
+This file documents the report_types resource at the shell, one section per command. Every command is a subcommand of =report_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 361DCEF1-20A6-5079-B61D-B14EFDE46605
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.report_types.list=.
+
+#+name: report_types-list
+#+begin_src ores-shell :tangle report_types-list.ores :exports none
+report_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: A045F53E-0FA4-5DE0-BED3-924E7246ADD7
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_types get <code>
+#+end_example
+
+It is addressed at =reporting.v1.report_types.get=.
+
+#+name: report_types-get
+#+begin_src ores-shell :tangle report_types-get.ores :exports none
+report_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: DB26388D-A0F5-532B-ACB4-ED226C464B25
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_types get-many <code>
+#+end_example
+
+It is addressed at =reporting.v1.report_types.get_many=.
+
+#+name: report_types-get-many
+#+begin_src ores-shell :tangle report_types-get-many.ores :exports none
+report_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1B8E5C90-8294-54D5-A888-4D5365172474
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_types add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.report_types.put=.
+
+#+name: report_types-add
+#+begin_src ores-shell :tangle report_types-add.ores :exports none
+report_types add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 89A94CF8-38FE-55BC-8CCF-97E2B834C145
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_types set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.report_types.put=.
+
+#+name: report_types-set
+#+begin_src ores-shell :tangle report_types-set.ores :exports none
+report_types set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D064D1A9-ECEA-59AC-93DE-E067A9B27D65
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_types put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.report_types.put_many=.
+
+#+name: report_types-put-many
+#+begin_src ores-shell :tangle report_types-put-many.ores :exports none
+report_types put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: D66C753E-2A86-553D-AE42-C12669DB486F
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.report_types.delete=.
+
+#+name: report_types-delete
+#+begin_src ores-shell :tangle report_types-delete.ores :exports none
+report_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 617ECA56-4C34-5ABE-9D6E-236CFE32A42E
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.report_types.delete_many=.
+
+#+name: report_types-delete-many
+#+begin_src ores-shell :tangle report_types-delete-many.ores :exports none
+report_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: D2853F93-E819-570C-9784-9F89DC45C146
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.report_types_versions.list=.
+
+#+name: report_types-versions
+#+begin_src ores-shell :tangle report_types-versions.ores :exports none
+report_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 90495650-632F-5236-812F-AAA5CB54E09A
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_types version <code> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.report_types_versions.get=.
+
+#+name: report_types-version
+#+begin_src ores-shell :tangle report_types-version.ores :exports none
+report_types version __none__ --version 1
+#+end_src
+

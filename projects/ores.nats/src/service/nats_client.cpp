@@ -81,6 +81,10 @@ client& nats_client::active_client() const {
     throw std::runtime_error("Not connected to NATS");
 }
 
+client& nats_client::transport() const {
+    return active_client();
+}
+
 message nats_client::request(std::string_view subject, std::string_view json_body) {
     return active_client().request_sync(subject, as_bytes(json_body));
 }

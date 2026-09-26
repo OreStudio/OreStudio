@@ -1,0 +1,94 @@
+The scheduling flow, driven from the shell
+==========================================
+
+Run at the head that adds the scheduler submenu, against the live fleet: NATS on
+21205, the recreatable database, ores.iam.service for the session and
+ores.scheduler.service for the loop. The service and the shell were started by
+hand, with the same arguments their systemd units pass, because this session's
+sandbox cannot drive the user manager.
+
+The script, run with ores.shell --load:
+
+    # Exercises the whole scheduling flow from the shell: create a job, watch it
+    # fire, read the executions it recorded, and remove it again.
+    scheduler jobs
+    scheduler schedule e2e-ok "* * * * *" --action execute_sql --command "select 1" --description "shell end-to-end probe"
+    scheduler jobs
+    scheduler status
+    scheduler watch --seconds 100
+    scheduler instances --job e2e-ok --limit 5
+    scheduler remove e2e-ok
+    scheduler jobs
+
+The transcript:
+
+    ✓ Connected to nats://localhost:21205
+    ✓ Logged in as: admin
+      Tenant:  (ffffffff-ffff-ffff-ffff-ffffffffffff)
+    ORE Studio Shell REPL v0.0.25
+    Type 'help' for available commands, 'exit' to quit.
+    ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_merry_newton/tmp/scheduler_flow.ores
+    > scheduler jobs
+    No job definitions are visible to this session.
+    > scheduler schedule e2e-ok "* * * * *" --action execute_sql --command "select 1" --description "shell end-to-end probe"
+    Scheduled 'e2e-ok' as 0efe3918-83c2-4a6e-8557-a035dde3cf06 on '* * * * *'.
+    Run 'scheduler watch' to see it fire.
+    > scheduler jobs
+    1 job definition(s), showing 1:
+      e2e-ok [active]
+        id:      0efe3918-83c2-4a6e-8557-a035dde3cf06
+        cron:    * * * * *
+        action:  execute_sql
+        about:   shell end-to-end probe
+        command: select 1
+    > scheduler status
+    1 active, 0 running:
+      e2e-ok [active] on '* * * * *'
+        next:   2026-09-26 18:55:00
+        last:   never run
+    > scheduler watch --seconds 100
+    Listening on 'scheduler.v1.job-instance-events' for 100 second(s).
+      2026-09-26 18:55:00 ores.scheduler.job_instance b418688d-83f2-46a3-bfc5-e6a7231fe9cd 121
+      2026-09-26 18:55:00 ores.scheduler.job_instance 0efe3918-83c2-4a6e-8557-a035dde3cf06 122 for tenant ffffffff-ffff-ffff-ffff-ffffffffffff
+      2026-09-26 18:55:00 ores.scheduler.job_instance b418688d-83f2-46a3-bfc5-e6a7231fe9cd 121
+      2026-09-26 18:55:00 ores.scheduler.job_instance 0efe3918-83c2-4a6e-8557-a035dde3cf06 122 for tenant ffffffff-ffff-ffff-ffff-ffffffffffff
+      2026-09-26 18:55:00 ores.scheduler.job_instance d75c50f8-796a-41a0-bd9e-743b1737236a 123
+      2026-09-26 18:55:00 ores.scheduler.job_instance d75c50f8-796a-41a0-bd9e-743b1737236a 123
+      2026-09-26 18:56:00 ores.scheduler.job_instance b418688d-83f2-46a3-bfc5-e6a7231fe9cd 124
+      2026-09-26 18:56:00 ores.scheduler.job_instance 0efe3918-83c2-4a6e-8557-a035dde3cf06 125 for tenant ffffffff-ffff-ffff-ffff-ffffffffffff
+      2026-09-26 18:56:00 ores.scheduler.job_instance b418688d-83f2-46a3-bfc5-e6a7231fe9cd 124
+      2026-09-26 18:56:00 ores.scheduler.job_instance 0efe3918-83c2-4a6e-8557-a035dde3cf06 125 for tenant ffffffff-ffff-ffff-ffff-ffffffffffff
+      2026-09-26 18:56:00 ores.scheduler.job_instance d75c50f8-796a-41a0-bd9e-743b1737236a 126
+      2026-09-26 18:56:00 ores.scheduler.job_instance d75c50f8-796a-41a0-bd9e-743b1737236a 126
+    12 event(s) in 100 second(s).
+    > scheduler instances --job e2e-ok --limit 5
+      #125 e2e-ok succeeded 2026-09-26 18:56:00 (0 ms)
+    1 execution(s) of 5 available.
+    > scheduler remove e2e-ok
+    Removed 'e2e-ok'.
+    > scheduler jobs
+    No job definitions are visible to this session.
+    Script complete: 8 commands executed.
+    ores-shell> Bye!
+
+What it proves:
+
+- scheduler schedule arms a job and the shell lists it back with its cron,
+  action and command.
+- The running service picks the new definition up without a restart: the loop
+  reads the table again on the change event its pipeline already receives.
+  Before this unit reload() had no caller, and a job scheduled while the
+  service ran never fired -- the first run of this script showed exactly that,
+  with the execution events arriving only for the two seeded jobs.
+- scheduler watch receives the scheduler's own publication on
+  scheduler.v1.job-instance-events and prints it: each event names the
+  definition and the execution, and the tenant when the row has one.
+- scheduler instances reads the execution back as succeeded in 0 ms.
+- scheduler remove deletes by name, resolving it to the key the protocol
+  addresses, and the definition is gone from the next listing.
+
+One observation for the operations read, not fixed here: when the definition
+row is gone, the execution summary's job_name carries the definition
+identifier instead of a name, because the join finds nothing. The page is also
+ordered by time, so a client-side --job filter sees one page; the command
+says so.

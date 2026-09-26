@@ -256,6 +256,17 @@ public:
      */
     [[nodiscard]] nats_client with_workspace_resolution(std::vector<std::string> chain) const;
 
+    /**
+     * @brief The connection underneath, for a caller that subscribes.
+     *
+     * Request and reply cover a command that asks one question and prints
+     * one answer. A command that holds the connection open and reads what
+     * arrives -- the shell's watch commands -- needs the subscription side
+     * of the transport, which this class does not wrap. The reference
+     * belongs to this object and must not outlive it.
+     */
+    [[nodiscard]] client& transport() const;
+
 private:
     [[nodiscard]] client& active_client() const;
 

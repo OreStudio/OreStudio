@@ -47,6 +47,7 @@
 #include "ores.shell/app/commands/refdata/refdata_commands.hpp"
 #include "ores.shell/app/commands/reports_commands.hpp"
 #include "ores.shell/app/commands/script_commands.hpp"
+#include "ores.shell/app/commands/scheduler_commands.hpp"
 #include "ores.shell/app/commands/subscription_commands.hpp"
 #include "ores.shell/app/commands/synthetic/synthetic_entity_commands.hpp"
 #include "ores.shell/app/commands/synthetic_commands.hpp"
@@ -111,6 +112,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     script_commands::register_commands(*root, active_session_);
     bundles_commands::register_commands(*root, session_);
     workflow_commands::register_commands(*root, session_);
+    scheduler_commands::register_commands(*root, session_);
     lei_commands::register_commands(*root, session_);
     compute_commands::register_commands(*root, session_);
     app_commands::register_commands(*root, session_);

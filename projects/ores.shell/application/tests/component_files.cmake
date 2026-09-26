@@ -22,4 +22,5 @@
 set(files
     "app_script_runner_tests.cpp"
     "main.cpp"
+    "scheduler_commands_tests.cpp"
 )

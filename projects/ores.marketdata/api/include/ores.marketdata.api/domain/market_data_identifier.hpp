@@ -163,6 +163,7 @@ struct inflation_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<domain::inflation_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<volatility_surface_point> vol;
 
     bool operator==(const inflation_market_data_identifier&) const = default;
 };

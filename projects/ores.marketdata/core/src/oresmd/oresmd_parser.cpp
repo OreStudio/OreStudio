@@ -398,6 +398,28 @@ market_data_identifier parse_inflation(const boost::urls::url_view& u, const que
     }
     if (qp.point)
         id.point = to_lower(*qp.point);
+    // An inflation cap/floor's surface point is the maturity, the cap-or-floor
+    // flag and the strike. Which surface it is -- a price or a normal vol --
+    // arrives as the model, matching the metric segment the projection emits.
+    if (qp.point && id.type == instrument_type::vol) {
+        std::vector<std::string> parts;
+        std::stringstream ss(*id.point);
+        std::string part;
+        while (std::getline(ss, part, ','))
+            parts.push_back(to_upper(part));
+        if (parts.size() != 3)
+            BOOST_THROW_EXCEPTION(
+                oresmd_exception(std::format("oresmd://inflation/... a capfloor vol point is "
+                                             "maturity,cap_or_floor,strike, got: '{}'.",
+                                             *id.point)));
+        volatility_surface_point v;
+        v.expiry = parts[0];
+        v.call_put = parts[1];
+        v.strike = parts[2];
+        id.vol = std::move(v);
+    }
+    if (qp.model && id.type == instrument_type::vol && id.vol)
+        id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
     return id;
 }
 
@@ -597,6 +619,13 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
                 append_if(u, "point", id.point);
+                // The surface's model is the ORE metric of the projected key, and no
+                // field carries it, so the uri_order loop above cannot emit it. A
+                // non-default model is emitted here or the round trip loses which
+                // surface this was -- the price one rather than a log-normal vol.
+                if (id.vol && id.vol->model_subtype != volatility_model_subtype::rate_lnvol)
+                    u.params().append(
+                        {"model", std::string(magic_enum::enum_name(id.vol->model_subtype))});
             } else if constexpr (std::is_same_v<T, correlation_market_data_identifier>) {
                 u.set_host("correlation");
                 u.segments().push_back(to_lower(id.factor_pair));

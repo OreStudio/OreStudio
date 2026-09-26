@@ -561,6 +561,20 @@ TEST_CASE("round_trip_inflation_seasonality", tags) {
     REQUIRE(original == roundtripped);
 }
 
+TEST_CASE("round_trip_inflation_zc_capfloor_price", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://inflation/euhicpxt?type=vol&quote=zc_capfloor&model=price&point=10y,c,0.00"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_inflation_yy_capfloor_normal_vol", tags) {
+    const auto original = oresmd_parser::parse(uri(
+        "oresmd://inflation/euhicpxt?type=vol&quote=yy_capfloor&model=rate_nvol&point=5y,f,0.02"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
 TEST_CASE("parse_commodity_fwd_quote", tags) {
     const auto id =
         oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote&quote=fwd&point=6m"));

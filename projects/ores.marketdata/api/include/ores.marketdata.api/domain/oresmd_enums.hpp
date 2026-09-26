@@ -169,9 +169,13 @@ enum class fx_quote_type {
  * only meaningful when `type=quote`.
  */
 enum class inflation_quote_type {
-    zc_swap,    ///< ZC_INFLATIONSWAP/RATE (zero-coupon inflation swap rate).
-    yy_swap,    ///< YY_INFLATIONSWAP/RATE (year-on-year inflation swap rate).
-    seasonality ///< SEASONALITY/RATE (seasonality adjustment factor).
+    zc_swap,     ///< ZC_INFLATIONSWAP/RATE (zero-coupon inflation swap rate).
+    yy_swap,     ///< YY_INFLATIONSWAP/RATE (year-on-year inflation swap rate).
+    seasonality, ///< SEASONALITY/RATE (seasonality adjustment factor).
+    zc_capfloor, ///< 6-segment: ZC_INFLATIONCAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE, and
+                 ///< the same shape under RATE_NVOL.
+    yy_capfloor  ///< 6-segment: YY_INFLATIONCAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE, and
+                 ///< the same shape under RATE_NVOL.
 };
 
 /**

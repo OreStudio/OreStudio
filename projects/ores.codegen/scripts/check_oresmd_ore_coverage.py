@@ -98,14 +98,6 @@ UNREPRESENTED: dict[str, str] = {
         "and a period code. Needs a profile asset class with a time-of-day "
         "coordinate."
     ),
-    "ZC_INFLATIONCAPFLOOR": (
-        "Zero-coupon inflation cap/floor price, keyed by index, tenor, "
-        "cap-or-floor and strike. Needs the inflation surface point."
-    ),
-    "YY_INFLATIONCAPFLOOR": (
-        "Year-on-year inflation cap/floor price, keyed by index, tenor, "
-        "cap-or-floor and strike. Needs the inflation surface point."
-    ),
 }
 
 # Quote types oresmd models whose shape does not match the keys ORE writes.
@@ -130,6 +122,8 @@ VOL_REPRESENTED: dict[str, str] = {
     "FX_OPTION": "fx",
     "EQUITY_OPTION": "equity",
     "CAPFLOOR": "ir",
+    "ZC_INFLATIONCAPFLOOR": "inflation",
+    "YY_INFLATIONCAPFLOOR": "inflation",
 }
 
 # An asset class whose model declares a ``vol`` field but whose projection

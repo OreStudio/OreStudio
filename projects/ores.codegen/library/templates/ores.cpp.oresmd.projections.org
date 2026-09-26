@@ -89,6 +89,8 @@ constexpr std::string_view cds_index{"CDS_INDEX"};
 constexpr std::string_view index_cds_tranche{"INDEX_CDS_TRANCHE"};
 constexpr std::string_view zc_inflation_swap{"ZC_INFLATIONSWAP"};
 constexpr std::string_view yy_inflation_swap{"YY_INFLATIONSWAP"};
+constexpr std::string_view zc_inflation_capfloor{"ZC_INFLATIONCAPFLOOR"};
+constexpr std::string_view yy_inflation_capfloor{"YY_INFLATIONCAPFLOOR"};
 constexpr std::string_view seasonality{"SEASONALITY"};
 constexpr std::string_view correlation{"CORRELATION"};
 }  // namespace ore_type_spec
@@ -590,6 +592,23 @@ std::string_view ore_{{asset_class}}_metric({{asset_class}}_quote_type qt) {
 }
 
 std::optional<std::string> quote_key_inflation(const {{asset_class}}_market_data_identifier& id) {
+    // An inflation cap/floor is a vol surface, not a quote: its metric segment is
+    // the surface (price or normal vol), and the coordinate is the maturity, the
+    // cap-or-floor flag and the strike.
+    if (id.type == instrument_type::vol) {
+        if (!id.vol || !id.quote_type || !id.vol->call_put)
+            return std::nullopt;
+        const auto qt = *id.quote_type;
+        if (qt != inflation_quote_type::zc_capfloor && qt != inflation_quote_type::yy_capfloor)
+            return std::nullopt;
+        return std::format("{}/{}/{}/{}/{}/{}",
+                           ore_type(qt),
+                           ore_vol_model(id.vol->model_subtype),
+                           id.index_code,
+                           to_upper(id.vol->expiry),
+                           to_upper(*id.vol->call_put),
+                           to_upper(id.vol->strike));
+    }
     if (id.type != instrument_type::quote || !id.quote_type || !id.point)
         return std::nullopt;
     const auto qt = *id.quote_type;
@@ -1065,6 +1084,30 @@ from_credit_index(credit_quote_type qt, const std::vector<std::string>& parts) {
 }
 
 std::optional<market_data_identifier>
+from_inflation_capfloor(inflation_quote_type qt, const std::vector<std::string>& parts) {
+    // ZC_INFLATIONCAPFLOOR/METRIC/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE, and the
+    // same shape for the year-on-year family. The metric is the surface: PRICE
+    // or RATE_NVOL.
+    if (parts.size() != 6)
+        return std::nullopt;
+    const auto model = parse_vol_model(parts[1]);
+    if (!model)
+        return std::nullopt;
+    inflation_market_data_identifier id;
+    id.index_code = to_upper(parts[2]);
+    id.type = instrument_type::vol;
+    id.quote_type = qt;
+    id.point = to_lower(parts[3]) + "," + to_lower(parts[4]) + "," + to_lower(parts[5]);
+    volatility_surface_point v;
+    v.model_subtype = *model;
+    v.expiry = to_upper(parts[3]);
+    v.call_put = to_upper(parts[4]);
+    v.strike = to_upper(parts[5]);
+    id.vol = std::move(v);
+    return id;
+}
+
+std::optional<market_data_identifier>
 from_inflation_swap(inflation_quote_type qt, const std::vector<std::string>& parts) {
     // ZC_INFLATIONSWAP/RATE/INDEX/POINT, YY_INFLATIONSWAP/RATE/INDEX/POINT.
     if (parts.size() != 4 || !metric_is(parts[1], ore_metric_spec::rate))
@@ -1180,7 +1223,10 @@ inverse_projection(const std::vector<std::string>& parts,
         return from_inflation_swap(inflation_quote_type::yy_swap, parts);
     if (type == ore_type_spec::seasonality)
         return from_inflation_seasonality(parts);
-    if (type == ore_type_spec::correlation)
+    if (type == ore_type_spec::zc_inflation_capfloor)
+        return from_inflation_capfloor(inflation_quote_type::zc_capfloor, parts);
+    if (type == ore_type_spec::yy_inflation_capfloor)
+        return from_inflation_capfloor(inflation_quote_type::yy_capfloor, parts);    if (type == ore_type_spec::correlation)
         return from_correlation(parts);
     // No oresmd mapping: BOND, FX_OPTION, CAPFLOOR, INDEX_CDS_OPTION,
     // EQUITY_OPTION, COMMODITY_OPTION, ZC_INFLATIONCAPFLOOR, YY_INFLATIONCAPFLOOR,

@@ -344,6 +344,30 @@ market_data_identifier parse_{{asset_class}}(const boost::urls::url_view& u, con
     if (qp.model && id.type == instrument_type::vol && id.vol)
         id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
 {{/equity}}
+{{#inflation}}
+    // An inflation cap/floor's surface point is the maturity, the cap-or-floor
+    // flag and the strike. Which surface it is -- a price or a normal vol --
+    // arrives as the model, matching the metric segment the projection emits.
+    if (qp.point && id.type == instrument_type::vol) {
+        std::vector<std::string> parts;
+        std::stringstream ss(*id.point);
+        std::string part;
+        while (std::getline(ss, part, ','))
+            parts.push_back(to_upper(part));
+        if (parts.size() != 3)
+            BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+                "oresmd://inflation/... a capfloor vol point is "
+                "maturity,cap_or_floor,strike, got: '{}'.",
+                *id.point)));
+        volatility_surface_point v;
+        v.expiry = parts[0];
+        v.call_put = parts[1];
+        v.strike = parts[2];
+        id.vol = std::move(v);
+    }
+    if (qp.model && id.type == instrument_type::vol && id.vol)
+        id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
+{{/inflation}}
     return id;
 }
 

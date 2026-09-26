@@ -397,6 +397,20 @@ TEST_CASE("seasonality_quote_key", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "SEASONALITY/RATE/MULT/UKRPI/JAN");
 }
 
+TEST_CASE("zc_inflation_capfloor_price_quote_key_matches_the_corpus", tags) {
+    const auto id = parse(
+        "oresmd://inflation/euhicpxt?type=vol&quote=zc_capfloor&model=price&point=10y,c,0.00");
+    REQUIRE(oresmd_projections::to_quote_key(id) ==
+            "ZC_INFLATIONCAPFLOOR/PRICE/EUHICPXT/10Y/C/0.00");
+}
+
+TEST_CASE("yy_inflation_capfloor_normal_vol_quote_key_matches_the_corpus", tags) {
+    const auto id = parse(
+        "oresmd://inflation/euhicpxt?type=vol&quote=yy_capfloor&model=rate_nvol&point=5y,f,0.02");
+    REQUIRE(oresmd_projections::to_quote_key(id) ==
+            "YY_INFLATIONCAPFLOOR/RATE_NVOL/EUHICPXT/5Y/F/0.02");
+}
+
 /*
  * Correlation asset class (id:D566131C-D08C-4AFE-950E-B3DD26EB2C24).
  */

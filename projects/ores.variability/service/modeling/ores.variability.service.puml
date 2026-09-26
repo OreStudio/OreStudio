@@ -26,6 +26,10 @@ namespace ores #F2F2F2 {
         namespace service #F2F2F2 {
             namespace app #F2F2F2 {
                 class application {
+                    +operator : application&
+                }
+                class application_exception {
+                    -message_ : string
                 }
                 class host {
                 }
@@ -37,6 +41,9 @@ namespace ores #F2F2F2 {
                     +database : ores::database::database_options
                 }
                 class parser {
+                }
+                class parser_exception {
+                    -message_ : string
                 }
             }
         }

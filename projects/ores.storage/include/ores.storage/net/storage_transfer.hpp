@@ -37,8 +37,8 @@ namespace ores::storage::net {
  * touching the archive layer — and composite helpers that combine pack+upload
  * or download+unpack for the common directory-tarball case.
  *
- * Composite helpers create a UUID-named temp file in
- * std::filesystem::temp_directory_path() and delete it after use.
+ * Composite helpers stage through a scoped temp file under the system
+ * temporary directory, which removes the file when it leaves scope.
  *
  * All operations log at DEBUG level including bucket, key, bytes transferred,
  * and wall-clock duration.

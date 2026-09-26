@@ -756,6 +756,43 @@ create scripts carry =tenant_id= thirteen times between them and no policy, so
 row-level security for this component currently comes only from that orphan. It
 has to be wired or the isolation it describes does not exist.
 
+** W04 the fix is a model change, not an aggregator edit
+
+The obvious fix is to repoint =workflow_create.sql= at the generated versions of
+the two table scripts and delete the hand-written ones. That would be wrong,
+because the hand-written set is not only the tables.
+
+=workflow_constraints_create.sql= carries five indexes:
+
+#+begin_example
+workflow_instances_tenant_id_idx        (tenant_id)
+workflow_instances_state_id_idx         (state_id)
+workflow_instances_correlation_id_idx   (correlation_id) where not null
+workflow_instances_tenant_type_idx      (tenant_id, type)
+workflow_steps_workflow_id_idx          (workflow_id)
+#+end_example
+
+The generated =workflow_workflow_instances_create.sql= carries one index. So four
+of the five exist only by hand, and deleting the file would silently drop them --
+which is the same trap as the RLS script, caught this time by looking rather than
+assuming.
+
+Indexes are generated elsewhere, so the four belong in the model. =ores.compute=
+declares them under an =* Indexes= section, one subsection per index, carrying
+=:columns:= and =:current_only:=; its generated create scripts emit them and it
+keeps no hand-written constraints file at all. =ores.workflow='s two models have
+no =Indexes= section.
+
+So W04's fix is: declare the four missing indexes on the two models, regenerate,
+confirm they appear in the generated create scripts, and only then repoint the
+aggregator and delete the hand-written table and constraint scripts together. The
+partial index -- =correlation_id= where it is not null -- needs whichever property
+expresses a predicate; that is not yet established and is the one detail to check
+before writing the section.
+
+Left as a recorded next step rather than half-applied: a model change that is
+regenerated but not verified is how this wave's earlier churn started.
+
 ** Correction to W04: the security half was wrong
 
 The paragraph above is wrong and is left here only because the correction is

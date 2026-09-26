@@ -9,6 +9,9 @@
 #include "ores.{{component}}.{{subcomponent}}/messaging/{{entity_singular}}_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
+{{#shell_has_request_timeout}}
+#include <chrono>
+{{/shell_has_request_timeout}}
 #include <cstddef>
 #include <functional>
 #include <optional>
@@ -170,7 +173,8 @@ void {{entity_singular}}_operations_commands::process_{{identifier}}(
     std::optional<{{namespace}}::{{response_type}}> result;
     if constexpr (request_type::requires_session) {
         result = do_auth_request<{{namespace}}::{{response_type}}>(
-            out, session, std::string(req.nats_subject), req);
+            out, session, std::string(req.nats_subject), req{{#request_timeout_seconds}},
+            std::chrono::seconds{ {{request_timeout_seconds}} }{{/request_timeout_seconds}});
     } else {
         result = do_request<{{namespace}}::{{response_type}}>(
             out, session, std::string(req.nats_subject), req);

@@ -298,6 +298,47 @@ class TestTheProtocolsOwnStatement:
         assert {m["requires_session"] for m in addressed} == {"true"}
 
 
+class TestTheDeclaredTimeout:
+    """A command whose work outlives the transport default states its budget."""
+
+    def _body(self, timeout_line):
+        return f"""* Messages
+
+** op_request
+:PROPERTIES:
+:subject: iam.v1.op
+:response: op_response
+{timeout_line}:END:
+"""
+
+    def test_a_message_without_the_property_declares_no_budget(self):
+        assert "request_timeout_seconds" not in _declared(_model_body(""))[0]
+
+    def test_the_model_states_it_and_the_command_reads_it(self):
+        messages = _declared(self._body(":request_timeout_seconds: 1800\n"))
+        assert messages[0]["request_timeout_seconds"] == 1800
+        assert shell_command_projection(messages)[0]["request_timeout_seconds"] == 1800
+
+    def test_a_command_without_a_budget_projects_none(self):
+        command = shell_command_projection([
+            _message("op_request", "iam.v1.op", "op_response"),
+        ])[0]
+        assert not command["request_timeout_seconds"]
+
+    @pytest.mark.parametrize("value", ["soon", "0", "-5", "1800.5"])
+    def test_a_budget_that_is_not_a_positive_whole_number_is_refused(self, value):
+        # A typo must not quietly leave the command on the transport default.
+        with pytest.raises(ValueError, match="positive whole number"):
+            _declared(self._body(f":request_timeout_seconds: {value}\n"))
+
+    def test_a_budget_on_an_unauthenticated_request_is_refused(self):
+        # Only an authenticated request carries a token, and only that call
+        # has a timeout parameter to pass.
+        with pytest.raises(ValueError, match="timeout the model can raise"):
+            _declared(self._body(
+                ":request_timeout_seconds: 1800\n:auth: none\n"))
+
+
 class TestTheRefusal:
     """A field no token can fill fails the model rather than vanishing."""
     def _command_with(self, cpp_type):
@@ -391,3 +432,26 @@ class TestTheRealModels:
             "login", "service-login", "signup",
             "bootstrap-status", "create-initial-admin", "provision-tenant",
         }
+
+    def test_the_one_command_that_declares_a_budget_is_acme_provisioning(self):
+        # Measured, not assumed: provision-acme is the command whose work
+        # outlives the transport's default request timeout, and the model now
+        # states the budget it needs beside the subject it sends to.
+        declared = {}
+        for path in sorted(IAM_MODELING.glob("*.org")):
+            try:
+                operation = load_org_operation_model(path)["operation"]
+            except ValueError:
+                continue
+            for command in operation["shell_commands"]:
+                if command["request_timeout_seconds"]:
+                    declared[command["command"]] = command["request_timeout_seconds"]
+        assert declared == {"provision-acme-tenant": 1800}
+
+    def test_the_budget_is_rendered_into_the_unit_that_uses_it(self):
+        # The unit includes <chrono> and passes the budget only because the
+        # model declares it; a unit with no budget renders neither.
+        operation = self._operation("ores.iam.tenant_provisioning_messages.org")
+        assert operation["shell_has_request_timeout"] is True
+        assert self._operation("ores.iam.account_messages.org")[
+            "shell_has_request_timeout"] is False

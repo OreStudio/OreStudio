@@ -27,6 +27,14 @@ one: =_reject_silent_shell_gap= refuses the model rather than dropping the
 argument, because a command that silently asks for fewer things than the
 protocol declares is worse than one that does not build.
 
+An operation whose work outlives the transport's default request timeout states
+its own budget with =:request_timeout_seconds:= in the message's drawer, and
+the command passes it to =do_auth_request=. The value is the caller's ceiling,
+so it has to exceed the handler's own. Declaring it on a message that takes no
+session is refused, because only the authenticated call carries a timeout to
+raise. A unit with no such command includes no =<chrono>= and passes nothing,
+so the transport default stays the default.
+
 
 * Template
 
@@ -46,6 +54,9 @@ The full template source. Edit here and re-tangle with
 #include "ores.{{component}}.{{subcomponent}}/messaging/{{entity_singular}}_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
+{{#shell_has_request_timeout}}
+#include <chrono>
+{{/shell_has_request_timeout}}
 #include <cstddef>
 #include <functional>
 #include <optional>
@@ -207,7 +218,8 @@ void {{entity_singular}}_operations_commands::process_{{identifier}}(
     std::optional<{{namespace}}::{{response_type}}> result;
     if constexpr (request_type::requires_session) {
         result = do_auth_request<{{namespace}}::{{response_type}}>(
-            out, session, std::string(req.nats_subject), req);
+            out, session, std::string(req.nats_subject), req{{#request_timeout_seconds}},
+            std::chrono::seconds{ {{request_timeout_seconds}} }{{/request_timeout_seconds}});
     } else {
         result = do_request<{{namespace}}::{{response_type}}>(
             out, session, std::string(req.nats_subject), req);

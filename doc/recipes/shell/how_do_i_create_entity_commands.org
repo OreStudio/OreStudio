@@ -88,6 +88,7 @@ gives a per-entity handle on a component's suite.
 
 * See also
 
+- [[id:01193D52-DD7C-4276-B6C2-E4B7F137B99E][How do I test the shell?]] — the three levels that prove the new unit works.
 - [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] — class layout, the two shapes, file locations.
 - [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] — skill that drives this workflow.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

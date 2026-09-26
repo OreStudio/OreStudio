@@ -615,3 +615,7 @@ tangled into the runnable script library
 * Pricing Model Products
 
 - [[id:DF802ADC-80A2-5CAA-8311-928BBD8F40B2][How do I run the pricing_model_products commands from the shell?]]
+
+* Testing
+
+- [[id:01193D52-DD7C-4276-B6C2-E4B7F137B99E][How do I test the shell?]]

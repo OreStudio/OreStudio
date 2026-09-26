@@ -186,6 +186,7 @@ section.
 * See also
 
 - [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]
+- [[id:01193D52-DD7C-4276-B6C2-E4B7F137B99E][How do I test the shell?]] — the scriptable half, and what a shell verdict means.
 - [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]
 - [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]]
 - [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][Archetype: doc_test_scenario.org.mustache]]

@@ -324,6 +324,16 @@ Every call site is read against the generated struct rather than
 renamed mechanically, and the nine shell units under
 =ores.shell/application/= need the same pass.
 
+=evidence/pr2_consumer_migration_recipe.txt= states the mapping in full:
+the four request shapes, the canonical construction the generated shell
+units use, the line-by-line mapping, and the counts for the handler.
+Two things a rename cannot carry: a whole-object assignment expands to
+one assignment per member of the generated =<x>_write=, whose member
+list the protocol header states; and every response check reads
+=result.outcome= rather than a =success= bool. The handler's =nats_call=
+helper needs no change, because it is templated on
+=typename Req::response_type=.
+
 
 ** 3. Regenerate
 

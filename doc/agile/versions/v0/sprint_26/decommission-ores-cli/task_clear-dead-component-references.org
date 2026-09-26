@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-26
 #+updated: 2026-09-26
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Finish the mop-up. Four live backlog captures still target a command line that n
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -71,3 +71,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done on 2026-09-26 on branch =feature/finish-mop-up-ores-cli=.
+
+Command-line residue, four files:
+
+- =next/commission_portfolio.org=, =next/commission_party_id_scheme.org=
+  and =next/commission_business_unit.org= no longer hand shell and CLI
+  commands to top-level commissioning stories. Only the shell story
+  remains, and the list of layers to capture is now shell and HTTP. The
+  CLI half of that pointer led to a capture this mop-up discarded.
+- =next/test_babel_recipe_types.org= no longer lists CLI among the recipe
+  types. =doc/recipes/= has no CLI directory.
+
+Dead component residue, three files. Each name was checked against the
+tree before removal; =projects/ores.client=, =projects/ores.wt.service=,
+=projects/ores.qt= and =projects/ores.wt= are all absent and untracked.
+
+- =next/design_standard_service_options_composable.org= drops
+  =ores.wt.service= from the tools that would adopt the helper.
+- =next/refactor_trading_reference_type_boilerplate_into_shared_templates.org=
+  drops the out-of-scope sentence about the Qt UI layer.
+- =projects/ores.hpp= drops the =ores.client= block from the component
+  guide. Nothing includes that header, so it is documentation only.
+
+Verified: =compass lint= exits 0 with no dangling id link, all six skill
+gates pass, and =misspell-fixer= reports nothing to replace.

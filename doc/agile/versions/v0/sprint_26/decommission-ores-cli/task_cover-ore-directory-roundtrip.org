@@ -26,11 +26,11 @@ Give ores::ore::xml::exporter::roundtrip a caller and a fidelity assertion. The 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -41,9 +41,10 @@ Give ores::ore::xml::exporter::roundtrip a caller and a fidelity assertion. The 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Add one test file to =ores.ore.core.tests= that drives
+=exporter::roundtrip= over two directories under =external/ore/examples=
+and asserts the walk's own contract, then wire it into the target's
+generated file list.
 
 * Notes
 
@@ -71,3 +72,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done on 2026-09-26 on branch =feature/finish-mop-up-ores-cli=.
+
+Added =projects/ores.ore/core/tests/xml_exporter_directory_roundtrip_tests.cpp=
+and listed it in the target's =component_files.cmake=. Two cases:
+
+- /Products/Example_Trades/ walks 132 portfolio documents. The test
+  asserts the accounting invariant, that every written document reads
+  back as a portfolio, and that every mapped trade reaches an output.
+- /Input/ walks a mixed directory. The test asserts the classification
+  counters for currencies, calendars and conventions, and that the
+  unsupported documents move the skip counter.
+
+Verified: =ores.ore.core.tests "[xml]"= passes, 10057 assertions in 353
+test cases, the two new ones included.
+
+** The defect it found
+
+Seventeen of the 132 documents are exported without a required child
+element, so they cannot be read back, and the 17 trades they carry are
+lost. The walk reports success for all of them. The affected products
+are Commodity, Credit, FX worst-of and Exotic, and the missing elements
+are =LegData=, =Quantity=, =InitialPrice=, =BarrierData=, =RangeBound=
+and =StrikePrice=.
+
+The test names the 17 documents and asserts the set for equality, so a
+new failure fails the suite and a fix has to shrink the list. The defect
+is tracked as capture 67277DBB-5ABD-4C36-934B-E97144E8910B, which carries
+the per-document table and the reproduce command.

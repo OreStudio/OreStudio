@@ -106,6 +106,31 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part sixteen: the publish operation is expressible, and the header is not one step
+
+Run on 2026-09-26. An operation model for the bundle publish verb was written and its header generated. The result is close to landable and the reason it is not is specific.
+
+**The operation model reproduces the wire shape.** =ores.codegen.operation= generates =publish_bundle_protocol.hpp= -- the **same path** as the hand-written header -- so the generated file replaces it in place, with the same struct names, the same =nats_subject= and the same fields in the same order. It adds one member the canonical protocol carries and the hand-written one did not: =static constexpr bool requires_session = true=. That is the pattern that retired =coding_scheme_protocol.hpp=, and it works here too.
+
+**What it does not reproduce is the params payload helpers.** The hand-written header also declares =lei_parties_params=, =publish_bundle_params= and =build_params_json=, which are not wire messages, and the operation model has no way to express them. They cannot simply go with the header, because they are **shared across three components**:
+
+#+begin_example
+publish_bundle_params   dq: party_provisioning_plan.hpp, dataset_handler.hpp, publication_handler.hpp
+                        iam: tenant_provisioning_handler.hpp
+                        shell: provision_commands.cpp
+lei_parties_params      iam: tenant_provisioning_handler.hpp
+                        shell: bundles_commands.cpp
+build_params_json       dq: party_provisioning_plan.hpp
+                        iam: tenant_provisioning_handler.hpp
+                        shell: provision_commands.cpp, bundles_commands.cpp
+#+end_example
+
+So retiring this one header means giving those three names a home of their own first -- a new header in =ores.dq.api=, with five or six includes updated across dq, iam and shell -- before the operation model can land. That is a small, bounded refactor, but it is a refactor, and it is why the highest-leverage item in the list is not a one-step job either.
+
+**What this settles.** The operation path itself is proven: an operation model renders the right messages to the right path, and the only friction is hand-written content that shares the file. That is the same shape as the entity problem part thirteen found -- a handler sharing its class with a bespoke verb -- one level down.
+
+**Evidence.** No source change: the operation model is in =git stash= ("wip: dq publish_bundle operation model..."), the working tree is clean and =check_component_drift.py --component dq= reports no drift on =main=.
+
 * Step 8 part fifteen: the coding scheme artefact table is generated
 
 Run on 2026-09-26. The smallest item from part fourteen is closed. The =coding_scheme= model now opts in to the artefact archetype, so =dq_coding_schemes_artefact_create.sql= is generated rather than hand-written. The generated table matches the hand-written one column for column.

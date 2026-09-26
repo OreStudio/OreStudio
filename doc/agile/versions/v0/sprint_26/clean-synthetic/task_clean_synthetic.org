@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-09-26
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ ores.synthetic passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:45455A9E-2DED-4101-8CF4-A520D7C3D364][Clean ores.synthetic to the component clean standard]] |
-| Now          | Baseline, models and the codegen sync are applied. The shell adapter, the whole-tree build, the gates and the registry entry are open. |
-| Waiting on   | Nothing.                               |
-| Next         | Finish the shell adapter and the whole-tree build, then run the gates and add the registry entry. |
-| Last touched | 2026-09-23                               |
+| Now          | The value eventing test is re-enabled and the RLS policy defect behind it is fixed, so synthetic is registered under the test gate and the standard's exception is gone. The generated shell commands against a live fleet (V04) are the last live item. |
+| Waiting on   | V04 needs an authenticated live fleet. |
+| Next         | Start the fleet, run the generated shell commands, and close V04. |
+| Last touched | 2026-09-26                               |
 
 * Acceptance
 
@@ -87,18 +87,18 @@ record each item's result in the table below.
 | W01 | Defect found and fixed. =service/src/messaging/event_registrar.cpp= composed eight of nine event mappings, so =register_folder_event_mapping= had no caller and folder change events never reached NATS even though the generated SQL notify trigger publishes the channel. The folder mapping is now composed at the same point as the other eight. The nine history-provider registrars are composed in core's =registrar.cpp=. | =event_registrar.cpp=; =core/src/messaging/registrar.cpp= |
 | W02 | Pass. The gate is green with synthetic registered. | =check_handler_permissions.py= |
 | W03 | Pass. The gate is green with synthetic registered. | =check_populate_references.py= |
-| W04 | The regenerated create and notify-trigger scripts are reachable from =synthetic_create.sql=. The RLS policy scripts are reachable through the top-level =rls_create.sql= and =rls_drop.sql=. Two drop scripts, =synthetic_yield_curve_process_types_drop.sql= and its notify trigger, were unreachable and recorded as =WIRE_001= exceptions; both are now wired into =synthetic_drop.sql= and the two ignore lines are removed. Schema validation and a database recreate are PENDING. | =synthetic_drop.sql=; projects/ores.sql/utility/validation_ignore.txt |
+| W04 | The regenerated create and notify-trigger scripts are reachable from =synthetic_create.sql=. The RLS policy scripts are reachable through the top-level =rls_create.sql= and =rls_drop.sql=. Two drop scripts, =synthetic_yield_curve_process_types_drop.sql= and its notify trigger, were unreachable and recorded as =WIRE_001= exceptions; both are now wired into =synthetic_drop.sql= and the two ignore lines are removed. Schema validation passes with 303 tables and no warnings, and the database recreates from scratch with the RLS policy change. | =synthetic_drop.sql=; projects/ores.sql/utility/validation_ignore.txt; =validate_schemas.sh= |
 | S01 | Generated command units and tests exist for all nine entities under =projects/ores.shell/synthetic/=. The hand-written equivalents under =ores.shell/application= are removed and the part is wired into the shell build. | shell integration commit |
 | S02 | The literate recipes are generated for all nine entities and the recipe inventory is regenerated (193 recipes in 112 categories). | =regenerate_shell_recipe_inventory.py= |
 | H01 | Audit run. The reports are under build/audit_synthetic/. Three ground-truth documents are corrected: the composite table, the system model layer page and the service registry. =validate_docs.sh= is green for synthetic; its one violation is the pre-existing =MISSING_PUML ores.shell.iam=. | build/audit_synthetic/*.md; =validate_docs.sh= |
 | H02 | Nine dead generated event headers and the superseded hand-written shell command units are deleted; the remaining findings are recorded in the audit reports. | commit 4d2dd48559 |
 | H03 | Pass. No commented-out code, no TODO or FIXME, no hand-edited comment in a generated file. | leg_d_tests_naming.md |
 | V01 | Pass. The whole tree builds, including the three synthetic libraries, their three test executables, the ores.shell.synthetic part, the shell application and the ores.iam consumer. | =compass build= |
-| V02 | Pass, with one recorded exception. All four suites pass with the fleet up: =ores.synthetic.api.tests=, =ores.synthetic.core.tests=, =ores.synthetic.service.tests= and =ores.shell.synthetic.tests=, and the codegen suite passes with 524 tests. The exception is the eventing integration test for =ir_curve_generation_config_process_parameter_value=, disabled in its model because its insert trigger cross-checks the config and definition process types and no generic seeding satisfies that. The organisation publisher seed was also made idempotent: three GB cases share a tenant and collided on the second and third because the insert trigger rejects a duplicate before =ON CONFLICT= can absorb it. | =ctest -R synthetic= (4/4 passed); build/audit_synthetic/ctest_green.txt |
+| V02 | Pass, with no exception. All four suites pass against a database recreated from scratch: =ores.synthetic.api.tests=, =ores.synthetic.core.tests= (67 cases), =ores.synthetic.service.tests= and =ores.shell.synthetic.tests=, and the codegen suite passes with 524 tests. The value eventing test is re-enabled: it seeds a VASICEK definition through a =parent_seed= block, and the table's party policy now lets a session with no party restriction read its own row back. The organisation publisher seed stays idempotent. | =ctest -R synthetic= (4/4 passed); build/audit_synthetic/ctest_green.txt; build/audit_synthetic/value_row_rls_diagnosis.md |
 | V03 | Pass. The database recreates from scratch and seeds cleanly (run three times on this branch), and the fleet starts and serves. =ores.web.service= does not come ready because Node is not installed in this environment; every C++ service does. | =compass db recreate -y -k=; =compass services start --use-busctl= |
 | V04 | PENDING. The generated shell commands need an authenticated live fleet. | |
 | V05 | Pass, with one pre-existing repo-wide exception. Model drift, protocol twin coverage, handler permissions, populate references, the shell recipe inventory and the synthetic CMake source lists are all green. =validate_docs.sh= reports one violation, =MISSING_PUML ores.shell.iam=, which is already absent on =origin/main= and belongs to another component. | Each check script; =validate_docs.sh= |
-| V06 | PENDING the exception decision. The tests are green, so only the disabled eventing test stands between synthetic and =COMPONENTS_UNDER_TEST=. The standard keeps a component out until every item passes or an exception is accepted; the entry is a one-line change once the exception is accepted. | =component_registry.py= |
+| V06 | Pass. The disabled eventing test is gone, so no exception stands between synthetic and the shared list: =COMPONENTS_UNDER_TEST = ("iam", "synthetic")=, and =check_component_drift.py --all= reports no drift with synthetic registered. | =component_registry.py=; =check_component_drift.py --all= |
 
 * Notes
 
@@ -115,8 +115,7 @@ record each item's result in the table below.
   still reports the regenerated tree unchanged.
 - The database recreates from scratch and the fleet serves. All four
   synthetic ctest suites pass against it, and =check_component_drift.py
-  --component synthetic= reports no drift. The registry entry stays held
-  until the exception below is accepted.
+  --all= reports no drift with synthetic registered.
 - The regime error-handling question (61 throw sites in this component)
   belongs to the house-wide capture, not to this pass.
 - One generator defect found by the build is fixed at source: the eventing
@@ -127,13 +126,21 @@ record each item's result in the table below.
 - A second template-level finding is recorded, not fixed: generated domain,
   eventing, protocol and handler types carry no export macro, in synthetic
   and in refdata alike, so it belongs to a house-wide template change.
-- One recorded exception. The eventing integration test for
-  =ir_curve_generation_config_process_parameter_value= is disabled in the
-  model's =* Physical space= table. Its insert trigger requires the
-  referenced config and definition process types to agree, and both parents
-  are system catalogue rows, so no generic seeding satisfies the check.
-  Re-enable it when the template can seed a system-tenant parent that
-  matches a sibling field.
+- The former exception is closed at its source. The eventing integration test
+  for =ir_curve_generation_config_process_parameter_value= is re-enabled, and
+  two defects behind it are fixed.
+  - The test seeds its definition parent through a =parent_seed= block that
+    selects a =VASICEK= catalogue row. The insert trigger requires the
+    definition's process type to match the config's, and the config generator
+    always emits =VASICEK=, so the generic catalogue seed could pick a
+    definition the trigger rejects.
+  - The table's party policy now lets a session with no party restriction
+    through. The row carries no =party_id= of its own -- its scope comes from
+    the parent config -- so the join alone returned nothing for a party-less
+    session, and the writer could not read back the row it had just written.
+    The generated party policy and the reporting =risk_report_config= policies
+    of the same shape carry the same passthrough. The diagnosis is recorded in
+    build/audit_synthetic/value_row_rls_diagnosis.md.
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

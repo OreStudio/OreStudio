@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "environment/environment.cpp"
     "environment/real_environment_provider.cpp"
@@ -30,7 +33,6 @@ set(files
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
 set(HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/attributes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/environment.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/environment_provider.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/fake_environment_provider.hpp"
@@ -52,5 +54,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/ores.platform.time.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/relative_time_formatter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/time_utils.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/unreachable.hpp"
 )

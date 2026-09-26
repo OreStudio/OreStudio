@@ -46,8 +46,6 @@ std::chrono::system_clock::time_point datetime::from_iso8601_utc(const std::stri
     if (str.empty())
         throw std::invalid_argument("from_iso8601_utc: empty string");
 
-    // Strip recognised UTC designators: 'Z', '+00:00', '+00'.
-    // Anything else — including a missing designator — is rejected.
     std::string clean;
     if (str.back() == 'Z') {
         clean = str.substr(0, str.size() - 1);
@@ -60,11 +58,11 @@ std::chrono::system_clock::time_point datetime::from_iso8601_utc(const std::stri
             "from_iso8601_utc: missing UTC designator (Z, +00:00, or +00) in: " + str);
     }
 
-    // Trim any trailing space that PostgreSQL may insert before the offset.
+    // PostgreSQL may insert a trailing space before the offset.
     while (!clean.empty() && clean.back() == ' ')
         clean.pop_back();
 
-    // Accept both 'T' (ISO 8601 standard) and ' ' (relaxed) as date/time separator.
+    // Callers may supply either the ISO 8601 'T' separator or the relaxed space.
     if (clean.size() > 10 && clean[10] == 'T')
         clean[10] = ' ';
 
@@ -79,14 +77,12 @@ std::chrono::system_clock::time_point datetime::from_iso8601_utc(const std::stri
 }
 
 std::string datetime::to_db_string(const std::chrono::system_clock::time_point& tp) {
-
     const auto s = to_iso8601_utc(tp);
-    return s.substr(0, s.size() - 1); // strip the Z suffix
+    return s.substr(0, s.size() - 1);
 }
 
 std::string datetime::to_local_display_string(const std::chrono::system_clock::time_point& tp,
                                               const std::string& format) {
-
     const auto time = std::chrono::system_clock::to_time_t(tp);
     std::tm tm_buf;
 
@@ -103,7 +99,6 @@ std::string datetime::to_iso8601_date(const std::chrono::year_month_day& date) {
 }
 
 std::chrono::year_month_day datetime::from_iso8601_date(const std::string& str) {
-
     int yy{}, mm{}, dd{};
     char s1{}, s2{};
     std::istringstream ss(str);
@@ -118,15 +113,6 @@ std::chrono::year_month_day datetime::from_iso8601_date(const std::string& str) 
         throw std::invalid_argument("from_iso8601_date: not a valid calendar date: " + str);
 
     return date;
-}
-
-bool datetime::is_valid_iso8601_date(const std::string& str) noexcept {
-    try {
-        from_iso8601_date(str);
-        return true;
-    } catch (const std::invalid_argument&) {
-        return false;
-    }
 }
 
 }

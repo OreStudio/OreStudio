@@ -78,18 +78,4 @@ std::string executable_build_time() {
     return {buf.data()};
 }
 
-std::string get_hostname() {
-#if defined(_WIN32)
-    char buf[MAX_COMPUTERNAME_LENGTH + 1] = {};
-    DWORD size = sizeof(buf);
-    if (GetComputerNameA(buf, &size))
-        return {buf};
-#else
-    char buf[256] = {};
-    if (::gethostname(buf, sizeof(buf)) == 0)
-        return {buf};
-#endif
-    return "unknown";
-}
-
 }

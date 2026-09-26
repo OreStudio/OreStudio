@@ -27,10 +27,10 @@
 namespace ores::platform::time {
 
 /**
- * @brief Canonical timestamp format string: "YYYY-MM-DD HH:MM:SS".
+ * @brief Default format string for local-time display: "YYYY-MM-DD HH:MM:SS".
  *
- * Shared by all callers that need strftime/format format strings without a
- * timezone suffix (database storage format and local-time display format).
+ * Local-time display only. Timestamps that go on the wire or into the
+ * database use ores::platform::time::datetime::to_iso8601_utc.
  */
 inline constexpr const char* k_timestamp_format = "%Y-%m-%d %H:%M:%S";
 
@@ -114,19 +114,6 @@ public:
      *         not form a valid calendar date (e.g. "2024-02-30").
      */
     static std::chrono::year_month_day from_iso8601_date(const std::string& str);
-
-    /**
-     * @brief Non-throwing check for whether @p str is a valid ISO 8601 date
-     * string, i.e. whether from_iso8601_date(str) would succeed.
-     *
-     * Intended for UI input validation, where a throwing parse would need
-     * try/catch at every call site -- see the generated Qt detail dialogs'
-     * validateInput().
-     *
-     * @param str String to check.
-     * @return true if str parses to a valid calendar date.
-     */
-    static bool is_valid_iso8601_date(const std::string& str) noexcept;
 };
 
 }

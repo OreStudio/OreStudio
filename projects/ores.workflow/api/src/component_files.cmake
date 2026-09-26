@@ -40,7 +40,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/domain/workflow_step_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/domain/workflow_step_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/domain/workflow_step_table_io.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/eventing/workflow_instance_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/eventing/workflow_instance_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/eventing/workflow_step_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/export.hpp"

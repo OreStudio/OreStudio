@@ -62,7 +62,7 @@ record each item's result in the table below.
 | B03 | 53 hand-written C++ files outside tests, none carrying the generated marker. 29 are generatable and 24 are infrastructure that stays hand-written. | Table below. |
 | B04 | Deferred to the Protocol section: the component serves no entity protocol yet, and all eight messaging headers are hand-written. | Recorded here; the subject inventory is P02's evidence. |
 | B05 | No open capture and no in-flight branch touches =ores.workflow=. | =doc/agile/product_backlog/inbox= holds no =workflow= capture; =git branch -a= holds no other =workflow= branch. |
-| B06 | One dead symbol group. Everything else is production-consumed, and nothing is test-only. =workflow_instance_changed_event= and its =event_traits= specialisation have no consumer at all: nothing constructs one, publishes one, or subscribes to one. | =git grep= over =projects/=: the only hits are the definition itself, the component's own =.puml=, and its =component_files.cmake=. Table below. |
+| B06 | Done. The one dead symbol group is deleted: =workflow_instance_changed_event.hpp= and its =event_traits= specialisation are gone, and the api module's source lists are regenerated. The generated =workflow_instance_event.hpp= and =workflow_step_event.hpp= are what the component publishes now. | =git grep= finds no reference outside the generated diagram; =ores.workflow.core.lib= still reaches "Built target" after the deletion. Detail below. |
 | M01 | Pass. No legacy JSON model remains and no =lookup_entity= survives. | =find= for =*.json= under the modeling directories returns nothing; =grep= for =lookup_entity= returns nothing. =check_model_drift.py= reports no model drift for this component. |
 | M02 | Fixed. Both entities bind =uuid-identified-lookup=. =workflow_step= carried =:has_tenant_id: false=, the only model in the tree that did, against a feature whose default is true and whose own document says to omit it only for genuinely global entities such as currencies and countries. Its parent is tenant-scoped, so the flag was a defect with row-level-security consequences, not a deliberate no-match. | Feature values read from =variability_uuid_identified_lookup.org=; the feature's default and effect from =variability_feature_has_tenant_id.org=; the census is 19 models at =true=, 1 at =false= and 0 absent. |
 | M03 | Pass by construction so far: the binding replaced the stated properties instead of adding to them. =has_tenant_id= came out of both =Flags= blocks, so neither model states a property its profile already fixes to the same value. | The diff on both models. =check_model_drift.py= is re-run with the regeneration, under G01. |
@@ -183,6 +183,21 @@ holding sprint prose rather than C++ that consumes the symbol. The census counts
 consumers, not mentions, so that hit is not one.
 
 Nothing is test-only, so no symbol is deleted for having only a test behind it.
+
+** B06 closed
+
+The dead event is deleted now that the regeneration that supersedes it has
+landed, which is the order B06 itself asked for: it falls under B06 and G02 at
+once, so the deletion belonged with the regeneration rather than before it. The
+generated =workflow_instance_event.hpp= and =workflow_step_event.hpp= are the
+component's event types, and nothing referenced the hand-written
+=workflow_instance_changed_event.hpp= except its own definition, the source list
+and the diagram.
+
+The diagram is the one remaining mention. It is stale either way until H01 authors
+it, and regenerating it now would drop the class from the automated pass while
+there is still no manual pass to carry anything, so the reference is left for H01
+to resolve with the rest of the diagram work.
 
 ** M02 profile binding
 

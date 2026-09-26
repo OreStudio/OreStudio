@@ -84,7 +84,7 @@ record each item's result in the table below.
 | W01 | Finding: the registrar families exist but are not composed. Generation materialised =workflow_instance_registrar.cpp=, =workflow_step_registrar.cpp=, their two history-provider registrars and the service's two event registrars, and the hand-written aggregate =core/src/messaging/registrar.cpp= references none of them. | The aggregate registrar's include list and =register_handlers= body, against the files generation wrote. Detail below. |
 | W02 | Fixed, and less severe than first recorded. The catalogue carried three =workflow::instances:*= rows that no handler checks, and none of the five codes the handlers do check. Access was never broken, because =has_permission= expands a component wildcard and =workflow::*= satisfies all five; what was stale was the catalogue an operator grants from. The three dead rows are replaced by the five checked codes. | The handlers; =iam_permissions_populate.sql=; =has_permission= in =ores.service/messaging/handler_helpers.hpp=, lines 204 to 213. Detail below. |
 | W03 | Pass. The populate references resolve. | =check_populate_references.py=, which reports "populate references resolve". |
-| W04 | Pending: the SQL reachability and the service grants need =compass db recreate=, which the same environment gap blocks as V01. | To be recorded with V03. |
+| W04 | Finding, and create and drop disagree. The create aggregator wires the hand-written *singular* table scripts; the drop aggregator wires the generated *plural* ones; and the generated create scripts and both notify triggers are reachable from neither. The row-level security script is NOT affected: it is wired, but into the global =rls_create.sql= and =rls_drop.sql= aggregators rather than the component's. | =workflow_create.sql= and =drop_workflow.sql= against the generated set; =rls/rls_create.sql= line 38 and =rls/rls_drop.sql= line 28. Detail below. |
 | S01 | Finding, in two parts. Generation wrote a command unit and a test for both entities, covering the canonical verbs, but nothing registers them; and the hand-written =workflow_commands.{hpp,cpp}= they supersede is still present, still compiled, and still wired into the shell's REPL. | The generated units and their tests; =git grep= showing the generated pair referenced nowhere outside its own module while the hand-written pair is named by =repl.cpp=, =bundles_commands=, =provision_commands= and =ore_commands=. Detail below. |
 | S02 | Pass. Both generated recipes exist and the inventory lists them. | =regenerate_shell_recipe_inventory.py --check= was stale on =doc/recipes/shell/shell.org=; regenerated, the diff is the two new categories and nothing else, and the re-check is silent. |
 | H01 | Open, and required rather than optional: the reviewer asked for the diagrams to be manually massaged so they are a proper reflection of the component. All three carry the sentinel and none has used it -- five lines of compile-command and =@enduml= below it, and nothing hand-authored. | The three =.puml= files. The core diagram renders =workflow_handler= and =workflow_query_handler= as boxes holding only methods, which is the empty-box case the item names. Detail below. |
@@ -656,6 +656,59 @@ nothing regenerates them. The engine has to express them with the generated API:
 
 This is the next and last piece of the G02 wave, and it is engine work rather
 than model work, which is why the model sections are empty and can stay so.
+
+** W04 the two SQL surfaces disagree
+
+There are two parallel sets of workflow SQL scripts and the aggregators do not
+agree about which is live.
+
+The create aggregator, =workflow_create.sql=, includes three hand-written
+singular scripts: =workflow_workflow_instance_create.sql=,
+=workflow_workflow_step_create.sql= and =workflow_constraints_create.sql=.
+
+The drop aggregator, =drop_workflow.sql=, includes the two generated plural
+scripts: =workflow_workflow_steps_drop.sql= and
+=workflow_workflow_instances_drop.sql=.
+
+So a database created through the aggregators gets the hand-written schema and is
+torn down through the generated one, and the generated create scripts --
+=workflow_workflow_instances_create.sql= and =workflow_workflow_steps_create.sql=
+-- along with both generated notify triggers, are reachable from neither. This is
+the item's exact clause: every SQL script has to be reachable from the create and
+drop aggregators.
+
+One of the unreachable scripts is a security concern rather than tidiness.
+=workflow_rls_policies_create.sql= is hand-written, carries the row-level security
+policies, and no aggregator references it, so nothing applies them. The generated
+create scripts carry =tenant_id= thirteen times between them and no policy, so
+row-level security for this component currently comes only from that orphan. It
+has to be wired or the isolation it describes does not exist.
+
+** Correction to W04: the security half was wrong
+
+The paragraph above is wrong and is left here only because the correction is
+worth reading. Workflow's row-level-security script is not orphaned. It is wired
+into a *global* aggregator rather than the component's: =create/rls/rls_create.sql=
+line 38 includes it, and =drop/rls/rls_drop.sql= line 28 includes the drop. That
+is the convention, not an oversight -- =ores.compute='s equivalent is referenced
+from the same file and nowhere else.
+
+So there is no security hole. What misled the first reading is that the component
+aggregator is not the only composition point for SQL, and the right question was
+not "is this reachable from =workflow_create.sql=" but "is this reachable at all".
+
+The rest of the finding stands, and is narrower than first written: the generated
+create scripts and notify triggers are genuinely unreachable, and create and drop
+genuinely disagree about which generation of schema is live.
+
+** W04 the two SQL surfaces disagree
+
+The resolution belongs with the regeneration rather than beside it: the
+hand-written singular scripts are superseded by the generated plural ones, so the
+create aggregator points at the generated set, the hand-written table scripts go,
+and the row-level-security question is settled by working out whether the
+generated schema is supposed to carry its own policies or whether that script
+stays and gets wired.
 
 * Test Scenarios
 

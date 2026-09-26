@@ -8,7 +8,7 @@
 #+filetags: :codegen-http-routes:sprint_26:v0:
 #+owner: marco
 #+branch: feature/codegen-http-routes
-#+pr:
+#+pr: 2210
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2210][#2210]] | [http] Generate the gateway's routes from the component models |
 
 * Review
 

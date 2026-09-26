@@ -46,10 +46,14 @@ source, test, model or list changed, so these measurements describe HEAD
 
     The list holds four components at this revision -- iam, assets-cpp,
     compute-cpp and ore. Its substance for this task is unchanged from the
-    first pass: the three generator fixes are gated on model properties that
-    only the scheduler entity sets (=nullable_tenant_id=, a nullable tenant
-    with a natural key, and =:is_value_type: true=), so the registered
-    components regenerate byte for byte and their SQL, C++ and TypeScript
+    first pass, although the pass now holds five generator fixes rather than
+    three. Three of them are gated on model properties that only the scheduler
+    entity sets (=nullable_tenant_id=, a nullable tenant with a natural key,
+    and =:is_value_type: true=). The other two are not gated at all: the
+    quoted-scalar-default guard changes output only for a model that quotes a
+    scalar default, and the jsonb sample value only for a jsonb column that
+    states no generator expression. No registered component does either, which
+    is why they regenerate byte for byte and their SQL, C++ and TypeScript
     output is untouched.
 
 3. The rest of the V05 set.

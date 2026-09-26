@@ -103,7 +103,7 @@ well as the All items.
 | H04 | Not applicable. The component carries no platform conditional and no OS header; its one platform need, the ISO-8601 timestamp, goes through =ores.platform=. | =grep= for preprocessor conditionals |
 | V01 | Pass. The whole tree builds, with the component's tests and every consumer, at the head after the rebase onto the current main: 173 targets, exit 0, no compiler error, including the three scheduler libraries, the scheduler service entry point, the three scheduler test binaries, =ores.reporting= with its migrated =report_scheduling_service.cpp=, and =ores.shell.exe=. The command recorded is =cmake --build build/output/linux-clang-debug-make -j 3= rather than =./compass.sh build=, because the wrapper cannot run in this session: it wraps the build in =systemd-run --user=, and the sandbox's unshared PID namespace puts the user manager out of reach. The two are the same command -- compass runs =cmake --build --preset linux-clang-debug-make -j 3= -- and the evidence file states the substitution, the diagnostic and the two attempts that failed before it. | =evidence/v01_whole_tree_build.txt= |
 | V02 | Pass. With the fleet up: the codegen suite is 608 passed, 0 failed; the api suite is 33 assertions in 6 cases, the service suite 26 in 10, and the core suite 84 in 22 -- the generated eventing integration test, three cases for the hand-written job-instance repository, three for the job-instance mapper, four for the schedule decisions the loop delegates to, three for the SQL action handler, four for the NATS-publish handler, and four for the message-queue handler. All three binary figures were re-measured at the same head; an earlier revision of the evidence file had left the core figure at the value it held before the hand-written cases existed, and that stale line is corrected there. | =evidence/v02_v03_live_fleet.txt= |
-| V03 | Partly, with the database half passing and the fleet half unobserved at this revision. =compass db recreate -y -k= exits 0 at this revision, =compass db recreate -y -k= exits 0 at this revision, creating the whole schema from scratch and running every populate script; the generated objects were then read back from the live database, not from a diff: nullable =tenant_id=, the unique index =job_definitions_job_name_uniq_idx= on =(tenant_id, job_name)= with the =valid_to= predicate, both triggers on the definitions table, and the three hand-written policies on the job-instances table. The item's second clause, that the fleet starts and serves, could not be re-observed at this revision: =compass services start= drives the units through =systemctl --user=, and this session's bubblewrap sandbox has an unshared PID namespace, so systemd-run and systemctl cannot reach the user manager. NATS and PostgreSQL serve -- ports 21205 and 5432 listen and the eventing test publishes and reads over both -- and an earlier run of this task, before the sandbox was noticed, recorded 22 of 23 units ready with only =ores.web.service= failing because npm is absent. The environment, not this change, limits the clause; the record states which part was measured and when. | =evidence/v02_v03_live_fleet.txt= |
+| V03 | Partly, with the database half passing and the fleet half unobserved at this revision. =compass db recreate -y -k= exits 0 at this revision, creating the whole schema from scratch and running every populate script; the generated objects were then read back from the live database, not from a diff: nullable =tenant_id=, the unique index =job_definitions_job_name_uniq_idx= on =(tenant_id, job_name)= with the =valid_to= predicate, both triggers on the definitions table, and the three hand-written policies on the job-instances table. The item's second clause, that the fleet starts and serves, could not be re-observed at this revision: =compass services start= drives the units through =systemctl --user=, and this session's bubblewrap sandbox has an unshared PID namespace, so systemd-run and systemctl cannot reach the user manager. NATS and PostgreSQL serve -- ports 21205 and 5432 listen and the eventing test publishes and reads over both -- and an earlier run of this task, before the sandbox was noticed, recorded 22 of 23 units ready with only =ores.web.service= failing because npm is absent. The environment, not this change, limits the clause; the record states which part was measured and when. | =evidence/v02_v03_live_fleet.txt= |
 | V04 | Not applicable. The component generates no shell command, because the model disables =ores.cpp.shell-command= with its reason in the =* Physical space= table, so there is no generated command to run against a fleet. | The model's =* Physical space= table |
 | V05 | Partly. Every gate this component is in scope for passes at the verified revision and leaves `git status` empty: its own drift check in writing mode, the shared list in dry-run mode, model drift, handler permissions, populate references, protocol twin coverage, the recipe inventory, this component's CMake source lists, the physical-space inventory tables and =validate_docs.sh=. Two of these were not green when the rebase landed them: the physical-space check was red over one line of the generated =ores.doc.knowledge= table and went green when that line was refreshed in this branch, and the repository-wide form of the CMake check is still red over 23 other components' lists, which is why it is claimed here only for scheduler. The reasons are recorded above. The item's last clause, "with the component added", is the registry entry, which is held under V06. | Each check script; =evidence/g01_clean_tree_check.txt= |
 | V07 | Pass. The audit found one vacuous case and it is fixed: =next_occurrence= asserted only that the result was in the future, which any implementation returning a future time satisfies. It now asserts a literal interval (an every-minute expression, from a fixed minute boundary, advances by exactly 60 seconds) and literal local calendar fields (a midnight expression lands on hour 0, minute 0); the assertion is time-zone stable because the subject evaluates in local time, and the alternative — computing the expectation by calling the subject twice — is the "one production run against another" anti-pattern the item names. The case was proved load-bearing by stubbing =next_occurrence= to return its input and re-running: all four new assertions fail and the other four cases still pass. The remaining cases assert literal round-trips and rejections, the config parser asserts literals, and the generated eventing test is a real end-to-end chain. | =domain_cron_expression_tests.cpp=, 33 assertions in 6 cases; the stub run |
@@ -126,11 +126,17 @@ The defects the survey found, each with the item that fixes it.
 2. =generator_facet_name= said =generator= where the tree says =generators/=
    and the codegen default is plural. A regeneration would have created a
    second generator folder beside the real one. Measured with
-   =grep -rhoP ':generator_facet_name:\s*\K\S+'= over the models: at the branch
-   point 26 said =generator= and 26 said =generators=; at this head 25 say
-   =generator= and 27 say =generators=, because this pass fixed one of the
-   singular ones. All 25 remaining singular spellings are in =ores.trading=, so
-   this is a latent defect there as well -- it is recorded here and fixed in
+   =git grep -hoP ':generator_facet_name:\s*\K\S+' <rev> -- 'projects/*/modeling/*.org'
+   'projects/*/*/modeling/*.org'=, which is the component modeling directories
+   and not the whole tree: at the branch point =f7fc9396b7=, 26 said
+   =generator= and 26 said =generators=; at this head 25 say =generator= and 27
+   say =generators=, because this pass fixed one of the singular ones. All 25
+   remaining singular spellings are in =ores.trading=, so this is a latent
+   defect there as well. The count depends on the file set -- a recursive search
+   over all of =projects/= also finds the template-library prose that documents
+   the property, which is not a model, and returns one more of each -- so the
+   set is stated here and the numbers are not portable. It is recorded here and
+   fixed in
    scheduler only. (G07)
 3. =nullable_tenant_id: true= makes the SQL column nullable but leaves the C++
    projection non-optional, so a nullable-tenant entity cannot be generated at
@@ -394,8 +400,13 @@ them here would bury this change in unrelated work.
 
 * Generator defects found
 
-Three, each fixed at source with its own regression test, before the
-regeneration that depends on it.
+The three that the regeneration depends on. Each is fixed at source with its
+own regression test, before the regeneration that uses it. The pass went on to
+find two more, later and in other places -- the quoted-scalar-default guard,
+in the section on what the verification pass found, and the jsonb sample value,
+in the section on the live run -- so G05 and the Result count five in total and
+name five test files. This section details the three without which the
+regenerated artefacts would have been wrong.
 
 1. *A nullable tenant had no C++ representation.* =nullable_tenant_id= made the
    SQL column nullable and left the domain member a non-optional

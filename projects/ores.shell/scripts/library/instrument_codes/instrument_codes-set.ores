@@ -1,0 +1,6 @@
+# =set=
+#
+# GENERATED from doc/recipes/shell/instrument_codes/instrument_code.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+instrument_codes set __none__ __none__ __none__ __none__ __none__ 0 __none__ system.new_record generated_script

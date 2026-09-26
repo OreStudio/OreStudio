@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/tenor_anchors/tenor_anchor.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+tenor_anchors list --limit 1

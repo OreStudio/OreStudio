@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/party_countries/party_country.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+party_countries list --limit 1

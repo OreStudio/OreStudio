@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/tenor_convention_resolutions/tenor_convention_resolution.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+tenor_convention_resolutions get __none__ __none__

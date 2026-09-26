@@ -1,0 +1,6 @@
+# =put-many=
+#
+# GENERATED from doc/recipes/shell/contact_types/contact_type.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+contact_types put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script

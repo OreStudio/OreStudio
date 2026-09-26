@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/diary_entry_types/diary_entry_type.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+diary_entry_types list --limit 1

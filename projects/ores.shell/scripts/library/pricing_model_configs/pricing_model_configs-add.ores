@@ -1,0 +1,6 @@
+# =add=
+#
+# GENERATED from doc/recipes/shell/pricing_model_configs/pricing_model_config.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+pricing_model_configs add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script

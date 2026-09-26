@@ -290,7 +290,8 @@ the whole cycle was then run from scratch on 2026-09-26:
   =ores.analytics.service.tests=.
 - V04. All 40 generated analytics scripts ran against the live fleet as
   =tenant_admin@acme_corporation=, each one through =compass shell -l= on
-  its own script under =projects/ores.shell/scripts/library/=. Ten answered
+  its own script under =projects/ores.shell/scripts/library/=. Every script
+  in that library is committed, so the run reproduces from a clone. Ten answered
   =ok=, among them the four =list= reads and the =pricing_engine_types= read
   that returns the 44 seeded engine types. Fifteen answered =missing=, for a
   key that addresses no row. Fourteen answered =failed=, and each carries

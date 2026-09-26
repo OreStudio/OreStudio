@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/pricing_model_product_parameters/pricing_model_product_parameter.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+pricing_model_product_parameters get __none__

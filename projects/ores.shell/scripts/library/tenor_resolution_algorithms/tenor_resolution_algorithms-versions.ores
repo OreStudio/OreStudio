@@ -1,0 +1,6 @@
+# =versions=
+#
+# GENERATED from doc/recipes/shell/tenor_resolution_algorithms/tenor_resolution_algorithm.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+tenor_resolution_algorithms versions __none__ --limit 1

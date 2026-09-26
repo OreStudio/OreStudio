@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/derivation_kinds/derivation_kind.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+derivation_kinds list --limit 1

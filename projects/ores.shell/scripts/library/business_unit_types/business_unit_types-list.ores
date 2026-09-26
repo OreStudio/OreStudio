@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/business_unit_types/business_unit_type.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+business_unit_types list --limit 1

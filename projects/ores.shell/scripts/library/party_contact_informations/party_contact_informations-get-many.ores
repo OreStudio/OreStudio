@@ -1,0 +1,6 @@
+# =get-many=
+#
+# GENERATED from doc/recipes/shell/party_contact_informations/party_contact_information.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+party_contact_informations get-many 00000000-0000-0000-0000-000000000000

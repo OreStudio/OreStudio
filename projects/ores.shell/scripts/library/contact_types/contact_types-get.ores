@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/contact_types/contact_type.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+contact_types get __none__

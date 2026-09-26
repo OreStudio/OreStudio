@@ -17,12 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_shell_command_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_SHELL_APP_COMMANDS_FX_DIGITAL_OPTION_INSTRUMENT_COMMANDS_HPP
 #define ORES_SHELL_APP_COMMANDS_FX_DIGITAL_OPTION_INSTRUMENT_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.shell/app/pagination_context.hpp"
 #include <ostream>
 #include <string>
 #include <vector>
@@ -36,7 +40,13 @@ class Menu;
 namespace ores::shell::app::commands {
 
 /**
- * @brief Manages commands related to FX digital option instruments.
+ * @brief Every verb FX digital option instruments answer, as one command each.
+ *
+ * The unit is the entity's own derivation addressed from the REPL, so a verb
+ * the model gains appears as a command without an edit here and a verb it
+ * loses takes its command with it. What each command asks for follows from its
+ * shape: a paged read is addressed by nothing, a write by its write record,
+ * and everything else by the key.
  */
 class fx_digital_option_instrument_commands {
 private:
@@ -51,42 +61,87 @@ private:
 
 public:
     /**
-     * @brief Register FX digital option instrument related commands.
+     * @brief Register the FX digital option instruments submenu.
      */
-    static void register_commands(cli::Menu& root_menu,
-                                  ores::nats::service::nats_client& session,
-                                  pagination_context& pagination);
+    static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
-     * @brief Process a get FX digital option instruments request.
+     * @brief list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
-    static void process_get_fx_digital_option_instruments(std::ostream& out,
-                                                          ores::nats::service::nats_client& session,
-                                                          pagination_context& pagination);
+    static void process_list(std::ostream& out,
+                             ores::nats::service::nats_client& session,
+                             const std::vector<std::string>& args);
 
     /**
-     * @brief Process an add FX digital option instrument request.
-     *
-     * The value arguments arrive as free-form tokens and are parsed in the
-     * body. A per-argument typed handler builds one template instantiation
-     * per argument count, which the Windows clang toolchain cannot mangle
-     * beyond a few dozen arguments.
+     * @brief get <instrument_id>
      */
-    static void process_add_fx_digital_option_instrument(std::ostream& out,
-                                                         ores::nats::service::nats_client& session,
-                                                         const std::vector<std::string>& args);
+    static void process_get(std::ostream& out,
+                            ores::nats::service::nats_client& session,
+                            const std::vector<std::string>& args);
 
     /**
-     * @brief Process a delete FX digital option instrument request.
+     * @brief get-many <instrument_id>
      */
-    static void process_delete_fx_digital_option_instrument(
-        std::ostream& out, ores::nats::service::nats_client& session, std::string instrument_id);
+    static void process_get_many(std::ostream& out,
+                                 ores::nats::service::nats_client& session,
+                                 const std::vector<std::string>& args);
 
     /**
-     * @brief Process the FX digital option instrument history request.
+     * @brief add <trade_type_code> <trade_id> <foreign_currency> <domestic_currency>
+     * <payoff_currency> <payoff_amount> <option_type> <expiry_date> <long_short> <strike>
+     * <barrier_type> <lower_barrier> <upper_barrier> <description> <reason> <commentary>
      */
-    static void process_get_fx_digital_option_instrument_history(
-        std::ostream& out, ores::nats::service::nats_client& session, std::string instrument_id);
+    static void process_add(std::ostream& out,
+                            ores::nats::service::nats_client& session,
+                            const std::vector<std::string>& args);
+
+    /**
+     * @brief set <instrument_id> <trade_type_code> <trade_id> <foreign_currency>
+     * <domestic_currency> <payoff_currency> <payoff_amount> <option_type> <expiry_date>
+     * <long_short> <strike> <barrier_type> <lower_barrier> <upper_barrier> <description> <reason>
+     * <commentary> [--version <n>]
+     */
+    static void process_set(std::ostream& out,
+                            ores::nats::service::nats_client& session,
+                            const std::vector<std::string>& args);
+
+    /**
+     * @brief put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <foreign_currency>
+     * <domestic_currency> <payoff_currency> <payoff_amount> <option_type> <expiry_date>
+     * <long_short> <strike> <barrier_type> <lower_barrier> <upper_barrier> <description> <reason>
+     * <commentary>
+     */
+    static void process_put_many(std::ostream& out,
+                                 ores::nats::service::nats_client& session,
+                                 const std::vector<std::string>& args);
+
+    /**
+     * @brief delete <instrument_id> <reason> <commentary> [--version <n>]
+     */
+    static void process_delete(std::ostream& out,
+                               ores::nats::service::nats_client& session,
+                               const std::vector<std::string>& args);
+
+    /**
+     * @brief delete-many <instrument_id> <reason> <commentary>
+     */
+    static void process_delete_many(std::ostream& out,
+                                    ores::nats::service::nats_client& session,
+                                    const std::vector<std::string>& args);
+
+    /**
+     * @brief versions <instrument_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+     */
+    static void process_versions(std::ostream& out,
+                                 ores::nats::service::nats_client& session,
+                                 const std::vector<std::string>& args);
+
+    /**
+     * @brief version <instrument_id> --version <n>
+     */
+    static void process_version(std::ostream& out,
+                                ores::nats::service::nats_client& session,
+                                const std::vector<std::string>& args);
 };
 
 }

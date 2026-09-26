@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 384232C0-B215-5394-8808-EA1B0FB0D153
+:END:
+#+title: How do I run the equity_accumulator_instruments commands from the shell?
+#+description: Every command the equity_accumulator_instruments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:equity_accumulator_instruments:
+
+This file documents the equity_accumulator_instruments resource at the shell, one section per command. Every command is a subcommand of =equity_accumulator_instruments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: A9D866E4-5AC8-5F63-BB55-D08CF62FE8BE
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_accumulator_instruments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.equity_accumulator_instruments.list=.
+
+#+name: equity_accumulator_instruments-list
+#+begin_src ores-shell :tangle equity_accumulator_instruments-list.ores :exports none
+equity_accumulator_instruments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: E8CA5259-18AE-5FCB-99A5-0A63A2E6B0FA
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_accumulator_instruments get <instrument_id>
+#+end_example
+
+It is addressed at =trading.v1.equity_accumulator_instruments.get=.
+
+#+name: equity_accumulator_instruments-get
+#+begin_src ores-shell :tangle equity_accumulator_instruments-get.ores :exports none
+equity_accumulator_instruments get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: D1CF0352-CA2B-5058-8CBB-E56E1F14ED51
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_accumulator_instruments get-many <instrument_id>
+#+end_example
+
+It is addressed at =trading.v1.equity_accumulator_instruments.get_many=.
+
+#+name: equity_accumulator_instruments-get-many
+#+begin_src ores-shell :tangle equity_accumulator_instruments-get-many.ores :exports none
+equity_accumulator_instruments get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B3A097E3-B823-5005-89AC-50CEA2A15492
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_accumulator_instruments add <trade_type_code> <trade_id> <underlying_name> <currency> <strike> <fixing_amount> <start_date> <expiry_date> <fixing_frequency> <long_short> <knock_out_level> <target_amount> <target_type> <payoff_type> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.equity_accumulator_instruments.put=.
+
+#+name: equity_accumulator_instruments-add
+#+begin_src ores-shell :tangle equity_accumulator_instruments-add.ores :exports none
+equity_accumulator_instruments add __none__ __none__ __none__ __none__ 0 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 778ECBD4-88D6-5440-9A5A-A9B911D22E5A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_accumulator_instruments set <instrument_id> <trade_type_code> <trade_id> <underlying_name> <currency> <strike> <fixing_amount> <start_date> <expiry_date> <fixing_frequency> <long_short> <knock_out_level> <target_amount> <target_type> <payoff_type> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.equity_accumulator_instruments.put=.
+
+#+name: equity_accumulator_instruments-set
+#+begin_src ores-shell :tangle equity_accumulator_instruments-set.ores :exports none
+equity_accumulator_instruments set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 0 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 71F17931-5B08-593A-90EF-02D40D6E388B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_accumulator_instruments put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <underlying_name> <currency> <strike> <fixing_amount> <start_date> <expiry_date> <fixing_frequency> <long_short> <knock_out_level> <target_amount> <target_type> <payoff_type> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.equity_accumulator_instruments.put_many=.
+
+#+name: equity_accumulator_instruments-put-many
+#+begin_src ores-shell :tangle equity_accumulator_instruments-put-many.ores :exports none
+equity_accumulator_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 0 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 753DEF2B-DAD5-5255-A164-1889EAE82C3F
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_accumulator_instruments delete <instrument_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.equity_accumulator_instruments.delete=.
+
+#+name: equity_accumulator_instruments-delete
+#+begin_src ores-shell :tangle equity_accumulator_instruments-delete.ores :exports none
+equity_accumulator_instruments delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 9D615B74-EDFC-5B23-8FA6-D8C2DBB37B5B
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_accumulator_instruments delete-many <instrument_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.equity_accumulator_instruments.delete_many=.
+
+#+name: equity_accumulator_instruments-delete-many
+#+begin_src ores-shell :tangle equity_accumulator_instruments-delete-many.ores :exports none
+equity_accumulator_instruments delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 8B51FB62-07EA-5D23-950D-60A8910795CD
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_accumulator_instruments versions <instrument_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.equity_accumulator_instruments_versions.list=.
+
+#+name: equity_accumulator_instruments-versions
+#+begin_src ores-shell :tangle equity_accumulator_instruments-versions.ores :exports none
+equity_accumulator_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 59AF7D95-6587-5133-8690-FC35EA25B927
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_accumulator_instruments version <instrument_id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.equity_accumulator_instruments_versions.get=.
+
+#+name: equity_accumulator_instruments-version
+#+begin_src ores-shell :tangle equity_accumulator_instruments-version.ores :exports none
+equity_accumulator_instruments version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

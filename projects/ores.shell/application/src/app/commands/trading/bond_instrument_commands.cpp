@@ -157,16 +157,16 @@ void bond_instrument_commands::process_get_bond_instruments(std::ostream& out,
 
     auto& state = pagination.state_for("bond_instruments");
 
-    trading::messaging::get_bond_instruments_request req;
+    trading::messaging::list_bond_instruments_request req;
     req.offset = state.current_offset;
     req.limit = pagination.page_size();
 
-    auto result = do_auth_request<trading::messaging::get_bond_instruments_response>(
-        out, session, "trading.v1.bond_instruments.list", req);
+    auto result = do_auth_request<trading::messaging::list_bond_instruments_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    state.total_count = result->total_available_count;
+    state.total_count = result->total;
     pagination.set_last_entity("bond_instruments");
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->bond_instruments.size()
@@ -280,8 +280,9 @@ void bond_instrument_commands::process_add_bond_instrument(std::ostream& out,
             do_auth_request<typename request_type::response_type>(out, session, subject, request);
         if (!result)
             return false;
-        if (!result->success) {
-            const auto& msg = result->message.empty() ? "Unknown error" : result->message;
+        if (result->result.outcome != ores::utility::domain::outcome::ok) {
+            const auto& msg =
+                result->result.message.empty() ? "Unknown error" : result->result.message;
             BOOST_LOG_SEV(lg(), warn) << "Failed to save the " << what << " row: " << msg;
             fail(out) << "Failed to save the " << what << " row: " << msg << std::endl;
             return false;
@@ -289,12 +290,30 @@ void bond_instrument_commands::process_add_bond_instrument(std::ostream& out,
         return true;
     };
 
-    auto issue_req = trading::messaging::save_bond_issue_request::from(std::move(issue));
+    auto issue_req = trading::messaging::put_bond_issue_request{
+        .change = {.write = {.issue_id = issue.issue_id,
+                             .security_id = issue.security_id,
+                             .issuer = issue.issuer,
+                             .currency = issue.currency,
+                             .face_value = issue.face_value,
+                             .coupon_rate = issue.coupon_rate,
+                             .coupon_frequency_code = issue.coupon_frequency_code,
+                             .day_count_code = issue.day_count_code,
+                             .issue_date = issue.issue_date,
+                             .settlement_days = issue.settlement_days,
+                             .calendar = issue.calendar,
+                             .credit_curve_id = issue.credit_curve_id,
+                             .reference_curve_id = issue.reference_curve_id,
+                             .income_curve_id = issue.income_curve_id,
+                             .bond_notional = issue.bond_notional}}};
     if (!save_row(issue_req, "trading.v1.bond_issues.save", "bond issue"))
         return;
 
-    auto instrument_req =
-        trading::messaging::save_bond_instrument_request::from(std::move(instrument));
+    auto instrument_req = trading::messaging::put_bond_instrument_request{
+        .change = {.write = {.instrument_id = instrument.identity.instrument_id,
+                             .trade_type_code = instrument.identity.trade_type_code,
+                             .trade_id = instrument.identity.trade_id,
+                             .issue_id = instrument.issue_id}}};
     if (!save_row(instrument_req, "trading.v1.bond_instruments.save", "bond instrument")) {
         fail(out) << "The issue row remains saved (issue id " << boost::uuids::to_string(issue_id)
                   << ")." << std::endl;
@@ -312,7 +331,13 @@ void bond_instrument_commands::process_add_bond_instrument(std::ostream& out,
         option_row.change_reason_code = change_reason_code;
         option_row.change_commentary = change_commentary;
 
-        auto option_req = trading::messaging::save_bond_option_request::from(std::move(option_row));
+        auto option_req = trading::messaging::put_bond_option_request{
+            .change = {.write = {.instrument_id = option_row.instrument_id,
+                                 .option_type = option_row.option_type,
+                                 .option_strike = option_row.option_strike,
+                                 .redemption = option_row.redemption,
+                                 .price_type = option_row.price_type,
+                                 .knocks_out = option_row.knocks_out}}};
         if (!save_row(option_req, "trading.v1.bond_options.save", "bond option")) {
             fail(out) << "The issue and instrument rows remain saved (issue id "
                       << boost::uuids::to_string(issue_id) << ", instrument id "
@@ -343,7 +368,15 @@ void bond_instrument_commands::process_add_bond_instrument(std::ostream& out,
         trs_row.change_reason_code = change_reason_code;
         trs_row.change_commentary = change_commentary;
 
-        auto trs_req = trading::messaging::save_bond_trs_request::from(std::move(trs_row));
+        auto trs_req = trading::messaging::put_bond_trs_request{
+            .change = {.write = {.instrument_id = trs_row.instrument_id,
+                                 .return_type = trs_row.return_type,
+                                 .funding_leg_type = trs_row.funding_leg_type,
+                                 .funding_rate = trs_row.funding_rate,
+                                 .funding_index = trs_row.funding_index,
+                                 .payer = trs_row.payer,
+                                 .price_type = trs_row.price_type,
+                                 .initial_price = trs_row.initial_price}}};
         if (!save_row(trs_req, "trading.v1.bond_trs.save", "bond trs")) {
             fail(out) << "The issue and instrument rows remain saved (issue id "
                       << boost::uuids::to_string(issue_id) << ", instrument id "
@@ -370,19 +403,19 @@ void bond_instrument_commands::process_delete_bond_instrument(std::ostream& out,
     }
 
     trading::messaging::delete_bond_instrument_request req;
-    req.ids = {std::move(instrument_id)};
+    req.removal.key.instrument_id = boost::uuids::string_generator()(instrument_id);
 
     auto result = do_auth_request<trading::messaging::delete_bond_instrument_response>(
-        out, session, "trading.v1.bond_instruments.delete", req);
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (result->success) {
+    if (result->result.outcome == ores::utility::domain::outcome::ok) {
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted Bond instrument.";
         out << "✓ Bond instrument deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Bond instrument: " << result->message;
-        fail(out) << "Failed to delete Bond instrument: " << result->message << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Bond instrument: " << result->result.message;
+        fail(out) << "Failed to delete Bond instrument: " << result->result.message << std::endl;
     }
 }
 
@@ -396,26 +429,27 @@ void bond_instrument_commands::process_get_bond_instrument_history(std::ostream&
         return;
     }
 
-    trading::messaging::get_bond_instrument_history_request req;
-    req.instrument_id = std::move(instrument_id);
+    trading::messaging::list_bond_instrument_versions_request req;
+    req.key.instrument_id = boost::uuids::string_generator()(instrument_id);
 
-    auto result = do_auth_request<trading::messaging::get_bond_instrument_history_response>(
-        out, session, "trading.v1.bond_instruments.history", req);
+    auto result = do_auth_request<trading::messaging::list_bond_instrument_versions_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get Bond instrument history: " << result->message;
-        fail(out) << result->message << std::endl;
+    if (result->result.outcome != ores::utility::domain::outcome::ok) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get Bond instrument history: "
+                                  << result->result.message;
+        fail(out) << result->result.message << std::endl;
         return;
     }
 
-    if (result->history.empty()) {
+    if (result->versions.empty()) {
         out << "No history found for this Bond instrument." << std::endl;
         return;
     }
 
-    out << result->history << std::endl;
+    out << result->versions << std::endl;
 }
 
 }

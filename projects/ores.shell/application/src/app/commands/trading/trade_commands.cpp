@@ -118,16 +118,16 @@ void trade_commands::process_get_trades(std::ostream& out,
 
     auto& state = pagination.state_for("trades");
 
-    trading::messaging::get_trades_request req;
+    trading::messaging::list_trades_request req;
     req.offset = state.current_offset;
     req.limit = pagination.page_size();
 
-    auto result = do_auth_request<trading::messaging::get_trades_response>(
-        out, session, "trading.v1.trades.list", req);
+    auto result = do_auth_request<trading::messaging::list_trades_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    state.total_count = result->total_available_count;
+    state.total_count = result->total;
     pagination.set_last_entity("trades");
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->trades.size() << " trades.";
@@ -168,27 +168,46 @@ void trade_commands::process_add_trade(std::ostream& out,
         return;
 
     const auto id = boost::uuids::random_generator()();
-    auto req = trading::messaging::save_trade_request::from(std::vector<domain::trade>{
-        domain::trade{.identity = {.id = id},
-                      .parties = {.book_id = *book_uuid, .portfolio_id = *portfolio_uuid},
-                      .classification = {.trade_type = std::move(trade_type),
-                                         .netting_set_id = std::move(netting_set_id),
-                                         .activity_type_code = std::move(activity_type_code)},
-                      .audit = {.change_reason_code = std::move(change_reason_code),
-                                .change_commentary = std::move(change_commentary),
-                                .recorded_at = std::chrono::system_clock::now()}}});
+    domain::trade trade{.identity = {.id = id},
+                        .parties = {.book_id = *book_uuid, .portfolio_id = *portfolio_uuid},
+                        .classification = {.trade_type = std::move(trade_type),
+                                           .netting_set_id = std::move(netting_set_id),
+                                           .activity_type_code = std::move(activity_type_code)},
+                        .audit = {.change_reason_code = std::move(change_reason_code),
+                                  .change_commentary = std::move(change_commentary),
+                                  .recorded_at = std::chrono::system_clock::now()}};
+    auto req = trading::messaging::put_trade_request{
+        .change = {
+            .write = {.id = trade.identity.id,
+                      .external_id = trade.identity.external_id,
+                      .book_id = trade.parties.book_id,
+                      .portfolio_id = trade.parties.portfolio_id,
+                      .successor_trade_id = trade.parties.successor_trade_id,
+                      .trade_type = trade.classification.trade_type,
+                      .counterparty_id = trade.parties.counterparty_id,
+                      .product_type = std::string(
+                          ores::trading::domain::to_string(trade.classification.product_type)),
+                      .instrument_id = trade.classification.instrument_id,
+                      .asset_class = trade.classification.asset_class,
+                      .netting_set_id = trade.classification.netting_set_id,
+                      .activity_type_code = trade.classification.activity_type_code,
+                      .status_id = trade.classification.status_id,
+                      .trade_date = trade.lifecycle.trade_date.value_or(""),
+                      .execution_timestamp = trade.lifecycle.execution_timestamp.value_or(""),
+                      .effective_date = trade.lifecycle.effective_date.value_or(""),
+                      .termination_date = trade.lifecycle.termination_date.value_or("")}}};
 
-    auto result = do_auth_request<trading::messaging::save_trade_response>(
-        out, session, "trading.v1.trades.save", req);
+    auto result = do_auth_request<trading::messaging::put_trade_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (result->success) {
+    if (result->result.outcome == ores::utility::domain::outcome::ok) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added trade.";
         out << "✓ Trade added successfully!" << std::endl;
         out << "Trade id: " << boost::uuids::to_string(id) << std::endl;
     } else {
-        const auto& msg = result->message.empty() ? "Unknown error" : result->message;
+        const auto& msg = result->result.message.empty() ? "Unknown error" : result->result.message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add trade: " << msg;
         fail(out) << "Failed to add trade: " << msg << std::endl;
     }
@@ -203,19 +222,19 @@ void trade_commands::process_delete_trade(std::ostream& out, nats_client& sessio
     }
 
     trading::messaging::delete_trade_request req;
-    req.ids = {std::move(id)};
+    req.removal.key.external_id = id;
 
     auto result = do_auth_request<trading::messaging::delete_trade_response>(
-        out, session, "trading.v1.trades.delete", req);
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (result->success) {
+    if (result->result.outcome == ores::utility::domain::outcome::ok) {
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted trade.";
         out << "✓ Trade deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete trade: " << result->message;
-        fail(out) << "Failed to delete trade: " << result->message << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete trade: " << result->result.message;
+        fail(out) << "Failed to delete trade: " << result->result.message << std::endl;
     }
 }
 
@@ -262,26 +281,26 @@ void trade_commands::process_get_trade_history(std::ostream& out,
         return;
     }
 
-    trading::messaging::get_trade_history_request req;
-    req.id = id;
+    trading::messaging::list_trade_versions_request req;
+    req.key.external_id = id;
 
-    auto result = do_auth_request<trading::messaging::get_trade_history_response>(
-        out, session, "trading.v1.trades.history", req);
+    auto result = do_auth_request<trading::messaging::list_trade_versions_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get trade history: " << result->message;
-        fail(out) << result->message << std::endl;
+    if (result->result.outcome != ores::utility::domain::outcome::ok) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get trade history: " << result->result.message;
+        fail(out) << result->result.message << std::endl;
         return;
     }
 
-    if (result->history.empty()) {
+    if (result->versions.empty()) {
         out << "No history found for this trade." << std::endl;
         return;
     }
 
-    out << result->history << std::endl;
+    out << result->versions << std::endl;
 }
 
 }

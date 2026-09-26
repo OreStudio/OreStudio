@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 6CDE7FDD-633C-50FC-BB31-63E4C1AD1F29
+:END:
+#+title: How do I run the fx_vanilla_option_instruments commands from the shell?
+#+description: Every command the fx_vanilla_option_instruments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_vanilla_option_instruments:
+
+This file documents the fx_vanilla_option_instruments resource at the shell, one section per command. Every command is a subcommand of =fx_vanilla_option_instruments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 4A3BB045-1FC7-56CF-80CE-225122BAAE75
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vanilla_option_instruments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.fx_vanilla_option_instruments.list=.
+
+#+name: fx_vanilla_option_instruments-list
+#+begin_src ores-shell :tangle fx_vanilla_option_instruments-list.ores :exports none
+fx_vanilla_option_instruments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: D5A37C80-B28E-53B5-8694-77410BE26A87
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vanilla_option_instruments get <instrument_id>
+#+end_example
+
+It is addressed at =trading.v1.fx_vanilla_option_instruments.get=.
+
+#+name: fx_vanilla_option_instruments-get
+#+begin_src ores-shell :tangle fx_vanilla_option_instruments-get.ores :exports none
+fx_vanilla_option_instruments get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 90C657D0-515F-5E05-84F8-C813465E8C56
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vanilla_option_instruments get-many <instrument_id>
+#+end_example
+
+It is addressed at =trading.v1.fx_vanilla_option_instruments.get_many=.
+
+#+name: fx_vanilla_option_instruments-get-many
+#+begin_src ores-shell :tangle fx_vanilla_option_instruments-get-many.ores :exports none
+fx_vanilla_option_instruments get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1EFCCF64-9BDC-52CD-BC12-099DBD545D2F
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vanilla_option_instruments add <trade_type_code> <trade_id> <bought_currency> <bought_amount> <sold_currency> <sold_amount> <option_type> <expiry_date> <exercise_style> <settlement> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.fx_vanilla_option_instruments.put=.
+
+#+name: fx_vanilla_option_instruments-add
+#+begin_src ores-shell :tangle fx_vanilla_option_instruments-add.ores :exports none
+fx_vanilla_option_instruments add __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: C39985C2-FCF3-53F6-BC29-005FC46972C0
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vanilla_option_instruments set <instrument_id> <trade_type_code> <trade_id> <bought_currency> <bought_amount> <sold_currency> <sold_amount> <option_type> <expiry_date> <exercise_style> <settlement> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.fx_vanilla_option_instruments.put=.
+
+#+name: fx_vanilla_option_instruments-set
+#+begin_src ores-shell :tangle fx_vanilla_option_instruments-set.ores :exports none
+fx_vanilla_option_instruments set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 32B8E852-96A5-5014-8177-29CDAD18E3F5
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vanilla_option_instruments put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <bought_currency> <bought_amount> <sold_currency> <sold_amount> <option_type> <expiry_date> <exercise_style> <settlement> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.fx_vanilla_option_instruments.put_many=.
+
+#+name: fx_vanilla_option_instruments-put-many
+#+begin_src ores-shell :tangle fx_vanilla_option_instruments-put-many.ores :exports none
+fx_vanilla_option_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 06D29937-54D8-5FA4-9B87-7EFD90A33BB0
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vanilla_option_instruments delete <instrument_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.fx_vanilla_option_instruments.delete=.
+
+#+name: fx_vanilla_option_instruments-delete
+#+begin_src ores-shell :tangle fx_vanilla_option_instruments-delete.ores :exports none
+fx_vanilla_option_instruments delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 2D5B685C-5911-5787-A0B6-70B17E84960C
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vanilla_option_instruments delete-many <instrument_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.fx_vanilla_option_instruments.delete_many=.
+
+#+name: fx_vanilla_option_instruments-delete-many
+#+begin_src ores-shell :tangle fx_vanilla_option_instruments-delete-many.ores :exports none
+fx_vanilla_option_instruments delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 21897D27-E821-5D89-A16B-91736AE6CD18
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vanilla_option_instruments versions <instrument_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.fx_vanilla_option_instruments_versions.list=.
+
+#+name: fx_vanilla_option_instruments-versions
+#+begin_src ores-shell :tangle fx_vanilla_option_instruments-versions.ores :exports none
+fx_vanilla_option_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: F3162257-B158-5FFD-BE0F-93AA85179B5F
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vanilla_option_instruments version <instrument_id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.fx_vanilla_option_instruments_versions.get=.
+
+#+name: fx_vanilla_option_instruments-version
+#+begin_src ores-shell :tangle fx_vanilla_option_instruments-version.ores :exports none
+fx_vanilla_option_instruments version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

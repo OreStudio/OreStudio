@@ -108,6 +108,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Regenerated components outside =ores.assets= | =projects/*/component_files.cmake= | Fixed | One commit had added the generated marker to 141 CMake source lists belonging to thirty other components, and had also reverted main's =ores.orgmode= work. Reverted: the foreign lists and the five orgmode and system-model files are back to main's content, and the six orphan lists it created are deleted. |
+| 2 | =.audit= looks like it should be git-ignored | =.gitignore= | Fixed | =.audit/= is ignored in full. The 48 captures and the decision trail stay on disk untracked; the one reusable artefact, the V04 shell sweep, moved to =projects/ores.codegen/scripts/check_shell_recipes.py=. |
 
 * Result
+
+Delivered on =feature/clean-assets=, rebased onto main with a linear history and no merge commits.
+
+=tag=, =image= and =image_tag= are modelled and generated together with their messages, shell surface, SQL and the publish-from-dq operation. The 21 hand-written files the generation supersedes are deleted, and the hand-written C++ that remains is infrastructure only. =assets-cpp= is in =COMPONENTS_UNDER_TEST=. The nine test suites the rollout had removed with the implementation they tested are restored, 40 cases, and the three class diagrams are refreshed.
+
+Two review findings were fixed: the tree-wide CMake marker change and the committed audit trail. One conflict with main was decided rather than merged quietly: main generalised images from SVG-only to binary-agnostic, so =image.data= is modelled as bytes whose text column holds the base64 spelling, through a new =base64= column property in codegen.
+
+Verification: =compass build= exits 0; =ctest -R assets= is 4 of 4; the 29 generated shell recipes answer against the live fleet; =check_component_drift.py --all= reports no drift; model drift, populate references, handler permissions, protocol twin coverage, recipe inventory, the assets CMake source lists and the backlog index are green; =pytest projects/ores.codegen/tests= is 562 passed; CI is 10 of 10.
+
+Two defects found by the gates were found rather than filed: the junction's missing service, which left nine shell recipes unserved, and a blank-line leak in the junction column branches that made =ores.compute= drift. Three template defects remain filed because each is a tree-wide change on its own scale: the notify-trigger collision, the generator ignoring a declared =default_value=, and the CMake marker staleness that main is now fixing incrementally.

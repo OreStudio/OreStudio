@@ -587,3 +587,15 @@ tangled into the runnable script library
 * Yield Curve Process Types
 
 - [[id:6E3169FA-98CD-5ACC-B24A-F2403BFEB51A][How do I run the yield_curve_process_types commands from the shell?]]
+
+* Image Tags
+
+- [[id:83E84B75-637A-5B86-A308-7FD495BFD81E][How do I run the image_tags commands from the shell?]]
+
+* Images
+
+- [[id:B631A4E0-4B74-574C-9C61-DEC4597C2710][How do I run the images commands from the shell?]]
+
+* Tags
+
+- [[id:B08A234B-9FEF-5B71-B0FC-DC4A43CAA19A][How do I run the tags commands from the shell?]]

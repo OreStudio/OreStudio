@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_environment_override.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -24,11 +25,14 @@
 
 namespace {
 
-const std::string tags("[ores.testing.nats_options]");
+const std::string test_suite("ores.testing.tests");
+const std::string tags("[testing]");
 
 }
 
-TEST_CASE("make_nats_options reads every setting from the environment", tags) {
+TEST_CASE("reads_every_setting_from_the_environment", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const ores::testing::scoped_environment_override env({
         {"ORES_NATS_URL", "nats://broker.test:4222"},
         {"ORES_NATS_SUBJECT_PREFIX", "ores.festive"},
@@ -38,6 +42,7 @@ TEST_CASE("make_nats_options reads every setting from the environment", tags) {
     });
 
     const auto opts = ores::testing::make_nats_options();
+    BOOST_LOG_SEV(lg, ores::logging::info) << "URL: " << opts.url;
 
     CHECK(opts.url == "nats://broker.test:4222");
     CHECK(opts.subject_prefix == "ores.festive");
@@ -46,10 +51,13 @@ TEST_CASE("make_nats_options reads every setting from the environment", tags) {
     CHECK(opts.tls_client_key == "/keys/client.key");
 }
 
-TEST_CASE("make_nats_options falls back to the local broker", tags) {
+TEST_CASE("falls_back_to_the_local_broker", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const ores::testing::scoped_environment_override env({}, {"ORES_NATS_URL"});
 
     const auto opts = ores::testing::make_nats_options();
+    BOOST_LOG_SEV(lg, ores::logging::info) << "URL: " << opts.url;
 
     CHECK(opts.url == "nats://localhost:4222");
     CHECK(opts.subject_prefix.empty());

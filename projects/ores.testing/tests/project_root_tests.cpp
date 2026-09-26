@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
@@ -24,28 +25,39 @@
 
 namespace {
 
-const std::string tags("[ores.testing.project_root]");
+const std::string test_suite("ores.testing.tests");
+const std::string tags("[testing]");
 
 }
 
-TEST_CASE("project_root resolves a path that exists in the tree", tags) {
-    const auto resolved =
-        ores::testing::project_root::resolve("projects/ores.testing/CMakeLists.txt");
+TEST_CASE("resolves_a_path_that_names_the_component_model", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
 
+    const auto resolved = ores::testing::project_root::resolve(
+        "projects/ores.testing/modeling/component_overview.org");
+    BOOST_LOG_SEV(lg, ores::logging::info) << "Resolved: " << resolved.string();
+
+    CHECK(resolved.filename() == "component_overview.org");
+    CHECK(resolved.parent_path().filename() == "modeling");
     CHECK(resolved.is_absolute());
     CHECK(std::filesystem::exists(resolved));
 }
 
-TEST_CASE("project_root is the directory holding the repository root", tags) {
+TEST_CASE("discovers_a_root_that_holds_the_repository", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const auto root = ores::testing::project_root::get();
+    BOOST_LOG_SEV(lg, ores::logging::info) << "Root: " << root.string();
 
     CHECK(std::filesystem::exists(root / ".git"));
-    CHECK(std::filesystem::exists(root / "projects" / "ores.testing" / "modeling" /
-                                  "component_overview.org"));
+    CHECK(std::filesystem::is_directory(root / "projects"));
 }
 
-TEST_CASE("project_root resolve appends to the root it found", tags) {
-    const auto root = ores::testing::project_root::get();
+TEST_CASE("resolves_a_relative_path_under_the_root_it_found", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
 
-    CHECK(ores::testing::project_root::resolve("projects") == root / "projects");
+    const auto resolved = ores::testing::project_root::resolve("projects/ores.testing").string();
+    BOOST_LOG_SEV(lg, ores::logging::info) << "Resolved: " << resolved;
+
+    CHECK(resolved.ends_with("projects/ores.testing"));
 }

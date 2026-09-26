@@ -17,27 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_environment_override.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
 namespace {
 
-const std::string tags("[ores.testing.scoped_environment_override]");
-
+const std::string test_suite("ores.testing.tests");
+const std::string tags("[testing]");
 const std::string probe("ORES_TESTING_SCOPED_ENVIRONMENT_PROBE");
 
 using ores::platform::environment::environment;
 
 }
 
-TEST_CASE("scoped_environment_override overrides a value for its lifetime only", tags) {
+TEST_CASE("overrides_a_value_for_its_lifetime_only", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
     environment::set_value(probe, "outer");
 
     {
         const ores::testing::scoped_environment_override guard({{probe, "inner"}});
-
-        CHECK(environment::get_value_or_default(probe, "") == "inner");
+        const auto inside = environment::get_value_or_default(probe, "");
+        BOOST_LOG_SEV(lg, ores::logging::info) << "Inside the guard: " << inside;
+        CHECK(inside == "inner");
     }
 
     CHECK(environment::get_value_or_default(probe, "") == "outer");
@@ -45,13 +48,15 @@ TEST_CASE("scoped_environment_override overrides a value for its lifetime only",
     environment::unset_value(probe);
 }
 
-TEST_CASE("scoped_environment_override hides a stripped key for its lifetime only", tags) {
+TEST_CASE("hides_a_stripped_key_for_its_lifetime_only", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
     environment::set_value(probe, "outer");
 
     {
         const ores::testing::scoped_environment_override guard({}, {probe});
-
-        CHECK(environment::get_value_or_default(probe, "hidden") == "hidden");
+        const auto inside = environment::get_value_or_default(probe, "hidden");
+        BOOST_LOG_SEV(lg, ores::logging::info) << "Inside the guard: " << inside;
+        CHECK(inside == "hidden");
     }
 
     CHECK(environment::get_value_or_default(probe, "") == "outer");
@@ -59,14 +64,16 @@ TEST_CASE("scoped_environment_override hides a stripped key for its lifetime onl
     environment::unset_value(probe);
 }
 
-TEST_CASE("scoped_environment_override hides every key it does not carry", tags) {
+TEST_CASE("hides_every_key_it_does_not_carry", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
     environment::set_value(probe, "outer");
 
     {
         const ores::testing::scoped_environment_override guard(
             {{"ORES_TESTING_OTHER_PROBE", "other"}});
-
-        CHECK(environment::get_value_or_default(probe, "absent") == "absent");
+        const auto inside = environment::get_value_or_default(probe, "absent");
+        BOOST_LOG_SEV(lg, ores::logging::info) << "Inside the guard: " << inside;
+        CHECK(inside == "absent");
         CHECK(environment::get_value_or_default("ORES_TESTING_OTHER_PROBE", "") == "other");
     }
 

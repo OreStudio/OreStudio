@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/sql_values_rows.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
@@ -25,109 +26,165 @@
 
 namespace {
 
-const std::string tags("[ores.testing.sql_values_rows]");
+const std::string test_suite("ores.testing.tests");
+const std::string tags("[testing]");
 const std::string script("probe.sql");
 
 using ores::testing::sql_values_rows;
 
 }
 
-TEST_CASE("sql_values_rows reads a row into its column texts", tags) {
+TEST_CASE("reads_one_row_into_column_texts", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const auto rows = sql_values_rows("\nvalues\n(1, 'a', 'b');", script);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "Columns: " << rows.front().size();
 
     REQUIRE(rows.size() == 1);
     CHECK(rows[0] == std::vector<std::string>{"1", "a", "b"});
 }
 
-TEST_CASE("sql_values_rows unquotes a column", tags) {
+TEST_CASE("unquotes_a_column", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const auto rows = sql_values_rows("\nvalues\n('FX', 'RATE');", script);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "First column: " << rows.front().front();
 
     REQUIRE(rows.size() == 1);
     CHECK(rows[0] == std::vector<std::string>{"FX", "RATE"});
 }
 
-TEST_CASE("sql_values_rows keeps a comma inside a quoted column", tags) {
+TEST_CASE("keeps_a_comma_inside_a_quoted_column", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const auto rows = sql_values_rows("\nvalues\n('a,b', 'c');", script);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "First column: " << rows.front().front();
 
     REQUIRE(rows.size() == 1);
     CHECK(rows[0] == std::vector<std::string>{"a,b", "c"});
 }
 
-TEST_CASE("sql_values_rows unescapes a doubled quote", tags) {
+TEST_CASE("unescapes_a_doubled_quote", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const auto rows = sql_values_rows("\nvalues\n('it''s', 'x');", script);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "First column: " << rows.front().front();
 
     REQUIRE(rows.size() == 1);
     CHECK(rows[0] == std::vector<std::string>{"it's", "x"});
 }
 
-TEST_CASE("sql_values_rows keeps a comma inside nested parentheses", tags) {
+TEST_CASE("keeps_a_comma_inside_nested_parentheses", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const auto rows = sql_values_rows("\nvalues\n(ores_fn(1, 2), 'x');", script);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "First column: " << rows.front().front();
 
     REQUIRE(rows.size() == 1);
     CHECK(rows[0] == std::vector<std::string>{"ores_fn(1, 2)", "x"});
 }
 
-TEST_CASE("sql_values_rows reads a row split across lines", tags) {
+TEST_CASE("reads_a_row_split_across_lines", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const auto rows = sql_values_rows("\nvalues\n('FX',\n     'RATE',\n     'SPOT');", script);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "Columns: " << rows.front().size();
 
     REQUIRE(rows.size() == 1);
     CHECK(rows[0] == std::vector<std::string>{"FX", "RATE", "SPOT"});
 }
 
-TEST_CASE("sql_values_rows trims the whitespace the opening parenthesis exposes", tags) {
+TEST_CASE("trims_the_whitespace_the_opening_parenthesis_exposes", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const auto rows = sql_values_rows("\nvalues\n   (   'FX'  ,  'RATE'  );", script);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "First column: " << rows.front().front();
 
     REQUIRE(rows.size() == 1);
     CHECK(rows[0] == std::vector<std::string>{"FX", "RATE"});
 }
 
-TEST_CASE("sql_values_rows keeps the null keyword as text", tags) {
+TEST_CASE("trims_a_vertical_tab_and_a_form_feed", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
+    const auto rows = sql_values_rows("\nvalues\n(\v'FX', 'RATE'\f);", script);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "First column: " << rows.front().front();
+
+    REQUIRE(rows.size() == 1);
+    CHECK(rows[0] == std::vector<std::string>{"FX", "RATE"});
+}
+
+TEST_CASE("keeps_the_null_keyword_as_text", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const auto rows = sql_values_rows("\nvalues\n('FX', null);", script);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "Second column: " << rows.front().back();
 
     REQUIRE(rows.size() == 1);
     CHECK(rows[0] == std::vector<std::string>{"FX", "null"});
 }
 
-TEST_CASE("sql_values_rows skips a comment between the rows", tags) {
+TEST_CASE("skips_a_comment_between_rows", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const auto rows = sql_values_rows("\nvalues\n(1, 'a'),\n-- a note\n(2, 'b');", script);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "Rows: " << rows.size();
 
     REQUIRE(rows.size() == 2);
     CHECK(rows[0] == std::vector<std::string>{"1", "a"});
     CHECK(rows[1] == std::vector<std::string>{"2", "b"});
 }
 
-TEST_CASE("sql_values_rows skips a comment inside a row", tags) {
+TEST_CASE("skips_a_comment_inside_a_row", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const auto rows = sql_values_rows("\nvalues\n(1, -- why\n     'a');", script);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "Second column: " << rows.front().back();
 
     REQUIRE(rows.size() == 1);
     CHECK(rows[0] == std::vector<std::string>{"1", "a"});
 }
 
-TEST_CASE("sql_values_rows keeps a comment marker inside a quoted column", tags) {
+TEST_CASE("keeps_a_comment_marker_inside_a_quoted_column", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const auto rows = sql_values_rows("\nvalues\n('a -- b');", script);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "First column: " << rows.front().front();
 
     REQUIRE(rows.size() == 1);
     CHECK(rows[0] == std::vector<std::string>{"a -- b"});
 }
 
-TEST_CASE("sql_values_rows reads one column from a one-column row", tags) {
+TEST_CASE("reads_one_column_from_a_one_column_row", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const auto rows = sql_values_rows("\nvalues\n('FX');", script);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "First column: " << rows.front().front();
 
     REQUIRE(rows.size() == 1);
     CHECK(rows[0] == std::vector<std::string>{"FX"});
 }
 
-TEST_CASE("sql_values_rows stops at the tail of the statement", tags) {
+TEST_CASE("stops_at_the_tail_of_the_statement", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const auto rows = sql_values_rows("\nvalues\n(1, 'a')\non conflict do nothing;", script);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "Rows: " << rows.size();
 
     REQUIRE(rows.size() == 1);
     CHECK(rows[0] == std::vector<std::string>{"1", "a"});
 }
 
-TEST_CASE("sql_values_rows refuses a script with no values list", tags) {
+TEST_CASE("refuses_a_script_with_no_values_list", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
+    BOOST_LOG_SEV(lg, ores::logging::info) << "Script without a values list: " << script;
     CHECK_THROWS_AS(sql_values_rows("select 1;", script), std::invalid_argument);
 }
 
-TEST_CASE("sql_values_rows refuses a values list with no rows", tags) {
+TEST_CASE("refuses_a_values_list_with_no_rows", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
+    BOOST_LOG_SEV(lg, ores::logging::info) << "Script with an empty values list: " << script;
     CHECK_THROWS_AS(sql_values_rows("\nvalues\n;", script), std::invalid_argument);
 }

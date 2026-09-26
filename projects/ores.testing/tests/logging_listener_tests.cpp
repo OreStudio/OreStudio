@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/logging_listener.hpp"
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -25,34 +26,47 @@
 
 namespace {
 
-const std::string tags("[ores.testing.logging_listener]");
+const std::string test_suite("ores.testing.tests");
+const std::string tags("[testing]");
 
 using ores::testing::logging_listener;
 
 }
 
-TEST_CASE("logging_listener reports the module name it was given", tags) {
-    logging_listener::set_test_module_name("ores.testing.tests");
+TEST_CASE("reports_the_module_name_it_was_given", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
 
+    logging_listener::set_test_module_name("ores.other.tests");
+    const auto module = logging_listener::extract_module_name();
+    BOOST_LOG_SEV(lg, ores::logging::info) << "Module: " << module;
+    CHECK(module == "ores.other.tests");
+
+    logging_listener::set_test_module_name("ores.testing.tests");
     CHECK(logging_listener::extract_module_name() == "ores.testing.tests");
-
-    logging_listener::set_test_module_name("ores.testing.tests");
 }
 
-TEST_CASE("logging_listener takes the suite name from the first tag", tags) {
+TEST_CASE("takes_the_suite_name_from_the_first_tag", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const Catch::TestCaseInfo info(
         "",
         Catch::NameAndTags("a case", "[my_suite][other]"),
         Catch::SourceLineInfo(__FILE__, static_cast<std::size_t>(__LINE__)));
+    const auto suite = logging_listener::extract_suite_name(info);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "Suite: " << suite;
 
-    CHECK(logging_listener::extract_suite_name(info) == "my_suite");
+    CHECK(suite == "my_suite");
 }
 
-TEST_CASE("logging_listener names the default suite when a case has no tags", tags) {
+TEST_CASE("names_the_default_suite_when_a_case_has_no_tags", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
     const Catch::TestCaseInfo info(
         "",
         Catch::NameAndTags("a case", ""),
         Catch::SourceLineInfo(__FILE__, static_cast<std::size_t>(__LINE__)));
+    const auto suite = logging_listener::extract_suite_name(info);
+    BOOST_LOG_SEV(lg, ores::logging::info) << "Suite: " << suite;
 
-    CHECK(logging_listener::extract_suite_name(info) == "default_suite");
+    CHECK(suite == "default_suite");
 }

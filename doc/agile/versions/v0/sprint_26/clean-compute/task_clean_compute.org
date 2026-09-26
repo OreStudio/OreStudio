@@ -125,6 +125,17 @@ The second is a product decision about what the telemetry surface is for,
 so it is not mine to take. The attempt was reverted rather than forced,
 and the tree is as it was.
 
+** The work surface wants an operation model
+
+=pull=, =heartbeat=, =reap= and =submit= are orchestrations rather than
+entity verbs, so P04 puts them in an operation model
+(=#+type: ores.codegen.operation=) rather than an entity. iam's
+=account_messages.org= is the template, and an operation model generates
+both its protocol and a handler, so the existing handler's logic moves into
+the model as a paste block rather than staying a hand-written file beside a
+generated one. That is the shape the next round takes, and it is also what
+removes the last four raw subject literals, so P02 follows it.
+
 ** M06, the platform model
 
 =platform= was the component's last hand-written entity, and the smallest:

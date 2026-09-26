@@ -104,3 +104,25 @@ TEST_CASE("workflow_operation_commands_start_refuses_an_instance_id_that_is_not_
     CHECK(out.str().find("must be a UUID") != std::string::npos);
     CHECK(command_feedback::failed());
 }
+
+TEST_CASE("workflow_operation_commands_start_refuses_the_nil_instance_id", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    // The nil UUID parses, so it would pass a check that only asked whether the
+    // text is a UUID. It is refused because every nil run would be the same run:
+    // a placeholder id would collapse unrelated workflows into one.
+    command_feedback::reset();
+    workflow_operation_commands::process_start(out,
+                                               session,
+                                               {"identity_workflow",
+                                                R"({"steps":[{"name":"one"}]})",
+                                                "--instance-id",
+                                                "00000000-0000-0000-0000-000000000000"});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for the nil instance id: " << out.str();
+    CHECK(out.str().find("nil UUID") != std::string::npos);
+    CHECK(command_feedback::failed());
+}

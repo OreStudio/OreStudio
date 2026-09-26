@@ -32,6 +32,7 @@
 #include <cli/cli.h>
 #include <expected>
 #include <map>
+#include <optional>
 #include <ostream>
 #include <thread>
 #include <vector>
@@ -102,19 +103,24 @@ void print_step(std::ostream& out,
 }
 
 /**
- * @brief True when the value parses as a UUID.
+ * @brief The canonical spelling of a UUID, or nothing when the value is not one.
  *
  * A supplied instance id is how a caller addresses a run it may already have
- * asked for, so a value that is not a UUID is refused here. Left to the
- * engine, the start would be accepted and the caller would wait on an id
- * nothing ever wrote.
+ * asked for, so the text is parsed rather than trusted. Parsing buys more than a
+ * rejection: the canonical spelling is what gets echoed and dispatched, so a
+ * caller who wrote the id with braces or without dashes still reads back the id
+ * the engine holds; and the nil UUID is refused, because it parses but every nil
+ * run would be the same run, so a placeholder id would quietly collapse
+ * unrelated workflows into one.
  */
-bool is_uuid(const std::string& value) {
+std::optional<std::string> canonical_uuid(const std::string& value) {
     try {
-        static_cast<void>(boost::uuids::string_generator()(value));
-        return true;
+        const auto parsed = boost::uuids::string_generator()(value);
+        if (parsed.is_nil())
+            return std::nullopt;
+        return boost::uuids::to_string(parsed);
     } catch (const std::exception&) {
-        return false;
+        return std::nullopt;
     }
 }
 
@@ -335,10 +341,11 @@ void workflow_operation_commands::process_start(std::ostream& out,
     if (supplied_id.empty()) {
         boost::uuids::random_generator rng;
         instance_id = boost::uuids::to_string(rng());
-    } else if (is_uuid(supplied_id)) {
-        instance_id = supplied_id;
+    } else if (const auto canonical = canonical_uuid(supplied_id)) {
+        instance_id = *canonical;
     } else {
-        fail(out) << "--instance-id must be a UUID: " << supplied_id << std::endl;
+        fail(out) << "--instance-id must be a UUID and not the nil UUID: " << supplied_id
+                  << std::endl;
         return;
     }
 

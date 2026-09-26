@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: CCE1A370-4106-4CA5-93D5-145F40F32384
+:END:
+#+title: The generated shell recipes no longer run
+#+description: V04 of the refdata clean-standard pass ran all 732 generated refdata shell scripts against the live fleet: 93 abort. Two causes, both in the ores.doc.shell-recipe family. The scripts omit the session-party positional the generated command requires, so an add or a set fails its own arity check by one; and they send __none__ where the shell needs its absent token -, so every optional uuid, date and numeric field is refused. The archetype is still registered (template shell_recipe.org.mustache, output doc/recipes/shell/{shell_menu}/{entity}.org) but renders nothing: an explicit --address ores.doc.shell-recipe run reports no file and no warning, so the family is frozen at whatever the last working generator produced and cannot be refreshed by the drift gate. This affects all 144 entity menus, not only refdata.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

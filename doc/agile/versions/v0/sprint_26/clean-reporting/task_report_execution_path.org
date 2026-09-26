@@ -26,11 +26,11 @@ A schedule fires, the reporting service creates a report instance in the correct
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] |
-| Now          | Analysis complete and proven live. The decisions are recorded below; the test report is the next unit of work. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | Seed the test report, then make the trigger an authenticated operation. |
+| Next         | Nothing. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -393,3 +393,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered. The report instance FSM is implemented, enforced, and proven.
+
+Ten defects stood between a scheduled trigger and a completed report. Nine were outside ores.reporting: the scheduler published with no identity and the rejection was discarded; the workflow engine set no =modified_by=, so **no workflow instance had ever been created**; the storage server's bucket allow-list omitted =report-data=; ores.ore moved a base URL out from under the package handler with a =std::move=; ores.compute assigned a nil application version; and the environment carried stale notify triggers and no market-data base URL. Reporting's own code needed three fixes, and none of them was why the pipeline could not run.
+
+Proof: a report triggered from the shell runs the seven-step workflow to =completed=, with the instance travelling =pending=, =running=, =completed= through the database guard. Witnessed twice -- once on the database as it had drifted, once on one built from nothing.
+
+The review of PR #2212 raised three findings, all fixed: the scheduler paths saved a null FSM state silently after the job had been created or deleted; compensation overwrote the true failure reason with an unrelated step's; and the concurrency policy codes were inline literals.
+
+Not delivered. The eight execution-step shell commands cannot answer outside a workflow, because the handlers return in silence when the workflow headers are absent -- diagnosed, and the fix is a shared handler contract rather than this component's.
+
+One caveat on the environment. The completed walk depended on two =ORES_*_SERVICE_HTTP_BASE_URL= variables added to =.env= by hand, which is why the durable fix belongs in the environment profile and not in that file.

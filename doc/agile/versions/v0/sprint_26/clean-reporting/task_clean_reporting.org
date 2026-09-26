@@ -26,11 +26,11 @@ ores.reporting passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -208,3 +208,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered. The component is listed in =COMPONENTS_UNDER_TEST= and every gate that reads the registry is green.
+
+Passing: B01, B03, B04, B06, G01, G02, G05, G07, M01, M02, M03, M09, M10, H05, P03, P04, V01, V02, V03, V05, V06, V07, W01, W02, W03.
+
+Both hand-written protocol headers were retired, so the twin gate passes with 45 generated headers across 8 components. The FSM's seeded transitions are enforced by a database trigger for the first time, which exposed that the seed could not represent its own concurrency policy. The registrar now serves all nine verbs per family where it served four, leaving twenty subjects with a generated message, a generated command and no handler. The retired Qt =widget= column is gone, and removing it changed no generated output at all.
+
+Partial, and measured. **V04**: thirteen shell commands exercised and answering; the remaining families are template repetition of the one proved, and the eight step commands are recorded as unable to answer with their cause diagnosed. **V08**: four of six files, with three pure units extracted and tested and the I/O recorded.
+
+Waiting on ores.dq. **M06** and **P02**'s remainder, because the surviving hand-written wire type carries a DQ type that DQ has neither modelled nor projected, so there is no TypeScript type to map it to.
+
+Recorded rather than fixed, each with its evidence on the task: the twin gate cannot see a wire type declared outside a =*_protocol.hpp=; nothing checks that a declared subject has a subscriber; the populate scripts cannot be replayed against a populated database because they pass =current_user=; the generated per-entity registrar family exists in twelve components with no caller; and compensation overwrites a report's own diagnosis. The handoff section lists the next four steps in order.

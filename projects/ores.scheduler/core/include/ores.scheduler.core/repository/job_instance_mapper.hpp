@@ -21,13 +21,14 @@
 #define ORES_SCHEDULER_REPOSITORY_JOB_INSTANCE_MAPPER_HPP
 
 #include "ores.scheduler.api/domain/job_instance.hpp"
+#include "ores.scheduler.core/export.hpp"
 #include "ores.scheduler.core/repository/job_instance_entity.hpp"
 #include <optional>
 #include <vector>
 
 namespace ores::scheduler::repository {
 
-class job_instance_mapper {
+class ORES_SCHEDULER_CORE_EXPORT job_instance_mapper {
 public:
     static domain::job_instance map(const job_instance_entity& e);
     static std::vector<domain::job_instance> map(const std::vector<job_instance_entity>& v);

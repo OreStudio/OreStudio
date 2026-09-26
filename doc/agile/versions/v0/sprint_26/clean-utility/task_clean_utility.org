@@ -254,11 +254,12 @@ via its "Verifies task" field.
 | 1 | The refreshed utility diagram lost the `id` member of `hierarchy_flat_row` and `hierarchy_node`, which the source declares as `boost::uuids::uuid id{};` | build/scripts/generate_component_puml.py | fixed | Found by reading the refresh rather than trusting it. A third defect in the parser: the field pattern accepted an `= value` initialiser but not a brace initialiser, and the brace bookkeeping consumed the line before the field reader saw it. Both halves are fixed, and three regression cases fail against the unfixed parser. |
 | 2 | `to_iso8601_utc` emits `YYYY-MM-DD HH:MM:SSZ`, so the name and the platform overview overstate the format as ISO 8601, which requires a `T` | projects/ores.platform/src/time/datetime.cpp | recorded, not fixed | Found while writing the faker datetime test: the assertion had to be written with a space. The pair `to_iso8601_utc` and `from_iso8601_utc` is self-consistent, and changing the separator moves the stored and transmitted shape, so it needs a compatibility decision rather than a quiet edit here. Captured in the backlog. |
 | 3 | The generator fix makes seven other components' `.puml` files stale, because their headers carry brace-initialised members | projects/ores.database, ores.diff, ores.nats, ores.orgmode, ores.security, ores.service, ores.testing | recorded, not fixed | The fix has to land with the component that found it. Each of those components owns a clean-up pass, several of them in flight in other worktrees, so the refresh belongs to those passes rather than to this PR. |
+| 4 | The bookkeeping commit that `compass pr create` made carries `Story-ID:` and `Task-ID:`, but no `Environment:` and no `Co-Authored-By:` trailer | commit 59f5fa77ae | recorded, not fixed | The same tooling gap the platform task recorded, narrower than it was there: the tool now emits the two ID trailers and still omits the other two. The commit is pushed, so the gap is recorded rather than rewritten. |
 
 * Result
 
 ores.utility meets the standard for the items that apply to a model-free
-component. Twelve work items landed across eight `[utility]` commits.
+component. Twelve work items landed across six `[utility]` commits.
 
 The component lost 27 files and 1872 lines: six sub-trees whose only
 consumer was their own test, and eleven umbrella stubs that held nothing

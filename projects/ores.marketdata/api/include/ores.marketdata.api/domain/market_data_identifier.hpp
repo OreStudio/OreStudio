@@ -93,6 +93,7 @@ struct ir_market_data_identifier final {
     std::string ccy;
     instrument_type type = instrument_type::quote;
     std::optional<index_family> index;
+    std::optional<std::string> index_spelling;
     std::optional<std::string> tenor;
     std::optional<std::string> second_tenor;
     std::optional<std::string> second_ccy;

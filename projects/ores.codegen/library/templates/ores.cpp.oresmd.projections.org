@@ -128,6 +128,28 @@ std::string curve_id(std::string_view ccy, std::string_view tenor) {
 }
 
 /*
+ * The index segment of an ORE key is a name, and producers spell one family more
+ * than one way: the corpus writes ESTER where index_family says estr, on 2,514
+ * IR_SWAP keys and 70 MM keys. A spelling that differs from the family's own
+ * uppercase name is carried in the identifier and emitted verbatim, so the key
+ * reads back as it arrived. The ordinary spelling records nothing, which keeps
+ * one key to one URI -- the same rule the IR swap's spot lag follows.
+ */
+std::string index_token(const ir_market_data_identifier& id) {
+    if (id.index_spelling)
+        return *id.index_spelling;
+    return id.index ? to_upper(std::string(magic_enum::enum_name(*id.index))) : std::string{};
+}
+
+void record_index_spelling(ir_market_data_identifier& id, std::string_view token) {
+    if (!id.index)
+        return;
+    if (to_lower(token) == std::string(magic_enum::enum_name(*id.index)))
+        return;
+    id.index_spelling = std::string{token};
+}
+
+/*
  * Both index name and curve key are produced together, gated on `type=fixing` -- the
  * design doc's own worked-examples table shows a single `type=fixing` URI producing
  * BOTH an index name and a curve key (the underlying curve construct has both facets),
@@ -401,6 +423,19 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
             // everywhere, 0D and 1D on some producers' lines. The corpus's own
             // default is emitted when the identifier recorded none.
             const auto settle = id.settle ? *id.settle : std::string{"2D"};
+            // A swap written against a named index carries it between the
+            // currency and the spot lag, which is the only difference between
+            // the two forms ORE writes: ccy/settle/tenor/maturity and
+            // ccy/index/settle/tenor/maturity.
+            if (id.index)
+                return std::format("{}/{}/{}/{}/{}/{}/{}",
+                                   ore_type(qt),
+                                   ore_metric(m),
+                                   id.ccy,
+                                   index_token(id),
+                                   settle,
+                                   t,
+                                   point);
             return std::format(
                 "{}/{}/{}/{}/{}/{}", ore_type(qt), ore_metric(m), id.ccy, settle, t, point);
         }
@@ -412,9 +447,13 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
             if (qt != ir_quote_type::mm)
                 return std::nullopt;
         } else {
-            const auto idx = to_upper(std::string(magic_enum::enum_name(*id.index)));
             return std::format("{}/{}/{}/{}/{}/{}",
-                               ore_type(qt), ore_metric(m), id.ccy, idx, t, point);
+                               ore_type(qt),
+                               ore_metric(m),
+                               id.ccy,
+                               index_token(id),
+                               t,
+                               point);
         }
     }
     // No-index types: CC_BASIS_SWAP, CC_FIX_FLOAT_SWAP, BMA_SWAP, FRA, IMM_FRA,
@@ -793,7 +832,14 @@ std::optional<metric> parse_metric(std::string_view value) {
 }
 
 std::optional<index_family> parse_index(std::string_view value) {
-    return parse_enum_lower<index_family>(value);
+    if (const auto exact = parse_enum_lower<index_family>(value))
+        return exact;
+    // ORE's own examples spell the euro short-term rate ESTER where the family
+    // is named estr. The family is what the alias resolves to, and the spelling
+    // that arrived is carried beside it so the key reads back as it came.
+    if (to_lower(value) == "ester")
+        return index_family::estr;
+    return std::nullopt;
 }
 
 std::optional<volatility_model_subtype> parse_vol_model(std::string_view value) {
@@ -876,10 +922,12 @@ std::optional<market_data_identifier> from_fx_fwd(const std::vector<std::string>
 }
 
 std::optional<market_data_identifier> from_ir_swap(const std::vector<std::string>& parts) {
-    // IR_SWAP/METRIC/CCY/SETTLE/TENOR/POINT. The settlement segment is a
-    // per-currency spot lag, recorded only when it is not the 2D the forward
-    // emits by default -- so the ordinary key keeps one URI rather than two.
-    if (parts.size() != 6)
+    // IR_SWAP/METRIC/CCY/SETTLE/TENOR/POINT, and the seven-segment form
+    // IR_SWAP/METRIC/CCY/INDEX/SETTLE/TENOR/POINT that names the index the swap
+    // is written against. The settlement segment is a per-currency spot lag,
+    // recorded only when it is not the 2D the forward emits by default -- so the
+    // ordinary key keeps one URI rather than two.
+    if (parts.size() != 6 && parts.size() != 7)
         return std::nullopt;
     const auto m = parse_metric(parts[1]);
     if (!m)
@@ -889,10 +937,19 @@ std::optional<market_data_identifier> from_ir_swap(const std::vector<std::string
     id.type = instrument_type::quote;
     id.quote_type = ir_quote_type::ir_swap;
     id.metric = *m;
-    if (parts[3] != "2D")
-        id.settle = parts[3];
-    id.tenor = to_lower(parts[4]);
-    id.point = to_lower(parts[5]);
+    const auto named_index = parts.size() == 7;
+    if (named_index) {
+        const auto idx = parse_index(parts[3]);
+        if (!idx)
+            return std::nullopt;
+        id.index = *idx;
+        record_index_spelling(id, parts[3]);
+    }
+    const auto settle = named_index ? parts[4] : parts[3];
+    if (settle != "2D")
+        id.settle = settle;
+    id.tenor = to_lower(parts[named_index ? 5 : 4]);
+    id.point = to_lower(parts[named_index ? 6 : 5]);
     return id;
 }
 
@@ -951,6 +1008,7 @@ from_ir_indexed(ir_quote_type qt, const std::vector<std::string>& parts) {
     id.quote_type = qt;
     id.metric = *m;
     id.index = *idx;
+    record_index_spelling(id, parts[3]);
     id.tenor = to_lower(parts[4]);
     id.point = to_lower(parts[5]);
     return id;

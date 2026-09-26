@@ -53,6 +53,7 @@ using ores::marketdata::core::detail::to_upper;
 struct query_params final {
     std::optional<std::string> ccy;
     std::optional<std::string> index;
+    std::optional<std::string> index_spelling;
     std::optional<std::string> tenor;
     std::optional<std::string> second_tenor;
     std::optional<std::string> second_ccy;
@@ -78,6 +79,8 @@ struct query_params final {
                 qp.ccy = p.value;
             else if (p.key == "index")
                 qp.index = p.value;
+            else if (p.key == "index_spelling")
+                qp.index_spelling = p.value;
             else if (p.key == "tenor")
                 qp.tenor = p.value;
             else if (p.key == "second_tenor")
@@ -193,6 +196,8 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
     id.type = parse_type(qp);
     if (qp.index)
         id.index = parse_enum<index_family>("index", *qp.index);
+    if (qp.index_spelling)
+        id.index_spelling = *qp.index_spelling;
     if (qp.tenor)
         id.tenor = to_lower(*qp.tenor);
     if (qp.second_tenor)

@@ -84,6 +84,7 @@ market_data_identifier resolve_ir(const ir_market_data_requirement& req,
     id.ccy = pick_mandatory_string(req.ccy, d ? d->ccy : std::string{}, "ccy");
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.index = pick_optional(req.index, d ? d->index : std::nullopt);
+    id.index_spelling = pick_optional(req.index_spelling, d ? d->index_spelling : std::nullopt);
     id.tenor = pick_optional(req.tenor, d ? d->tenor : std::nullopt);
     id.second_tenor = pick_optional(req.second_tenor, d ? d->second_tenor : std::nullopt);
     id.second_ccy = pick_optional(req.second_ccy, d ? d->second_ccy : std::nullopt);

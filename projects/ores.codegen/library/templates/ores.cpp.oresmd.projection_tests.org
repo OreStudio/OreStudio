@@ -402,6 +402,31 @@ TEST_CASE("from_ore_key_ir_swap_drops_the_settlement_segment", tags) {
                   "usd?settle=1D&tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y"));
 }
 
+TEST_CASE("from_ore_key_ir_swap_names_the_index_and_its_spelling", tags) {
+    // A swap written against a named index inserts it between the currency and
+    // the spot lag: ccy/index/settle/tenor/maturity, one segment longer than the
+    // form that leaves the index implicit.
+    REQUIRE(oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/SOFR/0D/1D/2Y") ==
+            parse("oresmd://ir/"
+                  "usd?index=sofr&settle=0D&tenor=1d&type=quote&quote=ir_swap&metric=rate"
+                  "&point=2y"));
+    // The corpus writes ESTER where index_family says estr, so the spelling is
+    // carried: a spelling that matches the family records nothing, and one that
+    // does not is emitted back verbatim.
+    REQUIRE(oresmd_projections::from_ore_key("IR_SWAP/RATE/EUR/ESTER/2D/1D/10M") ==
+            parse("oresmd://ir/"
+                  "eur?index=estr&index_spelling=ESTER&tenor=1d&type=quote&quote=ir_swap"
+                  "&metric=rate&point=10m"));
+    REQUIRE(oresmd_projections::from_ore_key("IR_SWAP/RATE/EUR/ESTR/2D/1D/10M") ==
+            parse("oresmd://ir/"
+                  "eur?index=estr&tenor=1d&type=quote&quote=ir_swap&metric=rate&point=10m"));
+    // MM reaches the same slot through its own indexed form.
+    REQUIRE(oresmd_projections::from_ore_key("MM/RATE/EUR/ESTER/0D/1D") ==
+            parse("oresmd://ir/"
+                  "eur?index=estr&index_spelling=ESTER&tenor=0d&type=quote&quote=mm&metric=rate"
+                  "&point=1d"));
+}
+
 TEST_CASE("from_ore_key_ir_discount_keeps_the_curve_name_whole", tags) {
     // The curve segment is the name curveconfig.xml gives the curve, not a
     // currency with a tenor appended: the corpus carries USD3M beside

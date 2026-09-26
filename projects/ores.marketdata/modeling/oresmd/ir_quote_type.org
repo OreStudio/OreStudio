@@ -87,6 +87,7 @@ A logical, possibly-partial oresmd requirement for an interest-rate instrument.
 | ccy        | std::string                     | yes       |           |                        |
 | type       | instrument_type                 | yes       | type      | instrument_type::quote |
 | index      | std::optional<index_family>     | no        | index     |                        |
+| index_spelling | std::optional<std::string>  | no        | index_spelling |                    |
 | tenor      | std::optional<std::string>      | no        | tenor     |                        |
 | second_tenor | std::optional<std::string>    | no        | second_tenor |                     |
 | second_ccy | std::optional<std::string>      | no        | second_ccy |                       |
@@ -132,6 +133,7 @@ branch), which no field-table ordering can express.
 | key |
 |-----|
 | index |
+| index_spelling |
 | tenor |
 | second_tenor |
 | second_ccy |
@@ -185,7 +187,7 @@ IR has the most complex qualifier shape variants:
 
 | uri | expected | description |
 |-----+----------+-------------|
-| oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y | IR_SWAP/RATE/USD/2D/3M/5Y | ir_swap_quote_key_matches_worked_example |
+| oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y | IR_SWAP/RATE/USD/2D/3M/5Y | ir_swap_quote_key_matches_worked_example |
 | oresmd://ir/usd?curve_id=USD3M&tenor=6m&type=quote&quote=discount&metric=rate | DISCOUNT/RATE/USD/USD3M/6M | discount_quote_key_matches_worked_example |
 | oresmd://ir/usd?curve_id=USD-SOFR-3M&tenor=10y&type=quote&quote=discount&metric=rate | DISCOUNT/RATE/USD/USD-SOFR-3M/10Y | discount_quote_key_matches_the_corpus |
 | oresmd://ir/eur?curve_id=EUR&tenor=1d&type=quote&quote=discount&metric=rate | DISCOUNT/RATE/EUR/EUR/1D | discount_quote_key_matches_the_corpus_currency_named_curve |
@@ -204,6 +206,8 @@ IR has the most complex qualifier shape variants:
 | oresmd://ir/eur?type=quote&quote=zero&metric=yield_spread&curve_id=EONIA_ESTER_SPREAD&day_count=A365&point=1d | ZERO/YIELD_SPREAD/EUR/EONIA_ESTER_SPREAD/A365/1D | ir_zero_yield_spread_quote_key_matches_the_corpus |
 | oresmd://ir/eur?tenor=3m&contract_month=2024-04&contract_code=XICE:FEI&type=quote&quote=mm_future&metric=price | MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M | ir_mm_future_price_quote_key_matches_the_corpus |
 | oresmd://ir/usd?tenor=3m&contract_month=2024-01&contract_code=XCME:SRA&type=quote&quote=oi_future&metric=price | OI_FUTURE/PRICE/USD/2024-01/XCME:SRA/3M | ir_oi_future_price_quote_key_matches_the_corpus |
+| oresmd://ir/usd?index=sofr&settle=0D&tenor=1d&type=quote&quote=ir_swap&metric=rate&point=2y | IR_SWAP/RATE/USD/SOFR/0D/1D/2Y | ir_swap_indexed_quote_key_matches_the_corpus |
+| oresmd://ir/eur?index=estr&index_spelling=ESTER&tenor=0d&type=quote&quote=mm&metric=rate&point=1d | MM/RATE/EUR/ESTER/0D/1D | ir_mm_index_spelling_matches_the_corpus |
 | oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03 | CAPFLOOR/RATE_NVOL/CHF/5Y/6M/0/0/0.03 | ir_capfloor_normal_vol_quote_key_matches_the_corpus |
 | oresmd://ir/chf?type=vol&quote=capfloor&point=5y,6m,0,0,0.03 | CAPFLOOR/RATE_LNVOL/CHF/5Y/6M/0/0/0.03 | ir_capfloor_log_normal_vol_quote_key_matches_the_corpus |
 | oresmd://ir/eur?type=vol&quote=capfloor&model=shift&tenor=6m | CAPFLOOR/SHIFT/EUR/6M | ir_capfloor_shift_quote_key_matches_the_corpus |
@@ -227,7 +231,7 @@ IR has the most complex qualifier shape variants:
 
 | uri | description |
 |-----+-------------|
-| oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y | round_trip_ir_quote |
+| oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y | round_trip_ir_quote |
 | oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03 | round_trip_ir_capfloor_normal_vol |
 | oresmd://ir/eur?type=vol&quote=capfloor&model=shift&tenor=6m | round_trip_ir_capfloor_shift |
 | oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm | round_trip_ir_bond_option_vol |
@@ -247,6 +251,8 @@ IR has the most complex qualifier shape variants:
 | oresmd://ir/usd?tenor=3m&contract_month=2024-01&contract_code=XCME:SRA&type=quote&quote=oi_future&metric=price | round_trip_ir_oi_future_price |
 | oresmd://ir/usd?curve_id=USD3M&tenor=6m&type=quote&quote=discount&metric=rate | round_trip_ir_discount |
 | oresmd://ir/eur?curve_id=EUR&tenor=1d&type=quote&quote=discount&metric=rate | round_trip_ir_discount_currency_named_curve |
+| oresmd://ir/usd?index=sofr&settle=0D&tenor=1d&type=quote&quote=ir_swap&metric=rate&point=2y | round_trip_ir_swap_indexed |
+| oresmd://ir/eur?index=estr&index_spelling=ESTER&tenor=0d&type=quote&quote=mm&metric=rate&point=1d | round_trip_ir_mm_index_spelling |
 | oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y | round_trip_ir_bma_swap_ratio |
 | oresmd://ir/usd?tenor=3m&second_tenor=1y&second_ccy=try&type=quote&quote=cc_fix_float_swap&metric=rate&point=1y | round_trip_ir_cc_fix_float_swap |
 

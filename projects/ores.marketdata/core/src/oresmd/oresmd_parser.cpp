@@ -51,6 +51,7 @@ using ores::marketdata::core::detail::to_upper;
 struct query_params final {
     std::optional<std::string> ccy;
     std::optional<std::string> index;
+    std::optional<std::string> index_spelling;
     std::optional<std::string> tenor;
     std::optional<std::string> second_tenor;
     std::optional<std::string> second_ccy;
@@ -76,6 +77,8 @@ struct query_params final {
                 qp.ccy = p.value;
             else if (p.key == "index")
                 qp.index = p.value;
+            else if (p.key == "index_spelling")
+                qp.index_spelling = p.value;
             else if (p.key == "tenor")
                 qp.tenor = p.value;
             else if (p.key == "second_tenor")
@@ -238,6 +241,8 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
     id.type = parse_type(qp);
     if (qp.index)
         id.index = parse_enum<index_family>("index", *qp.index);
+    if (qp.index_spelling)
+        id.index_spelling = *qp.index_spelling;
     if (qp.tenor)
         id.tenor = to_lower(*qp.tenor);
     if (qp.second_tenor)
@@ -606,6 +611,7 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.set_host("ir");
                 u.segments().push_back(to_lower(id.ccy));
                 append_enum_if(u, "index", id.index);
+                append_if(u, "index_spelling", id.index_spelling);
                 append_if(u, "tenor", id.tenor);
                 append_if(u, "second_tenor", id.second_tenor);
                 append_if(u, "second_ccy", id.second_ccy);

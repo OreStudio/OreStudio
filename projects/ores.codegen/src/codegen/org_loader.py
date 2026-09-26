@@ -3867,6 +3867,11 @@ _SHELL_TOKEN_LITERALS = {
     "std::uint32_t": "1",
     "std::uint64_t": "1",
     "boost::uuids::uuid": "00000000-0000-0000-0000-000000000001",
+    "double": "1.0",
+    # The two types whose conversions the generated unit states itself: an
+    # instant is an ISO 8601 UTC string, and an address is its text form.
+    "std::chrono::system_clock::time_point": "2026-01-01T00:00:00Z",
+    "boost::asio::ip::address": "127.0.0.1",
 }
 
 

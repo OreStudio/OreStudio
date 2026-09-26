@@ -27,5 +27,6 @@ set(files
     "report_type_eventing_integration_tests.cpp"
     "repository_report_definition_repository_tests.cpp"
     "repository_report_type_repository_tests.cpp"
+    "service_publish_subject_plan_tests.cpp"
     "service_scheduling_plan_tests.cpp"
 )

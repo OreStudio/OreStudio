@@ -18,6 +18,7 @@
  *
  */
 #include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.reporting.core/service/publish_subject_plan.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
@@ -48,18 +49,6 @@ auto& lg() {
  * Converts "reporting.v1.report-definitions.publish-from-dq" to
  * "ores_reporting_publish_report_definitions_from_dq_fn".
  */
-std::string subject_to_fn(std::string_view subject) {
-    const auto v1_pos = subject.find("v1.");
-    if (v1_pos == std::string_view::npos)
-        return {};
-    const auto start = v1_pos + 3;
-    const auto end = subject.rfind(".publish-from-dq");
-    if (end == std::string_view::npos || end <= start)
-        return {};
-    auto entity = std::string(subject.substr(start, end - start));
-    std::replace(entity.begin(), entity.end(), '-', '_');
-    return "ores_reporting_publish_" + entity + "_from_dq_fn";
-}
 
 } // namespace
 
@@ -81,7 +70,7 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
     }
     const auto& cmd = *parsed;
 
-    const auto fn_name = subject_to_fn(msg.subject);
+    const auto fn_name = service::publish_from_dq_function(msg.subject);
     if (fn_name.empty()) {
         wf->fail("Cannot derive SQL function from subject: " + std::string(msg.subject));
         return;

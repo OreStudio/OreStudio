@@ -37,7 +37,7 @@ indexes so none is lost.
 :product:       ores
 :component:     iam
 :has_tenant_id: true
-:profile:        read-only-current-state
+:profile:       read-only-current-state
 :END:
 
 * Natural keys

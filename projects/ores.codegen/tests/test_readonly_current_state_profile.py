@@ -149,3 +149,73 @@ def test_both_flags_are_profile_bindable(flag):
     from codegen.org_loader import _FEATURE_NAMESPACE
 
     assert flag in _FEATURE_NAMESPACE
+
+
+# A junction, because it derives its write surface on a different path from a
+# domain entity and reads it from a key computed during load rather than from
+# the flag itself. The profile supplies read_only; the model states it nowhere.
+JUNCTION_MODEL = """\
+:PROPERTIES:
+:ID: 00000000-0000-0000-0000-0000000000c4
+:END:
+#+title: ores.testcomp.widget_owner_junction
+#+type: ores.codegen.junction
+#+component: testcomp
+#+name: widget_owners
+#+name_singular: widget_owner
+#+name_title: Widget Owner
+#+name_singular_words: widget owner association
+#+brief: Links a widget to its owner.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+
+* Flags
+:PROPERTIES:
+:profile: {profile}
+:END:
+
+* Left
+:PROPERTIES:
+:column:        widget_id
+:column_short:  widget
+:column_title:  Widget
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:list_by:       true
+:END:
+
+* Right
+:PROPERTIES:
+:column:        owner_id
+:column_short:  owner
+:column_title:  Owner
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_testcomp_widget_owners_tbl
+:END:
+""".format(profile=PROFILE)
+
+
+def test_a_profile_bound_junction_derives_its_write_switch_after_the_profile(
+        tmp_path):
+    """The junction's ``wire_write_enabled`` folds ``read_only`` in, so it has
+    to be derived after the profile supplies the flag. Derived earlier, a
+    profile-bound junction advertises write messages for repository methods
+    the repository template has already dropped."""
+    from codegen.org_loader import load_org_junction_model
+
+    model_path = tmp_path / "ores.testcomp.widget_owner_junction.org"
+    model_path.write_text(JUNCTION_MODEL, encoding="utf-8")
+
+    loaded = load_org_junction_model(model_path)["junction"]
+
+    assert loaded["read_only"] is True
+    assert loaded["wire_write_enabled"] is False
+

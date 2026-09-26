@@ -220,6 +220,7 @@ table is the cross-facet index only.
 |---------+------+---------|
 | =system_scope= | bool | false |
 | =nullable_tenant_id= | bool | false |
+| =current_state= | bool | false |
 | =extra_checks= | collection<string> | ∅ |
 | =extra_delete_sets= | collection<string> | ∅ |
 | =fk_copy_validations= | collection<struct> | ∅ |

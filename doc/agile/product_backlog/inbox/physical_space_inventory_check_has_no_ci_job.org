@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: C5E0CC86-8FD1-4DF9-987C-2C1ED52C055F
+:END:
+#+title: No CI job runs the physical-space inventory check
+#+description: regenerate_physical_space_inventories.py --check reports a stale facet inventory on main, and nothing on the pull-request path runs it.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:drift:inventory:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add the physical-space inventory check to the pull-request path, beside the
+component drift and template drift jobs, and clear the one stale table it
+reports today.
+
+* Why
+
+=regenerate_physical_space_inventories.py --check= exits 1 on current main:
+
+  stale: projects/ores.codegen/library/templates/ores.doc.knowledge.org
+
+The cause is a template description edited without the facet inventory that
+lists it being regenerated, which is exactly the class of drift the sibling
+checks catch. Nothing runs this script on a pull request: =codegen-drift.yml=
+runs the component drift gate, the model gate, the protocol twin gate, the
+handler permission gate, the populate reference gate, the shell recipe
+inventory and the codegen suite, and the job named =inventory= is the shell
+recipe one. The physical-space inventories are checked only when someone
+remembers to run the script.
+
+Measured while closing =ores.nats=, which does not touch any codegen
+template and so cannot have caused it.
+
+* References
+
+- =projects/ores.codegen/scripts/regenerate_physical_space_inventories.py= —
+  the check, with no CI job.
+- =.github/workflows/codegen-drift.yml= — the jobs, and the =inventory= one
+  that is the shell recipe inventory.
+- =projects/ores.codegen/library/templates/ores.doc.knowledge.org= — the
+  stale table.
+
+* See also
+
+-

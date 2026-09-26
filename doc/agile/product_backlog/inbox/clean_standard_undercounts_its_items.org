@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 094C131F-7FF3-4A48-B9C7-B8F7EB3CF19D
+:END:
+#+title: The Component Clean Standard undercounts its own items
+#+description: The standard's table holds 49 items. Its own prose says 47, and the two it does not count, G08 and H05, are the two a component can skip in silence.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:clean_standard:component:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Correct the item count in the standard, and make the count checkable. The
+table under =doc/knowledge/architecture/component_clean_standard.org= holds
+49 rows: B01 to B06, M01 to M10, P01 to P06, G01 to G08, W01 to W04, S01
+and S02, H01 to H05, and V01 to V08. The prose under the table says 47, and
+says the five items the infrastructure survey added brought it there.
+
+* Why
+
+The two items the count does not include are G08 and H05, and both apply to
+every component. A component working the standard from the count records 47
+items and never reaches them. That is what happened to =ores.nats=: the
+task recorded 47 items, G08 and H05 were absent, and G08 is the item the
+first pass broke by deleting the namespace documentation header the item
+protects. The review round found it.
+
+The count is a number in prose with nothing that reads it, so it drifts
+from the table it describes. Either the number goes, or a check counts the
+rows and compares.
+
+* References
+
+- =doc/knowledge/architecture/component_clean_standard.org= — the table and
+  the prose that contradicts it.
+- [[id:D39AC7F1-78A8-49B0-B896-ABAA219C75A4][Bring ores.nats to the clean standard]] — the task that followed the
+  count and skipped the two items.
+
+* See also
+
+-

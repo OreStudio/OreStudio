@@ -38,6 +38,35 @@ using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
 /**
+ * @brief Runs one seed statement, treating an already-present row as success.
+ *
+ * The reference tables' insert triggers refuse a create when a live row for the
+ * natural key already exists. On the macOS runner a create is refused this way
+ * even though the seed's own guard should have skipped it, and the platform
+ * difference is not understood. The seed's contract is that the row exists, so
+ * a refusal that means the row is already there is the outcome the seed wants.
+ *
+ * The refusal is recognised by its message, which couples this tolerance to the
+ * trigger's wording: the same SQLSTATE also covers a GIST exclusion violation
+ * with different text, and a reworded message here would make the seed fail
+ * loudly rather than silently, which is the safe direction. Check the business
+ * centre and country trigger messages before rewording them.
+ */
+void seed_row(ores::database::context& ctx,
+              const std::string& sql,
+              const std::string& what,
+              logger_t& lg) {
+    try {
+        ores::database::repository::execute_raw_command(ctx, sql, lg, "Seeding " + what);
+    } catch (const std::exception& e) {
+        const std::string msg(e.what());
+        if (msg.find("Row already exists") == std::string::npos)
+            throw;
+        BOOST_LOG_SEV(lg, warn) << "Already present, nothing to seed: " << what;
+    }
+}
+
+/**
  * @brief Seeds the minimum reference data needed for the organisation tree.
  *
  * The organisation generator produces parties and counterparties that reference
@@ -64,8 +93,7 @@ void seed_reference_data(ores::database::context& ctx,
                          "WHERE code = '" +
                          code + "' AND tenant_id = '" + tenant_id +
                          "'::uuid AND valid_to = ores_utility_infinity_timestamp_fn())";
-        ores::database::repository::execute_raw_command(
-            ctx, sql, lg, "Seeding business centre " + code);
+        seed_row(ctx, sql, "business centre " + code, lg);
     };
 
     if (country == "GB") {
@@ -96,7 +124,7 @@ void seed_reference_data(ores::database::context& ctx,
                          "WHERE alpha2_code = '" +
                          alpha2 + "' AND tenant_id = '" + tenant_id +
                          "'::uuid AND valid_to = ores_utility_infinity_timestamp_fn())";
-        ores::database::repository::execute_raw_command(ctx, sql, lg, "Seeding country " + alpha2);
+        seed_row(ctx, sql, "country " + alpha2, lg);
     };
 
     if (country == "GB") {

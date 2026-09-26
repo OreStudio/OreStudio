@@ -8,7 +8,7 @@
 #+filetags: :clean-synthetic:sprint_26:v0:
 #+owner: marco
 #+branch: feature/clean-synthetic
-#+pr: 2159
+#+pr: 2170
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -197,6 +197,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2170][#2170]] | [synthetic] Make the organisation seed idempotent on macOS |
 | [[https://github.com/OreStudio/OreStudio/pull/2159][#2159]] | [synthetic,codegen,sql] Bring ores.synthetic to the clean standard |
 
 * Review
@@ -216,5 +217,8 @@ via its "Verifies task" field.
 | 11 | Two near-identical guarded-insert SQL blobs in the publisher test | =organisation_publisher_integration_tests.cpp= | Decline | Two different tables with different column sets. A shared helper would be a generic SQL string assembler inside a test fixture, which costs more than the duplication it removes. |
 | 12 | Stale comments copied into the new part: AUTOMOC/Q_OBJECT and the import/export note | =ores.shell/synthetic/CMakeLists.txt=, =component_files.cmake= | Decline | Both are template-owned text in generated files, so the fix is a house-wide template change that would touch every component's parts, not this pass. |
 | 13 | =doc/llm/**= and =compass.sh= are unrelated to the story | =doc/llm/= | Decline | User-directed in the same session, outside the story: the SSH-agent memory was corrected on request. Kept, and recorded here rather than removed. |
+| 14 | Absorbing a refused create in a seed could mask a defect | =organisation_publisher_integration_tests.cpp= | Accept as a tolerance | The platform difference behind the macOS failure is not established, so this is recorded as a tolerance for an unreproduced flake, not a confirmed root-cause fix. No production code changes, the guard stays as the fast path, and any refusal other than =Row already exists= still propagates. |
+| 15 | The tolerance couples to the trigger's exact wording | =organisation_publisher_integration_tests.cpp= | Accept | The helper's comment now names the coupling, says a rewording fails loudly rather than silently, and points at the two triggers to check. |
+| 16 | A stray blank-line removal unrelated to the fix | =organisation_publisher_integration_tests.cpp= | Accept | Restored, so the diff is only the helper and its two call sites. |
 
 * Result

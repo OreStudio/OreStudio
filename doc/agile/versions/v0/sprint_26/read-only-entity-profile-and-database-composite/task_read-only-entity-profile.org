@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 527B8D67-34B0-4B55-B0F3-3525850328BD
+:END:
+#+title: Task: Add a read-only entity profile
+#+description: Extend _FEATURE_NAMESPACE so a profile can carry read_only and current_state, add the profile document, and prove the generated protocol carries list, get and get_many only.
+#+type: task
+#+level: s1
+#+filetags: :sprint_26:v0:codegen:read-only-entity-profile-and-database-composite:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AD2B4B61-306D-48A7-9F71-7D9B014F87B9][Add a read-only entity profile and make ores.database hostable]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A model binds one named profile and gets a read-only entity: the generated
+protocol carries =list=, =get= and =get_many=, and nothing else. No =put_=, no
+=delete_=, no version reads. Models that need the same combination elsewhere
+bind the same profile instead of re-deciding each flag.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:AD2B4B61-306D-48A7-9F71-7D9B014F87B9][Add a read-only entity profile and make ores.database hostable]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- A model binds the profile and its emitted protocol carries =list=, =get= and
+  =get_many= only, asserted by a codegen regression test rather than by eye.
+- The regression test fails if a write or version message reappears, so the
+  read-only promise cannot regress in silence.
+- The profile is documented as a named element-scope profile, in the shape of
+  the existing profile pages.
+- =ores.iam.account='s missing generated protocol is explained, because that
+  entity sets =:read_only: true= and does not behave the way the flag says.
+
+* Plan
+
+The mechanism exists. This task makes it bindable and proves it.
+
+1. The two switches are already implemented in
+   =projects/ores.codegen/src/codegen/org_loader.py=:
+   =:read_only: true= sets =wire_write_enabled = false= at lines 2057 to 2067,
+   and the protocol derivation drops every write message and write-only record
+   at lines 3155 to 3159. =:current_state: true= in the model's =* SQL **
+   Flags= drawer selects the non-temporal table shape, read at
+   =core.py:3212-3219=. Neither flag belongs to a profile yet.
+
+2. A profile cannot carry either flag. =_FEATURE_NAMESPACE=
+   (=org_loader.py:51-78=) maps each profile-assignable feature to its
+   namespace, and =_apply_profile= (=org_loader.py:445-455=) skips every
+   feature missing from that map. Add =read_only= at the entity root and
+   =current_state= in the sql namespace.
+
+3. Write the profile page under =projects/modeling/=, in the shape of
+   =variability_table_less_record.org=, with its Purpose, Reference entity and
+   Assignments table.
+
+4. Bind it to a real entity and regenerate. =ores.iam.login_info= is the
+   working reference for the target output: it sets both flags today and its
+   protocol carries exactly the three reads. The proof is that binding the
+   profile reproduces that protocol, and that removing the profile and binding
+   it again changes nothing on the second run.
+
+5. Add the regression test to the codegen suite. It binds the profile, derives
+   the protocol, and asserts the absence of the write and version message
+   names, in the shape of the existing per-entity protocol tests.
+
+6. Resolve the =ores.iam.account= question. Its description says a "one-owner
+   gate" suppresses its generated protocol because a hand-written
+   =get_account_history(username)= would collide with the generated one. That
+   gate is not in =org_loader.py=. Find out whether it is a model property, a
+   template condition, or a stale comment, and record the answer here.
+
+* Notes
+
+Reference implementation, verified on 2026-09-26:
+=compass codegen entity generate login_info --diff= reports no differences,
+and =login_info_protocol.hpp= carries =get_login_info=, =get_many_login_info=
+and =list_login_info= only. =ores.iam.account= differs by being bitemporal,
+which is why it also carries =get_account_version= and
+=list_account_versions=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

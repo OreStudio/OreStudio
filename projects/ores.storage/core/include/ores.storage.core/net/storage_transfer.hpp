@@ -52,9 +52,12 @@ public:
      *                       e.g. "http://localhost:8080"
      * @param bearer_token   The calling session's bearer token, without the
      *                       "Bearer " prefix. The storage routes authenticate,
-     *                       so the token is required: a caller with no user
-     *                       session passes the service token its own
-     *                       nats_client carries.
+     *                       so the parameter is required. An empty token is
+     *                       accepted, because a node can hold no credential:
+     *                       the compute wrapper passes one. The gateway then
+     *                       refuses the request with 401. A caller with a
+     *                       session passes the token its own nats_client
+     *                       carries.
      */
     storage_transfer(std::string http_base_url, std::string bearer_token);
 

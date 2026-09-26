@@ -38,8 +38,9 @@ namespace ores::storage::net {
  * =Authorization: Bearer <token>=. The storage routes authenticate, so the
  * token is the calling session's own credential rather than the client's: the
  * service validates that caller and its own permission check governs. The
- * token is a parameter and not a member because one client instance serves
- * whichever caller invokes it.
+ * parameter is required, but an empty token is accepted and sent as-is. The
+ * service then refuses the request with 401. The token is a parameter and not
+ * a member because one client instance serves whichever caller invokes it.
  */
 class ORES_STORAGE_CORE_EXPORT http_client {
 public:

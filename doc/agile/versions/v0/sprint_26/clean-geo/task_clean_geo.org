@@ -57,9 +57,77 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | pass | Baseline before any edit. No catalogue row, so the drift gate cannot name the component. `regenerate_cmake_component_files.py --component ores.geo --check` reports 2 stale files, `src/component_files.cmake` and `tests/component_files.cmake`. |
+| B02 | pass | 0 entity, junction, operation and message models. |
+| B03 | pass | 5 production C++ files classified, 4 headers and 1 source, plus 2 files under `tests/`. The single source file, `service/geolocation_service.cpp`, holds the whole implementation, about 50 lines of SQL wrapper. Two umbrella headers are included by nobody. |
+| B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. |
+| B05 | pass | This story is the only live capture naming the component. A second capture, `geo_location_tests_fail_for_some_ip_addresses.org`, records the test defect that V02 confirms. |
+| M01 to M08 | not applicable | No org model. |
+| M09 | not applicable | No model, so no legacy fragment to find in one. |
+| M10 | fail | `component_overview.org` claims MaxMind GeoLite2-City, city plus coordinates, and three `geoip_*` tables. MaxMind was replaced by ip2country in sprint 07 and the service is country-only. It also names `ores.iam` as the consumer, and the consumer is `ores.http`. |
+| P01 to P06 | not applicable | No entity and no protocol. |
+| G01 | not applicable | No model, so nothing regenerates. |
+| G02 | pass | Nothing superseded remains. |
+| G03 | fail | The two `component_files.cmake` files carry no generated marker. |
+| G04 | not applicable | No generated code. |
+| G05 | pass | A diagram dry run is a no-op for this component, so it is not exposed to the generator defect. |
+| G06 | fail | The same two files as G03. |
+| W01 to W04 | not applicable | No entity, registrar, handler, populate script or SQL script. |
+| S01, S02 | not applicable | No entity and no shell unit. |
+| H01 | pass, with findings | `validate_docs.py` passes. The diagram is current and in sync with its image. No leftover artefact and no commented-out code. |
+| H02 | fail | A dead enum value, an unused include, and two umbrella headers nobody includes. |
+| H03 | pass, with one nit | A header comment names `geolocation_import.sql`, and the file on disk is `projects/ores.sql/populate/ip2country/ip2country_import.sql`. |
+| V01 | pending | Whole-tree build, measured after the work. |
+| V02 | fail | Five assertions in five test cases, and three of them sit inside `if (!result.has_value())`, so the suite passes whenever the lookup fails for any reason. The backlog capture above records exactly that bug. |
+| V03, V04 | not applicable | No entity, no SQL of its own and no generated shell command. |
+| V05 | pending | Every gate, measured after the work. |
+| V06 | not applicable | No catalogue row and no models, so the component cannot join `COMPONENTS_UNDER_TEST`. Recorded as the programme gap. |
 
 * Notes
+
+Survey, 2026-09-25, at trunk `5de59e3fb8`, by an agent that did not write
+the component.
+
+- Keep the component. The retirement hypothesis fails, because the call
+  site is live. `ores.http` builds the service at `application.cpp:86` and
+  calls `lookup` at `iam_routes.cpp:502` inside the login handler, and
+  `ores.http.server` is enabled in the service registry. That is the only
+  production call site, reached through two includes.
+- The use is inert. The geo table is written only by the dq ip2country
+  publish path over NATS. The standalone import script omits the `NOT NULL`
+  `tenant_id`, so it cannot succeed as written. A database recreated from
+  scratch therefore returns `address_not_found` for every lookup and
+  `country_code` is always empty.
+- Scale. 5 production C++ files in 4 headers and 1 source, with 2 files
+  under `tests/`. 5 test cases and 5 assertions. The suite passes, but see
+  V02.
+
+Work items, in the order they land.
+
+1. Rewrite the overview. Replace the MaxMind, city and coordinate claims
+   with ip2country and `ores_geo_ip2country_tbl`, state that the service is
+   country-only, and name `ores.http` as the consumer rather than
+   `ores.iam`.
+2. Fix the other stale ground truth. `projects/modeling/system_model_foundation.org`
+   and `ores.utility.hpp` both repeat the stale claims. The audit's step 4
+   applies: the documents lead, so a discrepancy in them is a document bug.
+3. Drop the unused PUBLIC `ores.geo.lib` link from
+   `projects/ores.iam/core/src/CMakeLists.txt`. That component contains no
+   geo symbol.
+4. Fill `See also` with id links.
+5. Rewrite the tests so they can fail. Seed a known range in
+   `ores_geo_ip2country_tbl`, assert a literal country code for a public
+   address, add an `invalid_address` case, and drop the two cases that
+   assert on a plain struct.
+6. Decide the data path. Either wire the dq publish function into the
+   recreate flow, beside the fpml and iso equivalents, or record the
+   emptiness as accepted in the overview and in the service. Leaving it
+   undocumented is the worst option.
+7. Hygiene. Drop the unused `<optional>` include, drop or use
+   `database_not_available`, and correct the script name in the header
+   comment.
+8. Decide the two umbrella headers that nobody includes. Keep them with
+   corrected text, or delete them.
 
 * Test Scenarios
 

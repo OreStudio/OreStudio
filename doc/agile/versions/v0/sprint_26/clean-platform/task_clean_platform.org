@@ -57,9 +57,91 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | pass | Baseline before any edit. `check_component_drift.py --component platform --dry-run` reports a component it cannot name, because there is no catalogue row. `regenerate_cmake_component_files.py --component ores.platform --check` reports 2 stale files, `src/component_files.cmake` and `tests/component_files.cmake`, each missing the generated marker. |
+| B02 | pass | 0 entity, junction, operation and message models. `modeling/` holds `component_overview.org`, `ores.platform.puml` and `ores.platform.png`. |
+| B03 | pass | 32 production C++ files classified, 23 headers and 9 sources, plus 7 files under `tests/`. Five public artefacts have no consumer anywhere: `unreachable.hpp`, `attributes.hpp`, `process::get_hostname()`, `file::open_c_file()` and `datetime::is_valid_iso8601_date()`. `network_info.cpp` duplicates the MAC enumeration in two near-identical functions. Three of the nine source files have no test. |
+| B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. |
+| B05 | pass | The only live capture naming the component is this story. No in-flight branch touches it. |
+| M01 to M08 | not applicable | No org model, so there is no format to migrate, no profile to bind, no feature namespace, no table, no wire type, no junction, no custom type binding and no model fragment. |
+| M09 | not applicable | No model, so no legacy fragment to find in one. |
+| M10 | fail | `component_overview.org` claims a dependency on `ores.utility` that the build does not have, omits `attributes.hpp`, `unreachable.hpp` and most of the `process` facet, and carries an empty `See also`. |
+| P01 to P06 | not applicable | No entity and no protocol, so no canonical verb, no owned subject, no registrar, no operation model, no consumer to migrate and no event cache. |
+| G01 | not applicable | No model, so nothing regenerates. |
+| G02 | fail | Dead public headers and symbols remain, and `network_info.cpp` duplicates the MAC enumeration. |
+| G03 | fail | The two `component_files.cmake` files carry no generated marker. |
+| G04 | not applicable | No generated code to review against the component's best hand-written code. |
+| G05 | fail | `build/scripts/generate_component_puml.py` loses brace sync on a one-line `enum class`, so a diagram refresh deletes the `time_unit` members and the whole `relative_time_formatter` class. A dry run reproduces it. |
+| G06 | fail | The same two files as G03. |
+| W01 to W04 | not applicable | No entity, registrar, handler, populate script or SQL script. |
+| S01, S02 | not applicable | No entity and no shell unit. |
+| H01 | pass, with findings | `validate_docs.py` passes for the component. The leftover-artefact, naming and platform-placement checks are clean. The diagram item is the G05 defect, so the audit record here is this task. |
+| H02 | fail | Five dead public artefacts, and `network_info.cpp` duplicates the MAC enumeration in about 230 lines that collapse to about 60. |
+| H03 | fail | Five end-of-line comments and six narration comments. |
+| V01 | pending | Whole-tree build, measured after the work. |
+| V02 | fail | Three of nine source files have no test, ten of 88 test cases are vacuous, and `datetime::to_db_string` has no test although 41 external files call it. |
+| V03, V04 | not applicable | No entity, no SQL and no generated shell command. |
+| V05 | pending | Every gate, measured after the work. |
+| V06 | not applicable | No catalogue row and no models, so the component cannot join `COMPONENTS_UNDER_TEST`. Recorded as the programme gap, not a defect of this component. |
 
 * Notes
+
+Survey, 2026-09-25, at trunk `5de59e3fb8`. Run by an agent that did not
+write the component, against the clean standard.
+
+- Scale. 32 production C++ files in 23 headers and 9 sources, with 7 files
+  under `tests/`. 88 test cases, 201 assertions, and 458 files outside the
+  component include it. The largest surface is
+  time, where `ores.platform/time/datetime.hpp` has 400 includers, 397 of
+  them outside the component.
+- Suites pass. `ores.platform.tests` runs green from the last build, 201
+  assertions in 88 test cases.
+- What is already clean. No leftover artefact, no commented-out code, no
+  TODO, every file and type name snake_case, folder morphology matches the
+  signed-off catalogue, and the tests target is registered with `add_test`
+  and `add_dependencies(run_all_tests ...)`.
+
+Work items, in the order they land.
+
+1. Delete `include/ores.platform/unreachable.hpp`. It has no includer, and
+   `std::unreachable()` is the portable C++23 facility the repo already
+   uses at `ores.nats/src/domain/wire_format.cpp:53`.
+2. Delete `include/ores.platform/attributes.hpp`. `ORES_NO_UNIQUE_ADDRESS`
+   is used only by its own three `#define`s, and `[[no_unique_address]]` is
+   the standard attribute every supported compiler has. Update the audit
+   page, which names the header.
+3. Delete `process::get_hostname()`. It duplicates the live
+   `net::get_hostname()` byte for byte and has no caller.
+4. Delete `file::open_c_file()`. No caller, not even a test.
+5. Delete `datetime::is_valid_iso8601_date()`. No caller. It was added for
+   the retired Qt `validateInput()` path.
+6. Collapse the duplicated MAC enumerators in `network_info.cpp`. Two
+   hundred and thirty lines to about sixty, one enumerator plus two
+   formatters.
+7. Add tests for the three untested source files, `environment.cpp`,
+   `real_environment_provider.cpp` and `executable.cpp`. The environment
+   facet already ships the test seam its own suite never uses.
+8. Add tests for untested public API on covered files, starting with
+   `datetime::to_db_string`, which 41 external files call.
+9. Remove the vacuous tests and checks. Five `f == f` stability checks,
+   two `has_value()` cases with no else, and three assert-nothing cases.
+10. Hygiene. Move the five end-of-line comments above their code, drop the
+    six narration comments, correct the `k_timestamp_format` doc claim, and
+    add the missing `<vector>` include to `file.hpp`.
+11. Rewrite `component_overview.org`. Fix the dependency claim, list every
+    facet, drop nothing that exists, fill `See also` with id links, and
+    bump `#+updated`.
+12. Fix the generator defect, then refresh the diagram. The automated pass
+    must not delete content, so the generator is fixed at its source with a
+    regression test in the codegen suite, and only then is the diagram
+    refreshed. The `net` and `process` facets hold free functions the
+    automated pass cannot draw, so they are hand-authored below the
+    sentinel.
+13. Regenerate the two `component_files.cmake` files, which closes G03 and
+    G06 for this component.
+
+Not this component's work. The other 145 stale `component_files.cmake`
+files are one repo-wide sweep, and the registry gap needs one programme
+decision. Both are recorded on the programme story.
 
 * Test Scenarios
 

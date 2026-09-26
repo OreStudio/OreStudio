@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-service:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-service
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
-#+updated: 2026-09-23
-#+environment:
+#+updated: 2026-09-26
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C649F853-C3F9-47E1-AF47-EB84DD27EC2F][Clean ores.service to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ ores.service passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C649F853-C3F9-47E1-AF47-EB84DD27EC2F][Clean ores.service to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Complete; the record is written, the whole tree builds and every gate is green. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | Raise the PR.                          |
+| Last touched | 2026-09-26                             |
 
 * Acceptance
 
@@ -55,11 +55,128 @@ record each item's result in the table below.
 7. Structure and hygiene (H01 to H03).
 8. Verification (V01 to V06), ending with the registry entry.
 
+The branch adds the items the standard gained on 2026-09-26 -- B06, G07,
+G08, H04, V07 and V08 -- because the survey of the component was run
+against the 48-item checklist.
+
+The record below was written by the agent that did the work. The survey
+it builds on is in the Notes, and it was run 2026-09-23 by an agent that
+did not.
+
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | pass | Baseline recorded at trunk =d0597b6a3a= before any edit. ores.service has no =component_catalogue.org= row, so the drift gate cannot name it: =check_component_drift.py --component ores.service --dry-run= answers =Unknown component: 'ores.service'=, and =--all --dry-run= ends =No drift: generated output matches the checked-in tree=. =check_model_drift.py= reports no drift with one known exception (=reporting=). =regenerate_cmake_component_files.py --component ores.service --check= named 2 stale files at baseline, =src/component_files.cmake= and =tests/component_files.cmake=, and reports =All component_files.cmake up to date= now. |
+| B02 | pass | 0 entity, junction, operation, message, field-group and module models. =projects/ores.service/modeling/= holds =component_overview.org= (=#+type: ores.codegen.component=), =ores.service.puml= and =ores.service.png=. |
+| B03 | pass | 20 production C++ files (17 headers, 3 sources) and 8 files under =tests/= (7 suites and =main.cpp=). None is generatable: the component has no model, so no archetype produces any of them. The infrastructure that stays hand-written is the three runners and their shared lifecycle header, the host envelope, the two messaging helper headers, the request-context builder, the standard option set, the heartbeat publisher, the systemd notification, the exit-code contract, and the umbrella/export/error-code headers. Dead and removed on this branch: =host_runner_sync.hpp= and =host_runner_sync_impl.hpp= (superseded by the merged host runner), =exit_code_name()= and =to_exit_code()=, and the exported declaration of =make_context_from_jwt()=. |
+| B04 | pass | The component owns no NATS subject. It references three, all generated constants: =telemetry::messaging::service_heartbeat_message::nats_subject=, =ores::workflow::messaging::step_completed_event::nats_subject= and =get_step_result_request::nats_subject=. A grep for subject-shaped string literals outside those constants returns nothing. Its protocol headers are all generated or declared: the three workflow step command headers (now declared once, in =ores.workflow.api=), and =ores::nats::headers=' =authorization=, =delegated_authorization=, =bearer_prefix=, =x_error=, =nats_correlation_id=, =nats_session_id=, =x_workspace_id=, =x_workspace_resolution= and =x_content_encoding=. |
+| B05 | pass | No open capture names ores.service. The two nearest captures, =ores.controller.service crashes with corrupted UTF-8 byte after launching a service= and =Drop dead ores_controller_service_instances_tbl/events_tbl=, both concern =ores.controller= and neither collides with this work. No in-flight branch touches the component: the fleet's =feature/clean-*= branches are other components'. |
+| B06 | pass, findings fixed | Consumer census by =git grep= over =projects/= excluding the component and its tests. Production consumers, counted as including files outside the component: 424 include =handler_helpers.hpp=, 226 include =request_context.hpp=, 19 include =host_runner.hpp=, 18 include =heartbeat_publisher.hpp=, 17 include =domain_service_runner.hpp=, 17 include =exit_codes.hpp=, 16 include =standard_service_options.hpp=, 14 include =workflow_helpers.hpp=, 4 include =error_code.hpp= and 1 includes =signing_service_runner.hpp=. Three symbols had none and are gone: =exit_code_name()= and =to_exit_code()= (0 hits anywhere, now deleted) and =host_runner_sync_options= (0 hits outside the component; the type is now the single =host_runner_options=). =make_context_from_jwt()= had no consumer outside its own translation unit, so its exported declaration is deleted and the definition is internal. Every remaining public symbol has a production consumer. |
+| M01 | not applicable | No org entity model. |
+| M02 | not applicable | No entity model, so no variability profile to bind. |
+| M03 | not applicable | No model states a property. |
+| M04 | not applicable | No model feature to place in a namespace. |
+| M05 | not applicable | No entity, so no table to describe. |
+| M06 | not applicable | The component exchanges wire types but declares none: the messages it sends and receives are modelled by =ores.workflow.api= and =ores.telemetry.core=. It carries no hand-written protocol header of its own. |
+| M07 | not applicable | No junction. |
+| M08 | not applicable | No org-model custom-type binding. |
+| M09 | not applicable | No model, so no legacy fragment to find in one. The hand-written code carries no Qt, Wt or retired-message residue; see H02. |
+| M10 | fail, fixed | The overview described only the runners, listed four entry points of eleven, claimed two dependencies of eight, carried a stale =#+updated: 2026-05-20=, and its =See also= was empty. It is rewritten with the six required sections, the correct entry points and dependencies, a =Facets= section, and ten id-linked references. =validate_docs.sh= passes for all 40 components. |
+| P01 | not applicable | No entity, so no canonical entity protocol. |
+| P02 | pass | The component owns no subject, so nothing is declared twice. Every subject it references is a generated constant, listed under B04. The one place reachable from here where a subject or header was not declared once -- the workflow step command headers -- is fixed, see P03. |
+| P03 | pass, finding fixed | No duplicate subject, no unregistered derived message and no declared message that nothing serves. The finding is a header rather than a subject: =X-Workflow-Step-Id=, =X-Workflow-Instance-Id= and =X-Tenant-Id= were declared as constants in =ores.service= and written as raw literals in =workflow_engine.cpp=, so producer and consumers agreed by coincidence. They now live in =ores.workflow.api= beside the event they describe, the engine uses them, and the four consumers in =ores.iam=, =ores.refdata= and =ores.ore= follow in the same commit. |
+| P04 | not applicable | The component has no operation model of its own. The two operations it exchanges -- the step result query and the step completion event -- are modelled in =ores.workflow.api= and reached through their generated constants. |
+| P05 | pass | The header move is a protocol change, and every consumer follows it in the same piece of work: =workflow_engine.cpp=, the two IAM handlers, the refdata party handler and the ore import handler. The whole-tree build is the proof; see V01. |
+| P06 | not applicable | No event cache. |
+| G01 | not applicable | No model, so nothing regenerates. The only generated artefacts are the two CMake source lists, and G06 proves those regenerate exactly. |
+| G02 | pass | No hand-written file that the generation supersedes remains, because no generation reaches this component. The two files deleted on this branch are a duplicate, not a superseded artefact; see H02. |
+| G03 | fail, fixed | Both =component_files.cmake= files carried no generated marker, and the =src= one still carried the retired "headers must be listed for AUTOMOC" comment. Both are regenerated and now carry the marker, their template name and the current comment. No hand-written file carries the marker: the only two hits are the two generated lists. |
+| G04 | not applicable | No generated code. |
+| G05 | pass, defect fixed | One generator defect found. =generate_component_puml.py= matched an enum value against the whole stripped line, so a Doxygen trailing comment on the same line dropped the value; =exit_code= is written that way and its diagram box arrived empty, which means a refresh would have deleted the seven values. The parser now strips a trailing line or block comment first, and =projects/ores.codegen/tests/test_plantuml_component_parse_enum_trailing_comment.py= pins it with three cases over five enum-value forms. |
+| G06 | fail, fixed | =regenerate_cmake_component_files.py --component ores.service --check= reports =All component_files.cmake up to date=. The tree-wide check still names many other components, which is the recorded sweep the standard describes, not this component's finding. |
+| G07 | pass | The generator's dry run was read before the refresh: it added four types, the seven enum values and no deletions, so the refresh could not destroy correct content. The manual pass sits below the sentinel, and a second automated run reports =no changes=, which proves the section survives a refresh. The rendered image was read, not merely regenerated. |
+| G08 | pass, document bug fixed | =include/ores.service/ores.service.hpp= carries the outermost namespace =@brief= that doxygen renders, and each facet has a header of its own (=config/=, =messaging/=, =service/=). The brief's claim that the lifecycle is shared by "the nine domain service binaries" was false -- sixteen service binaries and three tools call it -- and is corrected. The standard notes that facet-header =@brief= coverage is uneven tree-wide and filling the gaps is separate work, so the absent facet briefs are not recorded as findings here. |
+| W01 | not applicable | No registrar family and no entity, so no composition point. |
+| W02 | not applicable | The component checks permissions on behalf of handlers; it checks none of its own and seeds none. |
+| W03 | not applicable | No populate script names the component. |
+| W04 | not applicable | The component owns no SQL script, table, trigger or policy. |
+| S01 | not applicable | No entity or junction, so no shell command unit. |
+| S02 | not applicable | No command, so no recipe and no destructive flag. |
+| H01 | pass, findings fixed | The Component Architecture Audit ran and its record is this task. Shape: a simple component, matching the signed-off folder catalogue (=CMakeLists.txt=, =include/=, =src/=, =tests/=, =modeling/=). No leftover artefact, no unsign-off folder name, every file name snake_case and matching its type, and no platform-specific code (H04). Registries: the System Model lists the component (=projects/modeling/ores.puml:95=); =component_catalogue.org= has no row because the component has no models, which is the recorded V06 exception rather than a stale registry; there is no messaging reference to check because the component serves no subject. Findings fixed: the diagram (refreshed and hand-authored, image read), the overview (rewritten), the namespace mismatch of =notify_systemd_ready()= (moved into =ores::service::service= to match its facet), the three lifecycle tails (collapsed), the two host-runner envelopes (merged), and the public API nothing consumes (deleted, see B06). Complexity measure, =lizard= over =include/= and =src/=: 936 NLOC over 44 functions, average cyclomatic complexity 3.0, average function NLOC 14.1; the top function is =ores::service::messaging::stamp= at CCN 15 and the top file by average complexity is =request_context.cpp= at 8.0. The same command over the baseline gives 972 NLOC over 38 functions, average CCN 3.9 and average NLOC 17.0, so the reshape moved the same behaviour into smaller units. |
+| H02 | pass, findings fixed, one recorded exception | Three duplications collapsed. (1) =run()=, its no-database overload and =run_signing()= each carried the same registration-and-drain tail, and the two =run()= overloads also duplicated the signal setup and the abortable JWKS fetch in full; the tail is now one =announce_ready_and_drain()=. (2) The two host runners declared byte-identical options structs and repeated the same parse-log-run-log-failure body; one =host_runner_options= and two logging helpers replace them. (3) The workflow step command headers were declared in one component and written as literals in another. Three dead public symbols deleted (see B06). No Qt or Wt fragment, no commented-out code and no dead code remains. Recorded exception: =has_permission()= returns true when the caller's permission list is empty, which the code comments call a pre-RBAC pass-through. It is a deliberate compatibility rule on a security boundary, and removing it changes behaviour, so it is recorded rather than quietly changed here; the item cannot pass while it stands and the component is clean apart from it. |
+| H03 | pass, findings fixed | Comment pass over every file the branch touches. Two comments that only restated the code are removed (=the wildcard label and the wildcard example in =handler_helpers.hpp=), =error_reply()= now carries the doxygen brief its neighbours have instead of a two-line restatement, and the "fall through to the standard Authorization header" comment went with the reordering it described. The Doxygen =///<= trailing comments on the =exit_code= enumerators are the documented exception to the end-of-line rule and stay. |
+| H04 | pass | No platform-specific code. A grep for =_WIN32=, =__linux__=, =__APPLE__=, compiler and architecture macros, and the raw OS headers (=unistd.h=, =windows.h=, =sys/*.h=) over =include/= and =src/= returns nothing. The one conditional in the component, =BOOST_ASIO_HAS_LOCAL_SOCKETS= in =systemd_notify.cpp=, is a Boost feature test rather than a platform macro, and it guards the AF_UNIX path the notification needs. |
+| V01 | pass | =compass build= over the whole tree reaches 100% with exit code 0, which covers the shared headers this branch changed: =workflow_events.hpp= and the two ores.service headers that 400-plus translation units include. |
+| V02 | pass | The =ores.codegen= suite passes at 591. The =ores.service= suite is new on this branch and passes 39 test cases and 104 assertions. The =ores.compass= suite passes at 230 with 1 skipped. Every count was re-measured after the final rebase onto trunk. Honest limit: the fleet is not provisioned in this environment -- all 24 units are =missing= and NATS is down -- so the suites ran with PostgreSQL up and NATS down, and =service_lifecycle.hpp='s entry points, which need a live broker and an IAM JWKS endpoint, are exercised only by a running fleet. The component's own suites need no broker: =make_request_context= is driven through an HS256 signer, and the readiness notification through a real AF_UNIX datagram socket. |
+| V03 | not applicable | No entity and no service, so no database to recreate. The database was up and was not touched: the branch changes no SQL. |
+| V04 | not applicable | No generated shell command. |
+| V05 | pass | Every gate run and green. Component drift: =--all --dry-run= ends =No drift=; model drift: no drift with one known exception (=reporting=); protocol twin coverage: all 34 generated protocol headers in 4 components have a TypeScript twin; handler permissions: seeded for 3 components and 166 codes; populate references: resolve; shell recipe inventory: =--check= exits 0; CMake source lists: ores.service up to date; =validate_docs.sh=: all 40 components pass. |
+| V06 | not applicable | The component has no =component_catalogue.org= row and no models, and =COMPONENTS_UNDER_TEST= lists catalogue components, so the registry cannot hold it. Recorded as the infrastructure-tier gap the standard itself describes: "a registry that admits only model-bearing components excludes the whole infrastructure tier". =check_component_drift.py --all= passes without it. |
+| V07 | pass | Every test asserts a literal expected value or an observable side effect, and each fails when its subject is stubbed: the exit-code test fails on a renumbered enum, the permission tests on a permission check that always answers true, the context tests on a tenant or party that does not match the claim, the host-runner tests on a runner that skips the application, the readiness test on a notification that is not sent or is sent after the variable is unset, and the decode test on a codec that returns an empty object. One recorded caveat: the =cached_step_result= test pins the struct's default outcome rather than calling a subject. It is kept because the default is wire-visible -- a cached step replayed without an explicit outcome would publish whatever the default says -- but it is the weakest test in the suite. |
+| V08 | pass | The three source files each have a suite: =config/standard_service_options.cpp= by =standard_service_options_tests.cpp=, =service/request_context.cpp= by =request_context_tests.cpp=, and =service/systemd_notify.cpp= by =systemd_notify_tests.cpp=. The headers are exercised through the same suites. The one header with no direct test is =service/service_lifecycle.hpp=: its entry points need a live broker and a JWKS endpoint, so a unit test would assert the mock, not the lifecycle; it is recorded here as the reason, and the fleet exercises it on every service start. |
 
 * Notes
+
+Survey, 2026-09-23, at the sprint's start, by an agent that did not write the
+component: 0 entity, junction or operation models; 21 C++ files outside tests,
+0 of them generated; 2 messaging headers, 2 of them hand-written. Every claim
+was re-verified on this branch, and the file count moved from 21 to 20 because
+the duplicate host runner pair was deleted.
+
+- What the component is. It is the envelope around a service, not a service:
+  the lifecycle, the host body, the JWT-to-context step, the handler helpers,
+  the heartbeat and the readiness notification. It owns no model, no subject
+  and no wire type, so the model, protocol-generation, SQL and shell items are
+  not applicable rather than unexamined.
+- Why it is not in the registry, and cannot be. =COMPONENTS_UNDER_TEST= lists
+  =component_catalogue.org= entries, and a catalogue entry is a modeling
+  directory codegen can read. ores.service has none. The standard records the
+  gap and names the components that share it; this task adds ores.service to
+  that list rather than inventing a second registry.
+- The three duplications were the real findings. The lifecycle tail existed
+  three times, the host-runner envelope twice, and the workflow header
+  vocabulary twice across two components. Each is the kind of copy that
+  agrees until someone edits one side.
+- The generator defect was found by doing the diagram, not by looking for it.
+  =exit_code= is the only enum in the tree that documents its enumerators with
+  Doxygen trailing comments, and the parser dropped every value because of
+  them. Only a refresh that was read line by line found it, which is the
+  standard's own G07 caution in practice.
+- The test suite is the largest single piece of work. The component had
+  =main.cpp= and nothing else, so a surface that every service depends on had
+  no executable specification at all. The new suite is 7 files and 39 cases,
+  and it pins the things a refactor could break silently: the exit-code
+  numbers, the permission wildcards, the JWT rejection classes, and the
+  readiness datagram's exact bytes.
+- The standard's own item count was wrong. It claimed "the standard now holds
+  47 items" while the tables hold 48; counted mechanically section by section
+  (6 + 10 + 6 + 8 + 4 + 2 + 4 + 8). Corrected in place in
+  =component_clean_standard.org=, since the audit fixes a stale ground-truth
+  document where it finds one.
+- The whole-tree build earned its keep. The first tree-wide run failed on a
+  defect no narrower target could see: =boost::asio::signal_set= is not
+  movable, so the helper that returned one by value compiled for the library
+  and for the component's tests -- neither instantiates the template -- and
+  broke only where a service binary does. The helper now fills a set the
+  caller constructs. The local targets were green throughout, which is the
+  argument for V01.
+- The branch was rebased onto trunk =7ce4d3ef09= before the final measurement,
+  because trunk had advanced past the base the work started from. The baseline
+  in B01 is the trunk the survey ran against; the rebase replayed clean and
+  every count and gate result here was re-measured on the rebased tree.
+
+Work items, and their outcome.
+
+1. Collapse the three service lifecycles onto one tail. Done, see H02.
+2. Merge the two host-runner envelopes and their duplicate option struct.
+   Done, see H02.
+3. Declare the workflow step command headers once, at their owner. Done, see
+   P03; the engine and four consumers follow.
+4. Delete the public API nothing consumes. Done, see B06.
+5. Move =notify_systemd_ready()= into its facet namespace. Done, see H01.
+6. Fix the diagram generator, then refresh and hand-author the diagram. Done,
+   see G05 and H01.
+7. Rewrite the overview. Done, see M10.
+8. Give the component an executable specification. Done, see V02, V07, V08.
 
 * Test Scenarios
 
@@ -67,6 +184,10 @@ Manual QA scenarios (scaffolded via =compass add test_scenario=)
 that verify this task. Link
 new ones here as they're created; the scenario doc itself links back
 via its "Verifies task" field.
+
+No scenario applies. No user reaches the component directly; it is a library
+that the service binaries and three tools link. The component suite, the
+whole-tree build and the codegen gates are the evidence.
 
 | Scenario | State | Notes |
 |----------+-------+-------|

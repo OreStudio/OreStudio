@@ -17,5 +17,4 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-drop function if exists ores_dq_code_domain_preview_fn;
 drop function if exists ores_dq_code_domains_publish_fn;

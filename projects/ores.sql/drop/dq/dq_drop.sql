@@ -57,37 +57,22 @@
 
 -- FPML artefact families. The staging table goes before the functions that
 -- publish from it, so a failed drop leaves nothing that reads a dead table.
-\ir ./dq_account_types_population_functions_drop.sql
 \ir ./dq_account_types_artefact_drop.sql
-\ir ./dq_asset_classes_population_functions_drop.sql
 \ir ./dq_asset_classes_artefact_drop.sql
-\ir ./dq_asset_measures_population_functions_drop.sql
 \ir ./dq_asset_measures_artefact_drop.sql
-\ir ./dq_benchmark_rates_population_functions_drop.sql
 \ir ./dq_benchmark_rates_artefact_drop.sql
-\ir ./dq_business_centres_population_functions_drop.sql
 \ir ./dq_business_centres_artefact_drop.sql
-\ir ./dq_business_processes_population_functions_drop.sql
 \ir ./dq_business_processes_artefact_drop.sql
-\ir ./dq_cashflow_types_population_functions_drop.sql
 \ir ./dq_cashflow_types_artefact_drop.sql
 \ir ./dq_coding_schemes_population_functions_drop.sql
 \ir ./dq_coding_schemes_artefact_drop.sql
-\ir ./dq_entity_classifications_population_functions_drop.sql
 \ir ./dq_entity_classifications_artefact_drop.sql
-\ir ./dq_local_jurisdictions_population_functions_drop.sql
 \ir ./dq_local_jurisdictions_artefact_drop.sql
-\ir ./dq_party_relationships_population_functions_drop.sql
 \ir ./dq_party_relationships_artefact_drop.sql
-\ir ./dq_party_roles_population_functions_drop.sql
 \ir ./dq_party_roles_artefact_drop.sql
-\ir ./dq_person_roles_population_functions_drop.sql
 \ir ./dq_person_roles_artefact_drop.sql
-\ir ./dq_regulatory_corporate_sectors_population_functions_drop.sql
 \ir ./dq_regulatory_corporate_sectors_artefact_drop.sql
-\ir ./dq_reporting_regimes_population_functions_drop.sql
 \ir ./dq_reporting_regimes_artefact_drop.sql
-\ir ./dq_supervisory_bodies_population_functions_drop.sql
 \ir ./dq_supervisory_bodies_artefact_drop.sql
 
 -- Remaining artefact families

@@ -376,7 +376,6 @@ def get_schema_template_mappings():
         ("sql_schema_table_create.mustache", "_create.sql"),
         ("sql_schema_notify_trigger.mustache", "_notify_trigger.sql"),
         ("sql_schema_artefact_create.mustache", "_artefact_create.sql"),
-        ("sql_populate_function_refdata.mustache", "_population_functions.sql"),
     ]
 
 

@@ -18,11 +18,4 @@
  *
  */
 drop function if exists ores_dq_datasets_list_publishable_fn;
-drop function if exists ores_dq_image_preview_fn;
-drop function if exists ores_dq_images_publish_fn;
-drop function if exists ores_dq_country_preview_fn;
-drop function if exists ores_dq_countries_publish_fn;
-drop function if exists ores_dq_currency_preview_fn;
-drop function if exists ores_dq_currencies_publish_fn;
-drop function if exists ores_dq_preview_ip2country_population_fn;
 drop function if exists ores_dq_ip2country_publish_fn;

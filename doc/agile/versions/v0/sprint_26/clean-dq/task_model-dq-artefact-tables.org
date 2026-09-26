@@ -70,12 +70,31 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 4. Foreign models | DONE | All 6 switched, 3 as entities and 3 as junctions; see Step 4 results |
 | 5. Derivable tables | PARTIAL | 4 of 5 switched; =coding_schemes= needs a model; see Step 5 results |
 | 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
-| 7. Publication template | TODO | Unblocked |
+| 7. Publication template | DONE | The template generated a retired design; deleted with 21 dead files; see Step 7 results |
 | 8. Remaining models | TODO | The FPML family is blocked; the rest is unblocked |
 | 9. Regenerate C++ | TODO | |
 | 10. Eventing headers | TODO | |
 | 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
 | 12. Divergent tables: declare the projection | DONE | All 11 landed; divergent is 0; see Step 12 results |
+
+* Step 7 results: the publication functions are not an automation opportunity
+
+Run on 2026-09-26. Step 7 said "either absorb the 21 handcrafted files into =sql_populate_function_refdata.mustache=, or delete the template and record why". The answer is delete, and the 21 files go with it.
+
+**The template generates a retired design.** It emits =ores_dq_preview_<singular>_population= and =ores_dq_populate_<plural>=, the second writing into =ores_refdata_<plural>_tbl=. Both halves are gone from the architecture: [[proj:doc/plans/2026-05-14-dq-publish-pattern.org][the DQ publish pattern]] moved publish ownership into the target services as =<service>_publish_<entity>_from_dq_fn=, and the DQ-side publish functions that wrote to non-DQ tables were deleted. The artefact-type registry records this: =ores_dq_artefact_types_tbl= carries =target_subject= where it once carried =populate_function=, so nothing dispatches to a function by name any more. The one artefact still using the template's own naming, =ores_dq_preview_ip2country_population_fn=, was a leftover from when the template was wired.
+
+**The preview functions have no caller.** For all 21, the only reference in the tree is a =drop function if exists= statement. =publish_from_dq_handler.cpp= dispatches exactly six functions by subject, all of them publish functions, none a preview. So the previews are dead code, not an unwired feature.
+
+**What was removed**, in full: the template and its org source; the legacy =get_schema_template_mappings= entry that named it; 15 files that held nothing but a preview; the four previews in =dq_population_functions_create.sql=; the preview in each of the five files that also hold a live publish function; and every stale =drop function if exists= those left behind. Six files remain, holding exactly the six functions the handler and the DQ service call: =ores_dq_datasets_list_publishable_fn=, =ores_dq_ip2country_publish_fn=, and the four DQ-owned publishes for badges, code domains and coding schemes.
+
+**A serious defect surfaced while doing this.** =ores_dq_coding_schemes_publish_fn= was defined **twice**, in =dq_population_functions_create.sql= and =dq_coding_schemes_population_functions_create.sql=, and =dq_create.sql= includes both. The first definition expires **every** active coding scheme for the target tenant before inserting; the second scopes =replace_all= to the rows that dataset published, validates the mode, and is =security definer=. The second include wins, so the live behaviour was always the safe one — but which definition was live depended entirely on line order in an aggregator, and the destructive copy sat one reorder away from production. The duplicate is gone; the surviving definition is unchanged, so behaviour is unchanged.
+
+**Two smaller findings recorded, not fixed:**
+
+- =ores_dq_bundle_preview_fn=, in =dq_bundle_publication_create.sql=, is also uncalled. It is a different function from the ones above — bundle-level rather than per-artefact — and it lives in hand-written SQL that step 8 owns.
+- =dq_population_functions_create.sql='s own usage comment advertised the removed preview step. Corrected, and it now records why the previews went.
+
+**Figures.** Codegen suite 684 passing; validator 0 warnings; inventories 42 up to date. 47 files changed: 2 template deletions, 1 source edit, 21 create files and 21 drop files, plus the two aggregators.
 
 * Step 12 results (part two)
 

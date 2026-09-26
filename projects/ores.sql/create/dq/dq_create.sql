@@ -148,21 +148,6 @@
 \ir ./dq_population_functions_create.sql
 
 -- FPML entity population functions
-\ir ./dq_account_types_population_functions_create.sql
-\ir ./dq_asset_classes_population_functions_create.sql
-\ir ./dq_asset_measures_population_functions_create.sql
-\ir ./dq_benchmark_rates_population_functions_create.sql
-\ir ./dq_business_centres_population_functions_create.sql
-\ir ./dq_business_processes_population_functions_create.sql
-\ir ./dq_cashflow_types_population_functions_create.sql
-\ir ./dq_entity_classifications_population_functions_create.sql
-\ir ./dq_local_jurisdictions_population_functions_create.sql
-\ir ./dq_party_relationships_population_functions_create.sql
-\ir ./dq_party_roles_population_functions_create.sql
-\ir ./dq_person_roles_population_functions_create.sql
-\ir ./dq_regulatory_corporate_sectors_population_functions_create.sql
-\ir ./dq_reporting_regimes_population_functions_create.sql
-\ir ./dq_supervisory_bodies_population_functions_create.sql
 \ir ./dq_coding_schemes_population_functions_create.sql
 \ir ./dq_badge_severities_population_functions_create.sql
 \ir ./dq_badge_definitions_population_functions_create.sql

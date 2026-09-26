@@ -106,6 +106,20 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part nine: dataset's table is reproducible, but its publish verb blocks the migration
+
+Run on 2026-09-26. A =dataset= model was written and its table verified. It reproduces the hand-written =dq_dataset_create.sql=: every column (the five nullable ones rendered as =text null= rather than =text=, which is the same thing), the bitemporal primary key, the exclusion constraint and the checks, and **both natural keys** -- =(tenant_id, code)= from the flagged key, and =(tenant_id, name, subject_area_name, domain_name)= from the extra-index row. The generated table adds one redundant index on =(tenant_id, id)=, which the profile emits for every uuid-surrogate entity. So part eight's syntax works, and =dataset= is the first entity whose second natural key is expressed by it.
+
+**The migration cannot land, because the hand-written handler owns a verb the generated stack does not have.** =dataset_handler= serves =publish_datasets_request= through a =publish= method wired into the bundle-publish workflow -- it includes =bundle_publish_workflow.hpp= and =publication_service.hpp= and carries a =dataset_publish_params= payload. The generated handler has list, get, put, delete and history. Migrating the stack would silently drop the publish path.
+
+**Scoping the model to its SQL facet is not available either.** Disabling =ores.cpp.protocol=, =nats-handler=, =nats-sub-registrar= and =service= on the model still generates the domain, repository, generator, eventing and presentation facets, so the C++ moves anyway; and a generated repository breaks the hand-written =dataset_service=, which calls the old API -- exactly the failure methodology produced before it was trimmed. Restricting a model to one facet is therefore not a smaller migration; it is the same migration with the pieces left ungenerated.
+
+**So the order changes again.** =dataset= waits on modelling its **publish operation**, which is the operation shape part seven listed and is a larger decision than the entity. The FSM pair is the better next unit: it has no bespoke verbs, it is table-backed, and part eight supplied both pieces of vocabulary it needs -- two =:natural_key:= flags for =(machine_id, name)= and one extra-index row for =machine_id=.
+
+**A verification error worth recording, because it is the second in two rounds.** The first comparison in this round reported the generated table as identical to the hand-written one. It was comparing a file with itself: =git show HEAD:<singular path>= against the working =<singular path>=, when the generator writes the **plural** path. The conclusion happens to survive the corrected comparison, but the check did not test anything. Round twenty-one's error was a truncated grep; this one is a wrong path. Both are "checked the wrong thing" rather than "checked badly", and both were caught only by looking again at the output rather than at the claim.
+
+**Evidence.** No source change: the model and the regenerated SQL are in =git stash= ("wip: dq dataset model (table verified incl. both natural keys)"), the working tree is clean and =check_component_drift.py --component dq= reports no drift on =main=. The table comparison above is the corrected one, against =dq_datasets_create.sql=.
+
 * Step 8 part eight: the vocabulary exists, and three rounds of "gaps" were search failures
 
 Run on 2026-09-26. Parts five, six and seven reported that the remaining entities need model vocabulary the component does not have. **Most of that was wrong.** The vocabulary exists. I did not find it because I searched the models instead of the templates.

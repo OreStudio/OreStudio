@@ -109,7 +109,8 @@ Work items, in the order they land.
    country-only, and name `ores.http` as the consumer rather than
    `ores.iam`.
 2. Fix the other stale ground truth. `projects/modeling/system_model_foundation.org`
-   and `ores.utility.hpp` both repeat the stale claims. The audit's step 4
+   repeats the stale claims. The `ores.utility.hpp` stub that did too was deleted
+   on the ores.utility clean-up pass. The audit's step 4
    applies: the documents lead, so a discrepancy in them is a document bug.
 3. Drop the unused PUBLIC `ores.geo.lib` link from
    `projects/ores.iam/core/src/CMakeLists.txt`. That component contains no

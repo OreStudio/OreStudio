@@ -32,10 +32,10 @@ specific to that sandbox or also true on regular dev machines, since
 the reporting user says the service "seems to have this problem
 frequently" more broadly.
 
-The controller's existing restart/backoff (=retry_strategy=) already
-self-heals eventually (it did recover after ~8 attempts in the
-diagnosed case), so this isn't a hard outage — just a noisy,
-minutes-long crash-loop on every environment boot where it's hit.
+The controller's existing restart/backoff already self-heals eventually
+(it did recover after ~8 attempts in the diagnosed case), so this isn't a
+hard outage — just a noisy, minutes-long crash-loop on every environment
+boot where it's hit.
 
 As a stopgap (PR #1592), =ores.wt.service= is disabled by default in
 =controller_service_definitions_populate.sql= (=enabled = 0=), so fresh
@@ -59,7 +59,7 @@ accordingly.
 
 - =projects/ores.sql/populate/controller/controller_service_definitions_populate.sql= — the =enabled = 0= hotfix and its inline comment.
 - =projects/ores.controller/core/src/service/process_supervisor.cpp= — the restart/backoff logic that currently papers over the crash.
-- =projects/ores.utility/include/ores.utility/concurrency/retry_strategy.hpp= — the exponential-backoff calculator in play.
+- The exponential-backoff calculator this capture once pointed at, =ores.utility/concurrency/retry_strategy.hpp=, was deleted on the ores.utility clean-up pass: its only consumer was its own test. The backoff the controller runs is the one inside =process_supervisor.cpp=.
 
 * See also
 

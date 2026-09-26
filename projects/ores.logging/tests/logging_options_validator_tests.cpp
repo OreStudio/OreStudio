@@ -52,6 +52,10 @@ TEST_CASE("validate_accepts_console_only_options", tags) {
     BOOST_LOG_SEV(lg, ores::logging::info) << cfg;
 
     CHECK_NOTHROW(logging_options_validator::validate(cfg));
+
+    logging_options no_sink(cfg);
+    no_sink.output_to_console = false;
+    CHECK_THROWS_AS(logging_options_validator::validate(no_sink), logging_exception);
 }
 
 TEST_CASE("validate_accepts_file_only_options", tags) {
@@ -64,6 +68,10 @@ TEST_CASE("validate_accepts_file_only_options", tags) {
     BOOST_LOG_SEV(lg, ores::logging::info) << cfg;
 
     CHECK_NOTHROW(logging_options_validator::validate(cfg));
+
+    logging_options no_sink(cfg);
+    no_sink.filename.clear();
+    CHECK_THROWS_AS(logging_options_validator::validate(no_sink), logging_exception);
 }
 
 TEST_CASE("validate_rejects_options_with_no_output", tags) {

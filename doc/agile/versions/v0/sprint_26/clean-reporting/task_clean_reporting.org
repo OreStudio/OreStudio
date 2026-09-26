@@ -92,6 +92,8 @@ record each item's result in the table below.
 | M09  | Open, and not this pass's. The =widget= column survives in the four lookup models, and nothing renders a Qt artefact for this component: zero Qt paths appear in the drift check's output. The column feeds the retired Qt facet, so removing it belongs to the Qt-remnant story. | =check_component_drift.py --component reporting --dry-run= |
 | M10  | Open. The root =component_overview.org= carries only Summary, Sub-components and Entity modules. It lacks the six sections H05 requires and has no =Diagram= section. The three part overviews are complete, and =projects/ores.shell/reporting= gained one in this pass. |
 | H05  | Pass. The root overview gained the six sections, a =Diagram= section, its =.puml= and a rendered image, all read rather than regenerated. The three part overviews and the shell part carry theirs. =validate_docs.sh= reports all 40 components passing. | =validate_docs.sh=; =ores.reporting.puml= with =ores.reporting.png= |
+| G01  | Pass for the C++ and TypeScript facets. =check_component_drift.py --component reporting= exits 0 with "No drift: regenerated output matches the checked-in tree" after this pass regenerated 54 files and materialised 20. | =.audit/reporting/R8-drift.txt= |
+| G07  | Pass for this component: no generator defect was worked around, and the one model change made after the regeneration (the operations model) was regenerated rather than hand-edited. |
 | G06  | Known stale across the tree, not just here: =regenerate_cmake_component_files.py --all --check= reports stale lists for many components. The shell reporting part's two lists were regenerated in this pass. |
 
 * Notes

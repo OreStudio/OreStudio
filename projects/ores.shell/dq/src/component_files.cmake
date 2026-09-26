@@ -31,8 +31,11 @@ set(files
     "app/commands/dq/dataset_bundle_member_commands.cpp"
     "app/commands/dq/lei_entity_commands.cpp"
     "app/commands/dq/lei_relationship_commands.cpp"
+    "app/commands/dq/nature_dimension_commands.cpp"
+    "app/commands/dq/origin_dimension_commands.cpp"
     "app/commands/dq/report_definition_commands.cpp"
     "app/commands/dq/synthetic_fx_spot_config_commands.cpp"
+    "app/commands/dq/treatment_dimension_commands.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -48,6 +51,9 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/dataset_bundle_member_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/lei_entity_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/lei_relationship_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/nature_dimension_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/origin_dimension_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/report_definition_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/synthetic_fx_spot_config_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/treatment_dimension_commands.hpp"
 )

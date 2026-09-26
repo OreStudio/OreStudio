@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,26 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_DOMAIN_TREATMENT_DIMENSION_HPP
 #define ORES_DQ_API_DOMAIN_TREATMENT_DIMENSION_HPP
 
-#include <chrono>
-#include <optional>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <string>
+#include <string_view>
 
 namespace ores::dq::domain {
 
 /**
- * @brief Classifies datasets by their processing treatment level.
+ * @brief Describes how data should be treated.
  *
- * The treatment dimension indicates how much processing or transformation
- * has been applied to the data, from raw untouched data to fully processed.
+ * Describes how data should be treated. Examples: golden, provisional,
+ * deprecated.
  *
- * Standard treatment values:
- * - Raw: Unprocessed data as received from source
- * - Cleansed: Data that has undergone validation and cleaning
- * - Enriched: Data augmented with additional derived fields
- * - Aggregated: Summarized or rolled-up data
+ * The dimension records how much trust a value carries, so it is deliberately
+ * small: a code, a name and a description. Rows are authored directly rather
+ * than mirrored from an external source.
  */
 struct treatment_dimension final {
     /**
@@ -47,23 +50,22 @@ struct treatment_dimension final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique code identifying this treatment type.
+     * @brief Unique code identifying this treatment dimension.
      *
-     * This is the natural key for the dimension.
-     * Examples: "Raw", "Cleansed", "Enriched", "Aggregated".
+     * Examples: 'raw', 'cleansed', 'derived'.
      */
     std::string code;
 
     /**
-     * @brief Human-readable name for display purposes.
+     * @brief Human-readable name for the treatment dimension.
      */
     std::string name;
 
     /**
-     * @brief Detailed description of this treatment type.
+     * @brief Detailed description of what this treatment dimension classifies.
      */
     std::string description;
 
@@ -73,20 +75,55 @@ struct treatment_dimension final {
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
 
     /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
-
-    /**
      * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const treatment_dimension&, const treatment_dimension&) = default;
 };
+
+/**
+ * @brief Dispatch-key identifier for treatment_dimension, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const treatment_dimension&) {
+    return "ores.dq.treatment_dimension";
+}
 
 }
 

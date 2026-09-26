@@ -62,11 +62,11 @@
 \ir ./dq_badge_mappings_artefact_create.sql
 
 -- Dimensions
-\ir ./dq_origin_dimension_create.sql
+\ir ./dq_origin_dimensions_create.sql
 \ir ./dq_origin_dimensions_notify_trigger_create.sql
 \ir ./dq_nature_dimensions_create.sql
 \ir ./dq_nature_dimensions_notify_trigger_create.sql
-\ir ./dq_treatment_dimension_create.sql
+\ir ./dq_treatment_dimensions_create.sql
 \ir ./dq_treatment_dimensions_notify_trigger_create.sql
 
 -- Methodologies

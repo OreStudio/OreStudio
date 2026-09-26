@@ -21,8 +21,6 @@
 #define ORES_DQ_API_MESSAGING_DATA_ORGANIZATION_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/methodology.hpp"
-#include "ores.dq.api/domain/origin_dimension.hpp"
-#include "ores.dq.api/domain/treatment_dimension.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
@@ -78,106 +76,6 @@ struct get_methodology_history_response {
     bool success = false;
     std::string message;
     std::vector<ores::dq::domain::methodology> history;
-};
-
-// =============================================================================
-// Origin Dimension Protocol
-// =============================================================================
-
-struct get_origin_dimensions_request {
-    using response_type = struct get_origin_dimensions_response;
-    static constexpr std::string_view nats_subject = "dq.v1.origin-dimensions.list";
-    int offset = 0;
-    int limit = 100;
-};
-
-struct get_origin_dimensions_response {
-    std::vector<ores::dq::domain::origin_dimension> origin_dimensions;
-    int total_available_count = 0;
-};
-
-struct save_origin_dimension_request {
-    using response_type = struct save_origin_dimension_response;
-    static constexpr std::string_view nats_subject = "dq.v1.origin-dimensions.save";
-    ores::dq::domain::origin_dimension data;
-};
-
-struct save_origin_dimension_response {
-    bool success = false;
-    std::string message;
-};
-
-struct delete_origin_dimension_request {
-    using response_type = struct delete_origin_dimension_response;
-    static constexpr std::string_view nats_subject = "dq.v1.origin-dimensions.delete";
-    std::vector<std::string> codes;
-};
-
-struct delete_origin_dimension_response {
-    bool success = false;
-    std::string message;
-};
-
-struct get_origin_dimension_history_request {
-    using response_type = struct get_origin_dimension_history_response;
-    static constexpr std::string_view nats_subject = "dq.v1.origin-dimensions.history";
-    std::string code;
-};
-
-struct get_origin_dimension_history_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::dq::domain::origin_dimension> history;
-};
-
-// =============================================================================
-// Treatment Dimension Protocol
-// =============================================================================
-
-struct get_treatment_dimensions_request {
-    using response_type = struct get_treatment_dimensions_response;
-    static constexpr std::string_view nats_subject = "dq.v1.treatment-dimensions.list";
-    int offset = 0;
-    int limit = 100;
-};
-
-struct get_treatment_dimensions_response {
-    std::vector<ores::dq::domain::treatment_dimension> treatment_dimensions;
-    int total_available_count = 0;
-};
-
-struct save_treatment_dimension_request {
-    using response_type = struct save_treatment_dimension_response;
-    static constexpr std::string_view nats_subject = "dq.v1.treatment-dimensions.save";
-    ores::dq::domain::treatment_dimension data;
-};
-
-struct save_treatment_dimension_response {
-    bool success = false;
-    std::string message;
-};
-
-struct delete_treatment_dimension_request {
-    using response_type = struct delete_treatment_dimension_response;
-    static constexpr std::string_view nats_subject = "dq.v1.treatment-dimensions.delete";
-    std::vector<std::string> codes;
-};
-
-struct delete_treatment_dimension_response {
-    bool success = false;
-    std::string message;
-};
-
-struct get_treatment_dimension_history_request {
-    using response_type = struct get_treatment_dimension_history_response;
-    static constexpr std::string_view nats_subject = "dq.v1.treatment-dimensions.history";
-    std::string code;
-};
-
-struct get_treatment_dimension_history_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::dq::domain::treatment_dimension> history;
 };
 
 }

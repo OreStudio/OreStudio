@@ -106,6 +106,26 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part two: the other two dimensions, and the shell unit nobody registered
+
+Run on 2026-09-26. =origin_dimension= and =treatment_dimension= are modelled, so the dimension family is done and the hand-written layer it needed is gone.
+
+**One shape, three times.** The models are the nature model with the names, titles and generator suffixes changed, which is what the survey predicted: three identical code-keyed lookups. The generated tables match the hand-written ones column for column.
+
+**What the pair retired.**
+
+- =data_organization_protocol.hpp= loses its Origin and Treatment sections and now holds only methodologies, so it leaves the twelve-header list when =methodology= is modelled rather than now.
+- =dimension_protocol.hpp= is deleted. It was a one-line re-export with no consumers, so the twin gate's list is one shorter.
+- =dimension_handler.hpp= and =dimension_service.{hpp,cpp}= are deleted; the registrar was their last consumer.
+- Four hand-written singular SQL files, with =dq_create.sql= and =dq_drop.sql= taking the generated plural forms.
+- The two repository tests, rewritten to the stateless API like nature's.
+
+**A generated unit that compiled and reached nothing.** The generator emitted a shell command unit for each dimension, but the aggregator that registers them, =dq_commands=, is hand-written, so nobody added them. =nature_dimension_commands.cpp= had been inert since part one for the same reason. The gap was invisible until the shell binary was linked, where the three symbols were undefined — and the component library did not hold them either, because =ores.shell.dq='s =component_files.cmake= had not been regenerated since the entities were modelled.
+
+**What that means for the remaining entities.** A newly modelled dq entity generates a shell unit that the build will not compile and the REPL will not register until two hand-written steps happen: regenerate =ores.shell.dq='s file lists, and add the unit to =dq_commands=. Every remaining entity in the survey needs both. A check comparing the aggregate against the units on disk would catch the omission, and it is recorded rather than written because it belongs to the shell component and not to this task.
+
+**Evidence.** Codegen suite 706 passing; =check_component_drift.py --component dq= reports no drift twice in a row and =--all= reports none; =ores.dq.core.tests=, =ores.dq.api.tests=, =ores.dq.service.tests=, =ores.shell.dq.tests= build and link and =ores.shell.exe= links; the script tangle produces no change; model drift, protocol twin coverage, handler permissions, populate references, registry exceptions, both inventories, =compass lint= and =validate_docs.sh= all pass.
+
 * Step 8 part one: nature_dimension, and what authoring a model costs
 
 Run on 2026-09-26. =nature_dimension= is modelled, so the first of the twelve hand-written protocols is gone and the survey above has been executed once end to end.

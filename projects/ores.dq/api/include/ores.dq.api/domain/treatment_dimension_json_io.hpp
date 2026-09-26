@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_json_io.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_DOMAIN_TREATMENT_DIMENSION_JSON_IO_HPP
 #define ORES_DQ_API_DOMAIN_TREATMENT_DIMENSION_JSON_IO_HPP
 
@@ -27,7 +32,7 @@
 namespace ores::dq::domain {
 
 /**
- * @brief Dumps the treatment_dimension object to a stream in JSON format.
+ * @brief Dumps the treatment_dimension to a stream in JSON format.
  */
 ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const treatment_dimension& v);
 

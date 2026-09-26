@@ -98,11 +98,11 @@
 
 -- Dimensions
 \ir ./dq_treatment_dimensions_notify_trigger_drop.sql
-\ir ./dq_treatment_dimension_drop.sql
+\ir ./dq_treatment_dimensions_drop.sql
 \ir ./dq_nature_dimensions_notify_trigger_drop.sql
 \ir ./dq_nature_dimensions_drop.sql
 \ir ./dq_origin_dimensions_notify_trigger_drop.sql
-\ir ./dq_origin_dimension_drop.sql
+\ir ./dq_origin_dimensions_drop.sql
 
 -- Coding schemes
 \ir ./dq_coding_schemes_notify_trigger_drop.sql

@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: A13436CF-5292-485C-A69A-FCC5EB2153C7
+:END:
+#+title: ores.dq.origin_dimension
+#+description: Codegen entity model for the dq =origin_dimension= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: Describes the origin of data.
+#+entity_singular: origin_dimension
+#+entity_plural: origin_dimensions
+#+entity_title: Origin Dimension
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+Describes the origin of data. Examples: vendor, internal, regulatory.
+
+The dimension records where a value entered the platform rather than what it
+means, so it is deliberately small: a code, a name and a description. Rows are
+authored directly rather than mirrored from an external source.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
+:END:
+
+Unique code identifying this origin dimension.
+
+Examples: 'raw', 'cleansed', 'derived'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable name for the origin dimension.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "Origin"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of what this origin dimension classifies.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_origin_dimensions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:has_batch_remove: true
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: dimension
+:entity_plural_short:   dimensions
+:entity_singular_words: origin dimension
+:entity_plural_words:   origin dimensions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: o
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| name        | Name        |
+| description | Description |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.dq.api/domain/origin_dimension.hpp
+:domain_class:           dq::domain::origin_dimension
+:protocol_include:       ores.dq.api/messaging/origin_dimension_protocol.hpp
+:collection_name:        dimensions
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      dq::messaging::list_origin_dimensions_request
+:get_response_class:     dq::messaging::list_origin_dimensions_response
+:get_message_type:       list_origin_dimensions_request
+:save_request_class:     dq::messaging::put_origin_dimension_request
+:save_response_class:    dq::messaging::put_origin_dimension_response
+:save_message_type:      put_origin_dimension_request
+:delete_request_class:   dq::messaging::delete_origin_dimension_request
+:delete_response_class:  dq::messaging::delete_origin_dimension_response
+:delete_message_type:    delete_origin_dimension_request
+:has_change_reason_cache: true
+:has_pagination:         true
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder                 |
+|-------------+-------------+-----------------+-----------+--------+-------------+-----------------------------|
+| code        | Code        | codeEdit        | line_edit | true   | true        | Enter origin dimension code |
+| name        | Name        | nameEdit        | line_edit |        | true        | Enter origin dimension name |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description         |
+
+*** Columns
+
+| enum_name   | field       | header      | type      | width |
+|-------------+-------------+-------------+-----------+-------|
+| Code        | code        | Code        | string    | 150   |
+| Name        | name        | Name        | string    | 200   |
+| Description | description | Description | string    | 300   |
+| ModifiedBy  | modified_by | Modified By | string    | 120   |
+| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

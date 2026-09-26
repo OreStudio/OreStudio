@@ -50,14 +50,14 @@ TEST_CASE("write_single_treatment_dimension", tags) {
     database_helper h;
 
     generation_context ctx;
-    treatment_dimension_repository repo(h.context());
+    treatment_dimension_repository repo;
     auto treatment_dimension = generate_synthetic_treatment_dimension(ctx);
-    treatment_dimension.tenant_id = h.tenant_id().to_string();
+    treatment_dimension.tenant_id = h.tenant_id();
     treatment_dimension.code =
         treatment_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Treatment dimension: " << treatment_dimension;
-    CHECK_NOTHROW(repo.write(treatment_dimension));
+    CHECK_NOTHROW(repo.write(h.context(), treatment_dimension));
 }
 
 TEST_CASE("write_multiple_treatment_dimensions", tags) {
@@ -65,16 +65,16 @@ TEST_CASE("write_multiple_treatment_dimensions", tags) {
 
     database_helper h;
 
-    treatment_dimension_repository repo(h.context());
+    treatment_dimension_repository repo;
     generation_context ctx;
     auto treatment_dimensions = generate_synthetic_treatment_dimensions(3, ctx);
     for (auto& t : treatment_dimensions) {
-        t.tenant_id = h.tenant_id().to_string();
+        t.tenant_id = h.tenant_id();
         t.code = t.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Treatment dimensions: " << treatment_dimensions;
 
-    CHECK_NOTHROW(repo.write(treatment_dimensions));
+    CHECK_NOTHROW(repo.write(h.context(), treatment_dimensions));
 }
 
 TEST_CASE("read_latest_treatment_dimensions", tags) {
@@ -82,18 +82,18 @@ TEST_CASE("read_latest_treatment_dimensions", tags) {
 
     database_helper h;
 
-    treatment_dimension_repository repo(h.context());
+    treatment_dimension_repository repo;
     generation_context ctx;
     auto written_treatment_dimensions = generate_synthetic_treatment_dimensions(3, ctx);
     for (auto& t : written_treatment_dimensions) {
-        t.tenant_id = h.tenant_id().to_string();
+        t.tenant_id = h.tenant_id();
         t.code = t.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Written treatment dimensions: " << written_treatment_dimensions;
 
-    repo.write(written_treatment_dimensions);
+    repo.write(h.context(), written_treatment_dimensions);
 
-    auto read_treatment_dimensions = repo.read_latest();
+    auto read_treatment_dimensions = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read treatment dimensions: " << read_treatment_dimensions;
 
     CHECK(!read_treatment_dimensions.empty());
@@ -105,21 +105,21 @@ TEST_CASE("read_latest_treatment_dimension_by_code", tags) {
 
     database_helper h;
 
-    treatment_dimension_repository repo(h.context());
+    treatment_dimension_repository repo;
     generation_context ctx;
     auto treatment_dimensions = generate_synthetic_treatment_dimensions(3, ctx);
     for (auto& t : treatment_dimensions) {
-        t.tenant_id = h.tenant_id().to_string();
+        t.tenant_id = h.tenant_id();
         t.code = t.code + "_" + std::string(faker::string::alphanumeric(8));
     }
 
     const auto target = treatment_dimensions.front();
     BOOST_LOG_SEV(lg, debug) << "Write treatment dimensions: " << treatment_dimensions;
-    repo.write(treatment_dimensions);
+    repo.write(h.context(), treatment_dimensions);
 
     BOOST_LOG_SEV(lg, debug) << "Target treatment dimension: " << target;
 
-    auto read_treatment_dimensions = repo.read_latest(target.code);
+    auto read_treatment_dimensions = repo.read_latest(h.context(), target.code);
     BOOST_LOG_SEV(lg, debug) << "Read treatment dimensions: " << read_treatment_dimensions;
 
     REQUIRE(read_treatment_dimensions.size() == 1);

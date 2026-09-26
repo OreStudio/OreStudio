@@ -21,11 +21,11 @@ ores.security meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Survey checked against the tree, work landed. |
+| Now           | Merged as `b2e6c069db` in PR #2162. |
 | Waiting on    | Nothing.                               |
-| Next          | Verification and review. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-26                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ ores.security meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B4721EB0-FEA5-4AE1-96F2-58717D29B323][Bring ores.security to the clean standard]] | STARTED | 2026-09-26 | | Work ores.security through the Component Clean Standard in order and record each item. |
+| [[id:B4721EB0-FEA5-4AE1-96F2-58717D29B323][Bring ores.security to the clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Work ores.security through the Component Clean Standard in order and record each item. |
 
 * Notes
 

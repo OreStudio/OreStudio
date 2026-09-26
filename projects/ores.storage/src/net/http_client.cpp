@@ -66,20 +66,27 @@ void http_client::get(const std::string& url, const std::filesystem::path& dest)
 
     http::write(stream, req);
 
-    std::filesystem::create_directories(dest.parent_path());
+    // The status is read before the destination is opened, so a failed
+    // download neither creates a file nor truncates one that is already
+    // there.
     http::response_parser<http::file_body> parser;
     parser.body_limit(std::numeric_limits<std::uint64_t>::max());
+    beast::flat_buffer buf;
+    http::read_header(stream, buf, parser);
+
+    if (parser.get().result_int() < 200 || parser.get().result_int() >= 300)
+        throw std::runtime_error("http_client: GET " + url + " returned HTTP " +
+                                 std::to_string(parser.get().result_int()));
+
+    const auto parent = dest.parent_path();
+    if (!parent.empty())
+        std::filesystem::create_directories(parent);
     beast::error_code open_ec;
     parser.get().body().open(dest.string().c_str(), beast::file_mode::write, open_ec);
     if (open_ec)
         throw std::runtime_error("http_client: cannot open for writing: " + dest.string());
 
-    beast::flat_buffer buf;
     http::read(stream, buf, parser);
-
-    if (parser.get().result_int() < 200 || parser.get().result_int() >= 300)
-        throw std::runtime_error("http_client: GET " + url + " returned HTTP " +
-                                 std::to_string(parser.get().result_int()));
 
     beast::error_code ec;
     stream.socket().shutdown(tcp::socket::shutdown_both, ec);

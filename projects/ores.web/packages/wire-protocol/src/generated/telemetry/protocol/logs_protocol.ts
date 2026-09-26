@@ -39,7 +39,7 @@ export interface TelemetryLogEntry {
      */
     source: string;
     /**
-     * @brief Name of the source application, for example @c ores.qt.
+     * @brief Name of the source application, for example @c ores.shell.
      */
     source_name: string;
     /**

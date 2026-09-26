@@ -54,7 +54,7 @@ struct telemetry_log_entry {
     ores::telemetry::domain::telemetry_source source =
         ores::telemetry::domain::telemetry_source::client;
     /**
-     * @brief Name of the source application, for example @c ores.qt.
+     * @brief Name of the source application, for example @c ores.shell.
      */
     std::string source_name;
     /**

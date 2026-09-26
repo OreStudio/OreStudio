@@ -86,7 +86,7 @@ stored as it arrives, so neither is a row a caller reaches by primary key.
 
 #+begin_src cpp :name comment
 /**
- * @brief Name of the source application, for example @c ores.qt.
+ * @brief Name of the source application, for example @c ores.shell.
  */
 #+end_src
 

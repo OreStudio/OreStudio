@@ -29,6 +29,15 @@ namespace ores #F2F2F2 {
             forbidden
             bad_request
         }
+        namespace config #F2F2F2 {
+            class standard_options <<struct>> {
+                +logging : optional<ores::logging::logging_options>
+                +nats : ores::nats::config::nats_options
+                +database : ores::database::database_options
+            }
+            class standard_service_options {
+            }
+        }
         namespace messaging #F2F2F2 {
             class workflow_step_context <<struct>> {
                 +step_id : string
@@ -44,6 +53,13 @@ namespace ores #F2F2F2 {
         }
         namespace service #F2F2F2 {
             enum exit_code {
+                ok
+                general_error
+                config_error
+                db_connection_failed
+                nats_connection_failed
+                startup_timeout
+                auth_error
             }
             class heartbeat_publisher {
                 -service_name_ : string
@@ -52,11 +68,129 @@ namespace ores #F2F2F2 {
                 -nats_ : ores::nats::service::client&
                 -interval_seconds_ : uint32_t
             }
+            class host_runner_options <<struct>> {
+                +failure_message : string_view
+            }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass reads types and their data members. It arrives with the
+' fields of a struct and no API, an empty box for a class whose content is
+' methods, and nothing at all for a facet of free functions. The blocks below
+' fill those in and record the one relationship the parser cannot infer.
+'
+' Each block names its class fully qualified rather than reopening a namespace,
+' because reopening one that already holds classes crashes this PlantUML
+' version. Redeclaring a class merges the members below into the box the
+' automated pass drew, so a refresh keeps both.
+
+class ores::service::config::standard_service_options {
+    {static} +make_options_description(log_file : const string&, extra_options : const options_description&) : options_description
+    {static} +parse(od : const options_description&, arguments : const vector<string>&, app_name : const string&) : variables_map
+    {static} +read_options(vm : const variables_map&) : standard_options
+    {static} +wants_help(vm : const variables_map&) : bool
+    {static} +wants_version(vm : const variables_map&) : bool
+}
+note right of "ores::service::config::standard_service_options"
+The one place a domain service reads its shared options.
+It is also the single call site for
+nats_configuration::register_shared_domain().
+end note
+
+class ores::service::service::heartbeat_publisher {
+    +heartbeat_publisher(service_name : string, version : string, nats : client&, interval_seconds : uint32_t)
+    +run() : awaitable<void>
+}
+note right of "ores::service::service::heartbeat_publisher"
+A domain service co-spawns it from the runner's on_started
+hook. It mints a per-process instance id at construction,
+publishes once immediately and then on the interval, and
+exits when the io_context stops. A failed publish is logged
+and does not stop the loop.
+end note
+
+class ores::service::messaging::workflow_step_context {
+    {static} +from_message(nats : client&, msg : const message&) : optional<workflow_step_context>
+    +complete(result_json : const string&) : void
+    +warn(result_json : const string&, log : const vector<step_log_entry>&) : void
+    +fail(error_msg : const string&, log : const vector<step_log_entry>&) : void
+}
+note right of "ores::service::messaging::workflow_step_context"
+from_message returns nothing unless the message carries
+X-Workflow-Step-Id, which is how a handler chooses the
+workflow path. All three publishers end in one private
+publish() of a step_completed_event.
+end note
+
+note as OresServiceLifecycle
+    Free functions in ores::service::service:
+    run(io_ctx, nats, ctx, name, register_fn, on_started, on_shutdown) : awaitable<void>
+    run(io_ctx, nats, name, register_fn, on_started, on_shutdown) : awaitable<void>
+    run_signing(io_ctx, nats, ctx, name, jwt_private_key, register_fn, on_started, on_shutdown) : awaitable<void>
+    The standard service lifecycle: signal handling, JWKS key
+    fetch with exponential backoff, verifier or signer creation,
+    registration, readiness, and a graceful drain. The database
+    overload scopes every request from the JWT; the signing
+    overload mints its own tokens for IAM; all three share one
+    registration-and-drain tail.
+end note
+
+note as OresServiceHostRunner
+    Free functions in ores::service::service:
+    run_host_async(args, std_output, error_output, io_ctx, lg, opts, Parser, Application) : awaitable<int>
+    run_host_sync(args, std_output, error_output, lg, early_exit, run_application, opts, Parser) : int
+    The host envelope every service and tool shares: parse the
+    arguments, start the logging lifecycle, log the run, run the
+    application, and log and rethrow a failure. opts is taken by
+    value because an awaitable starts lazily and would otherwise
+    outlive the caller's frame.
+end note
+
+note as OresServiceRequestContext
+    Free function in ores::service::service:
+    make_request_context(base_ctx, msg, verifier) : expected<context, error_code>
+    Validates the Bearer JWT in the message headers and returns
+    a context scoped to its tenant, party and roles, narrowed by
+    the X-Workspace-Id and X-Workspace-Resolution headers. With
+    no verifier the base context is returned unchanged.
+    X-Delegated-Authorization is checked before Authorization,
+    and an expired delegated token is a hard reject.
+end note
+
+note as OresServiceMessaging
+    Free functions and values in ores::service::messaging:
+    log_handler_entry(lg, msg) : string
+    has_permission(ctx, required_permission) : bool
+    stamp(obj, ctx, change_reason) : void
+    delegated_actor(ctx) : const string&
+    reply(nats, msg, resp) : void
+    error_reply(nats, msg, code) : void
+    decode(msg) : optional<Req>
+    change_reasons::new_record
+    change_reasons::update
+    is_workflow_command(msg) : bool
+    extract_workflow_header(msg, header_name) : string
+    publish_step_completion(...) : void
+    check_step_idempotency(nats, step_id) : optional<cached_step_result>
+    The handler surface a domain service writes against. stamp()
+    matches fields by name, so it overwrites any party_id-named
+    field from the context; a type whose party_id is a target
+    rather than an ownership boundary needs its own stamp.
+end note
+
+note as OresServiceSystemdNotify
+    Free function in ores::service::service:
+    notify_systemd_ready() noexcept
+    Writes READY=1 to the AF_UNIX datagram socket named by
+    $NOTIFY_SOCKET, implementing sd_notify(3)'s wire protocol
+    rather than linking libsystemd. A no-op when the variable is
+    unset, and it never throws.
+end note
+
+ores::service::config::standard_service_options ..> ores::service::config::standard_options : produces
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.service.puml"

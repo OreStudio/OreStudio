@@ -1,0 +1,209 @@
+:PROPERTIES:
+:ID: 0442FD13-1833-427F-B6CA-C4B5877C452B
+:END:
+#+title: Task: Add the identity workflow and the commands that drive it
+#+description: Give the workflow component a fixture it can run against itself: an identity workflow whose steps the request declares, plus the shell commands that start it and read the engine back.
+#+type: task
+#+level: s1
+#+filetags: :workflow:testing:shell:exercise-workflow:sprint_26:v0:
+#+owner: marco
+#+branch: feature/workflow-identity
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The workflow engine's every path runs against the live fleet from ores.shell, driven by one registered fixture whose steps are declared by the request, so different configurations emulate the real workflows the component runs for other components.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- A definition named identity_workflow is registered by the workflow component, and its steps, their behaviours and their compensations all come from the request.
+- A step handler in the workflow service serves the fixture's command subject and answers the engine through the shared workflow_step_context helper.
+- The shell can list the registered definitions, start a workflow by type, read the instance summaries, read a step result, and read an entity's history.
+- Each configuration runs as a script and asserts its terminal state: instance state, step count, per-step state, and whether workflow wait returns true.
+- The engine's duplicate-completion, empty-definition, unknown-type and recovery paths each have a configuration or an integration test that covers them.
+- No recipe or script is vacuous: each assertion fails when the path it covers does nothing.
+
+* Plan
+
+** The command surface as it stands
+
+Two surfaces, easy to confuse because the shell reaches both.
+
+The generated entity surface is 23 commands: =workflow_instances= (list, get,
+get-many, add, set, put-many, delete, delete-many, versions, version),
+=workflow_steps= (the same ten plus =by-workflow-id=), and the hand-written
+=workflow wait=. These read and write the two tables. They are not the engine.
+
+The engine's conversation is start, dispatch a step, record a completion,
+compensate, recover. None of it is reachable from the shell, and the four gaps that
+block it are:
+
+| Gap | Evidence |
+|-----+----------|
+| Nothing can start a workflow | =start_workflow_message= is published only by a commissioner's own command. =workflow.v1.start= is subscribed and unreachable. |
+| No definition is exercise-able alone | All four are commissioned -- dq's =bundle_publish_workflow=, ore's =ore_import_workflow=, refdata's =provision_parties_workflow=, reporting's =report_execution_workflow= -- and each needs that component's data and step handlers. |
+| You cannot see what is registered | Three operation queries have no command: =workflow.v1.definitions.list=, =workflow.v1.instances.list= (the summary projection, distinct from the generated table read), =workflow.v1.steps.get-result=. Only =workflow.v1.instances.steps= is used, by =workflow wait=. |
+| No entry point to history | The generated units ship no =history= verb while trading's do, because =trading-instrument= enables it and =uuid-identified-lookup= does not. The family W01 wired is served but unreadable from the shell. |
+
+** The fixture: identity_workflow
+
+Named for what it does rather than for being a test: its steps perform no domain
+work, they identify and echo, and everything about them comes from the request. That
+is what makes one definition cover many workflow configurations.
+
+- =ores.workflow.api/workflow/identity_workflow.hpp= registers =identity_workflow=.
+  Its =build_steps= reads the request and emits one step per declared entry.
+- =ores.workflow.core/messaging/identity_step_handler.{hpp,cpp}= serves
+  =workflow.v1.identity.step=. =ores.service/messaging/workflow_helpers.hpp= already
+  extracts the step context from the message headers and offers =complete=, =warn= and
+  =fail=, so the handler is small.
+- Both are registered in the aggregate registrar beside the other definitions.
+
+A step declares its own behaviour, so the request is the configuration:
+
+#+begin_src json
+{"configuration": "saga",
+ "steps": [{"name": "reserve",  "behaviour": "complete",   "compensate": true},
+           {"name": "allocate", "behaviour": "complete",   "compensate": true},
+           {"name": "commit",   "behaviour": "fail"}]}
+#+end_src
+
+The behaviour vocabulary, which is what makes the configurations different shapes
+rather than different data:
+
+| Behaviour | What it drives |
+|-----------+----------------|
+| =complete= | the ordinary advance path |
+| =warn= | =completed_with_warnings= and a populated =step_log_json= |
+| =fail= | the failure path, and compensation when an earlier step has one |
+| =sleep:<seconds>= | an observable in-flight window, for watching a run and for recovery |
+| =echo-twice= | a duplicate =step_completed_event=, which the engine must ignore |
+| =compensate= (attribute) | whether the step declares a compensation subject, which decides whether a failure compensates or simply fails |
+
+** Configurations that emulate real workflows
+
+Each is a named request the shell can ask for by name, and each exists because it is
+a shape the component actually runs for someone:
+
+| Configuration | Emulates | Asserts |
+|---------------+----------+---------|
+| =happy_path= | any three-step provision | instance completes; three step rows; =current_step_index= reaches 2 |
+| =fan_out= | =bundle_publish_workflow='s one-step-per-dataset | step count follows the requested width |
+| =with_warnings= | =ore_import_workflow='s lossy-but-successful run | the step log is populated and the instance still completes |
+| =fail_fast= | a workflow with nothing to undo | instance failed, the failing step failed, later steps absent |
+| =saga= | =provision_parties_workflow='s compensable prefix | =compensating= then =compensated=, earlier steps compensated in reverse |
+| =long_running= | a run whose progress an operator watches | =in_progress= is observable; =workflow wait= prints transitions |
+| =recovery= | a service restart mid-flight | the same =step_id= is re-dispatched and the step completes exactly once |
+| =empty= | a definition whose =build_steps= yields nothing | the engine's guard puts the instance failed rather than leaving it in progress |
+| =unknown_type= | a typo'd type name | the registry miss is reported, not silently accepted |
+
+** The shell commands this needs
+
+Generic rather than fixture-specific, because each is a missing piece of the
+operation surface and several are what P04 is to model:
+
+| Command | Subject |
+|---------+---------|
+| =workflow definitions= | =workflow.v1.definitions.list= |
+| =workflow start <type> <request_json>= | publishes =start_workflow_message= |
+| =workflow status [--status <s>]= | =workflow.v1.instances.list= |
+| =workflow step-result <step_id>= | =workflow.v1.steps.get-result= |
+| =workflow history <instance_id>= | =workflow.v1.history.get= |
+
+=workflow start= being generic is deliberate: it drives the identity configurations
+and the real commissioned workflows alike, so nothing here is a test-only command.
+
+** Open decision: gated or always registered
+
+Always-on makes the component self-verifiable in the fleet, which is the point, at the
+cost of a fixture inside a production service. Gated keeps production clean but means
+it is exercised only where someone remembers to enable it, which is the failure mode
+this task exists to fix. The lean is always-on with naming that cannot be mistaken for
+domain code.
+
+** Sequencing
+
+1. =workflow definitions= and =workflow start=, which unblock everything else.
+2. The fixture with =happy_path= and =fail_fast=.
+3. =with_warnings=, =saga=, =fan_out=, =empty=, =unknown_type=.
+4. =long_running= and =recovery=, which need a service restart mid-flight and so
+   cannot be a pure shell script; a runbook step or a C++ integration test.
+5. A recipe and a tangled =.ores= script per configuration, so the sweep is one
+   command and the transcripts are the evidence.
+
+* Notes
+
+** Why the fixture has to live in the service, not the shell
+
+A step's command must be consumed and answered by a service: the engine publishes the
+command and waits for a =step_completed_event= on JetStream. The shell is a client and
+cannot reply, so a fixture whose commands it served itself would hang every step until
+the wait timed out. The workflow service is the only service with no domain
+dependency, so it is the only place a self-contained fixture can be served.
+
+** The two list projections are not the same thing
+
+=workflow.v1.instances.list= carries =workflow_instance_summary= with a status filter:
+the engine's view, for an operator. The generated =workflow_instances list= carries
+the entity table's rows. Both are wanted and neither replaces the other, which is why
+the fixture uses the summary projection to report progress and the generated commands
+to inspect state.
+
+** Recipe coverage is the generated commands' only
+
+=regenerate_shell_recipe_inventory.py= derives recipes from the models' shell-command
+facet, so hand-written commands have none: =workflow wait= has no recipe today. The
+five commands above are hand-written, so their recipes and scripts have to be written
+rather than generated, or the inventory stays green while covering less than it
+appears to.
+
+** What this task is not
+
+It is not P04. Modelling the operation conversation, and moving each commissioner's
+payload beside its own definition, is separate work on the component clean standard.
+This task only needs the conversation to be reachable, and it is written so the
+commands survive that change because they address the messages rather than the
+fixture.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

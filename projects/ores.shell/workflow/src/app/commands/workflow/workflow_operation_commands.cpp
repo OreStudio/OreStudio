@@ -30,10 +30,13 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
+#include <algorithm>
 #include <expected>
 #include <map>
 #include <optional>
 #include <ostream>
+#include <ranges>
+#include <sstream>
 #include <thread>
 #include <vector>
 
@@ -47,6 +50,11 @@ namespace {
 constexpr std::chrono::seconds poll_interval(3);
 constexpr std::chrono::seconds default_timeout(300);
 constexpr int max_consecutive_poll_failures = 5;
+
+/// How long a start waits for the engine to create its instance before
+/// reporting that the request was refused.
+constexpr std::chrono::seconds acceptance_timeout(5);
+constexpr std::chrono::milliseconds acceptance_poll(100);
 
 /**
  * @brief Fetch the steps of an instance without reporting failure.
@@ -367,6 +375,35 @@ void workflow_operation_commands::process_start(std::ostream& out,
         }
     }
 
+    // Refuse a type nobody registered before dispatching it. The engine only
+    // discovers that when it reads the message, so without this the command
+    // printed an instance id to follow for a run that would never exist.
+    workflow::messaging::list_workflow_definitions_request definitions_request;
+    auto definitions =
+        do_auth_request<workflow::messaging::list_workflow_definitions_response>(
+            out, session, std::string(definitions_request.nats_subject), definitions_request);
+    if (!definitions)
+        return;
+    if (!definitions->success) {
+        fail(out) << definitions->message << std::endl;
+        return;
+    }
+
+    const auto known = std::ranges::any_of(
+        definitions->definitions, [&type](const auto& d) { return d.type_name == type; });
+    if (!known) {
+        fail(out) << "No workflow type named '" << type << "' is registered." << std::endl;
+        if (!definitions->definitions.empty()) {
+            // Built as one string: fail() marks each insertion, so a type per
+            // call would print the marker between every name.
+            std::ostringstream registered;
+            for (const auto& d : definitions->definitions)
+                registered << " " << d.type_name;
+            fail(out) << "Registered types:" << registered.str() << std::endl;
+        }
+        return;
+    }
+
     BOOST_LOG_SEV(lg(), info) << "Starting workflow of type: " << type;
 
     workflow::messaging::start_workflow_message msg;
@@ -384,9 +421,26 @@ void workflow_operation_commands::process_start(std::ostream& out,
         return;
     }
 
-    out << "Dispatched " << type << "." << std::endl;
-    out << "workflow_instance_id: " << instance_id << std::endl;
-    out << "Follow progress with: workflow wait " << instance_id << std::endl;
+    // The engine acknowledges nothing, so acceptance is confirmed by the row it
+    // creates. Without this the command reported success for a request the
+    // engine had refused -- a type it did not know, or a definition that built
+    // no steps -- and the caller waited on an instance that never existed.
+    const auto deadline = std::chrono::steady_clock::now() + acceptance_timeout;
+    while (std::chrono::steady_clock::now() < deadline) {
+        auto accepted = fetch_steps(session, instance_id);
+        if (accepted && accepted->success) {
+            out << "Started " << type << "." << std::endl;
+            out << "workflow_instance_id: " << instance_id << std::endl;
+            out << "Follow progress with: workflow wait " << instance_id << std::endl;
+            return;
+        }
+        std::this_thread::sleep_for(acceptance_poll);
+    }
+
+    fail(out) << "The engine did not accept " << type << " for instance " << instance_id
+              << " within " << acceptance_timeout.count() << "s." << std::endl;
+    fail(out) << "Nothing is following it. The workflow service log says why it was refused."
+              << std::endl;
 }
 
 }

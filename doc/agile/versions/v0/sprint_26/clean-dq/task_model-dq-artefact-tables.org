@@ -72,10 +72,39 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
 | 7. Publication template | DONE | The template generated a retired design; deleted with 21 dead files; see Step 7 results |
 | 8. Remaining models | TODO | The FPML family is blocked; the rest is unblocked |
-| 9. Regenerate C++ | TODO | Now unblocked: the optional-field sentinel defect is fixed; see the prerequisite section |
+| 9. Regenerate C++ | IN PROGRESS | Four facets byte-identical; the C++ facet is a per-entity protocol migration, artefact_type done; see Step 9 results |
 | 10. Eventing headers | TODO | |
 | 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
 | 12. Divergent tables: declare the projection | DONE | All 11 landed; divergent is 0; see Step 12 results |
+
+* Step 9 in progress: the C++ facet is a protocol migration, not a refresh
+
+Run on 2026-09-26. Four facets are now byte-identical and committed; the fifth is not mechanical, and this section records why.
+
+**Four facets landed.** SQL (11 files), cmake (1), doc (14 recipes plus their tangled scripts), ts.protocol (1). The SQL facet carried the version-conflict guard and the canonical event payload; the cmake facet the generated marker; the doc facet the fourteen shell recipes dq's entities never had.
+
+**The C++ facet is three changes at once.** Its dry run is 480 files, and applying it produced 18 compile errors. Reading them:
+
+| Error | What it really is |
+|-------+-------------------|
+| =badge_definition_protocol.hpp= redefines =delete_badge_definition_request=, also in =badge_protocol.hpp= | The generated protocol has moved to the canonical verbs, and two hand-written umbrella headers define the same structs. G02's "hand-written protocol umbrella". |
+| =registrar.cpp= uses =get_dataset_bundles_request=, and =dataset_bundle_handler::list= | The hand-written registrar registers dataset bundles against type names the migration renames, duplicating the generated registrars. W01. |
+| =subject_area_key= redefined | Same umbrella collision, in =data_organization_protocol.hpp=. |
+
+So the facet performs the canonical NATS entity protocol migration (P01) for all fourteen entities, removes the hand-written umbrellas (G02), and rewires the registrar's composition points (W01) — and the last two only make sense entity by entity. The clean standard says so directly: "Work one entity at a time. Regenerate, build and test after each one."
+
+**The blanket apply was reverted, not committed.** A half-migrated tree with 480 uncommitted files is worse than a clean one. The findings above are the round's real product.
+
+**=artefact_type= is migrated and builds.** 29 files regenerated, four created (the event header, the history provider registrar pair, and the eventing integration test), four =component_files.cmake= lists refreshed. Its protocol now states =list=, =get=, =get_many=, =put=, =delete=, =history= and the point-in-time read with the =key=, =write=, =change=, =removal=, =lookup=, =event=, =version_key= and =versions_filter= types. Nothing outside =ores.dq= consumes its protocol, so the migration is self-contained.
+
+One hand-written fix was needed on the way: dq's core tests target did not link =ores.eventing.api.lib= or =ores.eventing.core.lib=, and the generated eventing integration test includes a header from the latter. =ores.synthetic='s equivalent target links both, so this is a gap in dq's CMakeLists rather than a template defect. The suite itself needs a live database, which this sandbox does not have, so the build and link are the available evidence.
+
+**Two findings recorded.**
+
+- =projects/ores.shell/dq= is a directory that is not a catalogue component and is not added by =ores.shell/CMakeLists.txt=, unlike =ores.shell.analytics=, =.assets=, =.iam=, =.refdata=, =.synthetic= and =.trading=. The shell command units the facet generates for dq are therefore compiled by nothing. =ores.shell.workflow= has the same shape, and =validate_docs.sh= already reports it.
+- The umbrella headers and the bespoke handlers they carry (=badge_handler=, =badge_service=, =data_organization_handler=, =dimension_handler=) are consumed only by =registrar.cpp=, so they can go. But each carries registrations for entities that are not modelled yet — methodologies, dimensions, datasets, coding schemes, publications — and those have to move before the umbrella can be deleted.
+
+**Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
 * A generator defect fixed before step 9: the shell sentinel for an optional field
 

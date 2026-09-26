@@ -33,7 +33,7 @@ ores.scheduler meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 - Every checklist item that applies to a component of kind *Entity* passes, with its evidence recorded on the task.
 - Every item that does not apply is recorded as not applicable, with the reason.
 - Every generator defect found is fixed at its source, with a regression test.
-- ores.scheduler is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
+- ores.scheduler passes its own gate, =check_component_drift.py --component scheduler-cpp=. It joins =COMPONENTS_UNDER_TEST=, and with it the shared =--all= list, in the =job_instance= unit (V06); the shared list deliberately covers only a component whose regeneration leaves the tree fully clean.
 
 * Tasks
 
@@ -47,7 +47,7 @@ ores.scheduler meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 - Nothing is generated yet. Known work sits in the inbox story "Complete the LLM skills catalogue": the scheduler audit findings, the hand-written operations to model, and the custom history handler to replace. Take those tasks into this story.
 - Survey on 2026-09-26, before any edit: 39 public headers and 59 public symbols; one model visible to codegen; eight subject literals in code; one external consumer, =ores.reporting=. The component predates the current templates: regeneration would have rewritten 19 files and created 12.
 - The =job_definition= unit is done: the model is resynced and bound to =uuid-identified-lookup=, the entity stack is generated, the retired =schedule=, =unschedule= and =schedule-batch= subjects are gone in favour of the canonical put, put_many and delete verbs, =ores.reporting= has moved to them, and the generated history provider replaces the custom history handler. Three generator defects were found and fixed at source, each with a regression test.
-- Five units remain, each recorded on the task: the diagram manual pass (H01), the shell part and its commands (S01, S02), the =job_instance= entity (M06, V06), tests for the untested hand-written sources (V08), and the model-property reference gap.
+- Six units remain, each recorded on the task: the shell part and its commands (S01, S02), the =job_instance= entity and the registry entry (M06, V06), tests for the untested hand-written sources (V08), the model-property reference gap, the =component_files.cmake= sweep, and the SQL ER diagram, which no gate covers.
 
 * Decisions
 

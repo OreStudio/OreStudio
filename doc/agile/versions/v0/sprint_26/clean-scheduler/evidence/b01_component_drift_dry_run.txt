@@ -1,3 +1,18 @@
+ores.scheduler baseline, component drift, before any edit
+=========================================================
+
+Branch point:      f7fc9396b7 (the main tip this branch was cut from)
+Date:              2026-09-26
+Command:           check_component_drift.py --component scheduler-cpp --dry-run
+Working tree:      clean, at the branch point
+Exit code:         1 (the component's committed tree does not match its models)
+Verdict, verbatim: 19 file(s) would change, 12 file(s) would be created
+                   (31 file(s) in total).
+                   The tree does not match its models. Run without --dry-run
+                   to apply the change, then commit the result.
+
+The full diff follows.
+
 Checking component 'scheduler-cpp' at address 'ores.cmake' (dry run, no writes)...
 Checking component 'scheduler-cpp' at address 'ores.cpp' (dry run, no writes)...
 Checking component 'scheduler-cpp' at address 'ores.doc' (dry run, no writes)...

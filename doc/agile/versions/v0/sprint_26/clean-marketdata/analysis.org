@@ -1,0 +1,958 @@
+#+title: Analysis: where ores.marketdata stands
+#+description: Discovery for the clean-marketdata story -- the checklist baseline, the state of oresmd adoption, the ORE import/export reality, and a proposed split into PRs.
+#+type: knowledge
+#+level: cross
+#+filetags: :clean_marketdata:analysis:oresmd:sprint_26:v0:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+* Summary
+
+=ores.marketdata= is a four-module composite (=api=, =client=, =core=,
+=service=) of kind *Entity* and *Protocol*. It is the least clean
+component surveyed so far, and the only one whose models describe a
+domain that a *second, parallel* identifier scheme already exists for.
+Five things are true at once:
+
+1. The **checked-in generated tree is far behind its models**. A dry-run
+   drift check reports **82 files would change and 14 would be created**
+   (96 in total). Almost all of it is template movement the component has
+   never absorbed: the value-equality operator, the =recorded_at=
+   removal, the =List*= request/response rename, the generated eventing
+   headers, and per-entity shell units.
+2. **Regenerating it now would not compile.** Three hand-written files
+   reference wire types the models remove, and a generated junction shell
+   unit includes a protocol header that no facet emits. The component
+   needs its generator and model defects fixed *before* it can be
+   regenerated at all, which is what makes the usual "regenerate and
+   commit" first step impossible here.
+3. **oresmd is built, tested -- and wired to nothing.** The URI scheme,
+   its identifier and requirement types, the parser, the resolver and the
+   four projections are all generated from eight models and carry an
+   extensive test suite. No production source file calls any of them.
+   Only =split_market_series_key()= escapes, into the ingest loop and
+   =ores.synthetic=.
+4. **oresmd covers 26.0% of the real ORE corpus, and the models are the
+   defect.** Measured against the 100 committed fixtures at
+   =external/ore/examples/=, 352,819 of 477,013 key lines have no URI.
+   Ten quote types that oresmd *does* model cannot hold the keys ORE
+   actually writes, and the IR path silently rewrites =0D= to =2D= on
+   1,338 lines today. Nine fixtures abort outright.
+5. **The native-identity target state was already designed and then
+   abandoned.** Sprint 25's =adopt-oresmd-native-market-data-identity=
+   story decided the exact end state the owner describes, and seven of
+   its nine implementation tasks were abandoned at sprint close. A branch,
+   =feature/identity-core-series-and-bindings=, holds an implementation
+   of step 1 of that plan; it was never merged.
+
+The component is otherwise in reasonable health: all four test binaries
+build, and 951 of 952 assertions pass, the single failure being an
+already-captured unwired event registrar. This is a clean-up, not a
+rescue.
+
+The clean-up and the native-representation goal are the same work. This
+page establishes where each piece stands and proposes how to cut it into
+PRs.
+
+* The three goals, assessed
+
+| Goal | State | Where it stands |
+|------+-------+-----------------|
+| Represent ORE market data natively with oresmd | *Designed, built, unwired* | Eight quote-type models generate a complete identifier/parser/resolver/projection layer. Storage still uses the legacy =series_type=/=metric=/=qualifier= columns and =feed_binding.ore_key=. Nothing calls the oresmd layer. |
+| Export back to ORE with no data loss | *Absent* | =serialize_market_data()= and =serialize_fixings()= exist in =ores.ore= and are called **only by their own round-trip test**. The one production "export" (=marketdata.v1.series.export-to-storage=) writes JSON+gzip to object storage, not ORE text. |
+| Parse ORE market data files to exercise the types | *Runs, but covers 26.0% of the corpus* | =marketdata import --file market.txt --fixings fixings.txt --source <tag>= parses, classifies and persists, and it is the only live path through the tables. Measured against the 100 committed fixtures at =external/ore/examples/=, 26.0% of 477,013 key lines project to an oresmd URI; 9 fixtures abort, and the IR path silently rewrites =0D= to =2D=. |
+
+* Baseline (item B01)
+
+Captured at =origin/main= =0f8054f2bd= (the telemetry merge), before any
+edit.
+
+** Component drift, =--dry-run=
+
+=check_component_drift.py --component marketdata --dry-run= exits 1:
+
+| Measure | Count |
+|---------+-------|
+| Files that would change | 82 |
+| Files that would be created | 14 |
+| Total | 96 |
+
+By area:
+
+| Area | Files | Nature of the difference |
+|------+-------+--------------------------|
+| =ores.sql/create/marketdata= | 10 | table shapes and notify triggers |
+| =core/src/repository=, =core/include/.../repository= | 16 | generated repository/mapper drift |
+| =api/include/.../domain= | 7 | equality operator, doc comments |
+| =core/include/.../service=, =core/src/service= | 12 | service drift |
+| =core/include/.../messaging=, =core/src/messaging= | 12 | handler and registrar drift |
+| =api/include/.../messaging= | 6 | the six generated protocol headers |
+| =service/src/messaging= | 6 | event registrar drift |
+| =web wire-protocol= (ts) | 8 | =Get*= to =List*= rename, domain twins |
+| =core/src/presentation= | 2 | history field mappers |
+| =api/src/generators= | 2 | test-data generators |
+| =core/tests= | 1 | eventing integration test |
+| =ores.shell/marketdata= | 6 | per-entity command units (new) |
+| =doc/recipes/shell= | 2 | recipe documents (new) |
+
+** Model drift
+
+=check_model_drift.py --summary= exits 1. See the model survey for the
+per-entity binding detail.
+
+** Gates that are scoped to the registry
+
+=check_protocol_twin_coverage.py=, =check_handler_permissions.py= and
+=check_populate_references.py= only judge components listed in
+=COMPONENTS_UNDER_TEST=, and =marketdata= is not listed. Their current
+green output says nothing about this component; item V05 is a claim about
+the state *after* it joins, and must be re-run then.
+
+** Gates that are red now
+
+| Gate | Result |
+|------+--------|
+| =regenerate_cmake_component_files.py --all --check= | all four modules stale (=G06=), part of the tree-wide staleness |
+| =validate_docs.sh= | passes for marketdata, but only because =MISSING_PUML ores.marketdata.client= is registered in =docs_exceptions.txt= |
+
+** Build and suites
+
+=compass build= cannot run in this environment: its =systemd-run --user
+--scope= wrapper fails with "Failed to connect to user scope bus". The
+same targets build through =cmake --build --preset
+linux-clang-debug-make= directly.
+
+All four test targets build. With the test database up and =.env= sourced:
+
+| Suite | Result |
+|-------+--------|
+| =ores.marketdata.api.tests= | **pass**, 71 assertions in 14 test cases |
+| =ores.marketdata.client.tests= | **pass**, 52 assertions in 30 test cases |
+| =ores.marketdata.service.tests= | **pass**, 164 assertions in 24 test cases |
+| =ores.marketdata.core.tests= | **203 of 204 pass**, 951 of 952 assertions |
+
+The single failure is
+=series_classification_rule_eventing_integration_tests.cpp:184= -- the
+known unwired event registrar (id:8FA7076B-62EE-43A5-9A40-177663F15F00),
+confirmed here rather than taken on trust. Nothing else in the component
+is red.
+
+So the component compiles and its suites are green apart from a defect
+that is already captured. That matters for scoping: this is not a rescue,
+it is a clean-up.
+
+=compass build= itself cannot run in this environment (see above), and
+=compass db recreate= and the fleet are a prerequisite for V02 and V03
+rather than a formality.
+
+* Models (items M01 to M10)
+
+** B02: nineteen model files, four metatypes
+
+| Metatype | Count | Files | Variability |
+|----------+-------+-------+-------------|
+| =ores.codegen.entity= | 6 | =feed_binding=, =market_fixing=, =market_observation=, =market_series=, =observation_lineage=, =series_classification_rule= | yes -- must bind |
+| =ores.codegen.junction= | 1 | =market_series_asset_class_junction= | yes -- must bind |
+| =ores.codegen.oresmd_quote_type= | 8 | =model.org= (manifest) + the seven asset-class specs | no -- carries no variability |
+| =ores.codegen.component= | 4 | the four =component_overview.org= files | no |
+
+The =oresmd_quote_type= metatype is the one the story flagged: a metatype
+of its own, generating the identifier, requirement, parser, resolver and
+projection families rather than an entity stack. It classifies under B02
+and is excluded from the profile binding, as the loader never reads
+=:profile:= for it.
+
+** Item results
+
+| Item | Result | Finding |
+|------+--------+---------|
+| M01 | PASS | No legacy JSON, no =lookup_entity=, no retired table type; all 15 entity/junction models load through the current loader |
+| M02 | **FAIL** | Five of seven models carry no =:profile:= |
+| M03 | **FAIL** (minor) | The junction restates =:has_tenant_id: true=, which =tenant-scoped-junction= already fixes; =check_model_drift.py= does not detect a same-value restatement |
+| M04 | PASS | Every stated feature sits in the namespace the loader reads |
+| M05 | PASS | All seven describe one real table; none is joined or denormalised; all seven tables carry =valid_from=/=valid_to= |
+| M07 | PASS | Singular named, key column types real, tenant-scoped row-level security in the generated SQL; the =read_only=/=client_read_only=/=party_id_is_target= flags are genuinely not applicable |
+| M08 | PASS | The one custom type, =std::chrono::year_month_day=, is bound to =<chrono>=; SQL spellings are canonical; =enabled= is a boolean |
+| M09 | **FAIL** | =feed_binding.org= states ten legacy Presentation properties naming retired message types -- =get_feed_bindings_request= and =save_feed_binding_request= -- where the canonical verbs are =get=, =get_many=, =list=, =list_by=, =put=, =put_many=, =delete=, =delete_many= |
+| M10 | **FAIL** | No component-root overview and no group model, so no root =CMakeLists.txt= is generated |
+
+** M02 in detail
+
+Bindings that should be declared and are not:
+
+| Model | Profile it should bind | Why |
+|-------+------------------------+-----|
+| =market_observation= | =readonly-timeseries= | the profile's reference entity *is* =market_observation= |
+| =market_fixing= | =readonly-timeseries= | same shape |
+| =market_series= | =uuid-surrogate-lookup= | UUID primary key, tenant-scoped, no workspace and no parent |
+| =observation_lineage= | =uuid-surrogate-lookup= | same |
+| =series_classification_rule= | =simple-lookup= | already bound |
+| =market_series_asset_class= | =tenant-scoped-junction= | already bound |
+
+=feed_binding= is a **genuine no-match**: it needs =workspace=true=, a
+UUID primary key and a standard presentation tier at once, and no profile
+combines those three without also requiring a parent or an explorer. This
+is the same gap already recorded for =reporting.report_definition=. It
+must be recorded as a no-match with its actual feature values and the
+reason, which is what M02 requires -- not force-bound to the nearest
+profile.
+
+** One note that is not an M-item but comes from the same read
+
+The committed protocol headers still use the retired =get_*= CRUD naming
+where regeneration emits =list_*= and =put_*. That is drift, not a model
+defect: the models already declare the canonical verbs, which is why the
+drift check wants to rewrite the headers.
+
+* The oresmd state of adoption
+
+** What exists
+
+Two model families live under =projects/ores.marketdata/modeling/=:
+
+- Seven =ores.codegen.entity= / junction models under =modeling/= --
+  =feed_binding=, =market_fixing=, =market_observation=, =market_series=,
+  =market_series_asset_class= (junction), =observation_lineage=,
+  =series_classification_rule=.
+- Eight =ores.codegen.oresmd_quote_type= models under =modeling/oresmd/=
+  -- one per asset class (=ir=, =credit=, =equity=, =commodity=, =fx=,
+  =inflation=, =correlation=) plus =model.org=, the batch manifest. This
+  is a metatype of its own: it carries no variability and produces no
+  entity stack. It generates =oresmd_enums=, =oresmd_identifiers=,
+  =oresmd_requirements=, the parser, the resolver, the projections and
+  four test files.
+
+** Coverage, measured against the corpus
+
+The ORE series-type universe is 43 types, seeded in
+=projects/ores.sql/populate/ore/ore_series_key_shapes_populate.sql=.
+By *type count* oresmd projects 30 of the 43. The types =from_ore_key()=
+deliberately rejects are the option, capfloor, bond and fixing families:
+=BOND=, =BOND_OPTION=, =FX_OPTION=, =CAPFLOOR=, =INDEX_CDS_OPTION=,
+=EQUITY_OPTION=, =COMMODITY_OPTION=, =ZC_INFLATIONCAPFLOOR=,
+=YY_INFLATIONCAPFLOOR=, =FIXING=, plus =SHAPE_PROFILE=, =RATING= and
+=GENERIC=.
+
+Type count flatters it. Measured against the whole committed corpus --
+100 fixtures, 477,013 key lines, 107,948 distinct keys -- **oresmd
+represents 26.0% of the data**: 124,194 lines project to a URI and
+352,819 do not.
+
+The rejects split in two, and the second half is the surprise.
+
+*Half one: 232,545 lines (48.8%) belong to the 13 of 43 registry types
+that have no oresmd coverage at all.* EQUITY_OPTION 119,137, CAPFLOOR
+78,270, ZC_INFLATIONCAPFLOOR 14,058, FX_OPTION 10,735,
+YY_INFLATIONCAPFLOOR 4,366, INDEX_CDS_OPTION 3,026, COMMODITY_OPTION
+2,346, SHAPE_PROFILE 171, BOND 154, BOND_OPTION 154, RATING 128, and
+=GENERIC= and =FIXING= with no corpus lines. This is the gap the
+abandoned story already recorded: oresmd models seven asset classes and
+ORE carries more.
+
+*Half two: quote types oresmd does claim cannot hold the keys ORE
+writes.* Ten of the 29 oresmd quote types have **zero** corpus coverage
+and six are partial:
+
+| ORE type | Lines projected | Why |
+|----------+-----------------+-----|
+| BASIS_SWAP | 0 / 5049 | real shape is long_tenor/short_tenor/ccy/maturity, not ccy/index/tenor/point |
+| CC_BASIS_SWAP | 0 / 2720 | four qualifier segments, not three |
+| FRA | 0 / 1678 | index and tenor order differs from the model |
+| ZERO | 0 / 498 | shape differs |
+| MM | 10 / 1436 (2.6%) | shape differs |
+| CC_FIX_FLOAT_SWAP | 0 / 106 | four qualifier segments |
+| IMM_FRA | 0 / 108 | shape differs |
+| MM_FUTURE, OI_FUTURE | 0 / 109 | real shape is ccy/contract_month/exchange:code/tenor |
+| CORRELATION | 0 / 61 | real shape is operand1/operand2/expiry/strike, six segments |
+| CPR | 0 / 1 | real key is =CPR/RATE/ISIN:...= |
+| IR_SWAP | 84.0% | 7-segment keys rejected |
+| SWAPTION | 37.7% | 7/8-segment smile keys, 91,689 lines |
+| DISCOUNT | 80.0% | =DISCOUNT/<CCY>/<CCY>= rejected by an off-by-one |
+| CDS | 19.4% | shape differs |
+| RECOVERY_RATE | 54.6% | shape differs |
+
+The oresmd quote-type models were derived from ORE's documented shapes,
+not from the corpus. Where the two disagree, the corpus is the authority
+and the model is the defect.
+
+**The registry fallback is healthy.** =decompose= followed by
+=reconstruct_key= is verbatim-lossless for **100%** of the corpus, and
+neither the unknown-type nor the short-key fallback fires on a single
+line. So the shape table itself is sound; the losses are in the
+projection layer above it.
+
+Four further findings from the same walk:
+
+- **A silent rewrite on the live import path.** The IR 6-segment path
+  discards the settlement segment and rebuilds it as the hardcoded ="2D"=.
+  The corpus carries =0D= on 1,338 six-segment keys, and every one of them
+  is imported as =2D=; a further 2,221 seven-segment keys are rejected
+  outright. This is not an export problem: the stored row already differs
+  from the file.
+- **A one-character bug costs 9,075 lines.** =from_ir_discount= rejects a
+  =curve_id= equal to the currency where the forward projection can emit
+  exactly that, because a comparison at =oresmd_projections.cpp:644= uses
+  ="<="= where it means ="<"=.
+- **A single stray comma aborts a whole file.** The tokeniser needs two
+  commas and a CSV line with exactly one loses the entire file --
+  19,170 lines across the large CSVs.
+- **Nine fixtures cannot be parsed at all**: seven on date format
+  (=DD-MM-YYYY= and =DD.MM.YY=, 23,497 lines) and two on that malformed
+  CSV line. The two named =fx_localvol/market.txt= fixtures are among the
+  seven.
+
+=FIXING= deserves its own note: fixings are imported and stored as series
+=series_type="FIXING"=, and =from_ore_key("FIXING/RATE/EUR-EONIA")=
+returns =nullopt=. There is no =type=fixing= in either direction, and no
+=type=curve= either. The fixing key space cannot round-trip through oresmd
+at all today.
+
+** Grammar holes
+
+The URI layer is not only unwired; it has its own defects. =model= is an
+accepted query key on all seven asset classes and is discarded for six.
+=parse_credit= does not type-gate =quote=. The =ir= entity is never
+validated as a currency. And =split_market_series_key= keeps no point,
+contradicting the four-field key the registry defines -- which is the
+function the ingest loop relies on.
+
+** The wiring gap, stated precisely
+
+| Symbol | Production callers |
+|--------|--------------------|
+| =oresmd_parser= | none |
+| =oresmd_resolver= | none |
+| =oresmd_projections::to_index_name= | none |
+| =oresmd_projections::to_curve_key= | none |
+| =oresmd_projections::to_quote_key= | none |
+| =oresmd_projections::from_ore_key= | none |
+| =oresmd_projections::split_market_series_key= | =feed_ingest_loop.cpp=, =ores.synthetic= (=fx_spot_feed=, =feed_controller=) |
+
+Test-only, by the standard's B06 rule, is dead code. This is the one
+place where that rule should not be applied as a deletion: the layer is
+the decided foundation for the target state, so the finding is "wire it",
+recorded as an exception with the plan attached.
+
+** Why it is unwired
+
+Sprint 25's =adopt-oresmd-native-market-data-identity= story
+(=E62808C1-D692-4877-835D-3A512A9F4160=) set the target state and was
+abandoned at sprint close on 2026-09-23:
+
+| Task | State |
+|------+-------|
+| Analysis: identity inventory, consumers, fields-vs-URI | DONE |
+| Inverse projection: ORE key to oresmd identifier | DONE |
+| Identity core: =market_series= and =feed_binding= store URIs | ABANDONED |
+| Observation identity: =point_id= carries the oresmd point | ABANDONED |
+| Generation configs move to URI s | ABANDONED |
+| The NATS wire carries URI s | ABANDONED |
+| =ores.shell= talks oresmd natively | ABANDONED |
+| Delete legacy ORE representations | ABANDONED |
+| Design: the market data data model on oresmd | ABANDONED |
+
+The story's own =* Result= reads: "Abandoned at sprint 25 close, as part
+of the reset to one approach for sprint 26." The reset chose the
+component-clean-standard programme, one component at a time. The two are
+not in conflict -- the clean standard is what makes the cutover safe --
+but the marketdata clean-up is the natural place to resume it.
+
+** The decided target state (from the DONE analysis task)
+
+- One =oresmd_uri= column per identity-bearing entity. Component fields
+  are dropped. The hybrid is rejected: two writable copies of one
+  identity drift and no constraint can detect it.
+- =market_observation.point_id= stays but is repurposed to carry the
+  serialised oresmd point; the ="SPOT"= sentinel dies and a scalar series
+  gets a null point.
+- Classification (=asset_class=, =series_subclass=, =is_scalar=) is
+  derived, not identity.
+- Validation moves from SQL check constraints into the oresmd layer.
+- ORE text and CSV stay as boundary formats. The projection boundary is
+  the ORE-format edge only. The NATS wire becomes oresmd-native, not a
+  projection.
+- Six sequenced steps, each keeping the system buildable: inverse
+  projection (done), identity core, observation rows, generation configs,
+  the wire, the shell, then deletion.
+
+** The abandoned branch
+
+=origin/feature/identity-core-series-and-bindings= holds six commits
+implementing step 1 (77 files, +1433/-1299). Thirty-six of those files
+are =ores.qt/= sources that no longer exist on main, so the branch cannot
+be merged as it stands. The other ~41 -- the =ores.marketdata=, =ores.sql=
+and =ores.synthetic= halves, plus the =from_index_name= inverse
+projection -- still apply and are worth reviving rather than rewriting.
+
+* The ORE import and export reality
+
+** Import: wired and working
+
+=ores.shell= =marketdata import= reads the files client-side, sends their
+content over =marketdata.v1.import=, and =import_service::import()=:
+
+1. =parse_market_data()= / =parse_fixings()= (=ores.ore.core/market/=)
+   with a =series_key_registry= read once per batch.
+2. The FX =key_swapped= correction against =ores.refdata='s currency
+   pairs, best-effort.
+3. Find-or-create =market_series= by =(series_type, metric, qualifier)=,
+   classified by =series_classifier= into subclass and asset classes.
+4. Bulk-write =market_observation= rows (=value= as text, =point_id=
+   defaulted from the registry) and =market_fixing= rows.
+
+** Export: absent
+
+=serialize_market_data()= / =serialize_fixings()= are the only code that
+writes ORE text. Both call sites are in
+=ores.ore/core/tests/market_market_data_roundtrip_tests.cpp=. There is no
+command, handler or service anywhere that turns stored rows back into an
+ORE file.
+
+** Data-loss enumeration for a round trip
+
+A round trip =ORE file -> stored rows -> ORE file= cannot be lossless
+today. In rough order of severity:
+
+1. **No export exists.** 100% of stored rows. The serializer has no
+   production caller, there is no =rows -> market_datum= mapper and no
+   ORE-text protocol struct. Everything below is what a new exporter must
+   also solve.
+2. **74.0% of the corpus cannot become an oresmd URI at all**, and the
+   ingest path never calls the projection library. This is a coverage
+   problem, not a storage one -- see the two halves above.
+3. **A single-comma CSV line aborts its whole file.** The tokeniser
+   requires two commas, so one malformed line costs 19,170 lines across
+   the large CSVs.
+4. **The verbatim key is not stored.** =market_datum= keeps =key=
+   verbatim; =import_service= decomposes it into
+   =series_type=/=metric=/=qualifier=/=point_id= and discards the string.
+   This is less dangerous than it looks, because
+   =decompose= then =reconstruct_key= is verbatim-lossless for 100% of the
+   corpus -- but it is still a reconstruction where a copy would do, and
+   it is the reason the point must be re-derived (item 6).
+5. **The point is defaulted on ingest with no inverse.** A key with no
+   point of its own is stored with =default_point_for(series_type)=. An
+   exporter that does not reproduce the registry's =has_point_dimension=
+   rule emits =FX/RATE/EUR/USD/SPOT= for =FX/RATE/EUR/USD=. The corpus
+   already carries 1,365 FX, 401 RECOVERY_RATE, 154 BOND, 105 EQUITY, 43
+   COMMODITY and 2 CPR lines in this shape.
+6. **A one-character projection bug rejects 9,075 lines.** =from_ir_discount=
+   refuses a =curve_id= equal to the currency that the *forward* projection
+   can emit, because =oresmd_projections.cpp:644= compares with ="<="=
+   where it means ="<"=.
+7. **The IR par-rate settlement segment is destroyed.** The 6-segment path
+   rebuilds it as the hardcoded ="2D"=, so the 1,338 corpus keys carrying
+   =0D= are imported as =2D=. A further 2,221 seven-segment keys are
+   rejected. This is the most serious of the fidelity findings because the
+   **stored row already differs from the file** -- it is not something an
+   exporter can repair.
+8. **The reversal is a rewrite, not a round trip.** The FX convention
+   correction mutates the qualifier when the pair is reversed relative to
+   refdata. The value is untouched, but the key is not.
+9. **No provenance at all.** =market_observation.source= is the caller's
+   =--source= string. There is no source file, line number, import id,
+   ingest time or raw line, so no row can be traced to its origin.
+10. **=source= is not in the unique key.** Re-importing under a new tag
+    supersedes the old tag rather than adding a second observation.
+11. **Duplicates are resolved destructively at parse time.** The last
+    occurrence of a =(date, key)= pair wins and the earlier one is gone;
+    =duplicate_policy= only chooses whether the loss is a warning or an
+    error, and the strict mode is unreachable from the CLI.
+12. **Comments, blank lines, delimiter, spacing, date format and file
+    order are dropped.** The parser discards them by design and the tables
+    have no column for them, so a byte-identical round trip is impossible
+    without new columns. Both =YYYYMMDD= and =YYYY-MM-DD= parse; the
+    market serializer writes =YYYYMMDD= and the fixings serializer writes
+    =YYYY-MM-DD=.
+13. **Shape-table row descriptions disagree with the metrics oresmd
+    emits.** Latent today, because nothing validates a metric.
+
+Items 1, 5, 6 and 7 decide whether "no data loss" is achievable at all.
+Item 7 is the only one where the damage is already done on the ingest
+path; 5 and 6 are properties of the projection layer, and 1 is the
+missing code.
+
+** The corpus exists, and only one test reads it
+
+The repository commits a real ORE corpus at =external/ore/examples/=. A
+fixture inventory of it counts **100 market-data fixtures** (105 names
+matching =market*/marketdata*=, plus three dated =MD_*.csv=, less eight
+derived dumps and logs) and **70 fixings files**. It is tracked in git,
+not downloaded at build time.
+
+Ninety-one of the hundred import cleanly: 477,013 key lines, 107,948
+distinct keys. Nine abort -- seven on date format and two on one
+malformed CSV line. The narrower glob =market*.txt= alone is 64 files and
+250,748 lines; the wider inventory is the one to quote.
+
+One test walks it: =classification_series_classifier_tests.cpp= resolves
+=external/ore/examples= through =ores::testing::project_root::resolve()=
+and censuses the distinct series keys to check the classifier. Forty-eight
+of the 170 fixtures are reached by the 27 parser cases and 48 round-trip
+cases. Nothing tests a byte-identical market-data round trip -- by design,
+the assertions are field-by-field -- and **no test links
+=series_key_registry= to the projections**.
+
+What no test does is walk the corpus against **oresmd**. Nothing asserts
+that a corpus key can be represented as a URI, which is how a 26.0%
+coverage figure and a silent =0D= to =2D= rewrite both survived a suite of
+952 assertions.
+
+* Protocol and wiring findings
+
+** Subjects and headers
+
+Twelve protocol headers. Six are generated for the six entities --
+=feed_binding=, =market_fixing=, =market_observation=, =market_series=,
+=observation_lineage=, =series_classification_rule= -- and six are
+hand-written for operations and custom payloads: =crm_protocol=,
+=curve_republish_protocol=, =curve_snapshot_protocol=, =import_protocol=,
+=market_feed_config_protocol=, =market_series_export_protocol=.
+
+The generated six are committed in the **retired** shape --
+=list=/=save=/=delete=/=history= -- while the models declare the canonical
+set: =list=, =get=, =get_many=, =put=, =put_many=, =delete=,
+=delete_many=, the =*_versions.= pair for the four entities with history,
+=list_by_series_id= for observations, and the three =<entity>_events.=
+subjects. This is the same 82-file drift, seen from the protocol side.
+
+=M06= **fails**: six hand-written headers carry wire types no model
+covers. =P04= fails with it: there is no =ores.codegen.operation= model
+anywhere in the component, and eight operation families want one (=crm=,
+=republish=, =compute=, =curve-snapshot=, =import=, =export-to-storage=,
+=feed-control=, =publish-from-dq=). =P01= is satisfied at the model level
+for all six entities, except that no model offers a point-in-time read.
+
+** Nothing is composed
+
+=W01= fails, and more broadly than the two handler families:
+
+- The umbrella =registrar.cpp= constructs its messenger handlers inline
+  and calls only =register_market_observation_handlers=; the other five
+  generated per-entity registrars are bypassed.
+- All four history-provider registrars are unwired.
+- All six event-mapping registrars are unwired, and the regenerated
+  event registrar has a different signature
+  (=register_entity_event_mapping= plus =publish_entity_event=) from the
+  hand-written mapping the service composes. The absence is what makes
+  =series_classification_rule_eventing_integration_tests= the one failing
+  core test.
+
+No reason is recorded for any of these, which is what W01 requires.
+Consequences: =observation_lineages.*= and
+=series_classification_rules.*= answer nothing, and =market_fixings.*=
+and =market_series.history= are declared but unserved.
+
+** The permissions gate is vacuous for this component
+
+=check_handler_permissions.py= prints a pass, but =marketdata= is not in
+its =REGISTRY=, so it checks nothing. Read by hand, =W02= fails: 16 codes
+are checked by handlers, none is seeded exactly as checked, seven
+=marketdata::= codes are seeded but checked by no handler, and
+=SyntheticService= and =IamService= hold grants that do not match what the
+handlers test. The four hand-written handlers check =crm:read=,
+=import:write= and =curve_bootstrap:*= codes that are not seeded at all.
+
+** Other protocol findings
+
+- =P02=: six raw subject literals duplicate a constant or belong to a
+  subject family with no model; =marketdata.v1.market-data-observations.publish-from-dq=
+  is a raw literal in =registrar.cpp= and again in SQL. Two exceptions are
+  legitimate (the tick family has no model; the feed-config subjects are
+  another component's).
+- =P03=: seven stale generated artefacts, including six =*_changed_event.hpp=
+  headers and =market_series_asset_class_protocol.ts=.
+- The junction materialises **no** protocol, handler, registrar or service
+  at all -- neither side of it sets =:list_by:=, which is the junction
+  messaging gate's condition. That is also why its shell command includes
+  a header nothing generates.
+- =market_data_architecture.org= documents a subject set the code no
+  longer matches.
+- The NATS wire is ORE-shaped: tick subjects are
+  =marketdata.v1.tick.<tenant>.<workspace>.<party>.<lowercased ore key
+  with '/' as '.'>=, and =feed_binding.ore_key= is a raw ORE key string.
+- =feed_binding='s =market_feed_configs.*= subjects live in the
+  =marketdata.v1= namespace but are served by =ores.synthetic=.
+- Seven tables carry =party_id= with no restrictive party policy,
+  silenced by =RLS_002= entries in
+  =projects/ores.sql/utility/validation_ignore.txt= lines 342-354.
+
+* Documentation findings
+
+- =api=, =core= and =service= each carry a =component_overview.org= with
+  a diagram and the six required sections.
+- =client/modeling/component_overview.org= is a **skeleton**: the Summary
+  is the template's own placeholder text ("Three to five sentences: ...")
+  and every other section is a single empty bullet. It links
+  =ores.marketdata.client.png=, which does not exist, and the module has
+  no =.puml=; the gap is registered as =MISSING_PUML ores.marketdata.client=
+  in =docs_exceptions.txt=.
+- There is **no =modeling/component_overview.org= at the component root**
+  and no group model, so codegen generates no root =CMakeLists.txt=; the
+  root =modeling/CMakeLists.txt= is hand-written and holds only a PlantUML
+  target.
+- The root =modeling/ores.marketdata.puml= has **no two-pass sentinel** --
+  it has never been through the automated pass. The three module PUMLs do
+  have one.
+
+* Structure, dead code and duplication
+
+** File census
+
+285 =.hpp=/=.cpp= files. 188 carry the generated marker; 97 are
+hand-written, of which 20 are tests and 77 are not. The 77 non-test
+hand-written files divide into 24 that generation should supersede, 36
+that are infrastructure and stay, and 17 that are dead.
+
+** G03 is clean in both directions
+
+All 188 marked files name a template that exists, and no hand-written
+file carries the marker or a near-miss spelling. The item passes as it
+stands. Worth recording because the suspicion going in was the opposite:
+the presentation history field mappers, the =api= =*_table= / =*_table_io=
+/ =*_json_io= families, the eventing headers, the generators, and the
+entity handlers and registrars are all already generated.
+
+** The client module is almost entirely dead
+
+The component's live client surface is exactly one class,
+=market_data_client=, consumed by =ores.synthetic= (=fx_spot_feed.cpp=,
+=ir_curve_feed.cpp=, =application.cpp=, =feed_controller.hpp=) and linked
+by =ores.refdata.client=. Everything else in =client/= is self-satisfying:
+
+| Symbol | External consumers |
+|--------|--------------------|
+| =crm_client= | none |
+| =fx_spot_subscription= | none (the one hit in =feed_ingest_loop.hpp= is a comment) |
+| =detail::ore_key_to_subject= | none |
+| =crm_rate_display_service= | none |
+| =crm_rate_formatter= | none |
+| =crm_rate_table= (=convert_to_table=, =convert_to_matrix_table=) | none |
+| =crm_rate_table_io= | no includer at all |
+
+This is 14 files plus their tests. They were the presentation layer behind
+the retired Qt cross-rates matrix, and their own doc comments claim a
+consumer -- "for any text-console consumer (ores.shell today)" -- that
+does not exist. There is no client codegen facet anywhere in the tree, so
+a hand-written client layer is by design; a dead one is not.
+
+** The plural/singular repositories
+
+=market_fixings_repository= and =market_observations_repository= (plural,
+hand-written) sit beside =market_fixing_repository= and
+=market_observation_repository= (singular, generated). They are not
+line-for-line duplicates: both halves share =sql()= and =write()= over the
+same entity and table, and they *split the read path*. The generated
+singular is production through the generated =*_service= and is untested;
+the hand-written plural carries =read_as_of=, =read_as_of_buckets= and the
+series/date reads, and is what =import_service=, =curve_snapshot_handler=,
+=curve_republish_service= and =feed_ingest_loop= actually call.
+
+So H02's "two implementations of the same behaviour" applies to the shared
+half and the fix is the standard one: the generated singular survives, the
+extra queries move into the =cpp_domain_type_repository= template and are
+regenerated, then the plural is deleted and its four callers migrate.
+
+** Other dead and unused symbols
+
+- =application_exception.hpp= in =service/app/= has zero consumers.
+- =marketdata_tick_subject_prefix= and =synthetic_sandbox_tick_subject_prefix=
+  in =tick_subjects.hpp= are unused constants.
+- =service/src/curve_republish_resolver.hpp= appears in no
+  =component_files.cmake= while two files include it directly (G06).
+
+** The oresmd verdict: wire it, do not delete it
+
+The census recommends deleting the oresmd layer, since by B06 a test-only
+consumer is dead code. That rule has an explicit escape -- "Name the
+intended consumer on the task, or delete the symbol with its test" -- and
+this is the case it exists for. The intended consumer is the import and
+export boundary, it is named in the decided target state, and it is what
+the owner asked for. Record the exception with that consumer named, and
+wire it in PR 4. The symbols do not go.
+
+The client CRM stack has no such defence: nothing intends to consume it.
+
+* Coverage of sources by tests (V08)
+
+65 generated sources and 16 hand-written sources have no test that
+reaches them. The sharpest one: =client/src/market_data_client.cpp= is the
+busiest client class in the component, consumed by four files in
+=ores.synthetic=, and has no test -- while the dead CRM code beside it is
+fully tested. Also untested: =api/domain/i_feed.cpp=, both =*_tick_json_io.cpp=,
+=core/messaging/registrar.cpp=, =core/messaging/publish_from_dq_handler.cpp=,
+and in =service/= the application, host, feed ingest loop, curve republish
+service, config parser and options.
+
+
+
+* Proposed split into PRs
+
+Six PRs. Each ends in a state that builds and has a green gate, and each
+is reviewable on its own. PR 1 is a prerequisite for PR 3, because
+regeneration before the generator defects are fixed does not compile. PRs
+2 and 3 are independent of each other. PRs 4 to 6 resume the abandoned
+target state and can be sequenced or dropped without unpicking 1 to 3.
+
+** PR 1 -- Absorb the template movement and make the tree regenerable
+
+*Scope.* Every defect that must be fixed at its source **before** the
+component is regenerated. Nothing is regenerated here, so the tree is
+unchanged and the evidence is the codegen suite plus a diff that shows
+marketdata untouched.
+
+- The model fixes (M02, M03, M09): bind the four unbound models, record
+  =feed_binding= as a no-match with its actual feature values, drop the
+  restated =:has_tenant_id:= from the junction, delete the ten legacy
+  Presentation properties from =feed_binding.org=.
+- The junction shell-command defect (G05). The junction model enables the
+  =ores.cpp.shell-command= facet, but the junction messaging gate emits no
+  protocol header, so the generated
+  =market_series_asset_class_commands.cpp= includes
+  =ores.marketdata.api/messaging/market_series_asset_class_protocol.hpp=
+  -- a file the render never produces. Either the junction gains a
+  protocol or the shell facet is gated off for it. Regression test in the
+  codegen suite.
+- The event-registrar signature mismatch (W01/G05). The regenerated event
+  registrar exposes =register_entity_event_mapping= plus
+  =publish_entity_event=, while the service composes a hand-written
+  mapping of a different shape. Fix at the template.
+
+*Why first.* Regenerating before these are fixed **will not compile**, so
+a "just regenerate" PR cannot exist. Three hand-written files reference
+types the models remove -- =market_data_client.cpp= on
+=get_market_series_request=, =save_market_series_request= and
+=save_market_observation_request=; the umbrella =registrar.cpp= on the
+same names; and =ores.iam='s provisioning handler -- and the junction
+shell unit includes a header nothing generates.
+
+*Why separate.* It is the only PR whose whole content is "the generator
+was wrong", it changes no generated output for marketdata, and it is what
+makes PR 3 reviewable as a mechanical regeneration rather than a mix of
+mechanical and semantic change.
+
+** PR 2 -- Make the corpus the test, and fix what it finds
+
+*Scope.* Point the test suite at =external/ore/examples/=: a test that
+parses every fixture and asserts the resulting series and observation
+rows, plus a coverage test that fails when a key line the corpus carries
+cannot be represented. Then fix what it finds. The first two fixes are
+under twenty lines and recover 42,667 corpus lines:
+
+- The CSV tokeniser needs two commas, so a line with exactly one aborts
+  the whole file. Change the requirement to at least one comma
+  (=market_data_parser.cpp:106-118=).
+- =time_utils::parse_date= gains =DD-MM-YYYY= and =DD.MM.YY= branches
+  (about fifteen lines), which unblocks seven fixtures.
+
+The third is the live import defect: the IR 6-segment path silently
+rewrites =0D= to =2D=. PR 2 stops the silent rewrite by preserving the
+segment through the parse; the real per-currency lookup follows in PR 4.
+
+*Why now and why separate.* It is the only way to exercise the data types
+the owner named, it needs no model or schema change, and it converts the
+26.0% coverage figure into a gate. Without it there is no way to show a
+later cutover did not change what a file means.
+
+*Depends on.* Nothing but PR 1 for a stable tree. It also produces the
+evidence PR 4 and PR 5 need.
+
+** PR 3 -- Regenerate, migrate the consumers, delete what generation supersedes
+
+*Scope.* Items G01 to G08, B03, B06, H02, H03, H05, W01, V05 to V08. The
+mechanical work the previous two PRs made safe:
+
+- Regenerate all four modules: 82 changed files, 14 created, across SQL,
+  C++, TypeScript, shell and docs.
+- Migrate every consumer of the retired wire types in the same piece of
+  work -- =market_data_client.cpp=, the umbrella =registrar.cpp=,
+  =ores.iam='s provisioning handler, and transitively =ores.synthetic='s
+  five =market_data_client= call sites.
+- Delete the dead code the census found: the client CRM stack (14 files
+  plus tests), =application_exception.hpp=, the two unused tick subject
+  constants, and the plural repositories once their =read_as_of= queries
+  move into the =cpp_domain_type_repository= template.
+- Give the component its root =component_overview.org= and group model so
+  the root =CMakeLists.txt= is generated (M10); write the =client='s
+  diagram and replace its placeholder prose; clear the
+  =MISSING_PUML ores.marketdata.client= exception.
+- Compose the unwired registrar families or record why not (W01). The
+  event mappings are the live case: their absence is the one failing core
+  test.
+- Refresh the CMake source lists and land the per-entity shell units and
+  recipes (S01, S02).
+
+*Why separate from the cutover.* It is large but entirely mechanical, and
+it is the PR that makes =check_component_drift.py --component marketdata=
+pass. Keeping it apart from PR 5 means the 96-file diff is reviewed once,
+in isolation from a schema change.
+
+*Known prerequisite inside it.* The =recorded_at= member is dropped by the
+current template for =:no_audit_columns:= entities
+(id:table_less_and_no_audit_columns_consequences), so =market_fixing= and
+=market_observation= and the two hand-written tests that populate it move
+together.
+
+** PR 4 -- Wire the import boundary through oresmd, and add ORE export
+
+*Scope.* Make the oresmd layer load-bearing at the ORE-format edge, and
+close the fidelity gaps that stop an export being lossless:
+
+- The import path gains the inverse projection at its boundary:
+  =parse_market_data()= -> =from_ore_key()= -> =market_data_identifier= ->
+  the series and observation rows it already writes. This is the consumer
+  the B06 exception for the oresmd layer names.
+- A new export path. A =rows -> market_datum / fixing= mapper plus one
+  serializer caller (a new =core/src/service/ore_export_service.cpp=),
+  exposed as a shell verb and a subject, asserting a file round trip
+  through the database.
+- The point-elision rule, in that same mapper: drop the point when
+  =has_point_dimension(series_type)= is false. The predicate already
+  exists and is unused, and this needs no schema change.
+- The one-character projection bug: =oresmd_projections.cpp:644= compares
+  with ="<="= where it means ="<"=, which rejects the 9,075
+  =DISCOUNT/<CCY>/<CCY>= lines the forward projection can emit.
+- The IR settlement segment: the real per-currency spot-lag lookup from
+  refdata, so the segment survives the round trip. A =settle= field on
+  =ir_market_data_identifier=, emitted in the quote-key projection.
+- The verbatim key, so the export is lossless for every case the
+  reconstructed key cannot reproduce. A =key text not null= column on
+  =marketdata_market_observations_create.sql= and =..._fixings_create.sql=,
+  populated from =market_datum::key= in =import_service.cpp=.
+- The remaining modelled-but-unrepresentable quote types from the corpus
+  table -- BASIS_SWAP, CC_BASIS_SWAP, ZERO, FRA, IMM_FRA, MM, MM_FUTURE,
+  OI_FUTURE, CORRELATION, CPR and the 7-segment IR and SWAPTION keys.
+  These are model defects: the oresmd quote-type models were written from
+  ORE's documentation and the corpus disagrees. Mostly =qualifier_shape=
+  in =modeling/oresmd/ir_quote_type.org= plus the projection dispatch.
+- The grammar holes the survey found: =model= accepted on seven classes
+  and discarded for six, =parse_credit= not type-gating =quote=, the =ir=
+  entity never validated as a currency, and =split_market_series_key=
+  dropping the point against the registry's four-field key.
+- =--duplicates-are-errors= on the shell import verb, so the strict
+  policy is reachable (=marketdata_commands.cpp:75-78=).
+
+*Why here.* It delivers the owner's first two goals without the schema
+cutover, and it is the smallest change that makes the oresmd layer
+load-bearing. It also surfaces where the URI and the stored columns
+disagree, which is PR 5's input.
+
+*The honest limit.* Even after this PR the export is lossless only for
+the 26.0% of the corpus oresmd can name, plus whatever the coverage work
+recovers. The 232,545 lines in the 13 uncovered types cannot round-trip
+until oresmd grows those asset classes, which is a modelling programme of
+its own. That is a decision for the owner, not something this PR can
+absorb.
+
+*Note.* =split_market_series_key()= currently serves as the identity split
+in the ingest loop. Under this PR it stays -- the cutover that retires it
+is PR 5.
+
+** PR 5 -- The identity cutover
+
+*Scope.* Revive =feature/identity-core-series-and-bindings=: the
+=oresmd_uri= column on =market_series= and =feed_binding=, the repos and
+registrars and ingest loops reading URIs, the =point_id= repurposing, then
+the deletion of =series_type=/=metric=/=qualifier=/=ore_key= and the
+import classification table. Hard cutover, no backfill, per the decided
+target state.
+
+*Why last of the substantive PRs.* It is the only irreversible one -- it
+drops columns -- and everything before it makes it verifiable. It should
+not be attempted before the corpus exists and the projections are
+lossless.
+
+** PR 6 -- Join =COMPONENTS_UNDER_TEST=
+
+*Scope.* Add =marketdata= to =component_registry.py= and run every gate:
+component drift, model drift, protocol twin coverage, handler permissions,
+populate references, recipe inventory, CMake source lists, plus
+=compass build=, the suites and =compass db recreate=. This is item V06
+and the standard's own closing condition.
+
+*Why separate.* Registration is a claim about the whole component. It
+should be its own commit so the claim can be reverted without reverting
+the work.
+
+* Decisions the owner must make
+
+1. **Is the oresmd cutover in scope for this story?** The clean standard
+   does not require it. PRs 1 to 3 and 6 stand alone as the clean-up; PRs
+   4 and 5 are the native-representation goal. Recommendation: take 1 to
+   3 plus 6 as this story, and 4 to 5 as a resumed story, because 5 drops
+   columns and deserves its own acceptance.
+2. **=FIXING= coverage.** Give fixings an oresmd representation, or
+   record them as an accepted exception at the import boundary. They are
+   imported and stored today, and =from_ore_key= rejects them, so the
+   export path cannot even attempt them.
+3. **The uncovered and mis-modelled series types.** The corpus, not the
+   documentation, is the authority. 13 types have no oresmd identifier
+   and account for 232,545 corpus lines (48.8%); 10 more have an
+   identifier that cannot hold the keys ORE writes for them. Growing
+   oresmd to cover the option and capfloor families is a modelling
+   programme in its own right -- decide whether it is in scope, or
+   record rejection at import and accept that 74.0% of the corpus cannot
+   round-trip.
+4. **The "no data loss" bar.** A byte-identical file round trip, or
+   value-and-key equivalence? Comments, blank lines, file order, the
+   losing duplicate in a =(date, key)= repeat, and the =YYYYMMDD= versus
+   =YYYY-MM-DD= asymmetry cannot survive storage without new columns.
+5. **Revive the abandoned branch or re-derive it?** It holds ~41
+   applicable files of PR 5's work. Reviewing it is cheaper than
+   rewriting it if its assumptions still hold.
+6. **The =client= module.** Its only live class is =market_data_client=.
+   Deleting the CRM stack leaves a one-class module -- keep it, or fold
+   the class into =core= and retire the module.
+
+* Evidence
+
+The surveys behind this page are raw working files under
+=tmp/marketdata_analysis/=, which is gitignored. They are listed here so
+they can be moved into the task's evidence directory when the task starts,
+rather than being lost:
+
+| File | What it holds |
+|------+---------------|
+| =01_baseline_drift.txt= | the full =check_component_drift.py --dry-run= output at the baseline head |
+| =01_models.md= | the B02 metatype table and every M-item result, cited file:line |
+| =02_cpp_census.md= | the B03 file census, the B06 symbol census, G02/G03, H02 and V08 |
+| =03_protocol.md= | the B04 subject inventory and every P-item and W-item result |
+| =04_oresmd_ore_roundtrip.md= | the oresmd grammar, the ORE key space, both ingest paths and the data-loss analysis |
+| =coverage_probe.py=, =coverage_probe.out= | the corpus walk that produced the 26.0% figure; ports =decompose= and the inverse projection line for line |
+| =fixture_inventory.txt= | the 100 market-data and 70 fixings fixtures, with which import and which abort |
+| =v02_core_tests.txt= | the one failing core test, named |
+| =v08.txt= | the per-source coverage survey |
+| =rendered/= | the dry-run render that proves the junction shell unit includes a header nothing emits |
+
+Reproduce the baseline with:
+
+#+begin_src sh
+cd projects/ores.codegen
+./venv/bin/python scripts/check_component_drift.py --component marketdata --dry-run
+./venv/bin/python scripts/check_model_drift.py --summary
+#+end_src
+
+Reproduce the coverage figure with:
+
+#+begin_src sh
+projects/ores.codegen/venv/bin/python tmp/marketdata_analysis/coverage_probe.py
+#+end_src
+
+* Open questions
+
+- Whether the unwired registrar families should be composed or recorded.
+  The survey found only =register_market_observation_handlers= composed;
+  the messenger handlers are otherwise constructed inline in the umbrella
+  =registrar.cpp=, and all four history-provider and all six event-mapping
+  registrars are unwired with no reason recorded anywhere. The failing
+  core test is one of them, so at least that one has to be answered.
+- Whether the six hand-written protocol headers should become operation
+  models (P04) in this story or a follow-up. There is no
+  =ores.codegen.operation= model anywhere in the component, and eight
+  operation families want one.
+- Whether =feed_binding='s three =market_feed_configs.*= subjects belong
+  to =ores.marketdata= at all: they are served by =ores.synthetic= while
+  living in the =marketdata.v1= namespace.
+- Whether =feed_binding='s no-match profile gap is fixed here or in the
+  profile catalogue, since =reporting.report_definition= has the same
+  shape.

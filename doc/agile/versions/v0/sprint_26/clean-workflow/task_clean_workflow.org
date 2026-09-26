@@ -26,11 +26,11 @@ ores.workflow passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]] |
-| Now          | Second increment on =feature/clean-workflow=, raised as PR #2179. S01, S02, W01, H01 and the documentation gate are done, and V02 to V04 now pass with the fleet up and the database recreated. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                |
-| Next         | Close the task once PR #2179 merges. V07 and V08 remain unsurveyed and are recorded as such. |
+| Next         | Nothing. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance

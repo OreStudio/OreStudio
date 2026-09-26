@@ -84,6 +84,7 @@ messaging::crm_enabled_derived_pair_key key_from(const domain::crm_enabled_deriv
 domain::crm_enabled_derived_pair to_domain(const messaging::crm_enabled_derived_pair_write& write) {
     domain::crm_enabled_derived_pair v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.config_id = write.config_id;
     v.base_currency_code = write.base_currency_code;
     v.quote_currency_code = write.quote_currency_code;

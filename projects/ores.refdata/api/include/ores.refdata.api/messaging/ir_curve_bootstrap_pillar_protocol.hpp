@@ -41,6 +41,7 @@ struct ir_curve_bootstrap_pillar_key {
 
 struct ir_curve_bootstrap_pillar_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     boost::uuids::uuid bootstrap_config_id;
     int sequence_index;
     std::string start_tenor_code;

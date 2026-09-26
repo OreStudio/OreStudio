@@ -84,6 +84,7 @@ messaging::portfolio_key key_from(const domain::portfolio& v) {
 domain::portfolio to_domain(const messaging::portfolio_write& write) {
     domain::portfolio v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.name = write.name;
     v.description = write.description;
     v.parent_portfolio_id = write.parent_portfolio_id;

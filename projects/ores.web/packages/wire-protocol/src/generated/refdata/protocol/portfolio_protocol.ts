@@ -34,6 +34,7 @@ export interface PortfolioKey {
 
 export interface PortfolioWrite {
     id: string;
+    party_id: string;
     name: string;
     description: string;
     parent_portfolio_id: string | null;

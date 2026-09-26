@@ -86,16 +86,16 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <name> <description> <parent_portfolio_id> <owner_unit_id> <functional_currency>
-     * <gl_account_ref> <cost_center> <book_status> <regulatory_book_type> <is_sweepable>
-     * <rates_centre_code> <reason> <commentary>
+     * @brief add <party_id> <name> <description> <parent_portfolio_id> <owner_unit_id>
+     * <functional_currency> <gl_account_ref> <cost_center> <book_status> <regulatory_book_type>
+     * <is_sweepable> <rates_centre_code> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <name> <description> <parent_portfolio_id> <owner_unit_id>
+     * @brief set <id> <party_id> <name> <description> <parent_portfolio_id> <owner_unit_id>
      * <functional_currency> <gl_account_ref> <cost_center> <book_status> <regulatory_book_type>
      * <is_sweepable> <rates_centre_code> <reason> <commentary> [--version <n>]
      */
@@ -104,9 +104,9 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <name> <description> <parent_portfolio_id> <owner_unit_id>
-     * <functional_currency> <gl_account_ref> <cost_center> <book_status> <regulatory_book_type>
-     * <is_sweepable> <rates_centre_code> <reason> <commentary>
+     * @brief put-many --count <n> <id> <party_id> <name> <description> <parent_portfolio_id>
+     * <owner_unit_id> <functional_currency> <gl_account_ref> <cost_center> <book_status>
+     * <regulatory_book_type> <is_sweepable> <rates_centre_code> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

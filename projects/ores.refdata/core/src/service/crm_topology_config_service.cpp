@@ -83,6 +83,7 @@ messaging::crm_topology_config_key key_from(const domain::crm_topology_config& v
 domain::crm_topology_config to_domain(const messaging::crm_topology_config_write& write) {
     domain::crm_topology_config v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.name = write.name;
     v.pivot_currency_code = write.pivot_currency_code;
     v.enabled = write.enabled;

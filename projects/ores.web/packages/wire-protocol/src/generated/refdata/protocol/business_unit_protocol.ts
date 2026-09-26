@@ -34,6 +34,7 @@ export interface BusinessUnitKey {
 
 export interface BusinessUnitWrite {
     id: string;
+    party_id: string;
     unit_name: string;
     parent_business_unit_id: string | null;
     unit_code: string;

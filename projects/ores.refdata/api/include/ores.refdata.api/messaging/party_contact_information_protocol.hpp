@@ -41,6 +41,7 @@ struct party_contact_information_key {
 
 struct party_contact_information_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     std::string contact_type;
     std::string street_line_1;
     std::string street_line_2;

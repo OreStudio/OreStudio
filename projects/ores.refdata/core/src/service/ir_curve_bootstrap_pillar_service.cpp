@@ -85,6 +85,7 @@ domain::ir_curve_bootstrap_pillar
 to_domain(const messaging::ir_curve_bootstrap_pillar_write& write) {
     domain::ir_curve_bootstrap_pillar v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.bootstrap_config_id = write.bootstrap_config_id;
     v.sequence_index = write.sequence_index;
     v.start_tenor_code = write.start_tenor_code;

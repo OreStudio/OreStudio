@@ -41,6 +41,7 @@ struct business_unit_key {
 
 struct business_unit_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     std::string unit_name;
     std::optional<boost::uuids::uuid> parent_business_unit_id;
     std::string unit_code;

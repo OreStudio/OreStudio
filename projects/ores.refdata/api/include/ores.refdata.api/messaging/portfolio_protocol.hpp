@@ -41,6 +41,7 @@ struct portfolio_key {
 
 struct portfolio_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     std::string name;
     std::string description;
     std::optional<boost::uuids::uuid> parent_portfolio_id;

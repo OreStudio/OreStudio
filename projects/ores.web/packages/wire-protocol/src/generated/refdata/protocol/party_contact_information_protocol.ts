@@ -35,6 +35,7 @@ export interface PartyContactInformationKey {
 
 export interface PartyContactInformationWrite {
     id: string;
+    party_id: string;
     contact_type: string;
     street_line_1: string;
     street_line_2: string;

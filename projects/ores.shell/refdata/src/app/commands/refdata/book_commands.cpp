@@ -140,27 +140,27 @@ void book_commands::register_commands(cli::Menu& root_menu, nats_client& session
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <name> <description> <parent_portfolio_id> <owner_unit_id> <functional_currency> "
-        "<gl_account_ref> <cost_center> <book_status> <regulatory_book_type> <is_sweepable> "
-        "<rates_centre_code> <reason> <commentary>");
+        "add <party_id> <name> <description> <parent_portfolio_id> <owner_unit_id> "
+        "<functional_currency> <gl_account_ref> <cost_center> <book_status> <regulatory_book_type> "
+        "<is_sweepable> <rates_centre_code> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <name> <description> <parent_portfolio_id> <owner_unit_id> <functional_currency> "
-        "<gl_account_ref> <cost_center> <book_status> <regulatory_book_type> <is_sweepable> "
-        "<rates_centre_code> <reason> <commentary> [--version <n>]");
+        "set <id> <party_id> <name> <description> <parent_portfolio_id> <owner_unit_id> "
+        "<functional_currency> <gl_account_ref> <cost_center> <book_status> <regulatory_book_type> "
+        "<is_sweepable> <rates_centre_code> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <name> <description> <parent_portfolio_id> <owner_unit_id> "
-        "<functional_currency> <gl_account_ref> <cost_center> <book_status> <regulatory_book_type> "
-        "<is_sweepable> <rates_centre_code> <reason> <commentary>");
+        "put-many --count <n> <id> <party_id> <name> <description> <parent_portfolio_id> "
+        "<owner_unit_id> <functional_currency> <gl_account_ref> <cost_center> <book_status> "
+        "<regulatory_book_type> <is_sweepable> <rates_centre_code> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -363,12 +363,13 @@ void book_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(req.change.write.name, parsed->positionals[next++], "name");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
         read_token(req.change.write.parent_portfolio_id,
@@ -429,12 +430,13 @@ void book_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
+        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(req.change.write.name, parsed->positionals[next++], "name");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
         read_token(req.change.write.parent_portfolio_id,
@@ -507,14 +509,15 @@ void book_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 12 + 2) {
-            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 13 + 2) {
+            fail(out) << "Expected " << (change_count * 13 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::book_change change;
             read_token(change.write.id, parsed->positionals[next++], "id");
+            read_token(change.write.party_id, parsed->positionals[next++], "party_id");
             read_token(change.write.name, parsed->positionals[next++], "name");
             read_token(change.write.description, parsed->positionals[next++], "description");
             read_token(change.write.parent_portfolio_id,

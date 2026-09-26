@@ -41,6 +41,7 @@ struct crm_driver_pair_key {
 
 struct crm_driver_pair_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     boost::uuids::uuid config_id;
     std::string base_currency_code;
     std::string quote_currency_code;

@@ -84,6 +84,7 @@ messaging::party_identifier_key key_from(const domain::party_identifier& v) {
 domain::party_identifier to_domain(const messaging::party_identifier_write& write) {
     domain::party_identifier v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.id_scheme = write.id_scheme;
     v.id_value = write.id_value;
     v.description = write.description;

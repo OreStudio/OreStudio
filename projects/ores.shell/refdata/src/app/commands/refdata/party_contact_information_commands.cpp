@@ -141,24 +141,26 @@ void party_contact_information_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <contact_type> <street_line_1> <street_line_2> <city> <state> <country_code> "
-        "<postal_code> <phone> <email> <web_page> <reason> <commentary>");
+        "add <party_id> <contact_type> <street_line_1> <street_line_2> <city> <state> "
+        "<country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <contact_type> <street_line_1> <street_line_2> <city> <state> <country_code> "
-        "<postal_code> <phone> <email> <web_page> <reason> <commentary> [--version <n>]");
+        "set <id> <party_id> <contact_type> <street_line_1> <street_line_2> <city> <state> "
+        "<country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary> [--version "
+        "<n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <contact_type> <street_line_1> <street_line_2> <city> <state> "
-        "<country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>");
+        "put-many --count <n> <id> <party_id> <contact_type> <street_line_1> <street_line_2> "
+        "<city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -360,12 +362,13 @@ void party_contact_information_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 11 + 2) {
+            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(req.change.write.contact_type, parsed->positionals[next++], "contact_type");
         read_token(req.change.write.street_line_1, parsed->positionals[next++], "street_line_1");
         read_token(req.change.write.street_line_2, parsed->positionals[next++], "street_line_2");
@@ -418,12 +421,13 @@ void party_contact_information_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
+        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(req.change.write.contact_type, parsed->positionals[next++], "contact_type");
         read_token(req.change.write.street_line_1, parsed->positionals[next++], "street_line_1");
         read_token(req.change.write.street_line_2, parsed->positionals[next++], "street_line_2");
@@ -488,14 +492,15 @@ void party_contact_information_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 11 + 2) {
-            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 12 + 2) {
+            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::party_contact_information_change change;
             read_token(change.write.id, parsed->positionals[next++], "id");
+            read_token(change.write.party_id, parsed->positionals[next++], "party_id");
             read_token(change.write.contact_type, parsed->positionals[next++], "contact_type");
             read_token(change.write.street_line_1, parsed->positionals[next++], "street_line_1");
             read_token(change.write.street_line_2, parsed->positionals[next++], "street_line_2");

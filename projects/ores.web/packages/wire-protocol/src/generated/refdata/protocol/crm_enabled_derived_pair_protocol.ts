@@ -34,6 +34,7 @@ export interface CrmEnabledDerivedPairKey {
 
 export interface CrmEnabledDerivedPairWrite {
     id: string;
+    party_id: string;
     config_id: string;
     base_currency_code: string;
     quote_currency_code: string;

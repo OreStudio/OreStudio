@@ -83,6 +83,7 @@ messaging::book_key key_from(const domain::book& v) {
 domain::book to_domain(const messaging::book_write& write) {
     domain::book v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.name = write.name;
     v.description = write.description;
     v.parent_portfolio_id = write.parent_portfolio_id;

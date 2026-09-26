@@ -87,21 +87,23 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <name> <pivot_currency_code> <enabled> <reason> <commentary>
+     * @brief add <party_id> <name> <pivot_currency_code> <enabled> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <name> <pivot_currency_code> <enabled> <reason> <commentary> [--version <n>]
+     * @brief set <id> <party_id> <name> <pivot_currency_code> <enabled> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <name> <pivot_currency_code> <enabled> <reason> <commentary>
+     * @brief put-many --count <n> <id> <party_id> <name> <pivot_currency_code> <enabled> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

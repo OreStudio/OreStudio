@@ -41,6 +41,7 @@ struct book_key {
 
 struct book_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     std::string name;
     std::string description;
     boost::uuids::uuid parent_portfolio_id;

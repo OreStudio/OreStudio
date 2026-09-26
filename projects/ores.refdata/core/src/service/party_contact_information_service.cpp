@@ -86,6 +86,7 @@ domain::party_contact_information
 to_domain(const messaging::party_contact_information_write& write) {
     domain::party_contact_information v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.contact_type = write.contact_type;
     v.street_line_1 = write.street_line_1;
     v.street_line_2 = write.street_line_2;

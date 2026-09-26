@@ -140,7 +140,7 @@ void business_unit_commands::register_commands(cli::Menu& root_menu, nats_client
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <unit_name> <parent_business_unit_id> <unit_code> <business_centre_code> "
+        "add <party_id> <unit_name> <parent_business_unit_id> <unit_code> <business_centre_code> "
         "<unit_type_id> <status> <reason> <commentary>");
 
     menu->Insert(
@@ -148,15 +148,15 @@ void business_unit_commands::register_commands(cli::Menu& root_menu, nats_client
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <unit_name> <parent_business_unit_id> <unit_code> <business_centre_code> "
-        "<unit_type_id> <status> <reason> <commentary> [--version <n>]");
+        "set <id> <party_id> <unit_name> <parent_business_unit_id> <unit_code> "
+        "<business_centre_code> <unit_type_id> <status> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <unit_name> <parent_business_unit_id> <unit_code> "
+        "put-many --count <n> <id> <party_id> <unit_name> <parent_business_unit_id> <unit_code> "
         "<business_centre_code> <unit_type_id> <status> <reason> <commentary>");
 
     menu->Insert(
@@ -352,12 +352,13 @@ void business_unit_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(req.change.write.unit_name, parsed->positionals[next++], "unit_name");
         read_token(req.change.write.parent_business_unit_id,
                    parsed->positionals[next++],
@@ -410,12 +411,13 @@ void business_unit_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
+        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(req.change.write.unit_name, parsed->positionals[next++], "unit_name");
         read_token(req.change.write.parent_business_unit_id,
                    parsed->positionals[next++],
@@ -480,14 +482,15 @@ void business_unit_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 7 + 2) {
-            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 8 + 2) {
+            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::business_unit_change change;
             read_token(change.write.id, parsed->positionals[next++], "id");
+            read_token(change.write.party_id, parsed->positionals[next++], "party_id");
             read_token(change.write.unit_name, parsed->positionals[next++], "unit_name");
             read_token(change.write.parent_business_unit_id,
                        parsed->positionals[next++],

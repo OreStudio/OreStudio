@@ -34,6 +34,7 @@ export interface CrmTopologyConfigKey {
 
 export interface CrmTopologyConfigWrite {
     id: string;
+    party_id: string;
     name: string;
     pivot_currency_code: string;
     enabled: boolean;

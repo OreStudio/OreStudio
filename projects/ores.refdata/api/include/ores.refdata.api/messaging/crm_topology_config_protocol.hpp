@@ -41,6 +41,7 @@ struct crm_topology_config_key {
 
 struct crm_topology_config_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     std::string name;
     std::string pivot_currency_code;
     bool enabled;

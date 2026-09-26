@@ -35,6 +35,7 @@ export interface PartyIdentifierKey {
 
 export interface PartyIdentifierWrite {
     id: string;
+    party_id: string;
     id_scheme: string;
     id_value: string;
     description: string;

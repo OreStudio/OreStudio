@@ -41,6 +41,7 @@ struct party_identifier_key {
 
 struct party_identifier_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     std::string id_scheme;
     std::string id_value;
     std::string description;

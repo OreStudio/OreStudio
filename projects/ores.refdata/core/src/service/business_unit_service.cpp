@@ -84,6 +84,7 @@ messaging::business_unit_key key_from(const domain::business_unit& v) {
 domain::business_unit to_domain(const messaging::business_unit_write& write) {
     domain::business_unit v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.unit_name = write.unit_name;
     v.parent_business_unit_id = write.parent_business_unit_id;
     v.unit_code = write.unit_code;

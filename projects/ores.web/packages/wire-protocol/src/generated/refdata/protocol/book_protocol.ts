@@ -35,6 +35,7 @@ export interface BookKey {
 
 export interface BookWrite {
     id: string;
+    party_id: string;
     name: string;
     description: string;
     parent_portfolio_id: string;

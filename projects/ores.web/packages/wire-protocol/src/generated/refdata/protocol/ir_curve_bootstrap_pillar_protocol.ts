@@ -34,6 +34,7 @@ export interface IrCurveBootstrapPillarKey {
 
 export interface IrCurveBootstrapPillarWrite {
     id: string;
+    party_id: string;
     bootstrap_config_id: string;
     sequence_index: number;
     start_tenor_code: string;

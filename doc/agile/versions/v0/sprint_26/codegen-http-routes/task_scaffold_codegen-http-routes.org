@@ -66,6 +66,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Generated code calls =build()= twice per route | =projects/ores.codegen/library/templates/ores.cpp.http-route.route_implementation.org=, =ores.cpp.http-route.operation_implementation.org= and their tangled =.mustache= files | Fixed | The route implementation archetypes now build once into a local named after the route (={{identifier}}_built=) and pass that value to both =add_route()= and =register_route()=. Both take =const domain::route&=, so the local costs no copy. The templates were re-tangled and 15 generated files were regenerated: three in =ores.http/assets=, eleven in =ores.http/iam= and one in =ores.http/refdata=. The =check_route_auth_declarations.py= gate resolves the built local back to its builder, so it still reads each route's authentication position; two tests pin the new shape. Regenerating refdata also rewrote seven unrelated files carrying main's later work, and those were restored. |
+| 2 | The storage client's documentation overstates token enforcement | =projects/ores.storage/core/include/ores.storage.core/net/storage_transfer.hpp= and =.../net/http_client.hpp= | Fixed | The wording now says the token is a required parameter, that an empty token is accepted, and that the service refuses the request with 401. No throw was added, because the compute wrapper passes an empty token: the node holds no credential, so a throw would break the tree build. =nats_client::bearer_token= makes no non-empty claim, so it is unchanged. |
 
 * Result

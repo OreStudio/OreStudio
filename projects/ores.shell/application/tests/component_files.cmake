@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "app_script_runner_tests.cpp"
+    "history_commands_tests.cpp"
     "main.cpp"
     "scheduler_commands_tests.cpp"
 )

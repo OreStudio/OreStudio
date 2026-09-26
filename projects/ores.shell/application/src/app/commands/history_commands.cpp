@@ -27,6 +27,7 @@
 #include <cli/cli.h>
 #include <optional>
 #include <ostream>
+#include <utility>
 
 namespace ores::shell::app::commands {
 
@@ -70,7 +71,7 @@ void history_commands::process_get(std::ostream& out,
     }
 
     const auto& entity_type = parsed->positionals[0];
-    const auto& entity_id = parsed->positionals[1];
+    auto& entity_id = parsed->positionals[1];
 
     std::optional<int> version;
     if (const auto& raw_version = parsed->flag("version"); !raw_version.empty()) {
@@ -83,9 +84,12 @@ void history_commands::process_get(std::ostream& out,
     }
 
     // The diff path is already shared by the per-entity history commands, so the
-    // one thing this unit adds is the listing beside it.
+    // one thing this unit adds is the listing beside it. The id is moved rather
+    // than copied, as every other caller of the renderer does it; entity_id is
+    // taken by non-const reference above for exactly that, because a move from a
+    // const reference would only copy.
     if (parsed->flag_set("diff")) {
-        render_history_diff(out, session, entity_type, entity_id, version);
+        render_history_diff(out, session, entity_type, std::move(entity_id), version);
         return;
     }
     if (version) {

@@ -79,9 +79,16 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 
 * Step 12 results (part one)
 
-Run on 2026-09-26. Four staging tables moved to generated, each with a declared =* Artefact columns= section: =business_units=, =books=, =currencies= and =currency_pair_conventions=.
+Run on 2026-09-26. Six staging tables moved to generated: =business_units=, =books=, =currencies=, =currency_pair_conventions= and =portfolio=, each with a declared =* Artefact columns= section, and =calendar= with none.
 
-**The criterion for a section.** An artefact table must carry every column a populate script writes and every column a publish function reads. Nothing else. Its own base table is not the test — that is what made the census read as 12 divergences when some of them were only staleness. Applying the criterion to these four:
+**When a section is required, and when it is a choice.** An artefact table must carry every column a populate script writes and every column a publish function reads. Its own base table is not the test — that is what made the census read as 12 divergences when some were only staleness.
+
+- *Required* when the default projection drops or mistypes something the pipeline uses. Five of the six below are this case.
+- *Optional* when the projection only adds columns nothing reads. Adding them is harmless and keeps the artefact in step with its base, so the default is left alone. A section may still pin the exact contract, and =countries= does: its exclusion of =coding_scheme_code= is load-bearing documentation, because the publish takes that value from the dataset rather than the row.
+
+That distinction is why =calendar= takes no section and =countries= does, even though both are the "the hand-written file was merely stale" case.
+
+**The six, and what the pipeline needs:**
 
 | Table | Column | Who needs it |
 |-------+--------+--------------|
@@ -89,6 +96,8 @@ Run on 2026-09-26. Four staging tables moved to generated, each with a declared 
 | =books= | =rates_centre_code= | The publish reads it and coalesces it with the publishing party's centre, so null must stay legal |
 | =currencies= | =holiday_calendar= | The ISO populate writes it; =refdata_currency_calendars_seed_populate.sql= reads it |
 | =currency_pair_conventions= | =advance_calendar= | The seed populate writes it; the publish explodes it into convention-calendar rows |
+| =portfolio= | =is_virtual= | The import carries =0=/=1= and the publish converts with =(m.is_virtual != 0)=, so the staging column stays integer |
+| =calendar= | none | The projection only adds =source=, =is_editable= and =base_calendar_code=, all defaulted or nullable, and the populate names the columns it supplies |
 
 **Two difference classes step 3 did not have.** Both surfaced here, and both are cases where the import contract is deliberately not the store contract:
 
@@ -99,20 +108,18 @@ Step 3's six classes stand; these are a seventh and an eighth.
 
 **A lever for the transcription.** =scripts/emit_artefact_section.py= turns a hand-written =CREATE TABLE= into the model section. It prints and never writes, so the section is reviewed before it is inserted. It exists because transcribing by eye loses a ==null== silently: the SQL still parses and a nullable column quietly becomes NOT NULL. The script is a transcription aid, not a verdict — a stale hand-written table transcribed faithfully is still stale, which is why each of the four was checked against its populate and publish first.
 
-**All four bodies are unchanged.** =books= and =business_units= come out byte-identical to the hand-written column block. =currencies= and =currency_pair_conventions= differ only by an explicit =null= on columns that were already nullable.
+**All six bodies carry the hand-written contract.** =books=, =business_units= and =portfolio= come out byte-identical to the hand-written column block. =currencies= and =currency_pair_conventions= differ only by an explicit =null= on columns that were already nullable, and =calendar= only by the defaults and extra nullable columns described above.
 
-**Figures.** Census: generated 30 to 34, divergent 11 to 7. Validator 0 warnings; codegen suite 681 passing; refdata drift 516 to 514, exactly the two notify triggers, and dq drift unchanged at 507 because a hand-written staging table was never in the drift. Regenerating also applied the pending drift to =refdata_books_notify_trigger_create.sql= and =refdata_business_units_notify_trigger_create.sql=, whose event payload becomes canonical — G01 work the same touch required.
+**Figures.** Census: generated 30 to 36, divergent 11 to 5. Validator 0 warnings; codegen suite 681 passing; refdata drift 516 to 513, exactly the three notify triggers that regenerated, and dq drift unchanged at 507 because a hand-written staging table was never in the drift. Regenerating also applied the pending drift to the =books=, =business_units= and =portfolios= notify triggers, whose event payload becomes canonical — G01 work the same touch required. =calendars=' trigger was already current, which is why four staging tables added one drift file rather than two.
 
-**The seven that remain, with their verdict already taken:**
+**The five that remain, with their verdict already taken:**
 
 | Table | Verdict | Reason |
 |-------+---------+--------|
 | =account_contact_information= | section | =account_username= is a natural key the publish resolves |
 | =account= | section | =business_unit_code=, =role=, =reports_to_username= and =photo_key= are written by the Acme populate; the passwords and TOTP secret must stay out of staging |
-| =calendar= | no section | the projection only widens; the columns it adds carry defaults or are nullable |
 | =image= | section | the import renames =id= to =image_id=, =code= to =key= and =data= to =svg_data= |
 | =image_tag= | section, and the junction template needs the switch | the generated table makes =version=, =assigned_by= and =assigned_at= NOT NULL, and the upsert function omits all three |
-| =portfolio= | section | =is_virtual= must stay =integer= in the import |
 | =tag= | section | the import renames =id= to =tag_id= |
 
 The one =image_tag= entry needs the junction artefact template to read =* Artefact columns= the way the domain_entity one does; it does not yet.

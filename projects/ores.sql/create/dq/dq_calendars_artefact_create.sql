@@ -17,28 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- Validated enumeration of named date collections consumed by ORE and QuantLib: business-day/holiday calendars (TARGET, UnitedStates, UnitedStates.GovernmentBond, ...), central-bank meeting calendars, and other calendar-shaped reference data. Each row is one concrete QuantLib/ORE calendar token — sub-market variants (e.g. UnitedStates.NYSE vs UnitedStates.GovernmentBond) are separate rows, not a joined variant field, so the code column always matches ORE's XML <Calendar> vocabulary verbatim. Classified by [[id:1A454661-81B5-4F8F-93A6-06547412DD84][calendar_type]] and associated with the [[id:88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563][country]] whose calendar it is — supranational calendars (TARGET) use the ZZ sentinel (ISO 3166-1's own reserved user-assigned code) rather than a nullable country reference, since no single country owns them. - Artefact Table
+-- =============================================================================
+
 create table if not exists "ores_dq_calendars_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
     "code" text not null,
     "version" integer not null,
     "name" text not null,
-    "calendar_type" text not null,
-    "country_code" text not null,
-    "image_id" uuid
+    "calendar_type" text not null default 'public_holiday',
+    "country_code" text not null default 'ZZ',
+    "image_id" uuid null,
+    "source" text not null default 'quantlib',
+    "is_editable" boolean not null default false,
+    "base_calendar_code" text null
 );
 
-create index if not exists calendars_artefact_dataset_idx
-on "ores_dq_calendars_artefact_tbl" (dataset_id);
+create index if not exists dq_calendars_artefact_dataset_idx
+on ores_dq_calendars_artefact_tbl (dataset_id);
 
-create index if not exists calendars_artefact_tenant_idx
-on "ores_dq_calendars_artefact_tbl" (tenant_id);
+create index if not exists dq_calendars_artefact_tenant_idx
+on ores_dq_calendars_artefact_tbl (tenant_id);
 
-create index if not exists calendars_artefact_code_idx
-on "ores_dq_calendars_artefact_tbl" (code);
-
-create index if not exists calendars_artefact_calendar_type_idx
-on "ores_dq_calendars_artefact_tbl" (calendar_type);
-
-create index if not exists calendars_artefact_country_code_idx
-on "ores_dq_calendars_artefact_tbl" (country_code);
+create index if not exists dq_calendars_artefact_code_idx
+on ores_dq_calendars_artefact_tbl (code);

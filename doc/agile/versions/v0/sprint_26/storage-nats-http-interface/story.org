@@ -22,10 +22,15 @@ it is moving bytes, and over NATS when it is sending a command, and the two
 agree: the same bucket and key name the same object, the same failure is
 reported the same way, and the same identity is required.
 
-Storage becomes generatable in the process. The target state's claim is that
-modelling the operation set is what produces the protocol, the handler, the
-permission codes, the shell verbs and the TypeScript twin, the way an entity's
-model produces its own, and this story is where that claim is tested.
+Storage becomes generatable in the process, and only as far as the generator
+reaches. The target state's claim is that modelling the operation set produces
+the protocol, the handler, the permission codes, the shell verbs and the
+TypeScript twin, the way an entity's model produces its own. Reading the facets
+against an operation model shows the claim is half true: the protocol header,
+the TypeScript twin and the shell commands generate, while the handler, the
+service and the registrar do not, and the permission codes are hand-maintained
+constants with hand-written SQL seeds. This story is where that claim is tested,
+and where the part that does not hold is recorded rather than papered over.
 
 * Status
 
@@ -41,8 +46,9 @@ model produces its own, and this story is where that claim is tested.
 * Acceptance
 
 - The operation set is modelled, and the generator produces its protocol header,
-  NATS handler, permission codes, shell verbs and TypeScript twin from the model
-  rather than by hand.
+  TypeScript twin, shell verbs and shell recipes from the model rather than by
+  hand. The handler, service and registrar are hand-written, because no facet
+  admits an operation model, and the task says which artefact is which.
 - Every storage route authenticates before it acts, and each operation is gated
   by its own permission code rather than by a valid token alone.
 - NATS carries the same operation set as HTTP: the same bucket and key leave the

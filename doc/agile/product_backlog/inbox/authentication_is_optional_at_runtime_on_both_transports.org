@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 12666A97-69C2-4874-ABE0-E8C497C9EAE1
+:END:
+#+title: Authentication is optional at runtime on both transports
+#+description: The HTTP server skips its whole auth middleware block when no authenticator is configured, and warns rather than refusing; the NATS request context comes back unauthenticated when no verifier is configured; and has_permission returns true for an empty permission list to keep pre-RBAC tokens working. A deployment that forgets to configure either transport therefore accepts everything, and nothing reports it.
+#+type: capture
+#+level: cross
+#+filetags: :security:auth:http:nats:defect:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Three independent fallbacks each turn "not configured" into "allow", and each is
+silent:
+
+- *HTTP.* The middleware that parses the bearer token, validates the JWT and sets
+  the request's authenticated user is skipped in its entirety when the server has
+  no authenticator. The server says so once, as a warning, and serves the request.
+  =projects/ores.http/api/src/net/http_session.cpp:140-193=, guard at =:152=;
+  =projects/ores.http/api/src/net/http_server.cpp:41-53= logs and continues.
+- *NATS.* The request context is built by =make_request_context=, which returns
+  the base, unauthenticated context when no verifier is configured
+  (=projects/ores.service/src/service/request_context.cpp:89-90=). A handler then
+  runs with an empty identity rather than refusing.
+- *Authorisation.* =has_permission= returns =true= when the context's permission
+  list is empty, deliberately, to keep tokens minted before RBAC working
+  (=projects/ores.service/include/ores.service/messaging/handler_helpers.hpp:198-216=,
+  short-circuit at =:202-203=). A token with no permission claims therefore passes
+  every check that uses it.
+
+The three compound. A deployment that omits the authenticator accepts an
+unauthenticated HTTP request; one that omits the verifier accepts any NATS
+request; and even with both configured, a token that carries no permissions is
+authorised for everything.
+
+* Why
+
+Every other security decision in the tree assumes a caller was authenticated and
+authorised before the operation was reached. The protocol states it as a rule —
+identity travels in the envelope, never in a payload, and authorisation is per
+operation and per resource — and the storage interface work depends on it, since
+its acceptance is "an unauthenticated put is refused".
+
+A fallback that allows is a fail-open, and the reporting is the weaker half of
+the problem: the HTTP warning goes to a service log at startup, and the other two
+say nothing at all. A misconfigured deployment is indistinguishable from a
+correctly configured one in every health signal the fleet has, so the only way to
+find it is to read the code.
+
+The fix is a decision about the intended posture rather than a patch: refuse to
+start when a transport has no verifier, or make "unauthenticated" an explicit
+deployment choice that is stated and audited. The empty-list bypass needs its own
+answer, because it is load-bearing for old tokens.
+
+* References
+
+- =projects/ores.http/api/src/net/http_session.cpp:140-193= — the middleware, and the skip at =:152=
+- =projects/ores.http/api/src/net/http_server.cpp:41-53= — the warning, and no refusal
+- =projects/ores.service/src/service/request_context.cpp:85-143= — =make_request_context=, unauthenticated base at =:89-90=
+- =projects/ores.service/include/ores.service/messaging/handler_helpers.hpp:198-216= — =has_permission=, empty-list short circuit
+- =doc/knowledge/architecture/nats_entity_protocol.org:747-808= — the security rules the callers assume
+
+* See also
+
+- [[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]] — the other half: even an authenticated caller may reach a handler that checks nothing.
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — where each layer is supposed to enforce the identity this capture finds optional.

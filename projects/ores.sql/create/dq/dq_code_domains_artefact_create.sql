@@ -17,30 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
 -- =============================================================================
--- Code Domains Artefact Table
---
--- Staging table for code domains before publication into a tenant's own
--- copy of dq_code_domains_tbl. Supports the DQ artefact pipeline pattern
--- (self-referential: DQ publishing into its own table, like coding_schemes,
--- badge_severities, and badge_definitions).
+-- A code domain is a classification registry that names the context in which a code value exists. It disambiguates identical codes used in different entity types — e.g. 'ACTIVE' in party_status vs 'ACTIVE' in book_status. Code domains are reusable beyond badges: any future system needing to namespace code values (validation rules, audit customisation, etc.) can reference this table. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_code_domains_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
     "code" text not null,
-    "version" integer not null default 0,
+    "version" integer not null,
     "name" text not null,
     "description" text not null,
     "display_order" integer not null
 );
 
-create index if not exists code_domains_artefact_dataset_idx
-on "ores_dq_code_domains_artefact_tbl" (dataset_id);
+create index if not exists dq_code_domains_artefact_dataset_idx
+on ores_dq_code_domains_artefact_tbl (dataset_id);
 
-create index if not exists code_domains_artefact_tenant_idx
-on "ores_dq_code_domains_artefact_tbl" (tenant_id);
+create index if not exists dq_code_domains_artefact_tenant_idx
+on ores_dq_code_domains_artefact_tbl (tenant_id);
 
-create index if not exists code_domains_artefact_code_idx
-on "ores_dq_code_domains_artefact_tbl" (code);
+create index if not exists dq_code_domains_artefact_code_idx
+on ores_dq_code_domains_artefact_tbl (code);

@@ -25,7 +25,7 @@
  * Badge Severity Table
  *
  * Reference data defining severity levels used to classify badges.
- * Codes align with Bootstrap 5 contextual classes so Wt rendering
+ * Codes align with Bootstrap 5 contextual classes so browser rendering
  * requires no translation layer.
  *
  * Values: secondary, info, success, warning, danger, primary.
@@ -92,7 +92,17 @@ begin
     for update;
 
     if found then
-        if NEW.version != 0 and NEW.version != current_version then
+        -- The write states what it believes about the row, and the store is
+        -- what decides. Version zero means one thing: no current row exists.
+        -- So a create that collides with a live row is refused here, for every
+        -- client, rather than by a check each client has to remember.
+        if NEW.version = 0 then
+            if not ores_utility_version_replace_allowed_fn() then
+                raise exception
+                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
+                    using errcode = '23505';
+            end if;
+        elsif NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
                 NEW.version, current_version
                 using errcode = 'P0002';

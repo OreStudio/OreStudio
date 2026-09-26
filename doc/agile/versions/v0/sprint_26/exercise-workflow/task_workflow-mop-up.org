@@ -144,3 +144,67 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** 1. The step-row race -- done
+
+Measured first, because the two candidate causes want opposite fixes. Both engine
+handlers were given a log line carrying =std::this_thread::get_id()=, the service
+was restarted and a two-step identity run was started. They are on different
+threads:
+
+#+begin_example
+on_start_workflow   thread=140192874710720
+on_step_completed   thread=140192883103424
+#+end_example
+
+and the interleaving reproduced on the same run:
+
+#+begin_example
+23:13:26.802333 Publishing step command: step_index=0 step_id=7f7da171-...
+23:13:26.804214 Step-completed event received: step=7f7da171-... outcome=completed
+23:13:26.816318 Workflow STARTED: step_count=2 first_step=one
+23:13:26.820405 ERROR Executing INSERT failed: Version conflict: expected version 1, but current version is 2
+#+end_example
+
+So it is true concurrency, not re-entrancy, and the engine's own header claim
+that the callbacks are "protected by the NATS library's serialisation
+guarantees" is simply false. That is what made the fix safe to pick: a plain
+=std::mutex= cannot deadlock, because a publish is asynchronous and the handler
+it provokes never re-enters this one on the same thread.
+
+The engine now holds a =std::mutex= for the whole of =on_start_workflow=,
+=on_step_completed= and =recover_in_progress=, and the header says what is
+actually true, with the measurement in it. Held for the whole handler rather
+than around the write, because the read-modify-write is the thing that has to be
+atomic.
+
+Verified on the same probe, a fresh id, with the fix in:
+
+#+begin_example
+Start-workflow request received: instance_id=eeeeeeee-1111-2222-3333-444444444444
+Publishing step command: step_index=0 step_name=one
+Workflow STARTED: step_count=2 first_step=one
+Step-completed event received: step=0 outcome=completed
+Publishing step command: step_index=1 step_name=two
+Dispatched step 1/1 (two)
+Step-completed event received: step=1 outcome=completed
+Workflow COMPLETED: steps=2
+#+end_example
+
+Zero version conflicts in the whole log, and the shell agrees:
+
+#+begin_example
+workflow wait eeeeeeee-... --timeout 60 --expect-steps 2
+  [1/2] one: completed
+  [2/2] two: completed
+✓ All 2 step(s) completed.
+#+end_example
+
+All four workflow test targets pass.
+
+** Still open
+
+The start path still reports acceptance it has not got, and the configurations
+are still unnamed and unscripted. Both are in the plan above; neither is
+blocked now.
+

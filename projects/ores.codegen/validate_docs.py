@@ -22,6 +22,9 @@ there; the parts are what the per-component checks validate.
 Sub-component overviews are named by their fully-qualified component
 name (ores.<group>.<part>) in output and in the exceptions file.
 
+The whole doc/ tree is also scanned for a link that a backtick span leaves
+visible to org, which aborts the site export at the first unresolved target.
+
 Exits 0 if all checks pass, 1 if any violations are found.
 
 Exceptions are read from docs_exceptions.txt in the same directory as
@@ -51,6 +54,37 @@ MISSING_DESCRIPTION  = "MISSING_DESCRIPTION"
 MISSING_SECTION      = "MISSING_SECTION"
 MISSING_PUML         = "MISSING_PUML"
 NAME_COLLISION       = "NAME_COLLISION"
+BACKTICK_LINK        = "BACKTICK_LINK"
+
+# A link inside one backtick span. Backticks are not org verbatim markup, so
+# org parses the brackets as a link; when the target is a C++ attribute such as
+# [[nodiscard]] the site export aborts with "Unable to resolve link".
+BACKTICK_SPAN_RE = re.compile(r"`([^`\n]*)`")
+
+# Inline verbatim inside a span: =...= and ~...~ do hide the brackets, so a
+# span that protects them is not a finding. Masked rather than removed, to
+# keep offsets stable.
+INLINE_VERBATIM_RE = re.compile(r"=[^=\n]+=|~[^~\n]+~")
+
+# A bracket link, and the targets org can resolve: a scheme (id:, file:,
+# proj:, https:), a file name, or a headline (leading *). A bare word is the
+# shape a C++ attribute has, and the shape the export aborts on.
+LINK_RE = re.compile(r"\[\[([^\]]+)\]\]")
+
+
+def _bare_link_targets(text: str) -> list[str]:
+    """Bracket-link targets that name nothing org can resolve."""
+    targets = []
+    for match in LINK_RE.finditer(text):
+        target = match.group(1).split("][")[0].strip()
+        if ":" in target or "." in target or target.startswith("*"):
+            continue
+        targets.append(target)
+    return targets
+
+# Verbatim blocks, where the exporter does not look for links at all.
+VERBATIM_BEGIN_RE = re.compile(r"^#\+(begin_(?:src|example))\b", re.IGNORECASE)
+VERBATIM_END_RE = re.compile(r"^#\+end_(?:src|example)\b", re.IGNORECASE)
 
 
 def load_exceptions(path: Path) -> set[tuple[str, str]]:
@@ -148,6 +182,54 @@ def check_name_collisions(components: list[Path]) -> list[tuple[str, str, str]]:
     return violations
 
 
+def check_backtick_links(doc_dir: Path) -> list[tuple[str, str, str]]:
+    """
+    Flag a [[target]] that sits inside one backtick span.
+
+    Backticks are not org verbatim markup. Org therefore parses the brackets
+    as a link, and the site export aborts on the first one whose target does
+    not exist -- so a single occurrence hides every page after it. This is how
+    [[nodiscard]] and [[no_unique_address]] reached main three times in one
+    day while every other doc check passed.
+
+    Only a complete span is judged, so two backticks that merely bracket a
+    protected =...= span are left alone, and a span whose brackets sit inside
+    =...= or ~...~ is left alone too. A src or example block is skipped
+    outright, because the exporter does not look for links there.
+    """
+    violations: list[tuple[str, str, str]] = []
+    for path in sorted(doc_dir.rglob("*.org")):
+        owner = str(path.relative_to(doc_dir.parent))
+        in_verbatim = False
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for number, line in enumerate(text.splitlines(), 1):
+            stripped = line.strip()
+            if VERBATIM_BEGIN_RE.match(stripped):
+                in_verbatim = True
+                continue
+            if VERBATIM_END_RE.match(stripped):
+                in_verbatim = False
+                continue
+            if in_verbatim:
+                continue
+            for match in BACKTICK_SPAN_RE.finditer(line):
+                content = list(match.group(1))
+                for span in INLINE_VERBATIM_RE.finditer(match.group(1)):
+                    for i in range(span.start(), span.end()):
+                        content[i] = "\x00"
+                targets = _bare_link_targets("".join(content))
+                if not targets:
+                    continue
+                violations.append((
+                    BACKTICK_LINK,
+                    owner,
+                    f"{owner}:{number}: org parses {','.join(targets)} inside backticks "
+                    f"as a link, and the site export aborts on the unresolved target; "
+                    f"use =...= or a src block: {match.group(0)}",
+                ))
+    return violations
+
+
 def main() -> int:
     script_dir = Path(__file__).resolve().parent
     projects_dir = script_dir.parent
@@ -209,6 +291,7 @@ def main() -> int:
                 violations.extend(check_component_overview(modeling_dir, owner))
 
     violations.extend(check_name_collisions(components))
+    violations.extend(check_backtick_links(projects_dir.parent / "doc"))
 
     violations = [
         (code, name, detail) for code, name, detail in violations

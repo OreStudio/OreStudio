@@ -22,6 +22,7 @@
 set(files
     "archiver_tests.cpp"
     "http_client_tests.cpp"
+    "local_store_tests.cpp"
     "main.cpp"
     "storage_transfer_tests.cpp"
 )

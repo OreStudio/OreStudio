@@ -189,6 +189,15 @@ public:
     route_builder delete_(const std::string& pattern);
 
     /**
+     * @brief Registers a HEAD route.
+     *
+     * A HEAD route answers with the status and the headers a GET would carry,
+     * and no body, so a caller can learn whether a resource exists and how
+     * large it is without transferring it.
+     */
+    route_builder head(const std::string& pattern);
+
+    /**
      * @brief Adds a built route to the router.
      */
     void add_route(const domain::route& route);

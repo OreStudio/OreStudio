@@ -23,31 +23,44 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http.core/export.hpp"
+#include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.storage.core/filesystem/local_store.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <expected>
 #include <memory>
 #include <string>
+#include <string_view>
 
 namespace ores::http_server::routes {
 
 /**
  * @brief Generic S3-like object storage HTTP endpoints.
  *
- * Registers four operations on every object in the storage hierarchy:
+ * Registers five operations over the storage hierarchy:
  *
  *   PUT    /api/v1/storage/{bucket}/{key}   upload (create or replace)
  *   GET    /api/v1/storage/{bucket}/{key}   download
+ *   HEAD   /api/v1/storage/{bucket}/{key}   existence and length, no body
  *   DELETE /api/v1/storage/{bucket}/{key}   delete object
- *   HEAD   /api/v1/storage/{bucket}/{key}   check existence / get size
+ *   GET    /api/v1/storage/{bucket}         list a page, filtered by prefix
  *
  * The {key} segment may contain slashes, enabling hierarchical keys such
  * as "workunit-id/input.tar.gz". Buckets map to subdirectories of the
- * configured storage root; unknown buckets receive a 404 response.
+ * configured storage root.
  *
- * Well-known bucket names are defined in ores.storage::net::buckets.
+ * Every route authenticates before it acts, and every operation checks its own
+ * permission code, so a read is never authorised by the code a write uses.
+ *
+ * The bytes themselves are not handled here: the routes resolve, guard and
+ * store through =ores.storage.core='s local store, which is the same code the
+ * NATS handler calls. That is what keeps the two interfaces from drifting in
+ * how they treat a key, a bucket or a missing object.
  */
 class ORES_HTTP_CORE_EXPORT storage_routes final {
 public:
-    explicit storage_routes(std::string storage_dir);
+    storage_routes(std::string storage_dir,
+                   std::shared_ptr<iam::service::authorization_service> auth_service);
 
     /**
      * @brief Registers all storage routes with the router.
@@ -64,6 +77,24 @@ private:
         return instance;
     }
 
+    /**
+     * @brief The caller's identity, once a route has admitted it.
+     */
+    struct auth_result {
+        boost::uuids::uuid account_id;
+    };
+
+    /**
+     * @brief Authenticates the caller and checks one operation's permission.
+     *
+     * Returns the response to send when either step fails, so a handler can
+     * co_return it unchanged.
+     */
+    std::expected<auth_result, http::domain::http_response>
+    check_auth(const http::domain::http_request& req,
+               std::string_view required_permission,
+               std::string_view operation_name);
+
     boost::asio::awaitable<http::domain::http_response>
     handle_put(const http::domain::http_request& req);
 
@@ -71,22 +102,16 @@ private:
     handle_get(const http::domain::http_request& req);
 
     boost::asio::awaitable<http::domain::http_response>
+    handle_head(const http::domain::http_request& req);
+
+    boost::asio::awaitable<http::domain::http_response>
     handle_delete(const http::domain::http_request& req);
 
-    /**
-     * @brief Resolves bucket + key to an absolute filesystem path and
-     *        validates that the bucket is known.
-     *
-     * Returns an empty string if the bucket is unknown (caller should
-     * respond with 404).
-     */
-    std::string resolve_path(const std::string& bucket, const std::string& key) const;
+    boost::asio::awaitable<http::domain::http_response>
+    handle_list(const http::domain::http_request& req);
 
-    static std::string read_file(const std::string& path);
-    static void write_file(const std::string& path, const std::string& data);
-    static void delete_file(const std::string& path);
-
-    std::string storage_dir_;
+    storage::filesystem::local_store store_;
+    std::shared_ptr<iam::service::authorization_service> auth_service_;
 };
 
 }

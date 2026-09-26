@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "filesystem/archiver.cpp"
+    "filesystem/local_store.cpp"
     "net/http_client.cpp"
     "net/storage_transfer.cpp"
 )
@@ -29,6 +30,7 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/filesystem/archiver.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/filesystem/local_store.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/net/http_client.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/net/storage_transfer.hpp"
 )

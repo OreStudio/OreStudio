@@ -155,3 +155,31 @@ def test_an_unstated_scoped_relation_is_refused(tmp_path):
     assert "const auto relation = *request.calendar_code;" in rendered
 
 
+# An entity whose parent has two mandatory FKs onto one table seeds that
+# ancestor twice, once per leg. Naming the ancestor after the entity alone
+# declared the same variable twice, which does not compile.
+#
+# The committed artefact is asserted rather than a single-model render: the
+# parent chain is resolved by scanning every component's models, which a model
+# rendered on its own from a temporary directory does not reach.
+TWO_LEG_GENERATED = (
+    REPO_ROOT
+    / "projects/ores.refdata/core/tests"
+    / "currency_pair_convention_eventing_integration_tests.cpp"
+)
+
+
+def test_a_parent_reached_twice_seeds_one_ancestor_per_leg():
+    import re
+
+    rendered = TWO_LEG_GENERATED.read_text(encoding="utf-8")
+    declared = re.findall(
+        r"auto (\w+) =\s+ores::\w+::\w+::generate_synthetic_", rendered)
+    assert declared, "the test seeds no parent"
+    assert len(declared) == len(set(declared)), f"a seed is declared twice: {declared}"
+    assert "pair_code_parent_base_currency_parent" in declared
+    assert "pair_code_parent_quote_currency_parent" in declared
+
+
+
+

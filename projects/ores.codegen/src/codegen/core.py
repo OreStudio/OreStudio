@@ -1687,11 +1687,14 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
             continue
         if mfk.get('table') in path:
             continue
-        # Name the ancestor after the row that references it and its entity,
-        # not after its FK column alone: two root FKs whose chains reach the
-        # same entity would otherwise declare the same variable twice, and so
-        # would a chain step whose FK column repeats an earlier step's column.
-        var = f"{parent_var}_{grandparent['entity_singular']}_parent"
+        # Name the ancestor after the row that references it and the FK column
+        # it fills, not after the entity alone: two mandatory FKs of one parent
+        # can reach the same entity -- currency_pair's base and quote legs both
+        # reference currency -- and an entity-only name declares the same
+        # variable twice. The column also keeps a chain step whose column
+        # repeats an earlier step's column apart, and each column needs its own
+        # active ancestor anyway, or both legs would point at one row.
+        var = f"{parent_var}_{mfk['column']}_parent"
         items.extend(_plan_required_seeds(
             grandparent['mandatory_fks'], var, org_by_table, component,
             path | {mfk.get('table')}))

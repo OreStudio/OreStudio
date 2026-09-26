@@ -117,3 +117,40 @@ fix. What this branch did build at this head, from the same log: the three
 scheduler libraries, its service entry point, its three test binaries, its
 consumer =ores.reporting=, and =ores.shell.exe=. The scheduler's part of V01
 holds; the tree-wide clause is blocked by another component's integration.
+
+
+The repair, and the head that builds
+====================================
+
+The two remaining workflow causes were repaired in this branch, because a
+tree-wide build is what V01 asks for and the repairs are mechanical:
+
+- =projects/ores.workflow/api/src/CMakeLists.txt= now compiles
+  =component_files.cmake= into a real library instead of declaring it
+  =INTERFACE=, with the same output name, version, visibility flags and
+  =ORES_WORKFLOW_API_LIBRARY= definition every sibling api part uses. Its
+  =export.hpp= drops the claim that the api is header-only, which its own
+  =src/= directory contradicted, and takes the =BOOST_SYMBOL_EXPORT=/
+  =IMPORT= pattern the rest of the tree uses. =libores.workflow.api.so= now
+  exports =operator<<(std::ostream&, workflow_instance const&)= and its step
+  sibling.
+- =projects/ores.workflow/core/tests/CMakeLists.txt= now links the libraries
+  its tests include: =ores.database.lib=, =ores.eventing.api.lib=,
+  =ores.eventing.core.lib=, =ores.nats.lib= and =ores.openssl_cleanup=,
+  matching the scheduler's equivalent test target.
+
+The whole-tree build then exits 0 at c4b1832beb: 178 targets, no compiler error,
+including every scheduler and workflow target, =ores.reporting= and
+=ores.shell.exe=.
+
+Two workflow defects the repair did not touch, because they are that
+component's substance rather than its build:
+
+- =ores.workflow.api.tests= and =ores.workflow.service.tests= run no test:
+  both binaries report "No tests ran" and exit 2, so those two test targets
+  carry no case at all.
+- =ores.workflow.core.tests= builds and runs, and two of its cases fail:
+  the repository selects a =version= column that the generated table does not
+  have ("column \"version\" does not exist"), so the entity's audit columns
+  and the table it describes disagree. That is a model defect in the workflow
+  component, not a link failure.

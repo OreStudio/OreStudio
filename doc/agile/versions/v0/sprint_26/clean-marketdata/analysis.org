@@ -289,10 +289,17 @@ Four further findings from the same walk:
   is imported as =2D=; a further 2,221 seven-segment keys are rejected
   outright. This is not an export problem: the stored row already differs
   from the file.
-- **A one-character bug costs 9,075 lines.** =from_ir_discount= rejects a
-  =curve_id= equal to the currency where the forward projection can emit
-  exactly that, because a comparison at =oresmd_projections.cpp:644= uses
-  ="<="= where it means ="<"=.
+- **A derivation, not a guard, costs 9,075 lines.** =from_ir_discount= treats
+  the key's fourth segment as the currency with a tenor appended, so it strips
+  the currency back off to recover a =tenor=. The segment is really the name
+  =curveconfig.xml= gives the curve -- the corpus carries =USD3M= beside
+  =USD-SOFR-3M=, =USD-FedFunds=, =USD-DUMMY= and the bare currency -- so a
+  curve named after its own currency leaves nothing behind and the guard
+  rejects the key. It is not the =<=/-vs-<=< comparison the first pass called
+  it: relaxing that guard would leave =id.tenor= unset and the forward
+  dereferences it. The other 36,948 keys project while carrying a tenor such
+  as =-SOFR-3M=, and round-trip cleanly, which is why the round-trip
+  measurement never showed this.
 - **A single stray comma aborts a whole file.** The tokeniser needs two
   commas and a CSV line with exactly one loses the entire file --
   19,170 lines across the large CSVs.
@@ -322,10 +329,12 @@ stay as written. Six of the mis-modelled shapes are fixed:
 | CC_FIX_FLOAT_SWAP | 106 | same | =second_ccy= |
 | MM_FUTURE | 319 | declared ccy/index/tenor/point; ORE writes ccy/contract-month/contract-code/tenor | =contract_month=, =contract_code= |
 | OI_FUTURE | 620 | same | =contract_month=, =contract_code= |
+| DISCOUNT | 9,075 | the curve segment is an opaque declared name, not ccy+tenor; the derivation rejected every currency-named curve | the curve kept verbatim, the trailing segment read as the tenor |
 
-That is 13,806 corpus lines brought in by the first six, and a further 939 by
-the two futures. What remains of the shape record is CPR and MM's residual
-(producers spell the index =ESTER= where =index_family= says =estr=).
+That is 13,806 corpus lines brought in by the first six, 939 by the two
+futures, and 9,075 by the discount re-modelling. What remains of the shape
+record is CPR and MM's residual (producers spell the index =ESTER= where
+=index_family= says =estr=).
 
 Each of the remaining shapes needs the identifier grammar extended, and the
 oresmd parser is hand-written per asset class rather than table-driven -- its

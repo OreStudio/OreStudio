@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 2deb5dd8-4bba-4793-80c9-54001dd120d9
 :END:
-#+title: The DISCOUNT model invents a tenor out of the curve name
-#+description: ORE writes DISCOUNT/RATE/CCY/CURVE/TENOR, where CURVE is an opaque curve name such as USD-SOFR-3M. The model instead derives the identifier's tenor by stripping the currency off the curve, so 9,075 keys are rejected and 36,948 carry a tenor that is not a tenor.
+#+title: The DISCOUNT model invented a tenor out of the curve name
+#+description: ORE writes DISCOUNT/RATE/CCY/CURVE/TENOR, where CURVE is an opaque curve name such as USD-SOFR-3M. The model instead derived the identifier's tenor by stripping the currency off the curve, so 9,075 keys were rejected and 36,948 carried a tenor that was not a tenor. Fixed: the curve is now kept verbatim.
 #+type: capture
 #+level: cross
 #+filetags:
@@ -10,6 +10,24 @@
 #+updated: 2026-09-26
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* Resolved
+
+Fixed as proposed below, in the oresmd facet. The curve segment is now the
+identifier's =curve_id=, kept verbatim and recorded always, and the trailing
+segment is its tenor; the =ccy + tenor= derivation is gone from both
+directions. Measured after the change: =DISCOUNT= names and round-trips all
+45,469 corpus keys, up from 36,394 named and 9,075 rejected. The canonical URI
+of the 36,948 keys that used to project changed, which is why the fix landed
+before the import boundary stores any.
+
+Two things the first diagnosis got wrong, both worth keeping:
+
+- It was called a one-character guard bug. It was a derivation. Relaxing the
+  guard alone would have left =id.tenor= unset and the forward dereferences it.
+- The key round-tripped either way, so no measurement of round-tripping could
+  ever have found it. The =tenor= field was simply wrong, and only the per-type
+  unnamed count showed it.
 
 * What
 

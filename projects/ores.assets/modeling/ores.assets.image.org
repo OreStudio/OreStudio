@@ -79,7 +79,13 @@ std::string(faker::word::noun()) + " image"
 :END:
 
 Media type of the stored document. Every image in the platform is SVG, so
-the default is the only value in practice.
+the default is the only value in practice. The generator block restates it
+because the generator template only honours =default_value= when a column
+also declares a generator, and otherwise invents a random word.
+
+#+begin_src cpp :name generator
+std::string("image/svg+xml")
+#+end_src
 
 ** data
 :PROPERTIES:

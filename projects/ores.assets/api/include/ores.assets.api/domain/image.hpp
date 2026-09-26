@@ -72,7 +72,9 @@ struct image final {
 
     /**
      * @brief Media type of the stored document. Every image in the platform is SVG, so the default
-     * is the only value in practice.
+     * is the only value in practice. The generator block restates it because the generator template
+     * only honours default_value when a column also declares a generator, and otherwise invents a
+     * random word.
      */
     std::string mime_type = "image/svg+xml";
 

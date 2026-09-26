@@ -48,7 +48,7 @@ domain::image generate_synthetic_image(utility::generation::generation_context& 
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.description = std::string(faker::word::noun()) + " image";
-    r.mime_type = std::string(faker::word::noun());
+    r.mime_type = std::string("image/svg+xml");
     r.data = std::string(faker::word::noun());
     r.modified_by = modified_by;
     r.performed_by = modified_by;

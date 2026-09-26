@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 6916DC9C-4CA3-4CDC-82B3-82851CBDE30B
+:END:
+#+title: The synthetic generator ignores a column's default_value unless the column also carries a generator block
+#+description: cpp_domain_type_generator.cpp.mustache honours a column's declared default_value only when the model also supplies a generator block; with no block it assigns a random faker value, silently discarding the default. Found on ores.assets.image.mime_type, whose model declares image/svg+xml and whose SQL column default is the same, yet every synthetic image was written with a random noun. Fixed for assets by restating the literal in a generator block; the template fix would touch all 53 models that declare default_value.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:generator-defect:synthetic-data:tech_debt:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the C++ domain generator honour a column's =default_value= when the column declares no generator block, instead of inventing a random value.
+
+* Why
+
+The generated domain type carries the declared default: =image.hpp= says =std::string mime_type = "image/svg+xml";= and the SQL column default is the same string. The synthetic generator disagrees. In =cpp_domain_type_generator.cpp.mustache= the text-column branch is ={{#generator_expr}}= ... ={{{generator_expr}}}= ... ={{/generator_expr}}{{^generator_expr}}= =r.<column> = std::string(faker::word::noun());=, so =default_value= is consulted only when a generator block also exists. The result was that every synthetic image was written with a random noun as its media type.
+
+The assets story fixed its own instance by restating the literal in a =generator= block on =ores.assets.image.mime_type=, which is duplication and a standing invitation to let the two drift apart. A template-level fix is the root-cause one: when a column has =default_value= and no =generator_expr=, use the default. The reason it was not done here is cost — =default_value= appears in 53 model files across the tree, so changing the template changes generated output for every component at once and needs a tree-wide regeneration and a drift check on a committed tree, the same shape of change as the notify-trigger defect.
+
+* References
+
+- =projects/ores.codegen/library/templates/cpp_domain_type_generator.cpp.mustache= — the text-column fallback that discards the default.
+- =projects/ores.assets/modeling/ores.assets.image.org= — the =mime_type= column, now carrying a generator block that restates =image/svg+xml=.
+- =projects/ores.assets/api/include/ores.assets.api/domain/image.hpp= — the same default, honoured on the domain type.
+- =projects/ores.assets/core/tests/generators_image_generator_tests.cpp= — asserts =mime_type == "image/svg+xml"=, which fails if the two spellings drift apart.
+
+* See also
+
+- [[id:50148376-3D8B-44A9-A851-2D38CE997B9B][A notify trigger collides when a natural key is called key]]
+- [[id:549C6EE0-E4E9-4A30-9109-E0ED23A1E8E5][Codegen can own a junction's service, so the hand-written junction registrars are duplicates]]

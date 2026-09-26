@@ -37,7 +37,6 @@ void database_lifecycle_listener::testRunStarting(Catch::TestRunInfo const& test
     BOOST_LOG_SEV(lg(), info) << "Test run starting, provisioning test tenant";
 
     try {
-        // Create database context
         auto ctx = test_database_manager::make_context();
 
         // Close OPEN synthetic rows an aborted earlier run left in the
@@ -45,22 +44,17 @@ void database_lifecycle_listener::testRunStarting(Catch::TestRunInfo const& test
         // with this run.
         test_database_manager::close_orphaned_synthetic_rows(ctx, pre_run_sweep_tables_);
 
-        // Get test suite name from Catch2
         const std::string test_suite_name(testRunInfo.name.data(), testRunInfo.name.size());
 
-        // Generate unique test tenant code for this process
         const auto tenant_code = test_database_manager::generate_test_tenant_code(test_suite_name);
 
-        // Build human-readable description with version info
         std::ostringstream desc;
         desc << "v" << ORES_VERSION << " (" << ores::utility::version::build_info() << ")";
         const auto description = desc.str();
 
-        // Provision the test tenant (copies refdata from system tenant)
         test_tenant_id_ =
             test_database_manager::provision_test_tenant(ctx, tenant_code, description);
 
-        // Set environment variable so tests use this tenant
         test_database_manager::set_test_tenant_id_env(test_tenant_id_);
 
         BOOST_LOG_SEV(lg(), info) << "Test tenant ready: " << test_tenant_id_;

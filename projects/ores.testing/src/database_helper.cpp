@@ -33,7 +33,6 @@ using ores::database::service::party_context;
 
 database_helper::database_helper()
     : context_(test_database_manager::make_context()) {
-    // Set tenant context for tests (use test tenant if provisioned)
     set_tenant_context();
 }
 

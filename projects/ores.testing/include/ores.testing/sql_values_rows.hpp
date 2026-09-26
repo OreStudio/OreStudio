@@ -56,11 +56,13 @@ inline std::vector<std::vector<std::string>> sql_values_rows(const std::string& 
         const auto nl = sql.find('\n', i);
         return nl == std::string::npos ? sql.size() : nl + 1;
     };
+    // std::isspace accepts these six, and the scanner skips with it.
     const auto trim = [](std::string s) {
-        const auto first = s.find_first_not_of(" \t\r\n");
+        constexpr std::string_view whitespace = " \t\r\n\v\f";
+        const auto first = s.find_first_not_of(whitespace);
         if (first == std::string::npos)
             return std::string{};
-        return s.substr(first, s.find_last_not_of(" \t\r\n") - first + 1);
+        return s.substr(first, s.find_last_not_of(whitespace) - first + 1);
     };
 
     std::vector<std::vector<std::string>> rows;
@@ -138,9 +140,12 @@ inline std::vector<std::vector<std::string>> sql_values_rows(const std::string& 
         columns.push_back(trim(column));
 
         // The opening parenthesis of the row was scanned as part of the first
-        // column; it belongs to the row, not to the value.
-        if (!columns.empty() && !columns.front().empty() && columns.front().front() == '(')
+        // column; it belongs to the row, not to the value. Trim again, because
+        // the first trim ran before the parenthesis came off.
+        if (!columns.empty() && !columns.front().empty() && columns.front().front() == '(') {
             columns.front().erase(0, 1);
+            columns.front() = trim(columns.front());
+        }
 
         rows.push_back(std::move(columns));
     }

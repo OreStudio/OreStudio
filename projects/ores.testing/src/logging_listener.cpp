@@ -28,7 +28,6 @@
 #include "ores.testing/test_database_manager.hpp"
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
-#include <catch2/reporters/catch_reporter_registrars.hpp>
 #include <filesystem>
 #include <iostream>
 #include <memory>
@@ -53,8 +52,7 @@ struct test_logging_context {
 thread_local test_logging_context current_test_context;
 inline std::string_view component_name = "catch2";
 
-// Global variable to store the test module name, set from main function
-std::string test_module_name = "ores.tests"; // default fallback
+std::string test_module_name = "ores.tests";
 
 /**
  * @brief Returns true if test logging is enabled via environment variable.
@@ -99,31 +97,16 @@ bool is_database_output_enabled() {
     return enabled;
 }
 
-/**
- * @brief Returns the logger for the current test case.
- *
- * This function provides access to the thread-local logger set up by the
- * logging_listener. It should be called from within a test case.
- *
- * @return Reference to the current test's logger
- * @throws std::runtime_error if called outside of a test case context
- */
 }
 
 namespace ores::testing {
 
 std::string logging_listener::extract_suite_name(const Catch::TestCaseInfo& testInfo) {
     const auto& tags = testInfo.tags;
-    if (!tags.empty()) {
-        // Tags in Catch2 are stored with brackets, e.g., "[suite_name]"
-        std::string first_tag = static_cast<std::string>(tags[0].original);
-        // Remove brackets
-        if (first_tag.size() >= 2 && first_tag.front() == '[' && first_tag.back() == ']') {
-            return first_tag.substr(1, first_tag.size() - 2);
-        }
-        return first_tag;
-    }
-    return "default_suite";
+    if (tags.empty())
+        return "default_suite";
+    // Catch2 strips the square brackets before it stores a tag.
+    return static_cast<std::string>(tags[0].original);
 }
 
 std::string logging_listener::extract_module_name() {
@@ -144,7 +127,6 @@ void logging_listener::testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/
 
     const std::string module = extract_module_name();
 
-    // Build logging options for test suite level logging
     std::filesystem::path log_dir = std::filesystem::path("..") / "log" / module;
 
     logging_options cfg;
@@ -154,7 +136,6 @@ void logging_listener::testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/
     cfg.output_to_console = is_console_output_enabled();
     cfg.tag = "TestSuite";
 
-    // Initialize logging lifecycle manager with options
     lifecycle_manager_ =
         std::make_shared<telemetry_lifecycle_manager>(std::optional<logging_options>{cfg});
 }
@@ -165,7 +146,6 @@ void logging_listener::testRunEnded(Catch::TestRunStats const& /*testRunStats*/)
 }
 
 void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
-    // Skip setup when logging is globally disabled
     if (!is_logging_enabled())
         return;
 
@@ -173,7 +153,6 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
     const std::string suite = extract_suite_name(testInfo);
     const std::string test_name = testInfo.name;
 
-    // Build logging options
     std::filesystem::path log_dir = std::filesystem::path("..") / "log" / module / suite;
     logging_options cfg;
     cfg.output_directory = log_dir;
@@ -181,11 +160,9 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
     cfg.severity = get_log_level();
     cfg.output_to_console = is_console_output_enabled();
 
-    // Initialize logging lifecycle manager with options
     current_test_context.lifecycle_mgr =
         std::make_unique<telemetry_lifecycle_manager>(std::optional<logging_options>{cfg});
 
-    // Add database sink if enabled
     if (is_database_output_enabled()) {
         const auto tenant_id = test_database_manager::get_test_tenant_id_env();
         if (!tenant_id.empty()) {
@@ -197,19 +174,16 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
                 auto repo =
                     std::make_shared<ores::telemetry::database::repository::telemetry_repository>();
 
-                // Create resource for telemetry
                 auto resource = std::make_shared<ores::telemetry::domain::resource>(
                     ores::telemetry::domain::resource::from_environment(module, "test"));
 
-                // Add database sink with handler that uses the pre-created repository.
-                // The handler must not call any functions that log (to avoid recursion).
+                // The handler must not log, to avoid recursion.
                 current_test_context.lifecycle_mgr->add_database_sink(
                     resource,
                     [repo, ctx](const ores::telemetry::domain::telemetry_log_entry& entry) {
                         try {
                             repo->create(*ctx, entry);
                         } catch (const std::exception& ex) {
-                            // Use cerr, not logging (to avoid recursion)
                             std::cerr << "[Database Sink] Failed to write log: " << ex.what()
                                       << std::endl;
                         }
@@ -217,16 +191,14 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
                     "test",
                     module + "/" + suite + "/" + test_name);
             } catch (const std::exception& e) {
-                // Log error but don't fail the test
+                // A failed sink must not fail the test.
                 std::cerr << "[Logging] Failed to set up database sink: " << e.what() << std::endl;
             }
         }
     }
 
-    // Create logger for this test
     current_test_context.logger.emplace(make_logger(component_name));
 
-    // Log test case start
     auto& lg = current_test_context.logger.value();
     BOOST_LOG_SEV(lg, info) << "Test case starting: " << testInfo.name;
     if (!testInfo.tags.empty()) {
@@ -260,7 +232,6 @@ void logging_listener::testCaseEnded(Catch::TestCaseStats const& testCaseStats) 
     if (testCaseStats.stdErr.size() > 0)
         BOOST_LOG_SEV(lg, debug) << "  Standard error:\n" << testCaseStats.stdErr;
 
-    // Clean up logging context
     current_test_context.logger.reset();
     current_test_context.lifecycle_mgr.reset();
 }

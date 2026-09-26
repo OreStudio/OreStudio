@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :modeling:architecture:infrastructure:system_model:nats:
 #+created: 2026-05-28
-#+updated: 2026-05-28
+#+updated: 2026-09-26
 
 This page is part of the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]]. Infrastructure owns the transport and
 testing contracts. Everything above this layer speaks [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]; this layer
@@ -40,19 +40,19 @@ handle, reply, reconnect on failure.
 
 ** ores.testing
 
-Catch2 integration that isolates every test into its own PostgreSQL schema. Each
-test process creates a unique schema, wires up a preconfigured logger, and tears
-down cleanly — making tests safe to run in parallel without touching production
-data.
+Catch2 integration that isolates every test run into its own PostgreSQL tenant
+inside the shared database. Each run provisions the tenant, wires up a
+per-test logger and a database watchdog, and terminates the tenant at the end —
+making tests safe to run in parallel without seeing each other's rows.
 
 | Sub-component | Role                                 | Dependencies                |
 |---------------+--------------------------------------+-----------------------------|
-| [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]]  | Per-test schema isolation for Catch2 | [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:1FBCC86B-8E04-4F81-8558-85C0B6C54836][ores.logging]] |
+| [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]]  | Per-test tenant isolation for Catch2 | [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:1FBCC86B-8E04-4F81-8558-85C0B6C54836][ores.logging]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]], [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]], [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]], [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]], [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]], [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]], [[id:B73EAF3C-1384-4882-9310-8E9DB594C038][ores.telemetry.database]] |
 
 Related documents:
 
 - [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] — how tests are structured, fixtures are named, and
-  schemas are isolated.
+  tenants are isolated.
 
 ** ores.eventing
 

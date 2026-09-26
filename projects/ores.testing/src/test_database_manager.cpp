@@ -23,6 +23,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.platform/environment/environment.hpp"
 #include "ores.platform/process/pid.hpp"
+#include "ores.platform/time/time_utils.hpp"
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include <chrono>
 #include <iomanip>
@@ -57,7 +58,6 @@ context test_database_manager::make_context() {
 }
 
 database::database_options test_database_manager::make_database_options() {
-    // Get test tenant ID, fall back to system tenant if not set
     auto tenant_id = get_test_tenant_id_env();
     if (tenant_id.empty()) {
         tenant_id = system_tenant_id;
@@ -80,16 +80,11 @@ std::string test_database_manager::generate_test_tenant_code(const std::string& 
     const auto now = std::chrono::system_clock::now();
     const auto time_t_now = std::chrono::system_clock::to_time_t(now);
     std::tm tm_now{};
-#ifdef _WIN32
-    localtime_s(&tm_now, &time_t_now);
-#else
-    localtime_r(&time_t_now, &tm_now);
-#endif
+    ores::platform::time::time_utils::localtime_safe(&time_t_now, &tm_now);
 
     // Use process ID for uniqueness across parallel processes
     const auto pid = ores::platform::process::current_pid();
 
-    // Add random suffix for additional uniqueness
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(1000, 9999);

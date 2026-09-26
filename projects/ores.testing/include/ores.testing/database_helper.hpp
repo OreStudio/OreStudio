@@ -25,7 +25,6 @@
 #include "ores.testing/export.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 
 namespace ores::testing {

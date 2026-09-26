@@ -141,7 +141,7 @@ void ir_curve_generation_config_process_parameter_value_commands::register_comma
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <config_id> <parameter_definition_id> <parameter_value> <reason> <commentary>");
+        "add <config_id> <parameter_definition_id> <parameter_value> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -352,8 +352,8 @@ void ir_curve_generation_config_process_parameter_value_commands::process_add(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 3 + 2) {
+            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -411,7 +411,7 @@ void ir_curve_generation_config_process_parameter_value_commands::process_set(
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.config_id, parsed->positionals[next++], "config_id");
         read_token(req.change.write.parameter_definition_id,
                    parsed->positionals[next++],

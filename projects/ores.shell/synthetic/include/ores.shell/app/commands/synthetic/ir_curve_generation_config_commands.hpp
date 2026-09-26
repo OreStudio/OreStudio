@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <config_id> <currency_code> <index_family> <tenor> <role> <process_type>
+     * @brief add <config_id> <currency_code> <index_family> <tenor> <role> <process_type>
      * <ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source> <vintage_date>
      * <description> <fixed_leg_payment_frequency_code> <source_name> <folder_id> <reason>
      * <commentary>

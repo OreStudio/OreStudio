@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-ir_curve_template_entries add <id> <ir_curve_config_id> <sequence_index> <start_tenor_code> <end_tenor_code> <instrument_code> <reason> <commentary>
+ir_curve_template_entries add <ir_curve_config_id> <sequence_index> <start_tenor_code> <end_tenor_code> <instrument_code> <reason> <commentary>
 #+end_example
 
 It is addressed at =synthetic.v1.ir_curve_template_entries.put=.
 
 #+name: ir_curve_template_entries-add
 #+begin_src ores-shell :tangle ir_curve_template_entries-add.ores :exports none
-ir_curve_template_entries add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ __none__ __none__ system.new_record generated_script
+ir_curve_template_entries add 00000000-0000-0000-0000-000000000000 0 __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=

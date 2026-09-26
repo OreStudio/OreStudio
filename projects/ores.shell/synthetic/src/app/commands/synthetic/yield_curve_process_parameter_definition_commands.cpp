@@ -141,7 +141,7 @@ void yield_curve_process_parameter_definition_commands::register_commands(cli::M
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <process_type_code> <parameter_name> <display_name> <symbol> <short_label> "
+        "add <process_type_code> <parameter_name> <display_name> <symbol> <short_label> "
         "<description> <data_type> <default_value> <min_value> <max_value> <display_order> "
         "<reason> <commentary>");
 
@@ -354,8 +354,8 @@ void yield_curve_process_parameter_definition_commands::process_add(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 11 + 2) {
+            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -418,7 +418,7 @@ void yield_curve_process_parameter_definition_commands::process_set(
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(
             req.change.write.process_type_code, parsed->positionals[next++], "process_type_code");
         read_token(req.change.write.parameter_name, parsed->positionals[next++], "parameter_name");

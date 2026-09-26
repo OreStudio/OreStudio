@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-fx_spot_generation_configs add <id> <config_id> <base_currency_code> <quote_currency_code> <source_name> <ore_key> <price_source> <gmm_initial_price> <ticks_per_hour> <process_type> <enabled> <auto_start> <vintage_source> <vintage_date> <folder_id> <reason> <commentary>
+fx_spot_generation_configs add <config_id> <base_currency_code> <quote_currency_code> <source_name> <ore_key> <price_source> <gmm_initial_price> <ticks_per_hour> <process_type> <enabled> <auto_start> <vintage_source> <vintage_date> <folder_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =synthetic.v1.fx_spot_generation_configs.put=.
 
 #+name: fx_spot_generation_configs-add
 #+begin_src ores-shell :tangle fx_spot_generation_configs-add.ores :exports none
-fx_spot_generation_configs add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ false false __none__ __none__ __none__ system.new_record generated_script
+fx_spot_generation_configs add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ false false __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=

@@ -141,7 +141,7 @@ void ir_curve_generation_config_commands::register_commands(cli::Menu& root_menu
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <config_id> <currency_code> <index_family> <tenor> <role> <process_type> "
+        "add <config_id> <currency_code> <index_family> <tenor> <role> <process_type> "
         "<ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source> <vintage_date> "
         "<description> <fixed_leg_payment_frequency_code> <source_name> <folder_id> <reason> "
         "<commentary>");
@@ -358,8 +358,8 @@ void ir_curve_generation_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 17 + 2) {
-            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 16 + 2) {
+            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -429,7 +429,7 @@ void ir_curve_generation_config_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.config_id, parsed->positionals[next++], "config_id");
         read_token(req.change.write.currency_code, parsed->positionals[next++], "currency_code");
         read_token(req.change.write.index_family, parsed->positionals[next++], "index_family");

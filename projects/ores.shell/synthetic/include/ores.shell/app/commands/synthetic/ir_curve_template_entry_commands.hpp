@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <ir_curve_config_id> <sequence_index> <start_tenor_code> <end_tenor_code>
+     * @brief add <ir_curve_config_id> <sequence_index> <start_tenor_code> <end_tenor_code>
      * <instrument_code> <reason> <commentary>
      */
     static void process_add(std::ostream& out,

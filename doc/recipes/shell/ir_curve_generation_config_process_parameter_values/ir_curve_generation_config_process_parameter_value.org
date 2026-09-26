@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-ir_curve_generation_config_process_parameter_values add <id> <config_id> <parameter_definition_id> <parameter_value> <reason> <commentary>
+ir_curve_generation_config_process_parameter_values add <config_id> <parameter_definition_id> <parameter_value> <reason> <commentary>
 #+end_example
 
 It is addressed at =synthetic.v1.ir_curve_generation_config_process_parameter_values.put=.
 
 #+name: ir_curve_generation_config_process_parameter_values-add
 #+begin_src ores-shell :tangle ir_curve_generation_config_process_parameter_values-add.ores :exports none
-ir_curve_generation_config_process_parameter_values add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+ir_curve_generation_config_process_parameter_values add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
 #+end_src
 
 ** =set=

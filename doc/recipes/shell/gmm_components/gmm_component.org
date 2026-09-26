@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-gmm_components add <id> <fx_spot_config_id> <component_index> <description> <mean> <stdev> <weight> <reason> <commentary>
+gmm_components add <fx_spot_config_id> <component_index> <description> <mean> <stdev> <weight> <reason> <commentary>
 #+end_example
 
 It is addressed at =synthetic.v1.gmm_components.put=.
 
 #+name: gmm_components-add
 #+begin_src ores-shell :tangle gmm_components-add.ores :exports none
-gmm_components add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ 0 0 0 system.new_record generated_script
+gmm_components add 00000000-0000-0000-0000-000000000000 0 __none__ 0 0 0 system.new_record generated_script
 #+end_src
 
 ** =set=

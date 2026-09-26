@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-market_data_generation_configs add <id> <scope> <binding_mode> <name> <description> <enabled> <dataset_id> <reason> <commentary>
+market_data_generation_configs add <scope> <binding_mode> <name> <description> <enabled> <dataset_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =synthetic.v1.market_data_generation_configs.put=.
 
 #+name: market_data_generation_configs-add
 #+begin_src ores-shell :tangle market_data_generation_configs-add.ores :exports none
-market_data_generation_configs add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+market_data_generation_configs add __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
 #+end_src
 
 ** =set=

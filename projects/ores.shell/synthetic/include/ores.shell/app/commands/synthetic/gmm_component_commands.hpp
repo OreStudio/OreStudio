@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <fx_spot_config_id> <component_index> <description> <mean> <stdev> <weight>
+     * @brief add <fx_spot_config_id> <component_index> <description> <mean> <stdev> <weight>
      * <reason> <commentary>
      */
     static void process_add(std::ostream& out,

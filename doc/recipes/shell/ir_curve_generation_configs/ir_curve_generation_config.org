@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-ir_curve_generation_configs add <id> <config_id> <currency_code> <index_family> <tenor> <role> <process_type> <ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source> <vintage_date> <description> <fixed_leg_payment_frequency_code> <source_name> <folder_id> <reason> <commentary>
+ir_curve_generation_configs add <config_id> <currency_code> <index_family> <tenor> <role> <process_type> <ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source> <vintage_date> <description> <fixed_leg_payment_frequency_code> <source_name> <folder_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =synthetic.v1.ir_curve_generation_configs.put=.
 
 #+name: ir_curve_generation_configs-add
 #+begin_src ores-shell :tangle ir_curve_generation_configs-add.ores :exports none
-ir_curve_generation_configs add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 false false __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+ir_curve_generation_configs add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 false false __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=

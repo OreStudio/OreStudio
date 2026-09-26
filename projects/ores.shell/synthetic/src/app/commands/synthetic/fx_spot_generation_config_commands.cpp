@@ -141,7 +141,7 @@ void fx_spot_generation_config_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <config_id> <base_currency_code> <quote_currency_code> <source_name> <ore_key> "
+        "add <config_id> <base_currency_code> <quote_currency_code> <source_name> <ore_key> "
         "<price_source> <gmm_initial_price> <ticks_per_hour> <process_type> <enabled> <auto_start> "
         "<vintage_source> <vintage_date> <folder_id> <reason> <commentary>");
 
@@ -356,8 +356,8 @@ void fx_spot_generation_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -427,7 +427,7 @@ void fx_spot_generation_config_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.config_id, parsed->positionals[next++], "config_id");
         read_token(
             req.change.write.base_currency_code, parsed->positionals[next++], "base_currency_code");

@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <scope> <binding_mode> <name> <description> <enabled> <dataset_id> <reason>
+     * @brief add <scope> <binding_mode> <name> <description> <enabled> <dataset_id> <reason>
      * <commentary>
      */
     static void process_add(std::ostream& out,

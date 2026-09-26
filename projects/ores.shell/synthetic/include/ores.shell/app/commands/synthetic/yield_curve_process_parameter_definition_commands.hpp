@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <process_type_code> <parameter_name> <display_name> <symbol> <short_label>
+     * @brief add <process_type_code> <parameter_name> <display_name> <symbol> <short_label>
      * <description> <data_type> <default_value> <min_value> <max_value> <display_order> <reason>
      * <commentary>
      */

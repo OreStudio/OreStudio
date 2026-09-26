@@ -87,9 +87,9 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <config_id> <base_currency_code> <quote_currency_code> <source_name>
-     * <ore_key> <price_source> <gmm_initial_price> <ticks_per_hour> <process_type> <enabled>
-     * <auto_start> <vintage_source> <vintage_date> <folder_id> <reason> <commentary>
+     * @brief add <config_id> <base_currency_code> <quote_currency_code> <source_name> <ore_key>
+     * <price_source> <gmm_initial_price> <ticks_per_hour> <process_type> <enabled> <auto_start>
+     * <vintage_source> <vintage_date> <folder_id> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,

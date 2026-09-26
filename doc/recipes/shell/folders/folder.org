@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-folders add <id> <parent_id> <name> <kind> <collection_id> <reason> <commentary>
+folders add <parent_id> <name> <kind> <collection_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =synthetic.v1.folders.put=.
 
 #+name: folders-add
 #+begin_src ores-shell :tangle folders-add.ores :exports none
-folders add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+folders add __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=

@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <parent_id> <name> <kind> <collection_id> <reason> <commentary>
+     * @brief add <parent_id> <name> <kind> <collection_id> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,

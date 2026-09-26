@@ -141,7 +141,7 @@ void market_data_generation_config_commands::register_commands(cli::Menu& root_m
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <scope> <binding_mode> <name> <description> <enabled> <dataset_id> <reason> "
+        "add <scope> <binding_mode> <name> <description> <enabled> <dataset_id> <reason> "
         "<commentary>");
 
     menu->Insert(
@@ -351,8 +351,8 @@ void market_data_generation_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -410,7 +410,7 @@ void market_data_generation_config_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.scope, parsed->positionals[next++], "scope");
         read_token(req.change.write.binding_mode, parsed->positionals[next++], "binding_mode");
         read_token(req.change.write.name, parsed->positionals[next++], "name");

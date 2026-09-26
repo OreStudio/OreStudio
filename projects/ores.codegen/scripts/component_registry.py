@@ -129,6 +129,29 @@ class AcceptedException:
 # did. The four are named here now, each with the task row that carries it, and
 # the security defects the same pass recorded are closed.
 ACCEPTED_EXCEPTIONS: dict[str, tuple[AcceptedException, ...]] = {
+    "refdata": (
+        AcceptedException(
+            item="V04",
+            reason=(
+                "93 of the 732 generated refdata shell commands abort against "
+                "the live fleet, for two causes that belong to the "
+                "ores.doc.shell-recipe archetype rather than to this component. "
+                "The generated scripts omit the session-party positional the "
+                "generated command reads first, so add, set and put-many fail "
+                "their own arity check by one, and they send __none__ where the "
+                "shell's command_token.hpp wants its absent token, so every "
+                "optional uuid, date and numeric field is refused. The archetype "
+                "is still registered but renders nothing, so the checked-in "
+                "family is frozen at whatever the last working generator "
+                "produced and no gate can see it rot; that reaches all 144 "
+                "entity menus tree-wide and is filed as the capture "
+                "shell-recipes-no-longer-run. The other 639 commands answer, so "
+                "the refdata subjects are wired."
+            ),
+            accepted_by="marco",
+            accepted_on="2026-09-26",
+        ),
+    ),
     "variability-cpp": (
         AcceptedException(
             item="V08",

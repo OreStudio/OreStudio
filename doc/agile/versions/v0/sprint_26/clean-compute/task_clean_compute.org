@@ -59,7 +59,7 @@ record each item's result in the table below.
 |------+---------+----------|
 | B01  | Pass    | =evidence/b01_component_drift_baseline.txt= records 88 changed and 34 created files. =evidence/b01_model_drift_baseline.txt= records two known exceptions, one of them compute's =result.has_change_reason_cache= and the other =reporting.report_definition.has_workspace_id=. |
 | B02  | Pass    | =evidence/b02_b03_b04_inventory.txt=: nine models. Six entity, one junction, one module and one component overview. The module and the overview carry no variability. |
-| B03  | Partial | Same file: 258 C++ files outside tests, 189 generated and 69 hand-written. Classification in Notes. |
+| B03  | Partial | Re-surveyed after the platform model: 285 C++ files outside tests, 223 generated and 62 hand-written, against 258, 189 and 69 at the baseline. Messaging headers 45, with 7 hand-written. Evidence in =evidence/b02_b03_b04_inventory_after_platform.txt=. |
 | B04  | Pass    | Same file: 40 subjects across ten protocol headers. Eleven raw subject literals in hand-written code, seven of them in the three hand-written protocol headers. |
 | B05  | Pass    | Nothing blocks the work. PR #2138 merged, so the branch rebased onto =origin/main= at =5de59e3fb8= and picked up its M09 chrome removal. No other in-flight branch touches =projects/ores.compute=. |
 | G01  | Pass    | Regeneration is byte-clean and the component builds. =compass build ores.compute.api.lib ores.compute.core.lib ores.compute.service.lib ores.compute.wrapper.lib ores.compute.client.lib= exits 0. =evidence/g01_regeneration_run4.txt=. |
@@ -69,7 +69,7 @@ record each item's result in the table below.
 | M02  | Pass    | All seven entity and junction models bind to a profile: six to =uuid-identified-lookup= and the junction to =tenant-scoped-junction=. No model needed a no-match record. |
 | M04  | Pass    | No property sits in a namespace the loader does not read for it. The one that did was =has_change_reason_cache=, moved to the model root for M09, and it is now removed as dead. |
 | M05  | Pass    | Each model describes one table. The junction is modelled as a junction and no joined shape is modelled as an entity. No compute table is current-state, so no model needs the current-state shape. |
-| M06  | Fail    | Three hand-written protocol headers remain, =platform_protocol.hpp=, =telemetry_protocol.hpp= and =work_protocol.hpp=, with six hand-written handlers beside them. Their wire types are not modelled. This is the largest open item. |
+| M06  | Partial | =platform= is modelled: its domain, protocol, entity, repository, service, handler, registrar, SQL, shell unit and TypeScript twin all generate, and the hand-written versions are deleted. Two wire surfaces remain hand-written, =telemetry_protocol.hpp= with =telemetry_handler.hpp=, and =work_protocol.hpp= with =work_handler.hpp=, =report_submit_handler.hpp= and =result_submit_handler.hpp=. |
 | M07  | Pass    | The junction names its singular (=#+name_singular: app_version_platform=), gives both key columns their real type (uuid), and its row-level security is tenant scoped, =ores_compute_app_version_platforms_tbl= with a =tenant_id= policy and a current-tenant check. =read_only=, =client_read_only= and =party_id_is_target= do not apply: the junction is written by publish, and it has no party column. |
 | M08  | Pass    | Every =cpp_type= in the component is a scalar or a registered built-in, so no custom type needs a header binding. =validate_schemas.sh= passes with 303 tables and no warnings, so the SQL spellings are canonical. No flag is an integer. |
 | M10  | Pass    | The component overview declares the parts and the composite generates its root =CMakeLists.txt= (the file carries the generated marker). =validate_docs.py= passes all 41 components. |
@@ -80,7 +80,7 @@ record each item's result in the table below.
 | V05  | Partial | Every gate is green with the component under test: component drift, model drift, protocol twin coverage, handler permissions, populate references, recipe inventory and the CMake source lists. The registry entry V06 is not made yet. |
 | P05  | Pass    | Every consumer follows the protocol: the shell application and, before main deleted the component, the CLI. Nothing is carried for backwards compatibility. |
 | P01  | Pass    | Every audited entity speaks list, get, put and delete, and carries the versions facet for the history and point-in-time reads: =compute.v1.<plural>_versions.list= and =.get=. The junction carries neither, and no junction in the codebase does, iam's included. That is a codegen-level decision, recorded as a finding rather than fixed here. |
-| P02  | Fail    | Eleven raw subject literals remain in hand-written code: seven in the three hand-written protocol headers, which M06 removes, and four that build a =compute.v1.work.assignments.= subject at runtime. All of them follow from M06. |
+| P02  | Partial | Ten raw subject literals remain, down from eleven. Six are in the two hand-written protocol headers M06 still owns, and four build a =compute.v1.work.assignments.= subject at runtime in the result submit handler, the workunit dispatcher and the wrapper. |
 | P03  | Pass    | 70 declared subjects, 70 distinct, no duplicate. Every generated registrar subscribes to as many subjects as it has handlers (9, 8, 9, 9, 9, 10, 10). One generated type is unused: =app_version_platform_event=, which no registrar maps and nothing publishes. iam's junction has the same shape, so it is a codegen pattern and is recorded as a finding. |
 | P06  | N/A     | The component keeps no warmed event cache. No generated cache file exists in it, and none exists in any component, so the item has nothing to check. |
 | W01  | Pass    | The messaging registrars are composed at the core composition point and the six entities' event mappings at the service's. The junction materialises no event family, because the generator emits none for junctions, which iam's junction also shows. |
@@ -90,6 +90,34 @@ record each item's result in the table below.
 Items not listed are not yet worked. Sections 2 to 8 are open.
 
 * Notes
+
+** M06, the platform model
+
+=platform= was the component's last hand-written entity, and the smallest:
+a domain class, a protocol header with one message pair, an entity row, a
+repository with one read, and a handler with one verb. That is why it went
+first.
+
+Two decisions shaped the model. =is_active= is a plain column and not a
+declared filter, because the generated read answers a filter with
+=filter_not_supported=, and advertising a filter the service refuses is
+worse than offering none. And the natural key is =code=, declared on the
+model root, so callers address a platform by its triplet.
+
+The coupling that could have blocked it did not. The junction surfaces the
+platform code through a join, and that join is declared on the junction
+with =enrich_code=, =references= and =code_column=, so it is generated and
+names the platform table directly. A platform model does not disturb it.
+
+The table and the seed are unchanged, so the recreation is unchanged, and
+the generated SQL now carries the natural-key uniqueness index the
+hand-written table did not.
+
+Still hand-written and still to model: =telemetry_protocol.hpp= with its
+handler, and =work_protocol.hpp= with its three handlers. The work surface
+is the harder of the two, because pull, heartbeat, reap and submit are
+operations rather than entity verbs, so it wants an operation model under
+P04 rather than an entity.
 
 ** Two codegen-wide findings from the protocol audit
 

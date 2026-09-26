@@ -32,6 +32,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/uuid/random_generator.hpp>
+#include <unordered_map>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <expected>
@@ -356,7 +357,42 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         };
         std::vector<pending_entry> pending;
 
+        // The scheduler may already hold a job for a definition whose id was
+        // never persisted here -- an earlier run created the job and then
+        // failed to record it. Matching on the name the job carries, rather
+        // than insisting on creating one, is what makes reconciliation converge
+        // on the state it finds instead of failing on the job-name index on
+        // every start.
+        std::unordered_map<std::string, boost::uuids::uuid> existing_jobs;
+        try {
+            ores::scheduler::messaging::list_job_definitions_request list_req;
+            list_req.limit = 1000;
+            const auto reply = svc_nats_.authenticated_request(
+                ores::scheduler::messaging::list_job_definitions_request::nats_subject,
+                ores::nats::default_wire_codec().encode(list_req));
+            if (auto parsed = ores::nats::default_wire_codec()
+                                  .decode<ores::scheduler::messaging::list_job_definitions_response>(
+                                      reply.data)) {
+                for (const auto& existing : parsed->definitions)
+                    existing_jobs.emplace(existing.job_name, existing.id);
+                BOOST_LOG_SEV(lg(), debug) << "Scheduler holds " << existing_jobs.size()
+                                           << " job(s) already";
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Could not read the scheduler's existing jobs: " << e.what();
+        }
+
         for (const auto& def : unscheduled) {
+            const auto job_name = "report_definition." + boost::uuids::to_string(def.id);
+            const auto found = existing_jobs.find(job_name);
+            if (found != existing_jobs.end()) {
+                BOOST_LOG_SEV(lg(), info)
+                    << "Adopting the scheduler's existing job " << found->second
+                    << " for definition " << def.id;
+                pending.push_back({found->second, &def});
+                continue;
+            }
             const auto job_id = gen_uuid();
             auto sent = send_schedule_request(def, job_id);
             if (!sent) {

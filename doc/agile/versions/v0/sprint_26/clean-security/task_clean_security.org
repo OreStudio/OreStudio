@@ -26,11 +26,11 @@ ores.security passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7EF62300-3026-49F9-A663-A1F3705C70A1][Clean ores.security to the component clean standard]] |
-| Now          | Survey checked against the tree, work landed. |
+| Now          | Merged as `b2e6c069db` in PR #2162. |
 | Waiting on   | Nothing.                               |
-| Next         | Verification and review.               |
+| Next         | Nothing.                               |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -196,3 +196,23 @@ row and no models, so V06 is the accepted exception.
 One correction to the record's own count: the fifth commit restores the
 namespace header the first commit should not have deleted, so the pass ends
 with five `[security]` commits rather than four.
+
+* Verification
+
+An independent verifier checked the branch and the review met it. The
+verifier's round posted **PASS** on `285042a2ed`, and it did something the
+record had called impossible: rather than accept that the pre-change
+baseline could not be measured, it checked the base versions of the changed
+files out of `230006c221`, rebuilt, and measured 127 assertions in 55 test
+cases exactly, against 149 in 57 at the head. It proved all four JWT fixes
+load-bearing by reverting each separately (two, one and one failures), the
+scrypt floor by removing it and watching the control fail, and the cache
+claim by restoring the function-local static.
+
+The PR review raised one more item, a weak assertion in
+`jwt_authenticator_validate_invalid_hs256_signature` that accepted either
+`invalid_signature` or `invalid_token`. Both are in Review rows 6 and 7 and
+fixed in `b7d6fadb75`, which the verifier's round did not cover because it
+post-dated the verdict.
+
+PR #2162 merged as `b2e6c069db` on 2026-09-26 with every CI check green.

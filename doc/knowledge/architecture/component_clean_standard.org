@@ -144,7 +144,10 @@ a typecheck all missed; only a build and a test run found them.
 
 - A check that writes is a check that damages. Run the drift check with
   =--dry-run= while a model is being drafted: an in-place =--all= run
-  overwrote sixteen hand-written files.
+  overwrote sixteen hand-written files. Never run a writing gate while a
+  build is reading the tree: a whole-tree build failed with "#include nested
+  too deeply" while the in-place drift check regenerated that component's
+  files under it, and the same file compiled once the tree was still.
 - The drift gate cannot see an unwired registrar, and the eventing
   tests register their own mappings. Check W01 by reading the
   composition points.

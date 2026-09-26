@@ -26,16 +26,19 @@ The task also asks one design question: can an artefact table generate from the 
 
 * Methodology
 
-Four read-only levers produced the numbers below. Each is rerunnable, and none writes to the tree.
+Five read-only levers produced the numbers below. Each is rerunnable, and none writes to the tree.
 
 | Lever | Item | What it answers |
 |-------+------+-----------------|
 | =scripts/survey_component.py --component dq= | B02, B03, B04 | Models by metatype; every C++ file classified; every NATS subject |
 | =scripts/check_component_drift.py --component dq --dry-run= | B01, G01 | Every file the current models would change or create |
 | =scripts/survey_sql_artefacts.py --product dq= | B01, B03 | Every artefact table, paired with its base table and classified |
+| =scripts/survey_table_consumers.py --product dq= | B03, B06 | Every reader, writer, registration and drop of each artefact table |
 | =compass codegen entity list= | M01 | The 295 entities codegen knows, used to test whether a model exists |
 
-=survey_sql_artefacts.py= is new in this turn. It pairs an artefact table with its base table *by entity name*, never by filename or by prefix. The prefix rule fails: DQ stages entities that other components own, so =ores_dq_currencies_artefact_tbl= pairs with =ores_refdata_currencies_tbl=. The exact rule is =ores_<component>_<entity>_tbl=, where the component is one token.
+The first three are new in this turn. =survey_sql_artefacts.py= pairs an artefact table with its base table *by entity name*, never by filename or by prefix. The prefix rule fails: DQ stages entities that other components own, so =ores_dq_currencies_artefact_tbl= pairs with =ores_refdata_currencies_tbl=. The exact rule is =ores_<component>_<entity>_tbl=, where the component is one token.
+
+=survey_table_consumers.py= reads the relation from the statement beside the name, not from the directory the file sits in. Two relations were missed before that rule: a publish function reaches a table with =join= rather than =from=, and the artefact-type registry spells the name short (=dq_currencies_artefact_tbl=). Both misses understated liveness. Both rules now have a regression test.
 
 Two method notes matter for the reading of the results.
 
@@ -190,9 +193,20 @@ Give a model to every handcrafted artefact and publication family, then reach by
 
 Run the 49 items on the tree pass 1 leaves behind. The protocol, wiring, shell, documentation and verification items are cheaper and more honest once the component regenerates cleanly.
 
+** Outcome of step 1, settled on 2026-09-26
+
+Step 1 is done, and it returned the opposite of a deletion list. A consumer census of all 49 tables -- =scripts/survey_table_consumers.py=, 33,010 files scanned -- found every table written, read or registered by something in the tree. *No artefact table is dead.*
+
+That closes the question the Finding 1 tables raised. The 13 generated tables with no model are live, and their base tables live in refdata, iam and reporting, exactly as the archetype intends. They are missing a model, not a reason to exist.
+
+Two qualifications survive, and they are records rather than deletions:
+
+- =ores_dq_image_tags_artefact_tbl= is written by one function that nothing calls, read by nothing and registered nowhere. It is the closest to dead in the family, and step 3 decides it.
+- =ores_dq_payment_frequencies_artefact_tbl= is registered and read but has no populate script in the repository. The staging source is either external or missing.
+
 ** Risks
 
-- *Deletion is destructive and the database is recreated from scratch.* A table deleted by mistake is not recoverable from a migration. Every deletion in step 1 needs a consumer census, not a marker test.
+- *Deletion is destructive and the database is recreated from scratch.* A table deleted by mistake is not recoverable from a migration. The step 1 census found nothing to delete, so no deletion is proposed; if one is proposed later, it needs the same census, not a marker test.
 - *The 517-file drift is a single change of enormous width.* Pass 1 should land it in verifiable units, not as one commit, per the sequencing principle.
 - *The publish path crosses service boundaries.* =doc/plans/2026-05-14-dq-publish-pattern.org= moved publish ownership to the target services. Any change to the artefact tables must keep =publish-from-dq= working for refdata, assets, reporting and DQ itself.
 
@@ -204,3 +218,4 @@ Run the 49 items on the tree pass 1 leaves behind. The protocol, wiring, shell, 
 - [[proj:doc/plans/2026-05-14-dq-publish-pattern.org][DQ Publish Pattern — Architecture and Decision]]
 - [[proj:doc/plans/2026-04-01-asset-class-unification.org][Asset class unification]]
 - [[proj:projects/ores.codegen/scripts/survey_sql_artefacts.py][survey_sql_artefacts.py — the artefact census lever]]
+- [[proj:projects/ores.codegen/scripts/survey_table_consumers.py][survey_table_consumers.py — the consumer census lever]]

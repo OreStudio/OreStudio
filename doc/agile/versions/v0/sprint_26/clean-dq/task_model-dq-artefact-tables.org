@@ -65,7 +65,7 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | Step | State | Evidence |
 |------+-------+----------|
 | 1. Baseline | DONE | Census and drift captured; see Notes |
-| 2. Liveness census | TODO | |
+| 2. Liveness census | DONE | 49 tables, 0 deletion candidates; see Step 2 results |
 | 3. Divergent tables | TODO | |
 | 4. Foreign models | TODO | |
 | 5. Derivable tables | TODO | |
@@ -74,6 +74,28 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 8. Remaining models | TODO | |
 | 9. Regenerate C++ | TODO | |
 | 10. Eventing headers | TODO | |
+
+* Step 2 results
+
+Run on 2026-09-26 with =scripts/survey_table_consumers.py --product dq=. It scanned 33,010 files and reported every reader, writer, registration, drop and C++ consumer of each of the 49 artefact tables.
+
+| Verdict | Tables |
+|---------+--------|
+| keep: writes, reads and registration | 42 |
+| keep: writes and reads, no registration | 3 |
+| keep: reads and registration, no writer | 1 |
+| keep: writes only | 1 |
+| DELETE CANDIDATE | 0 |
+
+*No artefact table is dead.* Every table is written, read or registered by something in the tree, so step 2 deletes nothing. The three earlier findings said the same thing from the other direction: a generated file with no model is still a live table.
+
+The four tables that depart from the common shape:
+
+- =ores_dq_image_tags_artefact_tbl=. Only =ores_dq_image_tags_artefact_upsert_fn= writes it, and nothing calls that function. It is never read, and it is not registered. It is the closest to dead of the family, but the function snapshots =ores_assets_image_tags_tbl= at dataset load, so it is retired only once nothing loads that dataset. Record the decision in step 3; do not delete it here.
+- =ores_dq_payment_frequencies_artefact_tbl=. Registered and read by =refdata.v1.payment-frequencies.publish-from-dq=, but no populate script in the repository writes it. Either the data is loaded outside the tree, or the pipeline is incomplete. Record which.
+- =ores_dq_synthetic_gmm_components_artefact_tbl=, =ores_dq_synthetic_ir_curve_template_entries_artefact_tbl= and =ores_dq_tags_artefact_tbl=. Written and read, but absent from =dq_artefact_types_populate.sql=, so the bundle publisher cannot dispatch them on their own. The synthetic pair are published through the config that owns them; =tags= is published through =sql_tag_populate.mustache=. Confirm that is intended, then either register or record the reason.
+
+The commit to keep, model or retire each table is step 3, which now starts from a clean sheet: nothing is dead, so every table has a model to gain rather than a deletion to earn.
 
 * Notes
 
@@ -87,7 +109,12 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 - Drift is 517 files: 410 change, 107 create. =ores.dq/core= 236, =ores.dq/api= 174, =ores.shell/dq= 42, =ores.dq/service= 28, =ores.sql/create= 21.
 - The C++ is generated, not handcrafted: 575 of 651 non-test files are generatable, but only 1 carries the marker.
 
-*Lever.* =projects/ores.codegen/scripts/survey_sql_artefacts.py= produces the artefact census. It is read-only, and it pairs a table with its base by entity name across every SQL product. Its regression test is =projects/ores.codegen/tests/test_survey_sql_artefacts.py=, and it locks the pairing rule specifically: reverting the lever to the suffix rule makes the =tags= case fail. The codegen suite is green at 648 tests.
+*Levers.* Two read-only scripts produce the evidence, and both have a regression test.
+
+- =scripts/survey_sql_artefacts.py= answers what shape the artefact family has. It pairs a table with its base by entity name across every SQL product. Test: =tests/test_survey_sql_artefacts.py=.
+- =scripts/survey_table_consumers.py= answers who touches each table. It scans the tree once and records the relation each file has to each name, reading the relation from the statement rather than from the directory. Test: =tests/test_survey_table_consumers.py=.
+
+Both tests lock a defect that produced a wrong answer first. The census paired =tags= with =image_tags= under a suffix rule; the consumer scan missed =join= reads and the short names in the artefact-type registry. The codegen suite is green at 662 tests.
 
 *Open question.* The population-function template names its output =_population_functions.sql=, while the 21 handcrafted files are =_population_functions_create.sql=. Settle the intended name in step 7.
 

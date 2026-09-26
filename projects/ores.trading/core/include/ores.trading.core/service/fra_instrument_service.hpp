@@ -17,16 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_SERVICE_FRA_INSTRUMENT_SERVICE_HPP
-#define ORES_TRADING_SERVICE_FRA_INSTRUMENT_SERVICE_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_CORE_SERVICE_FRA_INSTRUMENT_SERVICE_HPP
+#define ORES_TRADING_CORE_SERVICE_FRA_INSTRUMENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
-#include "ores.trading.api/domain/swap_leg.hpp"
+#include "ores.trading.api/messaging/fra_instrument_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/fra_instrument_repository.hpp"
-#include "ores.trading.core/repository/swap_leg_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -35,6 +41,9 @@ namespace ores::trading::service {
 
 /**
  * @brief Service for managing FRA instruments.
+ *
+ * Provides a higher-level interface for FRA instrument operations,
+ * wrapping the underlying repository.
  */
 class ORES_TRADING_CORE_EXPORT fra_instrument_service {
 private:
@@ -49,42 +58,144 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a fra_instrument_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit fra_instrument_service(context ctx);
 
-    std::vector<domain::fra_instrument> list_fra_instruments();
+    /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_fra_instruments_response
+    list_fra_instruments(const messaging::list_fra_instruments_request& request);
+    messaging::get_fra_instrument_response
+    get_fra_instrument(const messaging::get_fra_instrument_request& request);
+    messaging::get_many_fra_instruments_response
+    get_many_fra_instruments(const messaging::get_many_fra_instruments_request& request);
+    messaging::put_fra_instrument_response
+    put_fra_instrument(const messaging::put_fra_instrument_request& request);
+    messaging::put_many_fra_instruments_response
+    put_many_fra_instruments(const messaging::put_many_fra_instruments_request& request);
+    messaging::delete_fra_instrument_response
+    delete_fra_instrument(const messaging::delete_fra_instrument_request& request);
+    messaging::delete_many_fra_instruments_response
+    delete_many_fra_instruments(const messaging::delete_many_fra_instruments_request& request);
+    messaging::list_fra_instrument_versions_response
+    list_fra_instrument_versions(const messaging::list_fra_instrument_versions_request& request);
+    messaging::get_fra_instrument_version_response
+    get_fra_instrument_version(const messaging::get_fra_instrument_version_request& request);
+    /**@}*/
 
+    /**
+     * @brief Lists FRA instruments with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of FRA instruments for the requested page.
+     */
     std::vector<domain::fra_instrument> list_fra_instruments(std::uint32_t offset,
                                                              std::uint32_t limit);
 
+    /**
+     * @brief Gets the total count of active FRA instruments.
+     *
+     * @return Total number of active FRA instruments.
+     */
     std::uint32_t count_fra_instruments();
 
-    std::optional<domain::fra_instrument> get_fra_instrument(const std::string& id);
-
-    void save_fra_instrument(const domain::fra_instrument& v);
-
-    void remove_fra_instrument(const std::string& id);
-
-    void delete_fra_instruments(const std::vector<std::string>& ids);
-
-    std::vector<domain::fra_instrument> get_fra_instrument_history(const std::string& id);
 
     /**
-     * @brief Fetches the swap legs for any rates instrument by instrument_id.
+     * @brief Retrieves a single FRA instrument as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * All rates instrument families share the swap_legs table. This method is
-     * the shared access point used by handlers that need legs for any type.
+     * @param version The version to fetch.
+     * @return The FRA instrument at that version if found, std::nullopt otherwise.
      */
-    std::vector<domain::swap_leg> get_swap_legs(const std::string& instrument_id);
+    std::optional<domain::fra_instrument>
+    get_fra_instrument_at_version(const boost::uuids::uuid& instrument_id, std::uint32_t version);
 
-    std::vector<domain::swap_leg>
-    get_swap_legs_batch(const std::vector<std::string>& instrument_ids);
+    /**
+     * @brief Retrieves a single FRA instrument by its primary key.
+     *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
+     * @return The FRA instrument if found, std::nullopt otherwise.
+     */
+    std::optional<domain::fra_instrument>
+    get_fra_instrument(const boost::uuids::uuid& instrument_id);
 
-    std::vector<domain::fra_instrument> get_fra_instruments(const std::vector<std::string>& ids);
+    /**
+     * @brief Retrieves a batch of FRA instruments by primary key.
+     */
+    std::vector<domain::fra_instrument>
+    get_fra_instruments(const std::vector<std::string>& instrument_ids);
+
+    /**
+     * @brief Saves a FRA instrument (creates or updates).
+     *
+     * @param fra_instrument The FRA instrument to save.
+     * @throws std::exception on failure.
+     */
+    void save_fra_instrument(const domain::fra_instrument& fra_instrument);
+
+    /**
+     * @brief Saves a batch of FRA instruments.
+     *
+     * @param fra_instruments The FRA instruments to save.
+     * @throws std::exception on failure.
+     */
+    void save_fra_instruments(const std::vector<domain::fra_instrument>& fra_instruments);
+
+    /**
+     * @brief Deletes a FRA instrument by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_fra_instrument(const boost::uuids::uuid& instrument_id);
+
+    /**
+     * @brief Deletes FRA instruments by their primary keys.
+     */
+    void delete_fra_instruments(const std::vector<std::string>& instrument_ids);
+
+    /**
+     * @brief Retrieves all historical versions of a FRA instrument.
+     *
+     * Addressed by the entity's key, which is its storage key.
+     */
+    std::vector<domain::fra_instrument>
+    get_fra_instrument_history(const std::string& instrument_id);
 
 private:
     context ctx_;
     repository::fra_instrument_repository repo_;
-    repository::swap_leg_repository leg_repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::fra_instrument_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::fra_instrument& out);
 };
 
 }

@@ -17,12 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_TRADING_CORE_SERVICE_BOND_TRS_SERVICE_HPP
 #define ORES_TRADING_CORE_SERVICE_BOND_TRS_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/bond_trs.hpp"
+#include "ores.trading.api/messaging/bond_trs_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/bond_trs_repository.hpp"
 #include <chrono>
@@ -60,6 +66,34 @@ public:
     explicit bond_trs_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_bond_trs_response
+    list_bond_trs(const messaging::list_bond_trs_request& request);
+    messaging::get_bond_trs_response get_bond_trs(const messaging::get_bond_trs_request& request);
+    messaging::get_many_bond_trs_response
+    get_many_bond_trs(const messaging::get_many_bond_trs_request& request);
+    messaging::put_bond_trs_response put_bond_trs(const messaging::put_bond_trs_request& request);
+    messaging::put_many_bond_trs_response
+    put_many_bond_trs(const messaging::put_many_bond_trs_request& request);
+    messaging::delete_bond_trs_response
+    delete_bond_trs(const messaging::delete_bond_trs_request& request);
+    messaging::delete_many_bond_trs_response
+    delete_many_bond_trs(const messaging::delete_many_bond_trs_request& request);
+    messaging::list_bond_trs_versions_response
+    list_bond_trs_versions(const messaging::list_bond_trs_versions_request& request);
+    messaging::get_bond_trs_version_response
+    get_bond_trs_version(const messaging::get_bond_trs_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists bond trs with pagination support.
      *
      * @param offset Number of records to skip.
@@ -83,15 +117,23 @@ public:
      * @param version The version to fetch.
      * @return The bond trs at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::bond_trs> get_trs_at_version(const std::string& instrument_id,
+    std::optional<domain::bond_trs> get_trs_at_version(const boost::uuids::uuid& instrument_id,
                                                        std::uint32_t version);
 
     /**
      * @brief Retrieves a single bond trs by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The bond trs if found, std::nullopt otherwise.
      */
-    std::optional<domain::bond_trs> get_trs(const std::string& instrument_id);
+    std::optional<domain::bond_trs> get_trs(const boost::uuids::uuid& instrument_id);
+
+    /**
+     * @brief Retrieves a batch of bond trs by primary key.
+     */
+    std::vector<domain::bond_trs> get_trs(const std::vector<std::string>& instrument_ids);
 
     /**
      * @brief Saves a bond trs (creates or updates).
@@ -114,7 +156,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_trs(const std::string& instrument_id);
+    void delete_trs(const boost::uuids::uuid& instrument_id);
 
     /**
      * @brief Deletes bond trs by their primary keys.
@@ -123,12 +165,31 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a bond trs.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::bond_trs> get_trs_history(const std::string& instrument_id);
 
 private:
     context ctx_;
     repository::bond_trs_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::bond_trs_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::bond_trs& out);
 };
 
 }

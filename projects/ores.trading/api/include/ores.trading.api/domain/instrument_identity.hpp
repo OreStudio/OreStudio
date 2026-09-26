@@ -35,8 +35,9 @@ namespace ores::trading::domain {
 /**
  * @brief Common identity fields shared by all instrument types.
  *
- * Extracted as a plain nested sub-struct to keep each rfl::Literal below
- * the MSVC C1202 threshold. See the decomposition section of doc/knowledge/architecture/data_oriented_design.org.
+ * Extracted as a plain nested sub-struct to keep each rfl-reflected literal
+ * under the MSVC C1202 ceiling. See the decomposition section of
+ * doc/knowledge/architecture/data_oriented_design.org.
  */
 struct instrument_identity {
     /**
@@ -73,6 +74,16 @@ struct instrument_identity {
      * @brief Soft back-reference to the trade this instrument belongs to, when known.
      */
     std::optional<boost::uuids::uuid> trade_id;
+
+    /**
+     * @brief Value equality.
+     *
+     * A field group is a value like the entity that holds it: the entity's
+     * comparison is defaulted and reads every member, so a group without a
+     * comparison deletes the entity's and fails a build that treats that as
+     * an error.
+     */
+    friend bool operator==(const instrument_identity&, const instrument_identity&) = default;
 };
 
 }

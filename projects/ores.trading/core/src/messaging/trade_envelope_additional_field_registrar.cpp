@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_registrar.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.core/messaging/trade_envelope_additional_field_registrar.hpp"
 #include "ores.trading.api/messaging/trade_envelope_additional_field_protocol.hpp"
 #include "ores.trading.core/messaging/trade_envelope_additional_field_handler.hpp"
@@ -35,20 +40,56 @@ std::vector<ores::nats::service::subscription> register_trade_envelope_additiona
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<trade_envelope_additional_field_handler>(
         nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_trade_envelope_additional_fields_request::nats_subject,
+    subs.push_back(nats.queue_subscribe(list_trade_envelope_additional_fields_request::nats_subject,
                                         queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_trade_envelope_additional_field_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+                                        [h](ores::nats::message msg) {
+                                            h->list_trade_envelope_additional_fields(
+                                                std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(
+        get_trade_envelope_additional_field_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_trade_envelope_additional_field(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_many_trade_envelope_additional_fields_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->get_many_trade_envelope_additional_fields(std::move(msg));
+                             }));
+    subs.push_back(nats.queue_subscribe(
+        put_trade_envelope_additional_field_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_trade_envelope_additional_field(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(put_many_trade_envelope_additional_fields_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->put_many_trade_envelope_additional_fields(std::move(msg));
+                             }));
     subs.push_back(
         nats.queue_subscribe(delete_trade_envelope_additional_field_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->delete_trade_envelope_additional_field(std::move(msg));
+                             }));
     subs.push_back(
-        nats.queue_subscribe(get_trade_envelope_additional_field_history_request::nats_subject,
+        nats.queue_subscribe(delete_many_trade_envelope_additional_fields_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->delete_many_trade_envelope_additional_fields(std::move(msg));
+                             }));
+    subs.push_back(
+        nats.queue_subscribe(list_trade_envelope_additional_field_versions_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_trade_envelope_additional_field_versions(std::move(msg));
+                             }));
+    subs.push_back(
+        nats.queue_subscribe(get_trade_envelope_additional_field_version_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->get_trade_envelope_additional_field_version(std::move(msg));
+                             }));
     return subs;
 }
 

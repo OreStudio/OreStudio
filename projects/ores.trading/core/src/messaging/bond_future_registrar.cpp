@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_registrar.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.core/messaging/bond_future_registrar.hpp"
 #include "ores.trading.api/messaging/bond_future_protocol.hpp"
 #include "ores.trading.core/messaging/bond_future_handler.hpp"
@@ -34,19 +39,41 @@ register_bond_future_handlers(ores::nats::service::client& nats,
                               std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<bond_future_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_bond_futures_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_bond_future_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_bond_future_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->remove(std::move(msg));
+        list_bond_futures_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_bond_futures(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_bond_future_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->history(std::move(msg));
+        get_bond_future_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_bond_future(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_bond_futures_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_many_bond_futures(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_bond_future_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_bond_future(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_bond_futures_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_many_bond_futures(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_bond_future_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->delete_bond_future(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_bond_futures_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->delete_many_bond_futures(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        list_bond_future_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_bond_future_versions(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_bond_future_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_bond_future_version(std::move(msg));
         }));
     return subs;
 }

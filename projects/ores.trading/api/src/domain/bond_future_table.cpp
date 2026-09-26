@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/bond_future_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -31,7 +36,7 @@ std::string convert_to_table(const std::vector<bond_future>& v) {
     table << fort::header << "Contract" << "Contract Month" << "Long/Short" << "Currency"
           << "Fair Price" << "Last Delivery" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& bf : v) {
+    for ([[maybe_unused]] const auto& bf : v) {
         table << bf.contract_name << bf.contract_month << bf.long_short << bf.currency
               << bf.fair_price << bf.last_delivery_date << bf.modified_by << bf.version
               << fort::endr;

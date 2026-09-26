@@ -27,11 +27,24 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
-#include "ores.trading.api/eventing/trade_changed_event.hpp"
 #include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.service/app/application_exception.hpp"
+#include "ores.trading.service/messaging/ascot_event_registrar.hpp"
 #include "ores.trading.service/messaging/balance_guaranteed_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_forward_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_future_delivery_basket_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_future_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_issue_call_date_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_issue_conversion_target_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_issue_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_leg_amortization_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_leg_amount_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_leg_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_leg_rate_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_option_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_repo_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_trs_event_registrar.hpp"
 #include "ores.trading.service/messaging/callable_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/cap_floor_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/commodity_instrument_event_registrar.hpp"
@@ -55,12 +68,23 @@
 #include "ores.trading.service/messaging/fx_vanilla_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_variance_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/inflation_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/instrument_option_event_registrar.hpp"
+#include "ores.trading.service/messaging/instrument_option_exercise_fee_event_registrar.hpp"
+#include "ores.trading.service/messaging/instrument_option_payment_date_event_registrar.hpp"
+#include "ores.trading.service/messaging/instrument_option_premium_event_registrar.hpp"
+#include "ores.trading.service/messaging/instrument_schedule_date_event_registrar.hpp"
+#include "ores.trading.service/messaging/instrument_schedule_event_registrar.hpp"
+#include "ores.trading.service/messaging/instrument_strike_event_registrar.hpp"
 #include "ores.trading.service/messaging/knock_out_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/lifecycle_event_event_registrar.hpp"
 #include "ores.trading.service/messaging/party_role_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/rpa_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/scripted_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/swaption_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/trade_envelope_additional_field_event_registrar.hpp"
+#include "ores.trading.service/messaging/trade_envelope_event_registrar.hpp"
+#include "ores.trading.service/messaging/trade_envelope_portfolio_id_event_registrar.hpp"
+#include "ores.trading.service/messaging/trade_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_id_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_identifier_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_party_role_event_registrar.hpp"
@@ -75,20 +99,11 @@ namespace ores::trading::service::app {
 
 using namespace ores::logging;
 namespace ev = ores::eventing;
-namespace tdev = ores::trading::eventing;
 
 namespace {
 
 constexpr std::string_view service_name = "ores.trading.service";
 constexpr std::string_view service_version = ORES_VERSION;
-
-void publish_entity_event(ores::nats::service::client& nats,
-                          const std::string& subject,
-                          const ev::domain::entity_change_event& notif) {
-    // Delegate to the shared hardened publisher: it rethrows on failure so
-    // the event_bus surfaces the lost notification at error.
-    ev::service::publish_entity_event(nats, subject, notif);
-}
 
 } // namespace
 
@@ -121,18 +136,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ev::service::event_bus event_bus;
     ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
 
-    ev::service::registrar::register_mapping<tdev::trade_changed_event>(
-        event_source, "ores.trading.trade", "ores_trading_trades");
-
-    auto trade_sub =
-        event_bus.subscribe<tdev::trade_changed_event>([&nats](const tdev::trade_changed_event& e) {
-            publish_entity_event(nats,
-                                 "ores.trading.trade_changed",
-                                 ev::domain::entity_change_event{.entity = "ores.trading.trade",
-                                                                 .timestamp = e.timestamp,
-                                                                 .entity_ids = e.trade_ids,
-                                                                 .tenant_id = e.tenant_id});
-        });
+    auto trade_sub = ores::trading::service::messaging::register_trade_event_mapping(
+        event_source, event_bus, nats);
 
     auto equity_position_instrument_sub =
         ores::trading::service::messaging::register_equity_position_instrument_event_mapping(
@@ -239,6 +244,71 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto scripted_instrument_sub =
         ores::trading::service::messaging::register_scripted_instrument_event_mapping(
+            event_source, event_bus, nats);
+
+    auto ascot_sub = ores::trading::service::messaging::register_ascot_event_mapping(
+        event_source, event_bus, nats);
+    auto bond_forward_sub = ores::trading::service::messaging::register_bond_forward_event_mapping(
+        event_source, event_bus, nats);
+    auto bond_future_delivery_basket_sub =
+        ores::trading::service::messaging::register_bond_future_delivery_basket_event_mapping(
+            event_source, event_bus, nats);
+    auto bond_future_sub = ores::trading::service::messaging::register_bond_future_event_mapping(
+        event_source, event_bus, nats);
+    auto bond_issue_call_date_sub =
+        ores::trading::service::messaging::register_bond_issue_call_date_event_mapping(
+            event_source, event_bus, nats);
+    auto bond_issue_conversion_target_sub =
+        ores::trading::service::messaging::register_bond_issue_conversion_target_event_mapping(
+            event_source, event_bus, nats);
+    auto bond_issue_sub = ores::trading::service::messaging::register_bond_issue_event_mapping(
+        event_source, event_bus, nats);
+    auto bond_leg_amortization_sub =
+        ores::trading::service::messaging::register_bond_leg_amortization_event_mapping(
+            event_source, event_bus, nats);
+    auto bond_leg_amount_sub =
+        ores::trading::service::messaging::register_bond_leg_amount_event_mapping(
+            event_source, event_bus, nats);
+    auto bond_leg_sub = ores::trading::service::messaging::register_bond_leg_event_mapping(
+        event_source, event_bus, nats);
+    auto bond_leg_rate_sub =
+        ores::trading::service::messaging::register_bond_leg_rate_event_mapping(
+            event_source, event_bus, nats);
+    auto bond_option_sub = ores::trading::service::messaging::register_bond_option_event_mapping(
+        event_source, event_bus, nats);
+    auto bond_repo_sub = ores::trading::service::messaging::register_bond_repo_event_mapping(
+        event_source, event_bus, nats);
+    auto bond_trs_sub = ores::trading::service::messaging::register_bond_trs_event_mapping(
+        event_source, event_bus, nats);
+    auto instrument_option_sub =
+        ores::trading::service::messaging::register_instrument_option_event_mapping(
+            event_source, event_bus, nats);
+    auto instrument_option_exercise_fee_sub =
+        ores::trading::service::messaging::register_instrument_option_exercise_fee_event_mapping(
+            event_source, event_bus, nats);
+    auto instrument_option_payment_date_sub =
+        ores::trading::service::messaging::register_instrument_option_payment_date_event_mapping(
+            event_source, event_bus, nats);
+    auto instrument_option_premium_sub =
+        ores::trading::service::messaging::register_instrument_option_premium_event_mapping(
+            event_source, event_bus, nats);
+    auto instrument_schedule_date_sub =
+        ores::trading::service::messaging::register_instrument_schedule_date_event_mapping(
+            event_source, event_bus, nats);
+    auto instrument_schedule_sub =
+        ores::trading::service::messaging::register_instrument_schedule_event_mapping(
+            event_source, event_bus, nats);
+    auto instrument_strike_sub =
+        ores::trading::service::messaging::register_instrument_strike_event_mapping(
+            event_source, event_bus, nats);
+    auto trade_envelope_additional_field_sub =
+        ores::trading::service::messaging::register_trade_envelope_additional_field_event_mapping(
+            event_source, event_bus, nats);
+    auto trade_envelope_sub =
+        ores::trading::service::messaging::register_trade_envelope_event_mapping(
+            event_source, event_bus, nats);
+    auto trade_envelope_portfolio_id_sub =
+        ores::trading::service::messaging::register_trade_envelope_portfolio_id_event_mapping(
             event_source, event_bus, nats);
 
     event_source.start();

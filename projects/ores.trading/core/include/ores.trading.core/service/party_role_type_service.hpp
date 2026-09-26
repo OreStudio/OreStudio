@@ -17,12 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_TRADING_CORE_SERVICE_PARTY_ROLE_TYPE_SERVICE_HPP
 #define ORES_TRADING_CORE_SERVICE_PARTY_ROLE_TYPE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/party_role_type.hpp"
+#include "ores.trading.api/messaging/party_role_type_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/party_role_type_repository.hpp"
 #include <chrono>
@@ -60,6 +66,36 @@ public:
     explicit party_role_type_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_party_role_types_response
+    list_party_role_types(const messaging::list_party_role_types_request& request);
+    messaging::get_party_role_type_response
+    get_party_role_type(const messaging::get_party_role_type_request& request);
+    messaging::get_many_party_role_types_response
+    get_many_party_role_types(const messaging::get_many_party_role_types_request& request);
+    messaging::put_party_role_type_response
+    put_party_role_type(const messaging::put_party_role_type_request& request);
+    messaging::put_many_party_role_types_response
+    put_many_party_role_types(const messaging::put_many_party_role_types_request& request);
+    messaging::delete_party_role_type_response
+    delete_party_role_type(const messaging::delete_party_role_type_request& request);
+    messaging::delete_many_party_role_types_response
+    delete_many_party_role_types(const messaging::delete_many_party_role_types_request& request);
+    messaging::list_party_role_type_versions_response
+    list_party_role_type_versions(const messaging::list_party_role_type_versions_request& request);
+    messaging::get_party_role_type_version_response
+    get_party_role_type_version(const messaging::get_party_role_type_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists party role types with pagination support.
      *
      * @param offset Number of records to skip.
@@ -94,6 +130,11 @@ public:
     std::optional<domain::party_role_type> get_role_type(const std::string& code);
 
     /**
+     * @brief Retrieves a batch of party role types by primary key.
+     */
+    std::vector<domain::party_role_type> get_role_types(const std::vector<std::string>& codes);
+
+    /**
      * @brief Saves a party role type (creates or updates).
      *
      * @param role_type The party role type to save.
@@ -123,12 +164,31 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a party role type.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::party_role_type> get_role_type_history(const std::string& code);
 
 private:
     context ctx_;
     repository::party_role_type_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::party_role_type_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::party_role_type& out);
 };
 
 }

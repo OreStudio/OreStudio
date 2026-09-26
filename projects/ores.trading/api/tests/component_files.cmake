@@ -30,7 +30,6 @@ set(files
     "domain_trade_party_role_tests.cpp"
     "domain_trade_tests.cpp"
     "domain_trade_type_tests.cpp"
-    "eventing_trade_events_tests.cpp"
     "generators_tests.cpp"
     "main.cpp"
 )

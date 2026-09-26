@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/bond_leg_amount_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -44,7 +49,7 @@ std::string convert_to_table(const std::vector<bond_leg_amount>& v) {
     table << fort::header << "Role" << "Leg" << "Role" << "Sequence" << "Value" << "Start Date"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& amount : v) {
+    for ([[maybe_unused]] const auto& amount : v) {
         table << amount.leg_role << amount.leg_number << amount.amount_role
               << amount.sequence_number << amount.value << opt_str(amount.start_date)
               << amount.modified_by << amount.version << fort::endr;

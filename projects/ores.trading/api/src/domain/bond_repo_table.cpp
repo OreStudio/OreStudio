@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/bond_repo_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -31,7 +36,7 @@ std::string convert_to_table(const std::vector<bond_repo>& v) {
     table << fort::header << "Repo Type" << "Repo Rate" << "Repo Index" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& brp : v) {
+    for ([[maybe_unused]] const auto& brp : v) {
         table << brp.repo_type << brp.repo_rate << brp.repo_index << brp.modified_by << brp.version
               << fort::endr;
     }

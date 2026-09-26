@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/instrument_option_exercise_fee_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -44,7 +49,7 @@ std::string convert_to_table(const std::vector<instrument_option_exercise_fee>& 
     table << fort::header << "Sequence" << "Amount" << "Type" << "Start Date" << "Currency"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& fee : v) {
+    for ([[maybe_unused]] const auto& fee : v) {
         table << fee.sequence_number << fee.amount << opt_str(fee.type) << opt_str(fee.start_date)
               << opt_str(fee.currency) << fee.modified_by << fee.version << fort::endr;
     }

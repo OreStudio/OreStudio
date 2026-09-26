@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/bond_future_delivery_basket_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -31,7 +36,7 @@ std::string convert_to_table(const std::vector<bond_future_delivery_basket>& v) 
     table << fort::header << "Sequence" << "Deliverable" << "Modified By" << "Version"
           << fort::endr;
 
-    for (const auto& deliverable : v) {
+    for ([[maybe_unused]] const auto& deliverable : v) {
         table << deliverable.sequence_number << deliverable.delivery_basket_id
               << deliverable.modified_by << deliverable.version << fort::endr;
     }

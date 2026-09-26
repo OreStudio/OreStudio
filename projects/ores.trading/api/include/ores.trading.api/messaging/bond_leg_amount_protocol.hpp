@@ -17,75 +17,262 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_TRADING_API_MESSAGING_BOND_LEG_AMOUNT_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_BOND_LEG_AMOUNT_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/bond_leg_amount.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::trading::messaging {
 
-struct get_bond_leg_amounts_request {
-    using response_type = struct get_bond_leg_amounts_response;
+struct bond_leg_amount_key {
+    boost::uuids::uuid instrument_id;
+    std::string leg_role;
+    int leg_number;
+    std::string amount_role;
+    int sequence_number;
+};
+
+struct bond_leg_amount_write {
+    boost::uuids::uuid instrument_id;
+    std::string leg_role;
+    int leg_number;
+    std::string amount_role;
+    int sequence_number;
+    double value;
+    std::optional<std::string> start_date;
+};
+
+struct bond_leg_amount_change {
+    bond_leg_amount_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct bond_leg_amount_removal {
+    bond_leg_amount_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct bond_leg_amount_lookup {
+    bond_leg_amount_key key;
+    std::optional<ores::trading::domain::bond_leg_amount> bond_leg_amount;
+};
+
+struct bond_leg_amount_event {
+    boost::uuids::uuid event_id;
+    bond_leg_amount_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct bond_leg_amount_version_key {
+    bond_leg_amount_key bond_leg_amount;
+    std::uint32_t version;
+};
+
+struct bond_leg_amount_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_bond_leg_amounts_request {
+    using response_type = struct list_bond_leg_amounts_response;
     static constexpr std::string_view nats_subject = "trading.v1.bond_leg_amounts.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
 };
 
-struct get_bond_leg_amounts_response {
+struct list_bond_leg_amounts_response {
+    ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_leg_amount> bond_leg_amounts;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_bond_leg_amount_request {
-    using response_type = struct save_bond_leg_amount_response;
-    static constexpr std::string_view nats_subject = "trading.v1.bond_leg_amounts.save";
-    ores::trading::domain::bond_leg_amount data;
-
-    static save_bond_leg_amount_request from(ores::trading::domain::bond_leg_amount v) {
-        return {.data = std::move(v)};
-    }
+struct get_bond_leg_amount_request {
+    using response_type = struct get_bond_leg_amount_response;
+    static constexpr std::string_view nats_subject = "trading.v1.bond_leg_amounts.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    bond_leg_amount_key key;
 };
 
-struct save_bond_leg_amount_response {
-    bool success = false;
-    std::string message;
+struct get_bond_leg_amount_response {
+    ores::utility::domain::result result;
+    std::optional<ores::trading::domain::bond_leg_amount> bond_leg_amount;
+};
+
+struct get_many_bond_leg_amounts_request {
+    using response_type = struct get_many_bond_leg_amounts_response;
+    static constexpr std::string_view nats_subject = "trading.v1.bond_leg_amounts.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<bond_leg_amount_key> keys;
+};
+
+struct get_many_bond_leg_amounts_response {
+    ores::utility::domain::result result;
+    std::vector<bond_leg_amount_lookup> entries;
+};
+
+struct put_bond_leg_amount_request {
+    using response_type = struct put_bond_leg_amount_response;
+    static constexpr std::string_view nats_subject = "trading.v1.bond_leg_amounts.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    bond_leg_amount_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_bond_leg_amount_response {
+    ores::utility::domain::result result;
+    ores::trading::domain::bond_leg_amount bond_leg_amount;
+};
+
+struct put_many_bond_leg_amounts_request {
+    using response_type = struct put_many_bond_leg_amounts_response;
+    static constexpr std::string_view nats_subject = "trading.v1.bond_leg_amounts.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<bond_leg_amount_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_bond_leg_amounts_response {
+    ores::utility::domain::result result;
+    std::vector<ores::trading::domain::bond_leg_amount> bond_leg_amounts;
 };
 
 struct delete_bond_leg_amount_request {
     using response_type = struct delete_bond_leg_amount_response;
     static constexpr std::string_view nats_subject = "trading.v1.bond_leg_amounts.delete";
-    std::vector<std::string> ids;
-    std::vector<std::string> leg_roles;
-    std::vector<std::string> leg_numbers;
-    std::vector<std::string> amount_roles;
-    std::vector<std::string> sequence_numbers;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    bond_leg_amount_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_bond_leg_amount_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_bond_leg_amount_history_request {
-    using response_type = struct get_bond_leg_amount_history_response;
-    static constexpr std::string_view nats_subject = "trading.v1.bond_leg_amounts.history";
-    std::string instrument_id;
-    std::string leg_role;
-    std::string leg_number;
-    std::string amount_role;
-    std::string sequence_number;
+struct delete_many_bond_leg_amounts_request {
+    using response_type = struct delete_many_bond_leg_amounts_response;
+    static constexpr std::string_view nats_subject = "trading.v1.bond_leg_amounts.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<bond_leg_amount_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_bond_leg_amount_history_response {
-    std::vector<ores::trading::domain::bond_leg_amount> history;
-    bool success = false;
-    std::string message;
+struct delete_many_bond_leg_amounts_response {
+    ores::utility::domain::result result;
 };
+
+struct list_bond_leg_amount_versions_request {
+    using response_type = struct list_bond_leg_amount_versions_response;
+    static constexpr std::string_view nats_subject = "trading.v1.bond_leg_amounts_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    bond_leg_amount_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<bond_leg_amount_versions_filter> filter;
+};
+
+struct list_bond_leg_amount_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::trading::domain::bond_leg_amount> versions;
+    std::uint64_t total;
+};
+
+struct get_bond_leg_amount_version_request {
+    using response_type = struct get_bond_leg_amount_version_response;
+    static constexpr std::string_view nats_subject = "trading.v1.bond_leg_amounts_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    bond_leg_amount_version_key key;
+};
+
+struct get_bond_leg_amount_version_response {
+    ores::utility::domain::result result;
+    ores::trading::domain::bond_leg_amount version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace bond_leg_amount_event_subjects {
+inline constexpr std::string_view created = "trading.v1.bond_leg_amounts_events.created";
+inline constexpr std::string_view updated = "trading.v1.bond_leg_amounts_events.updated";
+inline constexpr std::string_view deleted = "trading.v1.bond_leg_amounts_events.deleted";
+}
 
 }
 

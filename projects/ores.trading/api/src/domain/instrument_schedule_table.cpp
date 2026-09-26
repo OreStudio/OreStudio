@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/instrument_schedule_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -44,7 +49,7 @@ std::string convert_to_table(const std::vector<instrument_schedule>& v) {
     table << fort::header << "Owner Role" << "Owner" << "Role" << "Sequence" << "Kind" << "Tenor"
           << "Calendar" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& sched : v) {
+    for ([[maybe_unused]] const auto& sched : v) {
         table << sched.owner_role << sched.owner_number << sched.schedule_role
               << sched.sequence_number << sched.schedule_kind << opt_str(sched.tenor)
               << opt_str(sched.calendar) << sched.modified_by << sched.version << fort::endr;

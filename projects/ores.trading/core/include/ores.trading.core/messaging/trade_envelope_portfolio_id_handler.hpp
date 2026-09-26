@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_handler.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_TRADING_CORE_MESSAGING_TRADE_ENVELOPE_PORTFOLIO_ID_HANDLER_HPP
 #define ORES_TRADING_CORE_MESSAGING_TRADE_ENVELOPE_PORTFOLIO_ID_HANDLER_HPP
 
@@ -60,7 +65,16 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves trading.v1.trade_envelope_portfolio_ids.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_trade_envelope_portfolio_ids(ores::nats::message msg) {
         BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -69,33 +83,133 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::trade_envelope_portfolio_id_service svc(req_ctx);
-        get_trade_envelope_portfolio_ids_response resp;
-        if (auto req = decode<get_trade_envelope_portfolio_ids_request>(msg)) {
-            try {
-                resp.trade_envelope_portfolio_ids =
-                    svc.list_trade_envelope_portfolio_ids(req->offset, req->limit);
-                resp.total_available_count =
-                    static_cast<int>(svc.count_trade_envelope_portfolio_ids());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
+        auto req = decode<list_trade_envelope_portfolio_ids_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
-            << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        service::trade_envelope_portfolio_id_service svc(req_ctx);
+        try {
+            auto response = svc.list_trade_envelope_portfolio_ids(*req);
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_trade_envelope_portfolio_ids_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves trading.v1.trade_envelope_portfolio_ids.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_trade_envelope_portfolio_id(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_trade_envelope_portfolio_id_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::trade_envelope_portfolio_id_service svc(req_ctx);
+        try {
+            auto response = svc.get_trade_envelope_portfolio_id(*req);
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_trade_envelope_portfolio_id_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves trading.v1.trade_envelope_portfolio_ids.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_trade_envelope_portfolio_ids(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_trade_envelope_portfolio_ids_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::trade_envelope_portfolio_id_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_trade_envelope_portfolio_ids(*req);
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_trade_envelope_portfolio_ids_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves trading.v1.trade_envelope_portfolio_ids.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_trade_envelope_portfolio_id(ores::nats::message msg) {
         BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -108,29 +222,43 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::trade_envelope_portfolio_id_service svc(req_ctx);
-        if (auto req = decode<save_trade_envelope_portfolio_id_request>(msg)) {
-            try {
-                svc.save_trade_envelope_portfolio_id(req->data);
-                BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, save_trade_envelope_portfolio_id_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      save_trade_envelope_portfolio_id_response{.success = false,
-                                                                .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_trade_envelope_portfolio_id_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::trade_envelope_portfolio_id_service svc(req_ctx);
+        try {
+            auto response = svc.put_trade_envelope_portfolio_id(*req);
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_trade_envelope_portfolio_id_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves trading.v1.trade_envelope_portfolio_ids.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_trade_envelope_portfolio_ids(ores::nats::message msg) {
         BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -139,33 +267,47 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::trade_envelope_portfolio_id_service svc(req_ctx);
-        if (auto req = decode<get_trade_envelope_portfolio_id_history_request>(msg)) {
-            try {
-                auto hist = svc.get_trade_envelope_portfolio_id_history(req->trade_id,
-                                                                        req->sequence_number);
-                BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_trade_envelope_portfolio_id_history_response{.history = std::move(hist),
-                                                                       .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      get_trade_envelope_portfolio_id_history_response{.success = false,
-                                                                       .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "trading::trade_envelope_portfolio_ids:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_trade_envelope_portfolio_ids_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::trade_envelope_portfolio_id_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_trade_envelope_portfolio_ids(*req);
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_many_trade_envelope_portfolio_ids_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves trading.v1.trade_envelope_portfolio_ids.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_trade_envelope_portfolio_id(ores::nats::message msg) {
         BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -178,25 +320,169 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::trade_envelope_portfolio_id_service svc(req_ctx);
-        if (auto req = decode<delete_trade_envelope_portfolio_id_request>(msg)) {
-            try {
-                svc.delete_trade_envelope_portfolio_ids(req->ids, req->sequence_numbers);
-                BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, delete_trade_envelope_portfolio_id_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      delete_trade_envelope_portfolio_id_response{.success = false,
-                                                                  .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_trade_envelope_portfolio_id_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::trade_envelope_portfolio_id_service svc(req_ctx);
+        try {
+            auto response = svc.delete_trade_envelope_portfolio_id(*req);
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_trade_envelope_portfolio_id_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves trading.v1.trade_envelope_portfolio_ids.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_trade_envelope_portfolio_ids(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::trade_envelope_portfolio_ids:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_trade_envelope_portfolio_ids_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::trade_envelope_portfolio_id_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_trade_envelope_portfolio_ids(*req);
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_many_trade_envelope_portfolio_ids_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves trading.v1.trade_envelope_portfolio_ids_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_trade_envelope_portfolio_id_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_trade_envelope_portfolio_id_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::trade_envelope_portfolio_id_service svc(req_ctx);
+        try {
+            auto response = svc.list_trade_envelope_portfolio_id_versions(*req);
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_trade_envelope_portfolio_id_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves trading.v1.trade_envelope_portfolio_ids_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_trade_envelope_portfolio_id_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_trade_envelope_portfolio_id_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::trade_envelope_portfolio_id_service svc(req_ctx);
+        try {
+            auto response = svc.get_trade_envelope_portfolio_id_version(*req);
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(trade_envelope_portfolio_id_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_trade_envelope_portfolio_id_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

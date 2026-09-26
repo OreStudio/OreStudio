@@ -52,6 +52,17 @@ struct trade final {
     trade_classification classification;
     trade_lifecycle lifecycle;
     trade_audit audit;
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const trade&, const trade&) = default;
 };
 
 /**

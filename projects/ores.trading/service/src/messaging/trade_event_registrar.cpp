@@ -23,10 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.service/messaging/trade_event_registrar.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
-#include "ores.trading.api/eventing/trade_changed_event.hpp"
+#include "ores.trading.api/eventing/trade_event.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 
 namespace ores::trading::service::messaging {
 
@@ -38,18 +39,17 @@ namespace ev = ores::eventing;
 register_trade_event_mapping(ev::service::postgres_event_source& event_source,
                              ev::service::event_bus& event_bus,
                              ores::nats::service::client& nats) {
-    ev::service::registrar::register_mapping<trading::eventing::trade_changed_event>(
-        event_source, "ores.trading.trade", "ores_trading_trades");
+    // The trigger publishes on the table's own channel, and the mapping turns
+    // what it says into this entity's event.
+    event_source.register_entity_event_mapping<trading::messaging::trade_event>(
+        "ores_trading_trades");
 
-    return event_bus.subscribe<trading::eventing::trade_changed_event>(
-        [&nats](const trading::eventing::trade_changed_event& e) {
+    return event_bus.subscribe<trading::messaging::trade_event>(
+        [&nats](const trading::messaging::trade_event& e) {
+            // One payload is addressed by three subjects, so the subject is
+            // the collection's prefix and the action the event reports.
             ev::service::publish_entity_event(
-                nats,
-                std::string(ev::domain::event_traits<trading::eventing::trade_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.trading.trade",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.trade_ids,
-                                                .tenant_id = e.tenant_id});
+                nats, ev::domain::event_subject<trading::messaging::trade_event>(e.action), e);
         });
 }
 

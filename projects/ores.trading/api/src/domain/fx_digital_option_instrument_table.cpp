@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/fx_digital_option_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -45,7 +50,7 @@ std::string convert_to_table(const std::vector<fx_digital_option_instrument>& v)
           << "Payoff Amount" << "Foreign Ccy" << "Domestic Ccy" << "Strike" << "Recorded At"
           << fort::endr;
 
-    for (const auto& fdoi : v) {
+    for ([[maybe_unused]] const auto& fdoi : v) {
         table << fdoi.identity.instrument_id << fdoi.identity.trade_type_code << fdoi.option_type
               << fdoi.expiry_date << fdoi.payoff_currency << fdoi.payoff_amount
               << fdoi.foreign_currency << fdoi.domestic_currency << opt_str(fdoi.strike)

@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/fx_barrier_option_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -45,7 +50,7 @@ std::string convert_to_table(const std::vector<fx_barrier_option_instrument>& v)
           << "Lower Barrier" << "Upper Barrier" << "Bought Ccy" << "Bought Amount" << "Recorded At"
           << fort::endr;
 
-    for (const auto& fboi : v) {
+    for ([[maybe_unused]] const auto& fboi : v) {
         table << fboi.identity.instrument_id << fboi.identity.trade_type_code << fboi.option_type
               << fboi.expiry_date << fboi.barrier_type << fboi.lower_barrier
               << opt_str(fboi.upper_barrier) << fboi.bought_currency << fboi.bought_amount

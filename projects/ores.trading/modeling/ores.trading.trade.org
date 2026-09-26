@@ -67,8 +67,12 @@ Optional external trade identifier.
 
 e.g., UTI prefix or legacy system ID.
 
+The model declares this column as the trade's key, so a fixture needs a
+value here: an empty key cannot be looked up, and the mapper writes an
+empty domain string as NULL, which no equality filter matches.
+
 #+begin_src cpp :name generator
-std::string()
+std::string("TRD-") + std::string(faker::string::alphanumeric(12))
 #+end_src
 
 ** book_id

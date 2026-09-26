@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/swaption_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -31,7 +36,7 @@ std::string convert_to_table(const std::vector<swaption_instrument>& v) {
     table << fort::header << "ID" << "Type" << "Expiry Date" << "Exercise" << "Settlement"
           << "Long/Short" << "Start Date" << "Maturity Date" << "Recorded At" << fort::endr;
 
-    for (const auto& sw : v) {
+    for ([[maybe_unused]] const auto& sw : v) {
         table << sw.identity.instrument_id << sw.identity.trade_type_code << sw.expiry_date
               << sw.exercise_type << sw.settlement_type << sw.long_short << sw.start_date
               << sw.maturity_date << sw.audit.recorded_at << fort::endr;

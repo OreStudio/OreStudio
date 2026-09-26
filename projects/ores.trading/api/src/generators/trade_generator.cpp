@@ -46,7 +46,7 @@ domain::trade generate_synthetic_trade(utility::generation::generation_context& 
     r.identity.workspace_id = utility::uuid::live_workspace_id();
     r.identity.id = ctx.generate_uuid();
     r.identity.party_id = ctx.generate_uuid();
-    r.identity.external_id = std::string();
+    r.identity.external_id = std::string("TRD-") + std::string(faker::string::alphanumeric(12));
     r.parties.book_id = ctx.generate_uuid();
     r.parties.portfolio_id = ctx.generate_uuid();
     r.parties.successor_trade_id = std::nullopt;

@@ -95,7 +95,11 @@ export interface OreImportExecuteResult {
     saved_currency_iso_codes: string[];
     saved_portfolio_ids: string[];
     saved_book_ids: string[];
-    saved_trade_ids: string[];
+    /**
+     * The external identifier of each saved trade, which is the key the
+     * trade model declares. The rollback addresses a trade by this key.
+     */
+    saved_trade_external_ids: string[];
 }
 
 /**
@@ -112,7 +116,8 @@ export interface OreImportRollbackRequest {
     saved_currency_iso_codes: string[];
     saved_portfolio_ids: string[];
     saved_book_ids: string[];
-    saved_trade_ids: string[];
+    /** The external identifier of each saved trade, which the rollback deletes by. */
+    saved_trade_external_ids: string[];
 }
 
 export const subjects = {

@@ -17,8 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_integration_test.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.database/domain/context.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
@@ -31,9 +37,11 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.trading.api/domain/lifecycle_event.hpp"
 #include "ores.trading.api/domain/lifecycle_event_json_io.hpp" // IWYU pragma: keep.
-#include "ores.trading.api/eventing/lifecycle_event_changed_event.hpp"
+#include "ores.trading.api/eventing/lifecycle_event_event.hpp"
 #include "ores.trading.api/generators/lifecycle_event_generator.hpp"
+#include "ores.trading.api/messaging/lifecycle_event_protocol.hpp"
 #include "ores.trading.core/repository/lifecycle_event_repository.hpp"
+#include "ores.trading.core/service/lifecycle_event_service.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -59,7 +67,7 @@ using ores::trading::repository::lifecycle_event_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_lifecycle_event_publishes_nats_changed_event", tags) {
+TEST_CASE("write_lifecycle_event_publishes_an_event", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -77,27 +85,22 @@ TEST_CASE("write_lifecycle_event_publishes_nats_changed_event", tags) {
     nats.connect();
     REQUIRE(nats.is_connected());
 
-    auto sub = bus.subscribe<ores::trading::eventing::lifecycle_event_changed_event>(
-        [&nats](const ores::trading::eventing::lifecycle_event_changed_event& e) {
-            ev::service::publish_entity_event(
-                nats,
-                std::string(ev::domain::event_traits<
-                            ores::trading::eventing::lifecycle_event_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.trading.lifecycle_event",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.codes,
-                                                .tenant_id = e.tenant_id});
-        });
+    using event_type = ores::trading::messaging::lifecycle_event_event;
+    auto sub = bus.subscribe<event_type>([&nats](const event_type& e) {
+        // One payload is addressed by three subjects, so the subject is the
+        // collection's prefix and the action the event reports.
+        ev::service::publish_entity_event(nats, ev::domain::event_subject<event_type>(e.action), e);
+    });
 
-    event_source.register_mapping<ores::trading::eventing::lifecycle_event_changed_event>(
-        "ores.trading.lifecycle_event", "ores_trading_lifecycle_events");
+    event_source.register_entity_event_mapping<event_type>("ores_trading_lifecycle_events");
 
     // 2. Subscribe as an external observer would, on the relative subject --
-    // client::subscribe() prepends the subject_prefix itself.
+    // client::subscribe() prepends the subject_prefix itself. The wildcard
+    // takes every action: the first write creates the row and a re-drive
+    // updates it, and the chain is what is under test rather than which of
+    // the three subjects carried it.
     auto observer = nats.subscribe_buffered(
-        std::string(
-            ev::domain::event_traits<ores::trading::eventing::lifecycle_event_changed_event>::name),
-        10);
+        std::string(ev::domain::entity_event_traits<event_type>::subject_prefix) + ".>", 10);
 
     // The listener thread issues LISTEN asynchronously on its own
     // dedicated connection. Block until it has actually done so before
@@ -136,15 +139,11 @@ TEST_CASE("write_lifecycle_event_publishes_nats_changed_event", tags) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             auto snap = observer.snapshot();
             for (const auto& msg : snap) {
-                auto decoded =
-                    ores::nats::default_wire_codec().decode<ev::domain::entity_change_event>(
-                        msg.data);
-                if (decoded && decoded->entity == "ores.trading.lifecycle_event") {
-                    for (const auto& changed_id : decoded->entity_ids) {
-                        if (changed_id == id_str)
-                            received.push_back(msg);
-                    }
-                }
+                auto decoded = ores::nats::default_wire_codec().decode<event_type>(msg.data);
+                // The event carries the row's own key record, so the row under
+                // test is recognised by comparing it with the row written.
+                if (decoded && decoded->key.code == v.code)
+                    received.push_back(msg);
             }
         }
     }
@@ -165,4 +164,30 @@ TEST_CASE("write_lifecycle_event_publishes_nats_changed_event", tags) {
     REQUIRE_FALSE(received.empty());
     BOOST_LOG_SEV(lg, info) << "Received " << received.size()
                             << " matching NATS notification(s) for lifecycle_event " << id_str;
+
+    // 5. CRUD round trip on the same row: update through the
+    // repository, read the version history through the service, and
+    // delete. Reads and writes go through party_ctx: for party-scoped
+    // entities it already carries the visible-party GUC the RLS
+    // policies filter every service read by; otherwise it is the
+    // plain test context. The version history grows by one per write
+    // (the notify re-drive above may have written more than once), so
+    // only growth is asserted, not an exact count.
+    {
+        const auto& crud_ctx = party_ctx;
+        ores::trading::service::lifecycle_event_service svc(crud_ctx);
+        v.change_commentary = "updated-by-crud-round-trip";
+        repo.write(crud_ctx, v);
+
+        auto versions = svc.get_event_history(id_str);
+        REQUIRE(versions.size() >= 2);
+        REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
+
+        svc.delete_event(id_str);
+        // Delete soft-closes the active row (the instead-of delete
+        // rule sets valid_to): the row disappears from latest reads,
+        // and the version history keeps every version.
+        REQUIRE_FALSE(svc.get_event(id_str).has_value());
+        REQUIRE(svc.get_event_history(id_str).size() == versions.size());
+    }
 }

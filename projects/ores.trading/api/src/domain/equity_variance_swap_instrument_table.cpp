@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/equity_variance_swap_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -31,7 +36,7 @@ std::string convert_to_table(const std::vector<equity_variance_swap_instrument>&
     table << fort::header << "ID" << "Type" << "Underlying" << "Ccy" << "Notional"
           << "Variance Strike" << "Start Date" << "Maturity Date" << "Recorded At" << fort::endr;
 
-    for (const auto& evsi : v) {
+    for ([[maybe_unused]] const auto& evsi : v) {
         table << evsi.identity.instrument_id << evsi.identity.trade_type_code
               << evsi.underlying_name << evsi.currency << evsi.notional << evsi.variance_strike
               << evsi.start_date << evsi.maturity_date << evsi.audit.recorded_at << fort::endr;

@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/bond_option_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -44,7 +49,7 @@ std::string convert_to_table(const std::vector<bond_option>& v) {
     table << fort::header << "Type" << "Strike" << "Redemption" << "Price Type" << "Knocks Out"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& bo : v) {
+    for ([[maybe_unused]] const auto& bo : v) {
         table << bo.option_type << bo.option_strike << opt_str(bo.redemption)
               << opt_str(bo.price_type) << opt_str(bo.knocks_out) << bo.modified_by << bo.version
               << fort::endr;

@@ -481,6 +481,7 @@ window.__ModuleLoader__.load({
           key: 'head',
           type: 'button',
           'aria-expanded': open ? 'true' : 'false',
+          title: task.description || undefined,
           onClick: () => setOpen((value) => !value),
           style: {
             display: 'flex', width: '100%', alignItems: 'center', gap: '0.4rem', textAlign: 'left',
@@ -504,6 +505,14 @@ window.__ModuleLoader__.load({
             borderRadius: '0.25rem', background: 'var(--dsw-alias-bg-layer-1)',
           },
         }, [
+          h(MicroLabel, { key: 'dl' }, 'description'),
+          h('div', {
+            key: 'desc',
+            style: {
+              whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+              color: 'var(--dsw-alias-label-secondary)', lineHeight: 1.5,
+            },
+          }, task.description || '—'),
           h(KeyValue, { key: 'bo', label: 'blocked on' }, task.blockedOn || '—'),
           h(KeyValue, { key: 'bs', label: 'blocked since' }, task.blockedSince || '—'),
           h(KeyValue, { key: 'c', label: 'created' }, task.created || '—'),

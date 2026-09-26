@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/image_tags/image_tag.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+image_tags list --limit 1

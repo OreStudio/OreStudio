@@ -1,0 +1,6 @@
+# =version=
+#
+# GENERATED from doc/recipes/shell/tags/tag.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+tags version __none__ --version 1

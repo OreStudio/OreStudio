@@ -103,7 +103,7 @@ well as the All items.
 | V06 | Held. =ores.scheduler= does not join =COMPONENTS_UNDER_TEST= yet, because =job_instance= is still unmodelled. The registry entry is the closing act of that unit, and the reason is recorded below. | Registry |
 | S01 | Held, with the reason recorded in the model. The profile enables =ores.cpp.shell-command=, and the model disables it in its =* Physical space= table because the =ores.shell= composite carries no scheduler part yet and its command registry is hand-written. Enabling the facet before the part exists would generate command units and a recipe for a module no build reaches. Adding the part, registering its commands and then enabling the facet is the third unit of this task. | Model =* Physical space= |
 | S02 | Held with S01. No recipe is generated while the facet is off, and the recipe inventory is unchanged. | =regenerate_shell_recipe_inventory.py= |
-| H01 | Pending. The diagrams have not yet had their manual pass. The automated pass reads data members, so the generated handler, registrar and operation protocol classes arrive as empty or missing boxes, and the deleted builder must come out. This is the one item this unit leaves open on the component itself. | Rendered image, not yet read |
+| H01 | Pass. All three diagrams are hand-authored above and below the sentinel: the api diagram carries the canonical protocol types and the two operation views, the core diagram drops the deleted builder and carries the generated registrar, history provider, presentation mapper and handler, and the service diagram carries the event mapping the application now wires. Each rendered image was read, not merely regenerated. | The three =.puml= files and their rendered =.png= files |
 
 * Notes
 
@@ -161,10 +161,7 @@ The defects the survey found, each with the item that fixes it.
 Each of these is a unit of its own, in the order the standard's sections want
 them.
 
-1. *The diagrams* (H01). The scheduler diagrams still carry the deleted builder
-   and none of the generated classes, because the automated pass reads data
-   members only and the manual pass has not run. The rendered image must be
-   read, not merely regenerated.
+1. *The diagrams* (H01). Done in this pass. One finding to carry: =build/scripts/generate_component_puml.py= cannot regenerate a composite component's module diagrams at all. It resolves =projects/<name>/include/= and writes =projects/<name>/modeling/<name>.puml=, so for =ores.scheduler.core= there is no such directory and it reports "No include/ directory found"; passing the module path instead would write the file to a path built from a name containing a slash. The three scheduler diagrams therefore had to be authored by hand, and they are now hand-owned above the sentinel too. Either the script learns the composite layout or those diagrams lose their automated pass; that is a tooling unit of its own.
 2. *The shell commands* (S01, S02). Add the scheduler part to the =ores.shell=
    composite, register its commands in the shell's hand-written registry, then
    enable =ores.cpp.shell-command= in the model and regenerate. The facet is

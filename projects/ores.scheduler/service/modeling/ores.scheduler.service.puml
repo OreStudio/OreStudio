@@ -26,8 +26,13 @@ namespace ores #F2F2F2 {
         namespace service #F2F2F2 {
             namespace app #F2F2F2 {
                 class application {
+                    +run(io_ctx, cfg) : awaitable<void>
+                    -make_context(db_opts) : context
+                }
+                class application_exception {
                 }
                 class host {
+                    +run() : int
                 }
             }
             namespace config #F2F2F2 {
@@ -37,6 +42,14 @@ namespace ores #F2F2F2 {
                     +database : ores::database::database_options
                 }
                 class parser {
+                    {static} +parse(argc, argv) : options
+                }
+                class parser_exception {
+                }
+            }
+            namespace messaging #F2F2F2 {
+                class job_definition_event_registrar <<free functions>> {
+                    +register_job_definition_event_mapping(source, bus, nats) : subscription
                 }
             }
         }
@@ -44,6 +57,41 @@ namespace ores #F2F2F2 {
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' ---------------------------------------------------------------------------
+' Relationships.
+' ---------------------------------------------------------------------------
+
+ores::scheduler::service::app::host --> ores::scheduler::service::app::application : runs
+ores::scheduler::service::app::application --> ores::scheduler::service::config::parser : parses options
+ores::scheduler::service::config::parser ..> ores::scheduler::service::config::parser_exception : throws
+ores::scheduler::service::app::application ..> ores::scheduler::service::app::application_exception : throws
+ores::scheduler::service::app::application --> ores::scheduler::service::messaging::job_definition_event_registrar : registers
+
+' ---------------------------------------------------------------------------
+' Notes.
+' ---------------------------------------------------------------------------
+
+note top of application
+  The process entry point. It opens the NATS client and
+  the database context, builds the action handlers, starts
+  the scheduler loop, wires the entity change-event
+  pipeline (event bus, PostgreSQL event source, generated
+  event mapping), then hands the registrar and the loop to
+  the shared domain service runner.
+end note
+
+note top of job_definition_event_registrar
+  Generated. Reads the job definition trigger's channel
+  and publishes the canonical change event on
+  scheduler.v1.job_definitions_events.
+end note
+
+note bottom of options
+  Parsed from the command line and the environment; the
+  parser is hand-written and is the one piece of this
+  module with its own test suite.
+end note
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.scheduler.service.puml"

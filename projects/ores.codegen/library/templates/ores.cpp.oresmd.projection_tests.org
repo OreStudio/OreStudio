@@ -443,6 +443,22 @@ TEST_CASE("from_ore_key_ir_discount_keeps_the_curve_name_whole", tags) {
             parse("oresmd://ir/eur?curve_id=EUR&tenor=1d&type=quote&quote=discount&metric=rate"));
 }
 
+TEST_CASE("from_ore_key_ir_basis_swap_names_the_basis", tags) {
+    // A seventh segment names the basis itself, between the currency and the
+    // maturity. Those tokens are not index families, so the identifier carries the
+    // name as written and the key reads back whole.
+    REQUIRE(oresmd_projections::from_ore_key("BASIS_SWAP/BASIS_SPREAD/1D/1D/USD/SOFR_FedFunds/10Y") ==
+            parse("oresmd://ir/"
+                  "usd?index_spelling=SOFR_FedFunds&tenor=1d&second_tenor=1d&type=quote"
+                  "&quote=basis_swap&metric=basis_spread&point=10y"));
+    const auto named = parse(
+        "oresmd://ir/"
+        "usd?index_spelling=SOFR_FedFunds&tenor=1d&second_tenor=1d&type=quote"
+        "&quote=basis_swap&metric=basis_spread&point=10y");
+    REQUIRE(oresmd_projections::to_quote_key(named) ==
+            "BASIS_SWAP/BASIS_SPREAD/1D/1D/USD/SOFR_FedFunds/10Y");
+}
+
 TEST_CASE("from_ore_key_ir_indexed_families", tags) {
     REQUIRE(oresmd_projections::from_ore_key("MM/RATE/EUR/EURIBOR/3M/1M") ==
             parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m"));

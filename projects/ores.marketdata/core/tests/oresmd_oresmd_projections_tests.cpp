@@ -265,6 +265,14 @@ TEST_CASE("swaption_smile_vol_quote_key_matches_the_corpus", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "SWAPTION/RATE_NVOL/EUR/6M/2Y/Smile/-0.02");
 }
 
+TEST_CASE("ir_basis_swap_named_form_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://ir/"
+                          "usd?index_spelling=SOFR_FedFunds&tenor=1d&second_tenor=1d&type=quote&"
+                          "quote=basis_swap&metric=basis_spread&point=10y");
+    REQUIRE(oresmd_projections::to_quote_key(id) ==
+            "BASIS_SWAP/BASIS_SPREAD/1D/1D/USD/SOFR_FedFunds/10Y");
+}
+
 TEST_CASE("ir_capfloor_normal_vol_quote_key_matches_the_corpus", tags) {
     const auto id =
         parse("oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03");
@@ -642,6 +650,22 @@ TEST_CASE("from_ore_key_ir_discount_keeps_the_curve_name_whole", tags) {
     // stripping the currency off the curve left no tenor behind.
     REQUIRE(oresmd_projections::from_ore_key("DISCOUNT/RATE/EUR/EUR/1D") ==
             parse("oresmd://ir/eur?curve_id=EUR&tenor=1d&type=quote&quote=discount&metric=rate"));
+}
+
+TEST_CASE("from_ore_key_ir_basis_swap_names_the_basis", tags) {
+    // A seventh segment names the basis itself, between the currency and the
+    // maturity. Those tokens are not index families, so the identifier carries the
+    // name as written and the key reads back whole.
+    REQUIRE(
+        oresmd_projections::from_ore_key("BASIS_SWAP/BASIS_SPREAD/1D/1D/USD/SOFR_FedFunds/10Y") ==
+        parse("oresmd://ir/"
+              "usd?index_spelling=SOFR_FedFunds&tenor=1d&second_tenor=1d&type=quote"
+              "&quote=basis_swap&metric=basis_spread&point=10y"));
+    const auto named = parse("oresmd://ir/"
+                             "usd?index_spelling=SOFR_FedFunds&tenor=1d&second_tenor=1d&type=quote"
+                             "&quote=basis_swap&metric=basis_spread&point=10y");
+    REQUIRE(oresmd_projections::to_quote_key(named) ==
+            "BASIS_SWAP/BASIS_SPREAD/1D/1D/USD/SOFR_FedFunds/10Y");
 }
 
 TEST_CASE("from_ore_key_ir_indexed_families", tags) {

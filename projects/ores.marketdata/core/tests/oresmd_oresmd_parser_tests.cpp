@@ -916,6 +916,25 @@ TEST_CASE("round_trip_ir_swaption_smile", tags) {
              oresmd_projections::to_curve_key(original).has_value()));
 }
 
+TEST_CASE("round_trip_ir_basis_swap_named_form", tags) {
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://ir/"
+                                 "usd?index_spelling=SOFR_FedFunds&tenor=1d&second_tenor=1d&type="
+                                 "quote&quote=basis_swap&metric=basis_spread&point=10y"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
 TEST_CASE("round_trip_ir_bma_swap_ratio", tags) {
     const auto original = oresmd_parser::parse(
         uri("oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y"));

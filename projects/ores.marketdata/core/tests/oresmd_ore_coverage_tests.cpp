@@ -256,7 +256,7 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
     // because four types name every key and still lose some on the way back;
     // those are in the round-trip gap list above, not here.
     const std::set<std::string> expected_fully_named{
-        "BMA_SWAP", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
+        "BASIS_SWAP", "BMA_SWAP", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
         "CC_FIX_FLOAT_SWAP", "CDS", "CDS_INDEX", "COMMODITY", "COMMODITY_FWD",
         "COMMODITY_OPTION",
         "CORRELATION", "DISCOUNT", "EQUITY", "EQUITY_DIVIDEND", "EQUITY_FWD",
@@ -268,7 +268,7 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
         "ZC_INFLATIONSWAP", "ZERO"};
 
     const std::set<std::string> expected_fully_round_tripped{
-        "BMA_SWAP", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
+        "BASIS_SWAP", "BMA_SWAP", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
         "CC_FIX_FLOAT_SWAP", "CDS", "CDS_INDEX", "COMMODITY", "COMMODITY_OPTION",
         "DISCOUNT", "EQUITY_DIVIDEND",
         "FRA", "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",

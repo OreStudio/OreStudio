@@ -130,12 +130,15 @@ std::string curve_id(std::string_view ccy, std::string_view tenor) {
 }
 
 /*
- * The index segment of an ORE key is a name, and producers spell one family more
- * than one way: the corpus writes ESTER where index_family says estr, on 2,514
- * IR_SWAP keys and 70 MM keys. A spelling that differs from the family's own
- * uppercase name is carried in the identifier and emitted verbatim, so the key
- * reads back as it arrived. The ordinary spelling records nothing, which keeps
- * one key to one URI -- the same rule the IR swap's spot lag follows.
+ * The index segment of an ORE key is a name, and the identifier carries it in one
+ * of two ways. Producers spell one family more than one way -- the corpus writes
+ * ESTER where index_family says estr, on 2,514 IR_SWAP keys and 70 MM keys -- and
+ * a spelling that differs from the family's own uppercase name is carried so the
+ * key reads back as it arrived. Some index tokens have no family at all: a basis
+ * swap names the basis itself (SOFR_FedFunds, LIBOR_PRIME) and there is nothing
+ * to resolve it to. Both cases record the token in index_spelling, and the
+ * ordinary spelling records nothing, which keeps one key to one URI -- the same
+ * rule the IR swap's spot lag follows.
  */
 std::string index_token(const ir_market_data_identifier& id) {
     if (id.index_spelling)
@@ -426,6 +429,19 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
     if (qt == ir_quote_type::basis_swap) {
         if (!id.second_tenor)
             return std::nullopt;
+        // A basis swap may name the basis itself -- SOFR_FedFunds, LIBOR_PRIME --
+        // between the currency and the maturity. Those names are not index
+        // families, so the token is carried as written and emitted the same way.
+        const auto index = index_token(id);
+        if (!index.empty())
+            return std::format("{}/{}/{}/{}/{}/{}/{}",
+                               ore_type(qt),
+                               ore_metric(m),
+                               t,
+                               to_upper(*id.second_tenor),
+                               id.ccy,
+                               index,
+                               point);
         return std::format("{}/{}/{}/{}/{}/{}",
                            ore_type(qt),
                            ore_metric(m),
@@ -1127,8 +1143,10 @@ from_ir_future(ir_quote_type qt, const std::vector<std::string>& parts) {
 std::optional<market_data_identifier>
 from_ir_basis_swap(const std::vector<std::string>& parts) {
     // BASIS_SWAP/BASIS_SPREAD/FIRST_TENOR/SECOND_TENOR/CCY/MATURITY -- the two
-    // index tenors come first, then the single currency, then the maturity.
-    if (parts.size() != 6)
+    // index tenors come first, then the single currency, then the maturity. A
+    // seventh segment names the basis itself, which sits between the currency and
+    // the maturity.
+    if (parts.size() != 6 && parts.size() != 7)
         return std::nullopt;
     const auto m = parse_metric(parts[1]);
     if (!m)
@@ -1140,7 +1158,15 @@ from_ir_basis_swap(const std::vector<std::string>& parts) {
     id.tenor = to_lower(parts[2]);
     id.second_tenor = to_lower(parts[3]);
     id.ccy = to_upper(parts[4]);
-    id.point = to_lower(parts[5]);
+    if (parts.size() == 7) {
+        // A named basis has no index family to resolve to, so the token is kept
+        // whole -- the same field that carries a producer's spelling when there
+        // is a family to spell.
+        id.index_spelling = parts[5];
+        id.point = to_lower(parts[6]);
+    } else {
+        id.point = to_lower(parts[5]);
+    }
     return id;
 }
 

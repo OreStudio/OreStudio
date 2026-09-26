@@ -537,6 +537,20 @@ component joins the registry and which are still vacuous.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Rebase before merge
+
+Main moved 197 commits while this PR was open. The rebase held one
+conflict, in =doc/recipes/shell/shell.org=, which is derived: main's
+version was taken and the inventory regenerated on top, so both sides'
+rows are present. The rebase also brought a main-side change the trading
+tree had not seen: two models name =ores.storage/net/storage_transfer.hpp=,
+a path that does not exist, and the regeneration followed it into
+=trade_handler.hpp= and broke the build. The trade model now names the
+header that exists, =ores.storage.core/net/storage_transfer.hpp=, and the
+marketdata half is recorded on the story for that component. Neither
+trading nor marketdata is under the drift gate, which is why the wrong
+path sat unnoticed.
+
 * Verification, round 1
 
 An independent verifier read the diff against the six claims the task

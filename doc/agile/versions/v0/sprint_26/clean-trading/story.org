@@ -296,6 +296,16 @@ not ours, so the PR 1 task records it rather than deletes it.
 
 The backlog captures that touch this work are listed in the PR 1 task.
 
+One latent defect belongs to another component but surfaces here. Two
+models on main name =ores.storage/net/storage_transfer.hpp=, a path that
+does not exist: =ores.trading.trade.org= and
+=ores.marketdata.market_series.org=. The header is at
+=ores.storage.core/net/storage_transfer.hpp=, and the hand-written
+consumers use that path. Trading was regenerated in PR 2, so its model was
+corrected to the path that exists; neither component is under the drift
+gate, which is why the wrong path sat unnoticed. The marketdata half is
+left to that component's own clean-up.
+
 * Target shape
 
 - One trade identity, one instrument identity and one security issue

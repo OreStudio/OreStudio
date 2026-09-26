@@ -78,7 +78,7 @@ record each item's result in the table below.
 | P05 | Not applicable yet. There is no protocol change to follow until the operation model replaces the hand-written headers; the consumers are then updated in the same piece of work. | — |
 | P06 | Not applicable: the component has no event cache, and B03 found none among its 53 files. | B03 survey. |
 | G01 | Pass. Regeneration is byte-identical and idempotent. The first run wrote 75 files; the second wrote nothing and reported "No drift: regenerated output matches the checked-in tree", exit 0, with the tree untouched. | Two runs of =check_component_drift.py --component workflow-cpp=, the second after committing the first. |
-| G02 | In progress. The generated set exists now, so the hand-written files generation supersedes are identifiable rather than guessed. The 12 repository files the B01 baseline said would change are among those the marker census now counts as generated. | G03's census, against B03's classification. |
+| G02 | Open, and it is a build blocker rather than tidiness. Compiling the component after the regeneration fails with a redefinition: the hand-written =core/include/ores.workflow.core/domain/workflow_instance.hpp= and the generated =api/include/ores.workflow.api/domain/workflow_instance.hpp= both define =ores::workflow::domain::workflow_instance=. The generated type is a strict superset, so the hand-written one is superseded and its call sites have to move with it. | =cmake --build ... --target ores.workflow.core.lib=: "error: redefinition of 'workflow_instance'", naming both headers. Detail below. |
 | G03 | Pass in part. The component holds 97 C++ files outside tests where the baseline held 53: 56 carry the generated marker and 41 remain hand-written, against a baseline of 0 and 53. Twelve of the original files are now generated, which is the 12 the baseline predicted would change. | File census over =projects/ores.workflow=, marker =AUTO-GENERATED FILE=. |
 | G06 | Pass for this component. All three modules report "All component_files.cmake up to date", each regenerated through the =ores.cmake.component.files= archetype rather than edited by hand. | =regenerate_cmake_component_files.py --component ores.workflow.{api,core,service}=. =--all= still fails on 24 components, verified pre-existing because =ores.reporting.core= is stale on a component this work never touched. |
 | W01 | Finding: the registrar families exist but are not composed. Generation materialised =workflow_instance_registrar.cpp=, =workflow_step_registrar.cpp=, their two history-provider registrars and the service's two event registrars, and the hand-written aggregate =core/src/messaging/registrar.cpp= references none of them. | The aggregate registrar's include list and =register_handlers= body, against the files generation wrote. Detail below. |
@@ -539,6 +539,41 @@ The other two parts are recorded elsewhere and are not re-derived here: S01 for
 the hand-written shell unit that duplicates the generated one, and W01 for the
 hand-written aggregate registrar that composes none of the generated families.
 B06 carries the dead event.
+
+** G02 the duplication is a build blocker, and the compiler found it
+
+The regeneration commit is red, and the reason is the item this section owns. The
+generated domain type and the hand-written one are both
+=ores::workflow::domain::workflow_instance=, so any translation unit that reaches
+both -- =registrar.cpp= does, through =workflow_engine.hpp= -- fails:
+
+#+begin_src text
+error: redefinition of 'workflow_instance'
+  core/include/ores.workflow.core/domain/workflow_instance.hpp:37
+  api/include/ores.workflow.api/domain/workflow_instance.hpp:44  (previous definition)
+#+end_src
+
+The generated type is a strict superset: it carries =version= and a typed
+=utility::uuid::tenant_id= where the hand-written one carries a bare
+=boost::uuids::uuid=, and it includes =tenant_id.hpp= and =string_view=. So the
+hand-written file is superseded rather than a parallel variant, and deleting it
+is the right resolution.
+
+The deletion is not free. The hand-written core domain headers are included by
+=core/include/ores.workflow.core/domain/*_json_io.hpp=, which are superseded too,
+and by =core/include/ores.workflow.core/service/workflow_engine.hpp=, which
+survives. The engine and everything downstream of it therefore move to the
+generated =ores::workflow::domain= types in the same piece of work.
+
+This is the concrete form of the pattern the last three sections kept finding:
+generation materialised the replacement, and the hand-written original is still
+in place. Here the consequence is not untidiness but a tree that does not
+compile, which is why V01 cannot pass before G02 does.
+
+One process note worth carrying: the regeneration and its deletions belong in the
+same commit, or at least the same wave. Committing the regeneration alone left
+the branch red for several commits, which the standard's sequencing is meant to
+avoid.
 
 * Test Scenarios
 

@@ -29,9 +29,12 @@
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include "ores.workflow.core/messaging/workflow_handler.hpp"
+#include "ores.workflow.core/messaging/workflow_instance_registrar.hpp"
 #include "ores.workflow.core/messaging/workflow_query_handler.hpp"
+#include "ores.workflow.core/messaging/workflow_step_registrar.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include "ores.workflow.core/service/workflow_engine.hpp"
+#include <iterator>
 #include <memory>
 
 namespace ores::workflow::messaging {
@@ -55,6 +58,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto qg = "ores.workflow.service";
+
+    // Generated per-entity registrars (workflow instances and steps). Each wires
+    // the standard CRUD surface -- list/save/delete/history -- to the generated
+    // handler. subscription is move-only, so fold each returned vector in with
+    // move iterators.
+    const auto fold = [&subs](std::vector<ores::nats::service::subscription> s) {
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+    };
+    fold(register_workflow_instance_handlers(nats, ctx, signer));
+    fold(register_workflow_step_handlers(nats, ctx, signer));
 
     // ----------------------------------------------------------------
     // Load FSM state maps once at startup (one NATS round-trip each).

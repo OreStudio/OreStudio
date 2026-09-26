@@ -279,8 +279,9 @@ void workflow_engine::check_compensation_complete(const domain::workflow_instanc
     const auto steps = step_repo_.find_by_workflow_id(ctx_, instance.id);
 
     for (const auto& s : steps) {
+        // Compensate the completed steps only; the rest never ran.
         if (s.step_index >= 0)
-            continue; // skip forward steps
+            continue;
         if (s.state_id == step_states_.require("in_progress")) {
             // At least one compensation step is still running.
             return;

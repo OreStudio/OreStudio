@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: F9757D88-A92E-474E-9E8E-C703D604A0B2
+:END:
+#+title: ores.telemetry
+#+description: Observability component: structured logs, service heartbeats, and NATS server and stream samples, gathered over the telemetry.v1.> namespace and stored in its own tables.
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: :telemetry:component:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+name: telemetry
+#+full_name: ores.telemetry
+#+brief: Telemetry ingestion, storage, and query component
+#+component_kind: composite
+#+parts: core database service
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.telemetry component diagram
+#+caption: ores.telemetry
+[[file:ores.telemetry.png][file:ores.telemetry.png]]
+
+* Summary
+
+=ores.telemetry= is the observability component for ORE Studio. It receives
+log entries, service heartbeats, and NATS server and stream samples, persists
+them, and answers queries over the stored data.
+
+It is a composite of three parts. =ores.telemetry.core= is the logging and
+tracing library that every component links against. =ores.telemetry.database=
+is the PostgreSQL persistence layer. =ores.telemetry.service= is the NATS
+service that serves the =telemetry.v1.>= namespace.
+
+* Inputs
+
+- Log entries published on =telemetry.v1.logs.publish= by other components'
+  wrapper nodes. The compute wrapper is the only in-repo publisher, and it
+  sends batches of up to 200 entries.
+- Heartbeats published on =telemetry.v1.services.heartbeat= by every service
+  that embeds the =ores.service= heartbeat publisher, including this
+  component's own service.
+- NATS server and stream samples that the service polls from the NATS HTTP
+  monitoring API, at =/varz= and =/jsz?streams=true=.
+- Queries for logs, service samples, and NATS samples, on the four request
+  subjects of the namespace.
+- Configuration: the NATS server URL and subject prefix, and the PostgreSQL
+  connection string.
+- Log events that other components emit through the Boost.Log sink that the
+  core library installs.
+
+* Outputs
+
+- Rows in its own tables: =telemetry_logs=, =service_samples=,
+  =nats_server_samples=, and =nats_stream_samples=, written through
+  =ores.telemetry.database=.
+- Replies to the query subjects. The log and service sample handlers read the
+  repository; the two NATS sample handlers currently reply with an empty
+  =samples= list and do not call the repository.
+- JSON Lines log files written by the core library to its configured export
+  path.
+
+* Entry points
+
+- =core/= — Boost.Log setup, trace and span correlation, the file and hybrid
+  exporters, and the three protocol headers that declare the six subjects.
+- =database/= — ORM entities, mappers, and repositories for the four
+  telemetry tables.
+- =service/src/main.cpp= — the service entry point that starts the NATS event
+  loop.
+- =service/src/messaging/registrar.cpp= — the one place that subscribes all
+  six =telemetry.v1.>= subjects and binds their handlers.
+
+* Dependencies
+
+- =ores.nats= — the transport the service subscribes and replies through.
+- =ores.service= — the service runner and heartbeat publisher; the telemetry
+  service embeds it and publishes =telemetry.v1.services.heartbeat= on its
+  behalf.
+- =ores.logging= — the Boost.Log infrastructure the service runner uses.
+- =ores.dq= — the ORM base classes the persistence layer builds on.
+- External libraries: =Boost.Log=, =nats.c=, =soci=, and PostgreSQL.
+
+* See also
+
+- [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]] — observability library that produces log records.
+- [[id:B73EAF3C-1384-4882-9310-8E9DB594C038][ores.telemetry.database]] — persistence layer for telemetry records.
+- [[id:DF0CAAB9-9DDB-4FEA-82D3-71FAC2177EEF][ores.telemetry.service]] — NATS service that serves the namespace.
+- [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — messaging transport used by the service.

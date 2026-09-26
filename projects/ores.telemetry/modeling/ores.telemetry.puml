@@ -1,0 +1,102 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.telemetry Component
+
+set namespaceSeparator ::
+
+left to right direction
+skinparam nodesep 30
+skinparam ranksep 40
+
+package "ores.telemetry" #F2F2F2 {
+    component [ores.telemetry.core] as tcore #F7E5FF
+    component [ores.telemetry.database] as tdb #F7E5FF
+    component [ores.telemetry.service] as tsvc #F7E5FF
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The component owns no C++ sources at its root, so the automated pass cannot
+' draw it: that pass reads projects/<component>/include/, and ores.telemetry
+' has no such directory. The three part boxes above are the composite's own
+' content. Everything below is hand-authored: the part-to-part edges, the
+' external publishers and stores, and the six subjects of the telemetry.v1.>
+' namespace. The subjects are declared once each in the protocol headers of
+' ores.telemetry.core and are all served by
+' service/src/messaging/registrar.cpp.
+
+package "publishers" #F2F2F2 {
+    component [ores.compute.wrapper] as wrapper #F7E5FF
+    component [ores.service heartbeat_publisher] as heartbeat #F7E5FF
+}
+
+package "telemetry.v1.> subjects" #F2F2F2 {
+    interface "telemetry.v1.logs.publish" as s_logs_publish
+    interface "telemetry.v1.services.heartbeat" as s_services_heartbeat
+    interface "telemetry.v1.logs.list" as s_logs_list
+    interface "telemetry.v1.services.list" as s_services_list
+    interface "telemetry.v1.nats.\nserver-samples.list" as s_server_samples_list
+    interface "telemetry.v1.nats.\nstream-samples.list" as s_stream_samples_list
+}
+
+package "external" <<Rectangle>> {
+    component "NATS server HTTP monitor" as nats_monitor #F7E5FF
+    database "PostgreSQL" as postgres #F7E5FF
+}
+
+' --- part-to-part dependencies
+tsvc --> tcore : domain types, protocol, logging
+tsvc --> tdb : persist and query
+tdb --> tcore : log_record, resource, samples
+tcore ..> tsvc : hybrid exporter forwards log records
+
+' --- one-way publishes into the component
+wrapper --> s_logs_publish : publish, batches of 200
+s_logs_publish --> tsvc : in
+heartbeat --> s_services_heartbeat : publish
+tsvc --> s_services_heartbeat : own heartbeat
+s_services_heartbeat --> tsvc : in
+
+' --- request/reply queries served by the component
+tsvc <--> s_logs_list : request in / reply out
+tsvc <--> s_services_list : request in / reply out
+tsvc <--> s_server_samples_list : request in / reply out
+tsvc <--> s_stream_samples_list : request in / reply out
+
+' --- collection and storage
+tsvc ..> nats_monitor : polls /varz and /jsz
+tdb --> postgres : four telemetry tables
+
+note bottom of s_server_samples_list
+The four request subjects have no in-repo caller. The
+server and stream sample handlers reply with an empty
+samples list and do not call the repository yet.
+end note
+
+legend right
+  ores.telemetry.service is the only NATS entrypoint.
+  registrar.cpp subscribes all six subjects under the
+  queue group ores.telemetry.service.
+endlegend
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.telemetry.puml"
+' End:
+@enduml

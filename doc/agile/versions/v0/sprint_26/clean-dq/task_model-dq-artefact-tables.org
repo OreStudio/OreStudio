@@ -106,6 +106,20 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part three: methodology, and the end of the data organization layer
+
+Run on 2026-09-26. =methodology= is modelled and the hand-written layer that served it is gone, so two more headers leave the list.
+
+**The model.** A =uuid-surrogate-lookup=: a surrogate =id=, a =name= natural key, a description and two optional text columns, =logic_reference= and =implementation_details=. The generated table matches the hand-written one except for the redundant unique index the profile adds on the surrogate key; no column, primary key or exclusion constraint moved.
+
+**What it retired.** =data_organization_protocol.hpp= and =data_organization_handler.hpp= are both deleted — once the dimensions left, methodology was all either of them still held. The registrar composes =register_methodology_handlers=; =dataset_service= loses the methodology section it duplicated, because the generated =methodology_service= owns those verbs; and the two hand-written singular SQL files give way to the generated plural forms in =dq_create.sql= and =dq_drop.sql=.
+
+**A third rule the generated repository imposes.** The stateless API, as with the dimensions, and =boost::uuids::to_string(...)= on lookups that pass a surrogate key: the generated =read_latest(ctx, id)= takes the id as a string, so both id lookups in the hand-written test needed the conversion.
+
+**A lesson worth keeping: a mem-initializer line can carry the constructor body.** Twice now a constructor has been edited by deleting a line from its initializer list, and twice the result did not compile — once because the list then began with a comma, and once because the deleted line ended in ={}=. The second is the dangerous one, because the damage surfaces as a syntax error far from the edit.
+
+**Evidence.** Codegen suite 706 passing; dq drift clean twice in a row and =--all= clean; the six affected targets build and link including =ores.shell.exe=; the script tangle produces no change; model drift, protocol twin coverage, handler permissions, populate references, registry exceptions, both inventories, =compass lint= and =validate_docs.sh= all pass.
+
 * Step 8 part two: the other two dimensions, and the shell unit nobody registered
 
 Run on 2026-09-26. =origin_dimension= and =treatment_dimension= are modelled, so the dimension family is done and the hand-written layer it needed is gone.
@@ -669,6 +683,7 @@ via its "Verifies task" field.
 | https://github.com/OreStudio/OreStudio/pull/2193 | [dq] Migrate the last three entities and wire the shell adapter |
 | https://github.com/OreStudio/OreStudio/pull/2196 | [dq] Model nature_dimension and delete its hand-written protocol |
 | https://github.com/OreStudio/OreStudio/pull/2198 | [dq] Model the origin and treatment dimensions, retiring the dimension layer |
+| https://github.com/OreStudio/OreStudio/pull/2200 | [dq] Model methodology, retiring the data organization layer |
 
 * Review
 
@@ -684,4 +699,4 @@ The design question is answered affirmatively and the answer is enforced by temp
 
 The remaining work is named: six entities whose canonical output the generator already emits and whose hand-written duplicates must be deleted, the shell unit that must be wired before the change-reason pair can move, one decision about `subject_area`'s composite history identity, and the line that adds dq to =COMPONENTS_UNDER_TEST=. Each is recorded above with the evidence that it is a deletion problem rather than a modelling problem.
 
-Landed as https://github.com/OreStudio/OreStudio/pull/2189, https://github.com/OreStudio/OreStudio/pull/2190, https://github.com/OreStudio/OreStudio/pull/2193 https://github.com/OreStudio/OreStudio/pull/2196 and https://github.com/OreStudio/OreStudio/pull/2198.
+Landed as https://github.com/OreStudio/OreStudio/pull/2189, https://github.com/OreStudio/OreStudio/pull/2190, https://github.com/OreStudio/OreStudio/pull/2193 https://github.com/OreStudio/OreStudio/pull/2196 and https://github.com/OreStudio/OreStudio/pull/2198 and https://github.com/OreStudio/OreStudio/pull/2200.

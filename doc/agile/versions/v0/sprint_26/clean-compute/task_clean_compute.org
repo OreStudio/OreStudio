@@ -78,13 +78,36 @@ record each item's result in the table below.
 | M09  | Pass    | No Qt or Wt presentation drawer or property remains in a compute model. The drawer's Qt list-window columns and its retired-type class names are gone. =grep -l "^\*\* Presentation" projects/ores.compute/modeling/*.org= returns nothing, against 109 files elsewhere. |
 | V01  | Pass    | =compass build= over the whole tree exits 0, with the component's tests and every consumer. |
 | V05  | Partial | Every gate is green with the component under test: component drift, model drift, protocol twin coverage, handler permissions, populate references, recipe inventory and the CMake source lists. The registry entry V06 is not made yet. |
-| P05  | Pass    | Both consumers follow the protocol: the shell application and the CLI. Nothing is carried for backwards compatibility. |
+| P05  | Pass    | Every consumer follows the protocol: the shell application and, before main deleted the component, the CLI. Nothing is carried for backwards compatibility. |
+| P01  | Pass    | Every audited entity speaks list, get, put and delete, and carries the versions facet for the history and point-in-time reads: =compute.v1.<plural>_versions.list= and =.get=. The junction carries neither, and no junction in the codebase does, iam's included. That is a codegen-level decision, recorded as a finding rather than fixed here. |
+| P02  | Fail    | Eleven raw subject literals remain in hand-written code: seven in the three hand-written protocol headers, which M06 removes, and four that build a =compute.v1.work.assignments.= subject at runtime. All of them follow from M06. |
+| P03  | Pass    | 70 declared subjects, 70 distinct, no duplicate. Every generated registrar subscribes to as many subjects as it has handlers (9, 8, 9, 9, 9, 10, 10). One generated type is unused: =app_version_platform_event=, which no registrar maps and nothing publishes. iam's junction has the same shape, so it is a codegen pattern and is recorded as a finding. |
+| P06  | N/A     | The component keeps no warmed event cache. No generated cache file exists in it, and none exists in any component, so the item has nothing to check. |
+| W01  | Pass    | The messaging registrars are composed at the core composition point and the six entities' event mappings at the service's. The junction materialises no event family, because the generator emits none for junctions, which iam's junction also shows. |
 | S01  | Pass    | The seven generated command units are registered in the repl and linked into =ores.shell.application=. The commands they supersede are deleted, and the commands no unit covers stay hand-written. |
 | S02  | Pass    | The recipe inventory lists 191 recipes in 110 categories and the gate passes. |
 
 Items not listed are not yet worked. Sections 2 to 8 are open.
 
 * Notes
+
+** Two codegen-wide findings from the protocol audit
+
+Both show up in iam as well, so neither is a compute defect. Neither is
+fixed here.
+
+- *A temporal junction exposes no history read.*
+  =ores_compute_app_version_platforms_tbl= carries =version=,
+  =valid_from= and =valid_to=, but its protocol has no versions facet, and
+  neither does any other junction. So a junction's rows have history that
+  no read reaches. P01 only requires the point-in-time read where the
+  model offers it, which is why the item passes, but the offer is missing
+  for a table that keeps the history.
+- *A junction gets an event record that nothing serves.* The generator
+  writes =app_version_platform_event= into the junction protocol, no event
+  registrar is emitted for junctions, and nothing publishes or consumes
+  the type. P03 says to remove what nothing serves, so this is a
+  generator-level deletion waiting for a codegen decision.
 
 ** The presentation drawer, M09
 

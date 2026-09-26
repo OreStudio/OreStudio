@@ -224,11 +224,15 @@ request with nothing**, and now read the repository the subjects promised. The
 Every gate is green for this component: the drift check reports no drift with
 the component listed in =COMPONENTS_UNDER_TEST=; the model, protocol twin,
 handler permission, populate, recipe and CMake gates pass; and the three
-suites pass at 2175, 70 and 32 assertions with the codegen suite at 602. Two
+suites pass at 2175, 70 and 32 assertions with the codegen suite at 626. Two
 failures on main are recorded rather than fixed, because neither is this
 component's and both belong to other environments: =ores.shell.workflow= has
-no overview and no test =main=, and the physical-space inventory check is
-stale on =ores.doc.knowledge.org=.
+no overview and no diagram, which fails the documentation check, and the
+physical-space inventory check is stale on =ores.doc.knowledge.org=. The
+third failure this branch met on main — the same shell part's test directory
+without a =main.cpp=, which stopped the whole build — was fixed on main
+while the branch was open, so its capture is withdrawn and the build is
+green.
 
 What stays open is recorded rather than claimed. The distributed-tracing API
 and the four stats reads are kept, each with the capture that names the

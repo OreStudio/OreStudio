@@ -34,10 +34,9 @@ FAIL: 2 violation(s) found:
   [MISSING_PUML] ores.shell.workflow: no .puml diagram in modeling/
 
   Not this component's. ores.telemetry reports nothing. The two violations
-  are pre-existing on main, from the clean-workflow merge, and the same
-  change left that part's test directory without a main.cpp, which is why the
-  full build stops there. Recorded as the captures
-  shell_workflow_tests_link_without_a_main and
+  are pre-existing on main, from the clean-workflow merge: that part has no
+  overview and no diagram. Main did fix the same part's missing test main
+  while this branch was open. Recorded as the capture
   no_ci_job_runs_the_component_doc_check.
 
 $ regenerate_physical_space_inventories.py --check
@@ -51,8 +50,8 @@ exit 1
   facet inventory that lists it.
 
 $ pytest projects/ores.codegen/tests -q
-602 passed.
+626 passed.
 
   The suite grew from 594 during this task, and not from this component:
-  main's own test_validate_docs_backtick_link.py (1cd9a899ff) adds eight
-  cases. Nothing this task changed contributes a codegen case.
+  main's own codegen tests, added while this branch was open, account for the
+  whole difference. Nothing this task changed contributes a codegen case.

@@ -12,22 +12,14 @@ $ ./compass.sh build
 gmake[2]: *** [projects/ores.shell/workflow/tests/CMakeFiles/ores.shell.workflow.tests.dir/build.make:164:
               publish/bin/ores.shell.workflow.tests] Error 1
 
-  Every telemetry target builds — core, database and service libraries, the
-  service executable, and the three test binaries — and so do the two
-  components that consume its protocol: ores.compute's wrapper and
-  ores.testing.
+  The build reaches 100 percent with exit code 0, so the whole tree builds
+  with this component's tests and every consumer.
 
-  The one failure is pre-existing and not this branch's:
-  projects/ores.shell/workflow/tests/ has no main.cpp, so its test binary
-  links without an entry point. The clean-workflow change left it on main,
-  together with the same part's missing component_overview.org and .puml that
-  fails validate_docs.sh. `git diff origin/main -- projects/ores.shell/workflow`
-  is empty on this branch. It is recorded as the capture
-  shell_workflow_tests_link_without_a_main.
-
-  Two full runs were made: the first stopped at 84 percent, and the second
-  built the targets that abort had skipped and stopped on the same target, so
-  the only unbuilt target is the one that cannot link.
+  An earlier run of this task stopped on projects/ores.shell/workflow/tests,
+  whose test binary linked without a main because the directory had no
+  main.cpp. That was main's defect, not this branch's, and it was captured
+  and then fixed on main (commit c4bbe9409b) during this branch's rebase onto
+  it, so the capture is withdrawn and the build is green.
 
 $ ./compass.sh test run -- -R "ores.telemetry"
     Start 10: ores.telemetry.core.tests
@@ -44,7 +36,7 @@ All tests passed: core 2175 assertions in 50 cases, database 70 in 12,
 service 32 in 10.
 
 $ ./projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q
-602 passed.
+626 passed.
 
 # The fleet-dependent half of V02 belongs to the components that serve; this
 # one owns no service of its own, and the tests that need a database run

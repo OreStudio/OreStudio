@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: D469834F-DB7C-4486-B43F-CBD984744C36
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.storage.objects
 #+description: Codegen operation model for object storage: put, get, delete and list over a bucket and an opaque key, the surface both the NATS service and the HTTP routes serve.

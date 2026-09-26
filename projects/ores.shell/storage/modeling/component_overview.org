@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 6EE638CE-19BB-4858-94DB-0F371E1AC9C2
+:END:
+#+title: ores.shell.storage
+#+description: The shell's storage adapter part. Holds the generated raw command unit that projects object storage onto the REPL, over a bucket, a key and a local path.
+#+type: ores.codegen.component
+#+component_kind: adapter
+#+level: cross
+#+filetags: :shell:repl:storage:component:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+name: storage
+#+full_name: ores.shell.storage
+#+brief: Shell raw storage command unit
+
+* Summary
+
+=ores.shell.storage= is the adapter part that projects object storage onto the
+shell's REPL. It holds the command unit generated from
+[[id:D469834F-DB7C-4486-B43F-CBD984744C36][ores.storage.objects]], so the verbs
+are the operation model's verbs and not a hand-written parallel surface.
+
+The unit is the raw one: every verb takes a bucket, a key and a local path, so a
+caller that only wants bytes somewhere does not have to learn a domain verb.
+The consumer verbs that wrap storage belatedly, such as the compute package
+publisher, live with their own domains.
+
+* Inputs
+
+- The operation model the unit is generated from, and the live session.
+
+* Outputs
+
+- A =storage= submenu whose verbs reach the object operation set.
+
+* Entry points
+
+- =include/ores.shell/app/commands/storage/objects_operations_commands.hpp= —
+  the =storage= submenu, generated from the operation model.
+- =src/app/commands/storage/objects_operations_commands.cpp= — the generated
+  unit; =application='s =storage_commands= aggregator is the hand-written list
+  that calls it.
+
+* Dependencies
+
+- [[id:8778E5E5-2123-4E40-A16D-B13B16D1B7AD][ores.storage.api]] — the modelled surface the unit speaks.
+
+* See also
+
+- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] — the component group overview.
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the target state, and the raw and wrapped use it separates.

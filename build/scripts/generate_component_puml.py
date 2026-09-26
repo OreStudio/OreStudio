@@ -129,6 +129,30 @@ def _simplify_type(t: str) -> str:
     return t
 
 
+def _inline_body_values(line: str) -> Optional[list[str]]:
+    """
+    Returns the comma-separated names in a declaration body that opens and
+    closes on the same line, or None when the declaration is not of that shape.
+
+    A one-line body must not be pushed onto the type stack: the only brace on
+    the line closes the declaration itself, so treating the declaration as
+    open would leave the parser one level too deep and swallow every following
+    type as if it were a member of this one. The names are empty for an empty
+    body, such as a one-line class.
+    """
+    open_index = line.find('{')
+    if open_index == -1 or '}' not in line[open_index:]:
+        return None
+
+    body = line[open_index + 1:line.rindex('}')]
+    values = []
+    for item in body.split(','):
+        name = re.sub(r'=.*$', '', item).strip()
+        if name:
+            values.append(name)
+    return values
+
+
 def parse_header(path: Path) -> dict[tuple[str, ...], list[TypeInfo]]:
     """
     Parse a C++ header and return {namespace_tuple: [TypeInfo, ...]}.
@@ -217,35 +241,54 @@ def parse_header(path: Path) -> dict[tuple[str, ...], list[TypeInfo]]:
 
             # --- Type declarations ---
             if not preceding_was_template:
+                # A declaration whose body opens and closes on the same line is
+                # already complete: emit it and stay at the current brace depth.
+                inline_body = _inline_body_values(line)
+
+                def emit_inline(type_name: str, type_kind: str) -> None:
+                    ti = TypeInfo(name=type_name, kind=type_kind)
+                    ti.members = [MemberInfo(name=v, type_str="", visibility="+")
+                                  for v in inline_body]
+                    results[current_ns()].append(ti)
+
                 m = _ENUM_CLASS_RE.match(line)
                 if m:
-                    current_type = TypeInfo(name=m.group(1), kind="enum class")
-                    type_brace_depth = brace_depth
-                    type_member_depth = 0
-                    brace_depth += 1
-                    visibility = "+"
+                    if inline_body is not None:
+                        emit_inline(m.group(1), "enum class")
+                    else:
+                        current_type = TypeInfo(name=m.group(1), kind="enum class")
+                        type_brace_depth = brace_depth
+                        type_member_depth = 0
+                        brace_depth += 1
+                        visibility = "+"
                     preceding_was_template = False
                     i += 1
                     continue
 
                 m = _ENUM_RE.match(line)
                 if m and 'class' not in line:
-                    current_type = TypeInfo(name=m.group(1), kind="enum")
-                    type_brace_depth = brace_depth
-                    type_member_depth = 0
-                    brace_depth += 1
-                    visibility = "+"
+                    if inline_body is not None:
+                        emit_inline(m.group(1), "enum")
+                    else:
+                        current_type = TypeInfo(name=m.group(1), kind="enum")
+                        type_brace_depth = brace_depth
+                        type_member_depth = 0
+                        brace_depth += 1
+                        visibility = "+"
                     preceding_was_template = False
                     i += 1
                     continue
 
                 m = _STRUCT_RE.match(line)
                 if m:
-                    current_type = TypeInfo(name=m.group(1), kind="struct")
-                    type_brace_depth = brace_depth
-                    type_member_depth = 0
-                    brace_depth += 1
-                    visibility = "+"
+                    if inline_body is not None:
+                        emit_inline(m.group(1), "struct")
+                    else:
+                        current_type = TypeInfo(name=m.group(1), kind="struct")
+                        type_brace_depth = brace_depth
+                        type_member_depth = 0
+                        brace_depth += 1
+                        visibility = "+"
                     preceding_was_template = False
                     i += 1
                     continue
@@ -254,11 +297,14 @@ def parse_header(path: Path) -> dict[tuple[str, ...], list[TypeInfo]]:
                 if m:
                     name = m.group(1)
                     if name not in ('EXPORT', 'API', 'final', 'override'):
-                        current_type = TypeInfo(name=name, kind="class")
-                        type_brace_depth = brace_depth
-                        type_member_depth = 0
-                        brace_depth += 1
-                        visibility = "-"  # class members default private
+                        if inline_body is not None:
+                            emit_inline(name, "class")
+                        else:
+                            current_type = TypeInfo(name=name, kind="class")
+                            type_brace_depth = brace_depth
+                            type_member_depth = 0
+                            brace_depth += 1
+                            visibility = "-"  # class members default private
                         preceding_was_template = False
                         i += 1
                         continue
@@ -324,7 +370,9 @@ def parse_header(path: Path) -> dict[tuple[str, ...], list[TypeInfo]]:
                 continue
 
             # Field: type name;  (include all visibility levels)
-            if stripped and ';' in stripped:
+            # A wrapped declaration leaves an unmatched parenthesis on its
+            # continuation line, which would otherwise read as a field.
+            if stripped and ';' in stripped and stripped.count('(') == stripped.count(')'):
                 m = _FIELD_RE.match(line)
                 if m:
                     t = _simplify_type(m.group(1))

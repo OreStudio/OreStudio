@@ -21,11 +21,11 @@ ores.refdata meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Task 1117D49B: regenerated clean; two build defects fixed; a third is a cross-cutting generator defect (G05). |
-| Waiting on    | The junction key-type generator fix, which re-signs every component's repository. |
-| Next          | Decide where the G05 fix lands, then finish V01 and run V02. |
+| Now           | Complete. Every applicable item passes with its evidence on the task; V04 carries a recorded accepted exception because the =ores.doc.shell-recipe= archetype renders nothing, so the checked-in shell recipes have frozen and 93 of 732 commands abort. |
+| Waiting on    | Nothing. The recipe family is captured as =shell-recipes-no-longer-run=. |
+| Next          | Nothing in this story; the capture is the follow-on work. |
 | Last touched  | 2026-09-26                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ ores.refdata meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:1117D49B-5460-4A3A-AE4F-8263A3270251][Bring ores.refdata to the clean standard]] | STARTED | 2026-09-26 | | Work ores.refdata through the Component Clean Standard in order and record each item. |
+| [[id:1117D49B-5460-4A3A-AE4F-8263A3270251][Bring ores.refdata to the clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Work ores.refdata through the Component Clean Standard in order and record each item. |
 
 * Notes
 

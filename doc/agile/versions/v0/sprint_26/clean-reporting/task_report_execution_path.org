@@ -237,6 +237,26 @@ What remains is the step the run stopped at: the instance does not leave
 =gather_trades=, so the next diagnostic is whether the engine published the
 step-0 command and to which subject.
 
+* The chain the live run exposed
+
+Driving the trigger from the shell one defect at a time reached a definite
+answer to the second half of the objective, and the answer is that the report
+service does its part correctly and the chain broke behind it. In order:
+
+| # | Where | Defect | State |
+|---+-------+--------+-------|
+| 1 | ores.scheduler | Published the trigger with no identity, so the reporting service rejected it unauthorized and the job was recorded as succeeded. | Fixed |
+| 2 | ores.reporting | The handler scoped its context from the base context and lost the workspace, so every definition looked missing. | Fixed |
+| 3 | ores.reporting | The in-flight query was revoked from PUBLIC and granted to nobody. | Fixed |
+| 4 | ores.reporting | The change reason code was an unseeded literal. | Fixed |
+| 5 | ores.workflow | No workflow instance has ever been created in this environment: both workflow tables require =modified_by=, validate it, and the engine set only =created_by=. Every start failed, so no step was ever dispatched. | Fixed |
+| 6 | ores.reporting | The instance took the definition's name and names are unique per tenant, so a second run of one definition was refused. | Fixed |
+| 7 | ores.reporting | The definition lookup alternates between finding the fixture definition and reporting it missing, from one request to the next, in one process. The lookup filters on =workspace_id = ctx.workspace_id()= and the party policy scopes by =app.visible_party_ids=; the fixture's party is ACME UK while the =admin= session's party is the System Party. Next diagnostic: read =context::with_tenant= and the pool's session-variable reset to see whether a pooled connection can carry a stale =app.visible_party_ids= from another request. | Open |
+
+The concurrency policy was observed working: with a stale =pending= instance in
+flight, the next trigger against the =fail= policy created its instance already
+=failed= rather than dispatching it, which is what the seed says it should do.
+
 * Plan
 
 1. Seed a test report in the component, so the FSM is testable in any

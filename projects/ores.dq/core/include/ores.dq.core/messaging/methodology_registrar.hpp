@@ -19,24 +19,26 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table.hpp.mustache
+ * Template: cpp_nats_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_DQ_API_DOMAIN_METHODOLOGY_TABLE_HPP
-#define ORES_DQ_API_DOMAIN_METHODOLOGY_TABLE_HPP
+#ifndef ORES_DQ_CORE_MESSAGING_METHODOLOGY_REGISTRAR_HPP
+#define ORES_DQ_CORE_MESSAGING_METHODOLOGY_REGISTRAR_HPP
 
-#include "ores.dq.api/domain/methodology.hpp"
-#include "ores.dq.api/export.hpp"
-#include <string>
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
 #include <vector>
 
-namespace ores::dq::domain {
+namespace ores::dq::messaging {
 
-/**
- * @brief Converts methodologies to the table format.
- */
-ORES_DQ_API_EXPORT std::string convert_to_table(const std::vector<methodology>& v);
+std::vector<ores::nats::service::subscription>
+register_methodology_handlers(ores::nats::service::client& nats,
+                              ores::database::context ctx,
+                              std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-}
+} // namespace ores::dq::messaging
 
 #endif

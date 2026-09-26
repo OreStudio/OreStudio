@@ -24,7 +24,6 @@
 #include "ores.dq.api/messaging/change_reason_protocol.hpp"
 #include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq.api/messaging/data_domain_protocol.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_dependency_protocol.hpp"
@@ -51,7 +50,6 @@
 #include "ores.dq.core/messaging/coding_scheme_handler.hpp"
 #include "ores.dq.core/messaging/data_domain_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/data_domain_registrar.hpp"
-#include "ores.dq.core/messaging/data_organization_handler.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_handler.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_member_handler.hpp"
@@ -64,6 +62,7 @@
 #include "ores.dq.core/messaging/lei_entity_registrar.hpp"
 #include "ores.dq.core/messaging/lei_relationship_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/lei_relationship_registrar.hpp"
+#include "ores.dq.core/messaging/methodology_registrar.hpp"
 #include "ores.dq.core/messaging/nature_dimension_registrar.hpp"
 #include "ores.dq.core/messaging/origin_dimension_registrar.hpp"
 #include "ores.dq.core/messaging/treatment_dimension_registrar.hpp"
@@ -171,30 +170,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
 
     // =========================================================================
-    // Data Organization (methodologies)
+    // Methodologies are on the standard generated stack (see
+    // methodology_handler/_registrar).
     // =========================================================================
 
-    auto do_ = std::make_shared<data_organization_handler>(nats, ctx, verifier);
-
-    subs.push_back(nats.queue_subscribe(
-        get_methodologies_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->list_methodologies(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_methodology_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->save_methodology(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_methodology_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->delete_methodologies(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_methodology_history_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->methodology_history(std::move(msg));
-        }));
+    {
+        auto methodology_subs = register_methodology_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(methodology_subs.begin()),
+                    std::make_move_iterator(methodology_subs.end()));
+    }
 
     // =========================================================================
     // Subject areas are on the standard generated stack (see

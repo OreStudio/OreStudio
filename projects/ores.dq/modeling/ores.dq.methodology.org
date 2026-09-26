@@ -1,0 +1,196 @@
+:PROPERTIES:
+:ID: DF18CCF5-EF2A-41A6-9EB2-07438BB09613
+:END:
+#+title: ores.dq.methodology
+#+description: Codegen entity model for the dq =methodology= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: Describes transformation and derivation logic.
+#+entity_singular: methodology
+#+entity_plural: methodologies
+#+entity_title: Methodology
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+Describes transformation/derivation logic. Links to documentation and
+implementation.
+
+A methodology is a named body of logic that a value is produced by, with an
+optional pointer to where the logic is written down and an optional note on how
+it is implemented. Rows are authored directly rather than mirrored from an
+external source.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:profile:   uuid-surrogate-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this methodology.
+
+The surrogate key; the name is the natural one.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:natural_key: true
+:END:
+
+Unique name for the methodology.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " " + std::string(faker::word::noun())
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of what the methodology does.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** logic_reference
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Where the logic is documented, when it is documented somewhere.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " reference"
+#+end_src
+
+** implementation_details
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+How the logic is implemented, when that is worth recording.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_methodologies_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: methodology
+:entity_plural_short:   methodologies
+:entity_singular_words: methodology
+:entity_plural_words:   methodologies
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: m
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| name        | Name        |
+| description | Description |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.dq.api/domain/methodology.hpp
+:domain_class:           dq::domain::methodology
+:protocol_include:       ores.dq.api/messaging/methodology_protocol.hpp
+:collection_name:        methodologies
+:key_field:              name
+:has_uuid_primary_key:   true
+:get_request_class:      dq::messaging::list_methodologies_request
+:get_response_class:     dq::messaging::list_methodologies_response
+:get_message_type:       list_methodologies_request
+:save_request_class:     dq::messaging::put_methodology_request
+:save_response_class:    dq::messaging::put_methodology_response
+:save_message_type:      put_methodology_request
+:delete_request_class:   dq::messaging::delete_methodology_request
+:delete_response_class:  dq::messaging::delete_methodology_response
+:delete_message_type:    delete_methodology_request
+:has_change_reason_cache: true
+:has_pagination:         true
+:END:
+
+*** Detail fields
+
+| field                  | label                  | widget                     | type      | is_key | is_required | placeholder                   |
+|------------------------+------------------------+----------------------------+-----------+--------+-------------+-------------------------------|
+| name                   | Name                   | nameEdit                   | line_edit | true   | true        | Enter methodology name        |
+| description            | Description            | descriptionEdit            | text_edit |        |             | Enter a description           |
+| logic_reference        | Logic Reference        | logicReferenceEdit         | line_edit |        |             | Where the logic is documented  |
+| implementation_details | Implementation Details | implementationDetailsEdit  | text_edit |        |             | How the logic is implemented   |
+
+*** Columns
+
+| enum_name             | field                  | header                 | type      | width |
+|-----------------------+------------------------+------------------------+-----------+-------|
+| Name                  | name                   | Name                   | string    | 200   |
+| Description           | description            | Description            | string    | 300   |
+| LogicReference        | logic_reference        | Logic Reference        | string    | 250   |
+| ImplementationDetails | implementation_details | Implementation Details | string    | 300   |
+| Version               | version                | Version                | int       | 80    |
+| ModifiedBy            | modified_by            | Modified By            | string    | 120   |
+| RecordedAt            | recorded_at            | Recorded At            | timestamp | 150   |
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

@@ -26,11 +26,11 @@ The shell can read any entity's version history through the generic subject ever
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6B32DFC7-06B6-4B3C-B49D-7779EDF43B3F][Clean ores.shell to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -132,3 +132,35 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+One command, =history get <entity_type> <entity_id> [--diff] [--version <n>]=, over
+the generic =<component>.v1.history.get= subject. It lists an entity's versions
+newest first and reuses =render_history_diff= for the diff path, so the listing is
+the only new behaviour. The subject is derived from the entity type's component
+segment, which is why one command reads any component and why an unknown entity type
+fails with the subject it tried.
+
+It also gives the history dispatch family its first client. That subject was
+subscribed by every service and read by nobody, which is part of how the regression
+below went unnoticed for as long as it did.
+
+Verified against the live fleet. A =workflow_instance= was created and updated to a
+second version with the generated commands, and the command reported both, with
+=--diff --version 2= printing the fields that moved -- step index, step count, both
+timestamps, the commentary and the recorded-at stamp. =ores.shell.exe= builds, and
+the component's file list is generator-identical:
+=regenerate_cmake_component_files.py --component ores.shell.application --check=
+reports "All component_files.cmake up to date".
+
+What was found and not fixed, on purpose. The protocol generator emits no history
+message, so every per-entity =history= command in the tree is either stale or
+hand-written, and regenerating a component removes its history subscription rather
+than restoring it. Putting the message back rewrites generated output for every
+versioned entity in the tree, which is a wave rather than a shell fix. It is recorded
+here, on the identity workflow task, and it stands as its own work item.
+
+One case is left open rather than explained: the bootstrapped =super_admin= account
+reads back with no versions although the row exists. Tenant scoping was the first
+hypothesis and is ruled out, because the workflow instance read answers on the same
+all-ones tenant. The account case is narrower and unexplained, most likely because
+iam's provider keys on something other than the row's uuid.

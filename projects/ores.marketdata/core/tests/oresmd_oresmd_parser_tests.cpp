@@ -24,6 +24,7 @@
  */
 #include "ores.marketdata.core/oresmd/oresmd_exception.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <utility>
 #include <vector>
@@ -34,6 +35,7 @@ using namespace ores::marketdata::domain;
 using ores::marketdata::core::canonical_values;
 using ores::marketdata::core::oresmd_exception;
 using ores::marketdata::core::oresmd_parser;
+using ores::marketdata::core::oresmd_projections;
 
 const std::string tags("[oresmd][parser]");
 
@@ -205,6 +207,16 @@ TEST_CASE("round_trip_fx", tags) {
     const auto original = oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote&quote=spot"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_fx_fwd", tags) {
@@ -212,12 +224,32 @@ TEST_CASE("round_trip_fx_fwd", tags) {
         oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote&quote=fwd&point=6m"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_fx_option_vol", tags) {
     const auto original = oresmd_parser::parse(uri("oresmd://fx/eurusd?type=vol&point=10y,atm"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_quote", tags) {
@@ -226,6 +258,16 @@ TEST_CASE("round_trip_ir_quote", tags) {
         "usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_capfloor_normal_vol", tags) {
@@ -233,6 +275,16 @@ TEST_CASE("round_trip_ir_capfloor_normal_vol", tags) {
         uri("oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_capfloor_shift", tags) {
@@ -240,6 +292,16 @@ TEST_CASE("round_trip_ir_capfloor_shift", tags) {
         oresmd_parser::parse(uri("oresmd://ir/eur?type=vol&quote=capfloor&model=shift&tenor=6m"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_bond_option_vol", tags) {
@@ -247,6 +309,16 @@ TEST_CASE("round_trip_ir_bond_option_vol", tags) {
         uri("oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_equity", tags) {
@@ -254,6 +326,16 @@ TEST_CASE("round_trip_equity", tags) {
         oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote&quote=spot"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_equity_dividend", tags) {
@@ -261,6 +343,16 @@ TEST_CASE("round_trip_equity_dividend", tags) {
         uri("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_equity_fwd", tags) {
@@ -268,6 +360,16 @@ TEST_CASE("round_trip_equity_fwd", tags) {
         uri("oresmd://equity/lufthansa?ccy=eur&type=quote&quote=fwd&point=6m"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_equity_option_vol", tags) {
@@ -275,6 +377,16 @@ TEST_CASE("round_trip_equity_option_vol", tags) {
         oresmd_parser::parse(uri("oresmd://equity/sp5?ccy=usd&type=vol&point=6m,atmf"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_equity_option_price", tags) {
@@ -282,6 +394,16 @@ TEST_CASE("round_trip_equity_option_price", tags) {
         uri("oresmd://equity/ric:.stoxx50e?ccy=eur&type=vol&point=2021-07-16,1200,c&model=price"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_equity_option_delta", tags) {
@@ -289,6 +411,16 @@ TEST_CASE("round_trip_equity_option_delta", tags) {
         uri("oresmd://equity/ric:.spx?ccy=usd&type=vol&point=1080d,del,spot,call,0.1"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_credit", tags) {
@@ -296,6 +428,16 @@ TEST_CASE("round_trip_credit", tags) {
         uri("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_hazard_rate", tags) {
@@ -303,6 +445,16 @@ TEST_CASE("round_trip_hazard_rate", tags) {
         uri("oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=sr,5y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_recovery_rate", tags) {
@@ -310,6 +462,16 @@ TEST_CASE("round_trip_recovery_rate", tags) {
         uri("oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&point=sr"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_cds_index", tags) {
@@ -317,6 +479,16 @@ TEST_CASE("round_trip_cds_index", tags) {
         uri("oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_index_cds_tranche", tags) {
@@ -324,6 +496,16 @@ TEST_CASE("round_trip_index_cds_tranche", tags) {
         uri("oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&point=5y,0.07"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_commodity", tags) {
@@ -331,6 +513,16 @@ TEST_CASE("round_trip_commodity", tags) {
         oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote&quote=spot"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_commodity_fwd", tags) {
@@ -338,6 +530,16 @@ TEST_CASE("round_trip_commodity_fwd", tags) {
         oresmd_parser::parse(uri("oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_commodity_cpr", tags) {
@@ -345,6 +547,16 @@ TEST_CASE("round_trip_commodity_cpr", tags) {
         oresmd_parser::parse(uri("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 /*
@@ -356,6 +568,16 @@ TEST_CASE("round_trip_ir_mm_rate", tags) {
         uri("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_mm_rate_without_index", tags) {
@@ -363,6 +585,16 @@ TEST_CASE("round_trip_ir_mm_rate_without_index", tags) {
         uri("oresmd://ir/usd?tenor=2d&type=quote&quote=mm&metric=rate&point=3m"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_fra_rate", tags) {
@@ -370,6 +602,16 @@ TEST_CASE("round_trip_ir_fra_rate", tags) {
         uri("oresmd://ir/usd?tenor=1m&type=quote&quote=fra&metric=rate&point=3m"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_imm_fra_rate", tags) {
@@ -377,6 +619,16 @@ TEST_CASE("round_trip_ir_imm_fra_rate", tags) {
         uri("oresmd://ir/nok?tenor=1&type=quote&quote=imm_fra&metric=rate&point=2"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_basis_swap_spread", tags) {
@@ -385,6 +637,16 @@ TEST_CASE("round_trip_ir_basis_swap_spread", tags) {
         "eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&point=10y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_cc_basis_swap", tags) {
@@ -394,6 +656,16 @@ TEST_CASE("round_trip_ir_cc_basis_swap", tags) {
                                  "basis_swap&metric=basis_spread&point=10y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_mm_future_price", tags) {
@@ -403,6 +675,16 @@ TEST_CASE("round_trip_ir_mm_future_price", tags) {
                                  "quote&quote=mm_future&metric=price"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_zero_yield_spread", tags) {
@@ -412,6 +694,16 @@ TEST_CASE("round_trip_ir_zero_yield_spread", tags) {
                                  "ESTER_SPREAD&day_count=A365&point=1d"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_oi_future_price", tags) {
@@ -421,6 +713,16 @@ TEST_CASE("round_trip_ir_oi_future_price", tags) {
                                  "quote&quote=oi_future&metric=price"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_discount", tags) {
@@ -428,6 +730,16 @@ TEST_CASE("round_trip_ir_discount", tags) {
         uri("oresmd://ir/usd?curve_id=USD3M&tenor=6m&type=quote&quote=discount&metric=rate"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_discount_currency_named_curve", tags) {
@@ -435,6 +747,16 @@ TEST_CASE("round_trip_ir_discount_currency_named_curve", tags) {
         uri("oresmd://ir/eur?curve_id=EUR&tenor=1d&type=quote&quote=discount&metric=rate"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_bma_swap_ratio", tags) {
@@ -442,6 +764,16 @@ TEST_CASE("round_trip_ir_bma_swap_ratio", tags) {
         uri("oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_ir_cc_fix_float_swap", tags) {
@@ -451,6 +783,16 @@ TEST_CASE("round_trip_ir_cc_fix_float_swap", tags) {
                                  "fix_float_swap&metric=rate&point=1y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 /*
@@ -553,6 +895,16 @@ TEST_CASE("round_trip_correlation", tags) {
         oresmd_parser::parse(uri("oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_correlation_surface", tags) {
@@ -562,6 +914,16 @@ TEST_CASE("round_trip_correlation_surface", tags) {
                                  "generic-eur-usd&point=1y,atm"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("parse_inflation_zc_swap", tags) {
@@ -578,6 +940,16 @@ TEST_CASE("round_trip_inflation", tags) {
         oresmd_parser::parse(uri("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_inflation_yy_swap", tags) {
@@ -585,6 +957,16 @@ TEST_CASE("round_trip_inflation_yy_swap", tags) {
         oresmd_parser::parse(uri("oresmd://inflation/ukrpi?type=quote&quote=yy_swap&point=5y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_inflation_seasonality", tags) {
@@ -592,6 +974,16 @@ TEST_CASE("round_trip_inflation_seasonality", tags) {
         uri("oresmd://inflation/ukrpi?type=quote&quote=seasonality&point=jan"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_inflation_zc_capfloor_price", tags) {
@@ -599,6 +991,16 @@ TEST_CASE("round_trip_inflation_zc_capfloor_price", tags) {
         uri("oresmd://inflation/euhicpxt?type=vol&quote=zc_capfloor&model=price&point=10y,c,0.00"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_inflation_cf_price", tags) {
@@ -606,6 +1008,16 @@ TEST_CASE("round_trip_inflation_cf_price", tags) {
         uri("oresmd://inflation/euhicpxt?type=vol&quote=cf_price&model=price&point=10y,c,0.00"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_inflation_yy_capfloor_normal_vol", tags) {
@@ -613,6 +1025,16 @@ TEST_CASE("round_trip_inflation_yy_capfloor_normal_vol", tags) {
         "oresmd://inflation/euhicpxt?type=vol&quote=yy_capfloor&model=rate_nvol&point=5y,f,0.02"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("parse_commodity_fwd_quote", tags) {

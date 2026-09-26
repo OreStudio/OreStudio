@@ -4,7 +4,7 @@
 #+title: ores.http.core
 #+name: http.core
 #+full_name: ores.http.core
-#+description: HTTP route implementations for the ORE Studio REST API — IAM, assets, risk, storage, and variability routes.
+#+description: HTTP route implementations for the ORE Studio REST API — IAM, storage, and variability routes.
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :http:core:component:
@@ -20,17 +20,19 @@
 * Summary
 
 =ores.http.core= implements the concrete HTTP route handlers for the ORE Studio
-REST API. It registers routes for each domain: IAM (login, session), assets
-(image serving), risk (report execution), storage, and variability
-(configuration). Each route handler translates the incoming HTTP request into
-NATS calls to the appropriate domain service and returns the NATS response as
-an HTTP response.
+REST API. It registers routes for each domain it still owns in process: IAM
+(login, session), storage, and variability (configuration). The domain
+components served through generated NATS-forwarding route units live in their
+own adapter parts under =projects/ores.http/= — =ores.http.assets= and
+=ores.http.refdata=. Each route handler translates the incoming HTTP request
+into NATS calls to the appropriate domain service and returns the NATS
+response as an HTTP response.
 
 * Inputs
 
 - Incoming HTTP requests dispatched from =ores.http.api= router.
-- NATS responses from =ores.iam.service=, =ores.assets.service=,
-  =ores.reporting.service=, etc.
+- NATS responses from =ores.iam.service=, =ores.variability.service=,
+  =ores.storage.service=, etc.
 
 * Outputs
 
@@ -40,15 +42,13 @@ an HTTP response.
 * Entry points
 
 - =include/ores.http.core/routes/iam_routes.hpp= — IAM endpoint handlers.
-- =include/ores.http.core/routes/assets_routes.hpp= — assets endpoint handlers.
-- =include/ores.http.core/routes/risk_routes.hpp= — risk/reporting handlers.
 - =include/ores.http.core/routes/variability_routes.hpp= — config handlers.
 - =include/ores.http.core/routes/storage_routes.hpp= — storage handlers.
 
 * Dependencies
 
 - =ores.http.api= — server infrastructure, router, JWT claims.
-- =ores.iam.api=, =ores.assets.api=, =ores.reporting.api=, =ores.variability.api=
+- =ores.iam.api=, =ores.variability.api=, =ores.storage.api=
   — NATS protocol types for each domain service called.
 - =nats.c= — NATS client for forwarding requests.
 

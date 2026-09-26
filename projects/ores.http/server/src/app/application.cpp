@@ -27,11 +27,11 @@
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.http.api/net/http_server.hpp"
 #include "ores.http.core/routes/iam_routes.hpp"
-#include "ores.http.core/routes/risk_routes.hpp"
 #include "ores.http.core/routes/storage_routes.hpp"
 #include "ores.http.core/routes/variability_routes.hpp"
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.http/routes/assets/assets_routes.hpp"
+#include "ores.http/routes/refdata/refdata_routes.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
@@ -161,13 +161,12 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
         ctx, system_flags, sessions, auth_service, server.get_authenticator(), geo_service);
     iam.register_routes(router, registry);
 
-    routes::risk_routes risk(ctx, sessions);
-    risk.register_routes(router, registry);
-
     routes::variability_routes variability(ctx, system_flags, sessions);
     variability.register_routes(router, registry);
 
     ores::http::routes::assets::assets_routes::register_routes(router, registry, service_nats);
+
+    ores::http::routes::refdata::refdata_routes::register_routes(router, registry, service_nats);
 
     routes::storage_routes storage(cfg.storage_dir, auth_service);
     storage.register_routes(router, registry);

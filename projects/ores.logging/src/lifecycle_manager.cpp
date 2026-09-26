@@ -156,7 +156,6 @@ lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg) {
     logging_options_validator::validate(cfg);
     core.set_logging_enabled(true);
 
-    // The validator guarantees at least one sink is enabled.
     const auto sl(to_boost_severity(cfg.severity));
     if (cfg.output_to_console) {
         console_sink_ = make_console_sink(sl, cfg.tag);

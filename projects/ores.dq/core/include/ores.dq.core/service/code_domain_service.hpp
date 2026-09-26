@@ -17,11 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_SERVICE_CODE_DOMAIN_SERVICE_HPP
 #define ORES_DQ_CORE_SERVICE_CODE_DOMAIN_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/code_domain.hpp"
+#include "ores.dq.api/messaging/code_domain_protocol.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/code_domain_repository.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -60,6 +66,36 @@ public:
     explicit code_domain_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_code_domains_response
+    list_code_domains(const messaging::list_code_domains_request& request);
+    messaging::get_code_domain_response
+    get_code_domain(const messaging::get_code_domain_request& request);
+    messaging::get_many_code_domains_response
+    get_many_code_domains(const messaging::get_many_code_domains_request& request);
+    messaging::put_code_domain_response
+    put_code_domain(const messaging::put_code_domain_request& request);
+    messaging::put_many_code_domains_response
+    put_many_code_domains(const messaging::put_many_code_domains_request& request);
+    messaging::delete_code_domain_response
+    delete_code_domain(const messaging::delete_code_domain_request& request);
+    messaging::delete_many_code_domains_response
+    delete_many_code_domains(const messaging::delete_many_code_domains_request& request);
+    messaging::list_code_domain_versions_response
+    list_code_domain_versions(const messaging::list_code_domain_versions_request& request);
+    messaging::get_code_domain_version_response
+    get_code_domain_version(const messaging::get_code_domain_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists code domains with pagination support.
      *
      * @param offset Number of records to skip.
@@ -94,6 +130,11 @@ public:
     std::optional<domain::code_domain> get_domain(const std::string& code);
 
     /**
+     * @brief Retrieves a batch of code domains by primary key.
+     */
+    std::vector<domain::code_domain> get_domains(const std::vector<std::string>& codes);
+
+    /**
      * @brief Saves a code domain (creates or updates).
      *
      * @param domain The code domain to save.
@@ -123,12 +164,31 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a code domain.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::code_domain> get_domain_history(const std::string& code);
 
 private:
     context ctx_;
     repository::code_domain_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::code_domain_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::code_domain& out);
 };
 
 }

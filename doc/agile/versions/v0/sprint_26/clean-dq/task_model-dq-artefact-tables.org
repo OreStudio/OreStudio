@@ -32,9 +32,9 @@ The design question is already answered: an artefact table *can* generate from t
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
-| Now          | Steps 1 to 7, 11 and 12 done. Step 9 has nine of fifteen entities canonical, and the last six are a deletion problem, not a modelling problem. |
-| Waiting on   | A decision on =subject_area='s composite history identity, and the shell wiring for =change_reason= and =change_reason_category=. |
-| Next         | Commit the regeneration for =badge_definition=, =badge_severity= and =code_domain= and shrink =badge_protocol.hpp= to =badge_mapping=; then wire =ores.shell.dq= and migrate the change-reason pair; then add dq to =COMPONENTS_UNDER_TEST=. |
+| Now          | Steps 1 to 7, 11 and 12 done. Step 9 has twelve of fifteen entities canonical, and the last three are a deletion problem, not a modelling problem. |
+| Waiting on   | The shell wiring for =change_reason= and =change_reason_category=, and a decision on =subject_area='s composite history identity. |
+| Next         | Wire =ores.shell.dq= so the generated shell units compile, and migrate the change-reason pair with it; then decide =subject_area=; then add dq to =COMPONENTS_UNDER_TEST=. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -72,7 +72,7 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
 | 7. Publication template | DONE | The template generated a retired design; deleted with 21 dead files; see Step 7 results |
 | 8. Remaining models | TODO | The FPML family is blocked; the rest is unblocked |
-| 9. Regenerate C++ | IN PROGRESS | Four facets byte-identical; 9 of 15 entities canonical; the last 6 need deletion, not models; see Step 9 parts one to four |
+| 9. Regenerate C++ | IN PROGRESS | Four facets byte-identical; 12 of 15 entities canonical; the last 3 need deletion and shell wiring, not models; see Step 9 parts one to five |
 | 10. Eventing headers | TODO | |
 | 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
 | 12. Divergent tables: declare the projection | DONE | All 11 landed; divergent is 0; see Step 12 results |
@@ -105,6 +105,24 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 - The umbrella headers and the bespoke handlers they carry (=badge_handler=, =badge_service=, =data_organization_handler=, =dimension_handler=) are consumed only by =registrar.cpp=, so they can go. But each carries registrations for entities that are not modelled yet — methodologies, dimensions, datasets, coding schemes, publications — and those have to move before the umbrella can be deleted.
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
+
+* Step 9 part five: the badge family, and the history providers nobody called
+
+Run on 2026-09-26, on a branch off the merged =main=. =badge_definition=, =badge_severity= and =code_domain= are migrated: twelve of fifteen entities are canonical.
+
+**Nothing was modelled.** Part four found that regenerating dq already emits a canonical protocol, handler, registrar, repository, service, event header, history-provider registrar and integration test for all six remaining entities. This unit took the three that no external consumer blocks. The change is the regeneration plus the deletion of what it supersedes, exactly as part four predicted.
+
+**Three hand-written files shrank to what the generator does not own.**
+
+- =badge_protocol.hpp= went from 213 lines to 45. It kept =badge_mapping=, the junction projection that has no generated protocol of its own, and lost the legacy =badge_definition=, =badge_severity= and =code_domain= protocols that the generated headers now define. It no longer includes a domain header.
+- =badge_handler.hpp= went from 439 lines to 97. Twelve of its thirteen methods served subjects the generated handlers now own; only =list_mappings= remains.
+- =badge_service= went from 232 lines to 63 across its two files, for the same reason. It is now a read-only service over the badge mapping junction.
+
+**The larger find is that eleven generated history providers existed and only nine hand-written ones were wired.** Part three migrated eight entities and committed a generated =register_<entity>_history_provider= for each, but =registrar.cpp= kept registering nine providers by hand. The generated units were therefore dead code, and four entities — =lei_entity=, =lei_relationship=, =report_definition= and =synthetic_fx_spot_config= — had no history provider at all, because the hand-written list never named them. This unit replaces the hand-written blocks with the generated calls. That makes eight previously inert units live, adds the three badge entities, and wires the four that had none. The three deferred entities keep their hand-written providers.
+
+**Evidence.** Codegen suite 701 passing; =check_component_drift.py --all= green; model drift, protocol twin coverage, handler permissions, populate references, registry exceptions, cmake file lists, physical-space inventories and the recipe inventory all pass; =ores.dq.core.tests=, =ores.dq.api.tests= and =ores.dq.service.tests= build and link; =compass lint= and =validate_docs.sh= clean.
+
+**What re-running the generator showed, and what it did not.** Regenerating after the unit moved nothing among the twelve migrated entities, which is the byte-identical claim for them. It did move the three deferred entities, because their canonical output is still in the tree's future. So =check_component_drift.py --component dq= still reports drift, twice over: the deferred entities' output, and the untracked generated units for them and for the shell facet. The unit that lands the last three entities is the one that can claim dq regenerates cleanly, and dq is not in =COMPONENTS_UNDER_TEST= until then, which is why no gate is red in the meantime.
 
 * Step 9 part four: the last six entities are a deletion problem, not a modelling problem
 

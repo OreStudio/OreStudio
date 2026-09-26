@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.api/domain/badge_definition_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -31,7 +36,7 @@ std::string convert_to_table(const std::vector<badge_definition>& v) {
     table << fort::header << "Code" << "Name" << "Background" << "Text" << "Severity" << "Order"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& bd : v) {
+    for ([[maybe_unused]] const auto& bd : v) {
         table << bd.code << bd.name << bd.background_colour << bd.text_colour << bd.severity_code
               << bd.display_order << bd.modified_by << bd.version << fort::endr;
     }

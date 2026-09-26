@@ -21,7 +21,9 @@
 # To modify, update the template and regenerate.
 set(files
     "artefact_type_eventing_integration_tests.cpp"
+    "badge_definition_eventing_integration_tests.cpp"
     "catalog_eventing_integration_tests.cpp"
+    "code_domain_eventing_integration_tests.cpp"
     "data_domain_eventing_integration_tests.cpp"
     "generators_tests.cpp"
     "lei_entity_eventing_integration_tests.cpp"

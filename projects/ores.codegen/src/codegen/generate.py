@@ -148,6 +148,10 @@ _PROTOCOL_FACETS = frozenset({
     # facets do. An entity whose protocol an operation model owns has no such
     # types, and its declared operations are what the shell renders instead.
     "ores.cpp.shell-command",
+    # The recipe documents the shell unit above, one recipe per command, so it
+    # goes wherever that unit goes. Left behind, it is a recipe for a command
+    # nothing renders.
+    "ores.doc.shell-recipe",
 })
 
 @lru_cache(maxsize=None)
@@ -335,8 +339,16 @@ def resolve_targets(
             # override cannot re-admit messaging for a junction with no
             # declared list read (a stack nothing would subscribe to, and a
             # regeneration that would overwrite a live legacy layer).
+            #
+            # The gate drops _PROTOCOL_FACETS as well as the messaging set:
+            # every facet in it names the derived request types, so a junction
+            # that renders no protocol must render no consumer of one either.
+            # Dropping only the messaging set left the shell command unit
+            # including a protocol header no facet emits, and the unit does
+            # not compile.
             gen_facets = {f for f in gen_facets
-                          if f not in _JUNCTION_MESSAGING_FACETS}
+                          if f not in _JUNCTION_MESSAGING_FACETS
+                          and f not in _PROTOCOL_FACETS}
     no_temporal_archetypes: frozenset[str] = frozenset()
     if model_type == "domain_entity":
         entity = model_data.get("domain_entity", {})

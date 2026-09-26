@@ -27,4 +27,11 @@ Usage: imported by the check scripts, never run.
 # pulled 254 of its files plus its shell, sql and web derivatives into this
 # branch's diff. main had it listed; that belongs to the refdata work, not
 # here.
-COMPONENTS_UNDER_TEST = ("iam",)
+#
+# compute-cpp joins it for the clean-compute task. Its regeneration leaves the
+# tree clean at every address, every protocol header has its TypeScript twin,
+# and its seeds are complete. The one clean-standard item it does not close,
+# G02, is about hand-written files the generation does not supersede rather
+# than about a gate this list feeds; it is recorded on
+# doc/agile/versions/v0/sprint_26/clean-compute/task_clean_compute.org.
+COMPONENTS_UNDER_TEST = ("iam", "compute-cpp")

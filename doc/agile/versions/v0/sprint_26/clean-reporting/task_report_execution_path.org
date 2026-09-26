@@ -257,6 +257,28 @@ The concurrency policy was observed working: with a stale =pending= instance in
 flight, the next trigger against the =fail= policy created its instance already
 =failed= rather than dispatching it, which is what the seed says it should do.
 
+* The chain now walks
+
+After defects 1 to 6 were fixed, one more surfaced and then the FSM moved.
+
+| # | Where | Defect | State |
+|---+-------+--------+-------|
+| 7 | ores.reporting | The fixture was owned by an arbitrary business party, so a session scoped to another party could not see the definition it was meant to trigger. The fixture is now owned by the tenant's system party, which every session can see. | Fixed |
+| 8 | ores.reporting | =ores_reporting_resolve_book_ids_for_config_fn= compared =valid_to= against the literal ='infinity'=, while every generated table stores =ores_utility_infinity_timestamp_fn()=, which is =9999-12-31 23:59:59+00=. It therefore resolved no scope for any config, and every report failed with "no books or portfolios in scope". | Fixed |
+| 9 | environment | The trading service performs =export_trades_to_storage=, and it has no HTTP base URL: only =ORES_ORE_SERVICE_HTTP_BASE_URL= is defined, the trading unit passes no =--http-base-url=, and its parser declares the option. The upload therefore cannot connect, so no report can gather trades. | Open, outside this component |
+
+Observed end to end after defect 8, through the shell:
+
+#+begin_example
+trigger  -> outcome ok, code triggered, instance 6423515a-... created
+instance -> pending, then running, then failed
+message  -> export_trades_to_storage failed: connect: Connection refused
+#+end_example
+
+So =pending -> running -> failed= now runs, the guard accepts each transition,
+and the failure is a real one carried into =output_message=. The remaining
+blocker is defect 9.
+
 * Plan
 
 1. Seed a test report in the component, so the FSM is testable in any

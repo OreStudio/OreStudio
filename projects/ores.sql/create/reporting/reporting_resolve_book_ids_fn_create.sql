@@ -52,7 +52,7 @@ begin
         from ores_reporting_risk_report_config_books_tbl b
         where b.tenant_id = p_tenant_id
           and b.risk_report_config_id = p_risk_report_config_id
-          and b.valid_to = 'infinity'
+          and b.valid_to = ores_utility_infinity_timestamp_fn()
     ) into v_has_books;
 
     if v_has_books then
@@ -61,7 +61,7 @@ begin
             from ores_reporting_risk_report_config_books_tbl b
             where b.tenant_id = p_tenant_id
               and b.risk_report_config_id = p_risk_report_config_id
-              and b.valid_to = 'infinity';
+              and b.valid_to = ores_utility_infinity_timestamp_fn();
         return;
     end if;
 
@@ -71,7 +71,7 @@ begin
         from ores_reporting_risk_report_config_portfolios_tbl p
         where p.tenant_id = p_tenant_id
           and p.risk_report_config_id = p_risk_report_config_id
-          and p.valid_to = 'infinity'
+          and p.valid_to = ores_utility_infinity_timestamp_fn()
     ) into v_has_portfolios;
 
     if v_has_portfolios then
@@ -82,7 +82,7 @@ begin
                 p_tenant_id, p.portfolio_id) as bk(id)
             where p.tenant_id = p_tenant_id
               and p.risk_report_config_id = p_risk_report_config_id
-              and p.valid_to = 'infinity';
+              and p.valid_to = ores_utility_infinity_timestamp_fn();
         return;
     end if;
 

@@ -78,18 +78,24 @@ begin
     limit 1;
     v_actor := coalesce(v_actor, current_user);
 
-    -- A party that owns at least one book, so the fixture has something to
-    -- put in scope. Without one there is nothing to seed.
-    select b.party_id, b.id into v_party, v_book
+    -- The fixture is owned by the tenant's system party, which every session
+    -- can see. Owning it with an arbitrary business party hid it from a session
+    -- scoped to another party, so the shell could not find the definition it
+    -- was meant to trigger.
+    select id into v_party from ores_refdata_read_system_party_fn(v_tenant) limit 1;
+
+    -- One book to put in scope. Its own party does not matter: the scope
+    -- junction is read through the definition's party.
+    select b.id into v_book
     from ores_refdata_books_tbl b
     where b.tenant_id = v_tenant
       and b.valid_to = ores_utility_infinity_timestamp_fn()
-      and b.party_id is not null
     order by b.name
     limit 1;
 
-    if v_party is null then
-        raise warning 'report FSM fixture: no book with a party in tenant %; skipped.', v_tenant;
+    if v_party is null or v_book is null then
+        raise warning 'report FSM fixture: tenant % has no system party or no book; skipped.',
+            v_tenant;
         return;
     end if;
 

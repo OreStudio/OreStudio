@@ -272,10 +272,6 @@ def migrate(text: str, path: Path, report: list[str]) -> str:
                 expanded += 1
                 continue
 
-        if re.search(r"^\s*(\}\s*)?(else\s+)?if\s*(constexpr)?\s*\(", line) or line.rstrip().endswith("{"):
-            # A branch declares its own request and response, so the
-            # previous branch's pairing must not reach it.
-            resp_entity.clear()
         call = re.search(r"auto\s+(\w+)\s*=\s*nats_call\([^,]+,\s*(\w+),", line)
         if call:
             resp_entity[call.group(1)] = var_entity.get(call.group(2), "")

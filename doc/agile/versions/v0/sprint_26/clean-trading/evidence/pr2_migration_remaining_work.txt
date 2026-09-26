@@ -99,3 +99,16 @@ four unmodelled families' sites untouched.
 So the remaining work is one decision, not three: pair each response
 with the request variable of the branch it is in, and the four families
 with no model fall out of that correctly.
+
+Update, fourth trial
+--------------------
+The block-scoped reset is removed. The call line alone decides the
+pairing, and the trial rewrites 60 response checks, the highest coverage
+so far. The pairing is right for every branch that declares its own
+request and calls nats_call before its check, which is all but the four
+families with no model.
+
+Those four sites are the only known over-rewrite. They are restored by
+hand after the run, which is cheaper and safer than a scope analysis the
+codemod cannot do textually: four lines, identifiable by the response
+type name the compiler reports.

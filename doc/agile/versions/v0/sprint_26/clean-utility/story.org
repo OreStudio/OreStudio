@@ -21,11 +21,11 @@ ores.utility meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Survey done, work landed. |
+| Now           | Merged as `9b2427bfca` in PR #2155. |
 | Waiting on    | Nothing.                               |
-| Next          | Verification and review. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-26                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ ores.utility meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:71F982F0-B4AB-426F-ADFB-BD1CF9881459][Bring ores.utility to the clean standard]] | STARTED | 2026-09-26 | | Work ores.utility through the Component Clean Standard in order and record each item. |
+| [[id:71F982F0-B4AB-426F-ADFB-BD1CF9881459][Bring ores.utility to the clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Work ores.utility through the Component Clean Standard in order and record each item. |
 
 * Notes
 
@@ -66,6 +66,10 @@ ores.utility meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
   the component. One generator defect is fixed at source. The survey's
   per-facet figures above are pre-deletion; the current ones are on the
   task.
+- Verified PASS on `3d1a31520f` over four independent rounds, and merged as
+  `9b2427bfca` in PR #2155 on 2026-09-26 with every CI check green. The
+  verifier found no code defect; the findings and their dispositions are in
+  the task's Review table.
 
 * Decisions
 

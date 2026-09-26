@@ -26,11 +26,11 @@ ores.utility passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2464A2A7-8744-4F0C-A2E4-6A1D11DF30EA][Clean ores.utility to the component clean standard]] |
-| Now          | Survey done, work landed.              |
+| Now          | Merged as `9b2427bfca` in PR #2155. |
 | Waiting on   | Nothing.                               |
-| Next         | Verification and review.               |
+| Next         | Nothing.                               |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -318,3 +318,19 @@ Three items stay out of scope. The M06 exception for
 concerns are recorded for separate work, one of them captured in the
 backlog. Seven other components' diagrams are stale against the fixed
 generator and belong to their own passes.
+
+* Verification
+
+An independent verifier worked the branch in four rounds and posted a
+verdict each time: PASS+NOTES, PASS+NOTES, PASS+NOTES, then PASS on
+`3d1a31520f`. No code defect was found in any round; every finding was a
+documentation figure or a stale reference, and all of them are in the
+Review table above with their disposition. The verifier also proved the
+load-bearing claims rather than accepting them: each half of the generator
+fix fails the regression cases when reverted, seven mutated production
+paths all fail the suite, and re-adding the old tree-builder case under a
+mutation showed it passing while the pinned case failed.
+
+The branch was rebased twice because main moved under it, and both rebases
+are recorded in the Notes with their patch-ids. PR #2155 merged as
+`9b2427bfca` on 2026-09-26, with every CI check green on the final head.

@@ -19,15 +19,7 @@
  */
 #include "ores.shell/app/commands/compute_commands.hpp"
 #include "ores.compute.api/domain/app.hpp"
-#include "ores.compute.api/domain/app_table_io.hpp"
 #include "ores.compute.api/domain/app_version.hpp"
-#include "ores.compute.api/domain/app_version_platform.hpp"
-#include "ores.compute.api/domain/app_version_table_io.hpp"
-#include "ores.compute.api/domain/batch_table_io.hpp"
-#include "ores.compute.api/domain/host_table_io.hpp"
-#include "ores.compute.api/domain/platform_table_io.hpp"
-#include "ores.compute.api/domain/result_table_io.hpp"
-#include "ores.compute.api/domain/workunit_table_io.hpp"
 #include "ores.compute.api/messaging/app_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_platform_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
@@ -120,8 +112,8 @@ resolve_platform_id(std::ostream& out, nats_client& session, const std::string& 
 // The server's grid-stats function counts a host as online when
 // last_rpc_time is within the last 5 minutes
 // (ores_compute_grid_stats_fn_create.sql). Keep the shell's online
-// window on the same value so the smoke assertion and the
-// delete-host guard agree with the server's online_hosts count.
+// window on the same value so the smoke assertion agrees with the
+// server's online_hosts count.
 constexpr std::chrono::seconds online_window{300};
 
 // Result outcome codes, per ores.compute.api domain docs: 1=Success,
@@ -334,8 +326,8 @@ void compute_commands::process_publish_package(std::ostream& out,
 
     auto app_resp = do_request(out, session, app_req, std::chrono::seconds(30), true);
     if (!app_resp || app_resp->result.outcome != ores::utility::domain::outcome::ok) {
-        fail(out) << "Failed to save app: "
-                  << (app_resp ? app_resp->result.message : "no response") << std::endl;
+        fail(out) << "Failed to save app: " << (app_resp ? app_resp->result.message : "no response")
+                  << std::endl;
         return;
     }
 

@@ -55,6 +55,7 @@ A logical, possibly-partial oresmd requirement for a commodity instrument.
 | second_ccy |
 | second_factor |
 | curve_id |
+| settle |
 | day_count |
 | shift |
 | strip |

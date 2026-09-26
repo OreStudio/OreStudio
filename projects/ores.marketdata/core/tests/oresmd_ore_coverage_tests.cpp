@@ -234,8 +234,10 @@ TEST_CASE("no_series_type_oresmd_cannot_name_has_gone_unrecorded", tags) {
 TEST_CASE("only_the_recorded_types_lose_keys_on_the_way_back", tags) {
     // A key that projects to a URI and does not read back as itself is the
     // silent kind of loss: the projection reports success and the caller has no
-    // reason to look. These are measured, not assumed, and a new one fails.
-    const std::set<std::string> recorded{"IR_SWAP"};
+    // reason to look. There are none left -- the list held eight types when it
+    // was written and they were fixed one at a time -- so this asserts that no
+    // type loses a key, and fails the moment one starts to.
+    const std::set<std::string> recorded{};
 
     REQUIRE(types_with_round_trip_gaps() == recorded);
 }
@@ -251,17 +253,17 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
         "CORRELATION", "EQUITY", "EQUITY_DIVIDEND", "EQUITY_FWD",
         "EQUITY_OPTION", "FRA",
         "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
-        "INDEX_CDS_TRANCHE", "SEASONALITY", "YY_INFLATIONCAPFLOOR",
-        "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR", "ZC_INFLATIONSWAP",
-        "ZERO"};
+        "INDEX_CDS_TRANCHE", "SEASONALITY",
+        "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",
+        "ZC_INFLATIONSWAP", "ZERO"};
 
     const std::set<std::string> expected_fully_round_tripped{
         "BMA_SWAP", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
         "CC_FIX_FLOAT_SWAP", "CDS_INDEX", "COMMODITY", "EQUITY_DIVIDEND",
         "FRA", "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
-        "INDEX_CDS_TRANCHE", "SEASONALITY", "YY_INFLATIONCAPFLOOR",
-        "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR", "ZC_INFLATIONSWAP",
-        "ZERO"};
+        "INDEX_CDS_TRANCHE", "IR_SWAP", "SEASONALITY",
+        "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",
+        "ZC_INFLATIONSWAP", "ZERO"};
 
     REQUIRE(fully_named_types() == expected_fully_named);
     for (const auto& type : expected_fully_round_tripped) {

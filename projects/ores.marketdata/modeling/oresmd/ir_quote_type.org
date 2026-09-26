@@ -17,7 +17,7 @@
 
 | enum_name           | ore_type          | ore_constant           | ore_metric      | point_semantics | qualifier_shape         | notes | comment |
 |---------------------+-------------------+------------------------+-----------------+-----------------+-------------------------+-------+--------------------------------------------------------------------------------------------------|
-| ir_swap             | IR_SWAP           | ir_swap                | RATE            | tenor           | includes_index_2d       | 6-segment: IR_SWAP/RATE/CCY/2D/TENOR/POINT | IR_SWAP (par swap rate). |
+| ir_swap             | IR_SWAP           | ir_swap                | RATE            | tenor           | includes_index_2d       | two forms: IR_SWAP/RATE/CCY/SETTLE/TENOR/POINT and IR_SWAP/RATE/CCY/INDEX/SETTLE/TENOR/POINT; the settle is a per-currency spot lag the corpus writes as 2D, 0D or 1D | IR_SWAP (par swap rate). |
 | discount            | DISCOUNT          | discount               | RATE            | tenor           | curve_id                | 5-segment: DISCOUNT/RATE/CCY/CURVE_ID/POINT | DISCOUNT (curve-sampled discount factor). |
 | mm                  | MM                | mm                     | RATE            | tenor           | no_index                | two forms: MM/RATE/CCY/SETTLE/TENOR when the producer names no index (94% of the corpus), MM/RATE/CCY/INDEX/SETTLE/TENOR when it does | MM (money market rate). |
 | fra                 | FRA               | fra                    | RATE            | tenor           | no_index                | 5-segment: FRA/RATE/CCY/START_TENOR/LENGTH | FRA (forward rate agreement rate). |
@@ -93,6 +93,7 @@ A logical, possibly-partial oresmd requirement for an interest-rate instrument.
 | shift      | std::optional<std::string>      | no        | shift     |                        |
 | strip      | std::optional<std::string>      | no        | strip     |                        |
 | curve_id   | std::optional<std::string>      | no        | curve_id  |                        |
+| settle     | std::optional<std::string>      | no        | settle    |                        |
 | day_count  | std::optional<std::string>      | no        | day_count |                        |
 | role       | std::optional<curve_role>       | no        | role      |                        |
 | metric     | std::optional<domain::metric>   | no        | metric    |                        |
@@ -137,6 +138,7 @@ branch), which no field-table ordering can express.
 | strip |
 | curve_id |
 | day_count |
+| settle |
 | role |
 | type |
 | metric |

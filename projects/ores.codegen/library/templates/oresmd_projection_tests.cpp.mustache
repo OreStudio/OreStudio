@@ -368,11 +368,13 @@ TEST_CASE("from_ore_key_fx_fwd", tags) {
 
 TEST_CASE("from_ore_key_ir_swap_drops_the_settlement_segment", tags) {
     // The forward hardcodes "2D" into the settle slot; the inverse accepts any settle
-    // and drops it — the identifier has no settle field.
+    // and records it unless it is the 2D the forward emits by default, so the
+    // ordinary key keeps one URI and the unusual one reads back as it arrived.
     REQUIRE(oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/2D/3M/5Y") ==
             parse("oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y"));
     REQUIRE(oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/1D/3M/5Y") ==
-            parse("oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y"));
+            parse("oresmd://ir/"
+                  "usd?settle=1D&tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y"));
 }
 
 TEST_CASE("from_ore_key_ir_discount_reverses_the_curve_id", tags) {

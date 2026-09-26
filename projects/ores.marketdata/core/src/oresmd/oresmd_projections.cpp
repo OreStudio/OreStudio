@@ -367,8 +367,14 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
     }
 
     if (qualifier_includes_index(qt)) {
-        if (qt == ir_quote_type::ir_swap)
-            return std::format("{}/{}/{}/2D/{}/{}", ore_type(qt), ore_metric(m), id.ccy, t, point);
+        if (qt == ir_quote_type::ir_swap) {
+            // The settlement segment is a per-currency spot lag: 2D almost
+            // everywhere, 0D and 1D on some producers' lines. The corpus's own
+            // default is emitted when the identifier recorded none.
+            const auto settle = id.settle ? *id.settle : std::string{"2D"};
+            return std::format(
+                "{}/{}/{}/{}/{}/{}", ore_type(qt), ore_metric(m), id.ccy, settle, t, point);
+        }
         if (qt == ir_quote_type::discount)
             // Emitted as the key spells it when the inverse kept it, and
             // rebuilt from the currency and tenor otherwise.
@@ -828,9 +834,9 @@ std::optional<market_data_identifier> from_fx_fwd(const std::vector<std::string>
 }
 
 std::optional<market_data_identifier> from_ir_swap(const std::vector<std::string>& parts) {
-    // IR_SWAP/METRIC/CCY/SETTLE/TENOR/POINT. The forward hardcodes the settlement
-    // ("2D") into the fourth segment; the identifier has no settle field, so the
-    // segment is accepted verbatim and dropped.
+    // IR_SWAP/METRIC/CCY/SETTLE/TENOR/POINT. The settlement segment is a
+    // per-currency spot lag, recorded only when it is not the 2D the forward
+    // emits by default -- so the ordinary key keeps one URI rather than two.
     if (parts.size() != 6)
         return std::nullopt;
     const auto m = parse_metric(parts[1]);
@@ -841,6 +847,8 @@ std::optional<market_data_identifier> from_ir_swap(const std::vector<std::string
     id.type = instrument_type::quote;
     id.quote_type = ir_quote_type::ir_swap;
     id.metric = *m;
+    if (parts[3] != "2D")
+        id.settle = parts[3];
     id.tenor = to_lower(parts[4]);
     id.point = to_lower(parts[5]);
     return id;

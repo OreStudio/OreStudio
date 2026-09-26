@@ -52,6 +52,7 @@ A logical, possibly-partial oresmd requirement for a correlation instrument.
 | second_tenor |
 | second_ccy |
 | curve_id |
+| settle |
 | day_count |
 | shift |
 | strip |

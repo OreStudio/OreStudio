@@ -59,6 +59,7 @@ struct query_params final {
     std::optional<std::string> second_factor;
     std::optional<std::string> curve_id;
     std::optional<std::string> day_count;
+    std::optional<std::string> settle;
     std::optional<std::string> shift;
     std::optional<std::string> strip;
     std::optional<std::string> role;
@@ -87,6 +88,8 @@ struct query_params final {
                 qp.curve_id = p.value;
             else if (p.key == "day_count")
                 qp.day_count = p.value;
+            else if (p.key == "settle")
+                qp.settle = p.value;
             else if (p.key == "shift")
                 qp.shift = p.value;
             else if (p.key == "strip")
@@ -194,6 +197,8 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
         id.curve_id = *qp.curve_id;
     if (qp.day_count)
         id.day_count = *qp.day_count;
+    if (qp.settle)
+        id.settle = *qp.settle;
     if (qp.role)
         id.role = parse_enum<curve_role>("role", *qp.role);
     if (qp.metric)

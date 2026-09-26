@@ -90,6 +90,7 @@ market_data_identifier resolve_ir(const ir_market_data_requirement& req,
     id.shift = pick_optional(req.shift, d ? d->shift : std::nullopt);
     id.strip = pick_optional(req.strip, d ? d->strip : std::nullopt);
     id.curve_id = pick_optional(req.curve_id, d ? d->curve_id : std::nullopt);
+    id.settle = pick_optional(req.settle, d ? d->settle : std::nullopt);
     id.day_count = pick_optional(req.day_count, d ? d->day_count : std::nullopt);
     id.role = pick_optional(req.role, d ? d->role : std::nullopt);
     id.metric = pick_optional(req.metric, d ? d->metric : std::nullopt);

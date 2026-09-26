@@ -63,6 +63,7 @@ per the "Logical vs. physical" section of id:C3E053CA-0D4B-480B-9119-E11530160EC
 | second_ccy |
 | second_factor |
 | curve_id |
+| settle |
 | day_count |
 | shift |
 | strip |

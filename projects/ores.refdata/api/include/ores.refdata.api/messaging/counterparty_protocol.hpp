@@ -276,7 +276,7 @@ struct get_counterparty_composite_as_of_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    std::string id;
+    boost::uuids::uuid id;
     int version = 0;
 };
 

@@ -58,8 +58,8 @@ void batch_workflow_bridge::poll_once() {
     for (const auto& link : links) {
         const auto batch_id = boost::uuids::to_string(link.batch_id);
         try {
-            const auto tenant_ctx =
-                ores::database::service::tenant_context::with_tenant(ctx_, link.tenant_id.to_string());
+            const auto tenant_ctx = ores::database::service::tenant_context::with_tenant(
+                ctx_, link.tenant_id.to_string());
 
             ores::compute::service::batch_service batch_svc(tenant_ctx);
             const auto batch =
@@ -95,9 +95,14 @@ void batch_workflow_bridge::poll_once() {
                                       << " (step=" << link.workflow_step_id
                                       << " instance=" << link.workflow_instance_id << ")";
 
-            // Remove the link — idempotency key (step_id) guards against
-            // duplicates should the service restart between publish and remove.
-            link_repo.remove(ctx_, batch_id);
+            // Remove the link as its own tenant: the removal is tenant-scoped,
+            // and the idempotency key (step_id) guards against duplicates
+            // should the service restart between publish and remove.
+            const auto removed = link_repo.remove(tenant_ctx, batch_id, std::nullopt);
+            if (removed != repository::workflow_batch_link_repository::remove_status::removed) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Link for batch " << batch_id << " was not removed; it will be retried.";
+            }
 
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)

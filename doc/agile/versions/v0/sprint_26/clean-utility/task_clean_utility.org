@@ -59,12 +59,12 @@ record each item's result in the table below.
 |------+--------+----------|
 | B01 | pass | Baseline before any edit, on `feature/clean-utility` at `89cc8d8acd`. Build 0 at 100 percent. `ores.utility.tests` passes at 476 assertions in 141 test cases. `regenerate_cmake_component_files.py --component ores.utility --check` reports 2 stale files, `src/component_files.cmake` and `tests/component_files.cmake`. No catalogue row, so the drift gate cannot name the component. |
 | B02 | pass | 0 entity, junction, operation and message models. |
-| B03 | pass | 65 production C++ files at the survey, 44 headers and 21 sources, plus 15 files under `tests/`. Six sub-trees had no consumer outside their own test, and eleven umbrella headers had no consumer at all. The component now holds 41 production files, 25 headers and 16 sources, and 14 test files. Every surviving facet reaches at least one file outside the component: `rfl` 857, `generation` 460, `uuid` 432, `domain` 251, `streaming` 80, `faker` 10, `program_options` 6, `convert` 4, `crypto` 3, `compression` 2, `serialization` 1 and `string` 1. |
+| B03 | pass | 65 production C++ files at the survey, 44 headers and 21 sources, plus 15 files under `tests/`. Six sub-trees had no consumer outside their own test, and eleven umbrella headers had no consumer at all. The component now holds 41 production files, 25 headers and 16 sources, and 15 files under `tests/`, of which 14 are suites and one is `main.cpp`. Every surviving facet reaches at least one C++ file outside the component: `rfl` 856, `generation` 460, `uuid` 432, `domain` 251, `streaming` 80, `version` 41, `faker` 10, `program_options` 6, `convert` 4, `crypto` 3, `compression` 2, `serialization` 1 and `string` 1. |
 | B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. |
 | B05 | pass | This story is the only live capture naming the component. |
 | M01 to M05, M07 to M09 | not applicable | No org model. |
-| M06 | not applicable, with a recorded exception | `domain/protocol.hpp` is a hand-written wire type: 124 lines, reached by 255 files outside the component, and the codegen templates include it, so it cannot become a per-entity model. The exception and its reason are recorded under /Recorded exceptions/. |
-| M10 | fixed | `component_overview.org` claimed the component had no dependency on any other ORE Studio component while `src/CMakeLists.txt` links `ores.platform.lib` `PUBLIC`. It listed `include/ores.utility/datetime/`, which never existed, advertised a geo facet with no code, named Base32 and TOTP, and omitted 8 of the 14 facets. It is rewritten: the dependency is stated, every facet is listed with its external reach, and `See also` is filled. The `ores.utility.hpp` stub that repeated the same claims is deleted. |
+| M06 | not applicable, with a recorded exception | `domain/protocol.hpp` is a hand-written wire type: 124 lines, reached by 245 C++ files outside the component, and the codegen templates include it, so it cannot become a per-entity model. The exception and its reason are recorded under /Recorded exceptions/. |
+| M10 | fixed | `component_overview.org` claimed the component had no dependency on any other ORE Studio component while `src/CMakeLists.txt` links `ores.platform.lib` `PUBLIC`. It listed `include/ores.utility/datetime/`, which never existed, advertised a geo facet with no code, named Base32 and TOTP, and omitted 8 of the facets. It is rewritten: the dependency is stated, all thirteen facets are listed with their external reach, and `See also` is filled. The `ores.utility.hpp` stub that repeated the same claims is deleted. |
 | P01 to P06 | not applicable | No entity and no protocol. |
 | G01 | not applicable | No model, so nothing regenerates from one. |
 | G02 | fixed | The six dead or test-only sub-trees are deleted with their tests, the two `Reflector<>` specialisations for the non-existent `ores::comms::messaging` are deleted, and the eleven consumer-less umbrella stubs are deleted. The CMake lists are regenerated. |
@@ -78,7 +78,7 @@ record each item's result in the table below.
 | H02 | fixed | The six sub-trees, the retired reflector specialisations, the eleven umbrellas, and the `converter` namespace that did not match its `convert` folder. |
 | H03 | fixed | The six end-of-line comments moved above their code, and the `Step 1` to `Step 4` narration left `short_code_generator.cpp`. |
 | V01 | pass | Whole-tree build 0 at 100 percent. |
-| V02 | fixed | `gzip` had zero coverage anywhere in the repo while `ores.nats` and `ores.storage` call it; it now has 7 cases. The live files with no test of their own gained two suites: 13 cases for the generation engine, context, environment and keys, and 4 for the faker datetime helpers. The suite went from 476 assertions in 141 test cases to 614 in 128: three test files holding 38 cases left with the deleted sub-trees, 24 cases arrived, and the tautological determinism case in `tree_builder_tests.cpp` became one that pins the shape for a known seed and one that proves the seed selects the shape. |
+| V02 | fixed | `gzip` had no direct test in the component while `ores.nats` and `ores.storage` call it, and `ores.nats` exercised it only indirectly through its own compression suite; it now has 7 cases that call it directly. The live files with no test of their own gained two suites: 13 cases for the generation engine, context, environment and keys, and 4 for the faker datetime helpers. The suite went from 476 assertions in 141 test cases to 614 in 128: three test files holding 38 cases left with the deleted sub-trees, 24 cases arrived, and the tautological determinism case in `tree_builder_tests.cpp` became one that pins the shape for a known seed and one that proves the seed selects the shape. |
 | V03, V04 | not applicable | No entity, no SQL and no generated shell command. |
 | V05 | pass | Every gate green on the committed head: `regenerate_cmake_component_files.py --component ores.utility --check`, `check_component_drift.py --all`, `validate_docs.py`, `./compass.sh lint`, the codegen suite at 533 tests, and `clang-format --dry-run --Werror` on every changed and added file. |
 | V06 | not applicable | No catalogue row and no models, so the component cannot join `COMPONENTS_UNDER_TEST`. Recorded as the programme gap. |
@@ -92,14 +92,16 @@ sub-tree's own test, which is the B06 test-only case.
 
 | Sub-tree | Files | Lines | Why it goes |
 |----------+-------+-------+-------------|
-| `serialization/reader` and `writer` | 4 | 475 | No consumer anywhere. The pair marshals the retired binary envelope, and each half includes only the other. |
+| `serialization/reader` and `writer` | 4 | 475 | No consumer anywhere. The pair marshals the retired binary envelope, and each half is included only by its own `.cpp`. |
 | `concurrency/retry_strategy.hpp` | 1 | 132 | No consumer anywhere. |
 | `streaming/std_optional.hpp` | 1 | 38 | No consumer anywhere. It also adds an overload to `std`, which the standard allows only narrowly. |
 | `faker/totp` | 2 | 72 | Only its own test. TOTP enrolment is recorded as missing work on the account journey, so removing a test-data faker does not block it. |
 | `convert/base32_converter` | 2 | 91 | Its only consumer was `faker/totp`, so it falls with it. |
 | `string/converter` and `conversion_error` | 3 | 139 | Only its own test. The class wrapped `std::stoi` to throw a custom exception. |
 
-Thirteen files and 1526 lines left with the sub-trees and their tests.
+Sixteen files and 1526 lines left with the sub-trees and their tests: 947
+lines across the thirteen sub-tree files in the table, and 579 across the
+three test files that covered them.
 Eleven umbrella stubs left as well: `ores.utility.hpp` and the ten
 facet-level files that held nothing but a `namespace` declaration and a
 `@brief` comment, 346 lines in total, none of them included anywhere.
@@ -115,9 +117,9 @@ live and its disposition is recorded below rather than deleted.
 Two hand-written artefacts stay, for different reasons.
 
 - *M06, `domain/protocol.hpp`.* The component's wire envelope is
-  hand-written: 124 lines, reached by 255 files outside the component, and
-  the codegen templates include it, so a per-entity model cannot carry it.
-  The standard's M06 asks for every wire type to be modelled and no
+  hand-written: 124 lines, reached by 245 C++ files outside the component,
+  and the codegen templates include it, so a per-entity model cannot carry
+  it. The standard's M06 asks for every wire type to be modelled and no
   hand-written protocol header to remain; this file is the recorded
   exception, and the template dependency is the reason.
 - *=serialization/error_code.hpp=, misplaced.* It enumerates the retired
@@ -148,7 +150,7 @@ Twelve items were planned. Each one is recorded here with its outcome.
 | 3. Deal with the eleven umbrella headers | done. All eleven deleted. The facet inventory they duplicated lives on the rewritten component overview. |
 | 4. Rewrite `component_overview.org` | done, including the false dependency claim, the non-existent `datetime/` facet, the geo facet with no code, and all fourteen facets. |
 | 5. Fix the same claims in `ores.utility.hpp` | done by deletion. The file was a stub with no consumer. |
-| 6. Test the live untested files | done. `gzip` had no test anywhere in the repo and now has 7 cases. Two new suites cover the generation facet and the faker datetime helpers. |
+| 6. Test the live untested files | done. `gzip` had no direct test in the component and now has 7 cases; `ores.nats` covered it indirectly before this pass. Two new suites cover the generation facet and the faker datetime helpers. |
 | 7. Strengthen the tautological assertions | done. The TOTP test left with `faker/totp`. `tree_builder_tests.cpp` compared two production runs to each other; that case is replaced by one that pins the tree shape for a known seed and one that proves the seed selects the shape. |
 | 8. Regenerate the diagram through both passes | done. The automated pass was refreshed only after its defect was fixed, and the manual pass fills every method-only box and draws the free-function facets the parser cannot see. The render was read. |
 | 9. Move the end-of-line comments and drop the `Step` narration | done. Six comments moved above their code, and the `Step 1` to `Step 4` comments are gone from `short_code_generator.cpp`. |
@@ -220,7 +222,9 @@ Work items, in the order they land.
    `#+updated`.
 5. Fix the same false claims in `ores.utility.hpp`.
 6. Add tests for the live untested files, starting with `gzip`, which is on
-   the wire and has no test anywhere in the repo.
+   the wire and had no direct test in the component. The survey's "no test
+   anywhere" was wrong: `ores.nats` covers it indirectly through its own
+   compression suite.
 7. Strengthen the tautological assertions, starting with the TOTP test,
    which checks only length and alphabet, and `tree_builder_tests.cpp`,
    which compares two production runs to each other.
@@ -232,7 +236,7 @@ Work items, in the order they land.
 10. Rename the `converter` namespace to `convert`, or the folder to
     `converter`, and fix the call sites.
 11. Record the load-bearing exception for `domain/protocol.hpp`. It is a
-    253-file wire envelope in a foundation library and the codegen
+    245-C++-file wire envelope in a foundation library and the codegen
     templates depend on it, so it cannot be generated per entity. It needs
     an M06 exception with that reason, not a move.
 12. Record the misplaced concerns for separate work. `serialization/error_code.hpp`
@@ -266,6 +270,15 @@ via its "Verifies task" field.
 | 2 | `to_iso8601_utc` emits `YYYY-MM-DD HH:MM:SSZ`, so the name and the platform overview overstate the format as ISO 8601, which requires a `T` | projects/ores.platform/src/time/datetime.cpp | recorded, not fixed | Found while writing the faker datetime test: the assertion had to be written with a space. The pair `to_iso8601_utc` and `from_iso8601_utc` is self-consistent, and changing the separator moves the stored and transmitted shape, so it needs a compatibility decision rather than a quiet edit here. Captured in the backlog. |
 | 3 | The generator fix makes seven other components' `.puml` files stale, because their headers carry brace-initialised members | projects/ores.database, ores.diff, ores.nats, ores.orgmode, ores.security, ores.service, ores.testing | recorded, not fixed | The fix has to land with the component that found it. Each of those components owns a clean-up pass, several of them in flight in other worktrees, so the refresh belongs to those passes rather than to this PR. |
 | 4 | The bookkeeping commit that `compass pr create` made carries `Story-ID:` and `Task-ID:`, but no `Environment:` and no `Co-Authored-By:` trailer | commit 59f5fa77ae | recorded, not fixed | The same tooling gap the platform task recorded, narrower than it was there: the tool now emits the two ID trailers and still omits the other two. The commit is pushed, so the gap is recorded rather than rewritten. |
+| 5 | The facet census omitted `version` and misstated `rfl`, and the component overview then said every other facet "reaches fewer than a dozen files" and "four of them reach fewer than five" | task_clean_utility.org, component_overview.org | fixed | Found by the independent verifier, which re-measured every figure. `rfl` is 856 rather than 857, `version` has 41 external includers and was missing from the list, and five facets reach fewer than five, not four. Every count in the census and the overview is now stated with its metric, C++ files outside the component. |
+| 6 | `domain/protocol.hpp` was recorded as reaching 255 files, and the story said 253 | task_clean_utility.org, story.org, component_overview.org, ores.utility.puml | fixed | Measured: 245 C++ files outside the component. The same figure now appears in all four places, with its metric named. |
+| 7 | The component was described as having fourteen facets | task_clean_utility.org | fixed | Thirteen facet directories exist. The survey's fourteen counted `concurrency`, which this pass deletes, so the number referred to a tree that no longer exists. |
+| 8 | The deletions section said thirteen files and 1526 lines left with the sub-trees and their tests | task_clean_utility.org | fixed | The table's thirteen sub-tree files are 947 lines; the sixteen files with their three tests are 1526. Both partitions are now stated. |
+| 9 | The file count said fourteen test files while the survey counted fifteen files under `tests/` | task_clean_utility.org | fixed | Both frames are right: fourteen suites plus `main.cpp`. The row now says so. |
+| 10 | "gzip had zero coverage anywhere in the repo", and the Result called the new cases the first test gzip has had anywhere | task_clean_utility.org, story.org, commit ed8e2ac27d, PR #2155 body | corrected, with one message left standing | The verifier found `projects/ores.nats/tests/domain_compression_tests.cpp`, eight cases present before this branch, which drives `ores.nats`'s compression wrapper and so exercises `gzip_compress` and `gzip_decompress` indirectly. The task, the story and the PR body now claim only that there was no direct test in the component. The pushed commit message repeats the old claim and stands, like the two platform messages before it. |
+| 11 | The deletions table said the reader and writer "each half includes only the other" | task_clean_utility.org | fixed | Neither includes the other; each is included only by its own `.cpp`. |
+| 12 | Three documents still named artefacts this branch deletes: the retry-strategy backoff capture, the geo task's stale-claim list, and a closed sprint 24 task | product_backlog/next/root_cause_wt_service_glibc_crash.org, clean-geo/task_clean_geo.org, sprint_24 task_generalise_account_images.org | two fixed, one left as history | The two live documents are corrected and now say what was deleted and what replaced it. The sprint 24 task is closed and its sentence describes the tree as it was then, so it is left as written. |
+| 13 | The diagram drew a box named `streaming::parsers`, which is not a file in the component | projects/ores.utility/modeling/ores.utility.puml | fixed | It becomes two boxes named for the files that hold the specialisations, `streaming::uuid_parser` and `streaming::tenant_id_parser`, and each note now says it stands for the `rfl::Parser` specialisation in that file rather than for a type. The render was read again. |
 
 * Result
 
@@ -276,10 +289,10 @@ The component lost 27 files and 1872 lines: six sub-trees whose only
 consumer was their own test, and eleven umbrella stubs that held nothing
 but a namespace declaration. It gained a component overview that describes
 what is actually there, a rendered diagram whose boxes carry their APIs,
-and 24 test cases, of which 7 are the first test `gzip` has had anywhere in
-the repo. Its test suite went from 476 assertions in 141 test cases to 614
-in 128, with the tautological determinism case replaced by two that assert
-something. One generator defect is fixed at its source.
+and 24 test cases, of which 7 are the first direct tests `gzip` has had in
+the component. Its test suite went from 476 assertions in 141 test cases to
+614 in 128, with the tautological determinism case replaced by two that
+assert something. One generator defect is fixed at its source.
 
 The component keeps its place as the foundation library. Every facet that
 survives reaches at least one file outside the component, and the facet

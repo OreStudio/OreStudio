@@ -209,10 +209,10 @@ end note
 
 note right of "ores::utility::domain::result"
 protocol.hpp is the component's hand-written wire envelope. It
-reaches 255 files outside the component and the codegen templates
-include it, so it is load-bearing and cannot become a per-entity
-model. This is the M06 exception, and the template dependency is
-the reason.
+reaches 245 C++ files outside the component and the codegen
+templates include it, so it is load-bearing and cannot become a
+per-entity model. This is the M06 exception, and the template
+dependency is the reason.
 end note
 
 class ores::utility::faker::datetime {
@@ -317,8 +317,9 @@ class ores::utility::rfl::time_point_parser {
     {static} +write(writer, tp, parent) : void
 }
 note top of "ores::utility::rfl::time_point_parser"
-The rfl parser for a system_clock time point. It reads and writes
-the ISO 8601 UTC form that ores.platform::time::datetime owns.
+The rfl Parser specialisation in time_point_parser.hpp. It reads
+and writes the ISO 8601 UTC form that
+ores.platform::time::datetime owns.
 end note
 
 note right of "ores::utility::serialization::error_code"
@@ -337,13 +338,21 @@ which is the narrow form the standard allows for a template over
 a standard type.
 end note
 
-class ores::utility::streaming::parsers {
+class ores::utility::streaming::uuid_parser {
     {static} +Parser<boost::uuids::uuid>
+}
+note top of "ores::utility::streaming::uuid_parser"
+The rfl Parser specialisation in uuid_parser.hpp, which gives a
+boost uuid its string form.
+end note
+
+class ores::utility::streaming::tenant_id_parser {
     {static} +Parser<tenant_id>
 }
-note top of "ores::utility::streaming::parsers"
-The rfl parsers that give uuid and tenant_id their string form,
-which their private members would otherwise hide.
+note top of "ores::utility::streaming::tenant_id_parser"
+The rfl Parser specialisation in tenant_id_parser.hpp, which
+gives tenant_id the string form its private members would
+otherwise hide.
 end note
 
 class ores::utility::string::short_code_generator {
@@ -387,7 +396,7 @@ ores::utility::program_options::common_configuration ..> ores::utility::program_
 ores::utility::program_options::environment_mapper_factory ..> ores::utility::program_options::shared_domain_registry : falls back to
 ores::utility::rfl::reflectors ..> ores::utility::serialization::error_code : serialises
 ores::utility::rfl::reflectors ..> ores::utility::uuid::tenant_id : serialises
-ores::utility::streaming::parsers ..> ores::utility::uuid::tenant_id : reads and writes
+ores::utility::streaming::tenant_id_parser ..> ores::utility::uuid::tenant_id : reads and writes
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.utility.puml"

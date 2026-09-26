@@ -38,12 +38,13 @@ stamps from =version.hpp.in=. The component's own =version.hpp= is
 generated; the facet holds only the template.
 
 Consumption is very uneven, and the load-bearing facets are few.
-=ores.utility/rfl/= reaches 857 files outside the component,
-=generation/= 460, =uuid/= 432, =domain/= 251 and =streaming/= 80. Every
-other facet reaches fewer than a dozen files, and four of them reach
-fewer than five. The thin end is still live; the survey that preceded this
-pass found six sub-trees whose only consumer was their own test, and those
-are gone.
+=ores.utility/rfl/= reaches 856 C++ files outside the component,
+=generation/= 460, =uuid/= 432, =domain/= 251, =streaming/= 80 and
+=version/= 41. Of the rest, =faker/= reaches 10, =program_options/= 6,
+=convert/= 4, =crypto/= 3, =compression/= 2, and =serialization/= and
+=string/= one each. Five of them reach fewer than five. The thin end is
+still live; the survey that preceded this pass found six sub-trees whose
+only consumer was their own test, and those are gone.
 
 * Facets
 
@@ -137,7 +138,7 @@ Two hand-written wire artefacts stay, and neither is a candidate for a
 model.
 
 - =domain/protocol.hpp= is a 124-line request-outcome enumeration that
-  reaches 255 files outside the component, and the codegen templates
+  reaches 245 C++ files outside the component, and the codegen templates
   themselves include it. It is load-bearing for generation, so it cannot
   become a per-entity model. This is the M06 exception, and its reason is
   the template dependency.

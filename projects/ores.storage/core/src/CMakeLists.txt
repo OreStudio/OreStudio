@@ -19,8 +19,6 @@
 # AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
 # Template: cmake_component_core_src.mustache
 # To modify, update the template and regenerate.
-find_package(LibArchive REQUIRED)
-
 set(name "ores.storage.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -47,13 +45,24 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
     PRIVATE
         ores.service.lib
-        ores.database.lib
-        ores.iam.api.lib
         ores.platform.lib
         ores.utility.lib
         ores.security.lib
         faker-cxx::faker-cxx
-        libfort::fort
+        libfort::fort)
+
+# A component declares here what the profile cannot know: the libraries it
+# needs beyond the baseline above, and the find_package calls they bring.
+# Appending to the target rather than replacing the profile keeps the
+# baseline honest for every other component.
+
+find_package(LibArchive REQUIRED)
+find_package(Boost REQUIRED)
+
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        ores.database.lib
+        ores.iam.api.lib
         LibArchive::LibArchive
         Boost::boost)
 

@@ -5314,4 +5314,21 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     parts = fm.get("parts", "").split()
     c["parts"] = [{"part": name, "last": i == len(parts) - 1}
                   for i, name in enumerate(parts)]
+    # What the shared profile cannot know goes in named source blocks: the
+    # libraries a component needs beyond the profile's baseline, and the
+    # find_package calls they bring with them. The block is spliced into the
+    # generated build file after the baseline, so a component extends its
+    # profile rather than replacing it, and the profile stays honest for
+    # every other component.
+    def named_block(node: OrgNode, block_name: str) -> str:
+        if block_name in node.src_blocks:
+            return node.src_blocks[block_name]
+        for child in node.children:
+            found = named_block(child, block_name)
+            if found:
+                return found
+        return ""
+
+    c["extra_dependencies"] = named_block(doc.root, "extra_dependencies")
+    c["extra_test_dependencies"] = named_block(doc.root, "extra_test_dependencies")
     return {"component": c}

@@ -48,6 +48,33 @@ the system temporary directory.
 - =include/ores.storage.core/filesystem/archiver.hpp= — =tar.gz= pack and extract.
 - =include/ores.storage.core/messaging/= — the NATS handler.
 
+* Build dependencies
+
+What the shared component profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced into its
+generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+find_package(LibArchive REQUIRED)
+find_package(Boost REQUIRED)
+
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        ores.database.lib
+        ores.iam.api.lib
+        LibArchive::LibArchive
+        Boost::boost)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+find_package(LibArchive REQUIRED)
+
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ores.platform.lib
+        ores.utility.lib)
+#+end_src
+
 * Dependencies
 
 - [[id:8778E5E5-2123-4E40-A16D-B13B16D1B7AD][ores.storage.api]] — the path helpers and protocol it serves.

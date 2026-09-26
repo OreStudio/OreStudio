@@ -51,6 +51,11 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.telemetry.core.lib)
 
+# A component declares here what the profile cannot know: the libraries it
+# needs beyond the baseline above, and the find_package calls they bring.
+
+
+
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 
 set(exe_binary_name ${name})

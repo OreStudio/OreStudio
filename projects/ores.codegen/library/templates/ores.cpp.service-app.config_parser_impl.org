@@ -81,7 +81,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     //   const auto od(standard_service_options::make_options_description(
     //       "{{full_name}}.log", my_opts));
     const auto od(standard_service_options::make_options_description("{{full_name}}.log"));
-    const auto vm(standard_service_options::parse(od, arguments, "SERVICE"));
+    const auto vm(standard_service_options::parse(od, arguments, "{{name_upper}}"));
 
     if (standard_service_options::wants_help(vm)) {
         print_help(od, info);

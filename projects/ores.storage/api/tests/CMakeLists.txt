@@ -40,6 +40,12 @@ target_link_libraries(${tests_target_name}
         ores.openssl_cleanup
         Threads::Threads)
 
+# A component's suites may use facilities the profile cannot know about --
+# a scoped temporary file, a compression helper -- so the component declares
+# them here rather than the profile carrying every component's needs.
+
+
+
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM
     COMMAND ${ORES_TEST_ENV_CMD} $<TARGET_FILE:${tests_binary_name}> ${ORES_CATCH2_ARGS}

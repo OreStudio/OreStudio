@@ -56,7 +56,10 @@ persisted records, NATS response messages, emitted events.
 
 Key files a developer opens first. Keep to 3–6 items. Prefer:
 - The main plugin/service class header
-- The aggregate include header (=ores.<comp>.hpp= if it exists)
+- The aggregate include header (=ores.<comp>.hpp=), which every component keeps
+  for its outermost namespace; it carries the namespace =@brief= that doxygen
+  renders and that the diagram conventions read when they label the component.
+  A multi-module component keeps one per module instead.
 - The messaging registrar (for services)
 - The application entry point (=main.cpp= for services and apps)
 

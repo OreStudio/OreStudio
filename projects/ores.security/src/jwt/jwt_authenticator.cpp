@@ -196,20 +196,33 @@ std::expected<jwt_claims, jwt_error> jwt_authenticator::validate(const std::stri
 
         return claims;
 
+    } catch (const ::jwt::error::signature_verification_exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "JWT signature verification failed: " << e.what();
+        return std::unexpected(jwt_error::invalid_signature);
+
     } catch (const ::jwt::error::token_verification_exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "JWT verification failed: " << e.what();
 
-        std::string msg = e.what();
-        if (msg.find("expired") != std::string::npos) {
-            return std::unexpected(jwt_error::expired_token);
-        } else if (msg.find("signature") != std::string::npos) {
-            return std::unexpected(jwt_error::invalid_signature);
-        } else if (msg.find("issuer") != std::string::npos) {
-            return std::unexpected(jwt_error::invalid_issuer);
-        } else if (msg.find("audience") != std::string::npos) {
-            return std::unexpected(jwt_error::invalid_audience);
+        // Map from the library's error code. The previous mapping searched
+        // the message text for words such as "issuer" and "signature", and
+        // jwt-cpp's messages do not contain them, so every specific code fell
+        // through to invalid_token and the enum's named cases were
+        // unreachable. The only claim values this component constrains are
+        // the issuer and the audience, and the audience has a code of its
+        // own, so a claim-value mismatch is an issuer mismatch.
+        using verify_error = ::jwt::error::token_verification_error;
+        switch (static_cast<verify_error>(e.code().value())) {
+            case verify_error::token_expired:
+                return std::unexpected(jwt_error::expired_token);
+            case verify_error::missing_claim:
+                return std::unexpected(jwt_error::missing_claims);
+            case verify_error::audience_missmatch:
+                return std::unexpected(jwt_error::invalid_audience);
+            case verify_error::claim_value_missmatch:
+                return std::unexpected(jwt_error::invalid_issuer);
+            default:
+                return std::unexpected(jwt_error::invalid_token);
         }
-        return std::unexpected(jwt_error::invalid_token);
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "JWT decode error: " << e.what();
@@ -253,6 +266,9 @@ jwt_authenticator::validate_allow_expired(const std::string& token) const {
 
         if (!issuer_.empty())
             verifier = verifier.with_issuer(issuer_);
+
+        if (!audience_.empty())
+            verifier = verifier.with_audience(audience_);
 
         verifier.verify(decoded);
 
@@ -303,14 +319,27 @@ jwt_authenticator::validate_allow_expired(const std::string& token) const {
 
         return claims;
 
+    } catch (const ::jwt::error::signature_verification_exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "JWT signature verification failed: " << e.what();
+        return std::unexpected(jwt_error::invalid_signature);
+
     } catch (const ::jwt::error::token_verification_exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "JWT verification failed: " << e.what();
-        std::string msg = e.what();
-        if (msg.find("signature") != std::string::npos)
-            return std::unexpected(jwt_error::invalid_signature);
-        if (msg.find("issuer") != std::string::npos)
-            return std::unexpected(jwt_error::invalid_issuer);
-        return std::unexpected(jwt_error::invalid_token);
+
+        using verify_error = ::jwt::error::token_verification_error;
+        switch (static_cast<verify_error>(e.code().value())) {
+            case verify_error::token_expired:
+                return std::unexpected(jwt_error::expired_token);
+            case verify_error::missing_claim:
+                return std::unexpected(jwt_error::missing_claims);
+            case verify_error::audience_missmatch:
+                return std::unexpected(jwt_error::invalid_audience);
+            case verify_error::claim_value_missmatch:
+                return std::unexpected(jwt_error::invalid_issuer);
+            default:
+                return std::unexpected(jwt_error::invalid_token);
+        }
+
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "JWT decode error: " << e.what();
         return std::unexpected(jwt_error::invalid_token);

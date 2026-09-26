@@ -30,16 +30,12 @@ namespace jwt #F2F2F2 {
 namespace ores #F2F2F2 {
     namespace security #F2F2F2 {
         namespace crypto #F2F2F2 {
-            class encryption {
-            }
             class password_hasher {
             }
         }
         namespace jwt #F2F2F2 {
             class jwt_authenticator {
-                +audience : const string&
-                +audience : const string&
-                +audience : const string&
+                -algorithm_type : enum class
                 -configured_ : bool
                 -algorithm_ : algorithm_type
                 -secret_ : string
@@ -76,7 +72,6 @@ namespace ores #F2F2F2 {
             class email_validator {
             }
             class password_validator {
-                +enforce_policy : bool
             }
             class validation_result <<struct>> {
                 +is_valid : bool
@@ -87,6 +82,82 @@ namespace ores #F2F2F2 {
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass reads data members and nothing else, so a class whose
+' content is methods arrives as an empty box, and a struct of type aliases
+' arrives with none of its aliases. The blocks below fill those boxes and
+' draw the relationships the automated pass cannot see.
+'
+' They use fully-qualified class names rather than a reopened namespace
+' block, because this PlantUML version crashes when a namespace that already
+' holds classes is declared a second time. Redeclaring a class merges its
+' members into the box the automated pass already drew, so a refresh keeps
+' both.
+
+class ores::security::crypto::password_hasher {
+    {static} +hash(password : string) : string
+    {static} +verify(password : string, hash : string) : bool
+}
+note right of "ores::security::crypto::password_hasher"
+The one place a password is hashed. The stored string carries
+its own cost, and verify refuses a hash weaker than the cost
+the running build produces.
+end note
+
+class ores::security::jwt::jwt_authenticator {
+    {static} +create_hs256(secret : string, issuer : string, audience : string) : jwt_authenticator
+    {static} +create_rs256_signer(private_key_pem : string, issuer : string, audience : string) : jwt_authenticator
+    {static} +create_rs256_verifier(public_key_pem : string, issuer : string, audience : string) : jwt_authenticator
+    +create_token(claims : jwt_claims) : optional<string>
+    +validate(token : string) : expected<jwt_claims, jwt_error>
+    +validate_allow_expired(token : string) : expected<jwt_claims, jwt_error>
+    +is_configured() : bool
+    +get_public_key_pem() : string
+}
+note top of "ores::security::jwt::jwt_authenticator"
+Both validation paths constrain the algorithm, the issuer, the
+audience and the expiry. The allow-expired path relaxes only
+the expiry, and only so a refresh can read an expired token.
+end note
+
+class ores::security::validation::email_validator {
+    {static} +validate(email : string) : validation_result
+}
+
+class ores::security::validation::password_validator {
+    {static} +validate(password : string, enforce_policy : bool) : validation_result
+}
+note right of "ores::security::validation::password_validator"
+The OWASP policy: twelve characters, upper and lower case, a
+digit and a special character. enforce_policy false returns a
+passing result, which is how a caller turns the policy off.
+end note
+
+class jwt::traits::boost_json <<struct>> {
+    {static} +value_type : boost::json::value
+    {static} +object_type : boost::json::object
+    {static} +array_type : boost::json::array
+    {static} +number_type : double
+    {static} +integer_type : int64_t
+    {static} +boolean_type : bool
+}
+note top of "jwt::traits::boost_json"
+The traits that bind jwt-cpp to Boost.JSON. The automated pass
+reads data members, so it draws the struct empty; these are
+type aliases.
+end note
+
+note right of "ores::security::jwt::jwt_error"
+to_string gives each case the message a service reports. Every
+case has a producer in the validation paths: missing_claims
+comes from a token that omits a claim the verifier requires.
+end note
+
+ores::security::jwt::jwt_authenticator ..> ores::security::jwt::jwt_claims : produces
+ores::security::jwt::jwt_authenticator ..> ores::security::jwt::jwt_error : reports
+ores::security::jwt::jwt_authenticator ..> jwt::traits::boost_json : uses
+ores::security::validation::email_validator ..> ores::security::validation::validation_result : returns
+ores::security::validation::password_validator ..> ores::security::validation::validation_result : returns
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.security.puml"

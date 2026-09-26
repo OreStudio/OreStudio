@@ -44,16 +44,6 @@ private:
         return instance;
     }
 
-    /**
-     * @brief Helper to Base64 encode.
-     */
-    static std::string base64_encode(const std::vector<unsigned char>& data);
-
-    /**
-     * @brief Helper to Base64 decode
-     */
-    static std::vector<unsigned char> base64_decode(const std::string& encoded);
-
     // scrypt parameters - OWASP recommendations for production
     static constexpr std::uint64_t PRODUCTION_N = 1 << 14; /// CPU/memory cost
     static constexpr std::uint32_t DEFAULT_r = 8;          /// Block size

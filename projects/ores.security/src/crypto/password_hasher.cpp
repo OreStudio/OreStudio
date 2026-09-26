@@ -38,8 +38,11 @@ using ores::utility::convert::base64_converter;
 using ores::platform::environment::environment;
 
 std::uint64_t password_hasher::get_n_parameter() {
-    static const bool use_fast = environment::get_value("ORES_TEST_PASSWORD_FAST").has_value();
-    if (use_fast) {
+    // Read on every call rather than caching the first answer: a cached
+    // answer makes the production cost unreachable once any test has run,
+    // and the cost this build produces is what verify() holds a stored
+    // hash to.
+    if (environment::get_value("ORES_TEST_PASSWORD_FAST").has_value()) {
         return TEST_N;
     }
     return PRODUCTION_N;
@@ -114,7 +117,7 @@ bool password_hasher::verify(const std::string& password, const std::string& has
         try {
             if (key == "ln") {
                 int ln = std::stoi(value);
-                if (ln < 1 || ln > 31) { // Reasonable bounds for ln
+                if (ln < 1 || ln > 31) {
                     BOOST_LOG_SEV(lg(), warn) << "Invalid ln value: " << ln;
                     return false;
                 }
@@ -135,7 +138,16 @@ bool password_hasher::verify(const std::string& password, const std::string& has
         return false;
     }
 
-    // Decode salt and expected hash
+    // A stored hash must not be weaker than the cost this build produces
+    // today. Accepting a downgraded cost lets anyone who can rewrite the
+    // stored hash turn verification into a cheap offline operation.
+    const auto minimum_n = get_n_parameter();
+    if (N < minimum_n) {
+        BOOST_LOG_SEV(lg(), warn) << "Refusing a downgraded scrypt cost: ln=" << std::log2(N)
+                                  << ", minimum ln=" << std::log2(minimum_n);
+        return false;
+    }
+
     std::vector<unsigned char> salt, expected_hash;
     try {
         salt = base64_converter::convert(segments[3]);
@@ -150,7 +162,6 @@ bool password_hasher::verify(const std::string& password, const std::string& has
         return false;
     }
 
-    // Compute hash with provided password and parsed parameters
     std::vector<unsigned char> actual_hash(HASH_LEN);
     if (EVP_PBE_scrypt(password.c_str(),
                        password.length(),

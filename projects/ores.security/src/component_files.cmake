@@ -16,8 +16,10 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
-    "crypto/encryption.cpp"
     "crypto/password_hasher.cpp"
     "jwt/jwt_authenticator.cpp"
     "validation/email_validator.cpp"
@@ -26,7 +28,6 @@ set(files
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
 set(HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/crypto/encryption.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/crypto/password_hasher.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/jwt/boost_json_traits.hpp"

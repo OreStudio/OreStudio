@@ -9,7 +9,8 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
@@ -22,27 +23,22 @@
 /**
  * @brief Shared security primitives for ORE Studio.
  *
- * This component provides cryptographic operations and validation utilities
- * that are shared across other components. Key features include:
+ * The component holds the security code the tree shares, in three facets:
  *
- * - Cryptographic operations (ores::security::crypto namespace):
- *   - Password hashing using scrypt algorithm
- *   - AES-256-GCM encryption/decryption with PBKDF2 key derivation
+ * - @b crypto (ores::security::crypto): the scrypt password hash and its
+ *   verification. A stored hash carries its own cost, production uses the
+ *   OWASP-recommended ln=14, and verification refuses a hash weaker than the
+ *   cost the running build produces.
+ * - @b jwt (ores::security::jwt): JWT signing and validation over jwt-cpp.
+ *   Both validation paths constrain the algorithm, the issuer, the audience
+ *   and the expiry, and report which of them failed through jwt_error.
+ * - @b validation (ores::security::validation): the OWASP password policy and
+ *   the email shape, each returning a validation_result.
  *
- * - Validation utilities (ores::security::validation namespace):
- *   - Password policy validation (OWASP compliant)
- *   - Email format validation
- *
- * All cryptographic operations use OpenSSL and follow current OWASP
- * security recommendations.
- *
- * - JWT support (ores::security::jwt namespace):
- *   - JWT claims structure with tenant/party/session fields
- *   - HS256 symmetric signing and verification
- *   - RS256 asymmetric signing (IAM only) and verification (all services)
+ * Every service validates the tokens IAM issues, which is why the JWT
+ * authenticator is the component's widest surface. Nothing here is generated,
+ * and nothing but a signed token crosses a wire.
  */
-#include "ores.security/jwt/jwt_authenticator.hpp"
-
 namespace ores::security {}
 
 #endif

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:codegen:component:checklist:drift:
 #+created: 2026-09-23
-#+updated: 2026-09-25
+#+updated: 2026-09-26
 
 * Summary
 
@@ -99,6 +99,7 @@ a typecheck all missed; only a build and a test run found them.
 | G05 | All | Every generator defect found is fixed at its source with a regression test in the codegen suite. | Codegen test suite |
 | G06 | All | The CMake source lists match the tree. | =regenerate_cmake_component_files.py --all --check= |
 | G07 | All | No generated artefact is refreshed while its generator has a known defect, because a refresh can delete correct content. Fix the generator at its source with a regression test, then refresh. A diagram refresh also honours the two-pass contract: run the automated pass, redo the manual pass below the sentinel, and verify the sentinel section survived. | The generator's own dry run, with its diff read line by line against the committed artefact |
+| G08 | All | The namespace documentation headers are not dead headers. Every component keeps one for its outermost namespace: =include/<component>/<component>.hpp= for a single-module component, and =include/<component>.<module>/<component>.<module>.hpp= for each module of a multi-module one. Where a facet has a header of its own, at =include/<component>/<facet>/<component>.<facet>.hpp= or =include/<component>/<facet>/<facet>.hpp=, that documents the sub-namespace and is not dead either; the coverage of facet headers is uneven across the tree today and filling the gaps is separate work, not a condition of this item. Each carries the namespace =@brief= that doxygen renders, and the outermost one is the description the diagram conventions read. A consumer census does not apply to them: an empty namespace is their whole content, so nothing includes them and nothing should. A claim in one is a document bug, corrected in place, never a reason to delete the file. | The diagram conventions; the component's own header list; a census of every component |
 
 ** 5. Wiring and data
 

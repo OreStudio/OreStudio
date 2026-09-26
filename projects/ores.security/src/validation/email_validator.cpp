@@ -31,7 +31,6 @@ validation_result email_validator::validate(const std::string& email) {
         return result;
     }
 
-    // Count '@' symbols - must be exactly one
     auto at_count = std::count(email.begin(), email.end(), '@');
     if (at_count == 0) {
         result.is_valid = false;
@@ -47,21 +46,18 @@ validation_result email_validator::validate(const std::string& email) {
 
     auto at_pos = email.find('@');
 
-    // '@' cannot be at start
     if (at_pos == 0) {
         result.is_valid = false;
         result.error_message = "Email address cannot start with '@'";
         return result;
     }
 
-    // '@' cannot be at end
     if (at_pos == email.length() - 1) {
         result.is_valid = false;
         result.error_message = "Email address cannot end with '@'";
         return result;
     }
 
-    // Check domain part has at least one '.'
     auto domain = email.substr(at_pos + 1);
     auto dot_pos = domain.find('.');
     if (dot_pos == std::string::npos) {
@@ -70,7 +66,6 @@ validation_result email_validator::validate(const std::string& email) {
         return result;
     }
 
-    // '.' cannot be at start or end of domain
     if (dot_pos == 0) {
         result.is_valid = false;
         result.error_message = "Email domain cannot start with '.'";

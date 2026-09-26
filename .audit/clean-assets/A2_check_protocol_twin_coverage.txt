@@ -1,1 +1,0 @@
-Protocol twin coverage intact: all 20 generated protocol header(s) in 1 committed component(s) have a TypeScript twin, and no model opts out.

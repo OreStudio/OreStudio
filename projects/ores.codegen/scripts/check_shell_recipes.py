@@ -19,10 +19,11 @@ Usage:
     2. Export the same credential and run this script:
 
         export V04_PRINCIPAL=admin V04_PASSWORD=<password>
-        .audit/clean-assets/run_v04_recipes.py
+        projects/ores.codegen/scripts/check_shell_recipes.py
 
 Outputs .audit/clean-assets/A30_v04_recipes.tsv and a per-recipe raw log
-under .audit/clean-assets/A30_logs/.
+under .audit/clean-assets/A30_logs/. The .audit tree is not committed, so
+rerun this script to regenerate the evidence.
 """
 
 from __future__ import annotations
@@ -33,7 +34,7 @@ import tempfile
 import sys
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[3]
 SHELL = REPO / "build/output/linux-clang-debug-make/publish/bin/ores.shell"
 LIBRARY = REPO / "projects/ores.shell/scripts/library"
 GROUP_DIRS = ("images", "image_tags", "tags")

@@ -1,1 +1,0 @@
-wrote doc/recipes/shell/shell.org (187 recipes in 106 categories)

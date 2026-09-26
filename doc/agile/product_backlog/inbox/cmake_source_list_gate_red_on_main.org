@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 20B62D32-3328-4714-8D77-D4011BCD7909
+:END:
+#+title: The CMake source-list gate is red on main for thirty components
+#+description: core.py injects an AUTO-GENERATED FILE marker into every rendered file, including the cmake_component_files units, but the checked-in component_files.cmake files of about thirty components carry no marker. regenerate_cmake_component_files.py --all --check therefore reports roughly 141 stale files on main. The ores.assets clean-standard branch first added the marker tree-wide to turn the gate green, then reverted that as out of scope, so the gate stays red and this capture owns it.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:cmake:gate:tech_debt:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Bring the checked-in =component_files.cmake= files back in step with the generator, so =regenerate_cmake_component_files.py --all --check= exits 0.
+
+* Why
+
+The generator injects the three-line marker — =# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY=, the template name and the regenerate hint — into every file it renders, and =projects/ores.codegen/src/codegen/core.py= on main already carries that behaviour. The checked-in lists largely predate it. Measured against =origin/main=: 141 =component_files.cmake= files differ from what the generator produces, and six more exist on the branch but not on main, sitting in =ores.cli=, =ores.connections= and =ores.fpml=, whose =CMakeLists.txt= files do not reference them at all.
+
+The ores.assets task met this while working item G06. Its first answer was to regenerate tree-wide, which turned the gate green but edited lists belonging to thirty other components, and the review rejected that as out of scope for an assets branch. Reverting it leaves the gate red repo-wide exactly as main is, and assets' own eight lists regenerated and current.
+
+A fix belongs in its own change, on its own branch, and needs one decision the assets work could not make for the tree: whether the six unowned files should be committed or deleted, since nothing includes them.
+
+* References
+
+- =projects/ores.codegen/src/codegen/core.py= — injects the marker.
+- =projects/ores.codegen/library/templates/cmake_component_files_src.mustache= and =cmake_component_files_tests.mustache= — the units whose template text carries no marker of its own.
+- =projects/ores.codegen/scripts/regenerate_cmake_component_files.py= — discovers components from =modeling/component_overview.org= and compares rendered output with the checked-in file.
+- =doc/agile/versions/v0/sprint_26/clean-assets/task_clean_assets.org= — the G06 row records why the assets branch reverted its part.
+
+* See also
+
+- [[id:50148376-3D8B-44A9-A851-2D38CE997B9B][A notify trigger collides when a natural key is called key]]
+- [[id:6916DC9C-4CA3-4CDC-82B3-82851CBDE30B][The synthetic generator ignores a column's default_value unless the column also carries a generator block]]

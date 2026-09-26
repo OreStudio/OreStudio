@@ -24,6 +24,7 @@
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include <rfl/json.hpp>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -36,16 +37,36 @@ namespace ores::workflow::workflow {
  * step reports, not by what it computes, so a step that declares its outcome lets
  * one definition cover the happy path, the warning path, the failure path and the
  * compensating path without a definition each.
+ *
+ * Every member but the name is optional: a request that omits one gets the
+ * default, which keeps a script readable as @c {"steps":[{"name":"one"}]}. A
+ * member initialiser does not buy that -- the JSON reader requires every member
+ * of a struct unless it is an @c std::optional, so an initialiser is only a
+ * default for C++ callers.
  */
 struct identity_step_request {
     std::string name;
-    /// @c complete, @c warn or @c fail. Anything else is refused at build time.
-    std::string behaviour = "complete";
+    /// @c complete, @c warn or @c fail. Anything else is refused when the step
+    /// runs, so a mistyped behaviour fails the run instead of passing for a
+    /// completion.
+    std::optional<std::string> behaviour;
     /// Whether the step declares a compensation subject, which is what decides
     /// whether a later failure unwinds or simply fails.
-    bool compensate = false;
+    std::optional<bool> compensate;
     /// Seconds to wait before reporting, so a run can be observed in flight.
-    int delay_seconds = 0;
+    std::optional<int> delay_seconds;
+
+    [[nodiscard]] std::string outcome() const {
+        return behaviour.value_or("complete");
+    }
+
+    [[nodiscard]] bool compensates() const {
+        return compensate.value_or(false);
+    }
+
+    [[nodiscard]] int delay() const {
+        return delay_seconds.value_or(0);
+    }
 };
 
 /**
@@ -100,14 +121,14 @@ inline void register_identity_workflow(ores::workflow::service::workflow_registr
         for (const auto& wanted : parsed->steps) {
             workflow_step_def s;
             s.name = wanted.name;
-            s.description = "Identity step '" + wanted.name + "' reporting '" + wanted.behaviour +
+            s.description = "Identity step '" + wanted.name + "' reporting '" + wanted.outcome() +
                             "'";
             s.command_subject = std::string(identity_step_command_subject);
             s.compensation_subject =
-                wanted.compensate ? std::string(identity_compensation_command_subject) : "";
+                wanted.compensates() ? std::string(identity_compensation_command_subject) : "";
 
-            const auto behaviour = wanted.behaviour;
-            const auto delay = wanted.delay_seconds;
+            const auto behaviour = wanted.outcome();
+            const auto delay = wanted.delay();
             const auto name = wanted.name;
 
             // The command carries what the handler needs to know, so the handler

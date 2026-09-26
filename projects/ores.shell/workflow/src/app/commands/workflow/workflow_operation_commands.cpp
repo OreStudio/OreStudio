@@ -289,8 +289,11 @@ void workflow_operation_commands::process_start(std::ostream& out,
                                                const std::vector<std::string>& args) {
     if (args.size() != 2) {
         fail(out) << "Usage: workflow start <type> <request_json>" << std::endl;
+        fail(out) << "Wrap the request in single quotes. The command line reads a double quote "
+                     "as a quote character, so unquoted JSON loses its own."
+                  << std::endl;
         fail(out) << "For example: workflow start identity_workflow "
-                     "{\"steps\":[{\"name\":\"a\"}]}"
+                     "'{\"steps\":[{\"name\":\"a\"}]}'"
                   << std::endl;
         return;
     }

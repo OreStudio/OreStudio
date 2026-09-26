@@ -21,7 +21,6 @@
 #define ORES_DQ_API_MESSAGING_DATA_ORGANIZATION_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/methodology.hpp"
-#include "ores.dq.api/domain/nature_dimension.hpp"
 #include "ores.dq.api/domain/origin_dimension.hpp"
 #include "ores.dq.api/domain/treatment_dimension.hpp"
 #include <string>
@@ -79,56 +78,6 @@ struct get_methodology_history_response {
     bool success = false;
     std::string message;
     std::vector<ores::dq::domain::methodology> history;
-};
-
-// =============================================================================
-// Nature Dimension Protocol
-// =============================================================================
-
-struct get_nature_dimensions_request {
-    using response_type = struct get_nature_dimensions_response;
-    static constexpr std::string_view nats_subject = "dq.v1.nature-dimensions.list";
-    int offset = 0;
-    int limit = 100;
-};
-
-struct get_nature_dimensions_response {
-    std::vector<ores::dq::domain::nature_dimension> nature_dimensions;
-    int total_available_count = 0;
-};
-
-struct save_nature_dimension_request {
-    using response_type = struct save_nature_dimension_response;
-    static constexpr std::string_view nats_subject = "dq.v1.nature-dimensions.save";
-    ores::dq::domain::nature_dimension data;
-};
-
-struct save_nature_dimension_response {
-    bool success = false;
-    std::string message;
-};
-
-struct delete_nature_dimension_request {
-    using response_type = struct delete_nature_dimension_response;
-    static constexpr std::string_view nats_subject = "dq.v1.nature-dimensions.delete";
-    std::vector<std::string> codes;
-};
-
-struct delete_nature_dimension_response {
-    bool success = false;
-    std::string message;
-};
-
-struct get_nature_dimension_history_request {
-    using response_type = struct get_nature_dimension_history_response;
-    static constexpr std::string_view nats_subject = "dq.v1.nature-dimensions.history";
-    std::string code;
-};
-
-struct get_nature_dimension_history_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::dq::domain::nature_dimension> history;
 };
 
 // =============================================================================

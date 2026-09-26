@@ -106,6 +106,27 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part one: nature_dimension, and what authoring a model costs
+
+Run on 2026-09-26. =nature_dimension= is modelled, so the first of the twelve hand-written protocols is gone and the survey above has been executed once end to end.
+
+**The model is small and the table did not move.** =projects/ores.dq/modeling/ores.dq.nature_dimension.org= is a 167-line code-keyed =simple-lookup=: a =code= primary key, a name and a description. The regenerated =dq_nature_dimensions_create.sql= is structurally identical to the hand-written =dq_nature_dimension_create.sql= it replaces — same columns, same primary-key tuple, same partial unique indexes, same exclusion constraint. Only the generated banner and the copyright year differ. Modelling a table does not have to change it.
+
+**Two rules the templates impose, found by breaking them.** A =#+begin_src cpp :name generator= expression has to yield =std::string=. The template appends ="-" + std::to_string(idx)= to the =code= generator and concatenates the =name= one, and =faker::word::noun()= returns =std::string_view=, so =string_view + const char* = does not compile. Every migrated sibling wraps with =std::string(...)=; the reason is now written down instead of copied.
+
+**What the migration touched besides the model.**
+
+- =data_organization_protocol.hpp=: the 50-line Nature section, and its =nature_dimension.hpp= include.
+- =dimension_handler.hpp=: the 120-line Nature block.
+- =dimension_service.{hpp,cpp}=: 48 lines of declaration and 55 of definition, plus the repository member and its include.
+- =registrar.cpp=: the four hand-written nature subscribes replaced by =register_nature_dimension_handlers=.
+- =dq_create.sql= and =dq_drop.sql=: now include the generated plural files, and the two hand-written singular files are deleted.
+- =repository_nature_dimension_repository_tests.cpp=: hand-written, not generated, and it had to follow.
+
+**The generated repository is stateless, and every remaining entity's hand-written test will need the same edit.** The old repository held a context and took =write(v)=; the generated one is default-constructed and takes =write(ctx, v)=, =read_latest(ctx)= and so on. The test was rewritten to that API, and its =tenant_id= assignment dropped =.to_string()= because the domain member is now the typed =utility::uuid::tenant_id= rather than a string. The generated domain also gained the =change_reason_code= member the hand-written type never had, which is a column the table always carried — so the migration removed a divergence rather than introducing one.
+
+**Evidence.** Codegen suite 706 passing; =check_component_drift.py --component dq= reports no drift twice in a row; =ores.dq.core.tests=, =ores.dq.api.tests=, =ores.dq.service.tests= and =ores.shell.dq.tests= build and link; model drift, protocol twin coverage, handler permissions, populate references and registry exceptions all pass.
+
 * Step 8 in progress: the twelve protocols that keep dq out of the test list
 
 Run on 2026-09-26. Part six found that dq regenerates cleanly and still cannot join =COMPONENTS_UNDER_TEST=, because twelve of its protocol headers are hand-written for entities that have no model and so can have no TypeScript twin. This is what those twelve are, grouped by what modelling each needs, because the groups are not the same job.

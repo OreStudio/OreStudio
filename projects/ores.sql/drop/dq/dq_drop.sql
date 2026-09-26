@@ -100,7 +100,7 @@
 \ir ./dq_treatment_dimensions_notify_trigger_drop.sql
 \ir ./dq_treatment_dimension_drop.sql
 \ir ./dq_nature_dimensions_notify_trigger_drop.sql
-\ir ./dq_nature_dimension_drop.sql
+\ir ./dq_nature_dimensions_drop.sql
 \ir ./dq_origin_dimensions_notify_trigger_drop.sql
 \ir ./dq_origin_dimension_drop.sql
 

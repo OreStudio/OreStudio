@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,10 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.api/domain/nature_dimension_table.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
 namespace ores::dq::domain {
+
 
 std::string convert_to_table(const std::vector<nature_dimension>& v) {
     fort::char_table table;
@@ -29,8 +36,8 @@ std::string convert_to_table(const std::vector<nature_dimension>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Modified By" << "Version"
           << fort::endr;
 
-    for (const auto& d : v) {
-        table << d.code << d.name << d.description << d.modified_by << d.version << fort::endr;
+    for ([[maybe_unused]] const auto& n : v) {
+        table << n.code << n.name << n.description << n.modified_by << n.version << fort::endr;
     }
     return table.to_string();
 }

@@ -27,6 +27,9 @@ namespace ores #F2F2F2 {
             namespace app #F2F2F2 {
                 class application {
                 }
+                class application_exception {
+                    -message_ : string
+                }
                 class host {
                 }
             }
@@ -38,12 +41,29 @@ namespace ores #F2F2F2 {
                 }
                 class parser {
                 }
+                class parser_exception {
+                    -message_ : string
+                }
+            }
+            namespace messaging #F2F2F2 {
+                class event_registrar {
+                }
             }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+ores::analytics::service::app::application ..> ores::analytics::service::messaging::event_registrar : composes the event mappings
+ores::analytics::service::app::host ..> ores::analytics::service::app::application : runs
+ores::analytics::service::config::parser ..> ores::analytics::service::config::options : fills
+
+note as N1
+  The per-entity event mappings are generated. This is the one
+  hand-maintained call site, and it holds the returned subscriptions
+  for the life of the run.
+end note
+ores::analytics::service::messaging::event_registrar .. N1
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.analytics.service.puml"

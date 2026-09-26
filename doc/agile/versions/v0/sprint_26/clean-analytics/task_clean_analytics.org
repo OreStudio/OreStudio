@@ -199,6 +199,19 @@ The Component Architecture Audit ran on =ores.analytics= and on the new
   the parts hold;
 - the models lost their Table display sections, so the generated tables
   rendered an empty header and no rows.
+- The diagrams were stale and the tooling could not refresh them. All four
+  analytics part diagrams still showed the retired =get_*=, =save_*= and
+  =*_changed_event= types and none of the canonical ones, because
+  =generate_component_puml.py= resolved only simple components and refused
+  a composite part. The generator now resolves a part named
+  =<group>.<part>=, the automated pass was re-run on the four analytics
+  parts and on =ores.shell.analytics=, and the manual pass added the
+  compositions and relationships the automated pass cannot infer. The two
+  passes were fixed as the audit describes: the manual edges use fully
+  qualified names, because a bare name beside a namespaced class makes
+  PlantUML draw a second node, and a note hangs off a free note rather than
+  =note right of= a qualified name, which made PlantUML invent a phantom
+  =ores= node. All five images were re-rendered and read back.
 
 Recorded findings (not fixed here):
 

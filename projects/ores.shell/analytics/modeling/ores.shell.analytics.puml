@@ -25,20 +25,13 @@ namespace ores #F2F2F2 {
     namespace shell #F2F2F2 {
         namespace app #F2F2F2 {
             namespace commands #F2F2F2 {
-                class analytics_commands {
-                    {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
-                }
                 class pricing_engine_type_commands {
-                    {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
                 }
                 class pricing_model_config_commands {
-                    {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
                 }
                 class pricing_model_product_commands {
-                    {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
                 }
                 class pricing_model_product_parameter_commands {
-                    {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
                 }
             }
         }
@@ -46,11 +39,12 @@ namespace ores #F2F2F2 {
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
-
-analytics_commands ..> pricing_engine_type_commands : registers
-analytics_commands ..> pricing_model_config_commands : registers
-analytics_commands ..> pricing_model_product_commands : registers
-analytics_commands ..> pricing_model_product_parameter_commands : registers
+' analytics_commands lives in ores.shell.application. It is the one
+' hand-maintained call site that registers this part's units.
+ores::shell::app::commands::analytics_commands ..> ores::shell::app::commands::pricing_engine_type_commands : registers
+ores::shell::app::commands::analytics_commands ..> ores::shell::app::commands::pricing_model_config_commands : registers
+ores::shell::app::commands::analytics_commands ..> ores::shell::app::commands::pricing_model_product_commands : registers
+ores::shell::app::commands::analytics_commands ..> ores::shell::app::commands::pricing_model_product_parameter_commands : registers
 
 ores.shell.api ..> ores.shell.analytics : parsed_args, command_feedback
 ores.analytics.api ..> ores.shell.analytics : domain, messaging

@@ -17,7 +17,7 @@
 '
 @startuml
 
-title ores.analytics.quant -- CRM engine (design proposal)
+title ores.analytics.quant Component
 
 set namespaceSeparator ::
 
@@ -25,184 +25,305 @@ namespace ores #F2F2F2 {
     namespace analytics #F2F2F2 {
         namespace quant #F2F2F2 {
             namespace domain #F2F2F2 {
-
-                interface IStochasticProcess <<interface>> {
-                    +next() : double
-                    +current() : double
+                class calendar_date_row <<struct>> {
+                    +calendar_index : size_t
+                    +date : chrono::year_month_day
                 }
-
-                class process_parameter_validation_result <<value type>> {
-                    +valid : bool
-                    +message : string
+                class calendar_query <<struct>> {
+                    +calendar_index : size_t
+                    +date : chrono::year_month_day
                 }
-
-                class "process_parameter_validation (free functions)" as process_parameter_validation {
-                    +validate_process_parameters(process_type, means,\nstdevs, weights, initial_price) : process_parameter_validation_result
+                class business_day_calendar_set {
+                    -holidays_ : vector<chrono::year_month_day>
+                    -calendar_offsets_ : vector<size_t>
+                    -weekend_masks_ : vector<bitset<7>>
                 }
-
-                process_parameter_validation ..> process_parameter_validation_result : returns
-            }
-
-            namespace service #F2F2F2 {
-
-                class gaussian_mixture_model_process {
-                    -means_ : vector<double>
-                    -stdevs_ : vector<double>
-                    -weights_ : vector<double>
-                    -price_ : double
-                    -rng_ : mt19937
-                    +next() : double
-                    +current() : double
-                    .. geometric (multiplicative) engine ..
+                enum calendar_rule_kind {
+                    fixed_date
+                    nth_weekday_of_month
+                    last_weekday_of_month
+                    easter_offset
                 }
-
-                class arithmetic_gaussian_mixture_model_process {
-                    -means_ : vector<double>
-                    -stdevs_ : vector<double>
-                    -weights_ : vector<double>
-                    -price_ : double
-                    -rng_ : mt19937
-                    +next() : double
-                    +current() : double
-                    .. additive engine; price may cross zero ..
+                enum observance_shift {
+                    none
+                    nearest_weekday
+                    roll_forward_to_monday
                 }
-
-                class ornstein_uhlenbeck_process {
-                    -kappa_ : double
-                    -theta_ : double
-                    -sigma_ : double
-                    -price_ : double
-                    -rng_ : mt19937
-                    +next() : double
-                    +current() : double
-                    .. mean-reverting; kappa<=0 degenerates to\na driftless random walk ..
+                class calendar_rule <<struct>> {
+                    +kind : calendar_rule_kind
+                    +month : optional<chrono::month>
+                    +day : optional<unsigned>
+                    +weekday : optional<chrono::weekday>
+                    +occurrence : optional<unsigned>
+                    +shift : observance_shift
+                    +effective_from : optional<chrono::year>
+                    +effective_to : optional<chrono::year>
                 }
-
-                class process_factory {
-                    +{static} make_process(process_type, means, stdevs,\nweights, initial_price, seed) : unique_ptr<IStochasticProcess>
+                class calendar_exception <<struct>> {
+                    +date : chrono::year_month_day
+                    +is_business_day : bool
                 }
-
-                gaussian_mixture_model_process ..|> ores::analytics::quant::domain::IStochasticProcess
-                arithmetic_gaussian_mixture_model_process ..|> ores::analytics::quant::domain::IStochasticProcess
-                ornstein_uhlenbeck_process ..|> ores::analytics::quant::domain::IStochasticProcess
-                process_factory ..> gaussian_mixture_model_process : creates
-                process_factory ..> arithmetic_gaussian_mixture_model_process : creates
-                process_factory ..> ornstein_uhlenbeck_process : creates
-                process_factory ..> ores::analytics::quant::domain::process_parameter_validation : validates via
-            }
-
-            namespace crm #F2F2F2 {
-
-                class currency_id <<value type>> {
-                    +index : uint16_t
+                class calendar_ruleset <<struct>> {
+                    +rules : vector<calendar_rule>
+                    +exceptions : vector<calendar_exception>
                 }
-
-                class ccy_pair <<value type>> {
+                class instantiated_holiday <<struct>> {
+                    +calendar_index : size_t
+                    +date : chrono::year_month_day
+                }
+                class ccy_pair <<struct>> {
                     +base : currency_id
                     +quote : currency_id
                     +is_driver : bool
                 }
-
-                class driver_quote <<value type>> {
-                    +pair : ccy_pair
-                    +rate : double
-                    +value_date : date
-                    +observed_at : timestamp
+                class ccy_pair_input <<struct>> {
+                    +base_code : string
+                    +quote_code : string
+                    +is_driver : bool
                 }
-
+                class crm_rate_view <<struct>> {
+                    +base_code : string
+                    +quote_code : string
+                    +rate : double
+                    +status : rate_status
+                    +as_of : chrono::system_clock::time_point
+                    +reciprocal : bool
+                    +delta_pct : optional<double>
+                }
+                class crm_topology {
+                    -pivot_ : currency_id
+                    -parent_ : vector<currency_id>
+                    -edge_to_parent_ : vector<optional<ccy_pair>>
+                    -currency_index_ : unordered_map<string, currency_id>
+                    -currency_code_ : vector<string>
+                }
+                class currency_id {
+                    -index_ : uint16_t
+                }
+                class derived_rate <<struct>> {
+                    +base_code : string
+                    +quote_code : string
+                    +rate : double
+                    +status : rate_status
+                    +as_of : chrono::system_clock::time_point
+                }
+                class driver_quote <<struct>> {
+                    +base_code : string
+                    +quote_code : string
+                    +rate : double
+                    +observed_at : chrono::system_clock::time_point
+                }
+                class IStochasticProcess {
+                }
+                class IYieldCurveProcess {
+                }
+                class process_parameter_validation_result <<struct>> {
+                    +valid : bool
+                    +message : string
+                }
+                class rate_snapshot {
+                    -states_ : immer::vector<vertex_state>
+                }
+                enum rate_status {
+                    fresh
+                    stale
+                    disconnected
+                    unavailable
+                }
+                class staleness_policy <<struct>> {
+                    +stale_after : chrono::system_clock::duration
+                }
+                class topology_build_error {
+                    -errors_ : vector<topology_error>
+                }
                 enum topology_error_kind {
                     missing_major
                     cycle_conflict
                     disconnected_currency
                     duplicate_edge
                 }
-
-                class topology_error <<value type>> {
+                class topology_error <<struct>> {
                     +kind : topology_error_kind
-                    +offending_pair : ccy_pair
-                    +describe() : string
+                    +base_code : string
+                    +quote_code : string
                 }
-
-                class topology_build_error <<exception>> {
-                    +errors : vector<topology_error>
-                    +what() : const char*
-                }
-
-                class crm_topology <<immutable>> {
-                    -pivot_ : currency_id
-                    -parent_ : vector<currency_id>
-                    -edge_of_ : vector<optional<ccy_pair>>
-                    -currency_index_ : map<string, currency_id>
-                    +vertex_count() : size_t
-                    +path_to_pivot(currency_id) : span<ccy_pair>
-                }
-
-                class topology_builder {
-                    +build(pairs, driver_assignment, majors) : crm_topology
-                    .. throws topology_build_error on cycle,\nmissing major, or disconnected currency ..
-                }
-
-                enum rate_status {
-                    fresh
-                    stale
-                    unavailable
-                }
-
-                class vertex_state <<immutable>> {
+                class vertex_state <<struct>> {
                     +edge_log_delta : double
-                    +edge_observed_at : timestamp
                     +edge_valid : bool
                     +log_rate : double
-                    +as_of : timestamp
                     +valid : bool
                 }
-
-                class rate_snapshot <<immutable>> {
-                    -states_ : immer::vector<vertex_state>
+            }
+            namespace math #F2F2F2 {
+                class tree_node <<struct>> {
+                    +level : size_t
+                    +index : size_t
                 }
-
-                class staleness_policy <<value type>> {
-                    +max_age : duration
+                class rate_tree_node <<struct>> {
+                    +log_rate : double
+                    +child_indices : vector<size_t>
+                    +child_probabilities : vector<double>
                 }
-
-                class derived_rate <<value type>> {
-                    +pair : ccy_pair
-                    +rate : double
-                    +status : rate_status
-                    +as_of : timestamp
+                class rate_tree <<struct>> {
+                    +levels : vector<vector<rate_tree_node>>
                 }
-
+            }
+            namespace service #F2F2F2 {
+                class calendar_rule_engine {
+                }
+                enum bootstrap_curve_role_code {
+                    DEPOSIT
+                    FRA
+                    SWAP
+                }
+                enum interpolation_method_code {
+                    LOG_LINEAR_DISCOUNT
+                    FLAT_FORWARD_THEN_LOG_LINEAR
+                    CUBIC_SPLINE
+                }
+                class bootstrap_pillar <<struct>> {
+                    +point_id : string
+                    +curve_role : bootstrap_curve_role_code
+                    +observed_rate : double
+                    +fixed_leg_dates : vector<chrono::year_month_day>
+                }
+                class bootstrapped_point <<struct>> {
+                    +point_id : string
+                    +discount_factor : double
+                }
+                class discount_curve_required_error {
+                }
+                class curve_bootstrap_engine {
+                }
+                enum curve_health_severity {
+                    INFO
+                    WARNING
+                }
+                class curve_health_finding <<struct>> {
+                    +severity : curve_health_severity
+                    +point_id : string
+                    +message : string
+                }
+                class curve_health_checker {
+                }
+                class curve_instrument_pricer {
+                }
+                enum day_count_convention_code {
+                    A360
+                    A365
+                    A365F
+                    THIRTY_360
+                }
+                class day_count_calculator {
+                }
+                class forward_rate_point <<struct>> {
+                    +point_id : string
+                    +instantaneous_forward_rate : double
+                }
+                class forward_rate_calculator {
+                }
+                class process_factory {
+                }
+                class affine_term_structure_params <<struct>> {
+                    +kappas : Eigen::VectorXd
+                    +sigma : Eigen::MatrixXd
+                    +theta : Eigen::VectorXd
+                    +delta_0 : double
+                    +deltas : Eigen::VectorXd
+                    +initial_factors : Eigen::VectorXd
+                }
+                class black_derman_toy_params <<struct>> {
+                    +discount_curve : vector<double>
+                    +sigma_path : vector<double>
+                }
+                class black_karasinski_params <<struct>> {
+                    +kappa : double
+                    +theta : double
+                    +sigma : double
+                    +initial_rate : double
+                }
+                class cox_ingersoll_ross_params <<struct>> {
+                    +kappa : double
+                    +theta : double
+                    +sigma : double
+                    +initial_rate : double
+                }
+                class heath_jarrow_morton_params <<struct>> {
+                    +initial_forward_rates : Eigen::VectorXd
+                    +volatilities : Eigen::VectorXd
+                    +tenor_spacings : Eigen::VectorXd
+                }
+                class hull_white_params <<struct>> {
+                    +kappa : double
+                    +theta : double
+                    +sigma : double
+                    +initial_rate : double
+                }
+                class libor_market_model_params <<struct>> {
+                    +initial_forward_rates : Eigen::VectorXd
+                    +volatilities : Eigen::VectorXd
+                    +correlation : Eigen::MatrixXd
+                    +displacements : Eigen::VectorXd
+                    +tenor_spacings : Eigen::VectorXd
+                }
+                class quadratic_gaussian_params <<struct>> {
+                    +kappas : Eigen::VectorXd
+                    +sigma : Eigen::MatrixXd
+                    +theta : Eigen::VectorXd
+                    +delta_0 : double
+                    +deltas : Eigen::VectorXd
+                    +gamma : Eigen::MatrixXd
+                    +initial_factors : Eigen::VectorXd
+                }
+                class two_factor_gaussian_params <<struct>> {
+                    +kappa_x : double
+                    +kappa_y : double
+                    +theta : double
+                    +sigma_x : double
+                    +sigma_y : double
+                    +rho : double
+                    +initial_rate : double
+                }
+                class vasicek_params <<struct>> {
+                    +kappa : double
+                    +theta : double
+                    +sigma : double
+                    +initial_rate : double
+                }
+                class quantlib_calendar_rulesets {
+                }
+                class rate_delta_tracker {
+                    -mutex_ : mutex
+                    -previous_ : map<pair_key, double>
+                }
                 class rate_engine {
-                    -topology_ : crm_topology
-                    -policy_ : staleness_policy
-                    -children_ : vector<vector<currency_id>>
-                    -snapshot_ : immer::atom<rate_snapshot>
-                    +update(driver_quote) : void
-                    .. throws invalid_argument if the pair is not\nan edge of this topology ..
-                    +rate(base_code, quote_code) : derived_rate
-                    +rates(pairs) : vector<derived_rate>
+                    -topology_ : domain::crm_topology
+                    -policy_ : domain::staleness_policy
+                    -children_ : vector<vector<domain::currency_id>>
+                    -snapshot_ : immer::atom<domain::rate_snapshot>
                 }
-
-                topology_builder ..> crm_topology : builds
-                topology_builder ..> topology_build_error : throws
-                topology_build_error "1" *-- "many" topology_error
-                rate_engine "1" o-- "1" crm_topology : reads (fixed)
-                rate_engine "1" *-- "1" rate_snapshot : atom<>
-                rate_snapshot "1" *-- "many" vertex_state
-                rate_engine ..> driver_quote : consumes
-                rate_engine ..> derived_rate : produces
-                rate_engine ..> staleness_policy : applies
-
-                class "recenter()" as recenter_fn <<free function>> {
-                    +recenter(source, aggregation_code, policy, now) : rate_engine
-                    .. star-shapes a new engine around\naggregation_code, preserving current values ..
+                class rate_reciprocator {
                 }
-                recenter_fn ..> rate_engine : reads (source)
-                recenter_fn ..> topology_builder : builds star topology
-                recenter_fn ..> rate_engine : produces (new)
+                class topology_builder {
+                }
             }
         }
     }
 }
 
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+ores::analytics::quant::service::process_factory ..> ores::analytics::quant::domain::IStochasticProcess : builds
+ores::analytics::quant::service::topology_builder ..> ores::analytics::quant::domain::crm_topology : builds
+ores::analytics::quant::service::rate_engine ..> ores::analytics::quant::domain::derived_rate : serves
+ores::analytics::quant::service::rate_engine ..> ores::analytics::quant::domain::rate_snapshot : publishes through
+
+note as N1
+  Pluggable price processes. The library has no database, messaging or
+  refdata coupling; the caller supplies every input as a plain parameter.
+end note
+ores::analytics::quant::domain::IStochasticProcess .. N1
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.analytics.quant.puml"
+' End:
 @enduml

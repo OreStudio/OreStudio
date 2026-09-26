@@ -25,6 +25,7 @@ set(files
     "config/options.cpp"
     "config/parser.cpp"
     "main.cpp"
+    "messaging/registrar.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -36,4 +37,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.service/config/parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.service/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.service/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.service/messaging/registrar.hpp"
 )

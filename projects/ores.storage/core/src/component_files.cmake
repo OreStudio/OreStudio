@@ -22,6 +22,7 @@
 set(files
     "filesystem/archiver.cpp"
     "filesystem/local_store.cpp"
+    "messaging/objects_handler.cpp"
     "net/http_client.cpp"
     "net/storage_transfer.cpp"
 )
@@ -31,6 +32,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/filesystem/archiver.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/filesystem/local_store.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/messaging/objects_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/net/http_client.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/net/storage_transfer.hpp"
 )

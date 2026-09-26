@@ -49,6 +49,13 @@ struct options final {
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
+    /**
+     * @brief Root directory the buckets live under.
+     *
+     * It must be the same directory the HTTP storage routes are given, because
+     * the two interfaces serve the same objects through the same store.
+     */
+    std::string storage_dir;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

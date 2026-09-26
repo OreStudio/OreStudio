@@ -74,7 +74,15 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     //   my_opts.add_options()(...);
     //   const auto od(standard_service_options::make_options_description(
     //       "ores.storage.service.log", my_opts));
-    const auto od(standard_service_options::make_options_description("ores.storage.service.log"));
+    options_description sod("Object storage");
+    sod.add_options()("storage-dir",
+                      boost::program_options::value<std::string>()->default_value(
+                          "/var/ores/http-server/storage"),
+                      "Root directory the buckets live under. It must match the HTTP "
+                      "server's --storage-dir, because both interfaces serve the same "
+                      "objects through the same store.");
+    const auto od(
+        standard_service_options::make_options_description("ores.storage.service.log", sod));
     const auto vm(standard_service_options::parse(od, arguments, "SERVICE"));
 
     if (standard_service_options::wants_help(vm)) {
@@ -92,6 +100,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.logging = std_opts.logging;
     r.nats = std_opts.nats;
     r.database = std_opts.database;
+    r.storage_dir = vm["storage-dir"].as<std::string>();
     return r;
 }
 

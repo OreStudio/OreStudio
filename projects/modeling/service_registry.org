@@ -363,6 +363,14 @@
 :entry_point: packages/bff/dist/main.js
 :END:
 
+* ores.storage.service
+:PROPERTIES:
+:description: Object storage over the bus. Answers put, get, delete and list on the storage.v1.objects.* subjects, over the same storage root the HTTP routes are given, so a caller reaches one set of objects either way. It needs no database of its own: a bucket is a directory and a key is a path.
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
+:END:
+
 * ores.compute.wrapper
 :PROPERTIES:
 :description: Compute grid worker nodes. {host_id} = stable UUID derived from hostname:replica_index; {work_dir} = ../run/wrappers/node_N; all replicas share the same certificate (ores.compute.wrapper.crt).

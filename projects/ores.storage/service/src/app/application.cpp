@@ -24,7 +24,11 @@
  */
 #include "ores.storage.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.service/service/domain_service_runner.hpp"
+#include "ores.storage.core/filesystem/local_store.hpp"
 #include "ores.storage.service/app/application_exception.hpp"
+#include "ores.storage.service/messaging/registrar.hpp"
 #include "ores.utility/version/version.hpp"
 #include <boost/throw_exception.hpp>
 
@@ -45,17 +49,29 @@ ores::database::context application::make_context(const ores::database::database
 
 application::application() = default;
 
-boost::asio::awaitable<void> application::run(boost::asio::io_context& /*io_ctx*/,
+boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                               const config::options& cfg) const {
 
     BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.storage.service", 0, 1);
 
-    auto ctx = make_context(cfg.database);
-    (void)ctx;
+    ores::nats::service::client nats(cfg.nats);
+    nats.connect();
 
-    // TODO: register domain handlers and run NATS server
-    BOOST_LOG_SEV(lg(), warn) << "ores.storage.service service is not yet implemented.";
+    // The store is the one the HTTP routes are given: two front doors onto the
+    // same tree, which is what makes a put over the bus and a put over HTTP
+    // leave the same object.
+    ores::storage::filesystem::local_store store(cfg.storage_dir);
+
+    co_await ores::service::service::run(
+        io_ctx,
+        nats,
+        make_context(cfg.database),
+        "ores.storage.service",
+        [store](auto& n, auto c, auto v) {
+            return ores::storage::service::messaging::registrar::register_handlers(
+                n, std::move(c), std::move(v), store);
+        });
     co_return;
 }
 

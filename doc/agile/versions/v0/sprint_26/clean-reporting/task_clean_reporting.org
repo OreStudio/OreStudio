@@ -67,7 +67,23 @@ record each item's result in the table below.
 | B06  | =report_definition_template= and its JSON I/O are hand-written domain types. They are read only by =report_definition_template_handler=, which forwards to the DQ service, so the type is the component's contract with DQ rather than dead code. The consumer census for the remaining hand-written symbols is not yet run. |
 | M01  | Pass. =check_model_drift.py --summary= parses every model: "No model drift: every bound model agrees with its profile". No legacy JSON model and no =lookup_entity= remains. | =check_model_drift.py --summary= |
 | M02  | Pass. 165 of 313 models across the tree bind to a profile; every reporting model that binds agrees with it. |
-| M03  | Open, one exception. =ores.reporting.report_definition.org= states =has_workspace_id= while its profile already fixes it. The gate tolerates it through =KNOWN_MODEL_DRIFT=, so the contradiction is recorded rather than fixed. | =check_model_drift.py --summary= output |
+| M03  | Open, two exceptions, both recorded in the gate's =KNOWN_MODEL_DRIFT= rather than fixed: =report_definition= / =has_workspace_id=, and =report_instance= / =parent_entity_singular=. | =check_model_drift.py:68-73= |
+
+  The =report_definition= bind cannot simply be changed, because the profile
+  catalogue has no exact match and a forced bind is what M02 forbids. Its
+  effective features are tenant, workspace, uuid primary key, change-reason
+  cache and pagination. The three candidates and their mismatches:
+
+  | Profile | has_workspace_id | Mismatch |
+  |---------+------------------+----------|
+  | =uuid-identified-lookup= (bound today) | false | the workspace feature, which the table has and the gate excepts |
+  | =workspace-scoped-lookup= | true | =has_uuid_primary_key: false=, while the entity has a uuid primary key |
+  | =fk-scoped-child= | true | claims a child shape: =system_scope=, =nullable_tenant_id= and =has_explorer_api=, and this entity has no parent |
+
+  So the honest outcome for this entity is a recorded no-match with its actual
+  feature values, which M02 allows, rather than the nearest profile. Deferred
+  to the next unit because the choice changes generated SQL and C++, and it
+  must be made deliberately rather than by trial.
 | M09  | Open, and not this pass's. The =widget= column survives in the four lookup models, and nothing renders a Qt artefact for this component: zero Qt paths appear in the drift check's output. The column feeds the retired Qt facet, so removing it belongs to the Qt-remnant story. | =check_component_drift.py --component reporting --dry-run= |
 | M10  | Open. The root =component_overview.org= carries only Summary, Sub-components and Entity modules. It lacks the six sections H05 requires and has no =Diagram= section. The three part overviews are complete, and =projects/ores.shell/reporting= gained one in this pass. |
 | H05  | Pass. The root overview gained the six sections, a =Diagram= section, its =.puml= and a rendered image, all read rather than regenerated. The three part overviews and the shell part carry theirs. =validate_docs.sh= reports all 40 components passing. | =validate_docs.sh=; =ores.reporting.puml= with =ores.reporting.png= |

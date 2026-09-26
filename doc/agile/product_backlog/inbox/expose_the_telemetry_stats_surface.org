@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 91EBB242-A9B2-4B09-8DFE-CC440078E4B5
+:END:
+#+title: Expose the telemetry stats surface
+#+description: Four telemetry_repository reads and their SQL functions have no caller: the stats surface is implemented and tested but has no subject, so nothing can ask for it.
+#+type: capture
+#+level: cross
+#+filetags: :telemetry:protocol:codegen:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give the telemetry stats reads a subject, so a caller can ask for them. The
+database part already computes the statistics: `read_hourly_stats`,
+`read_daily_stats`, `get_summary` and `read_by_session` read the four
+aggregate functions in
+=projects/ores.sql/create/telemetry/telemetry_stats_functions_create.sql=,
+and the component's tests exercise them. Nothing can ask for the result,
+because the component's six subjects carry logs, service samples and NATS
+samples only.
+
+* Why
+
+The clean standard's B06 classifies every public symbol by its consumer and
+says a test is not a consumer: a symbol reached only from a test is dead
+code, and the task either names its intended consumer or deletes it. These
+four reads are exactly that case, and the intended consumer is the
+observability view that should render them.
+
+Exposing them is a model change, not a clean-up: it needs the query and
+result shapes modelled, a subject per read, the handler wired, and the
+generated protocol header in place of the hand-written call path. That is
+the same shape as the three surfaces this component's clean-up added, so the
+pattern is established.
+
+`ores.telemetry` reached the standard with these four reads recorded here as
+their intended consumer, rather than deleted, because the SQL they read
+stays and deleting the readers would strand a working aggregation.
+
+* References
+
+- =projects/ores.telemetry/database/include/ores.telemetry.database/repository/telemetry_repository.hpp=
+  — the four reads.
+- =projects/ores.sql/create/telemetry/telemetry_stats_functions_create.sql=
+  — the aggregate functions they read.
+- =doc/agile/versions/v0/sprint_26/clean-telemetry/evidence/b06_symbol_census.tsv=
+  — the census that classified them.
+
+* See also
+
+- [[id:E510A1A8-F82D-441C-BCA2-B69C1D1722D1][Generate messaging registrars via codegen]] — the registrar this surface would
+  join.
+

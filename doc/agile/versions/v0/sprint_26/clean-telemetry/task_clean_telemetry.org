@@ -71,6 +71,14 @@ from them.
 | B05  | Pass   | No branch in flight on origin touches the component. Four captures in the backlog name it, and none asks for a change that collides with this task. The =instrument_components_with_telemetry_context= capture names the intended consumer of the tracing API that B06 finds test-only. Evidence in =evidence/b05_captures_and_branches.txt=. |
 | B06  | Pass   | Symbol census over every public header: 138 symbols, of which 71 have a production consumer, 30 are reached only from a test and 37 from nothing. The test-only set is the distributed-tracing API, whose intended consumer the capture at B05 names. The unreached set is the file-JSONL exporters, =macros.hpp= and =application_exception.hpp=. Evidence in =evidence/b06_symbol_census.tsv=. |
 
+| M01 to M05 | N/A | Entity items, and the component has no entity or junction model: there is no model format to migrate, no variability profile to bind, no feature namespace to check, and no table shape to review. |
+| M07  | N/A    | Entity item: no junction model, so there is no singular to name, no key column to type and no row-level security to scope. |
+| M08  | N/A    | Entity item: no entity model, so no custom column type is bound. The one custom type this task binds is a message field's enum, and it is bound through the same registry the item describes. |
+| W01 to W04 | N/A | Entity items: no registrar family, no handler permission, no populate script and no SQL script is generated for this component. Its five tables and their RLS policies stay hand-written, which is what the Protocol scope of this story records. |
+| S01, S02 | N/A | Entity items: no entity and no junction, so there is no shell command unit and no recipe to generate. |
+| V03  | N/A    | Entity item: the component owns no generated schema, so there is nothing for the regeneration to create and no service of its own to start. |
+| V04  | N/A    | Entity item: the component generates no shell command, so there is nothing to run against the fleet. |
+
 * Notes
 
 * Test Scenarios

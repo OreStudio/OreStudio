@@ -1,0 +1,23 @@
+# H04: no hand-rolled per-platform shim survives
+# 2026-09-26, branch feature/clean-telemetry.
+
+The item: where every supported compiler provides the standard facility, the
+shim goes and the standard facility replaces it. The three supported compilers
+are MSVC, AppleClang, and GCC or Clang.
+
+$ grep -rn "_WIN32\|_MSC_VER\|__APPLE__\|__GNUC__\|__clang__\|unreachable()" \
+      projects/ores.telemetry --include=*.hpp --include=*.cpp
+(no hit)
+
+$ grep -rn "__attribute__\|#define ORES_TELEMETRY.*ATTRIBUTE" \
+      projects/ores.telemetry --include=*.hpp
+projects/ores.telemetry/core/include/ores.telemetry.core/domain/attribute_value.hpp:21:
+    #define ORES_TELEMETRY_CORE_DOMAIN_ATTRIBUTE_VALUE_HPP
+
+  The one hit is an include guard whose name contains the word attribute. It
+  is not a compiler attribute.
+
+The component reaches C++23 facilities directly: std::chrono for time,
+std::optional for the read filters, std::span and std::byte for the wire
+payloads, and boost::uuids for identity. Nothing in it asks which compiler is
+building it, and there is no portability macro to replace.

@@ -36,6 +36,10 @@ namespace ores #F2F2F2 {
         }
         class logging_configuration {
         }
+        class logging_exception {
+            -message_ : string
+            +what() : const char*
+        }
         class logging_options <<struct>> {
             +severity : string
             +filename : string

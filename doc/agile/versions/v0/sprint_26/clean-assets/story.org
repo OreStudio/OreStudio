@@ -21,11 +21,11 @@ ores.assets meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Baseline and inventory done (B01 to B05); the component is registered for codegen and its root CMakeLists is generated and verified. |
+| Now           | Nothing. |
 | Waiting on    | G06, which is red repo-wide and blocks the registry step. |
-| Next          | Model the three wire types one at a time, starting with tag. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-23                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ ores.assets meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A147058C-4F32-4B1F-8AC0-1AD5A6900038][Bring ores.assets to the clean standard]] | STARTED | 2026-09-23 | | Work ores.assets through the Component Clean Standard in order and record each item. |
+| [[id:A147058C-4F32-4B1F-8AC0-1AD5A6900038][Bring ores.assets to the clean standard]] | DONE | 2026-09-23 | 2026-09-26 | Work ores.assets through the Component Clean Standard in order and record each item. |
 
 * Notes
 
@@ -51,3 +51,11 @@ ores.assets meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean
 * Out of scope
 
 -
+
+* Result
+
+=ores.assets= is on the Component Clean Standard. Its three entities are modelled and generated with their messages, shell surface, SQL and the publish-from-dq operation; the hand-written duplicates are deleted; and =assets-cpp= is under test by every codegen gate. The task records what each item of the standard decided and the artefact that proves it.
+
+Three defects the work surfaced were fixed rather than filed, because each was this component's or one template's: the junction's missing service, which left nine shell recipes unserved against the live fleet; a junction timestamp column that reached SQL as a raw time point; and a blank-line leak in the junction column branches that made =ores.compute= drift. Three more are filed because each is a tree-wide change on the scale of the notify-trigger collision, the generator ignoring a declared =default_value=, and the CMake marker staleness that main is now fixing incrementally.
+
+The task's review found two faults in this branch, both fixed: it had regenerated thirty other components' CMake source lists while reverting main's =ores.orgmode= work, and it had committed its audit trail. The scope rule that came out of that review is now checked explicitly — no =component_files.cmake= outside the component and its shell appears in the diff.

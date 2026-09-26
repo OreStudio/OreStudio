@@ -8,7 +8,7 @@
 #+filetags: :clean-service:sprint_26:v0:
 #+owner: marco
 #+branch: feature/clean-service
-#+pr:
+#+pr: 2175
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -197,7 +197,7 @@ whole-tree build and the codegen gates are the evidence.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2175][#2175]] | [service] Bring ores.service to the component clean standard |
 
 * Review
 

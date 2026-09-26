@@ -1,11 +1,10 @@
 V02 and V03 against a live environment
 =====================================
 
-Revision: 0088c1ff9e, the head after the rebase onto main. The database was
-dropped and recreated at this revision, and every measurement below is from
-after that recreate, not from an earlier one. Two commits follow it and both
-are documentation plus one generated template-doc line -- no compiled file --
-so the measurements describe HEAD (916568586e) too.
+Measured at 0088c1ff9e, and the database was dropped and recreated there; every
+measurement below is from after that recreate. The branch was rebased twice
+more after that, and the suites were re-run at the later head that this file
+names below.
 
 V03, the database and the fleet
 -------------------------------

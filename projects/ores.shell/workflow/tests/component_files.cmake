@@ -2,6 +2,7 @@
 #
 # Hand-written: this module has no modeling/component_overview.org.
 set(files
+    "main.cpp"
     "workflow_instance_commands_tests.cpp"
     "workflow_step_commands_tests.cpp"
 )

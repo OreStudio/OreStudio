@@ -8,7 +8,7 @@
 #+filetags: :sandboxed_compass_cannot_manage_systemd_units:sprint_26:v0:
 #+owner: marco
 #+branch: feature/systemd-busctl-transport
-#+pr:
+#+pr: 2150
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -68,7 +68,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2150][#2150]] | [compass] Default the environment to the busctl transport |
 
 * Review
 

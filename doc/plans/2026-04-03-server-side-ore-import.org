@@ -5,7 +5,7 @@
 #+title: Server-Side ORE Import
 #+DATE: 2026-04-03
 #+AUTHOR: Marco Craveiro
-#+STATUS: IN PROGRESS
+#+STATUS: COMPLETE
 
 * Overview
 
@@ -23,19 +23,23 @@ server-side trace for a single import can be grepped across services.
 
 * Status
 
-| Phase | Item                                        | Status  | PRs |
-|-------+---------------------------------------------+---------+-----|
-|     1 | ~ores.storage~ http_client + archiver       | Pending | —   |
-|     1 | ~ores.storage~ storage_transfer             | Pending | —   |
-|     2 | ~ores.ore.api~ codegen scaffold             | Pending | —   |
-|     2 | ore_storage bucket helper                   | Pending | —   |
-|     2 | ore_import_protocol types                   | Pending | —   |
-|     3 | ~ores.ore.service~ codegen scaffold         | Pending | —   |
-|     3 | config / app / messaging / workflow         | Pending | —   |
-|     3 | Correlation ID logging throughout           | Pending | —   |
-|     4 | Qt: pack_and_upload                         | Pending | —   |
-|     4 | Qt: NATS ore.import request / response      | Pending | —   |
-|     4 | Qt: display item_errors + correlation_id    | Pending | —   |
+All four server-side phases landed. Phase 4 as written is void: it named the Qt
+client, and commit =af67db3062= (2026-09-19) deleted that client. The operator
+surface is now =ores.shell=, and the read surface is =ores.web=.
+
+| Phase | Item                                        | Status  | Notes |
+|-------+---------------------------------------------+---------+-------|
+|     1 | ~ores.storage~ http_client + archiver       | Done    | =filesystem/archiver.hpp= |
+|     1 | ~ores.storage~ storage_transfer             | Done    | =net/storage_transfer.hpp= |
+|     2 | ~ores.ore.api~ codegen scaffold             | Done    | =projects/ores.ore/api= |
+|     2 | ore_storage bucket helper                   | Done    | =api/include/ores.ore.api/net/ore_storage.hpp= |
+|     2 | ore_import_protocol types                   | Done    | =api/include/ores.ore.api/messaging/ore_import_protocol.hpp= |
+|     3 | ~ores.ore.service~ codegen scaffold         | Done    | =projects/ores.ore/service= |
+|     3 | config / app / messaging / workflow         | Done    | =messaging/ore_import_handler.cpp=, =ore_import_execute_handler.cpp=, =registrar.cpp= |
+|     3 | Correlation ID logging throughout           | Done    | 48 uses in the service messaging layer |
+|     4 | Qt: pack_and_upload                         | Void    | Qt client deleted |
+|     4 | Qt: NATS ore.import request / response      | Void    | Qt client deleted |
+|     4 | Qt: display item_errors + correlation_id    | Void    | Qt client deleted |
 
 * Architecture
 
@@ -61,8 +65,8 @@ ores.ore.service
 
 1. ~ores.http.server~ handles storage upload only.  No workflow logic there.
 2. ~ores.ore.service~ is a standalone binary; not linked into any other service.
-3. ~storage_transfer~ lives in ~ores.storage~ (no Qt dependency) — usable from
-   Qt, CLI, wt, integration tests, and any future service.
+3. ~storage_transfer~ lives in ~ores.storage~ (no UI dependency) — usable from
+   the shell, the web service, integration tests, and any future service.
 4. Trade save failures are partial: errors collected into ~item_errors~ but the
    saga continues for remaining items.  Infrastructure failures (DB, NATS down)
    trigger full compensation.
@@ -342,6 +346,10 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.telemetry.lib)
 #+end_src
+
+As built today the target also links =ores.ore.core.lib=, which holds the
+scanner, the planner, and the trade mappers the handlers drive. The
+=ores.ore.lib= name in the snippet above is retired.
 
 * Phase 4: Qt Client Integration
 

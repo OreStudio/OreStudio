@@ -46,6 +46,11 @@ The component's catalogue slug is =ore=, not =ores.ore.core=. Any instruction wo
 
 * Conclusions
 
+/Status at 2026-09-26./ Findings 1 (the root group model), 3 (the xsdcpp pin and
+regeneration), 6 (the documentation cluster) and 7 (the round trip off the
+exporter) are closed. Findings 2, 4 and 5 are open, and finding 5 is the largest
+remaining risk.
+
 **1. The mechanical shape passes; the substantive shape does not.** Three correctly-named parts, the full simple layout in each, api to core to service with no cycle, no core linking a service, no api linking a database or repository. But the split is a rename rather than a design: =core/= is the pre-existing simple component =ores.ore= wearing a =core= label (renamed in =ce3fb736ed=, moved in =164255805d=). It holds 136 of 179 files and 96% of the lines. The root CMakeLists registers core before api, the only one of 21 composites that does, and commit =10216d4721= says so on purpose.
 
 **2. Three generators divide the tree, and the marker test misleads here.**
@@ -68,13 +73,13 @@ The =AUTO-GENERATED FILE= marker is not a reliable classifier in this component.
 
 Specific documentation findings, in severity order:
 
-- No root =modeling/component_overview.org=, so no =#+component_kind: composite= and no =#+parts:=. The root CMakeLists is hand-written and unregenerable, the group diagram target is orphaned, and =ores.ore= is the only C++ component like this. Already filed as task =9747E4C5-734E-4F75-AD8B-CEB4C9089B76=; do not re-file.
-- All four diagrams are stale. =ores.ore.core.puml= omits around twenty classes across six facets; =ores.ore.api.puml= documents the retired operation protocol instead of the canonical entity protocol; =ores.ore.core.png= predates its own =.puml= source; the group diagram hides 8 of the entity's 13 columns and its legend calls generated code hand-written.
-- The core overview's summary describes currency-config plumbing while the code is a full ORE document engine. Its Outputs name a =CurrencyElement= type that exists nowhere. Its Dependencies claim =pugixml= and =nats.c=, neither of which the part links.
-- The api overview calls the part header-only; it builds a shared library.
-- The core overview has no =#+brief:=, and 13 of 31 overviews repo-wide lack one.
-- No overview links the knowledge documents that give the component depth, though those documents exist.
-- Dead pages that still describe =ores.ore=: =doc/analysis/ore_xsd_schema_gaps.md= (a January snapshot whose open issues its own body says are fixed, and which names a path that no longer exists), =doc/knowledge/domain/ore_model_configuration.org=, two Qt architecture pages citing the retired =ores.ore.lib= target, and two plans whose status tables are Qt checklists.
+- No root =modeling/component_overview.org=, so no =#+component_kind: composite= and no =#+parts:=. The root CMakeLists is hand-written and unregenerable, the group diagram target is orphaned, and =ores.ore= is the only C++ component like this. Already filed as task =9747E4C5-734E-4F75-AD8B-CEB4C9089B76=; do not re-file. **Resolved 2026-09-26:** the root group model exists, the root CMakeLists is generated, and the part order in it is api, core, service.
+- All four diagrams are stale. =ores.ore.core.puml= omits around twenty classes across six facets; =ores.ore.api.puml= documents the retired operation protocol instead of the canonical entity protocol; =ores.ore.core.png= predates its own =.puml= source; the group diagram hides 8 of the entity's 13 columns and its legend calls generated code hand-written. **Resolved 2026-09-26:** all four diagrams were regenerated; api went 22 to 35 classes, core 22 to 42.
+- The core overview's summary describes currency-config plumbing while the code is a full ORE document engine. Its Outputs name a =CurrencyElement= type that exists nowhere. Its Dependencies claim =pugixml= and =nats.c=, neither of which the part links. **Resolved 2026-09-26:** the core overview was rewritten against the code.
+- The api overview calls the part header-only; it builds a shared library. **Resolved 2026-09-26:** the api overview now says the part builds a shared library.
+- The core overview has no =#+brief:=, and 13 of 31 overviews repo-wide lack one. **Resolved 2026-09-26:** the core overview carries a =#+brief:=.
+- No overview links the knowledge documents that give the component depth, though those documents exist. **Resolved 2026-09-26:** each part overview links the knowledge documents.
+- Pages that described =ores.ore= and no longer do. Six now carry a status banner that says what changed: =doc/analysis/ore_xsd_schema_gaps.md= (a January snapshot, superseded and kept as the historical record), =doc/knowledge/domain/ore_model_configuration.org= (Layers 1 and 5 landed in =ores.analytics.api=, Layers 2 to 4 open), the two Qt architecture pages (the Qt client was deleted in =af67db3062=; the analysis and the nine-step plan are void), =doc/plans/2026-04-03-server-side-ore-import.org= (all four server-side phases landed; the Qt phase is void), and =doc/plans/2026-05-05-ore-domain-roundtrip.org= (its Python harness died with =ores.cli=; the composition moved to =ores.ore.core/xml/roundtrip.hpp=). Two more were corrected in place rather than bannered: =doc/knowledge/architecture/market_data_architecture.org= now names =ores.shell= and =ores.web= where it named Qt plugins, and =doc/knowledge/external/open_source_risk_engine.org= no longer says the user assembles configuration "in the GUI".
 - No user journey covers ORE import, export or round trip, though the extraction standard requires one for every component that had a UX and =ores.ore= had three Qt surfaces.
 - The live round-trip recipe names a shell source path that moved and misstates how the scanner classifies files.
 
@@ -92,7 +97,7 @@ Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] i
 4. **Record the xsdcpp dependency.** Vendor or pin the tool, document the invocation and the export-macro reapply step, re-run the generation against the current schema, and close the blocked backlog item. Treat the schema and the generated output as one unit from then on.
 5. **Give the tag and facet vocabulary a home.** Either sign off =hierarchy=, =market=, =planner=, =scanner=, =xml=, =net= and =workflow= in the facet table, or move the material. An unnamed facet is a finding in its own right.
 6. **Wire the registrars or record why not**, and decide whether =ores.shell/ore= and its generated command unit belong in the build. V01 is currently green for the wrong reason.
-7. **Refresh the documentation once the types stop moving**: the four diagrams (regenerate then do the manual pass), the three part overviews, the knowledge links, and the dead pages. The stale pages cluster on =ore_model_configuration.org=; fixing it dislodges the rest.
+7. **Refresh the documentation once the types stop moving**: the four diagrams (regenerate then do the manual pass are done; the sentinel-and-below manual pass is not), the three part overviews (done), the knowledge links (done), and the stale pages (done — see finding 6).
 8. **Then** work M, P, G, W, S, H and V in order, recording each item's evidence in the task table.
 
 * See also

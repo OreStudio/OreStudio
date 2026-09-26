@@ -6,6 +6,16 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages
 
+*Status: superseded. Kept as the historical record.*
+
+Commit =af67db3062= (2026-09-19, "Remove the =ores.qt= and =ores.wt= trees")
+deleted the Qt desktop client, so no step of this plan can be executed. The
+nine steps below name targets that do not exist, and every =ores.qt.*= library
+they extract is gone. The replacement surface is the TypeScript UI under
+=ores.web=. See
+[[id:A3F9B2C1-4E72-4D8A-B1C5-F2A73E9D0456][qt-plugin-architecture.org]] for
+the architectural rationale, which is itself superseded.
+
 See [[id:A3F9B2C1-4E72-4D8A-B1C5-F2A73E9D0456][qt-plugin-architecture.org]] for the architectural rationale.
 
 This document is the step-by-step implementation plan.  Each step is a

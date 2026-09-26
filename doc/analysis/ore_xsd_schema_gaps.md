@@ -1,7 +1,31 @@
 # ORE XSD Schema Gaps Analysis
 
-This document lists features present in ORE sample XML files that are missing or
-incorrectly mapped in the XSD-generated domain code (`ores.ore/domain/domain.hpp`).
+**Status: superseded. Kept as the historical record.**
+
+This page is a snapshot taken on 2026-01-27 by the sprint 10 story "Fix issues with
+xsdcpp when generating ORE code". Most of the gaps it lists were fixed in that same
+sprint, and the bindings were regenerated again on 2026-09-26, so the open-issues
+list below no longer describes the code.
+
+Every claim in the list has been re-checked against
+`projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp`:
+
+| Claim in this page | What the header holds today |
+|--------------------|-----------------------------|
+| `envelope.NettingSetId` is missing | `envelope` carries `nettingSetGroup`, and `nettingSetGroup_group_t` holds `NettingSetId` |
+| `InterestRateModels.LGM` should be `xsd::vector` | it is `xsd::vector<domain::lgm>` |
+| the `lgm` attribute `ccy` is missing | `lgm` opens with `xsd::optional<domain::currencyCodeWithDefault> ccy` |
+| `trade` holds only basic fields and around 80 trade types are missing | `trade` carries every data group; `SwapData` alone appears 258 times in the header |
+| the bindings live at `ores.ore/domain/domain.hpp` | they live at `projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp` |
+
+The generator has moved on as well. The 2026-09-26 regeneration took `domain.cpp`
+from 108,655 lines to 40,095. See
+[[id:2DB7C1A3-3191-4D6E-8355-B8BE30BB7809][xsdcpp]] for the pin and the invocation.
+
+For the gaps that are real today, read
+[[id:67277DBB-5ABD-4C36-934B-E97144E8910B][ORE export drops required elements from 17 example documents]]
+and [[id:794EC06A-86D6-499B-9166-5B24EBAAF0CD][Investigation: ores.ore design and documentation survey]].
+The body below is kept as the January record, not as a work list.
 
 ## Summary
 

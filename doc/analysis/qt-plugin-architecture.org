@@ -6,6 +6,16 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages
 
+*Status: superseded. Kept as the historical record.*
+
+The subject of this page does not exist. Commit =af67db3062= (2026-09-19,
+"Remove the =ores.qt= and =ores.wt= trees") deleted the Qt desktop client in
+full: 2120 files under =projects/ores.qt=, the Qt6 package, the plugin output
+directory, and every reference that named them. Nothing in the tree builds
+=ores.qt=, so the analysis below describes a subsystem that is gone. The
+read-only presentation surface is now the TypeScript UI under =ores.web=. Read
+the page as a record of a design evaluation, not as a plan.
+
 * Background
 
 =ores.qt= is currently a single monolithic project: ~800 source/header files,

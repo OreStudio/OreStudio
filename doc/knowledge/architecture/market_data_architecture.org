@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:marketdata:nats:synthetic:feeds:
 #+created: 2026-06-28
-#+updated: 2026-06-28
+#+updated: 2026-09-26
 
 * Summary
 
@@ -22,7 +22,7 @@ authority*: a *feed configuration* binds an official series to one active
 source channel; marketdata subscribes to that channel, *persists* each
 observation (stamped with tenant + source) and *remaps* (re-publishes) it onto
 the *official, tenant-scoped* stream (=marketdata.v1.tick.<tenant>.<key>=).
-*Consumers* (the Qt chart, etc.) subscribe only to the official stream and are
+*Consumers* (the =ores.web= chart, etc.) subscribe only to the official stream and are
 completely source-independent — swapping synthetic for a vendor is a feed-config
 change, nothing else. Configuration is split: the *synthetic generation config*
 (how to generate) lives in =ores.synthetic=; the *feed config* (which source
@@ -50,9 +50,9 @@ producer writing marketdata's tables directly.
 | *Which* source feeds an official series (feed config / registry) | =ores.marketdata= |
 | Subscribe to source → *persist* → *remap* to official stream | =ores.marketdata= service |
 | Series catalogue + observation *store* + read side | =ores.marketdata= |
-| Source-agnostic control panel (registry + start/stop) | =ores.qt.mktdata= |
-| Synthetic config authoring UI | =ores.synthetic= / =ores.qt.synthetic= |
-| Live consumption (charts, …) | any consumer, via the *official* stream |
+| Source-agnostic control panel (registry + start/stop) | =ores.shell= (~marketdata~ commands) |
+| Synthetic config authoring UI | =ores.shell= (~synthetic~ commands) |
+| Live consumption (charts, …) | any consumer, via the *official* stream (=ores.web= today) |
 
 ** Producers — autonomous, namespaced, config-owning
 

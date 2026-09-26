@@ -538,6 +538,37 @@ market_data_identifier parse_commodity(const boost::urls::url_view& u, const que
     }
     if (qp.point)
         id.point = to_lower(*qp.point);
+    // A commodity option's surface point carries the same coordinates the equity
+    // option's does, and the count says which of the three shapes it is:
+    // expiry,strike; expiry,strike,call_put; or expiry,delta,premium,call_put,strike.
+    if (qp.point && id.type == instrument_type::vol) {
+        std::vector<std::string> parts;
+        std::stringstream ss(*id.point);
+        std::string part;
+        while (std::getline(ss, part, ','))
+            parts.push_back(to_upper(part));
+        if (parts.size() != 2 && parts.size() != 3 && parts.size() != 5)
+            BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+                "oresmd://commodity/... a vol surface point is expiry,strike; "
+                "expiry,strike,call_put; or expiry,delta,premium,call_put,strike; got: '{}'.",
+                *id.point)));
+        volatility_surface_point v;
+        if (parts.size() == 5) {
+            v.expiry = parts[0];
+            v.delta_type = parts[1];
+            v.premium_type = parts[2];
+            v.call_put = parts[3];
+            v.strike = parts[4];
+        } else {
+            v.expiry = parts[0];
+            v.strike = parts[1];
+            if (parts.size() == 3)
+                v.call_put = parts[2];
+        }
+        id.vol = std::move(v);
+    }
+    if (qp.model && id.type == instrument_type::vol && id.vol)
+        id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
     return id;
 }
 

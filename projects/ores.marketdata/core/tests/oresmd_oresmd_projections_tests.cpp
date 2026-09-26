@@ -454,6 +454,14 @@ TEST_CASE("commodity_fwd_quote_key", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "COMMODITY_FWD/PRICE/WTI/USD/6M");
 }
 
+TEST_CASE("commodity_option_vol_quote_key_matches_the_corpus", tags) {
+    const auto id =
+        parse("oresmd://commodity/"
+              "wti_usd_vols?ccy=usd&type=vol&quote=option&model=rate_lnvol&point=1y,30.0");
+    REQUIRE(oresmd_projections::to_quote_key(id) ==
+            "COMMODITY_OPTION/RATE_LNVOL/WTI_USD_VOLS/USD/1Y/30.0");
+}
+
 /*
  * Inflation asset class — new instrument family (id:D566131C-D08C-4AFE-950E-B3DD26EB2C24).
  */
@@ -715,6 +723,31 @@ TEST_CASE("from_ore_key_equity", tags) {
             parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y"));
 }
 
+TEST_CASE("from_ore_key_commodity_option_matches_the_equity_option_shapes", tags) {
+    // The commodity option writes the same three shapes the equity option does,
+    // with a commodity code where the equity has a ticker. The corpus spells the
+    // coordinates in mixed case and both directions keep them verbatim.
+    commodity_market_data_identifier delta_id;
+    delta_id.commodity_code = "ICE:B";
+    delta_id.ccy = "USD";
+    delta_id.type = instrument_type::vol;
+    delta_id.quote_type = commodity_quote_type::option;
+    delta_id.point = "10m,del,fwd,call,0.10";
+    volatility_surface_point v;
+    v.expiry = "10M";
+    v.delta_type = "DEL";
+    v.premium_type = "Fwd";
+    v.call_put = "Call";
+    v.strike = "0.10";
+    v.model_subtype = volatility_model_subtype::rate_lnvol;
+    delta_id.vol = v;
+    REQUIRE(oresmd_projections::from_ore_key(
+                "COMMODITY_OPTION/RATE_LNVOL/ICE:B/USD/10M/DEL/Fwd/Call/0.10") ==
+            market_data_identifier(delta_id));
+    REQUIRE(oresmd_projections::to_quote_key(market_data_identifier(delta_id)) ==
+            "COMMODITY_OPTION/RATE_LNVOL/ICE:B/USD/10M/DEL/Fwd/Call/0.10");
+}
+
 TEST_CASE("from_ore_key_commodity", tags) {
     REQUIRE(oresmd_projections::from_ore_key("COMMODITY/PRICE/GOLD/USD") ==
             parse("oresmd://commodity/gold?ccy=usd&type=quote&quote=spot"));
@@ -901,9 +934,12 @@ TEST_CASE("from_ore_key_convention_correction_only_touches_fx_spot", tags) {
 
 TEST_CASE("from_ore_key_rejects_registry_types_without_an_oresmd_mapping", tags) {
     REQUIRE_FALSE(oresmd_projections::from_ore_key("BOND/PRICE/ISINXS/SNR/5Y").has_value());
+    // The option families have mappings now, so these are the shapes they still
+    // refuse: a credit vol whose metric is not a model, a commodity surface with
+    // no strike, and two inflation cap/floor metrics that name a price.
     REQUIRE_FALSE(oresmd_projections::from_ore_key("INDEX_CDS_OPTION/RATE/CDX/5Y/1Y").has_value());
     REQUIRE_FALSE(
-        oresmd_projections::from_ore_key("COMMODITY_OPTION/PRICE/WTI/USD/1Y/100").has_value());
+        oresmd_projections::from_ore_key("COMMODITY_OPTION/RATE_LNVOL/WTI/USD/1Y").has_value());
     REQUIRE_FALSE(
         oresmd_projections::from_ore_key("ZC_INFLATIONCAPFLOOR/RATE/UKRPI/5Y").has_value());
     REQUIRE_FALSE(

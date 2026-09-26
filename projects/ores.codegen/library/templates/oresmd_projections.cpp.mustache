@@ -49,6 +49,7 @@ constexpr std::string_view equity_dividend{"EQUITY_DIVIDEND"};
 constexpr std::string_view equity_option{"EQUITY_OPTION"};
 constexpr std::string_view commodity{"COMMODITY"};
 constexpr std::string_view commodity_fwd{"COMMODITY_FWD"};
+constexpr std::string_view commodity_option{"COMMODITY_OPTION"};
 constexpr std::string_view cpr{"CPR"};
 constexpr std::string_view cds{"CDS"};
 constexpr std::string_view hazard_rate{"HAZARD_RATE"};
@@ -697,6 +698,8 @@ std::string_view ore_type({{asset_class}}_quote_type qt) {
             return ore_type_spec::commodity;
         case commodity_quote_type::fwd:
             return ore_type_spec::commodity_fwd;
+        case commodity_quote_type::option:
+            return ore_type_spec::commodity_option;
         // NOTE: Real ORE CPR/RATE quotes are security-level, keyed by ISIN
         // (e.g. CPR/RATE/ISIN:XS0983610930, a scalar inside <Security> blocks in
         // curveconfig.xml), not commodity/ccy/tenor. Modelling CPR under
@@ -714,6 +717,8 @@ std::string_view ore_commodity_metric(commodity_quote_type qt) {
         case commodity_quote_type::spot:
         case commodity_quote_type::fwd:
             return ore_metric_spec::price;
+        case commodity_quote_type::option:
+            return ore_metric_spec::rate;
         case commodity_quote_type::cpr:
             return ore_metric_spec::rate;
     }
@@ -800,6 +805,34 @@ std::optional<std::string> quote_key_correlation(const {{asset_class}}_market_da
 {{/correlation_ore}}
 {{#commodity_ore}}
 std::optional<std::string> quote_key_commodity(const commodity_market_data_identifier& id) {
+    // A vol surface point is the commodity option family, which writes the same
+    // three shapes the equity option does with a commodity code where the equity
+    // has a ticker:
+    //   COMMODITY_OPTION/MODEL/CODE/CCY/EXPIRY/STRIKE
+    //   COMMODITY_OPTION/MODEL/CODE/CCY/EXPIRY/STRIKE/CALL_PUT
+    //   COMMODITY_OPTION/MODEL/CODE/CCY/EXPIRY/DELTA/PREMIUM/CALL_PUT/STRIKE
+    if (id.type == instrument_type::vol) {
+        if (!id.vol)
+            return std::nullopt;
+        const auto& v = *id.vol;
+        const auto head = std::format("{}/{}/{}",
+                                      ore_type_spec::commodity_option,
+                                      ore_vol_model(v.model_subtype),
+                                      id.commodity_code);
+        if (v.delta_type && v.premium_type && v.call_put)
+            return std::format("{}/{}/{}/{}/{}/{}/{}",
+                               head,
+                               id.ccy,
+                               v.expiry,
+                               *v.delta_type,
+                               *v.premium_type,
+                               *v.call_put,
+                               v.strike);
+        if (v.call_put)
+            return std::format(
+                "{}/{}/{}/{}/{}", head, id.ccy, v.expiry, v.strike, *v.call_put);
+        return std::format("{}/{}/{}/{}", head, id.ccy, v.expiry, v.strike);
+    }
     if (id.type != instrument_type::quote)
         return std::nullopt;
     const auto qt = id.quote_type.value_or(commodity_quote_type::spot);
@@ -1304,6 +1337,49 @@ from_equity_curve(equity_quote_type qt, const std::vector<std::string>& parts) {
     return id;
 }
 
+std::optional<market_data_identifier> from_commodity_option(const std::vector<std::string>& parts) {
+    // The same three shapes the equity option writes, with a commodity code where
+    // the equity has a ticker. Which one this is follows from the segment count,
+    // because the call/put moves: the seven-segment form puts it after the strike,
+    // the nine-segment delta form puts it before the strike, and the six-segment
+    // form has none.
+    if (parts.size() != 6 && parts.size() != 7 && parts.size() != 9)
+        return std::nullopt;
+    const auto model = parse_vol_model(parts[1]);
+    if (!model)
+        return std::nullopt;
+    commodity_market_data_identifier id;
+    id.commodity_code = parts[2];
+    id.ccy = to_upper(parts[3]);
+    id.type = instrument_type::vol;
+    id.quote_type = commodity_quote_type::option;
+    std::string point;
+    for (auto i = std::size_t{4}; i < parts.size(); ++i) {
+        if (i > 4)
+            point += ",";
+        point += to_lower(parts[i]);
+    }
+    id.point = std::move(point);
+    volatility_surface_point v;
+    v.model_subtype = *model;
+    // Verbatim, not uppercased: the corpus writes these in mixed case
+    // (AtmDeltaNeutral, Spot, Fwd) and the spelling is data.
+    v.expiry = parts[4];
+    if (parts.size() == 6) {
+        v.strike = parts[5];
+    } else if (parts.size() == 7) {
+        v.strike = parts[5];
+        v.call_put = parts[6];
+    } else {
+        v.delta_type = parts[5];
+        v.premium_type = parts[6];
+        v.call_put = parts[7];
+        v.strike = parts[8];
+    }
+    id.vol = std::move(v);
+    return id;
+}
+
 std::optional<market_data_identifier> from_commodity_spot(const std::vector<std::string>& parts) {
     // COMMODITY/PRICE/CODE/CCY — scalar, no point.
     if (parts.size() != 4 || !metric_is(parts[1], ore_metric_spec::price))
@@ -1560,6 +1636,8 @@ inverse_projection(const std::vector<std::string>& parts,
         return from_equity_curve(equity_quote_type::fwd, parts);
     if (type == ore_type_spec::equity_dividend)
         return from_equity_curve(equity_quote_type::dividend, parts);
+    if (type == ore_type_spec::commodity_option)
+        return from_commodity_option(parts);
     if (type == ore_type_spec::commodity)
         return from_commodity_spot(parts);
     if (type == ore_type_spec::commodity_fwd)

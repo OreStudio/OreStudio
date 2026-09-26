@@ -157,9 +157,12 @@ enum class equity_quote_type {
  * only meaningful when `type=quote`.
  */
 enum class commodity_quote_type {
-    spot, ///< COMMODITY/PRICE (spot price, the default).
-    fwd,  ///< COMMODITY_FWD/PRICE (commodity forward price).
-    cpr   ///< CPR/RATE (conditional prepayment rate).
+    spot,  ///< COMMODITY/PRICE (spot price, the default).
+    fwd,   ///< COMMODITY_FWD/PRICE (commodity forward price).
+    cpr,   ///< CPR/RATE (conditional prepayment rate).
+    option ///< COMMODITY_OPTION/MODEL/CODE/CCY/EXPIRY[/DELTA/PREMIUM/CALL_PUT]/STRIKE -- the equity
+           ///< option's three shapes, with a commodity code where the equity has a ticker; the
+           ///< metric segment is the vol model, not this table's ore_metric
 };
 
 /**

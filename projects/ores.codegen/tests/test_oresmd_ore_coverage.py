@@ -42,11 +42,14 @@ def test_oresmd_discovery_is_not_vacuous():
 
 
 def test_every_exception_carries_a_reason():
+    # VOL_DECLARED_UNWIRED is allowed to be empty, and emptying it is the goal of
+    # the list: it held commodity and credit until both reached a vol path. The
+    # other two are not empty today and are not expected to be.
+    for table_name in ("UNREPRESENTED", "SHAPE_MISMATCH"):
+        assert getattr(check, table_name), f"{table_name} is empty"
     for table_name in ("UNREPRESENTED", "SHAPE_MISMATCH",
                        "VOL_DECLARED_UNWIRED"):
-        table = getattr(check, table_name)
-        assert table, f"{table_name} is empty"
-        for key, reason in table.items():
+        for key, reason in getattr(check, table_name).items():
             assert reason and reason.strip(), f"{table_name}[{key}] has no reason"
             assert reason != "TODO", f"{table_name}[{key}] is a placeholder"
 
@@ -69,9 +72,15 @@ def test_a_newly_modelled_type_makes_its_exception_stale(monkeypatch):
 
 
 def test_an_unwired_vol_asset_class_is_reported(monkeypatch):
-    """A vol field with neither a projection nor a record is a silent gap."""
-    asset_class = next(iter(check.VOL_DECLARED_UNWIRED))
-    monkeypatch.delitem(check.VOL_DECLARED_UNWIRED, asset_class)
+    """A vol field with neither a projection nor a record is a silent gap.
+
+    VOL_DECLARED_UNWIRED is empty in the tree as it stands, so the gap is planted
+    by taking a class out of the wired set -- which is what an unbuilt vol path
+    looks like from the check's side.
+    """
+    wired = check.vol_wired_asset_classes()
+    asset_class = next(a for a in check.asset_classes_declaring_vol() if a in wired)
+    monkeypatch.setattr(check, "vol_wired_asset_classes", lambda: wired - {asset_class})
     problems = check.coverage_problems()
     assert any(asset_class in p and "no inverse projection" in p
                for p in problems), problems

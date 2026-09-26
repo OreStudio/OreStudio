@@ -62,11 +62,6 @@ UNREPRESENTED: dict[str, str] = {
         "the identifier carries an instrument id rather than a currency, and "
         "the key has no currency, tenor or point dimension."
     ),
-    "COMMODITY_OPTION": (
-        "Commodity option log-normal volatility, 6, 7 and 9 segments, with "
-        "delta and forward coordinates. Needs the volatility surface point "
-        "the equity and FX option families also need."
-    ),
     "FIXING": (
         "Index fixings. The key is TYPE/METRIC/INDEX_NAME with no currency "
         "and no point, so it is a different key space from every quote type "
@@ -117,9 +112,7 @@ VOL_REPRESENTED: dict[str, str] = {
 # library implements no volatility surface, so the field is a promise
 # nothing keeps. Recorded rather than silently ignored; the fix is the
 # projection work for that asset class.
-VOL_DECLARED_UNWIRED: dict[str, str] = {
-    "commodity": "COMMODITY_OPTION has no inverse projection",
-}
+VOL_DECLARED_UNWIRED: dict[str, str] = {}
 
 # Modelled quote types with no projection test, because pinning the key the
 # projection currently emits would enshrine the defect the shape record

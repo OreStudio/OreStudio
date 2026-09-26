@@ -49,6 +49,7 @@ using ores::marketdata::core::detail::to_upper;
 namespace ore_type_spec {
 constexpr std::string_view fx{"FX"};
 constexpr std::string_view fxfwd{"FXFWD"};
+constexpr std::string_view fx_option{"FX_OPTION"};
 constexpr std::string_view ir_swap{"IR_SWAP"};
 constexpr std::string_view discount{"DISCOUNT"};
 constexpr std::string_view mm{"MM"};
@@ -347,25 +348,35 @@ std::string_view ore_fx_metric(fx_quote_type qt) {
 }
 
 std::optional<std::string> quote_key_fx(const fx_market_data_identifier& id) {
-    if (id.type != instrument_type::quote || id.pair.size() != 6)
+    if (id.pair.size() != 6)
+        return std::nullopt;
+    const auto ccy1 = id.pair.substr(0, 3);
+    const auto ccy2 = id.pair.substr(3, 3);
+    // A vol surface point is the FX option family, keyed by the pair, the expiry
+    // and the strike or at-the-money convention:
+    // FX_OPTION/MODEL/CCY1/CCY2/EXPIRY/STRIKE.
+    if (id.type == instrument_type::vol) {
+        if (!id.vol)
+            return std::nullopt;
+        return std::format("{}/{}/{}/{}/{}/{}",
+                           ore_type_spec::fx_option,
+                           ore_vol_model(id.vol->model_subtype),
+                           ccy1,
+                           ccy2,
+                           to_upper(id.vol->expiry),
+                           to_upper(id.vol->strike));
+    }
+    if (id.type != instrument_type::quote)
         return std::nullopt;
     const auto qt = id.quote_type.value_or(fx_quote_type::spot);
     // spot: TYPE/METRIC/CCY1/CCY2 (scalar).
     if (qt == fx_quote_type::spot)
-        return std::format("{}/{}/{}/{}",
-                           ore_type(qt),
-                           ore_fx_metric(qt),
-                           id.pair.substr(0, 3),
-                           id.pair.substr(3, 3));
+        return std::format("{}/{}/{}/{}", ore_type(qt), ore_fx_metric(qt), ccy1, ccy2);
     // fwd: TYPE/METRIC/CCY1/CCY2/TENOR — forward curve, needs point for tenor.
     if (!id.point)
         return std::nullopt;
-    return std::format("{}/{}/{}/{}/{}",
-                       ore_type(qt),
-                       ore_fx_metric(qt),
-                       id.pair.substr(0, 3),
-                       id.pair.substr(3, 3),
-                       to_upper(*id.point));
+    return std::format(
+        "{}/{}/{}/{}/{}", ore_type(qt), ore_fx_metric(qt), ccy1, ccy2, to_upper(*id.point));
 }
 
 std::string_view ore_type(equity_quote_type qt) {
@@ -643,6 +654,27 @@ from_fx_spot(const std::vector<std::string>& parts,
     id.pair = base + quote;
     id.type = instrument_type::quote;
     id.quote_type = fx_quote_type::spot;
+    return id;
+}
+
+std::optional<market_data_identifier> from_fx_option(const std::vector<std::string>& parts) {
+    // FX_OPTION/MODEL/CCY1/CCY2/EXPIRY/STRIKE -- the pair names the currencies,
+    // so the surface coordinate is the expiry and the strike after them.
+    if (parts.size() != 6)
+        return std::nullopt;
+    const auto model = parse_vol_model(parts[1]);
+    if (!model)
+        return std::nullopt;
+    if (!is_currency_code(parts[2]) || !is_currency_code(parts[3]))
+        return std::nullopt;
+    fx_market_data_identifier id;
+    id.pair = to_upper(parts[2]) + to_upper(parts[3]);
+    id.type = instrument_type::vol;
+    volatility_surface_point v;
+    v.model_subtype = *model;
+    v.expiry = to_lower(parts[4]);
+    v.strike = to_lower(parts[5]);
+    id.vol = std::move(v);
     return id;
 }
 
@@ -948,6 +980,8 @@ inverse_projection(const std::vector<std::string>& parts,
     const auto type = to_upper(parts[0]);
     if (type == ore_type_spec::fx)
         return from_fx_spot(parts, checker);
+    if (type == ore_type_spec::fx_option)
+        return from_fx_option(parts);
     if (type == ore_type_spec::fxfwd)
         return from_fx_fwd(parts);
     if (type == ore_type_spec::ir_swap)

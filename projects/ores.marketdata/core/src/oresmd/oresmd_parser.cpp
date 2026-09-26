@@ -180,6 +180,22 @@ market_data_identifier parse_fx(const boost::urls::url_view& u, const query_para
     }
     if (qp.point)
         id.point = to_lower(*qp.point);
+    // A vol surface point carries the FX option's expiry and strike, and the
+    // pair already carries the two currencies: type=vol&point=10y,atm.
+    if (qp.point && id.type == instrument_type::vol) {
+        std::vector<std::string> parts;
+        std::stringstream ss(*id.point);
+        std::string part;
+        while (std::getline(ss, part, ','))
+            parts.push_back(to_upper(part));
+        if (parts.size() != 2)
+            BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+                "oresmd://fx/... a vol surface point is expiry,strike, got: '{}'.", *id.point)));
+        volatility_surface_point v;
+        v.expiry = parts[0];
+        v.strike = parts[1];
+        id.vol = std::move(v);
+    }
     return id;
 }
 

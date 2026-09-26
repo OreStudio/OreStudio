@@ -214,6 +214,12 @@ TEST_CASE("round_trip_fx_fwd", tags) {
     REQUIRE(original == roundtripped);
 }
 
+TEST_CASE("round_trip_fx_option_vol", tags) {
+    const auto original = oresmd_parser::parse(uri("oresmd://fx/eurusd?type=vol&point=10y,atm"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
 TEST_CASE("round_trip_ir_quote", tags) {
     const auto original = oresmd_parser::parse(uri(
         "oresmd://ir/"

@@ -88,11 +88,6 @@ UNREPRESENTED: dict[str, str] = {
         "rather than a missing member of one. The identity-core work wires "
         "this boundary; see the fixing projection task."
     ),
-    "FX_OPTION": (
-        "FX option log-normal volatility, keyed by currency pair, expiry and "
-        "a delta or at-the-money convention. Needs the volatility surface "
-        "point."
-    ),
     "GENERIC-MD": (
         "A wrapper whose inner type and metric name the series and whose "
         "remaining segments are the point. Representing it means "
@@ -142,6 +137,7 @@ SHAPE_MISMATCH: dict[str, str] = {
 # oresmd_projections.cpp), so they do not appear in a Quote types table.
 VOL_REPRESENTED: dict[str, str] = {
     "SWAPTION": "ir",
+    "FX_OPTION": "fx",
 }
 
 # An asset class whose model declares a ``vol`` field but whose projection
@@ -152,7 +148,6 @@ VOL_DECLARED_UNWIRED: dict[str, str] = {
     "commodity": "COMMODITY_OPTION has no inverse projection",
     "credit": "INDEX_CDS_OPTION has no inverse projection",
     "equity": "EQUITY_OPTION has no inverse projection",
-    "fx": "FX_OPTION has no inverse projection",
 }
 
 # Modelled quote types with no projection test, because pinning the key the

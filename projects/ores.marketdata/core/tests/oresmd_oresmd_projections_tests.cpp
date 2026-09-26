@@ -70,6 +70,16 @@ TEST_CASE("fx_fwd_requires_point", tags) {
     REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
 }
 
+TEST_CASE("fx_option_vol_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://fx/eurusd?type=vol&point=10y,atm");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "FX_OPTION/RATE_LNVOL/EUR/USD/10Y/ATM");
+}
+
+TEST_CASE("fx_option_vol_quote_key_risk_reversal", tags) {
+    const auto id = parse("oresmd://fx/eurusd?type=vol&point=1d,25rr");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "FX_OPTION/RATE_LNVOL/EUR/USD/1D/25RR");
+}
+
 TEST_CASE("ir_usd_libor_3m_index_name_and_curve_key", tags) {
     const auto id = parse("oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=fixing");
     REQUIRE(oresmd_projections::to_index_name(id) == "USD-LIBOR-3M");

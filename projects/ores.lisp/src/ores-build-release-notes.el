@@ -116,6 +116,10 @@ Same convention as ores-build-manual.el's ores/site-base-url.")
 (setq package-user-dir (expand-file-name "./.packages"))
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("elpa" . "https://elpa.gnu.org/packages/")))
+;; Keep the batch install off the user's own package cache; see the file.
+(load-file (expand-file-name
+            "ores-batch-packages.el"
+            (file-name-directory (or load-file-name buffer-file-name))))
 (package-initialize)
 (unless package-archive-contents
   (package-refresh-contents))

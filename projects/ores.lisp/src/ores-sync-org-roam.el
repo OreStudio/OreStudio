@@ -39,6 +39,10 @@
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
                          ("nongnu" . "https://elpa.nongnu.org/nongnu/")
                          ("melpa" . "https://melpa.org/packages/")))
+;; Keep the batch install off the user's own package cache; see the file.
+(load-file (expand-file-name
+            "ores-batch-packages.el"
+            (file-name-directory (or load-file-name buffer-file-name))))
 (package-initialize)
 (unless (package-installed-p 'org-roam)
   (condition-case err

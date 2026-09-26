@@ -178,7 +178,7 @@ report_scheduling_service::schedule_one(const domain::report_definition& def,
     updated.fsm_state_id = active_state;
     updated.modified_by = actor;
     updated.performed_by = ctx_.service_account();
-    updated.change_reason_code = std::string(ores::service::messaging::change_reasons::new_record);
+    updated.change_reason_code = std::string(ores::service::messaging::change_reasons::update);
     updated.change_commentary = "Linked to scheduler job";
 
     const auto tenant_ctx = ctx_.with_tenant(def.tenant_id, actor);
@@ -240,7 +240,7 @@ report_scheduling_service::unschedule_one(const domain::report_definition& def,
     updated.fsm_state_id = suspended_state;
     updated.modified_by = actor;
     updated.performed_by = ctx_.service_account();
-    updated.change_reason_code = std::string(ores::service::messaging::change_reasons::new_record);
+    updated.change_reason_code = std::string(ores::service::messaging::change_reasons::update);
     updated.change_commentary = "Scheduler job removed";
 
     const auto tenant_ctx = ctx_.with_tenant(def.tenant_id, actor);
@@ -391,7 +391,7 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             def_updated.modified_by = ctx_.service_account();
             def_updated.performed_by = ctx_.service_account();
             def_updated.change_reason_code =
-                std::string(ores::service::messaging::change_reasons::new_record);
+                std::string(ores::service::messaging::change_reasons::update);
             def_updated.change_commentary = "Linked to scheduler job by reconciliation";
 
             try {

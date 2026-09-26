@@ -1,0 +1,52 @@
+PR 1 local checks, ores.trading clean standard
+
+The change class, from `git diff origin/main...HEAD --name-only`: every
+path is under doc/. No path matches projects/*/modeling/*, so the
+codegen drift checks do not apply to this PR. The docs class runs the
+site check, plus lint and the misspell pass.
+
+======================================================================
+$ ./compass.sh lint
+
+⚠️   durable documents linking into agile content: 160 link(s) across 77 file(s).
+   Advisory. Run with --strict-links to list them and fail.
+✅  compass lint: filetags and generator markers are valid.
+[exit code: 0]
+
+The advisory counts durable documents that link into agile content
+across the whole repository. It is not raised by this change and the
+default run does not fail on it.
+
+======================================================================
+$ ./projects/ores.codegen/validate_docs.sh
+
+OK: all 40 components pass documentation checks.
+[exit code: 0]
+
+======================================================================
+$ ./compass.sh site page
+
+ores-build-page: 2420 file(s), 0 failure(s).
+[exit code: 0]
+
+The site check publishes every page changed since the last build and
+stops on a broken link in any of them. This checkout had no site cache,
+so the run published the whole site. All 13 id links added by this PR
+resolve; the run reported no failure.
+
+======================================================================
+$ misspell-fixer $(git diff origin/main...HEAD --name-only)
+
+misspell-fixer: Real run (-r) has not been enabled. Files will not be changed.
+misspell-fixer: Iteration 0: prefiltering.
+misspell-fixer: Iteration 0: nothing to replace.
+[exit code: 0]
+
+======================================================================
+Not run, and why
+
+- check_component_drift.py: no model, template or generated file changed.
+  The component baseline is recorded in b01_component_drift_dry_run.txt
+  and is unchanged by this PR.
+- The whole-tree build and the component suites: no C++ changed. The
+  baseline is recorded in v02_trading_tests.txt.

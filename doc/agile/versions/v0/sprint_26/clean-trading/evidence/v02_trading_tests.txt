@@ -1,0 +1,42 @@
+V02 baseline: the ores.trading test suites
+Measured 2026-09-26 at b79609d808, with the fleet up.
+
+$ ctest --test-dir build/output/linux-clang-debug-make -R "ores.trading" --output-on-failure
+
+ores.trading.api.tests      Passed
+ores.trading.service.tests  Passed
+ores.trading.core.tests     Failed
+
+  test cases: 102 |  81 passed | 21 failed
+  assertions: 542 | 521 passed | 21 failed
+
+All 21 failing cases are the eventing integration tests:
+
+  write_equity_accumulator_instrument_publishes_nats_changed_event
+  write_equity_asian_option_instrument_publishes_nats_changed_event
+  write_equity_barrier_option_instrument_publishes_nats_changed_event
+  write_equity_digital_option_instrument_publishes_nats_changed_event
+  write_equity_forward_instrument_publishes_nats_changed_event
+  write_equity_option_instrument_publishes_nats_changed_event
+  write_equity_position_instrument_publishes_nats_changed_event
+  write_equity_swap_instrument_publishes_nats_changed_event
+  write_equity_variance_swap_instrument_publishes_nats_changed_event
+  write_fx_accumulator_instrument_publishes_nats_changed_event
+  write_fx_asian_forward_instrument_publishes_nats_changed_event
+  write_fx_barrier_option_instrument_publishes_nats_changed_event
+  write_fx_digital_option_instrument_publishes_nats_changed_event
+  write_fx_forward_instrument_publishes_nats_changed_event
+  write_fx_vanilla_option_instrument_publishes_nats_changed_event
+  write_fx_variance_swap_instrument_publishes_nats_changed_event
+  write_lifecycle_event_publishes_nats_changed_event
+  write_party_role_type_publishes_nats_changed_event
+  write_trade_id_type_publishes_nats_changed_event
+  write_trade_publishes_nats_changed_event
+  write_trade_type_publishes_nats_changed_event
+
+Cause: 123 of the repository's 209 notify triggers emit the legacy
+payload {entity, timestamp, entity_ids, tenant_id}, while
+projects/ores.eventing/core/src/service/postgres_event_source.cpp reads
+the canonical {event_id, entity, key, action, version, occurred_at,
+tenant_id}. The parse fails and the notification is dropped. Trading owns
+114 of those triggers. Captured as backlog note 80C846D1.

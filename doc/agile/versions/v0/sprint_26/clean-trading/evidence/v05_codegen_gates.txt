@@ -1,0 +1,99 @@
+V05 baseline: every codegen gate with ores.trading in its current state
+Measured 2026-09-26 at b79609d808. Every command below is read-only.
+The codegen scripts need projects/ores.codegen/venv/bin/python.
+
+==============================================================================
+$ projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_model_drift.py --summary
+
+projects/ores.reporting/modeling/ores.reporting.report_definition.org: has_workspace_id contradicts its profile, allowed by KNOWN_MODEL_DRIFT
+
+164 of 309 models bind to a profile; 14 profiles defined.
+No model drift: every bound model agrees with its profile (1 known exception(s)).
+
+[exit code: 0]
+
+==============================================================================
+$ python3 projects/ores.codegen/scripts/check_populate_references.py
+
+populate references resolve.
+
+[exit code: 0]
+
+==============================================================================
+$ python3 projects/ores.codegen/scripts/check_handler_permissions.py
+
+handler permissions are seeded (4 component(s), 174 distinct code(s)).
+
+[exit code: 0]
+
+==============================================================================
+$ projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_protocol_twin_coverage.py
+
+Protocol twin coverage intact: all 38 generated protocol header(s) in 6 committed component(s) have a TypeScript twin, and no model opts out.
+
+[exit code: 0]
+
+==============================================================================
+$ projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.trading.api --check
+
+
+2 file(s) would change. Run without --check to fix.
+Generated projects/ores.trading/api/src/component_files.cmake.check-tmp
+Generated projects/ores.trading/api/tests/component_files.cmake.check-tmp
+stale: projects/ores.trading/api/src/component_files.cmake
+stale: projects/ores.trading/api/tests/component_files.cmake
+
+[exit code: 1]
+
+==============================================================================
+$ projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.trading.core --check
+
+
+2 file(s) would change. Run without --check to fix.
+Generated projects/ores.trading/core/src/component_files.cmake.check-tmp
+Generated projects/ores.trading/core/tests/component_files.cmake.check-tmp
+stale: projects/ores.trading/core/src/component_files.cmake
+stale: projects/ores.trading/core/tests/component_files.cmake
+
+[exit code: 1]
+
+==============================================================================
+$ projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.trading.service --check
+
+
+2 file(s) would change. Run without --check to fix.
+Generated projects/ores.trading/service/src/component_files.cmake.check-tmp
+Generated projects/ores.trading/service/tests/component_files.cmake.check-tmp
+stale: projects/ores.trading/service/src/component_files.cmake
+stale: projects/ores.trading/service/tests/component_files.cmake
+
+[exit code: 1]
+
+==============================================================================
+$ python3 projects/ores.codegen/scripts/regenerate_shell_recipe_inventory.py --check
+
+
+[exit code: 0]
+
+==============================================================================
+$ projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/regenerate_physical_space_inventories.py --check
+
+42 inventory table(s) up to date.
+
+[exit code: 0]
+
+==============================================================================
+$ projects/ores.codegen/venv/bin/python projects/ores.codegen/validate_docs.py
+
+OK: all 40 components pass documentation checks.
+
+[exit code: 0]
+
+==============================================================================
+Gates that read green only because ores.trading is excluded:
+  handler_permissions  REGISTRY=("refdata","analytics","compute","assets");
+                       trading checks 98 codes and 6 are seeded.
+  protocol_twin_coverage  keyed on COMPONENTS_UNDER_TEST; trading has 0 TS twins.
+  recipe_inventory     trading has no recipes, so nothing can be stale.
+  component_drift      the component is absent from COMPONENTS_UNDER_TEST.
+  cmake lists          stale, and the check exits 1 (the honest failure).

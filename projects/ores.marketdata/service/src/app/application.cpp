@@ -31,6 +31,12 @@
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.marketdata.service/messaging/crm_handler.hpp"
 #include "ores.marketdata.service/messaging/curve_republish_handler.hpp"
+#include "ores.marketdata.service/messaging/feed_binding_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/market_fixing_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/market_observation_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/market_series_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/observation_lineage_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/series_classification_rule_event_registrar.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.refdata.api/eventing/crm_driver_pair_changed_event.hpp"
@@ -109,11 +115,30 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     namespace ev = ores::eventing;
     namespace mdev = ores::marketdata::eventing;
     namespace rdev = ores::refdata::eventing;
+    namespace mdsm = ores::marketdata::service::messaging;
     ev::service::event_bus event_bus;
     ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
-    ev::service::registrar::register_mapping<mdev::feed_binding_changed_event>(
-        event_source, "ores.marketdata.feed_binding", "ores_marketdata_feed_bindings");
-    auto feed_binding_sub = event_bus.subscribe<mdev::feed_binding_changed_event>(
+
+    // The generated registrars own each entity's mapping and its NATS
+    // publication: each reads the trigger's channel and publishes the
+    // canonical event. Composing them by hand instead left five entities
+    // with a mapping no one registered, so nothing they wrote reached NATS.
+    auto feed_binding_sub =
+        mdsm::register_feed_binding_event_mapping(event_source, event_bus, nats);
+    auto market_series_sub =
+        mdsm::register_market_series_event_mapping(event_source, event_bus, nats);
+    auto market_observation_sub =
+        mdsm::register_market_observation_event_mapping(event_source, event_bus, nats);
+    auto market_fixing_sub =
+        mdsm::register_market_fixing_event_mapping(event_source, event_bus, nats);
+    auto observation_lineage_sub =
+        mdsm::register_observation_lineage_event_mapping(event_source, event_bus, nats);
+    auto series_classification_rule_sub =
+        mdsm::register_series_classification_rule_event_mapping(event_source, event_bus, nats);
+
+    // The generated registrar publishes; the ingest loop also has to act, so
+    // the channel carries a second subscriber rather than a second mapping.
+    auto feed_binding_refresh_sub = event_bus.subscribe<mdev::feed_binding_changed_event>(
         [ingest](const mdev::feed_binding_changed_event&) {
             BOOST_LOG_SEV(lg(), info) << "Feed binding changed — refreshing ingest loop.";
             ingest->refresh();

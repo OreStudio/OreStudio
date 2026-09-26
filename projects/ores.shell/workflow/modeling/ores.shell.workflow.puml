@@ -1,0 +1,71 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.shell.workflow Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace shell #F2F2F2 {
+        namespace app #F2F2F2 {
+            namespace commands #F2F2F2 {
+                namespace workflow #F2F2F2 {
+                    class workflow_instance_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
+                    }
+                    class workflow_step_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
+                    }
+                    class workflow_wait_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
+                    }
+                }
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+ores.shell.api ..> ores.shell.workflow : menu, command feedback, argument parsing
+ores.workflow.api ..> ores.shell.workflow : domain, messaging
+
+' The automated pass draws one box per unit and cannot show which of the three a
+' person wrote, or why. Two are generated from the workflow entity models, one per
+' entity, and each answers its entity's derived verbs. The third is hand-written
+' because blocking on a run is not an entity verb: it polls the engine's step query
+' until the instance reaches a terminal state, and no entity model can express that.
+' Three other command units -- bundles, provision and ORE import -- call its
+' wait_for_instance at four sites, so retiring it would break them.
+
+note bottom of "ores::shell::app::commands::workflow::workflow_wait_commands"
+Answers `workflow wait <instance_id> [--timeout] [--expect-steps]`,
+and exposes wait_for_instance for the command units that dispatch a
+workflow and then block on it.
+
+The two units beside it answer the entity protocols, addressed per
+row; this one answers the engine, addressed per run. The workflow
+component's P04 records the operation model that would generate it,
+as iam's *_operations_commands units already are.
+end note
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.shell.workflow.puml"
+' End:
+@enduml

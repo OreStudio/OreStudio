@@ -87,11 +87,11 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
     }
     const auto& req_ctx = *ctx_expected;
 
-    auto req = decode<list_workflow_instances_request>(msg);
+    auto req = decode<list_workflow_instance_summaries_request>(msg);
     if (!req) {
         reply(nats_,
               msg,
-              list_workflow_instances_response{.success = false,
+              list_workflow_instance_summaries_response{.success = false,
                                                .message = "Invalid request payload."});
         return;
     }
@@ -117,7 +117,7 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
     if (static_cast<int>(instances.size()) > limit)
         instances.resize(static_cast<std::size_t>(limit));
 
-    list_workflow_instances_response resp;
+    list_workflow_instance_summaries_response resp;
     resp.success = true;
     resp.instances.reserve(instances.size());
 

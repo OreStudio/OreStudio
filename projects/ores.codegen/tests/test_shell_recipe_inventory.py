@@ -140,6 +140,38 @@ class TestTheInventory:
             rsri.read_index()
 
 
+class TestMergeConflicts:
+    def test_a_conflicted_inventory_is_refused(self, tmp_path):
+        # Markers reached the checked-in inventory because the prose under a
+        # heading is carried forward unchanged, so regeneration reproduced them
+        # and --check called the result clean.
+        conflicted = INDEX + """
+<<<<<<< HEAD
+
+- [[id:EEEE][Mine]]
+=======
+
+- [[id:FFFF][Theirs]]
+>>>>>>> abc1234 (a merge)
+"""
+        _tree(tmp_path, RECIPES, conflicted)
+        with pytest.raises(SystemExit, match="unresolved merge conflict"):
+            rsri.read_index()
+
+    def test_the_marker_lines_are_named(self):
+        # The file runs to hundreds of sections, so "there is a conflict
+        # somewhere" is not something a reader can act on.
+        with pytest.raises(SystemExit, match="line 1, 3, 4"):
+            rsri.reject_conflict_markers(
+                "<<<<<<< HEAD\ntheir side\n=======\n>>>>>>> abc1234 (a merge)\n")
+
+    def test_a_line_that_only_looks_like_a_marker_is_kept(self, tmp_path):
+        # Only a whole line is a marker; a sentence that spans one is prose the
+        # writer owns and has to survive.
+        _tree(tmp_path, RECIPES, INDEX + "\nA ======= mid-sentence is prose.\n")
+        assert "mid-sentence is prose." in rsri.build_index()
+
+
 class TestTheHeadings:
     def test_a_key_titles_as_words(self):
         assert rsri.heading_for("account_types") == "Account Types"

@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.shell/app/commands/workflow_commands.hpp"
-#include "ores.nats/domain/message.hpp"
+#include "ores.shell/app/commands/workflow/workflow_wait_commands.hpp"
 #include "ores.nats/service/request_helpers.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
@@ -28,6 +27,7 @@
 #include <map>
 #include <ostream>
 #include <thread>
+#include <vector>
 
 namespace ores::shell::app::commands {
 
@@ -44,10 +44,10 @@ constexpr int max_consecutive_poll_failures = 5;
  * @brief Fetch the steps of an instance without reporting failure.
  *
  * Transport and parse errors are returned as the error string so the
- * caller decides whether they are fatal (one-shot commands) or
- * transient (the polling loop, which tolerates a few in a row). A
- * server response with success == false is a definitive answer, also
- * left to the caller.
+ * caller decides whether they are fatal. The polling loop tolerates a few
+ * in a row, so it cannot use the shell's do_request helpers, which report
+ * every failure as a command failure. A server response with success ==
+ * false is a definitive answer, also left to the caller.
  */
 std::expected<workflow::messaging::get_workflow_steps_response, std::string>
 fetch_steps(nats_client& session, const std::string& instance_id) {
@@ -66,14 +66,13 @@ fetch_steps(nats_client& session, const std::string& instance_id) {
     }
 }
 
-
 /**
  * @brief Print the entries a step handler recorded while it ran.
  *
  * A step can report success and still have skipped work: the import
- * handler marks itself completed_with_warnings and puts the reason in
- * its log rather than in the step error, so a reader that prints only
- * the status cannot tell a clean run from a lossy one.
+ * handler marks itself completed_with_warnings and puts the reason in its
+ * log rather than in the step error, so a reader that prints only the
+ * status cannot tell a clean run from a lossy one.
  */
 void print_step_log(std::ostream& out, const workflow::messaging::workflow_step_summary& step) {
     for (const auto& entry : step.log) {
@@ -97,15 +96,8 @@ void print_step(std::ostream& out,
 
 }
 
-void workflow_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
+void workflow_wait_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto workflow_menu = std::make_unique<cli::Menu>("workflow");
-
-    workflow_menu->Insert("steps",
-                          [&session](std::ostream& out, std::string instance_id) {
-                              process_steps(std::ref(out), std::ref(session), instance_id);
-                          },
-                          "Show the steps of a workflow instance",
-                          {"instance_id"});
 
     workflow_menu->Insert(
         "wait",
@@ -150,35 +142,11 @@ void workflow_commands::register_commands(cli::Menu& root_menu, nats_client& ses
     root_menu.Insert(std::move(workflow_menu));
 }
 
-void workflow_commands::process_steps(std::ostream& out,
-                                      nats_client& session,
-                                      const std::string& instance_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Fetching steps for workflow instance: " << instance_id;
-
-    auto result = fetch_steps(session, instance_id);
-    if (!result) {
-        fail(out) << "Request failed: " << result.error() << std::endl;
-        return;
-    }
-    if (!result->success) {
-        fail(out) << "Failed to fetch workflow steps: " << result->message << std::endl;
-        return;
-    }
-
-    if (result->steps.empty()) {
-        out << "No steps recorded for instance " << instance_id << "." << std::endl;
-        return;
-    }
-
-    for (const auto& step : result->steps)
-        print_step(out, step, result->steps.size());
-}
-
-bool workflow_commands::wait_for_instance(std::ostream& out,
-                                          nats_client& session,
-                                          const std::string& instance_id,
-                                          std::chrono::seconds timeout,
-                                          std::size_t expected_steps) {
+bool workflow_wait_commands::wait_for_instance(std::ostream& out,
+                                               nats_client& session,
+                                               const std::string& instance_id,
+                                               std::chrono::seconds timeout,
+                                               std::size_t expected_steps) {
     BOOST_LOG_SEV(lg(), info) << "Waiting for workflow instance: " << instance_id
                               << " (timeout: " << timeout.count() << "s)";
 
@@ -189,13 +157,12 @@ bool workflow_commands::wait_for_instance(std::ostream& out,
     while (true) {
         auto result = fetch_steps(session, instance_id);
         if (!result || !result->success) {
-            // Tolerated for a few polls: transport/parse errors (long
-            // waits routinely survive network blips) and unsuccessful
-            // replies — immediately after dispatch the instance may
-            // not be queryable yet, so even "not found" is transient.
-            // The warning deliberately avoids fail(): were the wait to
-            // recover and succeed, an earlier mark would still abort a
-            // load script.
+            // Tolerated for a few polls: transport and parse errors, which a
+            // long wait routinely survives, and unsuccessful replies, because
+            // an instance is not queryable the instant it is dispatched, so
+            // even "not found" is transient. The warning deliberately avoids
+            // fail(): were the wait to recover and succeed, an earlier mark
+            // would still abort a load script.
             const auto reason = !result ? result.error() : result->message;
             if (result)
                 BOOST_LOG_SEV(lg(), info)
@@ -222,9 +189,8 @@ bool workflow_commands::wait_for_instance(std::ostream& out,
                 }
             }
 
-            // Terminal-state detection, as the GUI's WorkflowStepsWidget:
-            // any failed step is a terminal failure; all steps completed
-            // (with or without warnings) is terminal success.
+            // Any failed step is a terminal failure; all steps completed,
+            // with or without warnings, is terminal success.
             const auto total = result->steps.size();
             std::size_t completed = 0;
             for (const auto& step : result->steps) {
@@ -253,8 +219,8 @@ bool workflow_commands::wait_for_instance(std::ostream& out,
 
         if (std::chrono::steady_clock::now() + poll_interval > deadline) {
             fail(out) << "Timed out after " << timeout.count() << "s waiting for workflow instance "
-                      << instance_id << ". Check progress with: workflow steps " << instance_id
-                      << std::endl;
+                      << instance_id << ". Check progress with: workflow_steps by-workflow-id "
+                      << instance_id << std::endl;
             BOOST_LOG_SEV(lg(), error) << "Timed out waiting for workflow instance " << instance_id;
             return false;
         }

@@ -25,16 +25,22 @@
 -- -----------------------------------------------------------------------------
 -- Hand-written SQL the generator cannot express
 -- -----------------------------------------------------------------------------
--- Two things live here because no model can state them: a partial index, and a
--- cascading foreign key. The four other indexes this file used to carry are
--- generated now, from the models' * Indexes sections.
+-- The partial index lives here because no model can state it. The four other
+-- indexes this file used to carry are generated now, from the models' * Indexes
+-- sections.
 
 create index if not exists workflow_instances_correlation_id_idx
 on ores_workflow_workflow_instances_tbl (correlation_id)
 where correlation_id is not null;
 
-alter table ores_workflow_workflow_steps_tbl
-    add constraint ores_workflow_workflow_steps_workflow_id_fk
-    foreign key (workflow_id)
-    references ores_workflow_workflow_instances_tbl (id)
-    on delete cascade;
+-- A cascading foreign key from a step to its instance used to sit here, and it
+-- cannot exist. The parent is temporal, so its only uniqueness on
+-- (tenant_id, id) is a partial index over the open row, and PostgreSQL refuses a
+-- partial index as a foreign key target. Its full key adds the parent's own
+-- lifetime, which the child does not carry.
+--
+-- Nothing is lost by removing it: no database ever accepted it, so the create
+-- path failed outright and it protected nothing. What it was meant to close --
+-- step rows left behind when an instance row is removed -- is a real gap, and it
+-- cannot be closed in the schema. The removal is a physical delete, so an
+-- instance can orphan its steps, and the delete path is where that belongs.

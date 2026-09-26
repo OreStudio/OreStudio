@@ -68,9 +68,9 @@ public:
     /**
      * @brief Lists workflow instances for the authenticated tenant.
      *
-     * Decodes a list_workflow_instances_request from @p msg, validates the JWT,
+     * Decodes a list_workflow_instance_summaries_request from @p msg, validates the JWT,
      * queries the database filtered by tenant (via RLS context), and replies
-     * with a list_workflow_instances_response.
+     * with a list_workflow_instance_summaries_response.
      */
     void list_instances(ores::nats::message msg);
 

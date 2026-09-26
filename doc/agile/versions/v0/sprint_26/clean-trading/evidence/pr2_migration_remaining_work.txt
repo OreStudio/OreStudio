@@ -82,3 +82,20 @@ still gets wrong:
   in the dispatch chain. The block-scoped reset is not enough; the
   decision has to follow the request type actually declared in the
   branch.
+
+Update, third trial
+-------------------
+The many-row entity is now read from the protocol header that declares
+the request, which is the reliable source.
+
+The block-scoped reset over-corrects: response checks that the codemod
+rewrote before the reset are now left alone, so most sites keep
+->success on a generated response that has no such member. The reset
+must follow the request type the branch actually declares rather than
+clearing on every block, and the trial's coverage is the check to run
+after each change: it should rewrite the generated sites and leave the
+four unmodelled families' sites untouched.
+
+So the remaining work is one decision, not three: pair each response
+with the request variable of the branch it is in, and the four families
+with no model fall out of that correctly.

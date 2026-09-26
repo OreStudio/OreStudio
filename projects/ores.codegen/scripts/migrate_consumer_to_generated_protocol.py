@@ -153,6 +153,29 @@ def generated_requests() -> set[str]:
     return names
 
 
+_request_entity: dict[str, str] = {}
+
+
+def request_entity(request: str) -> str:
+    """The entity a generated request belongs to.
+
+    Read from the header that declares it rather than derived from the
+    name: put_many_trades_request names the plural, so stripping the verb
+    yields "trades" and no write record answers to it. Each entity's
+    protocol header declares exactly one write record, and its stem is
+    the entity.
+    """
+    if not _request_entity:
+        for header in MSG.glob("*_protocol.hpp"):
+            text = header.read_text(encoding="utf-8", errors="replace")
+            writes = re.findall(r"struct ([a-z0-9_]+)_write\b", text)
+            if len(writes) != 1:
+                continue
+            for name in re.findall(r"struct ([a-z0-9_]+_request)\b", text):
+                _request_entity[name] = writes[0]
+    return _request_entity.get(request, "")
+
+
 def is_generated(entity: str, generated: set[str]) -> bool:
     """Whether the entity's own protocol is generated rather than consolidated."""
     return bool({f"put_{entity}_request", f"list_{entity}s_request",
@@ -207,10 +230,16 @@ def migrate(text: str, path: Path, report: list[str]) -> str:
             if new_name and new_name in generated:
                 line = line.replace(old_name, new_name)
                 renamed += 1
-            for verb in ("save_", "put_", "list_", "get_", "delete_"):
-                if stem.startswith(verb):
-                    stem = stem[len(verb):]
-                    break
+                stem = request_entity(new_name) or stem
+                for verb in ("save_", "put_", "list_", "get_", "delete_"):
+                    if stem.startswith(verb):
+                        stem = stem[len(verb):]
+                        break
+            else:
+                for verb in ("save_", "put_", "list_", "get_", "delete_"):
+                    if stem.startswith(verb):
+                        stem = stem[len(verb):]
+                        break
             var_entity[decl.group(2)] = stem
 
         obj = DATA_OBJECT.search(line)

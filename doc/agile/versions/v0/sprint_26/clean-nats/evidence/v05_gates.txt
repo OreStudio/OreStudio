@@ -32,3 +32,54 @@ the marker template landed and most components have not regenerated since.
 
 $ validate_docs.sh
 OK: all 40 components pass documentation checks. (exit 0)
+
+# Re-run on 2026-09-26 after the rebase onto main and the review round, on the
+# committed tree. Main had moved 131 commits, so two counts differ from the
+# run above.
+
+$ check_component_drift.py --all
+No drift: regenerated output matches the checked-in tree. (exit 0)
+
+$ check_model_drift.py
+No model drift: every bound model agrees with its profile (1 known exception(s)).
+exit 0
+
+$ check_protocol_twin_coverage.py
+Protocol twin coverage intact: all 31 generated protocol header(s) in 3 committed component(s) have a TypeScript twin, and no model opts out.
+exit 0
+
+$ check_handler_permissions.py
+handler permissions are seeded (2 component(s), 160 distinct code(s)).
+exit 0
+
+$ check_populate_references.py
+populate references resolve.
+exit 0
+
+$ regenerate_shell_recipe_inventory.py --check
+exit 0
+
+$ regenerate_cmake_component_files.py --component ores.nats --check
+All component_files.cmake up to date.
+exit 0
+
+$ regenerate_cmake_component_files.py --all --check
+104 source lists are stale, none of them ores.nats. The sprint 26 clean-up
+has reduced the count from the 116 the earlier run reported.
+
+$ regenerate_physical_space_inventories.py --check
+stale: projects/ores.codegen/library/templates/ores.doc.knowledge.org
+exit 1
+
+  Not this branch's. Main changed the description of the
+  ores.doc.knowledge.investigation template and did not regenerate the facet
+  inventory that lists it. The branch changes no codegen template, and the
+  one line the regenerator would write is that description.
+
+$ validate_docs.sh
+OK: all 40 components pass documentation checks.
+exit 0
+
+$ pytest projects/ores.codegen/tests -q
+578 passed.
+exit 0

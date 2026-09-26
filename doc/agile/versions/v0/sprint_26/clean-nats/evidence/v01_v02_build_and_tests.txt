@@ -1,0 +1,28 @@
+# V01: the whole tree builds, with the component's tests and every consumer.
+# V02: the codegen suite passes, and the component's test suites pass.
+# Run 2026-09-26 on the committed tree, after the rebase onto main and the
+# review round's last source edit.
+
+$ ./compass.sh build
+...
+[100%] Built target ores.shell.exe
+exit 0
+
+  The build reaches 100 percent with every consumer of the deleted read and
+  message API. The header the review round restored is on the list, and the
+  component compiles without the deleted helper.
+
+$ ./compass.sh test run -- -R "ores.nats"
+    Start 15: ores.nats.tests
+1/1 Test #15: ores.nats.tests ..................   Passed    0.84 sec
+
+100% tests passed, 0 tests failed out of 1
+
+$ build/output/linux-clang-debug-make/publish/bin/ores.nats.tests
+All tests passed (55 assertions in 28 test cases)
+
+$ ./projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q
+578 passed in 14.63s
+
+# The fleet-dependent half of V02 belongs to the components that serve. This
+# component owns no service, so nothing here starts a fleet of its own.

@@ -1,0 +1,2 @@
+projects/ores.reporting/modeling/ores.reporting.report_definition.org: has_workspace_id contradicts its profile, allowed by KNOWN_MODEL_DRIFT
+No model drift: every bound model agrees with its profile (1 known exception(s)).

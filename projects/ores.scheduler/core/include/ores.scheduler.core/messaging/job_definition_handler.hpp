@@ -17,41 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SCHEDULER_MESSAGING_JOB_DEFINITION_HANDLER_HPP
-#define ORES_SCHEDULER_MESSAGING_JOB_DEFINITION_HANDLER_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_handler.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_SCHEDULER_CORE_MESSAGING_JOB_DEFINITION_HANDLER_HPP
+#define ORES_SCHEDULER_CORE_MESSAGING_JOB_DEFINITION_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.scheduler.api/domain/cron_expression.hpp"
-#include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
+#include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
 #include "ores.scheduler.core/service/job_definition_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <boost/uuid/uuid_io.hpp>
 #include <optional>
-#include <rfl/json.hpp>
-#include <stdexcept>
-
-namespace rfl {
-template <>
-struct Reflector<ores::scheduler::domain::cron_expression> {
-    using ReflType = std::string;
-    static ores::scheduler::domain::cron_expression to(const ReflType& str) {
-        if (str.empty())
-            return {};
-        auto r = ores::scheduler::domain::cron_expression::from_string(str);
-        if (!r)
-            throw std::runtime_error("Invalid cron expression: " + r.error());
-        return *r;
-    }
-    static ReflType from(const ores::scheduler::domain::cron_expression& v) {
-        return v.to_string();
-    }
-};
-} // namespace rfl
 
 namespace ores::scheduler::messaging {
 
@@ -65,11 +48,13 @@ inline auto& job_definition_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
-using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
+/**
+ * @brief NATS message handler for job definition operations.
+ */
 class job_definition_handler {
 public:
     job_definition_handler(ores::nats::service::client& nats,
@@ -79,146 +64,398 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves scheduler.v1.job_definitions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_job_definitions(ores::nats::message msg) {
         BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        service::job_definition_service svc(ctx);
-        get_job_definitions_response resp;
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_job_definitions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(job_definition_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::job_definition_service svc(req_ctx);
         try {
-            if (auto req = decode<get_job_definitions_request>(msg)) {
-                resp.definitions = svc.list_definitions();
-                resp.total_available_count = static_cast<int>(resp.definitions.size());
-            }
-        } catch (...) {
+            auto response = svc.list_job_definitions(*req);
+            BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(job_definition_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_job_definitions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
-        reply(nats_, msg, resp);
-        BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
-    void schedule(ores::nats::message msg) {
+    /**
+     * @brief Serves scheduler.v1.job_definitions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_job_definition(ores::nats::message msg) {
         BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "scheduler::job_definitions:write")) {
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_job_definition_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(job_definition_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::job_definition_service svc(req_ctx);
+        try {
+            auto response = svc.get_job_definition(*req);
+            BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(job_definition_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_job_definition_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves scheduler.v1.job_definitions.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_job_definitions(ores::nats::message msg) {
+        BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_job_definitions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(job_definition_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::job_definition_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_job_definitions(*req);
+            BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(job_definition_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_job_definitions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves scheduler.v1.job_definitions.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_job_definition(ores::nats::message msg) {
+        BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "scheduler::job_definitions:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        if (auto req = decode<schedule_job_request>(msg)) {
-            try {
-                req->definition.performed_by = ctx.service_account();
-                service::job_definition_service svc(ctx);
-                svc.save_definition(req->definition);
-                reply(nats_, msg, schedule_job_response{.success = true});
-            } catch (const std::exception& e) {
-                reply(nats_, msg, schedule_job_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_job_definition_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(job_definition_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            reply(nats_,
-                  msg,
-                  schedule_job_response{.success = false, .message = "Failed to decode request"});
-        }
-        BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Completed " << msg.subject;
-    }
-
-    void schedule_batch(ores::nats::message msg) {
-        BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "scheduler::job_definitions:write")) {
+        service::job_definition_service svc(req_ctx);
+        try {
+            auto response = svc.put_job_definition(*req);
+            BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(job_definition_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_job_definition_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves scheduler.v1.job_definitions.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_job_definitions(ores::nats::message msg) {
+        BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "scheduler::job_definitions:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        if (auto req = decode<schedule_jobs_batch_request>(msg)) {
-            schedule_jobs_batch_response resp;
-            for (auto& def : req->definitions) {
-                try {
-                    def.performed_by = ctx.service_account();
-                    service::job_definition_service svc(ctx);
-                    svc.save_definition(def);
-                    ++resp.scheduled_count;
-                } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(job_definition_handler_lg(), error)
-                        << "Failed to schedule job " << def.job_name << ": " << e.what();
-                    resp.failed_ids.push_back(boost::uuids::to_string(def.id));
-                }
-            }
-            resp.success = resp.failed_ids.empty();
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<put_many_job_definitions_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(job_definition_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            schedule_jobs_batch_response resp;
-            resp.success = false;
-            resp.message = "Failed to decode request";
-            reply(nats_, msg, resp);
-        }
-        BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Completed " << msg.subject;
-    }
-
-    void unschedule(ores::nats::message msg) {
-        BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "scheduler::job_definitions:delete")) {
+        service::job_definition_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_job_definitions(*req);
+            BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(job_definition_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_many_job_definitions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves scheduler.v1.job_definitions.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_job_definition(ores::nats::message msg) {
+        BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "scheduler::job_definitions:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        if (auto req = decode<unschedule_job_request>(msg)) {
-            try {
-                service::job_definition_service svc(ctx);
-                svc.remove_definition(req->job_definition_id);
-                reply(nats_, msg, unschedule_job_response{.success = true});
-            } catch (const std::exception& e) {
-                reply(nats_, msg, unschedule_job_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_job_definition_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(job_definition_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            reply(nats_,
-                  msg,
-                  unschedule_job_response{.success = false, .message = "Failed to decode request"});
-        }
-        BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Completed " << msg.subject;
-    }
-
-    void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (auto req = decode<get_job_history_request>(msg)) {
-            try {
-                service::job_definition_service svc(ctx);
-                // Returns definition version history; instance
-                // execution history is not yet implemented.
-                svc.get_definition_history(req->job_definition_id);
-                reply(nats_, msg, get_job_history_response{.success = true});
-            } catch (const std::exception& e) {
-                reply(nats_, msg, get_job_history_response{.success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(job_definition_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+        service::job_definition_service svc(req_ctx);
+        try {
+            auto response = svc.delete_job_definition(*req);
+            BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(job_definition_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_job_definition_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
-        BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Completed " << msg.subject;
+    }
+
+    /**
+     * @brief Serves scheduler.v1.job_definitions.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_job_definitions(ores::nats::message msg) {
+        BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "scheduler::job_definitions:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_job_definitions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(job_definition_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::job_definition_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_job_definitions(*req);
+            BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(job_definition_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_many_job_definitions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves scheduler.v1.job_definitions_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_job_definition_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_job_definition_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(job_definition_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::job_definition_service svc(req_ctx);
+        try {
+            auto response = svc.list_job_definition_versions(*req);
+            BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(job_definition_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_job_definition_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves scheduler.v1.job_definitions_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_job_definition_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_job_definition_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(job_definition_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::job_definition_service svc(req_ctx);
+        try {
+            auto response = svc.get_job_definition_version(*req);
+            BOOST_LOG_SEV(job_definition_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(job_definition_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_job_definition_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
 private:

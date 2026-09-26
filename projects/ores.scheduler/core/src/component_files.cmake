@@ -16,9 +16,14 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
-    "builder/job_definition_builder.cpp"
+    "messaging/job_definition_history_provider_registrar.cpp"
+    "messaging/job_definition_registrar.cpp"
     "messaging/registrar.cpp"
+    "presentation/job_definition_history_field_mapper.cpp"
     "repository/job_definition_entity.cpp"
     "repository/job_definition_mapper.cpp"
     "repository/job_definition_repository.cpp"
@@ -32,15 +37,17 @@ set(files
     "service/sql_action_handler.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/builder/job_definition_builder.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/messaging/job_definition_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/messaging/job_definition_history_provider_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/messaging/job_definition_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/messaging/job_instance_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/messaging/registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/messaging/scheduler_status_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/ores.scheduler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/presentation/job_definition_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/repository/job_definition_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/repository/job_definition_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/repository/job_definition_repository.hpp"

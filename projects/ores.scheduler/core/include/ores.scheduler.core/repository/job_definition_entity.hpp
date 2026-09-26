@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_ENTITY_HPP
-#define ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_ENTITY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_ENTITY_HPP
+#define ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -40,14 +45,16 @@ struct job_definition_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::optional<std::string> tenant_id;
     int version = 0;
-    std::optional<std::string> party_id;
+
     std::string job_name;
-    std::optional<std::string> description;
+
+    std::optional<std::string> party_id;
+    std::string description;
     std::string command;
     std::string schedule_expression;
     std::string action_type = "execute_sql";
     std::string action_payload = "{}";
-    bool is_active = true;
+    bool is_active = "true";
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

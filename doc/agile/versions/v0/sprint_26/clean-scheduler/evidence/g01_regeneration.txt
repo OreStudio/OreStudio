@@ -1,0 +1,73 @@
+ores.scheduler regeneration record
+==================================
+
+Command: check_component_drift.py --component scheduler-cpp
+Run after: the model resync, and after each of the three generator fixes.
+Mode: in place (the authoritative check). The first run was a dry run, kept
+as b01_component_drift_dry_run.txt, and is the baseline this run is measured
+against.
+
+What the baseline said, before any edit:
+
+    19 file(s) would change, 12 file(s) would be created (31 file(s) in total).
+
+What the regeneration created, none of which existed before:
+
+    projects/ores.scheduler/api/include/ores.scheduler.api/eventing/job_definition_event.hpp
+    projects/ores.scheduler/api/include/ores.scheduler.api/messaging/job_definition_protocol.hpp
+    projects/ores.scheduler/api/include/ores.scheduler.api/messaging/scheduling_operations_protocol.hpp
+    projects/ores.scheduler/core/include/ores.scheduler.core/messaging/job_definition_history_provider_registrar.hpp
+    projects/ores.scheduler/core/include/ores.scheduler.core/messaging/job_definition_registrar.hpp
+    projects/ores.scheduler/core/include/ores.scheduler.core/presentation/job_definition_history_field_mapper.hpp
+    projects/ores.scheduler/core/src/messaging/job_definition_history_provider_registrar.cpp
+    projects/ores.scheduler/core/src/messaging/job_definition_registrar.cpp
+    projects/ores.scheduler/core/src/presentation/job_definition_history_field_mapper.cpp
+    projects/ores.scheduler/core/tests/job_definition_eventing_integration_tests.cpp
+    projects/ores.scheduler/service/include/ores.scheduler.service/messaging/job_definition_event_registrar.hpp
+    projects/ores.scheduler/service/src/messaging/job_definition_event_registrar.cpp
+
+And what it rewrote, replacing the hand-written equivalents:
+
+    projects/ores.scheduler/CMakeLists.txt
+    projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition.hpp
+    projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition_json_io.hpp
+    projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition_table.hpp
+    projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition_table_io.hpp
+    projects/ores.scheduler/api/include/ores.scheduler.api/generators/job_definition_generator.hpp
+    projects/ores.scheduler/api/src/domain/job_definition_json_io.cpp
+    projects/ores.scheduler/api/src/domain/job_definition_table.cpp
+    projects/ores.scheduler/api/src/domain/job_definition_table_io.cpp
+    projects/ores.scheduler/api/src/generators/job_definition_generator.cpp
+    projects/ores.scheduler/core/include/ores.scheduler.core/messaging/job_definition_handler.hpp
+    projects/ores.scheduler/core/include/ores.scheduler.core/repository/job_definition_entity.hpp
+    projects/ores.scheduler/core/include/ores.scheduler.core/repository/job_definition_mapper.hpp
+    projects/ores.scheduler/core/include/ores.scheduler.core/repository/job_definition_repository.hpp
+    projects/ores.scheduler/core/include/ores.scheduler.core/service/job_definition_service.hpp
+    projects/ores.scheduler/core/src/repository/job_definition_entity.cpp
+    projects/ores.scheduler/core/src/repository/job_definition_mapper.cpp
+    projects/ores.scheduler/core/src/repository/job_definition_repository.cpp
+    projects/ores.scheduler/core/src/service/job_definition_service.cpp
+    projects/ores.sql/create/scheduler/scheduler_job_definitions_create.sql
+    projects/ores.sql/create/scheduler/scheduler_job_definitions_notify_trigger_create.sql
+
+Idempotence is the property that matters, and it holds: after the first
+in-place run, a second run changed no artefact. The check keeps exiting
+non-zero while the artefacts are uncommitted, because its in-place mode
+compares the working tree with git and the new files are untracked until the
+commit lands; the only difference it then reports is that untracked list.
+
+The generated shell units and recipe are absent by design: the model disables
+the =ores.cpp.shell-command= facet in its =* Physical space= table, with the
+reason stated there.
+
+Generator fixes this run depends on, each with a regression test:
+
+    nullable_tenant_id emits an optional C++ tenant
+        projects/ores.codegen/tests/test_nullable_tenant_optional.py
+    a nullable-tenant natural key is tenant-scoped
+        projects/ores.codegen/tests/test_nullable_tenant_natural_key_index.py
+    a value type reaches the entity struct as the string it wraps
+        projects/ores.codegen/tests/test_value_type_column.py
+
+Template variables added: =nullable_tenant_id= and =is_value_type=, both in
+projects/ores.codegen/library/templates/template_variables.org.

@@ -120,6 +120,7 @@ Variables available inside ={{#columns}}=…={{/columns}}= and
 | =is_key=        | True if the column participates in natural key lookup.    | =true=                     |
 | =is_sentinel=   | True if the value is a sentinel/default placeholder.      | =true=                     |
 | =is_simple=     | True if the type needs no special handling.               | =true=                     |
+| =is_value_type= | The column's =:cpp_type:= is a value type opt-in: the entity member is the =std::string= the type wraps and the mapper converts through the type's =to_string()= and =from_string()=. Set by the model's =:is_value_type: true=. | =true= |
 | =column_index=  | Zero-based position of the column in the result set.      | =3=                        |
 | =column_style=  | CSS/Qt display style hint for this column.                | =numeric=                  |
 | =natural_keys=  | List of natural-key columns (loop section).               | (list)                     |
@@ -135,6 +136,7 @@ Top-level boolean sections that enable/disable template blocks.
 | =domain_entity=   | True for regular (temporal) domain entities.              |
 | =junction=        | True for junction-table entities.                         |
 | =has_tenant_id=   | Entity has a tenant_id column for multi-tenancy.          |
+| =nullable_tenant_id= | Entity's tenant is nullable; SQL NULL means no tenant. |
 | =has_workspace_id=| Entity has a workspace_id column.                         |
 | =has_batch_read=  | Repository exposes a batch read method.                   |
 | =has_batch_remove=| Repository exposes a batch remove method.                 |

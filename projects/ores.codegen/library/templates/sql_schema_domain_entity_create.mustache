@@ -130,9 +130,16 @@ on "{{domain_entity.sql_name_base}}_tbl" (tenant_id{{#prefix_columns}}, {{prefix
 {{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.has_tenant_in_pk}}
 {{^domain_entity.has_tenant_in_pk}}
+{{#domain_entity.sql.nullable_tenant_id}}
+create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
+on "{{domain_entity.sql_name_base}}_tbl" (tenant_id, {{column}})
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
+{{/domain_entity.sql.nullable_tenant_id}}
+{{^domain_entity.sql.nullable_tenant_id}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
 on "{{domain_entity.sql_name_base}}_tbl" ({{column}})
 {{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
+{{/domain_entity.sql.nullable_tenant_id}}
 {{/domain_entity.has_tenant_in_pk}}
 {{/domain_entity.natural_keys}}
 {{/domain_entity.has_multiple_natural_keys}}

@@ -23,12 +23,21 @@
 manages job definitions (cron expressions, target actions) and job instances
 (execution history, status), runs a persistent scheduler loop that fires due
 jobs, and exposes NATS handlers for querying and managing jobs at runtime. It
-supports SQL, NATS-publish, and message-queue action types, making it the
-general-purpose periodic-operation backbone for the platform.
+supports SQL and NATS-publish action types, making it the general-purpose
+periodic-operation backbone for the platform.
+
+The job-definition entity stack -- repository, mapper, entity, service,
+handler, sub-registrar, history provider and the presentation field mapper --
+is generated from the entity model. The hand-written code here is the
+infrastructure generation does not reach: the scheduler loop, the cron
+evaluator, the action handlers, the messaging registrar that composes the
+generated sub-registrar with the two hand-written view handlers, and the
+job-instance repository.
 
 * Inputs
 
-- NATS request messages for job-definition CRUD and instance queries.
+- NATS request messages for job-definition CRUD, the version reads, the two
+  operational views, and the executions the loop serves.
 - PostgreSQL connections to =ores_scheduler_*= tables for job persistence.
 - System clock for evaluating cron expressions.
 
@@ -36,28 +45,40 @@ general-purpose periodic-operation backbone for the platform.
 
 - Job-definition and job-instance records persisted to the =ores_scheduler=
   schema.
-- Triggered actions: SQL statements executed, NATS messages published, or MQ
-  actions dispatched per job schedule.
-- NATS response messages returned to callers.
+- Triggered actions: SQL statements executed, or NATS messages published, per
+  job schedule.
+- NATS response messages returned to callers, and a change event per job
+  definition write.
 
 * Entry points
 
-- =include/ores.scheduler.core/ores.scheduler.hpp= — aggregate include.
-- =include/ores.scheduler.core/messaging/registrar.hpp= — registers all NATS
-  handlers.
+- =include/ores.scheduler.core/ores.scheduler.hpp= — namespace documentation.
+- =include/ores.scheduler.core/messaging/registrar.hpp= — composes every NATS
+  handler the component serves: the generated job-definition registrar, the
+  two view handlers, and the generic history handler.
+- =include/ores.scheduler.core/messaging/job_definition_registrar.hpp= — the
+  generated job-definition handlers.
+- =include/ores.scheduler.core/messaging/job_instance_handler.hpp= — the global
+  job-instance list.
+- =include/ores.scheduler.core/messaging/scheduler_status_handler.hpp= — the
+  live scheduler status.
 - =include/ores.scheduler.core/service/scheduler_loop.hpp= — the main
   scheduling loop driven by the service host.
-- =include/ores.scheduler.core/builder/job_definition_builder.hpp= — fluent
-  builder for creating job definitions programmatically.
 
 * Dependencies
 
-- =ores.scheduler.api= — shared domain types and NATS protocol schemas.
-- =ores.dq= — ORM base classes and persistence infrastructure.
-- =ores.iam.core= — identity and authorisation context.
-- =rfl= — JSON serialisation via reflection.
-- =soci= — SQL ORM for PostgreSQL persistence.
-- =nats.c= — NATS messaging client.
+- =ores.scheduler.api= — domain types, the generated protocol, and the
+  generated entity artefacts.
+- =ores.database= — connections, the request context, and the bitemporal
+  repository operations.
+- =ores.nats= — NATS client, subscriptions and wire codec.
+- =ores.service= — request context, handler helpers and permission checks.
+- =ores.history.core= — the generic history provider registry.
+- =ores.eventing.api= — the change event published when a job fires.
+- =ores.utility=, =ores.security=, =ores.logging=, =ores.platform= — shared
+  types, token validation, logging and time formatting.
+- =croncpp= — cron expression parsing and next-occurrence computation.
+- =libfort= — the table rendering of the domain types.
 
 * See also
 

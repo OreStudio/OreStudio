@@ -54,3 +54,54 @@ def test_discovery_includes_parts_and_simple_components():
 
 def test_unknown_name_has_no_directory():
     assert generator._project_dir("ores.does_not_exist.core") is None
+
+
+def _auto_section():
+    """A bare generated section, sentinel included, as the generator emits it."""
+    return generator.generate_puml("ores.example", {})
+
+
+def test_merge_preserves_the_manual_tail(tmp_path):
+    target = tmp_path / "ores.example.puml"
+    target.write_text(
+        _auto_section() + "\nnote right of \"a::b::c\"\n  hand written\nend note\n",
+        encoding="utf-8")
+
+    merged = generator.merge_with_existing(_auto_section(), target)
+
+    assert merged is not None
+    assert "hand written" in merged
+    assert merged.count(generator.SENTINEL) == 1
+
+
+def test_merge_refuses_a_file_without_a_sentinel(tmp_path):
+    """An unmanaged diagram must not be replaced by a bare skeleton.
+
+    Eighteen .puml files under projects/ ship no sentinel, among them the
+    hand-authored meta-model and architecture diagrams. Replacing one
+    discards its body, and no gate notices because the file still parses
+    and still renders.
+    """
+    target = tmp_path / "ores.example.puml"
+    hand_written = "@startuml\nclass only_mine\n@enduml\n"
+    target.write_text(hand_written, encoding="utf-8")
+
+    assert generator.merge_with_existing(_auto_section(), target) is None
+
+
+def test_a_hand_authored_diagram_in_the_tree_is_refused():
+    """Pin the real case, not just the synthetic one.
+
+    ores.history.core.puml is hand-authored, carries no sentinel, and is
+    discovered by find_all_projects because the part has an include/
+    directory. Running the generator over every project used to replace
+    its body with a bare type skeleton, dropping two relationship lines
+    and a note.
+    """
+    out_path = REPO_ROOT / "projects/ores.history/core/modeling/ores.history.core.puml"
+    assert out_path.exists()
+    assert generator.SENTINEL not in out_path.read_text(encoding="utf-8")
+
+    before = out_path.read_text(encoding="utf-8")
+    assert generator.process_project("ores.history.core", dry_run=False) is False
+    assert out_path.read_text(encoding="utf-8") == before

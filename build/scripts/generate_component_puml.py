@@ -509,15 +509,19 @@ def generate_puml(project_name: str, all_types: dict[tuple[str, ...], list[TypeI
 # File handling (sentinel-aware merge)
 # ---------------------------------------------------------------------------
 
-def merge_with_existing(new_auto: str, existing_path: Path) -> str:
+def merge_with_existing(new_auto: str, existing_path: Path) -> Optional[str]:
     """
     Replace the auto-generated section (before sentinel) in the existing file
     while preserving everything after the sentinel.
+
+    Return ``None`` when the existing file carries no sentinel. Such a file is
+    hand-authored, or predates the sentinel, and the generator has no safe way
+    to tell its manual body from a section it may overwrite. Replacing it would
+    destroy the body, so the caller refuses instead.
     """
     existing = existing_path.read_text(encoding='utf-8')
     if SENTINEL not in existing:
-        # No sentinel: replace entire file
-        return new_auto
+        return None
 
     after = existing.split(SENTINEL, 1)[1]
     # new_auto already ends with sentinel + newline; append the preserved tail
@@ -624,7 +628,13 @@ def process_project(project_name: str, dry_run: bool) -> bool:
     out_path = modeling_dir / f"{project_name}.puml"
 
     if out_path.exists():
-        final_content = merge_with_existing(new_auto, out_path)
+        merged = merge_with_existing(new_auto, out_path)
+        if merged is None:
+            print(f"  {project_name}: SKIPPED {out_path} -- no manual sentinel, "
+                  f"so the file is not generator-managed and overwriting it "
+                  f"would destroy hand-authored content", file=sys.stderr)
+            return False
+        final_content = merged
     else:
         final_content = new_auto
 

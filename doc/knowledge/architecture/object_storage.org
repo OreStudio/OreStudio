@@ -333,6 +333,7 @@ Recorded so that the target is not mistaken for the tree:
 
 * See also
 
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] -- where object storage sits among the other stores, and which one owns which data.
 - [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]] -- the component as it stands today.
 - [[id:023DDD49-944D-45B2-88E1-080BCE4741EB][Bring ores.storage to the clean standard]] -- the pass that recorded the current state, including items S01 and S02.
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] -- the layers and facets a storage service must fit.

@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: F1BC2C10-B23B-4979-9692-8FA7C29319CB
+:END:
+#+title: Data storage
+#+description: Structure note for the storage cluster: the relational database, object storage, the durable stream, and the caches and other derived copies, with what each one owns, which interface reaches it, and the order to read them in.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:structure_note:storage:database:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+* Summary
+
+ORE Studio keeps its durable data in two stores, holds disposable copies in a
+third, and passes work in flight through a stream. The relational database is
+the system of record: it holds the entities, their versions and their
+bitemporal history, and it is the only store a caller can query by value.
+Object storage holds bulk bytes — packages, input and output archives, import
+bundles and report packages — under a bucket and an opaque key rather than
+under a schema. Caches and mirrors hold copies that either of the two can
+rebuild.
+
+The stream is JetStream, the persistence layer inside NATS. The system uses it
+for events that must survive a service restart, but it holds work in flight
+rather than the record of what happened.
+
+This page is the entry point to the cluster. It names what each store owns,
+which interface reaches it, and the order to read the pages in.
+
+* Detail
+
+** Reading order
+
+Read the store you are about to use, rather than all of them. The store
+decides the interface, the failure set and the consistency the caller gets, so
+the choice comes before the design.
+
+- A row you will query, join, version or audit — start at
+  [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]].
+- Bytes with no schema, too large or too shapeless for a row — start at
+  [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]].
+- A copy held for speed and safe to lose — start at
+  [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an entity-mirror cache live?]].
+- An event another service must receive after a restart — start at
+  [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]].
+
+** The relational database
+
+PostgreSQL is the system of record. Every entity, its audit columns, its
+version rows and its bitemporal intervals live here, and the generated SQL,
+the repositories and the handlers all read and write it.
+
+- [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] — the store
+  itself: schema layout, roles, session settings, extensions, the key SQL
+  patterns and the bitemporal design.
+- [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] — how time is
+  represented and stored, and the type chain from =db_timestamp= to
+  =std::chrono::system_clock=.
+- [[id:CE4752C0-7A3C-46B4-AC97-922C5B940BB1][Optimistic Concurrency Versioning]] — how a concurrent write is
+  detected, and the version sentinel that conflates four write cases.
+- [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — the target for
+  parent-and-child entities, where a child save must bump the parent's version.
+- [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] — tenant isolation and service-role
+  separation enforced by the database rather than by the caller.
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the component that owns the DDL, the migrations and the
+  role provisioning.
+
+** Object storage
+
+Object storage holds the bytes no table should hold: an application package, a
+workunit input or output archive, an ORE import bundle and a report package.
+An object is a bucket, an opaque key and a byte string, so the store never
+parses what it holds and never learns what a bucket means.
+
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the target state: one contract over HTTP and NATS,
+  raw use and wrapped use, and a replaceable backend.
+- [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]] — the component as it stands today, and the HTTP client
+  the callers link.
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — the largest consumer, and the bucket and key
+  scheme that compute owns.
+
+** Caches and derived copies
+
+A cache is a copy held for speed, and it is not a store of record. Its
+placement rule names the component that owns it, and its contents must be
+rebuildable from the database or from object storage.
+
+- [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an entity-mirror cache live?]] — the placement rule for the
+  cached copy of an entity.
+
+** The durable stream, and what it is not
+
+JetStream is NATS's built-in persistence layer. A stream is an append-only,
+subject-filtered log with consumer cursors, so it holds a message until its
+consumer acknowledges it — which is what work assignment and event delivery
+need. The system uses it for events that must survive a service restart.
+
+It is not a store of record. A stream is addressed by subject, not by key, and
+its retention is a policy the deployment sets rather than a schema the domain
+declares. The bus, its namespace and its message contract are described in
+[[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] and
+[[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]].
+
+** Choosing a store
+
+- A value the system must query, join, version or audit belongs in the
+  database.
+- A value the system only moves, whose size or shape no schema describes,
+  belongs in object storage.
+- A value either of the two can recompute belongs in a cache, if it belongs
+  anywhere at all.
+- A value that must reach another service travels on a stream until that
+  service acknowledges it; the stream retains it by the deployment's policy
+  rather than by the domain's.
+
+** What this hub does not cover
+
+- The bus itself: [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]], its external substrate
+  [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]], and the entity verbs
+  [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol Specification]].
+- How a component's in-memory data model is chosen:
+  [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]].
+- The schema as drawn: [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]].
+- How a stored version becomes a diff:
+  [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]].
+
+* See also
+
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component Architecture]] — where a store's client sits in the api, core and service split.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] — the layer order a stored entity passes through.
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] — the rules a storage component passes to be clean.

@@ -37,12 +37,14 @@ namespace ores::testing {
  * Boost.Log file.
  *
  * The listener must be registered in each test's main.cpp file using:
- * CATCH_REGISTER_LISTENER(ores::utility::test::logging_listener)
+ * CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
  *
- * In your tests, use logger() to access the current test's logger:
+ * The test binary sets its own module name once, before the Catch2 session
+ * runs, so that logs land under a directory named after the binary:
  *
- * TEST_CASE("my_test", "[my_suite]") {
- *     BOOST_LOG_SEV(logger(), info) << "Test message";
+ * int main(int argc, char* argv[]) {
+ *     ores::testing::logging_listener::set_test_module_name("ores.<name>.tests");
+ *     return Catch::Session().run(argc, argv);
  * }
  *
  */
@@ -58,14 +60,12 @@ public:
      *
      * If no tags are present, returns "default_suite".
      */
-    std::string extract_suite_name(const Catch::TestCaseInfo& testInfo);
+    static std::string extract_suite_name(const Catch::TestCaseInfo& testInfo);
 
     /**
-     * @brief Extracts the module name from the test binary name.
-     *
-     * Assumes the binary follows the pattern "ores.*.tests"
+     * @brief Returns the module name set by set_test_module_name().
      */
-    std::string extract_module_name();
+    static std::string extract_module_name();
 
 public:
     using Catch::EventListenerBase::EventListenerBase;

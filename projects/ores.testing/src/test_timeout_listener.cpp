@@ -27,7 +27,6 @@ namespace ores::testing {
 using namespace ores::logging;
 
 void test_timeout_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
-    // Check for environment variable override
     using ores::platform::environment::environment;
     timeout_ = std::chrono::seconds(environment::get_int_value_or_default(
         "ORES_TEST_TIMEOUT_SECONDS", static_cast<int>(timeout_.count())));
@@ -39,14 +38,12 @@ void test_timeout_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo
     BOOST_LOG_SEV(lg(), debug) << "Starting test: " << current_test_name_
                                << " (timeout: " << timeout_.count() << "s)";
 
-    // Start watchdog thread
     watchdog_thread_ = std::thread([this]() { watchdog_thread_func(); });
 }
 
 void test_timeout_listener::testCaseEnded(Catch::TestCaseStats const& /*testCaseStats*/) {
     test_running_ = false;
 
-    // Wait for watchdog thread to finish
     if (watchdog_thread_.joinable()) {
         watchdog_thread_.join();
     }
@@ -57,7 +54,6 @@ void test_timeout_listener::testCaseEnded(Catch::TestCaseStats const& /*testCase
     BOOST_LOG_SEV(lg(), debug) << "Test completed: " << current_test_name_
                                << " (duration: " << elapsed_seconds.count() << "s)";
 
-    // Warn if test took more than half the timeout
     if (elapsed > timeout_ / 2) {
         BOOST_LOG_SEV(lg(), warn) << "Slow test: " << current_test_name_ << " took "
                                   << elapsed_seconds.count() << "s (timeout: " << timeout_.count()
@@ -89,8 +85,8 @@ void test_timeout_listener::watchdog_thread_func() {
                       << "Timeout: " << timeout_.count() << " seconds\n"
                       << "========================================\n\n";
 
-            // Force exit with failure status
-            // This ensures the test fails immediately with a clear message
+            // _Exit, not exit: the watchdog must not unwind a test that is
+            // still running.
             std::_Exit(EXIT_FAILURE);
         }
     }

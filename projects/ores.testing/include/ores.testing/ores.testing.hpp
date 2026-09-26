@@ -26,19 +26,19 @@
  * Provides comprehensive testing utilities for ORE Studio components using
  * Catch2. Key features:
  *
- * - Database isolation: Each test process gets a unique database for parallel execution
- * - Catch2 listeners: Automatic logging and database lifecycle management
+ * - Tenant isolation: each test run provisions its own PostgreSQL tenant on a
+ *   shared database, so parallel suites cannot see each other's rows
+ * - Catch2 listeners: automatic logging and test-tenant lifecycle management
  * - Logging integration: Boost.Log configured per-test-case with suite-based organization
- * - Database helpers: Table truncation and context management for tests
- * - Tenant isolation: Tests use row-level security within a shared database
- * - Environment-driven: Database configuration from TEST_ORES_DB_* environment variables
+ * - Database helpers: context management, RBAC seeding and party-scoped isolation
+ * - Environment-driven: database configuration from ORES_TEST_DB_* environment variables
  *
  * Usage: Register the listeners in each test's main.cpp:
  *   CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
  *   CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
  *
- * The logging_listener initializes logging per test case, the
- * database_lifecycle_listener creates/drops test databases.
+ * The logging_listener initializes logging per test case, and the
+ * database_lifecycle_listener provisions and terminates the test tenant.
  */
 namespace ores::testing {}
 

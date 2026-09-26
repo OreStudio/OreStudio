@@ -21,12 +21,12 @@ ores.storage meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
+| Now           | Nothing. The component is clean on =feature/clean-storage=; no PR raised. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-26                               |
 
 * Acceptance
 
@@ -39,13 +39,36 @@ ores.storage meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:023DDD49-944D-45B2-88E1-080BCE4741EB][Bring ores.storage to the clean standard]] | STARTED | 2026-09-26 | | Work ores.storage through the Component Clean Standard in order and record each item. |
+| [[id:023DDD49-944D-45B2-88E1-080BCE4741EB][Bring ores.storage to the clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Work ores.storage through the Component Clean Standard in order and record each item. |
 
 * Notes
 
 - Survey on 2026-09-23: 0 entity, junction or operation models; 9 C++ files outside tests, 0 of them generated (0%); 0 messaging headers, 0 of them hand-written.
 
 * Decisions
+
+- The archiver stays in =ores.storage= for this pass. It carries the
+  component's only platform conditional and it duplicates
+  =ores.compute.wrapper='s own copy, so the audit's platform-placement rule
+  and the duplicate rule point at the same fix: one archiver, in
+  =ores.platform::filesystem=, where the platform concern belongs. It is not
+  done here because that would add libarchive to a foundation component and
+  rewrite the tree of an already-closed clean pass. The capture
+  [[id:43217FF8-2359-4C99-8E1D-6344E50C47EE][Consolidate the duplicated tarball archivers into one shared utility]]
+  owns the move.
+- =net::http_client= and =filesystem::archiver= stay public even though
+  nothing outside the component includes them. Their intended consumer is
+  =storage_transfer=, which composes both, and the cross-component captures
+  want them as the survivor of the consolidation rather than as a private
+  detail to be hidden first.
+- V06 is an accepted exception rather than a pass. =COMPONENTS_UNDER_TEST=
+  lists catalogue components, and a component with no entity model has no
+  catalogue row, so the drift gate cannot name =ores.storage= at all. The
+  standard records the same gap for the whole infrastructure tier.
+- The temporary-file migration from
+  [[id:CA6A6FA0-0DA7-4FF6-8F66-F51FAF620A94][Migrate the remaining temp path call sites to the shared scoped temp types]]
+  lands here rather than in a pass of its own, because that capture assigns
+  each call site to the clean-up story of the component that holds it.
 
 * Out of scope
 

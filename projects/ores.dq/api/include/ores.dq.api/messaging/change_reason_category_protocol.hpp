@@ -17,67 +17,253 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_MESSAGING_CHANGE_REASON_CATEGORY_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_CHANGE_REASON_CATEGORY_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/change_reason_category.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::dq::messaging {
 
-struct get_change_reason_categories_request {
-    using response_type = struct get_change_reason_categories_response;
+struct change_reason_category_key {
+    std::string code;
+};
+
+struct change_reason_category_write {
+    std::string code;
+    std::string description;
+};
+
+struct change_reason_category_change {
+    change_reason_category_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct change_reason_category_removal {
+    change_reason_category_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct change_reason_category_lookup {
+    change_reason_category_key key;
+    std::optional<ores::dq::domain::change_reason_category> change_reason_category;
+};
+
+struct change_reason_category_event {
+    boost::uuids::uuid event_id;
+    change_reason_category_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct change_reason_category_version_key {
+    change_reason_category_key change_reason_category;
+    std::uint32_t version;
+};
+
+struct change_reason_category_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_change_reason_categories_request {
+    using response_type = struct list_change_reason_categories_response;
     static constexpr std::string_view nats_subject = "dq.v1.change_reason_categories.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
 };
 
-struct get_change_reason_categories_response {
+struct list_change_reason_categories_response {
+    ores::utility::domain::result result;
     std::vector<ores::dq::domain::change_reason_category> categories;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_change_reason_category_request {
-    using response_type = struct save_change_reason_category_response;
-    static constexpr std::string_view nats_subject = "dq.v1.change_reason_categories.save";
-    ores::dq::domain::change_reason_category data;
-
-    static save_change_reason_category_request from(ores::dq::domain::change_reason_category v) {
-        return {.data = std::move(v)};
-    }
+struct get_change_reason_category_request {
+    using response_type = struct get_change_reason_category_response;
+    static constexpr std::string_view nats_subject = "dq.v1.change_reason_categories.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    change_reason_category_key key;
 };
 
-struct save_change_reason_category_response {
-    bool success = false;
-    std::string message;
+struct get_change_reason_category_response {
+    ores::utility::domain::result result;
+    std::optional<ores::dq::domain::change_reason_category> change_reason_category;
+};
+
+struct get_many_change_reason_categories_request {
+    using response_type = struct get_many_change_reason_categories_response;
+    static constexpr std::string_view nats_subject = "dq.v1.change_reason_categories.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<change_reason_category_key> keys;
+};
+
+struct get_many_change_reason_categories_response {
+    ores::utility::domain::result result;
+    std::vector<change_reason_category_lookup> entries;
+};
+
+struct put_change_reason_category_request {
+    using response_type = struct put_change_reason_category_response;
+    static constexpr std::string_view nats_subject = "dq.v1.change_reason_categories.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    change_reason_category_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_change_reason_category_response {
+    ores::utility::domain::result result;
+    ores::dq::domain::change_reason_category change_reason_category;
+};
+
+struct put_many_change_reason_categories_request {
+    using response_type = struct put_many_change_reason_categories_response;
+    static constexpr std::string_view nats_subject = "dq.v1.change_reason_categories.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<change_reason_category_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_change_reason_categories_response {
+    ores::utility::domain::result result;
+    std::vector<ores::dq::domain::change_reason_category> categories;
 };
 
 struct delete_change_reason_category_request {
     using response_type = struct delete_change_reason_category_response;
     static constexpr std::string_view nats_subject = "dq.v1.change_reason_categories.delete";
-    std::vector<std::string> codes;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    change_reason_category_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_change_reason_category_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_change_reason_category_history_request {
-    using response_type = struct get_change_reason_category_history_response;
-    static constexpr std::string_view nats_subject = "dq.v1.change_reason_categories.history";
-    std::string code;
+struct delete_many_change_reason_categories_request {
+    using response_type = struct delete_many_change_reason_categories_response;
+    static constexpr std::string_view nats_subject = "dq.v1.change_reason_categories.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<change_reason_category_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_change_reason_category_history_response {
-    std::vector<ores::dq::domain::change_reason_category> history;
-    bool success = false;
-    std::string message;
+struct delete_many_change_reason_categories_response {
+    ores::utility::domain::result result;
 };
+
+struct list_change_reason_category_versions_request {
+    using response_type = struct list_change_reason_category_versions_response;
+    static constexpr std::string_view nats_subject = "dq.v1.change_reason_categories_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    change_reason_category_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<change_reason_category_versions_filter> filter;
+};
+
+struct list_change_reason_category_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::dq::domain::change_reason_category> versions;
+    std::uint64_t total;
+};
+
+struct get_change_reason_category_version_request {
+    using response_type = struct get_change_reason_category_version_response;
+    static constexpr std::string_view nats_subject = "dq.v1.change_reason_categories_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    change_reason_category_version_key key;
+};
+
+struct get_change_reason_category_version_response {
+    ores::utility::domain::result result;
+    ores::dq::domain::change_reason_category version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace change_reason_category_event_subjects {
+inline constexpr std::string_view created = "dq.v1.change_reason_categories_events.created";
+inline constexpr std::string_view updated = "dq.v1.change_reason_categories_events.updated";
+inline constexpr std::string_view deleted = "dq.v1.change_reason_categories_events.deleted";
+}
 
 }
 

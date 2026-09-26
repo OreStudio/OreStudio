@@ -42,7 +42,9 @@
 #include "ores.dq.core/messaging/badge_severity_registrar.hpp"
 #include "ores.dq.core/messaging/catalog_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/catalog_registrar.hpp"
+#include "ores.dq.core/messaging/change_reason_category_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/change_reason_category_registrar.hpp"
+#include "ores.dq.core/messaging/change_reason_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/change_reason_registrar.hpp"
 #include "ores.dq.core/messaging/code_domain_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/code_domain_registrar.hpp"
@@ -68,13 +70,10 @@
 #include "ores.dq.core/messaging/report_definition_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/report_definition_registrar.hpp"
 #include "ores.dq.core/messaging/report_definition_template_handler.hpp"
+#include "ores.dq.core/messaging/subject_area_registrar.hpp"
 #include "ores.dq.core/messaging/synthetic_fx_spot_config_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/synthetic_fx_spot_config_registrar.hpp"
-#include "ores.dq.core/presentation/change_reason_category_history_field_mapper.hpp"
-#include "ores.dq.core/presentation/change_reason_history_field_mapper.hpp"
 #include "ores.dq.core/presentation/subject_area_history_field_mapper.hpp"
-#include "ores.dq.core/service/change_reason_category_service.hpp"
-#include "ores.dq.core/service/change_reason_service.hpp"
 #include "ores.dq.core/service/subject_area_service.hpp"
 #include "ores.history.api/service/version_builder.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
@@ -170,7 +169,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
 
     // =========================================================================
-    // Data Organization (methodologies, subject-areas)
+    // Data Organization (methodologies)
     // =========================================================================
 
     auto do_ = std::make_shared<data_organization_handler>(nats, ctx, verifier);
@@ -195,25 +194,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
             do_->methodology_history(std::move(msg));
         }));
 
-    subs.push_back(nats.queue_subscribe(
-        get_subject_areas_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->list_subject_areas(std::move(msg));
-        }));
+    // =========================================================================
+    // Subject areas are on the standard generated stack (see
+    // subject_area_handler/_registrar). Their history provider stays
+    // hand-written, because the entity's history identity is composite.
+    // =========================================================================
 
-    subs.push_back(nats.queue_subscribe(
-        save_subject_area_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->save_subject_area(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_subject_area_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->delete_subject_areas(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_subject_area_history_request::nats_subject,
-        queue_group,
-        [do_](ores::nats::message msg) { do_->subject_area_history(std::move(msg)); }));
+    {
+        auto subject_area_subs = register_subject_area_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(subject_area_subs.begin()),
+                    std::make_move_iterator(subject_area_subs.end()));
+    }
 
     // =========================================================================
     // Dimensions (nature, origin, treatment)
@@ -492,6 +484,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_badge_definition_history_provider(hist_registry);
         register_badge_severity_history_provider(hist_registry);
         register_catalog_history_provider(hist_registry);
+        register_change_reason_category_history_provider(hist_registry);
+        register_change_reason_history_provider(hist_registry);
         register_code_domain_history_provider(hist_registry);
         register_data_domain_history_provider(hist_registry);
         register_dataset_bundle_history_provider(hist_registry);
@@ -500,31 +494,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_report_definition_history_provider(hist_registry);
         register_synthetic_fx_spot_config_history_provider(hist_registry);
 
-        // change_reason, change_reason_category and subject_area keep their
-        // hand-written providers until those three entities move too.
-        hist_registry.register_history_provider(
-            "ores.dq.change_reason",
-            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-                service::change_reason_service svc(scoped_ctx);
-                auto versions = svc.get_reason_history(entity_id);
-                return ores::history::service::build_entity_history_versions(
-                    versions, presentation::render_change_reason_fields);
-            });
-
-        hist_registry.register_history_provider(
-            "ores.dq.change_reason_category",
-            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-                service::change_reason_category_service svc(scoped_ctx);
-                auto versions = svc.get_category_history(entity_id);
-                return ores::history::service::build_entity_history_versions(
-                    versions, presentation::render_change_reason_category_fields);
-            });
-
-        // subject_area has a compound (name, domain_name) natural key and no
-        // surrogate -- entity_id arrives as "name|domain_name" from the Qt
-        // client (SubjectAreaController::showHistoryWindow), split back
-        // apart here rather than adding surrogate-key support this has
-        // never needed otherwise.
+        // subject_area keeps a hand-written provider. Its history identity is
+        // the composite (name, domain_name) that the Qt client sends as
+        // "name|domain_name" (SubjectAreaController::showHistoryWindow), and
+        // the generated registrar declines to register one for a compound key.
+        // So the bridge stays here rather than moving with the rest.
         hist_registry.register_history_provider(
             "ores.dq.subject_area",
             [](const ores::database::context& scoped_ctx, const std::string& entity_id) {

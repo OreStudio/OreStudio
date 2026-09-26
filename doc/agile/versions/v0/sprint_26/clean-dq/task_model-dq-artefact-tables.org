@@ -32,9 +32,9 @@ The design question is already answered: an artefact table *can* generate from t
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
-| Now          | Steps 1 to 7, 11 and 12 done. Step 9 has twelve of fifteen entities canonical, and the last three are a deletion problem, not a modelling problem. |
-| Waiting on   | The shell wiring for =change_reason= and =change_reason_category=, and a decision on =subject_area='s composite history identity. |
-| Next         | Wire =ores.shell.dq= so the generated shell units compile, and migrate the change-reason pair with it; then decide =subject_area=; then add dq to =COMPONENTS_UNDER_TEST=. |
+| Now          | All fifteen entities are canonical and =ores.shell.dq= is wired, so no hand-written duplicate of a generated dq unit is left. Step 9 waits only on the drift claim. |
+| Waiting on   | Nothing.                              |
+| Next         | Confirm =check_component_drift.py --component dq= reports no drift, then add dq to =COMPONENTS_UNDER_TEST= so the property is enforced. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -72,7 +72,7 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
 | 7. Publication template | DONE | The template generated a retired design; deleted with 21 dead files; see Step 7 results |
 | 8. Remaining models | TODO | The FPML family is blocked; the rest is unblocked |
-| 9. Regenerate C++ | IN PROGRESS | Four facets byte-identical; 12 of 15 entities canonical; the last 3 need deletion and shell wiring, not models; see Step 9 parts one to five |
+| 9. Regenerate C++ | IN PROGRESS | Four facets byte-identical; all 15 entities canonical and =ores.shell.dq= wired; the drift claim is pending; see Step 9 parts one to six |
 | 10. Eventing headers | TODO | |
 | 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
 | 12. Divergent tables: declare the projection | DONE | All 11 landed; divergent is 0; see Step 12 results |
@@ -105,6 +105,26 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 - The umbrella headers and the bespoke handlers they carry (=badge_handler=, =badge_service=, =data_organization_handler=, =dimension_handler=) are consumed only by =registrar.cpp=, so they can go. But each carries registrations for entities that are not modelled yet — methodologies, dimensions, datasets, coding schemes, publications — and those have to move before the umbrella can be deleted.
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
+
+* Step 9 part six: the dq shell adapter, and the end of the protocol migration
+
+Run on 2026-09-26, on a branch off the merged =main=. =change_reason=, =change_reason_category= and =subject_area= are migrated, so all fifteen entities are canonical, and the generated dq shell units compile because =ores.shell.dq= is now a component the build adds.
+
+**The three entities and the shell had to move together.** The generated shell unit includes the entity's protocol header, so a unit cannot compile until that entity's protocol is canonical; and =component_files.cmake= lists every file in the part's directory, so a part cannot compile thirteen units and skip a fourteenth. That is why the last protocol migration and the shell wiring are one change rather than two.
+
+**Wiring the part.** =ores.shell.dq= is an adapter in the =ores.shell.refdata= shape: hand-authored =CMakeLists.txt= files, because an adapter's link libraries belong to the shell surface and not to the domain; two generated =component_files.cmake= lists; a =component_overview.org= and a diagram; and one hand-written aggregator, =dq_commands=, that lists the units for the REPL to call. The thirteen submenus replace the two hand-written change-reason commands, and those four files — the two headers and their two implementations — are deleted.
+
+**The composite root is declared, not discovered.** Adding the directory to =projects/ores.shell= was not enough, because the generated root adds one =add_subdirectory= per part in =#+parts:=, and CMake never learns an undeclared directory exists: configure succeeds and the part is silently absent from the binary. =#+parts:= gained =dq= and the root was regenerated. The generator refuses to render a part its composite does not build, so the mistake surfaces where it is made rather than in a binary that quietly lacks a feature.
+
+**=subject_area= keeps a hand-written history bridge, and that is the decision the task was waiting on.** Its history identity is the composite =(name, domain_name)=, which the Qt client sends as =name|domain_name=. The generated history-provider registrar declines to register a provider for a compound key — it says so in the generated source — so the hand-written provider that splits the string stays, with the reason recorded beside it. The alternative was to change the wire identity a shipped client uses, which is not a codegen decision. Everything else about the entity is generated.
+
+**Three deletions the migration required, measured.** =data_organization_protocol.hpp= lost its whole subject-area section: 55 lines, and the =subject_area.hpp= include with it. =data_organization_handler.hpp= lost 131 lines — the four subject-area handlers. The bespoke =data_organization_service= lost 62 lines of declaration and 79 of definition, keeping only what =dataset_dependency_handler= reads. The umbrella could not be deleted outright because methodologies and the three dimensions are still hand-written; it shrank to what it still owns.
+
+**A generator defect, found because the shell facet finally compiled.** =ores.shell.dq= has a unit for =badge_mapping= that includes =badge_mapping_protocol.hpp=, and nothing generates that header. =badge_mapping= is the only model in the tree that sets =:ores.cpp.protocol.enabled: false= — it suppresses the protocol, handler and service because a hand-written read-only handler serves the badge lookup — and the shell facet ignored the opt-out and emitted a unit that could not compile. It is the same dependency the operation-owner gate already encodes, missing for the model's own opt-out, so the fix is one constant: =_PROTOCOL_DEPENDENT_FACETS= names the facets that carry the protocol's request types — the shell unit, the eventing facets, and the literate recipe that documents the shell unit's commands — and they are dropped when the protocol is not rendered. Two tests pin it: the live =badge_mapping= junction resolves none of them and keeps its SQL, and a junction that keeps its protocol keeps its shell unit, so the gate cannot pass by dropping the shell facet everywhere.
+
+**What follows the unit it documented.** The =badge_mappings= shell recipe and its eight tangled library scripts are views of a unit that no longer exists, so they are deleted with it and the recipe inventory drops the category. The recipe is in the gate rather than left to a model opt-out because a recipe is where its command unit is: the dependency is resolved, not restated per model.
+
+**Evidence.** Codegen suite 706 passing; =check_component_drift.py --all= green; model drift, protocol twin coverage, handler permissions, populate references, registry exceptions, cmake file lists, physical-space inventories and the recipe inventory all pass; =ores.dq.core.tests=, =ores.dq.api.tests=, =ores.dq.service.tests=, =ores.shell.dq.tests= and =ores.shell.application.lib= build and link; =compass lint= and =validate_docs.sh= clean.
 
 * Step 9 part five: the badge family, and the history providers nobody called
 

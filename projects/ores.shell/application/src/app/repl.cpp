@@ -24,8 +24,7 @@
 #include "ores.shell/app/commands/accounts_commands.hpp"
 #include "ores.shell/app/commands/analytics/analytics_commands.hpp"
 #include "ores.shell/app/commands/bundles_commands.hpp"
-#include "ores.shell/app/commands/change_reason_categories_commands.hpp"
-#include "ores.shell/app/commands/change_reasons_commands.hpp"
+#include "ores.shell/app/commands/dq/dq_commands.hpp"
 #include "ores.shell/app/commands/assets/assets_commands.hpp"
 #include "ores.shell/app/commands/storage/storage_commands.hpp"
 #include "ores.shell/app/commands/compute_commands.hpp"
@@ -98,8 +97,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     auto root = std::make_unique<cli::Menu>("ores-shell");
 
     using namespace commands;
-    change_reason_categories_commands::register_commands(*root, session_);
-    change_reasons_commands::register_commands(*root, session_, pagination_);
+    dq_commands::register_commands(*root, session_);
     connection_commands::register_commands(*root, session_, connection_template_);
     trading_commands::register_commands(*root, session_, pagination_);
     iam_commands::register_commands(*root, session_, pagination_);

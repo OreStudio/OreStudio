@@ -150,6 +150,24 @@ _PROTOCOL_FACETS = frozenset({
     "ores.cpp.shell-command",
 })
 
+# The facets that name the derived protocol's request types, and so cannot
+# render for a model that opts out of :ores.cpp.protocol:. The shell's entity
+# unit includes the entity's protocol header, an event carries that protocol's
+# key record, and the eventing integration test drives the same types. The
+# literate recipe is in the set for the same reason one step removed: it
+# documents the commands that unit registers, so it exists exactly where the
+# unit does. Without the protocol the includes do not exist, so the facets go
+# together rather than each leaving output that cannot build or cannot be
+# built. ``_PROTOCOL_FACETS`` above is the other half of the same dependency:
+# there an operation model owns the protocol, here nothing renders it at all.
+_PROTOCOL_DEPENDENT_FACETS = frozenset({
+    "ores.cpp.nats-eventing",
+    "ores.cpp.nats-event-registrar",
+    "ores.cpp.eventing-integration-test",
+    "ores.cpp.shell-command",
+    "ores.doc.shell-recipe",
+})
+
 @lru_cache(maxsize=None)
 def _operation_protocol_owners(modeling_dir: str) -> dict[tuple[str, str], str]:
     """The protocols operation models own, keyed by (component, entity).
@@ -386,6 +404,18 @@ def resolve_targets(
             # dialog's field mapper (which reads the domain type's recorded_at
             # member) has nothing to project and would not compile.
             no_temporal_archetypes = _NO_TEMPORAL_HISTORY_ARCHETYPES
+    if "ores.cpp.protocol" not in gen_facets:
+        # Hard gate, like the junction messaging and audit-shape gates above:
+        # the facets that name the protocol's request types have nothing to
+        # name when the model suppresses the protocol, so they are dropped
+        # rather than emitted against an include that is never generated. It
+        # runs before the per-archetype override loop, so an explicit
+        # :ores.*.enabled: override cannot re-admit such a unit. badge_mappings
+        # is the case that exposed it: the junction disables the protocol,
+        # handler and service because a hand-written read-only handler serves
+        # the lookup, and its shell unit was emitted anyway.
+        gen_facets = {f for f in gen_facets
+                      if f not in _PROTOCOL_DEPENDENT_FACETS}
     # Per-archetype activation: the entity's ores.* drawer overrides (most-
     # specific wins, archetype depth included) and, for components, the kind
     # discriminator that selects mutually-exclusive variants in one pass.

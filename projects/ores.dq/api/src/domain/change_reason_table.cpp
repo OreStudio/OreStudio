@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.api/domain/change_reason_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -32,7 +37,7 @@ std::string convert_to_table(const std::vector<change_reason>& v) {
           << "Applies To Amend" << "Applies To Delete" << "Requires Commentary" << "Display Order"
           << "Modified By" << fort::endr;
 
-    for (const auto& r : v) {
+    for ([[maybe_unused]] const auto& r : v) {
         table << r.code << r.description << r.category_code << (r.applies_to_new ? "true" : "false")
               << (r.applies_to_amend ? "true" : "false") << (r.applies_to_delete ? "true" : "false")
               << (r.requires_commentary ? "true" : "false") << r.display_order << r.modified_by

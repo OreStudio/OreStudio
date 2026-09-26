@@ -617,10 +617,6 @@ tangled into the runnable script library
 
 - [[id:38F4CD93-7F57-5E27-A586-0EEBBB7A86ED][How do I run the badge_definitions commands from the shell?]]
 
-* Badge Mappings
-
-- [[id:6FA5889A-660A-5527-8D75-243F973DBBB2][How do I run the badge_mappings commands from the shell?]]
-
 * Catalogs
 
 - [[id:44815F8D-7A5E-5C03-AC60-5120CF939A1B][How do I run the catalogs commands from the shell?]]

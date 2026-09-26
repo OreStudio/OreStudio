@@ -68,13 +68,35 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 2. Liveness census | DONE | 49 tables, 0 deletion candidates; see Step 2 results |
 | 3. Divergent tables | DONE | 12 tables, 6 difference classes, 0 defects; see Step 3 results |
 | 4. Foreign models | TODO | Unblocked, except the FPML family; see below |
-| 5. Derivable tables | TODO | Unblocked |
+| 5. Derivable tables | PARTIAL | 3 of 5 switched; badge_mappings and coding_schemes need a model; see Step 5 results |
 | 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
 | 7. Publication template | TODO | Unblocked |
 | 8. Remaining models | TODO | The FPML family is blocked; the rest is unblocked |
 | 9. Regenerate C++ | TODO | |
 | 10. Eventing headers | TODO | |
 | 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
+
+* Step 5 results (part)
+
+Run on 2026-09-26. Three of the five derivable tables are now generated.
+
+| Entity | Model | Was | Now |
+|--------+-------+-----+-----|
+| =badge_definition= | =ores.dq.badge_definition= | hand-written staging table | generated |
+| =badge_severity= | =ores.dq.badge_severity= | hand-written staging table | generated |
+| =code_domain= | =ores.dq.code_domain= | hand-written staging table | generated |
+
+Each needed one line, not a model: =:ores.sql.schema.domain_entity_artefact_create.enabled: true= in the model's property drawer. Step 3 had already classified all three as pure projections.
+
+**A template defect blocked them, and it is now fixed.** Both artefact archetypes rendered only the plain columns, never the natural keys, and all three entities have exactly one natural key. Switching the archetype on before the fix dropped the =name= column — the column that =dq_badge_definitions_artefact_populate.sql=, =dq_badge_severities_artefact_populate.sql= and =dq_code_domains_artefact_populate.sql= all insert. The gap was latent because every model already using the archetype had zero natural keys. Fixed at source with a regression test, per G05.
+
+**The swap is safe.** The regenerated staging tables carry the same columns in the same order as the hand-written ones. The differences are the generated banner, the model's description prose, the index names gaining their =dq_= prefix and the table name being quoted, and =version integer not null default 0= becoming =version integer not null=. The default is safe to drop because every populate script names =version= explicitly.
+
+The create and notify-trigger files for the three entities also picked up drift they already carried: the version-conflict guard and the canonical event payload. That is G01 work the entity's touch required anyway.
+
+**Figures.** Census: generated 19 to 22, derivable 5 to 2. Component drift for dq: 513 files to 507, exactly the six create and notify-trigger files. iam still reports no drift and refdata still reports 516, so the shared natural-keys marking changed nothing else.
+
+**What remains in step 5.** =badge_mappings= is a junction, not an entity, so it takes the junction pathway. =coding_schemes= has no model at all and needs one authored.
 
 * Step 11 results
 

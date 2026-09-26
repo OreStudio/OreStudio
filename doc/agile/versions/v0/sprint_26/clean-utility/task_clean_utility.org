@@ -270,6 +270,7 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/2155][#2155]] | [utility] Clean ores.utility to the component clean standard |
+| [[https://github.com/OreStudio/OreStudio/pull/2161][#2161]] | [agile] Close the ores.utility clean-up task and story |
 
 * Review
 

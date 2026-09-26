@@ -55,7 +55,7 @@ per-entity flag, so the work is to make it bindable.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:527B8D67-34B0-4B55-B0F3-3525850328BD][Add a read-only entity profile]] | BACKLOG | | | Extend _FEATURE_NAMESPACE so a profile can carry read_only and current_state, add the profile document, and prove the generated protocol carries list, get and get_many only. |
+| [[id:527B8D67-34B0-4B55-B0F3-3525850328BD][Add a read-only entity profile]] | DONE | | 2026-09-26 | Extend _FEATURE_NAMESPACE so a profile can carry read_only and current_state, add the profile document, and prove the generated protocol carries list, get and get_many only. |
 | [[id:841EA68A-0490-421D-83E4-8C9D01D148EF][Make ores.database a composite and host the generated entity]] | BACKLOG | | | Prototype the api/core emission under one modelling directory, move the foundation library into a part, and add database.api, database.core and database.service so database_info can be a generated read-only entity without inverting the layering. |
 
 * Decisions

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-26
 #+updated: 2026-09-26
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AD2B4B61-306D-48A7-9F71-7D9B014F87B9][Add a read-only entity profile and make ores.database hostable]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,11 +29,11 @@ bind the same profile instead of re-deciding each flag.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AD2B4B61-306D-48A7-9F71-7D9B014F87B9][Add a read-only entity profile and make ores.database hostable]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -94,6 +94,35 @@ and =list_login_info= only. =ores.iam.account= differs by being bitemporal,
 which is why it also carries =get_account_version= and
 =list_account_versions=.
 
+** The =ores.iam.account= question, answered
+
+The claim was stale, and the mechanism it describes does not exist. There is
+no one-owner gate in the generator, no model property and no template
+condition that suppresses a generated protocol.
+
+The entity's read surface is generated and composed. Its generated
+=account_protocol.hpp= owns =iam.v1.accounts.list= and
+=iam.v1.accounts.get=, with the version reads beside them, and
+=account_registrar= is called from =ores.iam/core/src/messaging/registrar.cpp=.
+The hand-written =account_operations_protocol.hpp= owns the write subjects:
+=save=, =delete=, =update=, =lock=, =unlock=, =change-password=,
+=reset-password=, =select-party=, =set-default-party=, =switch-party=,
+=update-email= and =publish-from-dq=. The two sets do not overlap, so nothing
+collides and nothing needed suppressing. The split is what =:read_only: true=
+produces: no write verb is generated, and the hand-written half covers the
+writes.
+
+What was real is narrower. Only the generated =CRUD service= was dropped,
+because its =get_account_history(id)= collides in name and signature with the
+hand-written =get_account_history(username)=. The model's description
+conflated that with a suppression of the protocol. Corrected in
+=ores.iam.account.org=, and the generated SQL and C++ comments were
+regenerated from it.
+
+The answer matters for this task because the profile rests on =:read_only:=,
+and a flag whose meaning is undocumented on one of its three real users is a
+flag nobody can rely on. The flag behaves as documented on all three.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -118,3 +147,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed 2026-09-26. A model binds =:profile: read-only-current-state= and gets
+a read-only entity: =list=, =get= and =get_many= on the wire, no write verb
+and no version read, over the current-state table shape.
+
+What shipped. Two entries in =_FEATURE_NAMESPACE= make =read_only= and
+=current_state= profile-bindable, the profile
+=variability_read_only_current_state.org= with the two feature pages it links,
+a row in the profile catalogue, and the suite
+=test_readonly_current_state_profile.py=.
+
+Evidence. The suite passes, seven cases. The strongest case is not in the
+suite: binding the profile to =ores.iam.login_info= in place of its two
+explicit flags regenerates byte-identical output, which is what proves the
+profile carries both flags to the places that read them. The suite covers the
+same ground on a model that declares neither flag, so the mechanism is proved
+away from the entity that happened to work already.
+
+Acceptance met. The protocol carries the three reads and no =put_=, no
+=delete_= and no version message; the regression test fails if any of them
+returns; the profile and both features are catalogued and documented; and the
+=ores.iam.account= question is answered above, with the stale claim corrected
+where it lived.
+
+Two things the work found that were not in the plan. The loader rejects a
+=#+profile:= in file frontmatter and requires it in the =* Flags= drawer, and
+the profile filename must be the slug with hyphens turned into underscores.
+Both cost a test iteration and neither is documented where a model author
+would look.

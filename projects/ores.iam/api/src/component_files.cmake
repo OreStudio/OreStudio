@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "domain/account_contact_information_json_io.cpp"
     "domain/account_contact_information_table.cpp"
@@ -69,7 +72,7 @@ set(files
     "service/auth_session_service.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/domain/account.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/domain/account_contact_information.hpp"

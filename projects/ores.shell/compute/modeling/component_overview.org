@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 12BCE6F1-8330-4757-A854-D07F2CD0EC86
+:END:
+#+title: ores.shell.compute
+#+description: The shell's compute adapter part. Holds the generated command units that project the compute domain onto the REPL menu.
+#+type: ores.codegen.component
+#+component_kind: adapter
+#+level: cross
+#+filetags: :shell:repl:compute:component:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+name: shell.compute
+#+full_name: ores.shell.compute
+#+brief: Shell compute command units
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.shell.compute component diagram
+#+caption: ores.shell.compute
+[[file:ores.shell.compute.png][file:ores.shell.compute.png]]
+
+* Summary
+
+=ores.shell.compute= is the adapter part that projects the compute domain
+onto the shell's REPL menu. It holds the generated command units for the
+compute models that opt in, and each unit owns one submenu.
+
+An entity unit owns that entity's verbs: the paged list, the read by key,
+the write, the delete, the scoped reads and the version reads, each
+rendered from the entity's derived protocol. A junction unit owns the
+junction's own verbs. The part declares =#+component_kind: adapter=, so
+its command units are static and link into =ores.shell.exe=.
+
+The generated units cover the entity verbs, from the same models the
+service serves, so a verb the model gains appears as a command without an
+edit. The grid verbs no single entity owns — publish a package, dispatch a
+batch, watch the grid, and download a job's input or a result's output —
+stay in the hand-written =compute= menu in =ores.shell.application=,
+because each orchestrates several entities rather than one.
+
+* Inputs
+
+- The compute entity and junction models under =projects/ores.compute/modeling/=.
+- A shell session, for the NATS client every command addresses.
+
+* Outputs
+
+- One command unit per compute model, each registering its own submenu.
+
+* Entry points
+
+- =ores::shell::app::commands::app_commands::register_commands= and its
+  siblings, one per model.
+
+* Dependencies
+
+- =ores.shell.api= for the menu and the request helpers.
+- =ores.compute.api= for the generated protocol types.
+- =ores.nats=, =ores.logging=, =ores.platform=, =ores.utility= and =cli=.
+
+* See also
+
+- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] - the domain component these units project.
+- [[id:410D3332-BEED-4B51-B46C-01E92FB5E4F9][ores.shell.iam]] - the adapter part this one follows.

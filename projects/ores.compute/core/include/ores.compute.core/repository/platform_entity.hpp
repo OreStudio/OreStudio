@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_REPOSITORY_PLATFORM_ENTITY_HPP
-#define ORES_COMPUTE_REPOSITORY_PLATFORM_ENTITY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_COMPUTE_CORE_REPOSITORY_PLATFORM_ENTITY_HPP
+#define ORES_COMPUTE_CORE_REPOSITORY_PLATFORM_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -30,6 +35,9 @@ namespace ores::compute::repository {
 
 using db_timestamp = ores::database::repository::db_timestamp;
 
+/**
+ * @brief Represents a platform in the database.
+ */
 struct platform_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_compute_platforms_tbl";
@@ -37,13 +45,15 @@ struct platform_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+
     std::string code;
+
     std::string display_name;
     std::string description;
     std::string os_family;
     std::string cpu_arch;
     std::optional<std::string> abi;
-    bool is_active;
+    bool is_active = false;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

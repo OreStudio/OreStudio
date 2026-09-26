@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ID: 39C23F63-132A-59F0-B27F-78B9EC4C66A2
+:END:
+#+title: How do I run the app_version_platforms commands from the shell?
+#+description: Every command the app_version_platforms submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:app_version_platforms:
+
+This file documents the app_version_platforms resource at the shell, one section per command. Every command is a subcommand of =app_version_platforms=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: A39BC507-0E03-531B-AD67-39CB3484FAE6
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_version_platforms list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.app_version_platforms.list=.
+
+#+name: app_version_platforms-list
+#+begin_src ores-shell :tangle app_version_platforms-list.ores :exports none
+app_version_platforms list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 27A7E910-C4EB-5513-8A69-D3825F93B02D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_version_platforms get <app_version_id> <platform_id>
+#+end_example
+
+It is addressed at =compute.v1.app_version_platforms.get=.
+
+#+name: app_version_platforms-get
+#+begin_src ores-shell :tangle app_version_platforms-get.ores :exports none
+app_version_platforms get 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 3EA3F5C2-B301-59C8-8EC9-70CC31E5BF55
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_version_platforms get-many <app_version_id> <platform_id>
+#+end_example
+
+It is addressed at =compute.v1.app_version_platforms.get_many=.
+
+#+name: app_version_platforms-get-many
+#+begin_src ores-shell :tangle app_version_platforms-get-many.ores :exports none
+app_version_platforms get-many 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: A19AAFA7-F89E-56E2-8095-041EF458DB45
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_version_platforms add <app_version_id> <platform_id> <package_uri> <sha256> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.app_version_platforms.put=.
+
+#+name: app_version_platforms-add
+#+begin_src ores-shell :tangle app_version_platforms-add.ores :exports none
+app_version_platforms add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: D9F6402D-67B2-5056-94D6-7B7AE593AA34
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_version_platforms set <app_version_id> <platform_id> <package_uri> <sha256> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =compute.v1.app_version_platforms.put=.
+
+#+name: app_version_platforms-set
+#+begin_src ores-shell :tangle app_version_platforms-set.ores :exports none
+app_version_platforms set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 2116001E-8004-55BA-853C-9D8E991F7900
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_version_platforms put-many --count <n> <app_version_id> <platform_id> <package_uri> <sha256> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.app_version_platforms.put_many=.
+
+#+name: app_version_platforms-put-many
+#+begin_src ores-shell :tangle app_version_platforms-put-many.ores :exports none
+app_version_platforms put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 7A424B19-46EB-5C9D-8456-2F9F970786BC
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_version_platforms delete <app_version_id> <platform_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =compute.v1.app_version_platforms.delete=.
+
+#+name: app_version_platforms-delete
+#+begin_src ores-shell :tangle app_version_platforms-delete.ores :exports none
+app_version_platforms delete 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 491E2C6D-0B65-589D-95DB-50B7B9F3B68A
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_version_platforms delete-many <app_version_id> <platform_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.app_version_platforms.delete_many=.
+
+#+name: app_version_platforms-delete-many
+#+begin_src ores-shell :tangle app_version_platforms-delete-many.ores :exports none
+app_version_platforms delete-many 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-app-version-id=
+:PROPERTIES:
+:ID: 022392E0-3F87-5D83-8882-A6FF537C315D
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_version_platforms by-app-version-id <app_version_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.app_version_platforms.list_by_app_version_id=.
+
+#+name: app_version_platforms-by-app-version-id
+#+begin_src ores-shell :tangle app_version_platforms-by-app-version-id.ores :exports none
+app_version_platforms by-app-version-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+

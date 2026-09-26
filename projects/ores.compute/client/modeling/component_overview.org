@@ -27,9 +27,9 @@ verifies its integrity: it computes the local SHA256 before uploading,
 compares it against the server's own SHA256 of the bytes received, and
 throws on mismatch rather than returning a result the caller might trust.
 
-It is the one shared core behind both =ores.shell='s non-interactive publish
-command and the removed client's "Upload Engines" dialog. Building and sending the
-=save_app_request= and =save_app_version_request= NATS messages that register
+It is the one shared core behind the =ores.shell='s non-interactive publish
+command. Building and sending the =put_app_request= and
+=put_app_version_request= NATS messages that register
 the uploaded package stays with each caller, since each already has its
 own request/response plumbing.
 

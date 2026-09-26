@@ -1544,6 +1544,12 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         td = _section(cpp_section, "Table display")
         if td:
             cpp_out["table_display"] = _table_display(td)
+        # The table renderer names the row it is streaming, and a model that
+        # leaves the drawer out or states it empty renders `const auto& : v`,
+        # which does not compile. One default, stated here, is what
+        # _prepare_table_display() already assumes for its own loop.
+        if not str(cpp_out.get("iterator_var", "")).strip():
+            cpp_out["iterator_var"] = "e"
         if cpp_out:
             de["cpp"] = cpp_out
 
@@ -2447,8 +2453,15 @@ def _ts_message(
     response_type: str | None = None,
     subject: str | None = None,
     fields: list[dict[str, Any]] | None = None,
+    verb: str | None = None,
 ) -> dict[str, Any]:
-    """One derived protocol message: the shape both twins render from."""
+    """One derived protocol message: the shape both twins render from.
+
+    ``verb`` states what an operation asks for when its name does not, which
+    is any operation on a sub-resource: an entity whose plural ends in
+    ``_versions`` names its own list the way the versions sub-resource names
+    its own, so the name alone cannot tell the two apart.
+    """
     message: dict[str, Any] = {
         "name": name,
         "name_pascal": _to_pascal_case(name),
@@ -2461,6 +2474,8 @@ def _ts_message(
         # the operation model that states it.
         "derived": True,
     }
+    if verb:
+        message["verb"] = verb
     if response_type:
         message["response_type"] = response_type
     if subject:
@@ -2497,6 +2512,36 @@ def ts_domain_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
         {"entity": entity, "entity_pascal": _to_pascal_case(entity)}
         for entity in sorted(entities - hand_written)
     ]
+
+
+def apply_ts_domain_alias(
+        entity: dict[str, Any],
+        messages: list[dict[str, Any]]) -> str:
+    """Alias the domain interface when a shared utility interface owns its name.
+
+    An entity and a shared utility type can carry the same TypeScript name, as
+    the envelope's ``Result`` and an entity named ``result`` do. The protocol
+    imports both, and two imports of one identifier from two modules is a
+    duplicate identifier. The domain import takes a suffixed alias and the
+    fields that name the entity's own type follow it, so the two stay apart.
+    Every other entity keeps the plain import and stays byte-identical.
+
+    Returns the alias, or an empty string when the name is free.
+    """
+    singular = entity.get("entity_singular", "")
+    component = entity.get("component", "")
+    pascal = _to_pascal_case(singular)
+    taken = {item["name_pascal"] for item in ts_utility_imports(messages)}
+    if pascal not in taken:
+        return ""
+    alias = f"{pascal}Entity"
+    own = f"ores::{component}::domain::{singular}"
+    for message in messages:
+        for field in message.get("fields") or []:
+            if own in (field.get("cpp_type") or "") and field.get("ts_type"):
+                field["ts_type"] = re.sub(
+                    rf"\b{re.escape(pascal)}\b", alias, field["ts_type"])
+    return alias
 
 
 def ts_utility_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -2709,14 +2754,17 @@ def declared_key_field(entity: dict[str, Any]) -> str:
     a declaration of the model, made once, and that it is the same key that
     appears in the resource's operations and in the HTTP projection's path
     parameter, so a caller never translates between an address and a request.
-    The one declaration is the presentation drawer's ``key_field``: it is
-    already the field the route's path segment carries, so reading it here is
-    what makes the operation and the path agree.
+    Reading it here is what makes the operation and the path agree.
 
-    Empty when the model declares no key, which is a model with no screen. Its
-    storage key is then the only key it has, and callers address it by that.
+    The declaration is the model's own ``key_field``. It used to sit in the
+    presentation drawer alone; it is read from the model root first, so a model
+    can drop a drawer it no longer needs without losing its key.
+
+    Empty when the model declares no key, which is a model whose rows are
+    addressed by the storage key. Its storage key is then the only key it has.
     """
-    return (entity.get("presentation") or {}).get("key_field") or ""
+    return (entity.get("key_field")
+            or (entity.get("presentation") or {}).get("key_field") or "")
 
 
 def declared_key_column(entity: dict[str, Any]) -> dict[str, Any] | None:
@@ -2857,6 +2905,12 @@ _SCOPE = "ores::utility::domain::scope"
 _WRITE_OPERATION_PREFIXES = ("put_", "put_many_", "delete_", "delete_many_")
 _WRITE_ONLY_RECORD_SUFFIXES = ("_write", "_change", "_removal")
 
+# The announcement record. An entity owns one because an event registrar is
+# emitted for it, which publishes the record on three action subjects. No event
+# registrar is emitted for a junction, so a junction's announcement is a record
+# no code path reaches and no subject carries.
+_ANNOUNCEMENT_RECORD_SUFFIXES = ("_event",)
+
 
 def _column_cpp_type(entity: dict[str, Any], name: str) -> str:
     """One named column's own C++ type, or a string when the model is silent.
@@ -2939,6 +2993,7 @@ def paged_list_messages(
     filter_field: dict[str, Any] | None,
     collection: str,
     collection_type: str,
+    verb: str | None = None,
 ) -> list[dict[str, Any]]:
     """The request and response pair every paged list shares.
 
@@ -2946,7 +3001,8 @@ def paged_list_messages(
     covers -- nothing for an unscoped list, the relation for a scoped one, the
     key for a versions list. Offset, limit and total are unconditional in the
     specification, so they are stated here once instead of per entity, and the
-    filter comes last, after the page it narrows.
+    filter comes last, after the page it narrows. ``verb`` is passed through
+    for a list whose name does not state which sub-resource it reads.
     """
     fields = list(leading) + [
         _ts_field("offset", "std::uint32_t", default="0"),
@@ -2957,7 +3013,7 @@ def paged_list_messages(
         fields.append(filter_field)
     return [
         _ts_message(f"{name}_request", response_type=f"{name}_response",
-                    subject=subject, fields=fields),
+                    subject=subject, fields=fields, verb=verb),
         _ts_message(f"{name}_response", fields=[
             _ts_field("result", _RESULT),
             _ts_field(collection, f"std::vector<{collection_type}>"),
@@ -2965,7 +3021,48 @@ def paged_list_messages(
     ]
 
 
-def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
+@lru_cache(maxsize=None)
+def _entity_singulars_in(model_dir: str) -> frozenset[str]:
+    """The entity singulars declared in one modeling directory, read once."""
+    singulars: set[str] = set()
+    for path in sorted(Path(model_dir).glob("*.org")):
+        doc = parse_org(path.read_text(encoding="utf-8"))
+        if doc.frontmatter.get("type") != "ores.codegen.entity":
+            continue
+        singular = (doc.frontmatter.get("entity_singular") or "").strip()
+        if singular:
+            singulars.add(singular)
+    return frozenset(singulars)
+
+
+def sibling_entity_singulars(model_path: Any) -> frozenset[str]:
+    """The entity singulars modelled beside ``model_path``, its siblings.
+
+    A model's version facet is named after the entity's singular, so an
+    entity and an entity named ``<that singular>_version`` in the same
+    component derive the same type, service and handler names. The facet
+    reads this set so it can step aside; see ``entity_protocol_messages``.
+    """
+    if not model_path:
+        return frozenset()
+    return _entity_singulars_in(str(Path(model_path).resolve().parent))
+
+
+def response_payload_member(entity: dict[str, Any]) -> str:
+    """The member a response carries its payload in, named after the entity.
+
+    The envelope states its outcome in a member named ``result``, so an entity
+    of that name gives its payload a suffixed member rather than sharing the
+    one the envelope already uses. The protocol header, the service body and
+    the TypeScript twin all read this, so the three cannot disagree.
+    """
+    singular = entity.get("entity_singular", "")
+    return "result_value" if singular == "result" else singular
+
+
+def entity_protocol_messages(
+        entity: dict[str, Any],
+        sibling_singulars: frozenset[str] | None = None) -> list[dict[str, Any]]:
     """Derive an entity's canonical message list, as the specification states it.
 
     The list is the one model both protocol twins render: the C++
@@ -2984,6 +3081,16 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
 
     A ``current_state`` entity derives no versions sub-resource: it has no
     valid_from/valid_to axis, so it has no version to read.
+
+    Two names are chosen to avoid a collision rather than by derivation
+    alone. The versions sub-resource is named after the singular, so a
+    sibling entity named ``<singular>_version`` owns every one of its
+    names; the facet then takes the plural as its stem and the sibling
+    keeps what its own model states. The response envelope states its
+    outcome in a member named ``result``, so an entity of that name gives
+    its payload a suffixed member instead. ``sibling_singulars`` is the
+    set from ``sibling_entity_singulars``; without it the singular is used
+    as before.
     """
     component = entity.get("component", "")
     singular = entity.get("entity_singular", "")
@@ -2991,6 +3098,9 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
     plural_short = entity.get("entity_plural_short") or plural
     domain_type = f"ores::{component}::domain::{singular}"
     key = f"{singular}_key"
+    facet_stem = (
+        plural if f"{singular}_version" in (sibling_singulars or ()) else singular)
+    payload_member = response_payload_member(entity)
     key_columns = frozenset(
         _column_name(column)
         for column in (entity.get("primary_key") or {}).get("columns") or [])
@@ -3036,10 +3146,10 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
         # ``no_audit_columns`` keeps a validity window with no version in it.
         # The gate is the version column, not the current-state flag, because
         # the two are not the same claim.
-        messages.append(_ts_message(f"{singular}_version_key", fields=[
+        messages.append(_ts_message(f"{facet_stem}_version_key", fields=[
             _ts_field(singular, key),
             _ts_field("version", "std::uint32_t")]))
-        messages.append(_ts_message(f"{singular}_versions_filter",
+        messages.append(_ts_message(f"{facet_stem}_versions_filter",
                                     fields=versions_filter_fields()))
 
     list_filter = (_ts_field("filter", f"std::optional<{plural}_filter>")
@@ -3062,7 +3172,7 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
                     fields=[_ts_field("key", key)]),
         _ts_message(f"get_{singular}_response", fields=[
             _ts_field("result", _RESULT),
-            _ts_field(singular, f"std::optional<{domain_type}>")]),
+            _ts_field(payload_member, f"std::optional<{domain_type}>")]),
         _ts_message(f"get_many_{plural}_request",
                     response_type=f"get_many_{plural}_response",
                     subject=request_subject(component, plural, "get_many"),
@@ -3077,7 +3187,7 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
                             _ts_field("intent", _INTENT)]),
         _ts_message(f"put_{singular}_response", fields=[
             _ts_field("result", _RESULT),
-            _ts_field(singular, domain_type)]),
+            _ts_field(payload_member, domain_type)]),
         _ts_message(f"put_many_{plural}_request",
                     response_type=f"put_many_{plural}_response",
                     subject=request_subject(component, plural, "put_many"),
@@ -3120,17 +3230,18 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
 
     if entity.get("has_audit_columns"):
         messages += paged_list_messages(
-            f"list_{singular}_versions",
+            f"list_{facet_stem}_versions",
             versions_subject(component, plural, "list"),
             [_ts_field("key", key)],
-            _ts_field("filter", f"std::optional<{singular}_versions_filter>"),
-            "versions", domain_type)
+            _ts_field("filter", f"std::optional<{facet_stem}_versions_filter>"),
+            "versions", domain_type, verb="list_versions")
         messages += [
-            _ts_message(f"get_{singular}_version_request",
-                        response_type=f"get_{singular}_version_response",
+            _ts_message(f"get_{facet_stem}_version_request",
+                        response_type=f"get_{facet_stem}_version_response",
                         subject=versions_subject(component, plural, "get"),
-                        fields=[_ts_field("key", f"{singular}_version_key")]),
-            _ts_message(f"get_{singular}_version_response", fields=[
+                        verb="get_version",
+                        fields=[_ts_field("key", f"{facet_stem}_version_key")]),
+            _ts_message(f"get_{facet_stem}_version_response", fields=[
                 _ts_field("result", _RESULT),
                 _ts_field("version", domain_type)]),
         ]
@@ -3232,6 +3343,10 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
     """
     entity = junction_entity_shape(junction)
     messages = entity_protocol_messages(entity)
+    # A junction announces nothing, so it drops the entity derivation's
+    # announcement record rather than declaring a wire type nothing serves.
+    messages = [message for message in messages
+                if not message["name"].endswith(_ANNOUNCEMENT_RECORD_SUFFIXES)]
     # ``wire_write_enabled`` folds the repository's read_only together with the
     # client-only switch; the fallback keeps a hand-built junction dict, as the
     # tests use, on the read_only rule.
@@ -3244,9 +3359,10 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
             and not message["name"].endswith(_WRITE_ONLY_RECORD_SUFFIXES)]
 
 
-# Which verb a derived request states, from the request's own name. A versions
-# list is a list and a single version is a get, but each answers a different
-# sub-resource and so takes a different body, so the suffix is read first.
+# Which verb a derived request states, from the request's own name. A request
+# that answers a sub-resource states its verb where it is built instead, because
+# its name cannot carry it: an entity whose plural ends in "_versions" names its
+# own list the way the versions sub-resource names its own.
 _OPERATION_PREFIXES = (
     ("list_by_", "list_scoped"),
     ("put_many_", "put_many"),
@@ -3261,10 +3377,6 @@ _OPERATION_PREFIXES = (
 
 def _operation_verb(name: str) -> str:
     """The verb one derived request states, or an empty string if none."""
-    if name.endswith("_versions_request"):
-        return "list_versions"
-    if name.endswith("_version_request"):
-        return "get_version"
     for prefix, verb in _OPERATION_PREFIXES:
         if name.startswith(prefix):
             return verb
@@ -3290,7 +3402,7 @@ def protocol_operations(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
         fields = message.get("fields") or []
         names = [field.get("name") for field in fields]
         leading_type = fields[0].get("cpp_type", "") if fields else ""
-        verb = _operation_verb(message["name"])
+        verb = message.get("verb") or _operation_verb(message["name"])
         operations.append({
             "method": message["name"][:-len("_request")],
             "request": message["name"],
@@ -4077,16 +4189,31 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
         "get_version": ("version_read", "version"),
     }
 
-    def _used_inputs(kind: str) -> list[dict[str, Any]]:
+    def _used_inputs(kind: str, typed: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if kind in ("put", "put_many"):
-            return writes
+            return typed
         if kind in ("paged", "list_by"):
             return []
         return keys
 
     def _command(operation: dict[str, Any], kind: str, name: str,
                  precondition: str = "",
-                 relation: dict[str, Any] | None = None) -> dict[str, Any]:
+                 relation: dict[str, Any] | None = None,
+                 id_from_caller: bool = False) -> dict[str, Any]:
+        # A create mints the row's id, so the caller does not state it. A
+        # replace addresses a row that already exists, and the id is how the
+        # store finds it: a minted id reaches the trigger as a row no current
+        # row matches, so the write is taken for a create and collides with
+        # the natural key's unique index. The replace therefore takes the id
+        # from the caller, which is what a read of the row returns.
+        def _typed(field: dict[str, Any]) -> dict[str, Any]:
+            item = _input(field.get("name", ""), field.get("cpp_type", ""))
+            if id_from_caller and item.get("is_minted"):
+                item["is_minted"] = False
+                item["is_user"] = True
+            return item
+
+        typed = [_typed(field) for field in entity.get("write_fields") or []]
         command = {
             "command": name,
             "identifier": name.replace("-", "_"),
@@ -4096,9 +4223,16 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
             "response_type": operation["response"],
             "subject": operation["subject"],
             "keys": keys,
-            "writes": writes,
+            "writes": typed,
+            # A single put fills a session party itself, so the caller types
+            # only the remaining fields. A put_many reads the whole write
+            # record, because a batch of changes states its own ids. The two
+            # arities differ, and a command whose stated count is the wider one
+            # refuses the line its own help prints.
+            "put_writes": [field for field in typed if field.get("is_user")],
             "key_arity": len(keys),
-            "write_arity": len(writes),
+            "write_arity": len(typed),
+            "put_arity": sum(1 for field in typed if field.get("is_user")),
             "relation": relation,
             "has_order": bool(operation.get("has_order")),
             "has_intent": operation.get("verb") in
@@ -4109,7 +4243,8 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
             # key, and a write takes the write record rather than the key,
             # because the key travels inside it.
             "unsupported": sorted(
-                item["name"] for item in _used_inputs(kind) if not item["fillable"]),
+                item["name"] for item in _used_inputs(kind, typed)
+                if not item["fillable"]),
         }
         # The flags the handler declares. Exact rather than uniform, so a
         # command that takes no page cannot be handed one.
@@ -4158,7 +4293,8 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
         verb = operation.get("verb", "")
         if verb == "put":
             commands.append(_command(operation, "put", "add", "must_not_exist"))
-            commands.append(_command(operation, "put", "set", "any"))
+            commands.append(_command(operation, "put", "set", "any",
+                                     id_from_caller=True))
             continue
         # A scoped read's verb names the shape and not the column it is scoped
         # by: the derivation states the relation in `leading`, so the command
@@ -4275,7 +4411,10 @@ def _entity_shell_invocation(command: dict[str, Any]) -> str:
     if kind in ("put", "put_many"):
         if kind == "put_many":
             tokens += ["--count", "1"]
-        tokens += [_sentinel_value(field["cpp_type"]) for field in command["writes"]]
+            typed = command["writes"]
+        else:
+            typed = command["put_writes"]
+        tokens += [_sentinel_value(field["cpp_type"]) for field in typed]
     elif kind == "list_by":
         tokens.append(_sentinel_value(command["relation"]["cpp_type"]))
     elif kind != "paged":
@@ -4302,7 +4441,10 @@ def _entity_shell_usage(command: dict[str, Any]) -> str:
     if kind in ("put", "put_many"):
         if kind == "put_many":
             parts.append("--count <n>")
-        parts.extend(f"<{field['name']}>" for field in command["writes"])
+            typed = command["writes"]
+        else:
+            typed = command["put_writes"]
+        parts.extend(f"<{field['name']}>" for field in typed)
     elif kind == "list_by":
         parts.append(f"<{command['relation']['name']}>")
     elif kind != "paged":

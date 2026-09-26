@@ -1,0 +1,63 @@
+# B06 consumer census: hand-written public headers under projects/ores.compute/*/include/
+# Each header is searched by its include path, which is unique, not by basename.
+# The consumers are split into:
+#   prod    production files outside projects/ores.compute
+#   own     production files inside projects/ores.compute
+#   tests   test files anywhere
+# A header with no prod and no own consumer is dead public API: its only
+# possible consumer is a test, and a test is not a consumer.
+
+include path                                                             prod  own   tests
+ores.compute.api/export.hpp                                              0     44    0
+ores.compute.api/net/compute_storage.hpp                                 1     2     0
+ores.compute.client/client/package_publisher.hpp                         1     1     0
+ores.compute.client/export.hpp                                           0     1     0
+ores.compute.core/export.hpp                                             0     42    0
+ores.compute.core/messaging/registrar.hpp                                0     2     0
+ores.compute.core/messaging/report_submit_handler.hpp                    0     2     0
+ores.compute.core/messaging/result_submit_handler.hpp                    0     1     0
+ores.compute.core/messaging/telemetry_handler.hpp                        0     1     0
+ores.compute.core/messaging/work_handler.hpp                             0     1     0
+ores.compute.core/ores.compute.hpp                                       0     0     0
+ores.compute.core/repository/compute_telemetry_repository.hpp            0     3     0
+ores.compute.service/app/application_exception.hpp                       0     1     0
+ores.compute.service/app/application.hpp                                 0     2     0
+ores.compute.service/app/batch_workflow_bridge.hpp                       0     2     0
+ores.compute.service/app/compute_grid_poller.hpp                         0     2     0
+ores.compute.service/app/host.hpp                                        0     2     0
+ores.compute.service/app/workunit_dispatcher.hpp                         0     2     0
+ores.compute.service/config/options.hpp                                  0     3     0
+ores.compute.service/config/parser_exception.hpp                         0     2     1
+ores.compute.service/config/parser.hpp                                   0     2     1
+ores.compute.service/export.hpp                                          0     2     0
+ores.compute.service/ores.compute.service.hpp                            0     0     0
+ores.compute.wrapper/app/application.hpp                                 0     2     0
+ores.compute.wrapper/app/host.hpp                                        0     2     0
+ores.compute.wrapper/app/log_publisher.hpp                               0     2     0
+ores.compute.wrapper/config/options.hpp                                  0     3     0
+ores.compute.wrapper/config/parser_exception.hpp                         0     2     0
+ores.compute.wrapper/config/parser.hpp                                   0     2     0
+ores.compute.wrapper/export.hpp                                          0     2     0
+ores.compute.wrapper/filesystem/archiver.hpp                             0     2     1
+ores.compute.wrapper/net/http_client.hpp                                 0     2     0
+
+## Finding
+
+No test-only public API. Every hand-written header that declares a symbol
+has a production consumer: the handlers are registered by registrar.cpp,
+the repositories are called by the services, and the option, parser and
+client headers are called by their applications. None is reached only from
+a test, so no symbol is dead by B06's test.
+
+The two rows with no consumer at all declare an empty namespace and
+nothing else:
+
+  ores.compute.core/ores.compute.hpp
+  ores.compute.service/ores.compute.service.hpp
+
+They declare no symbol, so B06 has nothing to classify. They are the
+component's banner headers, one of 42 such headers across the repo, and
+nothing includes them. The core overview calls the first an aggregate
+include, which it is not: it carries no includes. The overview line is
+corrected rather than the header made to aggregate, because no caller
+asked for the aggregate.

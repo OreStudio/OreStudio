@@ -26,63 +26,245 @@
 #define ORES_COMPUTE_API_MESSAGING_BATCH_PROTOCOL_HPP
 
 #include "ores.compute.api/domain/batch.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::compute::messaging {
 
-struct get_batches_request {
-    using response_type = struct get_batches_response;
+struct batch_key {
+    std::string external_ref;
+};
+
+struct batch_write {
+    boost::uuids::uuid id;
+    std::string external_ref;
+    std::string status;
+};
+
+struct batch_change {
+    batch_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct batch_removal {
+    batch_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct batch_lookup {
+    batch_key key;
+    std::optional<ores::compute::domain::batch> batch;
+};
+
+struct batch_event {
+    boost::uuids::uuid event_id;
+    batch_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct batch_version_key {
+    batch_key batch;
+    std::uint32_t version;
+};
+
+struct batch_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_batches_request {
+    using response_type = struct list_batches_response;
     static constexpr std::string_view nats_subject = "compute.v1.batches.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
 };
 
-struct get_batches_response {
+struct list_batches_response {
+    ores::utility::domain::result result;
     std::vector<ores::compute::domain::batch> batches;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_batch_request {
-    using response_type = struct save_batch_response;
-    static constexpr std::string_view nats_subject = "compute.v1.batches.save";
-    ores::compute::domain::batch data;
-
-    static save_batch_request from(ores::compute::domain::batch v) {
-        return {.data = std::move(v)};
-    }
+struct get_batch_request {
+    using response_type = struct get_batch_response;
+    static constexpr std::string_view nats_subject = "compute.v1.batches.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    batch_key key;
 };
 
-struct save_batch_response {
-    bool success = false;
-    std::string message;
+struct get_batch_response {
+    ores::utility::domain::result result;
+    std::optional<ores::compute::domain::batch> batch;
+};
+
+struct get_many_batches_request {
+    using response_type = struct get_many_batches_response;
+    static constexpr std::string_view nats_subject = "compute.v1.batches.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<batch_key> keys;
+};
+
+struct get_many_batches_response {
+    ores::utility::domain::result result;
+    std::vector<batch_lookup> entries;
+};
+
+struct put_batch_request {
+    using response_type = struct put_batch_response;
+    static constexpr std::string_view nats_subject = "compute.v1.batches.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    batch_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_batch_response {
+    ores::utility::domain::result result;
+    ores::compute::domain::batch batch;
+};
+
+struct put_many_batches_request {
+    using response_type = struct put_many_batches_response;
+    static constexpr std::string_view nats_subject = "compute.v1.batches.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<batch_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_batches_response {
+    ores::utility::domain::result result;
+    std::vector<ores::compute::domain::batch> batches;
 };
 
 struct delete_batch_request {
     using response_type = struct delete_batch_response;
     static constexpr std::string_view nats_subject = "compute.v1.batches.delete";
-    std::vector<std::string> ids;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    batch_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_batch_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_batch_history_request {
-    using response_type = struct get_batch_history_response;
-    static constexpr std::string_view nats_subject = "compute.v1.batches.history";
-    std::string id;
+struct delete_many_batches_request {
+    using response_type = struct delete_many_batches_response;
+    static constexpr std::string_view nats_subject = "compute.v1.batches.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<batch_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_batch_history_response {
-    std::vector<ores::compute::domain::batch> history;
-    bool success = false;
-    std::string message;
+struct delete_many_batches_response {
+    ores::utility::domain::result result;
 };
+
+struct list_batch_versions_request {
+    using response_type = struct list_batch_versions_response;
+    static constexpr std::string_view nats_subject = "compute.v1.batches_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    batch_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<batch_versions_filter> filter;
+};
+
+struct list_batch_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::compute::domain::batch> versions;
+    std::uint64_t total;
+};
+
+struct get_batch_version_request {
+    using response_type = struct get_batch_version_response;
+    static constexpr std::string_view nats_subject = "compute.v1.batches_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    batch_version_key key;
+};
+
+struct get_batch_version_response {
+    ores::utility::domain::result result;
+    ores::compute::domain::batch version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace batch_event_subjects {
+inline constexpr std::string_view created = "compute.v1.batches_events.created";
+inline constexpr std::string_view updated = "compute.v1.batches_events.updated";
+inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
+}
 
 }
 

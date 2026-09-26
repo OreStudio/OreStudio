@@ -23,92 +23,149 @@
  * To modify, update the template and regenerate.
  */
 import type { AppVersionPlatform } from '../domain/app_version_platform.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
-export interface GetAppVersionPlatformsRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetAppVersionPlatformsResponse {
-    app_version_platforms: AppVersionPlatform[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface GetAppVersionPlatformsByAppVersionRequest {
+export interface AppVersionPlatformKey {
     app_version_id: string;
-    offset: number;
-    limit: number;
-}
-
-export interface GetAppVersionPlatformsByAppVersionResponse {
-    app_version_platforms: AppVersionPlatformView[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveAppVersionPlatformRequest {
-    app_version_platforms: AppVersionPlatform[];
-}
-
-export interface SaveAppVersionPlatformResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteAppVersionPlatformRequest {
-    app_version_ids: string[];
-    platform_ids: string[];
-}
-
-export interface DeleteAppVersionPlatformResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface ReplaceAppVersionPlatformsByAppVersionRequest {
-    app_version_id: string;
-    app_version_platforms: AppVersionPlatform[];
-    modified_by: string;
-    performed_by: string;
-    change_reason_code: string;
-    change_commentary: string;
-}
-
-export interface ReplaceAppVersionPlatformsByAppVersionResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface CountAppVersionPlatformsByAppVersionRequest {
-    app_version_id: string;
-}
-
-export interface CountAppVersionPlatformsByAppVersionResponse {
-    total_available_count: number;
-}
-
-export interface CountAppVersionPlatformsByPlatformRequest {
     platform_id: string;
 }
 
-export interface CountAppVersionPlatformsByPlatformResponse {
-    total_available_count: number;
+export interface AppVersionPlatformWrite {
+    app_version_id: string;
+    platform_id: string;
+    package_uri: string;
+    sha256: string;
 }
 
-export interface AppVersionPlatformView {
+export interface AppVersionPlatformChange {
+    write: AppVersionPlatformWrite;
+    precondition: Precondition;
+}
+
+export interface AppVersionPlatformRemoval {
+    key: AppVersionPlatformKey;
+    precondition: Precondition;
+}
+
+export interface AppVersionPlatformLookup {
+    key: AppVersionPlatformKey;
+    app_version_platform: AppVersionPlatform | null;
+}
+
+export interface AppVersionPlatformsFilter {
+    app_version_id: string | null;
+}
+
+export interface ListAppVersionPlatformsRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: AppVersionPlatformsFilter | null;
+}
+
+export interface ListAppVersionPlatformsResponse {
+    result: Result;
+    app_version_platforms: AppVersionPlatform[];
+    total: number;
+}
+
+export interface GetAppVersionPlatformRequest {
+    key: AppVersionPlatformKey;
+}
+
+export interface GetAppVersionPlatformResponse {
+    result: Result;
+    app_version_platform: AppVersionPlatform | null;
+}
+
+export interface GetManyAppVersionPlatformsRequest {
+    keys: AppVersionPlatformKey[];
+}
+
+export interface GetManyAppVersionPlatformsResponse {
+    result: Result;
+    entries: AppVersionPlatformLookup[];
+}
+
+export interface PutAppVersionPlatformRequest {
+    change: AppVersionPlatformChange;
+    intent: ChangeIntent;
+}
+
+export interface PutAppVersionPlatformResponse {
+    result: Result;
     app_version_platform: AppVersionPlatform;
-    platform_code: string;
+}
+
+export interface PutManyAppVersionPlatformsRequest {
+    changes: AppVersionPlatformChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyAppVersionPlatformsResponse {
+    result: Result;
+    app_version_platforms: AppVersionPlatform[];
+}
+
+export interface DeleteAppVersionPlatformRequest {
+    removal: AppVersionPlatformRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteAppVersionPlatformResponse {
+    result: Result;
+}
+
+export interface DeleteManyAppVersionPlatformsRequest {
+    removals: AppVersionPlatformRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyAppVersionPlatformsResponse {
+    result: Result;
+}
+
+export interface ListByAppVersionIdAppVersionPlatformsRequest {
+    app_version_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: AppVersionPlatformsFilter | null;
+}
+
+export interface ListByAppVersionIdAppVersionPlatformsResponse {
+    result: Result;
+    app_version_platforms: AppVersionPlatform[];
+    total: number;
 }
 
 export const subjects = {
-    get_app_version_platforms_request: "compute.v1.app_version_platforms.list",
-    get_app_version_platforms_by_app_version_request: "compute.v1.app_version_platforms.list_by_app_version_id",
-    save_app_version_platform_request: "compute.v1.app_version_platforms.save",
+    list_app_version_platforms_request: "compute.v1.app_version_platforms.list",
+    get_app_version_platform_request: "compute.v1.app_version_platforms.get",
+    get_many_app_version_platforms_request: "compute.v1.app_version_platforms.get_many",
+    put_app_version_platform_request: "compute.v1.app_version_platforms.put",
+    put_many_app_version_platforms_request: "compute.v1.app_version_platforms.put_many",
     delete_app_version_platform_request: "compute.v1.app_version_platforms.delete",
-    replace_app_version_platforms_by_app_version_request: "compute.v1.app_version_platforms.replace_by_app_version_id",
-    count_app_version_platforms_by_app_version_request: "compute.v1.app_version_platforms.count_by_app_version_id",
-    count_app_version_platforms_by_platform_request: "compute.v1.app_version_platforms.count_by_platform_id",
+    delete_many_app_version_platforms_request: "compute.v1.app_version_platforms.delete_many",
+    list_by_app_version_id_app_version_platforms_request: "compute.v1.app_version_platforms.list_by_app_version_id",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_app_version_platforms_request: true,
+    get_app_version_platform_request: true,
+    get_many_app_version_platforms_request: true,
+    put_app_version_platform_request: true,
+    put_many_app_version_platforms_request: true,
+    delete_app_version_platform_request: true,
+    delete_many_app_version_platforms_request: true,
+    list_by_app_version_id_app_version_platforms_request: true,
 } as const;

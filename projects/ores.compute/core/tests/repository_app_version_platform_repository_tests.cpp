@@ -28,30 +28,33 @@
 #include <string>
 #include <vector>
 
+// The canonical junction surface writes and removes rows one claim at a time:
+// the repository offers no operation that replaces a whole set for one parent,
+// so a caller that wants the set replaced composes the writes and the
+// removals itself.
+
 namespace {
 
-const std::string_view test_suite("ores.compute.tests");
 const std::string tags("[repository][app_version_platform]");
 
 using ores::testing::database_helper;
 using ores::compute::domain::app_version_platform;
-using ores::compute::domain::compute_platform;
 using ores::compute::repository::app_version_platform_repository;
 using ores::compute::repository::platform_repository;
 using namespace ores::logging;
 
 /// Look up the seeded compute platforms; most tests need at least two
-/// distinct rows to exercise add/remove semantics on the junction.
-std::vector<compute_platform> seeded_platforms(database_helper& h) {
+/// distinct rows to exercise the junction.
+std::vector<ores::compute::domain::platform> seeded_platforms(database_helper& h) {
     platform_repository repo;
-    auto platforms = repo.read_active(h.context());
+    auto platforms = repo.read_latest(h.context());
     REQUIRE(platforms.size() >= 2);
     return platforms;
 }
 
 app_version_platform make_row(database_helper& h,
                               const boost::uuids::uuid& av_id,
-                              const compute_platform& p,
+                              const ores::compute::domain::platform& p,
                               const std::string& uri_suffix) {
     app_version_platform r;
     r.tenant_id = h.tenant_id().to_string();
@@ -62,135 +65,7 @@ app_version_platform make_row(database_helper& h,
     return r;
 }
 
-/// read_latest_by_app_version reports platform_code via a JOIN — callers
-/// compare codes rather than ids, so surface them sorted for stable equality.
-std::vector<std::string> sorted_codes(const std::vector<app_version_platform>& rows) {
-    std::vector<std::string> codes;
-    codes.reserve(rows.size());
-    for (const auto& r : rows)
-        codes.push_back(r.platform_code);
-    std::sort(codes.begin(), codes.end());
-    return codes;
-}
-
 } // namespace
-
-TEST_CASE("replace_by_app_version_initial_insert_lists_all_rows", tags) {
-    auto lg(make_logger(test_suite));
-    database_helper h;
-    const auto platforms = seeded_platforms(h);
-    const auto av_id = boost::uuids::random_generator()();
-
-    app_version_platform_repository repo(h.context());
-    std::vector<app_version_platform> rows{
-        make_row(h, av_id, platforms[0], "pkg-a.tar.gz"),
-        make_row(h, av_id, platforms[1], "pkg-b.tar.gz"),
-    };
-
-    CHECK_NOTHROW(repo.replace_by_app_version(
-        av_id, rows, h.db_user(), h.db_user(), "system.new_record", "initial insert"));
-
-    const auto listed = repo.read_latest_by_app_version(av_id);
-    CHECK(listed.size() == 2);
-    const auto got = sorted_codes(listed);
-    const auto want = std::vector<std::string>{platforms[0].code, platforms[1].code};
-    auto want_sorted = want;
-    std::sort(want_sorted.begin(), want_sorted.end());
-    CHECK(got == want_sorted);
-    for (const auto& r : listed)
-        CHECK(!r.package_uri.empty());
-}
-
-TEST_CASE("replace_by_app_version_swap_removes_old_adds_new", tags) {
-    database_helper h;
-    const auto platforms = seeded_platforms(h);
-    REQUIRE(platforms.size() >= 3);
-
-    const auto av_id = boost::uuids::random_generator()();
-
-    app_version_platform_repository repo(h.context());
-    // Seed with platforms[0] + platforms[1].
-    repo.replace_by_app_version(av_id,
-                                {
-                                    make_row(h, av_id, platforms[0], "old-a.tar.gz"),
-                                    make_row(h, av_id, platforms[1], "old-b.tar.gz"),
-                                },
-                                h.db_user(),
-                                h.db_user(),
-                                "system.new_record",
-                                "initial");
-
-    // Replace with platforms[0] + platforms[2]; platforms[1] should be gone.
-    repo.replace_by_app_version(av_id,
-                                {
-                                    make_row(h, av_id, platforms[0], "new-a.tar.gz"),
-                                    make_row(h, av_id, platforms[2], "new-c.tar.gz"),
-                                },
-                                h.db_user(),
-                                h.db_user(),
-                                "system.new_record",
-                                "swap");
-
-    const auto listed = repo.read_latest_by_app_version(av_id);
-    CHECK(listed.size() == 2);
-    const auto got = sorted_codes(listed);
-    auto want = std::vector<std::string>{platforms[0].code, platforms[2].code};
-    std::sort(want.begin(), want.end());
-    CHECK(got == want);
-
-    // URI for the platform that survived must be the new one, not the old one.
-    for (const auto& r : listed) {
-        if (r.platform_code == platforms[0].code)
-            CHECK(r.package_uri.find("new-a.tar.gz") != std::string::npos);
-        else if (r.platform_code == platforms[2].code)
-            CHECK(r.package_uri.find("new-c.tar.gz") != std::string::npos);
-    }
-}
-
-TEST_CASE("replace_by_app_version_empty_set_drops_all_active", tags) {
-    database_helper h;
-    const auto platforms = seeded_platforms(h);
-    const auto av_id = boost::uuids::random_generator()();
-
-    app_version_platform_repository repo(h.context());
-    repo.replace_by_app_version(av_id,
-                                {
-                                    make_row(h, av_id, platforms[0], "seed.tar.gz"),
-                                },
-                                h.db_user(),
-                                h.db_user(),
-                                "system.new_record",
-                                "seed");
-    REQUIRE(repo.read_latest_by_app_version(av_id).size() == 1);
-
-    repo.replace_by_app_version(av_id, {}, h.db_user(), h.db_user(), "system.new_record", "clear");
-
-    CHECK(repo.read_latest_by_app_version(av_id).empty());
-}
-
-TEST_CASE("replace_by_app_version_is_idempotent", tags) {
-    database_helper h;
-    const auto platforms = seeded_platforms(h);
-    const auto av_id = boost::uuids::random_generator()();
-
-    std::vector<app_version_platform> rows{
-        make_row(h, av_id, platforms[0], "same.tar.gz"),
-        make_row(h, av_id, platforms[1], "same.tar.gz"),
-    };
-
-    app_version_platform_repository repo(h.context());
-    repo.replace_by_app_version(
-        av_id, rows, h.db_user(), h.db_user(), "system.new_record", "first");
-    repo.replace_by_app_version(
-        av_id, rows, h.db_user(), h.db_user(), "system.new_record", "same again");
-
-    const auto listed = repo.read_latest_by_app_version(av_id);
-    CHECK(listed.size() == 2);
-    const auto got = sorted_codes(listed);
-    auto want = std::vector<std::string>{platforms[0].code, platforms[1].code};
-    std::sort(want.begin(), want.end());
-    CHECK(got == want);
-}
 
 TEST_CASE("read_latest_by_app_version_returns_empty_for_unknown_id", tags) {
     database_helper h;
@@ -200,30 +75,16 @@ TEST_CASE("read_latest_by_app_version_returns_empty_for_unknown_id", tags) {
     CHECK(repo.read_latest_by_app_version(unknown).empty());
 }
 
-TEST_CASE("read_latest_by_app_version_filters_by_app_version", tags) {
+TEST_CASE("read_latest_by_app_version_reports_the_rows_written_for_each_parent", tags) {
     database_helper h;
     const auto platforms = seeded_platforms(h);
     const auto av_a = boost::uuids::random_generator()();
     const auto av_b = boost::uuids::random_generator()();
 
     app_version_platform_repository repo(h.context());
-    repo.replace_by_app_version(av_a,
-                                {
-                                    make_row(h, av_a, platforms[0], "a0.tar.gz"),
-                                    make_row(h, av_a, platforms[1], "a1.tar.gz"),
-                                },
-                                h.db_user(),
-                                h.db_user(),
-                                "system.new_record",
-                                "av_a");
-    repo.replace_by_app_version(av_b,
-                                {
-                                    make_row(h, av_b, platforms[0], "b0.tar.gz"),
-                                },
-                                h.db_user(),
-                                h.db_user(),
-                                "system.new_record",
-                                "av_b");
+    repo.write({make_row(h, av_a, platforms[0], "a0.tar.gz"),
+                make_row(h, av_a, platforms[1], "a1.tar.gz")});
+    repo.write({make_row(h, av_b, platforms[0], "b0.tar.gz")});
 
     const auto a_rows = repo.read_latest_by_app_version(av_a);
     const auto b_rows = repo.read_latest_by_app_version(av_b);
@@ -236,26 +97,18 @@ TEST_CASE("read_latest_by_app_version_filters_by_app_version", tags) {
         CHECK(r.package_uri.find("/b") != std::string::npos);
 }
 
-TEST_CASE("replace_by_app_version_stamps_the_context_tenant", tags) {
+TEST_CASE("remove_by_app_version_leaves_the_other_parent_alone", tags) {
     database_helper h;
     const auto platforms = seeded_platforms(h);
-    const auto av_id = boost::uuids::random_generator()();
-
-    // A client must not assert its own tenant, so the shell sends rows with
-    // tenant_id unset. The repository stamps the context tenant on each one
-    // before the insert, which keeps the close and the insert on one tenant.
-    auto a = make_row(h, av_id, platforms[0], "stamped-a.tar.gz");
-    auto b = make_row(h, av_id, platforms[1], "stamped-b.tar.gz");
-    a.tenant_id.clear();
-    b.tenant_id.clear();
+    const auto av_a = boost::uuids::random_generator()();
+    const auto av_b = boost::uuids::random_generator()();
 
     app_version_platform_repository repo(h.context());
-    CHECK_NOTHROW(repo.replace_by_app_version(
-        av_id, {a, b}, h.db_user(), h.db_user(), "system.new_record", "stamp"));
+    repo.write({make_row(h, av_a, platforms[0], "a0.tar.gz")});
+    repo.write({make_row(h, av_b, platforms[0], "b0.tar.gz")});
 
-    const auto expected = h.tenant_id().to_string();
-    const auto listed = repo.read_latest_by_app_version(av_id);
-    CHECK(listed.size() == 2);
-    for (const auto& r : listed)
-        CHECK(r.tenant_id == expected);
+    CHECK_NOTHROW(repo.remove_by_app_version(av_a));
+
+    CHECK(repo.read_latest_by_app_version(av_a).empty());
+    CHECK(repo.read_latest_by_app_version(av_b).size() == 1);
 }

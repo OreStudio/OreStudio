@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 400F8C55-EC77-40F1-91B2-53FF023C998D
+:END:
+#+title: The batch workflow bridge has no test
+#+description: The bridge's tenant-scoped removal was wrong and no test saw it; add an integration test that writes a link for one tenant, finishes the batch, polls, and asserts the link is gone.
+#+type: capture
+#+level: cross
+#+filetags: :compute:testing:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=batch_workflow_bridge= is the service-level poller that fires
+=step_completed_event= when a batch finishes and then removes the link. It
+has no test, and the gap is not theoretical: the success path removed the
+link as the service's own tenant while the link belonged to another, the
+tenant-scoped DELETE matched nothing, and the bridge republished the
+completion event on every poll. A review found it; no test did.
+
+Write an integration test in =projects/ores.compute/service/tests/= that
+makes the tenant difference real: seed a batch for one tenant, write a link
+for that tenant, build the bridge with the system tenant's context, call
+=poll_once()=, and assert the link is gone. A second case should assert
+that a link whose batch is still open survives the poll, which pins the
+other half of the seam.
+
+* Why
+
+The bridge is the only path from a finished batch back to the workflow that
+waits on it, and its failure mode is a loop rather than a crash: the event
+repeats forever and nothing logs an error. It is also the seam the G02 note
+described, where the read is cross-tenant and the write is tenant-scoped,
+which is exactly the kind of asymmetry a test should hold still.
+
+* References
+
+- =projects/ores.compute/service/src/app/batch_workflow_bridge.cpp= — the
+  bridge and the removal this test would pin.
+- =projects/ores.compute/core/include/ores.compute.core/repository/workflow_batch_link_repository.hpp= —
+  =remove_status=, which the successful removal must report.
+- =doc/agile/versions/v0/sprint_26/clean-compute/evidence/v08_source_files_without_a_test.txt= —
+  records this file as the one V08 gap on the task.
+
+* See also
+
+- [[id:F2FCB7EA-8F6E-45A1-A853-88D2CFD71BA1][A current-state remove reports removed for a delete that matched nothing]] —
+  why the wrong tenant produced no error.

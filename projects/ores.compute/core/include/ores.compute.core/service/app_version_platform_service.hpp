@@ -26,10 +26,13 @@
 #define ORES_COMPUTE_SERVICE_APP_VERSION_PLATFORM_SERVICE_HPP
 
 #include "ores.compute.api/domain/app_version_platform.hpp"
+#include "ores.compute.api/messaging/app_version_platform_protocol.hpp"
 #include "ores.compute.core/repository/app_version_platform_repository.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -38,8 +41,8 @@ namespace ores::compute::service {
 /**
  * @brief Service for managing app version platforms.
  *
- * This service provides functionality for:
- * - Managing app version platforms (CRUD operations)
+ * Provides a higher-level interface for app version platform operations,
+ * wrapping the underlying repository.
  */
 class app_version_platform_service {
 private:
@@ -56,98 +59,62 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a app_version_platform_service with required repositories.
+     * @brief Constructs a app_version_platform_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit app_version_platform_service(context ctx);
 
     /**
-     * @brief Lists all app version platforms.
-     */
-    std::vector<domain::app_version_platform> list_app_version_platforms();
-
-    /**
-     * @brief Lists app version platforms with pagination.
-     */
-    std::vector<domain::app_version_platform> list_app_version_platforms(std::uint32_t offset,
-                                                                         std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active app version platforms.
-     */
-    std::uint32_t get_total_app_version_platform_count();
-
-    /**
-     * @brief Lists app version platforms for a specific app version.
+     * @brief The protocol operations, one method per subject.
      *
-     * @param app_version_id The app version to filter by
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
      */
-    std::vector<domain::app_version_platform>
-    list_app_version_platforms_by_app_version(const boost::uuids::uuid& app_version_id);
-
-    /**
-     * @brief Lists app version platforms for a specific app version, with pagination.
-     */
-    std::vector<domain::app_version_platform> list_app_version_platforms_by_app_version(
-        const boost::uuids::uuid& app_version_id, std::uint32_t offset, std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active app version platforms filtered by app_version_id.
-     */
-    std::uint32_t
-    get_total_app_version_platform_count_by_app_version(const boost::uuids::uuid& app_version_id);
-
-    /**
-     * @brief Gets the total count of active app version platforms filtered by platform_id.
-     */
-    std::uint32_t
-    get_total_app_version_platform_count_by_platform(const boost::uuids::uuid& platform_id);
-    /**
-     * @brief Saves a app version platform (creates or updates).
-     *
-     * @param app_version_platform The app version platform to save
-     */
-    void save_app_version_platform(const domain::app_version_platform& app_version_platform);
-
-    /**
-     * @brief Saves a batch of app version platforms in one transaction.
-     *
-     * @param app_version_platforms The app version platforms to save
-     */
-    void save_app_version_platforms(
-        const std::vector<domain::app_version_platform>& app_version_platforms);
-
-    /**
-     * @brief Removes a app version platform.
-     *
-     * @param app_version_id The app version
-     * @param platform_id The platform
-     */
-    void remove_app_version_platform(const boost::uuids::uuid& app_version_id,
-                                     const boost::uuids::uuid& platform_id);
-
-    /**
-     * @brief Replaces the app version platforms for a app version.
-     *
-     * Soft-closes the currently active rows for the given
-     * app version and inserts the rows in @p app_version_platforms,
-     * so the active set exactly matches the caller's list.
-     *
-     * @param app_version_id The app version
-     * @param app_version_platforms The rows that make up the new active set
-     */
-    void replace_app_version_platforms_by_app_version(
-        const boost::uuids::uuid& app_version_id,
-        const std::vector<domain::app_version_platform>& app_version_platforms,
-        const std::string& modified_by,
-        const std::string& performed_by,
-        const std::string& change_reason_code,
-        const std::string& change_commentary);
+    /**@{*/
+    messaging::list_app_version_platforms_response
+    list_app_version_platforms(const messaging::list_app_version_platforms_request& request);
+    messaging::get_app_version_platform_response
+    get_app_version_platform(const messaging::get_app_version_platform_request& request);
+    messaging::get_many_app_version_platforms_response get_many_app_version_platforms(
+        const messaging::get_many_app_version_platforms_request& request);
+    messaging::put_app_version_platform_response
+    put_app_version_platform(const messaging::put_app_version_platform_request& request);
+    messaging::put_many_app_version_platforms_response put_many_app_version_platforms(
+        const messaging::put_many_app_version_platforms_request& request);
+    messaging::delete_app_version_platform_response
+    delete_app_version_platform(const messaging::delete_app_version_platform_request& request);
+    messaging::delete_many_app_version_platforms_response delete_many_app_version_platforms(
+        const messaging::delete_many_app_version_platforms_request& request);
+    messaging::list_by_app_version_id_app_version_platforms_response
+    list_by_app_version_id_app_version_platforms(
+        const messaging::list_by_app_version_id_app_version_platforms_request& request);
+    /**@}*/
 
 private:
     context ctx_;
     repository::app_version_platform_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const messaging::app_version_platform_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::app_version_platform& out);
 };
 
 }

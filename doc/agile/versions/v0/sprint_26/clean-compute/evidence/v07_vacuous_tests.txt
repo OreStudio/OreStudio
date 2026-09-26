@@ -1,0 +1,47 @@
+# V07: no vacuous test
+# A test is vacuous when it passes although its subject does nothing. The
+# survey reads every test in the component for assertions that cannot fail:
+# a bare length, a non-throw, a truthiness, or one production run compared
+# with another. Run 2026-09-26.
+
+## The tests and what they assert
+
+projects/ores.compute/api/tests/domain_app_tests.cpp                            22 assertion lines
+projects/ores.compute/api/tests/domain_app_version_platform_tests.cpp           14 assertion lines
+projects/ores.compute/api/tests/domain_app_version_tests.cpp                    22 assertion lines
+projects/ores.compute/api/tests/domain_batch_tests.cpp                          23 assertion lines
+projects/ores.compute/api/tests/domain_host_tests.cpp                           30 assertion lines
+projects/ores.compute/api/tests/domain_result_tests.cpp                         20 assertion lines
+projects/ores.compute/api/tests/domain_workunit_tests.cpp                       22 assertion lines
+projects/ores.compute/core/tests/app_eventing_integration_tests.cpp              7 assertion lines
+projects/ores.compute/core/tests/app_version_eventing_integration_tests.cpp      7 assertion lines
+projects/ores.compute/core/tests/batch_eventing_integration_tests.cpp            7 assertion lines
+projects/ores.compute/core/tests/host_eventing_integration_tests.cpp             7 assertion lines
+projects/ores.compute/core/tests/platform_eventing_integration_tests.cpp         7 assertion lines
+projects/ores.compute/core/tests/repository_app_version_platform_repository_tests.cpp   9 assertion lines
+projects/ores.compute/core/tests/result_eventing_integration_tests.cpp           7 assertion lines
+projects/ores.compute/core/tests/workunit_eventing_integration_tests.cpp         7 assertion lines
+projects/ores.compute/service/tests/config_parser_tests.cpp                     26 assertion lines
+projects/ores.compute/wrapper/tests/filesystem_archiver_tests.cpp               16 assertion lines
+
+## The three assertions that look weak, and the assertion beside each
+
+77:    CHECK(fs::file_size(out) > 0);
+84:    CHECK(read_text(extracted) == content);
+
+93:    CHECK(!json_output.empty());
+94:    CHECK(json_output.find("LEDGER") != std::string::npos);
+
+## Finding
+
+No test is vacuous. Every non-empty, truthiness or non-throw assertion is
+a guard that sits beside an assertion of a literal expected value in the
+same case: the archiver case that checks a non-zero file size also reads
+the extracted files back and compares their bytes, and each domain
+serialisation case that checks a non-empty string also searches it for the
+field value it wrote. A subject that did nothing fails the paired
+assertion, which is what the item asks.
+
+The generated eventing cases assert the same way: each waits for a
+notification that names the row it wrote and then round-trips the row
+through the service, so a chain that published nothing fails.

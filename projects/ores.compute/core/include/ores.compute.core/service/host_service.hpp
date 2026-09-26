@@ -26,6 +26,7 @@
 #define ORES_COMPUTE_CORE_SERVICE_HOST_SERVICE_HPP
 
 #include "ores.compute.api/domain/host.hpp"
+#include "ores.compute.api/messaging/host_protocol.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/host_repository.hpp"
 #include "ores.database/domain/context.hpp"
@@ -65,6 +66,32 @@ public:
     explicit host_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_hosts_response list_hosts(const messaging::list_hosts_request& request);
+    messaging::get_host_response get_host(const messaging::get_host_request& request);
+    messaging::get_many_hosts_response
+    get_many_hosts(const messaging::get_many_hosts_request& request);
+    messaging::put_host_response put_host(const messaging::put_host_request& request);
+    messaging::put_many_hosts_response
+    put_many_hosts(const messaging::put_many_hosts_request& request);
+    messaging::delete_host_response delete_host(const messaging::delete_host_request& request);
+    messaging::delete_many_hosts_response
+    delete_many_hosts(const messaging::delete_many_hosts_request& request);
+    messaging::list_host_versions_response
+    list_host_versions(const messaging::list_host_versions_request& request);
+    messaging::get_host_version_response
+    get_host_version(const messaging::get_host_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists compute hosts with pagination support.
      *
      * @param offset Number of records to skip.
@@ -88,14 +115,35 @@ public:
      * @param version The version to fetch.
      * @return The compute host at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::host> get_host_at_version(const std::string& id, std::uint32_t version);
+    std::optional<domain::host> get_host_at_version(const boost::uuids::uuid& id,
+                                                    std::uint32_t version);
 
     /**
      * @brief Retrieves a single compute host by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The compute host if found, std::nullopt otherwise.
      */
-    std::optional<domain::host> get_host(const std::string& id);
+    std::optional<domain::host> get_host(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single compute host by the key the model
+     * declares -- the human-readable key a caller holds.
+     *
+     * This is the counterpart of the uuid overload above: the two keys an
+     * entity holds are different keys, and a call site has to say which one it
+     * means.
+     *
+     * @return The compute host if found, std::nullopt otherwise.
+     */
+    std::optional<domain::host> get_host_by_external_id(const std::string& external_id);
+
+    /**
+     * @brief Retrieves a batch of compute hosts by primary key.
+     */
+    std::vector<domain::host> get_hosts(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a compute host (creates or updates).
@@ -118,7 +166,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_host(const std::string& id);
+    void delete_host(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes compute hosts by their primary keys.
@@ -127,12 +175,33 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a compute host.
+     *
+     * Addressed by the key the model declares, which is the one a caller
+     * holds; the storage key is resolved from it here, the same step every
+     * other read makes.
      */
-    std::vector<domain::host> get_host_history(const std::string& id);
+    std::vector<domain::host> get_host_history(const std::string& key);
 
 private:
     context ctx_;
     repository::host_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::host_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::host& out);
 };
 
 }

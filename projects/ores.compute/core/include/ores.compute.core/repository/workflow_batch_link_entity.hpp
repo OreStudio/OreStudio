@@ -17,12 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_REPOSITORY_WORKFLOW_BATCH_LINK_ENTITY_HPP
-#define ORES_COMPUTE_REPOSITORY_WORKFLOW_BATCH_LINK_ENTITY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_COMPUTE_CORE_REPOSITORY_WORKFLOW_BATCH_LINK_ENTITY_HPP
+#define ORES_COMPUTE_CORE_REPOSITORY_WORKFLOW_BATCH_LINK_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
+#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
-#include <sqlgen/postgres.hpp>
+#include <ostream>
 #include <string>
 
 namespace ores::compute::repository {
@@ -30,10 +36,7 @@ namespace ores::compute::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Async bridge record linking a compute batch to a workflow step.
- *
- * Written by report_submit_handler when it defers step completion. Read and
- * deleted by batch_workflow_bridge when the batch reaches a terminal state.
+ * @brief Represents a workflow batch link in the database.
  */
 struct workflow_batch_link_entity {
     constexpr static const char* schema = "public";
@@ -43,8 +46,10 @@ struct workflow_batch_link_entity {
     std::string tenant_id;
     std::string workflow_step_id;
     std::string workflow_instance_id;
-    db_timestamp created_at;
+    std::string created_at;
 };
+
+std::ostream& operator<<(std::ostream& s, const workflow_batch_link_entity& v);
 
 }
 

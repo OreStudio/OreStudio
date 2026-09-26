@@ -27,6 +27,7 @@
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.core/domain/token_settings.hpp"
+#include "ores.iam.core/messaging/principal.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/account_operations_service.hpp"
@@ -197,11 +198,7 @@ public:
                 using ores::database::service::tenant_context;
                 auto wf_ctx = tenant_context::with_tenant(ctx_, tenant_id);
 
-                // Extract username from principal (strip @hostname suffix).
-                std::string username = req->principal;
-                const auto at_pos = req->principal.rfind('@');
-                if (at_pos != std::string::npos)
-                    username = req->principal.substr(0, at_pos);
+                const auto username = username_of(req->principal);
 
                 service::account_operations_service acct_svc(wf_ctx);
                 auto auth_svc = std::make_shared<service::authorization_service>(wf_ctx);
@@ -254,12 +251,11 @@ public:
             // Parse principal: if username@hostname, route to that tenant's
             // context so accounts can be created in any tenant by a system
             // admin whose JWT is in the system tenant.
-            std::string username = req->principal;
+            const auto principal = split_principal(req->principal);
+            const auto& username = principal.username;
             ores::database::context op_ctx = base_ctx;
-            const auto at_pos = req->principal.rfind('@');
-            if (at_pos != std::string::npos) {
-                username = req->principal.substr(0, at_pos);
-                const auto hostname = req->principal.substr(at_pos + 1);
+            if (principal.has_hostname) {
+                const auto& hostname = principal.hostname;
                 const auto tenants = repository::read_active_tenant_by_hostname(ctx_, hostname);
                 if (!tenants.empty()) {
                     using ores::database::service::tenant_context;

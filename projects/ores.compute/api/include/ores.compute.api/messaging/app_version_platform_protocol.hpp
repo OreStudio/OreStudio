@@ -26,118 +26,203 @@
 #define ORES_COMPUTE_API_MESSAGING_APP_VERSION_PLATFORM_PROTOCOL_HPP
 
 #include "ores.compute.api/domain/app_version_platform.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::compute::messaging {
 
-/**
- * @brief The app version platform row enriched with the joined row's
- * display fields, so a screen needs one request for the whole set rather
- * than one per row. The by-side read returns this view.
- */
-struct app_version_platform_view {
-    ores::compute::domain::app_version_platform app_version_platform;
-    std::string platform_code;
+struct app_version_platform_key {
+    boost::uuids::uuid app_version_id;
+    boost::uuids::uuid platform_id;
 };
 
-struct get_app_version_platforms_request {
-    using response_type = struct get_app_version_platforms_response;
+struct app_version_platform_write {
+    boost::uuids::uuid app_version_id;
+    boost::uuids::uuid platform_id;
+    std::string package_uri;
+    std::string sha256;
+};
+
+struct app_version_platform_change {
+    app_version_platform_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct app_version_platform_removal {
+    app_version_platform_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct app_version_platform_lookup {
+    app_version_platform_key key;
+    std::optional<ores::compute::domain::app_version_platform> app_version_platform;
+};
+
+struct app_version_platforms_filter {
+    std::optional<boost::uuids::uuid> app_version_id;
+};
+
+struct list_app_version_platforms_request {
+    using response_type = struct list_app_version_platforms_response;
     static constexpr std::string_view nats_subject = "compute.v1.app_version_platforms.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<app_version_platforms_filter> filter;
 };
 
-struct get_app_version_platforms_response {
+struct list_app_version_platforms_response {
+    ores::utility::domain::result result;
     std::vector<ores::compute::domain::app_version_platform> app_version_platforms;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct get_app_version_platforms_by_app_version_request {
-    using response_type = struct get_app_version_platforms_by_app_version_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.app_version_platforms.list_by_app_version_id";
-    std::string app_version_id;
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
+struct get_app_version_platform_request {
+    using response_type = struct get_app_version_platform_response;
+    static constexpr std::string_view nats_subject = "compute.v1.app_version_platforms.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    app_version_platform_key key;
 };
 
-struct get_app_version_platforms_by_app_version_response {
-    std::vector<app_version_platform_view> app_version_platforms;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+struct get_app_version_platform_response {
+    ores::utility::domain::result result;
+    std::optional<ores::compute::domain::app_version_platform> app_version_platform;
 };
 
-struct save_app_version_platform_request {
-    using response_type = struct save_app_version_platform_response;
-    static constexpr std::string_view nats_subject = "compute.v1.app_version_platforms.save";
+struct get_many_app_version_platforms_request {
+    using response_type = struct get_many_app_version_platforms_response;
+    static constexpr std::string_view nats_subject = "compute.v1.app_version_platforms.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<app_version_platform_key> keys;
+};
+
+struct get_many_app_version_platforms_response {
+    ores::utility::domain::result result;
+    std::vector<app_version_platform_lookup> entries;
+};
+
+struct put_app_version_platform_request {
+    using response_type = struct put_app_version_platform_response;
+    static constexpr std::string_view nats_subject = "compute.v1.app_version_platforms.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    app_version_platform_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_app_version_platform_response {
+    ores::utility::domain::result result;
+    ores::compute::domain::app_version_platform app_version_platform;
+};
+
+struct put_many_app_version_platforms_request {
+    using response_type = struct put_many_app_version_platforms_response;
+    static constexpr std::string_view nats_subject = "compute.v1.app_version_platforms.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<app_version_platform_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_app_version_platforms_response {
+    ores::utility::domain::result result;
     std::vector<ores::compute::domain::app_version_platform> app_version_platforms;
-
-    static save_app_version_platform_request
-    from(std::vector<ores::compute::domain::app_version_platform> v) {
-        return {.app_version_platforms = std::move(v)};
-    }
-};
-
-struct save_app_version_platform_response {
-    bool success = false;
-    std::string message;
 };
 
 struct delete_app_version_platform_request {
     using response_type = struct delete_app_version_platform_response;
     static constexpr std::string_view nats_subject = "compute.v1.app_version_platforms.delete";
-    std::vector<std::string> app_version_ids;
-    std::vector<std::string> platform_ids;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    app_version_platform_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_app_version_platform_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct replace_app_version_platforms_by_app_version_request {
-    using response_type = struct replace_app_version_platforms_by_app_version_response;
+struct delete_many_app_version_platforms_request {
+    using response_type = struct delete_many_app_version_platforms_response;
+    static constexpr std::string_view nats_subject = "compute.v1.app_version_platforms.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<app_version_platform_removal> removals;
+    ores::utility::domain::change_intent intent;
+};
+
+struct delete_many_app_version_platforms_response {
+    ores::utility::domain::result result;
+};
+
+struct list_by_app_version_id_app_version_platforms_request {
+    using response_type = struct list_by_app_version_id_app_version_platforms_response;
     static constexpr std::string_view nats_subject =
-        "compute.v1.app_version_platforms.replace_by_app_version_id";
-    std::string app_version_id;
+        "compute.v1.app_version_platforms.list_by_app_version_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid app_version_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<app_version_platforms_filter> filter;
+};
+
+struct list_by_app_version_id_app_version_platforms_response {
+    ores::utility::domain::result result;
     std::vector<ores::compute::domain::app_version_platform> app_version_platforms;
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
+    std::uint64_t total;
 };
 
-struct replace_app_version_platforms_by_app_version_response {
-    bool success = false;
-    std::string message;
-};
-
-struct count_app_version_platforms_by_app_version_request {
-    using response_type = struct count_app_version_platforms_by_app_version_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.app_version_platforms.count_by_app_version_id";
-    std::string app_version_id;
-};
-
-struct count_app_version_platforms_by_app_version_response {
-    int total_available_count = 0;
-};
-
-struct count_app_version_platforms_by_platform_request {
-    using response_type = struct count_app_version_platforms_by_platform_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.app_version_platforms.count_by_platform_id";
-    std::string platform_id;
-};
-
-struct count_app_version_platforms_by_platform_response {
-    int total_available_count = 0;
-};
 }
 
 #endif

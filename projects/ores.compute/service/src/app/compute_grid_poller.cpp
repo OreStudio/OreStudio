@@ -19,7 +19,9 @@
  */
 #include "ores.compute.service/app/compute_grid_poller.hpp"
 #include "ores.compute.core/repository/compute_telemetry_repository.hpp"
+#include "ores.compute.core/repository/grid_sample_repository.hpp"
 #include <boost/asio/steady_timer.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/system/system_error.hpp>
@@ -35,8 +37,12 @@ compute_grid_poller::compute_grid_poller(std::uint32_t interval_seconds,
 
 void compute_grid_poller::poll_once() {
     repository::compute_telemetry_repository telemetry_repo;
-    const auto sample = telemetry_repo.compute_grid_stats(ctx_);
-    telemetry_repo.insert_grid_sample(ctx_, sample);
+    auto sample = telemetry_repo.compute_grid_stats(ctx_);
+    // The row is a fact about an instant rather than a running record, so the
+    // writer names it and the generated repository writes it.
+    sample.id = boost::uuids::random_generator()();
+    repository::grid_sample_repository sample_repo;
+    sample_repo.write(ctx_, sample);
 
     BOOST_LOG_SEV(lg(), debug) << "Grid sample: hosts=" << sample.total_hosts
                                << " online=" << sample.online_hosts << " idle=" << sample.idle_hosts

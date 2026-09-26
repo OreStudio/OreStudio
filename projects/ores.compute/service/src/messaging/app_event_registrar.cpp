@@ -23,8 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.compute.service/messaging/app_event_registrar.hpp"
-#include "ores.compute.api/eventing/app_changed_event.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.compute.api/eventing/app_event.hpp"
+#include "ores.compute.api/messaging/app_protocol.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
 
@@ -38,18 +39,16 @@ namespace ev = ores::eventing;
 register_app_event_mapping(ev::service::postgres_event_source& event_source,
                            ev::service::event_bus& event_bus,
                            ores::nats::service::client& nats) {
-    ev::service::registrar::register_mapping<compute::eventing::app_changed_event>(
-        event_source, "ores.compute.app", "ores_compute_apps");
+    // The trigger publishes on the table's own channel, and the mapping turns
+    // what it says into this entity's event.
+    event_source.register_entity_event_mapping<compute::messaging::app_event>("ores_compute_apps");
 
-    return event_bus.subscribe<compute::eventing::app_changed_event>(
-        [&nats](const compute::eventing::app_changed_event& e) {
+    return event_bus.subscribe<compute::messaging::app_event>(
+        [&nats](const compute::messaging::app_event& e) {
+            // One payload is addressed by three subjects, so the subject is
+            // the collection's prefix and the action the event reports.
             ev::service::publish_entity_event(
-                nats,
-                std::string(ev::domain::event_traits<compute::eventing::app_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.compute.app",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.app_ids,
-                                                .tenant_id = e.tenant_id});
+                nats, ev::domain::event_subject<compute::messaging::app_event>(e.action), e);
         });
 }
 

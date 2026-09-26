@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: B9D74FB0-B4DF-53A0-9E47-4A7171C33D4C
+:END:
+#+title: How do I run the batches commands from the shell?
+#+description: Every command the batches submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:batches:
+
+This file documents the batches resource at the shell, one section per command. Every command is a subcommand of =batches=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 4C0B7852-5EA3-5224-95A0-565547B96F7F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+batches list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.batches.list=.
+
+#+name: batches-list
+#+begin_src ores-shell :tangle batches-list.ores :exports none
+batches list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 20FB1889-D384-5081-AECF-33BE896AF230
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+batches get <external_ref>
+#+end_example
+
+It is addressed at =compute.v1.batches.get=.
+
+#+name: batches-get
+#+begin_src ores-shell :tangle batches-get.ores :exports none
+batches get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: D42C7D11-AF38-5829-A28A-3EEB42550753
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+batches get-many <external_ref>
+#+end_example
+
+It is addressed at =compute.v1.batches.get_many=.
+
+#+name: batches-get-many
+#+begin_src ores-shell :tangle batches-get-many.ores :exports none
+batches get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B3011C7C-72FA-50A5-889F-D0760C2ECEA4
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+batches add <external_ref> <status> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.batches.put=.
+
+#+name: batches-add
+#+begin_src ores-shell :tangle batches-add.ores :exports none
+batches add __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 7E3046C2-16F6-5C04-8CBA-EA7A558E46A4
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+batches set <id> <external_ref> <status> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =compute.v1.batches.put=.
+
+#+name: batches-set
+#+begin_src ores-shell :tangle batches-set.ores :exports none
+batches set 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 16F1933A-81B0-5A97-A5F7-59315979DBE7
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+batches put-many --count <n> <id> <external_ref> <status> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.batches.put_many=.
+
+#+name: batches-put-many
+#+begin_src ores-shell :tangle batches-put-many.ores :exports none
+batches put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 9EFE5FCF-7E1B-543A-97C8-38A1A57896D9
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+batches delete <external_ref> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =compute.v1.batches.delete=.
+
+#+name: batches-delete
+#+begin_src ores-shell :tangle batches-delete.ores :exports none
+batches delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: A38F2C09-17FC-58A8-B39C-5A31238DBFEB
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+batches delete-many <external_ref> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.batches.delete_many=.
+
+#+name: batches-delete-many
+#+begin_src ores-shell :tangle batches-delete-many.ores :exports none
+batches delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 285F363B-2509-52C7-9BDC-7AB767DCC700
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+batches versions <external_ref> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.batches_versions.list=.
+
+#+name: batches-versions
+#+begin_src ores-shell :tangle batches-versions.ores :exports none
+batches versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C1B51C67-DF28-50F0-B227-DD912B979C74
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+batches version <external_ref> --version <n>
+#+end_example
+
+It is addressed at =compute.v1.batches_versions.get=.
+
+#+name: batches-version
+#+begin_src ores-shell :tangle batches-version.ores :exports none
+batches version __none__ --version 1
+#+end_src
+

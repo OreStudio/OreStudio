@@ -1,0 +1,21 @@
+# H04 survey: hand-rolled per-platform shims under projects/ores.compute
+# Searched for the compiler and platform macros the three supported compilers define,
+# and for the standard facilities a shim would stand in for.
+
+## macro search
+projects/ores.compute/wrapper/src/filesystem/archiver.cpp:63:#ifdef _WIN32
+projects/ores.compute/wrapper/src/filesystem/archiver.cpp:77:#ifdef _WIN32
+projects/ores.compute/wrapper/src/filesystem/archiver.cpp:110:#ifdef _WIN32
+projects/ores.compute/wrapper/src/filesystem/archiver.cpp:132:#ifdef _WIN32
+
+## Finding
+
+No hand-rolled shim. The four matches are one file's Windows entry points:
+libarchive exposes wide-character functions (archive_write_open_filename_w,
+archive_entry_copy_pathname_w, archive_read_open_filename_w) for Unicode
+paths on Windows, and the standard library offers no substitute for them,
+so the branches pick the library's own wide API. Nothing here stands in for
+a facility MSVC, AppleClang and GCC all provide: no hand-rolled
+unreachable(), no ORES_NO_UNIQUE_ADDRESS macro, no compiler-detection
+header. The component compiles on the three supported compilers with no
+shim of its own.

@@ -272,8 +272,8 @@ void {{entity_singular}}_commands::process_{{identifier}}(
 {{/is_version_read}}
 {{#is_put}}
 
-    if (parsed->positionals.size() != {{write_arity}} + 2) {
-        fail(out) << "Expected " << ({{write_arity}} + 2) << " arguments, got "
+    if (parsed->positionals.size() != {{put_arity}} + 2) {
+        fail(out) << "Expected " << ({{put_arity}} + 2) << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
         return;
     }

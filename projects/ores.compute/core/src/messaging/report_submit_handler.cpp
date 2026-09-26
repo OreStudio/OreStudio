@@ -47,7 +47,7 @@ namespace {
 // Subject for work assignment events: append tenant_id so wrappers can
 // subscribe to their own tenant's work stream.
 std::string assignment_subject(const std::string& tenant_id) {
-    return "compute.v1.work.assignments." + tenant_id;
+    return std::string(work_assignment_event::nats_subject) + "." + tenant_id;
 }
 
 } // namespace
@@ -107,7 +107,8 @@ void report_submit_handler::submit(ores::nats::message msg) {
             domain::workunit wu;
             wu.id = wu_uuid;
             wu.batch_id = batch_uuid;
-            wu.app_version_id = {}; // Placeholder: no ORE app version yet
+            // No ORE app version is assigned to this workunit yet.
+            wu.app_version_id = {};
             wu.input_uri = tarball_uri;
             wu.priority = 1;
             wu.target_redundancy = 1;
@@ -116,7 +117,6 @@ void report_submit_handler::submit(ores::nats::message msg) {
             wu_svc.save_workunit(wu);
             workunit_ids.push_back(wu_id);
 
-            // Publish work assignment event (fire-and-forget).
             work_assignment_event evt;
             evt.workunit_id = wu_id;
             evt.app_version_id = boost::uuids::to_string(wu.app_version_id);
@@ -132,16 +132,15 @@ void report_submit_handler::submit(ores::nats::message msg) {
 
         // Record the async bridge row: batch_workflow_bridge will publish
         // step_completed_event once the batch reaches "closed" status.
-        repository::workflow_batch_link_entity link;
-        link.batch_id = batch_id;
-        link.tenant_id = req.tenant_id;
+        domain::workflow_batch_link link;
+        link.batch_id = batch_uuid;
+        link.tenant_id = utility::uuid::tenant_id::from_string(req.tenant_id).value();
         link.workflow_step_id = wf->step_id;
         link.workflow_instance_id = wf->instance_id;
-        link.created_at =
-            ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now());
+        link.created_at = std::chrono::system_clock::now();
 
         repository::workflow_batch_link_repository link_repo;
-        link_repo.create(tenant_ctx, link);
+        link_repo.write(tenant_ctx, link);
 
         BOOST_LOG_SEV(lg(), info) << "submit_compute deferred | instance=" << req.report_instance_id
                                   << " batch=" << batch_id << " workunits=" << workunit_ids.size()

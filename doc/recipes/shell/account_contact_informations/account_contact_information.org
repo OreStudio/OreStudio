@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-account_contact_informations add <id> <account_id> <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>
+account_contact_informations add <account_id> <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.account_contact_informations.put=.
 
 #+name: account_contact_informations-add
 #+begin_src ores-shell :tangle account_contact_informations-add.ores :exports none
-account_contact_informations add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+account_contact_informations add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=

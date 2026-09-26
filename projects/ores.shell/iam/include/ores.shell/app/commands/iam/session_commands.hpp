@@ -86,7 +86,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <start_time> <account_id> <end_time> <client_ip> <client_identifier>
+     * @brief add <start_time> <account_id> <end_time> <client_ip> <client_identifier>
      * <client_version_major> <client_version_minor> <bytes_sent> <bytes_received> <country_code>
      * <protocol> <reason> <commentary>
      */

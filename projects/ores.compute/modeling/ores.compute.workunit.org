@@ -25,6 +25,11 @@ of 'workunit'. Does not track execution state — that belongs to results.
 :profile:   uuid-identified-lookup
 :END:
 
+The workunit's key is its id. An earlier version of this model said
+=:key_field: input_uri=, and that made a multi-job batch impossible: every
+workunit of a batch runs the same input bundle, so the second workunit of
+a batch was refused as an existing row. The end-to-end run found it.
+
 * Columns
 
 ** id
@@ -175,36 +180,6 @@ FK to the validated canonical result; NULL until the Validator accepts a result.
 | target_redundancy | Target Redundancy |
 | modified_by       | Modified By       |
 | recorded_at       | Recorded At       |
-
-** Presentation
-:PROPERTIES:
-:domain_include:          ores.compute.api/domain/workunit.hpp
-:domain_class:            compute::domain::workunit
-:protocol_include:        ores.compute.api/messaging/workunit_protocol.hpp
-:collection_name:         workunits
-:key_field:               input_uri
-:get_request_class:       compute::messaging::get_workunits_request
-:get_response_class:      compute::messaging::get_workunits_response
-:get_message_type:        get_workunits_request
-:save_request_class:      compute::messaging::save_workunit_request
-:save_response_class:     compute::messaging::save_workunit_response
-:save_message_type:       save_workunit_request
-:delete_request_class:    compute::messaging::delete_workunit_request
-:delete_response_class:   compute::messaging::delete_workunit_response
-:delete_message_type:     delete_workunit_request
-:END:
-
-*** Columns
-
-| enum_name        | field             | header         | type   | width |
-|------------------+-------------------+----------------+--------+-------|
-| BatchId          | batch_id          | Batch ID       | uuid   | 160   |
-| AppVersionId     | app_version_id    | App Version ID | uuid   | 160   |
-| InputUri         | input_uri         | Input URI      | string | 200   |
-| Priority         | priority          | Priority       | int    | 70    |
-| TargetRedundancy | target_redundancy | Redundancy     | int    | 80    |
-| Version          | version           | Version        | int    | 60    |
-| ModifiedBy       | modified_by       | Modified By    | string | 120   |
 
 ** Custom repository methods
 

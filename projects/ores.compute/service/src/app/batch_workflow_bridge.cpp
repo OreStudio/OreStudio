@@ -26,7 +26,9 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/system/system_error.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <format>
 
 namespace ores::compute::service::app {
@@ -42,7 +44,10 @@ batch_workflow_bridge::batch_workflow_bridge(std::uint32_t interval_seconds,
 
 void batch_workflow_bridge::poll_once() {
     repository::workflow_batch_link_repository link_repo;
-    const auto links = link_repo.find_all(ctx_);
+    // Every tenant's links: the read states no tenant filter and the table's
+    // policy is what decides, so the service's system-tenant session sees them
+    // all.
+    const auto links = link_repo.read_latest(ctx_);
 
     if (links.empty())
         return;
@@ -51,18 +56,20 @@ void batch_workflow_bridge::poll_once() {
                                << " pending link(s)";
 
     for (const auto& link : links) {
-        const auto batch_id = link.batch_id.value();
+        const auto batch_id = boost::uuids::to_string(link.batch_id);
         try {
-            // Load batch under the appropriate tenant context.
-            const auto tenant_ctx =
-                ores::database::service::tenant_context::with_tenant(ctx_, link.tenant_id);
+            const auto tenant_ctx = ores::database::service::tenant_context::with_tenant(
+                ctx_, link.tenant_id.to_string());
 
-            ores::compute::service::batch_service batch_svc(std::move(tenant_ctx));
-            const auto batch = batch_svc.get_batch(batch_id);
+            ores::compute::service::batch_service batch_svc(tenant_ctx);
+            const auto batch =
+                batch_svc.get_batch(boost::lexical_cast<boost::uuids::uuid>(batch_id));
 
             if (!batch) {
                 BOOST_LOG_SEV(lg(), warn) << "Batch not found, removing stale link: " << batch_id;
-                link_repo.remove(ctx_, batch_id);
+                // The link belongs to the batch's tenant, and a removal stays
+                // tenant-scoped, so it is removed as that tenant.
+                link_repo.remove(tenant_ctx, batch_id);
                 continue;
             }
 
@@ -72,7 +79,6 @@ void batch_workflow_bridge::poll_once() {
                 continue;
             }
 
-            // Batch closed: publish step_completed_event.
             ores::workflow::messaging::step_completed_event evt;
             evt.workflow_instance_id = link.workflow_instance_id;
             evt.step_id = link.workflow_step_id;
@@ -89,9 +95,14 @@ void batch_workflow_bridge::poll_once() {
                                       << " (step=" << link.workflow_step_id
                                       << " instance=" << link.workflow_instance_id << ")";
 
-            // Remove the link — idempotency key (step_id) guards against
-            // duplicates should the service restart between publish and remove.
-            link_repo.remove(ctx_, batch_id);
+            // Remove the link as its own tenant: the removal is tenant-scoped,
+            // and the idempotency key (step_id) guards against duplicates
+            // should the service restart between publish and remove.
+            const auto removed = link_repo.remove(tenant_ctx, batch_id, std::nullopt);
+            if (removed != repository::workflow_batch_link_repository::remove_status::removed) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Link for batch " << batch_id << " was not removed; it will be retried.";
+            }
 
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)

@@ -27,6 +27,7 @@
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.core/domain/token_settings.hpp"
+#include "ores.iam.core/messaging/principal.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/auth_event_repository.hpp"
@@ -243,14 +244,13 @@ public:
             return;
         }
         try {
-            // Parse principal: split username@hostname for tenant routing
-            std::string username = req->principal;
+            // The hostname routes the request to a tenant; the username is what
+            // the account row is stored under.
+            const auto principal = split_principal(req->principal);
+            const auto& username = principal.username;
             ores::database::context login_ctx = ctx_;
-            const auto at_pos = req->principal.rfind('@');
-            if (at_pos != std::string::npos) {
-                username = req->principal.substr(0, at_pos);
-                const auto hostname = req->principal.substr(at_pos + 1);
-                if (auto t = auth_lookup_tenant_by_hostname(ctx_, hostname)) {
+            if (principal.has_hostname) {
+                if (auto t = auth_lookup_tenant_by_hostname(ctx_, principal.hostname)) {
                     auto tid_result = ores::utility::uuid::tenant_id::from_uuid(t->id);
                     if (tid_result)
                         login_ctx = ctx_.with_tenant(*tid_result, "");

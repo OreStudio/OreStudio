@@ -25,17 +25,22 @@
 #include "ores.compute.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <optional>
-#include <sqlgen/postgres.hpp>
 #include <vector>
 
 namespace ores::compute::repository {
 
 /**
- * @brief Persistence for compute grid telemetry time-series samples.
+ * @brief The telemetry reads no generated repository expresses.
  *
- * Writes to ores_compute_grid_samples_tbl and
- * ores_compute_node_samples_tbl (TimescaleDB hypertables).
+ * The writes and the newest grid sample come from
+ * grid_sample_repository and node_sample_repository, which the entity models
+ * generate. Two reads are left, and neither has a generated form:
+ *
+ * - The newest row per node is a DISTINCT ON (host_id). A read scoped to one
+ *   host returns that node's rows, and a read of the newest returns the
+ *   grid's newest, so one row per node is a third shape.
+ * - The live summary is a call to ores_compute_grid_stats_fn, a SQL function
+ *   the codegen has no expression for.
  */
 class ORES_COMPUTE_CORE_EXPORT compute_telemetry_repository {
 private:
@@ -52,27 +57,10 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Insert one grid-level sample row.
-     */
-    void insert_grid_sample(context ctx, const domain::grid_sample& sample);
-
-    /**
-     * @brief Insert one node-level sample row.
-     */
-    void insert_node_sample(context ctx, const domain::node_sample& sample);
-
-    /**
-     * @brief Return the most recent grid sample for the context's tenant.
-     *
-     * Returns nullopt if no samples exist yet.
-     */
-    std::optional<domain::grid_sample> latest_grid_sample(context ctx);
-
-    /**
      * @brief Return the most recent sample per node for the context's tenant.
      *
-     * Uses DISTINCT ON (host_id) to return exactly one row per host,
-     * the one with the most recent sampled_at, in a single database query.
+     * Uses DISTINCT ON (host_id) to return exactly one row per host, the one
+     * with the most recent sampled_at, in a single database query.
      */
     std::vector<domain::node_sample> latest_node_samples(context ctx);
 

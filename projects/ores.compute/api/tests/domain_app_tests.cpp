@@ -146,7 +146,8 @@ TEST_CASE("app_convert_empty_vector_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
-    CHECK(!table.empty()); // Table should still have headers
+    // The header row survives an empty result set.
+    CHECK(!table.empty());
 }
 
 TEST_CASE("create_app_with_faker", tags) {

@@ -1,0 +1,10 @@
+=== SQL Schema Validation ===
+
+
+=== Validation Summary ===
+Tables parsed: 304
+Functions parsed: 0
+Views parsed: 0
+Warnings: 0
+
+=== Validation Passed ===

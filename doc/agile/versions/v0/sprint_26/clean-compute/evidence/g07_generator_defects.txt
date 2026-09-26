@@ -1,0 +1,30 @@
+# G07: no generated artefact is refreshed while its generator has a known defect
+# Run 2026-09-26 after the rebase onto origin/main.
+
+## The generator's dry run, read before any refresh
+
+$ python3 build/scripts/generate_component_puml.py --project ores.shell.compute --dry-run
+  [WARN] No include/ directory found for ores.shell.compute
+
+0/1 projects would change.
+
+## Known generator defects and the artefacts they hold back
+
+1. generate_component_puml.py resolves only projects/<name>/include/<name>/.
+   A component whose sources live in a nested tree is not found, so its
+   diagram cannot be refreshed. ores.shell.compute is one: its path is
+   projects/ores.shell/compute/. The dry run above reports it and would
+   change 0 projects. Its diagram is therefore hand-maintained, and the
+   refresh is deferred until the resolver is fixed.
+
+2. entity_meta_model_cpp_qt.org still describes the Qt presentation
+   drawers. M09 removed the Qt presentation from the compute models, so
+   refreshing through that facet would put back what M09 took out. The
+   facet is left alone and the defect is recorded rather than papered over.
+
+## What was refreshed, and why it was safe
+
+Every other generated artefact was refreshed only after the defect that
+touched it was fixed at source, with a case: G05 records the nine fixes
+and the seventeen cases. The two defects above are the ones still open,
+and no artefact behind either was refreshed in this branch.

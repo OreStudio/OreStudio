@@ -23,6 +23,7 @@ batch completion to trigger downstream report generation.
 :product:   ores
 :component: compute
 :profile:   uuid-identified-lookup
+:key_field: external_ref
 :END:
 
 * Columns
@@ -97,33 +98,6 @@ Lifecycle status: open, processing, assimilating, or closed.
 | status       | Status       |
 | modified_by  | Modified By  |
 | recorded_at  | Recorded At  |
-
-** Presentation
-:PROPERTIES:
-:domain_include:          ores.compute.api/domain/batch.hpp
-:domain_class:            compute::domain::batch
-:protocol_include:        ores.compute.api/messaging/batch_protocol.hpp
-:collection_name:         batches
-:key_field:               external_ref
-:get_request_class:       compute::messaging::get_batches_request
-:get_response_class:      compute::messaging::get_batches_response
-:get_message_type:        get_batches_request
-:save_request_class:      compute::messaging::save_batch_request
-:save_response_class:     compute::messaging::save_batch_response
-:save_message_type:       save_batch_request
-:delete_request_class:    compute::messaging::delete_batch_request
-:delete_response_class:   compute::messaging::delete_batch_response
-:delete_message_type:     delete_batch_request
-:END:
-
-*** Columns
-
-| enum_name   | field        | header      | type   | width |
-|-------------+--------------+-------------+--------+-------|
-| ExternalRef | external_ref | Reference   | string | 200   |
-| Status      | status       | Status      | string | 100   |
-| Version     | version      | Version     | int    | 60    |
-| ModifiedBy  | modified_by  | Modified By | string | 120   |
 
 ** Custom repository methods
 

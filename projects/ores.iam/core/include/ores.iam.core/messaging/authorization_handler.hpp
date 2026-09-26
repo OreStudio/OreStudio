@@ -25,6 +25,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
+#include "ores.iam.core/messaging/principal.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
@@ -233,8 +234,8 @@ public:
             const auto& ctx = *ctx_expected;
 
             // Parse principal: username@hostname
-            const auto at_pos = req->principal.rfind('@');
-            if (at_pos == std::string::npos) {
+            const auto principal = split_principal(req->principal);
+            if (!principal.has_hostname) {
                 reply(nats_,
                       msg,
                       assign_role_by_name_response{
@@ -242,8 +243,8 @@ public:
                           .error_message = "Principal must be in username@hostname format"});
                 return;
             }
-            const auto username = req->principal.substr(0, at_pos);
-            const auto hostname = req->principal.substr(at_pos + 1);
+            const auto& username = principal.username;
+            const auto& hostname = principal.hostname;
 
             // Resolve tenant by hostname
             const auto tenants = repository::read_active_tenant_by_hostname(ctx_, hostname);
@@ -326,8 +327,8 @@ public:
             }
 
             // Parse principal: username@hostname
-            const auto at_pos = req->principal.rfind('@');
-            if (at_pos == std::string::npos) {
+            const auto principal = split_principal(req->principal);
+            if (!principal.has_hostname) {
                 reply(nats_,
                       msg,
                       revoke_role_by_name_response{
@@ -335,8 +336,8 @@ public:
                           .error_message = "Principal must be in username@hostname format"});
                 return;
             }
-            const auto username = req->principal.substr(0, at_pos);
-            const auto hostname = req->principal.substr(at_pos + 1);
+            const auto& username = principal.username;
+            const auto& hostname = principal.hostname;
 
             // Resolve tenant by hostname
             const auto tenants = repository::read_active_tenant_by_hostname(ctx_, hostname);

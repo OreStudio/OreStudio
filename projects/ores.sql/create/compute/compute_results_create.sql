@@ -28,18 +28,15 @@
  * Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),
  * and the location of output data. The BOINC equivalent of 'result'.
  *
- * Change-reason exception (recorded in the codegen drift loop): result is a
- * machine-written, list-only entity — the grid machinery writes results and
- * there is no human edit flow — so has_change_reason_cache is explicitly
- * false, overriding the profile default.
+ * The entity carries no change-reason cache: the grid machinery writes results
+ * and there is no human edit flow.
  *
- * Generator-signature exception (recorded in the codegen drift loop): the
- * pre-drift handcrafted generator took a workunit_id parameter
- * (generate_synthetic_result(workunit_id, ctx)). The template signature
- * takes only the generation context, and the sole consumer (the result
- * eventing integration test) now links the FK by member assignment after
- * generation. No model knob or paste block is needed for the parameterized
- * overload; the template shape is the sanctioned surface.
+ * Generator-signature exception: the generator takes only the generation
+ * context; a caller that needs a specific workunit links it by member
+ * assignment after generation. No parameterized overload or model knob is
+ * needed.
+ *
+ * result declares no key field, so callers address it by its storage key.
  */
 
 create table if not exists "ores_compute_results_tbl" (
@@ -139,7 +136,17 @@ begin
     for update;
 
     if found then
-        if NEW.version != 0 and NEW.version != current_version then
+        -- The write states what it believes about the row, and the store is
+        -- what decides. Version zero means one thing: no current row exists.
+        -- So a create that collides with a live row is refused here, for every
+        -- client, rather than by a check each client has to remember.
+        if NEW.version = 0 then
+            if not ores_utility_version_replace_allowed_fn() then
+                raise exception
+                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
+                    using errcode = '23505';
+            end if;
+        elsif NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
                 NEW.version, current_version
                 using errcode = 'P0002';

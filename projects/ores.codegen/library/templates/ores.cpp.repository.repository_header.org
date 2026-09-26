@@ -230,6 +230,18 @@ public:
      */
     std::vector<domain::{{entity_singular}}>
     read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+{{#domain_entity.has_newest_read}}
+
+    /**
+     * @brief Reads the newest {{entity_singular_words}} for the caller.
+     *
+     * A time-series table is read from its newest end. A paged read walks the
+     * key in order, so it returns the oldest row first and cannot answer "the
+     * last one" without reading everything before it. The model names the
+     * column the newest is measured by.
+     */
+    std::optional<domain::{{entity_singular}}> read_newest(context ctx);
+{{/domain_entity.has_newest_read}}
 
     /**
      * @brief Gets the total count of active {{entity_plural_words}}.

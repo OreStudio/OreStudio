@@ -1,0 +1,48 @@
+# The end-to-end run of the compute grid on 2026-09-26 (prime_origin)
+# The procedure is doc/llm/runbooks/run_compute_end_to_end_job/runbook.org.
+# This file records what that run produced.
+
+## Environment
+
+- ./compass.sh db recreate -y -k -- the database recreated from the current models.
+- services started: iam, http.server, compute, compute.wrapper.
+- bootstrap: create-initial-admin super_admin@localhost; provision-tenant
+  acme_corporation.
+- five wrapper nodes registered: five host rows with eight columns of hardware.
+
+## Provisioning check
+
+- compute publish-package ORE 1.8.17.0 x64-linux --file
+  external/ore/packages/ore-1.8.17.0-x64-linux.tar.gz
+- sha256sum of the vendored tarball: 8099ac8f51067cf59378137a327f273b073390e1cc47ea862f5cfcc2ab519868
+- the server computed the same value, and the app version's platform row
+  carries it. A version without this row stores workunits and publishes no
+  assignment; the dispatcher logs a warning that names the workunit.
+
+## The submitted job
+
+- batches add e2e-ir-swap-2026-09-26 open system.new_record "clean-compute end to end run"
+- compute dispatch-batch e2e-ir-swap-2026-09-26 15 <app_version_id>
+  external/ore/packages/TA002_IR_Swap.tar.gz
+- app version id for ORE 1.8.17.0: 1442e713-ab7b-44ff-97fd-f5f7b9815615
+- compute grid-stats --watch e2e-ir-swap-2026-09-26 --smoke
+- result: the batch closed, 15 workunits, 15 canonical results, every result
+  server_state=5 (Done) and outcome=1 (Success), 15 output archives in storage.
+
+## The output comparison
+
+- compute download-output c6396236-ecc9-4ea0-8a2d-61f06c398ccc build/e2e/out
+- python3 external/ore/tools/compare_csv.py build/e2e/out/<f>.csv
+  external/ore/examples/Academy/TA002_IR_Swap/ExpectedOutput/<f>.csv
+
+  curves.csv  OK: 240 row(s) x 4 shared column(s) match within rtol=1e-06
+  flows.csv   OK: 60 row(s) x 25 shared column(s) match within rtol=1e-06
+              NEW COLUMNS (in this build, not in the reference):
+              EffectiveFloorVolatility, EffectiveCapVolatility,
+              Amount(Base), DiscountFactor(Base)
+  npv.csv     OK: 1 row(s) x 13 shared column(s) match within rtol=1e-06
+
+  Exit 0 on all three. The four flows.csv columns are engine schema
+  additions the reference predates; the package's own .diff-report.txt
+  carries the same note, so they are a reviewed difference, not a
+  regression.

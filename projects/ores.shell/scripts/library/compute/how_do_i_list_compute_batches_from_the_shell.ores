@@ -6,5 +6,5 @@
 #
 connect $ORES_NATS_URL
 login super_admin@localhost Secure-Password-123
-compute list-batches
+batches list
 logout

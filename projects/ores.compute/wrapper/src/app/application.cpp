@@ -183,7 +183,6 @@ private:
             output_bytes_ = 0;
         }
 
-        // Compute seconds since last heartbeat.
         int seconds_since_hb = 0;
         {
             std::lock_guard lock(hb_mutex_);
@@ -427,14 +426,11 @@ std::string tail_file(const fs::path& path, int max_lines = 50) {
 }
 
 /**
- * @brief Replace {input}, {config}, {output} placeholders in argument list.
- */
-/**
  * @brief Process one work assignment.
  *
  * 1. Download and cache the engine package (if not already cached).
  * 2. Download input and config files for this job.
- * 3. Spawn the engine subprocess with substituted argument placeholders.
+ * 3. Spawn the engine subprocess with the manifest's arguments.
  * 4. Upload the output file on success.
  * 5. Submit the result via NATS.
  * 6. If a reporter is provided, record the task outcome and timing.
@@ -462,7 +458,6 @@ void process_assignment(ores::nats::service::client& nats,
     std::int64_t duration_ms = 0;
 
     try {
-        // 1. Download and unpack package if not cached
         const fs::path pkg_cache_dir = fs::path(cfg.work_dir) / "packages" / evt.app_version_id;
         if (!fs::exists(pkg_cache_dir / "manifest.json")) {
             BOOST_LOG_SEV(lg, debug) << "Downloading package: " << evt.app_version_id;
@@ -553,7 +548,6 @@ void process_assignment(ores::nats::service::client& nats,
             std::chrono::duration_cast<std::chrono::milliseconds>(engine_end - engine_start)
                 .count();
 
-        // Write combined output to engine.log.
         {
             std::ofstream engine_log(engine_log_path, std::ios::out | std::ios::trunc);
             if (engine_log) {
@@ -580,7 +574,8 @@ void process_assignment(ores::nats::service::client& nats,
             BOOST_LOG_SEV(lg, error) << "Engine exited with code " << exit_code;
             if (!engine_output.empty())
                 BOOST_LOG_SEV(lg, error) << "Engine output:\n" << engine_output;
-            outcome = 3; // ClientError
+            // ClientError.
+            outcome = 3;
         } else {
             // 4. Upload output.
             // ORE writes multiple files to Output/ as specified in ore.xml.
@@ -599,12 +594,14 @@ void process_assignment(ores::nats::service::client& nats,
                                          output_archive);
             }
             BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
-            outcome = 1; // Success
+            // Success.
+            outcome = 1;
         }
     } catch (const std::exception& e) {
         error_message = e.what();
         BOOST_LOG_SEV(lg, error) << "Job failed: " << e.what();
-        outcome = 3; // ClientError
+        // ClientError.
+        outcome = 3;
     }
 
     hb.stop();
@@ -651,7 +648,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     try {
         const auto stream_name = nats.make_stream_name("compute_assignments");
         auto admin = nats.make_admin();
-        admin.ensure_stream(stream_name, {nats.make_subject("compute.v1.work.assignments.>")});
+        const std::string assignment_stream =
+            std::string(compute::messaging::work_assignment_event::nats_subject) + ".>";
+        admin.ensure_stream(stream_name, {nats.make_subject(assignment_stream)});
         BOOST_LOG_SEV(lg(), info) << "Compute JetStream stream ready: " << stream_name;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure compute stream: " << e.what();
@@ -679,8 +678,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     std::string sanitised_tenant = cfg.tenant_id;
     std::replace(sanitised_tenant.begin(), sanitised_tenant.end(), '.', '_');
     const std::string my_triplet(ores::utility::version::platform_triplet());
-    const std::string work_subject =
-        "compute.v1.work.assignments." + cfg.tenant_id + "." + my_triplet;
+    const std::string assignment_prefix(compute::messaging::work_assignment_event::nats_subject);
+    const std::string work_subject = assignment_prefix + "." + cfg.tenant_id + "." + my_triplet;
     const std::string durable_name = "compute_wrapper_" + sanitised_tenant + "_" + my_triplet;
     const std::string queue_group = "ores.compute.wrapper." + my_triplet;
 

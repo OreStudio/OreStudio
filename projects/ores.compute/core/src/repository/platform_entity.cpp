@@ -17,14 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.compute.core/repository/platform_entity.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
 namespace ores::compute::repository {
 
 std::ostream& operator<<(std::ostream& s, const platform_entity& v) {
-    s << "{ id: " << v.id.value() << ", code: " << v.code << ", display_name: " << v.display_name
-      << " }";
+    rfl::json::write(v, s);
     return s;
 }
 

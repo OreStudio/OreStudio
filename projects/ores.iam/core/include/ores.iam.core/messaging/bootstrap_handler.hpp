@@ -25,6 +25,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
+#include "ores.iam.core/messaging/principal.hpp"
 #include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.iam.core/service/account_party_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
@@ -119,11 +120,14 @@ public:
             const auto password_hash = ores::security::crypto::password_hasher::hash(req->password);
 
             // The stored procedure creates the account, assigns SuperAdmin,
-            // associates with the system party, and exits bootstrap mode.
+            // associates with the system party, and exits bootstrap mode. Its
+            // audit columns take the username, which is the part of the
+            // principal before the hostname.
+            const auto username = username_of(req->principal);
             const auto results = execute_parameterized_string_query(
                 ctx_,
                 "SELECT ores_iam_create_initial_admin_fn($1, $2, $3, $4)::text",
-                {req->principal, req->email, password_hash, req->principal},
+                {username, req->email, password_hash, username},
                 bootstrap_handler_lg(),
                 "Creating initial admin");
 
@@ -208,25 +212,28 @@ public:
                 << "Provisioned tenant: " << req->code << " (id: " << tenant_id_str
                 << ", system_party: " << system_party_id_str << ")";
 
-            // Create the admin account in the new tenant's context.
+            // Create the admin account in the new tenant's context. The
+            // username is the part of the principal before the hostname, and
+            // the audit columns take the same name rather than the principal.
+            const auto username = username_of(req->principal);
             auto tenant_ctx = tenant_context::with_tenant(ctx_, tenant_id_str);
             service::account_operations_service svc(tenant_ctx);
-            auto acct = svc.create_account(
-                req->principal, req->email, req->password, ctx_.service_account());
+            auto acct =
+                svc.create_account(username, req->email, req->password, ctx_.service_account());
 
             // Associate the admin account with the system party returned by provisioner.
             domain::account_party ap;
             ap.account_id = acct.id;
             ap.party_id = boost::uuids::string_generator{}(system_party_id_str);
             ap.tenant_id = tenant_id_str;
-            ap.modified_by = req->principal;
-            ap.performed_by = req->principal;
+            ap.modified_by = username;
+            ap.performed_by = username;
             ap.change_reason_code = "system.initial_load";
             ap.change_commentary = "Provision tenant: associate admin with system party";
             service::account_party_service ap_svc(tenant_ctx);
             ap_svc.save_account_party(ap);
             BOOST_LOG_SEV(bootstrap_handler_lg(), info)
-                << "Associated " << req->principal << " with system party " << system_party_id_str;
+                << "Associated " << username << " with system party " << system_party_id_str;
 
             // Reload the new tenant's party cache: the SQL provisioner created
             // the system party directly, no NATS event is published for it.

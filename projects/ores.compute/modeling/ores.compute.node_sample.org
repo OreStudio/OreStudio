@@ -1,0 +1,199 @@
+:PROPERTIES:
+:ID: 3F8B2D15-6A47-4C93-B8E1-2F5A9D0C4E76
+:END:
+#+title: ores.compute.node_sample
+#+description: Codegen entity model for the compute node_samples hypertable, one wrapper node's report of what it has done.
+#+type: ores.codegen.entity
+#+component: compute
+#+filetags: :model:entity:compute:
+#+entity_singular: node_sample
+#+entity_plural: node_samples
+#+entity_title: Node Sample
+#+brief: One wrapper node's report of what it has done since its last sample; a TimescaleDB hypertable partitioned by sampled_at.
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+One wrapper node's report, published fire-and-forget on
+=compute.v1.telemetry.node_samples= and written here by the service. The
+rows are append-only, one per node per interval, and the dashboard shows
+the newest row of each node.
+
+The model states =:current_state:= for the same reason =grid_sample= does:
+a sample is a fact about an instant, so the bi-temporal pair has no
+meaning on it.
+
+The per-node newest read stays hand-written. It is a
+=DISTINCT ON (host_id)= over the tenant's rows, which no generated read
+expresses: a read by host_id returns one node's rows, and a read of the
+newest returns the grid's newest and not one row per node.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     compute
+:has_tenant_id: true
+:profile:       readonly-timeseries
+:subcomponent:  api
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
+:primary_key:     true
+:skip_uuid_check: true
+:END:
+
+Surrogate key, so the partition column can sit in the primary key beside it.
+
+** sampled_at
+:PROPERTIES:
+:type:        timestamp with time zone
+:cpp_type:    std::chrono::system_clock::time_point
+:primary_key: true
+:nullable:    false
+:END:
+
+When the sample was taken.
+
+** host_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+The reporting node.
+
+** tasks_completed
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Tasks the node finished since its wrapper started.
+
+** tasks_failed
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Tasks that failed since the wrapper started.
+
+** tasks_since_last
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Tasks the node finished since its previous sample.
+
+** avg_task_duration_ms
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Mean task duration over the tasks since the last sample.
+
+** max_task_duration_ms
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Longest task duration over the tasks since the last sample.
+
+** input_bytes_fetched
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Bytes the node fetched for those tasks.
+
+** output_bytes_uploaded
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Bytes the node uploaded for those tasks.
+
+** seconds_since_hb
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Seconds since the node last heartbeated.
+
+* C++
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ns
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                     ores_compute_node_samples_tbl
+:current_state:                 true
+:hypertable:                    true
+:hypertable_partition_column:   sampled_at
+:hypertable_chunk_interval:     1 day
+:hypertable_retention_interval: 30 days
+:no_audit_columns:              true
+:suppress_nk_index:             true
+:rls_tenant_isolation:          true
+:END:
+
+The retention policy keeps thirty days, which is what the hand-written
+table set.
+
+** Indexes
+
+| name                    | columns                     | unique | current_only | where_extra |
+|-------------------------+-----------------------------+--------+--------------+-------------|
+| node_samples_host       | host_id, sampled_at desc    | false  | false        |             |
+| node_samples_tenant     | tenant_id, sampled_at desc  | false  | false        |             |
+
+* Physical space
+
+The table is internal, like =grid_sample=, so only the data layer and the
+SQL schema are generated.
+
+| Address                             | Enabled |
+|-------------------------------------+---------|
+| ores.cpp.service                    | false   |
+| ores.cpp.protocol                   | false   |
+| ores.cpp.nats-handler               | false   |
+| ores.cpp.nats-sub-registrar         | false   |
+| ores.cpp.nats-event-registrar       | false   |
+| ores.cpp.nats-eventing              | false   |
+| ores.cpp.nats-event-cache           | false   |
+| ores.cpp.history-provider-registrar | false   |
+| ores.cpp.presentation               | false   |
+| ores.cpp.eventing-integration-test  | false   |
+| ores.cpp.shell                      | false   |
+| ores.sql.schema.notify_trigger      | false   |
+| ores.sql.schema.notify_trigger_drop | false   |
+| ores.ts.protocol                    | false   |
+| ores.ts.domain                      | false   |
+
+* See also
+
+- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.

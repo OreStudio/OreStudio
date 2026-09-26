@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: B3737869-5FB8-5AE4-8670-EE3896DB5C70
+:END:
+#+title: How do I run the workunits commands from the shell?
+#+description: Every command the workunits submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:workunits:
+
+This file documents the workunits resource at the shell, one section per command. Every command is a subcommand of =workunits=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F8AA4A90-F39B-5862-9367-5427B8FFEAA3
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+workunits list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.workunits.list=.
+
+#+name: workunits-list
+#+begin_src ores-shell :tangle workunits-list.ores :exports none
+workunits list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: A499E3A4-1596-58A8-BDB2-4F1609913DF3
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+workunits get <id>
+#+end_example
+
+It is addressed at =compute.v1.workunits.get=.
+
+#+name: workunits-get
+#+begin_src ores-shell :tangle workunits-get.ores :exports none
+workunits get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 1DC8811B-68A3-519B-8FBE-5F4F55A1846E
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+workunits get-many <id>
+#+end_example
+
+It is addressed at =compute.v1.workunits.get_many=.
+
+#+name: workunits-get-many
+#+begin_src ores-shell :tangle workunits-get-many.ores :exports none
+workunits get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 13E0C753-FEBC-5C00-948C-70816602AEE7
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+workunits add <batch_id> <app_version_id> <input_uri> <config_uri> <priority> <target_redundancy> <canonical_result_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.workunits.put=.
+
+#+name: workunits-add
+#+begin_src ores-shell :tangle workunits-add.ores :exports none
+workunits add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 0 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: D7CB0AC7-0C6E-5057-B32B-2278A4EF9661
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+workunits set <id> <batch_id> <app_version_id> <input_uri> <config_uri> <priority> <target_redundancy> <canonical_result_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =compute.v1.workunits.put=.
+
+#+name: workunits-set
+#+begin_src ores-shell :tangle workunits-set.ores :exports none
+workunits set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 0 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: CCE29CC0-8A73-53A0-80B6-37E7B5E12A24
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+workunits put-many --count <n> <id> <batch_id> <app_version_id> <input_uri> <config_uri> <priority> <target_redundancy> <canonical_result_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.workunits.put_many=.
+
+#+name: workunits-put-many
+#+begin_src ores-shell :tangle workunits-put-many.ores :exports none
+workunits put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 0 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 702A4EAC-4D50-5015-86D6-3BE28D22A402
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+workunits delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =compute.v1.workunits.delete=.
+
+#+name: workunits-delete
+#+begin_src ores-shell :tangle workunits-delete.ores :exports none
+workunits delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 2E9221B1-AB9E-57C8-9C1F-58B3C49E54C6
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+workunits delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.workunits.delete_many=.
+
+#+name: workunits-delete-many
+#+begin_src ores-shell :tangle workunits-delete-many.ores :exports none
+workunits delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-batch-id=
+:PROPERTIES:
+:ID: EB0AD984-C868-5C8B-A873-58D9AFABDA2C
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+workunits by-batch-id <batch_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.workunits.list_by_batch_id=.
+
+#+name: workunits-by-batch-id
+#+begin_src ores-shell :tangle workunits-by-batch-id.ores :exports none
+workunits by-batch-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 38EAD164-9680-565F-97A8-F2F5239AF30A
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+workunits versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.workunits_versions.list=.
+
+#+name: workunits-versions
+#+begin_src ores-shell :tangle workunits-versions.ores :exports none
+workunits versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 81094242-D1A1-5EB0-8915-16F2E95ECCDD
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+workunits version <id> --version <n>
+#+end_example
+
+It is addressed at =compute.v1.workunits_versions.get=.
+
+#+name: workunits-version
+#+begin_src ores-shell :tangle workunits-version.ores :exports none
+workunits version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

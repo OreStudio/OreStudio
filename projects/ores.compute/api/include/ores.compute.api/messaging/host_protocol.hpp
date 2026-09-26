@@ -26,63 +26,251 @@
 #define ORES_COMPUTE_API_MESSAGING_HOST_PROTOCOL_HPP
 
 #include "ores.compute.api/domain/host.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::compute::messaging {
 
-struct get_hosts_request {
-    using response_type = struct get_hosts_response;
+struct host_key {
+    std::string external_id;
+};
+
+struct host_write {
+    boost::uuids::uuid id;
+    std::string external_id;
+    std::string location;
+    int cpu_count;
+    std::int64_t ram_mb;
+    std::string gpu_type;
+    std::string display_name;
+    std::chrono::system_clock::time_point last_rpc_time;
+    double credit_total;
+};
+
+struct host_change {
+    host_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct host_removal {
+    host_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct host_lookup {
+    host_key key;
+    std::optional<ores::compute::domain::host> host;
+};
+
+struct host_event {
+    boost::uuids::uuid event_id;
+    host_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct host_version_key {
+    host_key host;
+    std::uint32_t version;
+};
+
+struct host_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_hosts_request {
+    using response_type = struct list_hosts_response;
     static constexpr std::string_view nats_subject = "compute.v1.hosts.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
 };
 
-struct get_hosts_response {
+struct list_hosts_response {
+    ores::utility::domain::result result;
     std::vector<ores::compute::domain::host> hosts;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_host_request {
-    using response_type = struct save_host_response;
-    static constexpr std::string_view nats_subject = "compute.v1.hosts.save";
-    ores::compute::domain::host data;
-
-    static save_host_request from(ores::compute::domain::host v) {
-        return {.data = std::move(v)};
-    }
+struct get_host_request {
+    using response_type = struct get_host_response;
+    static constexpr std::string_view nats_subject = "compute.v1.hosts.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    host_key key;
 };
 
-struct save_host_response {
-    bool success = false;
-    std::string message;
+struct get_host_response {
+    ores::utility::domain::result result;
+    std::optional<ores::compute::domain::host> host;
+};
+
+struct get_many_hosts_request {
+    using response_type = struct get_many_hosts_response;
+    static constexpr std::string_view nats_subject = "compute.v1.hosts.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<host_key> keys;
+};
+
+struct get_many_hosts_response {
+    ores::utility::domain::result result;
+    std::vector<host_lookup> entries;
+};
+
+struct put_host_request {
+    using response_type = struct put_host_response;
+    static constexpr std::string_view nats_subject = "compute.v1.hosts.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    host_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_host_response {
+    ores::utility::domain::result result;
+    ores::compute::domain::host host;
+};
+
+struct put_many_hosts_request {
+    using response_type = struct put_many_hosts_response;
+    static constexpr std::string_view nats_subject = "compute.v1.hosts.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<host_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_hosts_response {
+    ores::utility::domain::result result;
+    std::vector<ores::compute::domain::host> hosts;
 };
 
 struct delete_host_request {
     using response_type = struct delete_host_response;
     static constexpr std::string_view nats_subject = "compute.v1.hosts.delete";
-    std::vector<std::string> ids;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    host_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_host_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_host_history_request {
-    using response_type = struct get_host_history_response;
-    static constexpr std::string_view nats_subject = "compute.v1.hosts.history";
-    std::string id;
+struct delete_many_hosts_request {
+    using response_type = struct delete_many_hosts_response;
+    static constexpr std::string_view nats_subject = "compute.v1.hosts.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<host_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_host_history_response {
-    std::vector<ores::compute::domain::host> history;
-    bool success = false;
-    std::string message;
+struct delete_many_hosts_response {
+    ores::utility::domain::result result;
 };
+
+struct list_host_versions_request {
+    using response_type = struct list_host_versions_response;
+    static constexpr std::string_view nats_subject = "compute.v1.hosts_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    host_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<host_versions_filter> filter;
+};
+
+struct list_host_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::compute::domain::host> versions;
+    std::uint64_t total;
+};
+
+struct get_host_version_request {
+    using response_type = struct get_host_version_response;
+    static constexpr std::string_view nats_subject = "compute.v1.hosts_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    host_version_key key;
+};
+
+struct get_host_version_response {
+    ores::utility::domain::result result;
+    ores::compute::domain::host version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace host_event_subjects {
+inline constexpr std::string_view created = "compute.v1.hosts_events.created";
+inline constexpr std::string_view updated = "compute.v1.hosts_events.updated";
+inline constexpr std::string_view deleted = "compute.v1.hosts_events.deleted";
+}
 
 }
 

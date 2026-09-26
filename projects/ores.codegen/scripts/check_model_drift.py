@@ -68,8 +68,6 @@ PROFILE_DIR = REPO_ROOT / "projects" / "modeling"
 KNOWN_MODEL_DRIFT = {
     ("projects/ores.reporting/modeling/ores.reporting.report_definition.org",
      "has_workspace_id"),
-    ("projects/ores.compute/modeling/ores.compute.result.org",
-     "has_change_reason_cache"),
     ("projects/ores.reporting/modeling/ores.reporting.report_instance.org",
      "parent_entity_singular"),
 }

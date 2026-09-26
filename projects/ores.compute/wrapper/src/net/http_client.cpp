@@ -40,7 +40,8 @@ http_client::url_parts http_client::parse_url(const std::string& url) {
     if (url.substr(0, prefix.size()) != prefix)
         throw std::runtime_error("http_client: only http:// URLs supported: " + url);
 
-    const auto rest = url.substr(prefix.size()); // host:port/path
+    // A URL is host:port/path; the slash separates the authority from the path.
+    const auto rest = url.substr(prefix.size());
     const auto slash = rest.find('/');
     const auto authority = (slash == std::string::npos) ? rest : rest.substr(0, slash);
     const auto path = (slash == std::string::npos) ? std::string("/") : rest.substr(slash);
@@ -69,13 +70,11 @@ void http_client::download(const std::string& url, const std::filesystem::path& 
 
     http::write(stream, req);
 
-    // A plain http::response<string_body> read (the previous
-    // implementation) uses Beast's default 1MB body_limit, which a
-    // multi-MB compute engine package blows straight through
-    // ("body limit exceeded"). Stream to file via a response_parser with
-    // an unbounded limit instead -- same fix as
-    // ores.storage::net::http_client::get(), and avoids buffering the
-    // whole package in memory as a bonus.
+    // A string_body response uses Beast's default 1MB body_limit, which a
+    // multi-MB compute engine package exceeds ("body limit exceeded"). Stream
+    // to a file through a response_parser with an unbounded limit, as
+    // ores.storage::net::http_client::get() does, so the package never buffers
+    // in memory.
     std::filesystem::create_directories(dest.parent_path());
     http::response_parser<http::file_body> parser;
     parser.body_limit(std::numeric_limits<std::uint64_t>::max());
@@ -99,7 +98,6 @@ void http_client::download(const std::string& url, const std::filesystem::path& 
 
 void http_client::upload(const std::string& url, const std::filesystem::path& src) {
 
-    // Read file into memory
     std::ifstream f(src, std::ios::binary);
     if (!f)
         throw std::runtime_error("http_client: cannot open for reading: " + src.string());

@@ -141,7 +141,7 @@ void account_contact_information_commands::register_commands(cli::Menu& root_men
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <account_id> <street_line_1> <street_line_2> <city> <state> <country_code> "
+        "add <account_id> <street_line_1> <street_line_2> <city> <state> <country_code> "
         "<postal_code> <phone> <email> <web_page> <reason> <commentary>");
 
     menu->Insert(
@@ -360,8 +360,8 @@ void account_contact_information_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -423,7 +423,7 @@ void account_contact_information_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.account_id, parsed->positionals[next++], "account_id");
         read_token(req.change.write.street_line_1, parsed->positionals[next++], "street_line_1");
         read_token(req.change.write.street_line_2, parsed->positionals[next++], "street_line_2");

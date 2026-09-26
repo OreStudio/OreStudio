@@ -17,12 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_REPOSITORY_NODE_SAMPLE_ENTITY_HPP
-#define ORES_COMPUTE_REPOSITORY_NODE_SAMPLE_ENTITY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_COMPUTE_CORE_REPOSITORY_NODE_SAMPLE_ENTITY_HPP
+#define ORES_COMPUTE_CORE_REPOSITORY_NODE_SAMPLE_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
-#include <cstdint>
-#include <sqlgen/postgres.hpp>
+#include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::compute::repository {
@@ -30,27 +36,27 @@ namespace ores::compute::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief sqlgen entity for ores_compute_node_samples_tbl.
+ * @brief Represents a node sample in the database.
  */
 struct node_sample_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_compute_node_samples_tbl";
 
-    sqlgen::PrimaryKey<db_timestamp> sampled_at;
-    sqlgen::PrimaryKey<std::string> tenant_id;
-    sqlgen::PrimaryKey<std::string> host_id;
-
-    int tasks_completed{0};
-    int tasks_failed{0};
-    int tasks_since_last{0};
-
-    std::int64_t avg_task_duration_ms{0};
-    std::int64_t max_task_duration_ms{0};
-    std::int64_t input_bytes_fetched{0};
-    std::int64_t output_bytes_uploaded{0};
-
-    int seconds_since_hb{0};
+    sqlgen::PrimaryKey<std::string> id;
+    sqlgen::PrimaryKey<std::string> sampled_at;
+    std::string tenant_id;
+    std::string host_id;
+    int tasks_completed = 0;
+    int tasks_failed = 0;
+    int tasks_since_last = 0;
+    std::int64_t avg_task_duration_ms;
+    std::int64_t max_task_duration_ms;
+    std::int64_t input_bytes_fetched;
+    std::int64_t output_bytes_uploaded;
+    int seconds_since_hb = 0;
 };
+
+std::ostream& operator<<(std::ostream& s, const node_sample_entity& v);
 
 }
 

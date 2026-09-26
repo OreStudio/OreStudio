@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: 5A9D3E27-8C14-4B6E-9F2A-1E7B4D0C8A53
+:END:
+#+title: ores.compute.workflow_batch_link
+#+description: Codegen entity model for the compute workflow_batch_links table, the async bridge between a batch and the workflow step that waits for it.
+#+type: ores.codegen.entity
+#+component: compute
+#+filetags: :model:entity:compute:
+#+entity_singular: workflow_batch_link
+#+entity_plural: workflow_batch_links
+#+entity_title: Workflow Batch Link
+#+brief: The async bridge between a compute batch and the workflow step that waits for it.
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+When a submit_compute workflow step runs, the service creates a batch and
+records one row here that names the step and the step's instance. The
+bridge polls this table, and when the batch reaches a terminal state it
+publishes step_completed_event and deletes the row.
+
+The table has no validity window and carries no audit tail: the row is a
+note that a step is outstanding, and it is deleted rather than closed. The
+model therefore states =:current_state:= and =:no_audit_columns:=.
+
+The one decision the model records is the read scope. The bridge is a
+service-level poller, not a caller acting for one tenant, so it reads
+every tenant's links and deletes each under the tenant that owns it. That
+is why the model states =:tenant_read_scope: shared=, which leaves the
+tenant filter to row-level security rather than adding one on top, and
+=:rls_system_tenant_visible:=, which is what lets the service's
+system-tenant session see rows the tenant owns. Mutations stay
+tenant-scoped, so the delete names the link's own tenant.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     compute
+:has_tenant_id: true
+:subcomponent:  api
+:END:
+
+* Columns
+
+** batch_id
+:PROPERTIES:
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
+:primary_key:     true
+:skip_uuid_check: true
+:END:
+
+The batch the step waits for. One step waits for one batch, so this column
+is the whole key.
+
+** workflow_step_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The workflow step to complete when the batch finishes.
+
+** workflow_instance_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The workflow instance the step belongs to.
+
+** created_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: false
+:END:
+
+When the link was recorded.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:               ores_compute_workflow_batch_links_tbl
+:current_state:           true
+:no_audit_columns:        true
+:rls_tenant_isolation:    true
+:rls_system_tenant_visible: true
+:END:
+
+The two row-level-security flags do different jobs.
+=:rls_system_tenant_visible:= states the policy: a system-tenant session
+may read and write every tenant's rows.
+=:tenant_read_scope: shared= states the C++ read: no tenant filter is
+added on top, so the policy is what decides.
+
+** Indexes
+
+| name                                    | columns   | unique | current_only | where_extra |
+|-----------------------------------------+-----------+--------+--------------+-------------|
+| workflow_batch_links_tenant             | tenant_id | false  | false        |             |
+
+* Physical space
+
+The table is internal. The bridge is the only reader and
+report_submit_handler the only writer, and neither reaches it over the
+wire, so only the data layer and the SQL schema are generated.
+
+| Address                             | Enabled |
+|-------------------------------------+---------|
+| ores.cpp.service                    | false   |
+| ores.cpp.protocol                   | false   |
+| ores.cpp.nats-handler               | false   |
+| ores.cpp.nats-sub-registrar         | false   |
+| ores.cpp.nats-event-registrar       | false   |
+| ores.cpp.nats-eventing              | false   |
+| ores.cpp.nats-event-cache           | false   |
+| ores.cpp.history-provider-registrar | false   |
+| ores.cpp.presentation               | false   |
+| ores.cpp.eventing-integration-test  | false   |
+| ores.cpp.shell                      | false   |
+| ores.sql.schema.notify_trigger      | false   |
+| ores.sql.schema.notify_trigger_drop | false   |
+| ores.ts.protocol                    | false   |
+| ores.ts.domain                      | false   |
+
+* C++
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:END:
+
+The bridge reads every tenant's links, so the read states no tenant
+filter and the row-level-security policy is what decides. Mutations
+stay tenant-scoped, so the delete names the link's own tenant.
+
+** Conventions
+:PROPERTIES:
+:iterator_var: wbl
+:END:
+
+* See also
+
+- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.

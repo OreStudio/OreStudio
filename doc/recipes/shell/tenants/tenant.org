@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-tenants add <id> <code> <name> <type> <description> <hostname> <status> <reason> <commentary>
+tenants add <code> <name> <type> <description> <hostname> <status> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.tenants.put=.
 
 #+name: tenants-add
 #+begin_src ores-shell :tangle tenants-add.ores :exports none
-tenants add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+tenants add __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=

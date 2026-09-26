@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "messaging/app_history_provider_registrar.cpp"
     "messaging/app_registrar.cpp"
@@ -26,6 +29,8 @@ set(files
     "messaging/batch_registrar.cpp"
     "messaging/host_history_provider_registrar.cpp"
     "messaging/host_registrar.cpp"
+    "messaging/platform_history_provider_registrar.cpp"
+    "messaging/platform_registrar.cpp"
     "messaging/registrar.cpp"
     "messaging/report_submit_handler.cpp"
     "messaging/result_history_provider_registrar.cpp"
@@ -36,6 +41,7 @@ set(files
     "presentation/app_version_history_field_mapper.cpp"
     "presentation/batch_history_field_mapper.cpp"
     "presentation/host_history_field_mapper.cpp"
+    "presentation/platform_history_field_mapper.cpp"
     "presentation/result_history_field_mapper.cpp"
     "presentation/workunit_history_field_mapper.cpp"
     "repository/app_entity.cpp"
@@ -51,14 +57,23 @@ set(files
     "repository/batch_mapper.cpp"
     "repository/batch_repository.cpp"
     "repository/compute_telemetry_repository.cpp"
+    "repository/grid_sample_entity.cpp"
+    "repository/grid_sample_mapper.cpp"
+    "repository/grid_sample_repository.cpp"
     "repository/host_entity.cpp"
     "repository/host_mapper.cpp"
     "repository/host_repository.cpp"
+    "repository/node_sample_entity.cpp"
+    "repository/node_sample_mapper.cpp"
+    "repository/node_sample_repository.cpp"
     "repository/platform_entity.cpp"
+    "repository/platform_mapper.cpp"
     "repository/platform_repository.cpp"
     "repository/result_entity.cpp"
     "repository/result_mapper.cpp"
     "repository/result_repository.cpp"
+    "repository/workflow_batch_link_entity.cpp"
+    "repository/workflow_batch_link_mapper.cpp"
     "repository/workflow_batch_link_repository.cpp"
     "repository/workunit_entity.cpp"
     "repository/workunit_mapper.cpp"
@@ -68,11 +83,12 @@ set(files
     "service/app_version_service.cpp"
     "service/batch_service.cpp"
     "service/host_service.cpp"
+    "service/platform_service.cpp"
     "service/result_service.cpp"
     "service/workunit_service.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/app_handler.hpp"
@@ -90,6 +106,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/host_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/host_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/platform_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/platform_history_provider_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/platform_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/report_submit_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/result_handler.hpp"
@@ -106,6 +124,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/presentation/app_version_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/presentation/batch_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/presentation/host_history_field_mapper.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/presentation/platform_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/presentation/result_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/presentation/workunit_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/app_entity.hpp"
@@ -122,16 +141,22 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/batch_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/compute_telemetry_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/grid_sample_entity.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/grid_sample_mapper.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/grid_sample_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/host_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/host_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/host_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/node_sample_entity.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/node_sample_mapper.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/node_sample_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/platform_entity.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/platform_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/platform_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/result_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/result_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/result_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/workflow_batch_link_entity.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/workflow_batch_link_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/workflow_batch_link_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/workunit_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/repository/workunit_mapper.hpp"
@@ -141,6 +166,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/service/app_version_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/service/batch_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/service/host_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/service/platform_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/service/result_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/service/workunit_service.hpp"
 )

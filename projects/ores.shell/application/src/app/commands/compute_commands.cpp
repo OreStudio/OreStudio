@@ -19,14 +19,7 @@
  */
 #include "ores.shell/app/commands/compute_commands.hpp"
 #include "ores.compute.api/domain/app.hpp"
-#include "ores.compute.api/domain/app_table_io.hpp"
 #include "ores.compute.api/domain/app_version.hpp"
-#include "ores.compute.api/domain/app_version_platform.hpp"
-#include "ores.compute.api/domain/app_version_table_io.hpp"
-#include "ores.compute.api/domain/batch_table_io.hpp"
-#include "ores.compute.api/domain/host_table_io.hpp"
-#include "ores.compute.api/domain/result_table_io.hpp"
-#include "ores.compute.api/domain/workunit_table_io.hpp"
 #include "ores.compute.api/messaging/app_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_platform_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
@@ -73,7 +66,7 @@ std::string default_http_base_url() {
 
 std::optional<compute::domain::app>
 find_app_by_name(std::ostream& out, nats_client& session, const std::string& name) {
-    compute::messaging::get_apps_request req;
+    compute::messaging::list_apps_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -90,7 +83,7 @@ std::optional<compute::domain::app_version> find_app_version(std::ostream& out,
                                                              const boost::uuids::uuid& app_id,
                                                              const std::string& engine_version,
                                                              const std::string& wrapper_version) {
-    compute::messaging::get_app_versions_request req;
+    compute::messaging::list_app_versions_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -103,29 +96,11 @@ std::optional<compute::domain::app_version> find_app_version(std::ostream& out,
     return std::nullopt;
 }
 
-// std::nullopt on fetch failure, distinct from an empty vector (genuinely
-// no platforms published yet) -- callers must abort on nullopt rather than
-// treat it as "start fresh", or a transient RPC failure here silently
-// wipes every previously published platform on the next save.
-std::optional<std::vector<compute::domain::app_version_platform>> existing_platforms(
-    std::ostream& out, nats_client& session, const boost::uuids::uuid& app_version_id) {
-    compute::messaging::get_app_version_platforms_by_app_version_request req;
-    req.app_version_id = boost::uuids::to_string(app_version_id);
-    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
-    if (!resp || !resp->success)
-        return std::nullopt;
-    std::vector<compute::domain::app_version_platform> rows;
-    rows.reserve(resp->app_version_platforms.size());
-    for (auto& view : resp->app_version_platforms)
-        rows.push_back(std::move(view.app_version_platform));
-    return rows;
-}
-
 std::optional<boost::uuids::uuid>
 resolve_platform_id(std::ostream& out, nats_client& session, const std::string& platform_code) {
     compute::messaging::list_platforms_request req;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
-    if (!resp || !resp->success)
+    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
         return std::nullopt;
     for (const auto& p : resp->platforms) {
         if (p.code == platform_code)
@@ -137,14 +112,9 @@ resolve_platform_id(std::ostream& out, nats_client& session, const std::string& 
 // The server's grid-stats function counts a host as online when
 // last_rpc_time is within the last 5 minutes
 // (ores_compute_grid_stats_fn_create.sql). Keep the shell's online
-// window on the same value so the smoke assertion and the
-// delete-host guard agree with the server's online_hosts count.
+// window on the same value so the smoke assertion agrees with the
+// server's online_hosts count.
 constexpr std::chrono::seconds online_window{300};
-
-// Smoke-test job-count bounds, mirroring the spec's
-// config.smoke_min_jobs / config.smoke_max_jobs.
-constexpr std::uint32_t smoke_min_jobs = 10;
-constexpr std::uint32_t smoke_max_jobs = 20;
 
 // Result outcome codes, per ores.compute.api domain docs: 1=Success,
 // 3=ClientError, 4=NoReply.
@@ -157,7 +127,7 @@ bool is_online(const compute::domain::host& h) {
 std::optional<compute::domain::batch> find_batch_by_external_ref(std::ostream& out,
                                                                  nats_client& session,
                                                                  const std::string& external_ref) {
-    compute::messaging::get_batches_request req;
+    compute::messaging::list_batches_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -172,7 +142,7 @@ std::optional<compute::domain::batch> find_batch_by_external_ref(std::ostream& o
 
 std::optional<std::vector<compute::domain::workunit>>
 workunits_of_batch(std::ostream& out, nats_client& session, const boost::uuids::uuid& batch_id) {
-    compute::messaging::get_workunits_request req;
+    compute::messaging::list_workunits_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -193,7 +163,7 @@ results_of_batch(std::ostream& out, nats_client& session, const boost::uuids::uu
     std::unordered_set<boost::uuids::uuid> workunit_ids;
     for (const auto& w : *wus)
         workunit_ids.insert(w.id);
-    compute::messaging::get_results_request req;
+    compute::messaging::list_results_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -234,40 +204,6 @@ void compute_commands::register_commands(cli::Menu& root_menu, nats_client& sess
                          {"app_name engine_version platform_code [--file <path>] "
                           "[--wrapper-version <v>] [--min-ram-mb <n>] [--http-base-url <url>]"});
 
-    compute_menu->Insert(
-        "list-apps",
-        [&session](std::ostream& out) { process_list_apps(std::ref(out), std::ref(session)); },
-        "List compute apps");
-
-    compute_menu->Insert(
-        "list-app-versions",
-        [&session](std::ostream& out) {
-            process_list_app_versions(std::ref(out), std::ref(session));
-        },
-        "List compute app versions");
-
-    compute_menu->Insert(
-        "list-platforms",
-        [&session](std::ostream& out) { process_list_platforms(std::ref(out), std::ref(session)); },
-        "List compute platforms");
-
-    compute_menu->Insert(
-        "list-hosts",
-        [&session](std::ostream& out) { process_list_hosts(std::ref(out), std::ref(session)); },
-        "List compute hosts");
-
-    compute_menu->Insert(
-        "list-batches",
-        [&session](std::ostream& out) { process_list_batches(std::ref(out), std::ref(session)); },
-        "List compute batches");
-
-    compute_menu->Insert("add-batch",
-                         [&session](std::ostream& out, std::vector<std::string> args) {
-                             process_add_batch(std::ref(out), std::ref(session), args);
-                         },
-                         "Create a compute batch",
-                         {"<external_ref> <job_count> [--smoke]"});
-
     compute_menu->Insert("dispatch-batch",
                          [&session](std::ostream& out, std::vector<std::string> args) {
                              process_dispatch_batch(std::ref(out), std::ref(session), args);
@@ -275,33 +211,12 @@ void compute_commands::register_commands(cli::Menu& root_menu, nats_client& sess
                          "Dispatch a compute batch's jobs",
                          {"<external_ref> <job_count> <app_version_id> <input_tarball>"});
 
-    compute_menu->Insert("list-workunits",
-                         [&session](std::ostream& out, std::vector<std::string> args) {
-                             process_list_workunits(std::ref(out), std::ref(session), args);
-                         },
-                         "List compute workunits",
-                         {"[--batch <external_ref>]"});
-
-    compute_menu->Insert("list-results",
-                         [&session](std::ostream& out, std::vector<std::string> args) {
-                             process_list_results(std::ref(out), std::ref(session), args);
-                         },
-                         "List compute results",
-                         {"[--batch <external_ref>]"});
-
     compute_menu->Insert("grid-stats",
                          [&session](std::ostream& out, std::vector<std::string> args) {
                              process_grid_stats(std::ref(out), std::ref(session), args);
                          },
                          "Show compute grid telemetry",
                          {"[--watch <external_ref>] [--smoke] [--timeout <seconds>]"});
-
-    compute_menu->Insert("delete-host",
-                         [&session](std::ostream& out, std::vector<std::string> args) {
-                             process_delete_host(std::ref(out), std::ref(session), args);
-                         },
-                         "Delete a compute host",
-                         {"<host_id>"});
 
     compute_menu->Insert("download-input",
                          [&session](std::ostream& out, std::vector<std::string> args) {
@@ -387,7 +302,6 @@ void compute_commands::process_publish_package(std::ostream& out,
 
     out << "Uploaded: " << upload.package_uri << " (sha256=" << upload.sha256 << ")" << std::endl;
 
-    const auto username = session.auth().username;
     const auto reason_code = std::string(default_reason_code);
     const std::string commentary = "Published via compute publish-package";
 
@@ -397,16 +311,22 @@ void compute_commands::process_publish_package(std::ostream& out,
     app.id = existing_app ? existing_app->id : boost::uuids::random_generator()();
     app.name = app_name;
     app.description = existing_app ? existing_app->description : app_name;
-    app.modified_by = username;
-    app.performed_by = username;
-    app.change_reason_code = reason_code;
-    app.change_commentary = commentary;
 
-    auto app_req = compute::messaging::save_app_request::from(app);
+    compute::messaging::put_app_request app_req;
+    app_req.change.write.id = app.id;
+    app_req.change.write.name = app.name;
+    app_req.change.write.description = app.description;
+    app_req.intent.reason_code = reason_code;
+    app_req.intent.commentary = commentary;
+    if (existing_app) {
+        app_req.change.precondition.kind =
+            ores::utility::domain::precondition_kind::must_match_version;
+        app_req.change.precondition.version = static_cast<std::uint32_t>(existing_app->version);
+    }
 
     auto app_resp = do_request(out, session, app_req, std::chrono::seconds(30), true);
-    if (!app_resp || !app_resp->success) {
-        fail(out) << "Failed to save app: " << (app_resp ? app_resp->message : "no response")
+    if (!app_resp || app_resp->result.outcome != ores::utility::domain::outcome::ok) {
+        fail(out) << "Failed to save app: " << (app_resp ? app_resp->result.message : "no response")
                   << std::endl;
         return;
     }
@@ -419,222 +339,50 @@ void compute_commands::process_publish_package(std::ostream& out,
     ver.wrapper_version = wrapper_version;
     ver.engine_version = engine_version;
     ver.min_ram_mb = min_ram_mb;
-    ver.modified_by = username;
-    ver.performed_by = username;
-    ver.change_reason_code = reason_code;
-    ver.change_commentary = commentary;
 
-    compute::domain::app_version_platform row;
-    row.app_version_id = ver.id;
-    row.platform_id = *platform_id;
-    row.platform_code = platform_code;
-    row.package_uri = upload.package_uri;
-    row.sha256 = upload.sha256;
-
-    // save_app_version_request replaces every platform row for the version
-    // wholesale, so preserve platforms already published under this version
-    // (e.g. from an earlier publish-package run for a different triplet)
-    // rather than overwriting them with this single upload. Abort rather
-    // than proceed if the version exists but the fetch itself failed --
-    // treating a fetch failure as "no platforms yet" would silently wipe
-    // every previously published platform on save.
-    std::vector<compute::domain::app_version_platform> platform_rows;
+    compute::messaging::put_app_version_request ver_req;
+    ver_req.change.write.id = ver.id;
+    ver_req.change.write.app_id = ver.app_id;
+    ver_req.change.write.wrapper_version = ver.wrapper_version;
+    ver_req.change.write.engine_version = ver.engine_version;
+    ver_req.change.write.min_ram_mb = ver.min_ram_mb;
+    ver_req.intent.reason_code = reason_code;
+    ver_req.intent.commentary = commentary;
     if (existing_version) {
-        auto fetched = existing_platforms(out, session, ver.id);
-        if (!fetched) {
-            fail(out) << "Failed to fetch existing platforms for " << app_name << " "
-                      << engine_version << "; refusing to publish " << platform_code
-                      << " without them (would wipe other platforms on save)." << std::endl;
-            return;
-        }
-        platform_rows = std::move(*fetched);
+        ver_req.change.precondition.kind =
+            ores::utility::domain::precondition_kind::must_match_version;
+        ver_req.change.precondition.version = static_cast<std::uint32_t>(existing_version->version);
     }
-    std::erase_if(platform_rows, [&](const auto& p) { return p.platform_code == platform_code; });
-    platform_rows.push_back(row);
-
-    auto ver_req = compute::messaging::save_app_version_request::from(ver);
 
     auto ver_resp = do_request(out, session, ver_req, std::chrono::seconds(30), true);
-    if (!ver_resp || !ver_resp->success) {
+    if (!ver_resp || ver_resp->result.outcome != ores::utility::domain::outcome::ok) {
         fail(out) << "Failed to save app version: "
-                  << (ver_resp ? ver_resp->message : "no response") << std::endl;
+                  << (ver_resp ? ver_resp->result.message : "no response") << std::endl;
         return;
     }
 
-    // Platforms are saved through the junction's replace-by-app-version flow
-    // (compute.v1.app_version_platforms.replace_by_app_version_id), which
-    // swaps the full platform row set for the version in one operation.
-    compute::messaging::replace_app_version_platforms_by_app_version_request plat_req;
-    plat_req.app_version_id = boost::uuids::to_string(ver.id);
-    plat_req.app_version_platforms = std::move(platform_rows);
-    plat_req.modified_by = username;
-    plat_req.performed_by = username;
-    plat_req.change_reason_code = reason_code;
-    plat_req.change_commentary = commentary;
+    // The junction writes one row at a time, so republishing a triplet
+    // replaces that row alone. The retired replace-by-app-version operation
+    // swapped the whole set for the version, which is why the earlier flow
+    // read the other platforms and preserved them across the save.
+    compute::messaging::put_app_version_platform_request plat_req;
+    plat_req.change.write.app_version_id = ver.id;
+    plat_req.change.write.platform_id = *platform_id;
+    plat_req.change.write.package_uri = upload.package_uri;
+    plat_req.change.write.sha256 = upload.sha256;
+    plat_req.intent.reason_code = reason_code;
+    plat_req.intent.commentary = commentary;
+    plat_req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
 
     auto plat_resp = do_request(out, session, plat_req, std::chrono::seconds(30), true);
-    if (!plat_resp || !plat_resp->success) {
+    if (!plat_resp || plat_resp->result.outcome != ores::utility::domain::outcome::ok) {
         fail(out) << "Failed to save platforms for app version: "
-                  << (plat_resp ? plat_resp->message : "no response") << std::endl;
+                  << (plat_resp ? plat_resp->result.message : "no response") << std::endl;
         return;
     }
 
     out << "Published " << app_name << " " << engine_version << " (" << platform_code
         << ") successfully." << std::endl;
-}
-
-void compute_commands::process_list_apps(std::ostream& out, nats_client& session) {
-    if (!session.is_logged_in()) {
-        fail(out) << "Not logged in." << std::endl;
-        return;
-    }
-
-    compute::messaging::get_apps_request req;
-    req.limit = 1000;
-    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
-    if (!resp)
-        return;
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << resp->apps.size() << " apps.";
-    out << resp->apps << std::endl;
-}
-
-void compute_commands::process_list_app_versions(std::ostream& out, nats_client& session) {
-    if (!session.is_logged_in()) {
-        fail(out) << "Not logged in." << std::endl;
-        return;
-    }
-
-    compute::messaging::get_app_versions_request req;
-    req.limit = 1000;
-    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
-    if (!resp)
-        return;
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << resp->app_versions.size()
-                              << " app versions.";
-    out << resp->app_versions << std::endl;
-}
-
-void compute_commands::process_list_platforms(std::ostream& out, nats_client& session) {
-    if (!session.is_logged_in()) {
-        fail(out) << "Not logged in." << std::endl;
-        return;
-    }
-
-    compute::messaging::list_platforms_request req;
-    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
-    if (!resp)
-        return;
-    if (!resp->success) {
-        const auto& msg = resp->message.empty() ? "Failed to list platforms." : resp->message;
-        BOOST_LOG_SEV(lg(), warn) << msg;
-        fail(out) << msg << std::endl;
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << resp->platforms.size()
-                              << " platforms.";
-
-    // Provisional output: raw rows until the drift task generates the
-    // platform table_io. The reconciliation task replaces this loop
-    // with `out << resp->platforms`.
-    for (const auto& p : resp->platforms) {
-        out << boost::uuids::to_string(p.id) << ' ' << p.code << ' ' << p.display_name << ' '
-            << p.os_family << ' ' << p.cpu_arch << std::endl;
-    }
-    out << std::endl;
-}
-
-void compute_commands::process_list_hosts(std::ostream& out, nats_client& session) {
-    if (!session.is_logged_in()) {
-        fail(out) << "Not logged in." << std::endl;
-        return;
-    }
-
-    compute::messaging::get_hosts_request req;
-    req.limit = 1000;
-    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
-    if (!resp)
-        return;
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << resp->hosts.size() << " hosts.";
-    out << resp->hosts << std::endl;
-}
-
-void compute_commands::process_list_batches(std::ostream& out, nats_client& session) {
-    if (!session.is_logged_in()) {
-        fail(out) << "Not logged in." << std::endl;
-        return;
-    }
-
-    compute::messaging::get_batches_request req;
-    req.limit = 1000;
-    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
-    if (!resp)
-        return;
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << resp->batches.size() << " batches.";
-    out << resp->batches << std::endl;
-}
-
-void compute_commands::process_add_batch(std::ostream& out,
-                                         nats_client& session,
-                                         const std::vector<std::string>& args) {
-    auto parsed =
-        parse_args(args, {{.name = "smoke", .requires_value = false, .default_value = "false"}});
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-    if (parsed->positionals.size() != 2) {
-        fail(out) << "Usage: compute add-batch <external_ref> <job_count> [--smoke]" << std::endl;
-        return;
-    }
-    if (!session.is_logged_in()) {
-        fail(out) << "Not logged in." << std::endl;
-        return;
-    }
-
-    const auto& external_ref = parsed->positionals[0];
-    const auto job_count = parse_uint32(parsed->positionals[1]);
-    if (!job_count || *job_count == 0) {
-        fail(out) << "Job count must be a positive integer." << std::endl;
-        return;
-    }
-    const bool smoke = parsed->flag_set("smoke");
-    if (smoke && (*job_count < smoke_min_jobs || *job_count > smoke_max_jobs)) {
-        fail(out) << "Smoke batches run " << smoke_min_jobs << " to " << smoke_max_jobs
-                  << " jobs; got " << *job_count << "." << std::endl;
-        return;
-    }
-
-    const auto username = session.auth().username;
-    const auto reason_code = std::string(default_reason_code);
-    const std::string commentary = "Created via compute add-batch";
-
-    compute::domain::batch batch;
-    batch.id = boost::uuids::random_generator()();
-    batch.external_ref = external_ref;
-    batch.status = "open";
-    batch.modified_by = username;
-    batch.performed_by = username;
-    batch.change_reason_code = reason_code;
-    batch.change_commentary = commentary;
-
-    compute::messaging::save_batch_request req;
-    req.data = batch;
-
-    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
-    if (!resp || !resp->success) {
-        fail(out) << "Failed to create batch: " << (resp ? resp->message : "no response")
-                  << std::endl;
-        return;
-    }
-
-    out << "Created batch " << boost::uuids::to_string(batch.id) << " (ref " << external_ref << ", "
-        << *job_count << " job" << (*job_count == 1 ? "" : "s") << (smoke ? ", smoke" : "") << ")."
-        << std::endl;
 }
 
 void compute_commands::process_dispatch_batch(std::ostream& out,
@@ -680,7 +428,7 @@ void compute_commands::process_dispatch_batch(std::ostream& out,
     // published and the jobs sit unsent forever.
     boost::uuids::uuid app_version_uuid;
     bool found_app_version = false;
-    compute::messaging::get_app_versions_request av_req;
+    compute::messaging::list_app_versions_request av_req;
     av_req.limit = 1000;
     auto av_resp = do_request(out, session, av_req, std::chrono::seconds(30), true);
     if (!av_resp)
@@ -722,7 +470,6 @@ void compute_commands::process_dispatch_batch(std::ostream& out,
         return;
     }
 
-    const auto username = session.auth().username;
     const auto reason_code = std::string(default_reason_code);
     const std::string commentary = "Dispatched via compute dispatch-batch";
 
@@ -732,124 +479,48 @@ void compute_commands::process_dispatch_batch(std::ostream& out,
     // save fails partway, the batch can be dispatched again instead of
     // being stranded mid-flight with no way to finish it.
     for (std::uint32_t i = 0; i < *job_count; ++i) {
-        compute::domain::workunit wu;
-        wu.id = boost::uuids::random_generator()();
-        wu.batch_id = batch->id;
-        wu.app_version_id = app_version_uuid;
-        wu.input_uri = input_uri;
-        wu.priority = 1;
-        wu.target_redundancy = 1;
-        wu.canonical_result_id = boost::uuids::uuid{};
-        wu.modified_by = username;
-        wu.performed_by = username;
-        wu.change_reason_code = reason_code;
-        wu.change_commentary = commentary;
+        const auto wu_id = boost::uuids::random_generator()();
 
-        compute::messaging::save_workunit_request wu_req;
-        wu_req.data = wu;
+        compute::messaging::put_workunit_request wu_req;
+        wu_req.change.write.id = wu_id;
+        wu_req.change.write.batch_id = batch->id;
+        wu_req.change.write.app_version_id = app_version_uuid;
+        wu_req.change.write.input_uri = input_uri;
+        wu_req.change.write.priority = 1;
+        wu_req.change.write.target_redundancy = 1;
+        wu_req.change.write.canonical_result_id = boost::uuids::uuid{};
+        wu_req.intent.reason_code = reason_code;
+        wu_req.intent.commentary = commentary;
+
         auto wu_resp = do_request(out, session, wu_req, std::chrono::seconds(30), true);
-        if (!wu_resp || !wu_resp->success) {
+        if (!wu_resp || wu_resp->result.outcome != ores::utility::domain::outcome::ok) {
             fail(out) << "Failed to dispatch job " << (i + 1) << "/" << *job_count << ": "
-                      << (wu_resp ? wu_resp->message : "no response") << std::endl;
+                      << (wu_resp ? wu_resp->result.message : "no response") << std::endl;
             return;
         }
         BOOST_LOG_SEV(lg(), info) << "Dispatched job " << (i + 1) << "/" << *job_count
-                                  << " (workunit " << boost::uuids::to_string(wu.id) << ")";
+                                  << " (workunit " << boost::uuids::to_string(wu_id) << ")";
     }
 
-    compute::domain::batch dispatched = *batch;
-    dispatched.status = "dispatched";
-    dispatched.modified_by = username;
-    dispatched.performed_by = username;
-    dispatched.change_reason_code = reason_code;
-    dispatched.change_commentary = commentary;
+    compute::messaging::put_batch_request batch_req;
+    batch_req.change.write.id = batch->id;
+    batch_req.change.write.external_ref = batch->external_ref;
+    batch_req.change.write.status = "dispatched";
+    batch_req.intent.reason_code = reason_code;
+    batch_req.intent.commentary = commentary;
+    batch_req.change.precondition.kind =
+        ores::utility::domain::precondition_kind::must_match_version;
+    batch_req.change.precondition.version = static_cast<std::uint32_t>(batch->version);
 
-    compute::messaging::save_batch_request batch_req;
-    batch_req.data = dispatched;
     auto batch_resp = do_request(out, session, batch_req, std::chrono::seconds(30), true);
-    if (!batch_resp || !batch_resp->success) {
+    if (!batch_resp || batch_resp->result.outcome != ores::utility::domain::outcome::ok) {
         fail(out) << "Failed to mark batch dispatched: "
-                  << (batch_resp ? batch_resp->message : "no response") << std::endl;
+                  << (batch_resp ? batch_resp->result.message : "no response") << std::endl;
         return;
     }
 
     out << "Dispatched " << *job_count << " job(s) of batch " << external_ref << " to app version "
         << app_version_id << "." << std::endl;
-}
-
-void compute_commands::process_list_workunits(std::ostream& out,
-                                              nats_client& session,
-                                              const std::vector<std::string>& args) {
-    auto parsed =
-        parse_args(args, {{.name = "batch", .requires_value = true, .default_value = ""}});
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-    if (!session.is_logged_in()) {
-        fail(out) << "Not logged in." << std::endl;
-        return;
-    }
-
-    compute::messaging::get_workunits_request req;
-    req.limit = 1000;
-    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
-    if (!resp)
-        return;
-
-    const auto& batch_ref = parsed->flag("batch");
-    std::vector<compute::domain::workunit> filtered;
-    if (batch_ref.empty()) {
-        filtered = resp->workunits;
-    } else {
-        const auto batch = find_batch_by_external_ref(out, session, batch_ref);
-        if (!batch)
-            return;
-        for (const auto& w : resp->workunits) {
-            if (w.batch_id == batch->id)
-                filtered.push_back(w);
-        }
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << filtered.size() << " workunits.";
-    out << filtered << std::endl;
-}
-
-void compute_commands::process_list_results(std::ostream& out,
-                                            nats_client& session,
-                                            const std::vector<std::string>& args) {
-    auto parsed =
-        parse_args(args, {{.name = "batch", .requires_value = true, .default_value = ""}});
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-    if (!session.is_logged_in()) {
-        fail(out) << "Not logged in." << std::endl;
-        return;
-    }
-
-    const auto& batch_ref = parsed->flag("batch");
-    if (!batch_ref.empty()) {
-        const auto batch = find_batch_by_external_ref(out, session, batch_ref);
-        if (!batch)
-            return;
-        auto results = results_of_batch(out, session, batch->id);
-        if (!results)
-            return;
-        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << results->size() << " results.";
-        out << *results << std::endl;
-        return;
-    }
-
-    compute::messaging::get_results_request req;
-    req.limit = 1000;
-    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
-    if (!resp)
-        return;
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << resp->results.size() << " results.";
-    out << resp->results << std::endl;
 }
 
 void compute_commands::process_grid_stats(std::ostream& out,
@@ -910,7 +581,7 @@ void compute_commands::process_grid_stats(std::ostream& out,
             if (workunit_count > 0 && terminal_count == workunit_count) {
                 BOOST_LOG_SEV(lg(), info) << "Batch " << batch_ref << " drained (" << terminal_count
                                           << "/" << workunit_count << " workunits).";
-                compute::messaging::get_hosts_request hosts_req;
+                compute::messaging::list_hosts_request hosts_req;
                 hosts_req.limit = 1000;
                 auto hosts_resp =
                     do_request(out, session, hosts_req, std::chrono::seconds(30), true);
@@ -1018,59 +689,6 @@ void compute_commands::process_grid_stats(std::ostream& out,
     }
 }
 
-void compute_commands::process_delete_host(std::ostream& out,
-                                           nats_client& session,
-                                           const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, {});
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-    if (parsed->positionals.size() != 1) {
-        fail(out) << "Usage: compute delete-host <host_id>" << std::endl;
-        return;
-    }
-    if (!session.is_logged_in()) {
-        fail(out) << "Not logged in." << std::endl;
-        return;
-    }
-
-    const auto& host_id = parsed->positionals[0];
-
-    compute::messaging::get_hosts_request req;
-    req.limit = 1000;
-    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
-    if (!resp)
-        return;
-
-    const compute::domain::host* target = nullptr;
-    for (const auto& h : resp->hosts) {
-        if (boost::uuids::to_string(h.id) == host_id) {
-            target = &h;
-            break;
-        }
-    }
-    if (!target) {
-        fail(out) << "Unknown host id: " << host_id << std::endl;
-        return;
-    }
-    if (is_online(*target)) {
-        fail(out) << "Host " << target->display_name << " (" << host_id
-                  << ") is online; stop the wrapper before deleting it." << std::endl;
-        return;
-    }
-
-    compute::messaging::delete_host_request del_req;
-    del_req.ids = {host_id};
-    auto del_resp = do_request(out, session, del_req, std::chrono::seconds(30), true);
-    if (!del_resp || !del_resp->success) {
-        fail(out) << "Failed to delete host: " << (del_resp ? del_resp->message : "no response")
-                  << std::endl;
-        return;
-    }
-    out << "Deleted host " << target->display_name << " (" << host_id << ")." << std::endl;
-}
-
 void compute_commands::process_download_input(std::ostream& out,
                                               nats_client& session,
                                               const std::vector<std::string>& args) {
@@ -1091,7 +709,7 @@ void compute_commands::process_download_input(std::ostream& out,
     const auto& workunit_id = parsed->positionals[0];
     const auto& dest_dir = parsed->positionals[1];
 
-    compute::messaging::get_workunits_request req;
+    compute::messaging::list_workunits_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -1150,7 +768,7 @@ void compute_commands::process_download_output(std::ostream& out,
     const auto& result_id = parsed->positionals[0];
     const auto& dest_dir = parsed->positionals[1];
 
-    compute::messaging::get_results_request req;
+    compute::messaging::list_results_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)

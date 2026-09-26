@@ -7,11 +7,13 @@
 #+level: cross
 #+filetags: :recipe:shell:compute:storage:
 #+created: 2026-08-11
-#+updated: 2026-08-11
+#+updated: 2026-09-26
 
-The compute grid verbs live in the shell's =compute= menu. They talk
-to the ~ores.compute~ service over NATS; the domain shapes and table
-renderers come from ~ores.compute.api~.
+The compute verbs live in the shell's =compute= menu (=publish-package=,
+=dispatch-batch=, =grid-stats=, =download-input=, =download-output=);
+the entity verbs live in their own menus. They talk to the
+~ores.compute~ service over NATS; the domain shapes and table renderers
+come from ~ores.compute.api~.
 
 * Question
 
@@ -36,8 +38,8 @@ exit
 EOF
 #+end_src
 
-The workunit id comes from =compute list-workunits=; find the batch
-external reference first, then the workunit within it.
+The workunit id comes from =workunits list=, or from =workunits
+by-batch-id= once =batches get <external_ref>= has printed the batch id.
 
 * Script
 

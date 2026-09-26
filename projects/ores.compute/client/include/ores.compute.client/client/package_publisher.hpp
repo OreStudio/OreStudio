@@ -48,13 +48,13 @@ struct package_publish_result {
  * @brief Uploads a compute engine package to the canonical per-triplet
  * storage location and verifies its integrity.
  *
- * The single shared core behind both ores.shell's non-interactive publish
- * command and ores.qt's "Upload Engines" dialog -- HTTP upload plus
- * client-vs-server hash verification only; building and sending the
- * save_app_request/save_app_version_request NATS messages that register the
- * result stays with each caller, since shell and Qt each already have their
- * own request/response plumbing (ores::nats::service::authenticated_request_and_decode
- * vs. ClientManager) that isn't worth abstracting over here.
+ * The shared core behind ores.shell's non-interactive publish command: HTTP
+ * upload plus client-vs-server hash verification only. Building and sending
+ * the put_app_request, put_app_version_request and
+ * put_app_version_platform_request messages that register the result stays
+ * with the caller, which already has its own request and response plumbing
+ * (ores::nats::service::authenticated_request_and_decode) that isn't worth
+ * abstracting over here.
  */
 class ORES_COMPUTE_CLIENT_EXPORT package_publisher {
 public:

@@ -32,7 +32,7 @@
 #include "ores.compute.core/messaging/app_version_registrar.hpp"
 #include "ores.compute.core/messaging/batch_registrar.hpp"
 #include "ores.compute.core/messaging/host_registrar.hpp"
-#include "ores.compute.core/messaging/platform_handler.hpp"
+#include "ores.compute.core/messaging/platform_registrar.hpp"
 #include "ores.compute.core/messaging/report_submit_handler.hpp"
 #include "ores.compute.core/messaging/result_registrar.hpp"
 #include "ores.compute.core/messaging/result_submit_handler.hpp"
@@ -64,6 +64,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_app_handlers(nats, ctx, verifier));
     fold(register_app_version_handlers(nats, ctx, verifier));
     fold(register_app_version_platform_handlers(nats, ctx, verifier));
+    fold(register_platform_handlers(nats, ctx, verifier));
     fold(register_batch_handlers(nats, ctx, verifier));
     fold(register_workunit_handlers(nats, ctx, verifier));
     fold(register_result_handlers(nats, ctx, verifier));
@@ -104,15 +105,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.subscribe(node_sample_message::nats_subject, [th](ores::nats::message msg) {
         th->ingest_node_sample(std::move(msg));
     }));
-
-    // ----------------------------------------------------------------
-    // Platforms (system data - list only)
-    // ----------------------------------------------------------------
-    auto ph = std::make_shared<platform_handler>(nats, ctx, verifier);
-    subs.push_back(
-        nats.queue_subscribe(list_platforms_request::nats_subject,
-                             "ores.compute.service",
-                             [ph](ores::nats::message msg) { ph->list(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Report execution: submit to compute grid (workflow step handler).

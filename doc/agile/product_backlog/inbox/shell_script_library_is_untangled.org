@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 0D7CB751-66C8-496E-B5B7-9A8971C1B51B
+:END:
+#+title: The shell script library is untangled
+#+description: The codegen-generated shell recipes have no tangled .ores scripts in the shipped library, because tangle_shell_scripts is not part of the build or the drift gate; 793 scripts are missing.
+#+type: capture
+#+level: cross
+#+filetags: :shell:codegen:drift:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The shell recipe library is generated, not written: every recipe under
+=doc/recipes/shell/= with an =ores-shell= block tangles into a runnable
+=.ores= under =projects/ores.shell/scripts/library/=, and
+=projects/ores.shell/application/CMakeLists.txt= installs that folder as
+the shipped library. The tangle runs only when somebody asks for it
+(=./compass.sh build --direct tangle_shell_scripts=); it is not a
+dependency of the default build, and
+=projects/ores.codegen/scripts/check_component_drift.py= regenerates the
+recipes from the models but never tangles them. So when the codegen work
+of 2026-09-22 added the entity recipes for the whole model surface
+(=apps=, =batches=, =calendars=, =currencies=, …), their scripts were
+never produced or committed.
+
+The gap is 793 scripts on top of the 223 that are committed: on
+2026-09-26 the tangle emitted 1016 scripts and git saw 793 untracked
+files in 98 category folders. Run the tangle, commit its output, and
+make the state self-checking: either add =tangle_shell_scripts= to the
+default build, or extend the drift gate to tangle and diff the library
+so a recipe without its script fails the gate.
+
+* Why
+
+The library is what =compass shell -f <recipe>.ores= loads and what the
+install rule ships. A recipe whose script is absent is a documented
+procedure nobody can run, and the stale compute recipes that the
+2026-09-26 end-to-end run exposed are the visible half of the same
+problem. Because no gate compares the library to the recipes, a recipe
+edit can also land with its script left behind.
+
+* References
+
+- =projects/ores.lisp/src/ores-build-recipe-scripts.el= — the tangle;
+  its header states the .ores artefacts are generated and committed.
+- =projects/ores.shell/application/CMakeLists.txt= — installs
+  =scripts/library/= as =share/ores/shell-scripts=.
+- =CMakeLists.txt= — the =tangle_shell_scripts= target, not part of =all=.
+- =doc/recipes/shell/= — 193 recipes, 189 of them with an =ores-shell= block.
+- =doc/llm/runbooks/run_compute_end_to_end_job/runbook.org= — the run
+  that exposed the stale compute recipes.
+
+* See also
+
+- [[id:C70600A2-817B-4FE3-8D7D-09F2A2327484][Paginate the compute list requests]] — the other open shell-compute follow-up.

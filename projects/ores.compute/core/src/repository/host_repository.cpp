@@ -28,6 +28,7 @@
 #include "ores.compute.core/repository/host_mapper.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::compute::repository {
@@ -41,14 +42,71 @@ std::string host_repository::sql() {
     return generate_create_table_sql<host_entity>(lg());
 }
 
+ores::utility::domain::precondition host_repository::replace_claim(context ctx,
+                                                                   const domain::host& v) {
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
+
+domain::host host_repository::apply_claim(context ctx,
+                                          const domain::host& v,
+                                          const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
+
 void host_repository::write(context ctx, const domain::host& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing compute host. " << "id: " << v.id;
-    execute_write_query(ctx, host_mapper::map(v), lg(), "Writing compute host to database.");
+    write(ctx, v, replace_claim(ctx, v));
 }
 
 void host_repository::write(context ctx, const std::vector<domain::host>& v) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void host_repository::write(context ctx,
+                            const domain::host& v,
+                            const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing compute host. " << "id: " << v.id;
+    const auto t = apply_claim(ctx, v, claim);
+    execute_write_query(ctx, host_mapper::map(t), lg(), "Writing compute host to database.");
+}
+
+void host_repository::write(context ctx,
+                            const std::vector<domain::host>& v,
+                            const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing compute hosts. Count: " << v.size();
-    execute_write_query(ctx, host_mapper::map(v), lg(), "Writing compute hosts to database.");
+    std::vector<domain::host> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(ctx, host_mapper::map(batch), lg(), "Writing compute hosts to database.");
 }
 
 std::vector<domain::host> host_repository::read_latest(context ctx) {
@@ -79,6 +137,39 @@ std::vector<domain::host> host_repository::read_latest(context ctx, const std::s
         [](const auto& entities) { return host_mapper::map(entities); },
         lg(),
         "Reading latest compute host by id.");
+}
+
+std::vector<domain::host>
+host_repository::read_latest_by_external_id(context ctx, const std::string& external_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest compute host by external_id: " << external_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<host_entity>> |
+                       where("tenant_id"_c == tid && "external_id"_c == external_id &&
+                             "valid_to"_c == max.value());
+
+    return execute_read_query<host_entity, domain::host>(
+        ctx,
+        query,
+        [](const auto& entities) { return host_mapper::map(entities); },
+        lg(),
+        "Reading latest compute host by external_id.");
+}
+
+std::vector<domain::host> host_repository::read_any_by_external_id(context ctx,
+                                                                   const std::string& external_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any compute host by external_id: " << external_id;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<host_entity>> |
+                       where("tenant_id"_c == tid && "external_id"_c == external_id) |
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+
+    return execute_read_query<host_entity, domain::host>(
+        ctx,
+        query,
+        [](const auto& entities) { return host_mapper::map(entities); },
+        lg(),
+        "Reading any compute host by external_id.");
 }
 
 
@@ -118,14 +209,37 @@ host_repository::read_at_version(context ctx, const std::string& id, std::uint32
     return entities.front();
 }
 
-void host_repository::remove(context ctx, const std::string& id) {
+host_repository::remove_status
+host_repository::remove(context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing compute host. " << "id: " << id;
+    const auto current = read_latest(ctx, id);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<host_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing compute host from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, id).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void host_repository::remove(context ctx, const std::string& id) {
+    static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::host>
@@ -165,6 +279,23 @@ std::uint32_t host_repository::get_total_host_count(context ctx) {
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active compute host count: " << count;
     return count;
+}
+
+std::vector<domain::host> host_repository::read_latest(context ctx,
+                                                       const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<host_entity>> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = execute_read_query<host_entity, domain::host>(
+        ctx,
+        query,
+        [](const auto& entities) { return host_mapper::map(entities); },
+        lg(),
+        "Reading latest compute hosts by ids.");
+    return result;
 }
 
 void host_repository::remove(context ctx, const std::vector<std::string>& ids) {

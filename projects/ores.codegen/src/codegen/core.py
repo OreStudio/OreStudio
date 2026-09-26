@@ -3217,6 +3217,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['current_state'] = bool(
             sql_section.get('current_state', False))
         current_state = domain_entity['current_state']
+        # A time-series table is read from its newest end. A paged read walks
+        # the key in order, so it answers "the first page" and never "the last
+        # row"; a caller that wants the latest states the column it is the
+        # latest of. The read is generated only for a current-state table,
+        # where every row is current and the newest is the one written last.
+        domain_entity['has_newest_read'] = bool(
+            current_state and sql_section.get('newest_by'))
         # Compute has_tenant_in_pk: tenant_id is in the primary key when has_tenant_id
         # is set but neither system_scope nor nullable_tenant_id overrides the PK.
         # A current-state table keys on the model's own primary key alone --
@@ -4133,6 +4140,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _reject_silent_entity_domain_ts_gap,
             _to_pascal_case,
             _ts_domain_type,
+            apply_ts_domain_alias,
             entity_event_prefix,
             entity_events,
             entity_protocol_messages,
@@ -4144,8 +4152,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_shell_plan,
             operations_by_verb,
             protocol_operations,
+            response_payload_member,
             shell_menu_name,
             shell_recipe_document,
+            sibling_entity_singulars,
             write_record_for,
         )
         for _field in (
@@ -4177,8 +4187,24 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if target_template == 'domain_types.ts.mustache':
             _reject_silent_entity_domain_ts_gap(model_path, domain_entity)
         # The standard CRUD message list, derived once so the TypeScript
-        # twin renders from the same shapes the C++ entity block states.
-        domain_entity['messages'] = entity_protocol_messages(domain_entity)
+        # twin renders from the same shapes the C++ entity block states. The
+        # component's other entities are read here because the versions
+        # sub-resource steps aside when a sibling entity already owns its
+        # derived names.
+        domain_entity['messages'] = entity_protocol_messages(
+            domain_entity, sibling_entity_singulars(model_path))
+        # The member the service body assigns the payload to. The protocol
+        # header names it, so the service reads it from the same place rather
+        # than assuming the entity's own name, which the envelope's result
+        # member can already have taken.
+        domain_entity['payload_member'] = response_payload_member(domain_entity)
+        # A domain interface whose TypeScript name a shared utility interface
+        # already owns is imported under an alias, and the fields that name it
+        # follow. Read by ts_protocol.ts.mustache's import line.
+        _ts_alias = apply_ts_domain_alias(
+            domain_entity, domain_entity['messages'])
+        if _ts_alias:
+            domain_entity['entity_ts_alias'] = _ts_alias
         # Every read by something other than the storage key. The legacy
         # opt-in contributes one; a model whose declared key is not its storage
         # key contributes one more, so the address a caller holds resolves to a

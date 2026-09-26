@@ -33,7 +33,7 @@ namespace ores::compute::net {
  * hierarchical keys:
  *
  *   packages/{app_version_id}[.ext]
- *       single-platform bundle (legacy, used by AppProvisionerWizard)
+ *       bundle keyed by app version alone.
  *   packages/{app_name}/{version}/{app_name}-{version}-{platform_code}[.ext]
  *       per-triplet bundle; matches the SQL seed convention so blobs are
  *       browseable by hand ("this is ORE 1.8.15.0 for x64-linux")
@@ -130,8 +130,6 @@ struct compute_storage {
         k += ".tar.gz";
         return k;
     }
-
-    // Convenience path builders
 
     static std::string package_path(std::string_view id, std::string_view ext = "") {
         return ores::storage::net::storage_paths::make_object_path(bucket, package_key(id, ext));

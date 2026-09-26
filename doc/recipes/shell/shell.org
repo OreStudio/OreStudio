@@ -519,3 +519,35 @@ tangled into the runnable script library
 * Zero Conventions
 
 - [[id:316E5305-BB65-52D7-A217-437A5D5A27AF][How do I run the zero_conventions commands from the shell?]]
+
+* App Version Platforms
+
+- [[id:39C23F63-132A-59F0-B27F-78B9EC4C66A2][How do I run the app_version_platforms commands from the shell?]]
+
+* App Versions
+
+- [[id:7BB0B235-0579-5241-8021-531EAC9FA5DD][How do I run the app_versions commands from the shell?]]
+
+* Apps
+
+- [[id:99B32742-6E3C-5770-A305-A52C9F7A57D7][How do I run the apps commands from the shell?]]
+
+* Batches
+
+- [[id:B9D74FB0-B4DF-53A0-9E47-4A7171C33D4C][How do I run the batches commands from the shell?]]
+
+* Hosts
+
+- [[id:CA65AF08-8279-5D49-9654-0C26560FD7B1][How do I run the hosts commands from the shell?]]
+
+* Results
+
+- [[id:32B694B6-1D3D-5BA0-A6CA-065A174A44A9][How do I run the results commands from the shell?]]
+
+* Workunits
+
+- [[id:B3737869-5FB8-5AE4-8670-EE3896DB5C70][How do I run the workunits commands from the shell?]]
+
+* Platforms
+
+- [[id:B07AA915-541C-55EB-BBC1-9DEA5AB1421F][How do I run the platforms commands from the shell?]]

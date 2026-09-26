@@ -16,12 +16,16 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_tests.mustache
+# To modify, update the template and regenerate.
 set(files
     "app_eventing_integration_tests.cpp"
     "app_version_eventing_integration_tests.cpp"
     "batch_eventing_integration_tests.cpp"
     "host_eventing_integration_tests.cpp"
     "main.cpp"
+    "platform_eventing_integration_tests.cpp"
     "repository_app_version_platform_repository_tests.cpp"
     "result_eventing_integration_tests.cpp"
     "workunit_eventing_integration_tests.cpp"

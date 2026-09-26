@@ -24,6 +24,7 @@ the URI of its own packaged bundle.
 :product:   ores
 :component: compute
 :profile:   uuid-identified-lookup
+:key_field: wrapper_version
 :END:
 
 * Columns
@@ -134,35 +135,6 @@ tenant must see them in reads. Mutations stay own-tenant scoped.
 | min_ram_mb      | Min RAM (MB)    |
 | modified_by     | Modified By     |
 | recorded_at     | Recorded At     |
-
-** Presentation
-:PROPERTIES:
-:domain_include:          ores.compute.api/domain/app_version.hpp
-:domain_class:            compute::domain::app_version
-:protocol_include:        ores.compute.api/messaging/app_version_protocol.hpp
-:collection_name:         app_versions
-:key_field:               wrapper_version
-:get_request_class:       compute::messaging::get_app_versions_request
-:get_response_class:      compute::messaging::get_app_versions_response
-:get_message_type:        get_app_versions_request
-:save_request_class:      compute::messaging::save_app_version_request
-:save_response_class:     compute::messaging::save_app_version_response
-:save_message_type:       save_app_version_request
-:delete_request_class:    compute::messaging::delete_app_version_request
-:delete_response_class:   compute::messaging::delete_app_version_response
-:delete_message_type:     delete_app_version_request
-:END:
-
-*** Columns
-
-| enum_name      | field           | header          | type   | width |
-|----------------+-----------------+-----------------+--------+-------|
-| AppId          | app_id          | App ID          | uuid   | 160   |
-| WrapperVersion | wrapper_version | Wrapper Version | string | 120   |
-| EngineVersion  | engine_version  | Engine Version  | string | 120   |
-| MinRamMb       | min_ram_mb      | Min RAM (MB)    | int    | 90    |
-| Version        | version         | Version         | int    | 60    |
-| ModifiedBy     | modified_by     | Modified By     | string | 120   |
 
 ** Custom repository methods
 

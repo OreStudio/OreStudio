@@ -1,0 +1,126 @@
+===== how_do_i_add_a_compute_batch_from_the_shell =====
+> login super_admin@localhost Secure-Password-123
+✓ Login successful!
+  User: super_admin
+  Tenant:  (ffffffff-ffff-ffff-ffff-ffffffffffff)
+> compute add-batch $BATCH_REF 10 --smoke
+✗ Undefined environment variable: $BATCH_REF
+✗ Script aborted at line 9: compute add-batch $BATCH_REF 10 --smoke
+ores-shell> Bye!
+===== how_do_i_delete_a_compute_host_from_the_shell =====
+> login super_admin@localhost Secure-Password-123
+✓ Login successful!
+  User: super_admin
+  Tenant:  (ffffffff-ffff-ffff-ffff-ffffffffffff)
+> compute delete-host $HOST_ID
+✗ Undefined environment variable: $HOST_ID
+✗ Script aborted at line 9: compute delete-host $HOST_ID
+ores-shell> Bye!
+===== how_do_i_dispatch_a_compute_batch_from_the_shell =====
+> login super_admin@localhost Secure-Password-123
+✓ Login successful!
+  User: super_admin
+  Tenant:  (ffffffff-ffff-ffff-ffff-ffffffffffff)
+> compute dispatch-batch $BATCH_REF $JOB_COUNT $APP_VERSION_ID $INPUT_TARBALL
+✗ Undefined environment variable: $BATCH_REF
+✗ Script aborted at line 9: compute dispatch-batch $BATCH_REF $JOB_COUNT $APP_VERSION_ID $INPUT_TARBALL
+ores-shell> Bye!
+===== how_do_i_download_a_compute_job_input_from_the_shell =====
+> login super_admin@localhost Secure-Password-123
+✓ Login successful!
+  User: super_admin
+  Tenant:  (ffffffff-ffff-ffff-ffff-ffffffffffff)
+> compute download-input $WORKUNIT_ID $DEST_DIR
+✗ Undefined environment variable: $WORKUNIT_ID
+✗ Script aborted at line 9: compute download-input $WORKUNIT_ID $DEST_DIR
+ores-shell> Bye!
+===== how_do_i_download_a_compute_result_output_from_the_shell =====
+> login super_admin@localhost Secure-Password-123
+✓ Login successful!
+  User: super_admin
+  Tenant:  (ffffffff-ffff-ffff-ffff-ffffffffffff)
+> compute download-output $RESULT_ID $DEST_DIR
+✗ Undefined environment variable: $RESULT_ID
+✗ Script aborted at line 9: compute download-output $RESULT_ID $DEST_DIR
+ores-shell> Bye!
+===== how_do_i_list_compute_apps_from_the_shell =====
+> login super_admin@localhost Secure-Password-123
+✓ Login successful!
+  User: super_admin
+  Tenant:  (ffffffff-ffff-ffff-ffff-ffffffffffff)
+> compute list-apps
+✗ Wrong command: compute list-apps
+✗ Script aborted at line 9: compute list-apps
+ores-shell> Bye!
+===== how_do_i_list_compute_app_versions_from_the_shell =====
+> login super_admin@localhost Secure-Password-123
+✓ Login successful!
+  User: super_admin
+  Tenant:  (ffffffff-ffff-ffff-ffff-ffffffffffff)
+> compute list-app-versions
+✗ Wrong command: compute list-app-versions
+✗ Script aborted at line 9: compute list-app-versions
+ores-shell> Bye!
+===== how_do_i_list_compute_batches_from_the_shell =====
+> login super_admin@localhost Secure-Password-123
+✓ Login successful!
+  User: super_admin
+  Tenant:  (ffffffff-ffff-ffff-ffff-ffffffffffff)
+> compute list-batches
+✗ Wrong command: compute list-batches
+✗ Script aborted at line 9: compute list-batches
+ores-shell> Bye!
+===== how_do_i_list_compute_hosts_from_the_shell =====
+> login super_admin@localhost Secure-Password-123
+✓ Login successful!
+  User: super_admin
+  Tenant:  (ffffffff-ffff-ffff-ffff-ffffffffffff)
+> compute list-hosts
+✗ Wrong command: compute list-hosts
+✗ Script aborted at line 9: compute list-hosts
+ores-shell> Bye!
+===== how_do_i_list_compute_platforms_from_the_shell =====
+| b1e2a62d-6447-41f6-873e-8206a0670e24 | x64-linux     | Linux x86-64                   | linux     | x86_64   | true   | ores_prime_origin_ddl_user | 2026-09-26 02:15:22.000000000 |
+| b3965c10-5cef-4492-9da9-be71103d5679 | arm64-osx     | macOS Apple Silicon (M-series) | macos     | aarch64  | true   | ores_prime_origin_ddl_user | 2026-09-26 02:15:22.000000000 |
+| d349080d-1bb0-4fc6-a209-074ae6f5b686 | arm64-linux   | Linux ARM64                    | linux     | aarch64  | true   | ores_prime_origin_ddl_user | 2026-09-26 02:15:22.000000000 |
++--------------------------------------+---------------+--------------------------------+-----------+----------+--------+----------------------------+-------------------------------+
+> logout
+✓ Logged out successfully.
+Script complete: 4 commands executed.
+ores-shell> Bye!
+===== how_do_i_list_compute_results_from_the_shell =====
+> login super_admin@localhost Secure-Password-123
+✓ Login successful!
+  User: super_admin
+  Tenant:  (ffffffff-ffff-ffff-ffff-ffffffffffff)
+> compute list-results
+✗ Wrong command: compute list-results
+✗ Script aborted at line 9: compute list-results
+ores-shell> Bye!
+===== how_do_i_list_compute_workunits_from_the_shell =====
+> login super_admin@localhost Secure-Password-123
+✓ Login successful!
+  User: super_admin
+  Tenant:  (ffffffff-ffff-ffff-ffff-ffffffffffff)
+> compute list-workunits
+✗ Wrong command: compute list-workunits
+✗ Script aborted at line 9: compute list-workunits
+ores-shell> Bye!
+===== how_do_i_smoke_test_the_compute_grid_from_the_shell =====
+> login super_admin@localhost Secure-Password-123
+✓ Login successful!
+  User: super_admin
+  Tenant:  (ffffffff-ffff-ffff-ffff-ffffffffffff)
+> compute add-batch smoke-$SMOKE_REF 15 --smoke
+✗ Undefined environment variable: $SMOKE_REF
+✗ Script aborted at line 9: compute add-batch smoke-$SMOKE_REF 15 --smoke
+ores-shell> Bye!
+===== how_do_i_view_compute_grid_stats_from_the_shell =====
+Workunits: 0 total; batches: 0 total, 0 active
+Outcomes: 0 success, 0 client errors, 0 no replies
+Sampled at: 2026-09-26T02:15:37.000000000Z
+Nodes:
+> logout
+✓ Logged out successfully.
+Script complete: 4 commands executed.
+ores-shell> Bye!

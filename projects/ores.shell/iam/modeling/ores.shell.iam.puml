@@ -1,0 +1,100 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.shell.iam Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace shell #F2F2F2 {
+        namespace app #F2F2F2 {
+            namespace commands #F2F2F2 {
+                namespace iam #F2F2F2 {
+                    class account_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class account_contact_information_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class account_operations_operations_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class account_party_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class account_type_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class authorization_operations_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class bootstrap_operations_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class login_info_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class permission_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class reset_operations_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class role_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class session_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class session_operations_operations_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class session_samples_operations_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class signup_operations_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class tenant_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class tenant_provisioning_operations_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class tenant_status_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                    class tenant_type_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
+                    }
+                }
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+ores.shell.api ..> ores.shell.iam : menu, pagination_context
+ores.iam.api ..> ores.shell.iam : domain, messaging
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.shell.iam.puml"
+' End:
+@enduml

@@ -7,11 +7,13 @@
 #+level: cross
 #+filetags: :recipe:shell:compute:batch:
 #+created: 2026-08-11
-#+updated: 2026-08-11
+#+updated: 2026-09-26
 
-The compute grid verbs live in the shell's =compute= menu. They talk
-to the ~ores.compute~ service over NATS; the domain shapes and table
-renderers come from ~ores.compute.api~.
+The compute verbs live in the shell's =compute= menu (=publish-package=,
+=dispatch-batch=, =grid-stats=, =download-input=, =download-output=);
+the entity verbs live in their own menus. They talk to the
+~ores.compute~ service over NATS; the domain shapes and table renderers
+come from ~ores.compute.api~.
 
 * Question
 
@@ -37,7 +39,9 @@ EOF
 #+end_src
 
 The upload runs once: every workunit in the batch shares the same
-input bundle, stored as =input/{batch_id}.tar.gz=.
+input bundle, stored as =input/{batch_id}.tar.gz=. The batch must still
+be =open=: dispatch moves it to =dispatched=, and the grid closes it
+when the last result arrives.
 
 * Script
 

@@ -1,0 +1,867 @@
+<frozen site>:107: RuntimeWarning: Unexpected value in sys.prefix, expected /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.codegen/venv, got /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.codegen/scripts/../../ores.codegen/venv
+<frozen site>:107: RuntimeWarning: Unexpected value in sys.exec_prefix, expected /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.codegen/venv, got /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.codegen/scripts/../../ores.codegen/venv
+Regenerating component 'compute-cpp' at address 'ores.cmake'...
+INFO Regenerating 8 models for component 'compute-cpp' (address: ores.cmake)...
+Generated projects/ores.compute/CMakeLists.txt
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/CMakeLists.txt
+INFO Regeneration complete.
+Regenerating component 'compute-cpp' at address 'ores.cpp'...
+INFO Regenerating 8 models for component 'compute-cpp' (address: ores.cpp)...
+WARNING component_overview.org: nothing to generate for 'ores.cpp' (model type 'component')
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app.hpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_json_io.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_json_io.hpp
+Generated projects/ores.compute/api/src/domain/app_json_io.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_json_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_table.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_table.hpp
+Generated projects/ores.compute/api/src/domain/app_table.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_table.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_table_io.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_table_io.hpp
+Generated projects/ores.compute/api/src/domain/app_table_io.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_table_io.cpp
+Generated projects/ores.compute/core/tests/app_eventing_integration_tests.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/tests/app_eventing_integration_tests.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/generators/app_generator.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/generators/app_generator.hpp
+Generated projects/ores.compute/api/src/generators/app_generator.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/generators/app_generator.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_history_provider_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_history_provider_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/app_history_provider_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/app_history_provider_registrar.cpp
+Generated projects/ores.compute/service/include/ores.compute.service/messaging/app_event_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/include/ores.compute.service/messaging/app_event_registrar.hpp
+Generated projects/ores.compute/service/src/messaging/app_event_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/src/messaging/app_event_registrar.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/eventing/app_event.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/eventing/app_event.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_handler.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_handler.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/app_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/app_registrar.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/presentation/app_history_field_mapper.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/presentation/app_history_field_mapper.hpp
+Generated projects/ores.compute/core/src/presentation/app_history_field_mapper.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/presentation/app_history_field_mapper.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/app_protocol.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/app_protocol.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_entity.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_entity.hpp
+Generated projects/ores.compute/core/src/repository/app_entity.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_entity.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_mapper.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_mapper.hpp
+Generated projects/ores.compute/core/src/repository/app_mapper.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_mapper.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_repository.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_repository.hpp
+Generated projects/ores.compute/core/src/repository/app_repository.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_repository.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/service/app_service.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/service/app_service.hpp
+Generated projects/ores.compute/core/src/service/app_service.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/service/app_service.cpp
+Generated projects/ores.shell/compute/include/ores.shell/app/commands/compute/app_commands.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/include/ores.shell/app/commands/compute/app_commands.hpp
+Generated projects/ores.shell/compute/src/app/commands/compute/app_commands.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/src/app/commands/compute/app_commands.cpp
+Generated projects/ores.shell/compute/tests/app_commands_tests.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/tests/app_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version.hpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version_json_io.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version_json_io.hpp
+Generated projects/ores.compute/api/src/domain/app_version_json_io.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_version_json_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version_table.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version_table.hpp
+Generated projects/ores.compute/api/src/domain/app_version_table.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_version_table.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version_table_io.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version_table_io.hpp
+Generated projects/ores.compute/api/src/domain/app_version_table_io.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_version_table_io.cpp
+Generated projects/ores.compute/core/tests/app_version_eventing_integration_tests.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/tests/app_version_eventing_integration_tests.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/generators/app_version_generator.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/generators/app_version_generator.hpp
+Generated projects/ores.compute/api/src/generators/app_version_generator.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/generators/app_version_generator.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_version_history_provider_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_version_history_provider_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/app_version_history_provider_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/app_version_history_provider_registrar.cpp
+Generated projects/ores.compute/service/include/ores.compute.service/messaging/app_version_event_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/include/ores.compute.service/messaging/app_version_event_registrar.hpp
+Generated projects/ores.compute/service/src/messaging/app_version_event_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/src/messaging/app_version_event_registrar.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/eventing/app_version_event.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/eventing/app_version_event.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_version_handler.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_version_handler.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_version_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_version_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/app_version_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/app_version_registrar.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/presentation/app_version_history_field_mapper.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/presentation/app_version_history_field_mapper.hpp
+Generated projects/ores.compute/core/src/presentation/app_version_history_field_mapper.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/presentation/app_version_history_field_mapper.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/app_version_protocol.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/app_version_protocol.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_version_entity.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_version_entity.hpp
+Generated projects/ores.compute/core/src/repository/app_version_entity.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_version_entity.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_version_mapper.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_version_mapper.hpp
+Generated projects/ores.compute/core/src/repository/app_version_mapper.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_version_mapper.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_version_repository.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_version_repository.hpp
+Generated projects/ores.compute/core/src/repository/app_version_repository.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_version_repository.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/service/app_version_service.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/service/app_version_service.hpp
+Generated projects/ores.compute/core/src/service/app_version_service.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/service/app_version_service.cpp
+Generated projects/ores.shell/compute/include/ores.shell/app/commands/compute/app_version_commands.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/include/ores.shell/app/commands/compute/app_version_commands.hpp
+Generated projects/ores.shell/compute/src/app/commands/compute/app_version_commands.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/src/app/commands/compute/app_version_commands.cpp
+Generated projects/ores.shell/compute/tests/app_version_commands_tests.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/tests/app_version_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform_json_io.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform_json_io.hpp
+Generated projects/ores.compute/api/src/domain/app_version_platform_json_io.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_version_platform_json_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform_table.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform_table.hpp
+Generated projects/ores.compute/api/src/domain/app_version_platform_table.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_version_platform_table.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform_table_io.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform_table_io.hpp
+Generated projects/ores.compute/api/src/domain/app_version_platform_table_io.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/app_version_platform_table_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/generators/app_version_platform_generator.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/generators/app_version_platform_generator.hpp
+Generated projects/ores.compute/api/src/generators/app_version_platform_generator.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/generators/app_version_platform_generator.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_version_platform_handler.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_version_platform_handler.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/app_version_platform_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/app_version_platform_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/app_version_platform_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/app_version_platform_registrar.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/app_version_platform_protocol.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/app_version_platform_protocol.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_version_platform_entity.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_version_platform_entity.hpp
+Generated projects/ores.compute/core/src/repository/app_version_platform_entity.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_version_platform_entity.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_version_platform_mapper.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_version_platform_mapper.hpp
+Generated projects/ores.compute/core/src/repository/app_version_platform_mapper.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_version_platform_mapper.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/app_version_platform_repository.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/app_version_platform_repository.hpp
+Generated projects/ores.compute/core/src/repository/app_version_platform_repository.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/app_version_platform_repository.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/service/app_version_platform_service.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/service/app_version_platform_service.hpp
+Generated projects/ores.compute/core/src/service/app_version_platform_service.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/service/app_version_platform_service.cpp
+Generated projects/ores.shell/compute/include/ores.shell/app/commands/compute/app_version_platform_commands.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/include/ores.shell/app/commands/compute/app_version_platform_commands.hpp
+Generated projects/ores.shell/compute/src/app/commands/compute/app_version_platform_commands.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/src/app/commands/compute/app_version_platform_commands.cpp
+Generated projects/ores.shell/compute/tests/app_version_platform_commands_tests.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/tests/app_version_platform_commands_tests.cpp
+INFO clang-formatted 24 generated C++ file(s) (two passes)
+Generated projects/ores.compute/api/include/ores.compute.api/domain/batch.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/batch.hpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/batch_json_io.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/batch_json_io.hpp
+Generated projects/ores.compute/api/src/domain/batch_json_io.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/batch_json_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/batch_table.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/batch_table.hpp
+Generated projects/ores.compute/api/src/domain/batch_table.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/batch_table.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/batch_table_io.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/batch_table_io.hpp
+Generated projects/ores.compute/api/src/domain/batch_table_io.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/batch_table_io.cpp
+Generated projects/ores.compute/core/tests/batch_eventing_integration_tests.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/tests/batch_eventing_integration_tests.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/generators/batch_generator.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/generators/batch_generator.hpp
+Generated projects/ores.compute/api/src/generators/batch_generator.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/generators/batch_generator.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/batch_history_provider_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/batch_history_provider_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/batch_history_provider_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/batch_history_provider_registrar.cpp
+Generated projects/ores.compute/service/include/ores.compute.service/messaging/batch_event_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/include/ores.compute.service/messaging/batch_event_registrar.hpp
+Generated projects/ores.compute/service/src/messaging/batch_event_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/src/messaging/batch_event_registrar.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/eventing/batch_event.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/eventing/batch_event.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/batch_handler.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/batch_handler.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/batch_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/batch_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/batch_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/batch_registrar.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/presentation/batch_history_field_mapper.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/presentation/batch_history_field_mapper.hpp
+Generated projects/ores.compute/core/src/presentation/batch_history_field_mapper.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/presentation/batch_history_field_mapper.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/batch_protocol.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/batch_protocol.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/batch_entity.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/batch_entity.hpp
+Generated projects/ores.compute/core/src/repository/batch_entity.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/batch_entity.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/batch_mapper.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/batch_mapper.hpp
+Generated projects/ores.compute/core/src/repository/batch_mapper.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/batch_mapper.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/batch_repository.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/batch_repository.hpp
+Generated projects/ores.compute/core/src/repository/batch_repository.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/batch_repository.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/service/batch_service.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/service/batch_service.hpp
+Generated projects/ores.compute/core/src/service/batch_service.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/service/batch_service.cpp
+Generated projects/ores.shell/compute/include/ores.shell/app/commands/compute/batch_commands.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/include/ores.shell/app/commands/compute/batch_commands.hpp
+Generated projects/ores.shell/compute/src/app/commands/compute/batch_commands.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/src/app/commands/compute/batch_commands.cpp
+Generated projects/ores.shell/compute/tests/batch_commands_tests.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/tests/batch_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.compute/api/include/ores.compute.api/domain/host.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/host.hpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/host_json_io.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/host_json_io.hpp
+Generated projects/ores.compute/api/src/domain/host_json_io.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/host_json_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/host_table.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/host_table.hpp
+Generated projects/ores.compute/api/src/domain/host_table.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/host_table.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/host_table_io.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/host_table_io.hpp
+Generated projects/ores.compute/api/src/domain/host_table_io.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/host_table_io.cpp
+Generated projects/ores.compute/core/tests/host_eventing_integration_tests.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/tests/host_eventing_integration_tests.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/generators/host_generator.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/generators/host_generator.hpp
+Generated projects/ores.compute/api/src/generators/host_generator.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/generators/host_generator.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/host_history_provider_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/host_history_provider_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/host_history_provider_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/host_history_provider_registrar.cpp
+Generated projects/ores.compute/service/include/ores.compute.service/messaging/host_event_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/include/ores.compute.service/messaging/host_event_registrar.hpp
+Generated projects/ores.compute/service/src/messaging/host_event_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/src/messaging/host_event_registrar.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/eventing/host_event.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/eventing/host_event.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/host_handler.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/host_handler.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/host_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/host_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/host_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/host_registrar.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/presentation/host_history_field_mapper.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/presentation/host_history_field_mapper.hpp
+Generated projects/ores.compute/core/src/presentation/host_history_field_mapper.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/presentation/host_history_field_mapper.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/host_protocol.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/host_protocol.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/host_entity.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/host_entity.hpp
+Generated projects/ores.compute/core/src/repository/host_entity.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/host_entity.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/host_mapper.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/host_mapper.hpp
+Generated projects/ores.compute/core/src/repository/host_mapper.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/host_mapper.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/host_repository.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/host_repository.hpp
+Generated projects/ores.compute/core/src/repository/host_repository.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/host_repository.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/service/host_service.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/service/host_service.hpp
+Generated projects/ores.compute/core/src/service/host_service.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/service/host_service.cpp
+Generated projects/ores.shell/compute/include/ores.shell/app/commands/compute/host_commands.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/include/ores.shell/app/commands/compute/host_commands.hpp
+Generated projects/ores.shell/compute/src/app/commands/compute/host_commands.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/src/app/commands/compute/host_commands.cpp
+Generated projects/ores.shell/compute/tests/host_commands_tests.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/tests/host_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.compute/api/include/ores.compute.api/domain/result.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/result.hpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/result_json_io.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/result_json_io.hpp
+Generated projects/ores.compute/api/src/domain/result_json_io.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/result_json_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/result_table.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/result_table.hpp
+Generated projects/ores.compute/api/src/domain/result_table.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/result_table.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/result_table_io.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/result_table_io.hpp
+Generated projects/ores.compute/api/src/domain/result_table_io.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/result_table_io.cpp
+Generated projects/ores.compute/core/tests/result_eventing_integration_tests.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/tests/result_eventing_integration_tests.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/generators/result_generator.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/generators/result_generator.hpp
+Generated projects/ores.compute/api/src/generators/result_generator.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/generators/result_generator.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/result_history_provider_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/result_history_provider_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/result_history_provider_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/result_history_provider_registrar.cpp
+Generated projects/ores.compute/service/include/ores.compute.service/messaging/result_event_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/include/ores.compute.service/messaging/result_event_registrar.hpp
+Generated projects/ores.compute/service/src/messaging/result_event_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/src/messaging/result_event_registrar.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/eventing/result_event.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/eventing/result_event.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/result_handler.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/result_handler.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/result_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/result_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/result_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/result_registrar.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/presentation/result_history_field_mapper.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/presentation/result_history_field_mapper.hpp
+Generated projects/ores.compute/core/src/presentation/result_history_field_mapper.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/presentation/result_history_field_mapper.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/result_protocol.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/result_protocol.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/result_entity.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/result_entity.hpp
+Generated projects/ores.compute/core/src/repository/result_entity.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/result_entity.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/result_mapper.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/result_mapper.hpp
+Generated projects/ores.compute/core/src/repository/result_mapper.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/result_mapper.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/result_repository.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/result_repository.hpp
+Generated projects/ores.compute/core/src/repository/result_repository.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/result_repository.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/service/result_service.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/service/result_service.hpp
+Generated projects/ores.compute/core/src/service/result_service.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/service/result_service.cpp
+Generated projects/ores.shell/compute/include/ores.shell/app/commands/compute/result_commands.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/include/ores.shell/app/commands/compute/result_commands.hpp
+Generated projects/ores.shell/compute/src/app/commands/compute/result_commands.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/src/app/commands/compute/result_commands.cpp
+Generated projects/ores.shell/compute/tests/result_commands_tests.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/tests/result_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.compute/api/include/ores.compute.api/domain/workunit.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/workunit.hpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/workunit_json_io.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/workunit_json_io.hpp
+Generated projects/ores.compute/api/src/domain/workunit_json_io.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/workunit_json_io.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/workunit_table.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/workunit_table.hpp
+Generated projects/ores.compute/api/src/domain/workunit_table.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/workunit_table.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/domain/workunit_table_io.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/domain/workunit_table_io.hpp
+Generated projects/ores.compute/api/src/domain/workunit_table_io.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/domain/workunit_table_io.cpp
+Generated projects/ores.compute/core/tests/workunit_eventing_integration_tests.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/tests/workunit_eventing_integration_tests.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/generators/workunit_generator.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/generators/workunit_generator.hpp
+Generated projects/ores.compute/api/src/generators/workunit_generator.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/src/generators/workunit_generator.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/workunit_history_provider_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/workunit_history_provider_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/workunit_history_provider_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/workunit_history_provider_registrar.cpp
+Generated projects/ores.compute/service/include/ores.compute.service/messaging/workunit_event_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/include/ores.compute.service/messaging/workunit_event_registrar.hpp
+Generated projects/ores.compute/service/src/messaging/workunit_event_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/service/src/messaging/workunit_event_registrar.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/eventing/workunit_event.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/eventing/workunit_event.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/workunit_handler.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/workunit_handler.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/messaging/workunit_registrar.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/messaging/workunit_registrar.hpp
+Generated projects/ores.compute/core/src/messaging/workunit_registrar.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/messaging/workunit_registrar.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/presentation/workunit_history_field_mapper.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/presentation/workunit_history_field_mapper.hpp
+Generated projects/ores.compute/core/src/presentation/workunit_history_field_mapper.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/presentation/workunit_history_field_mapper.cpp
+Generated projects/ores.compute/api/include/ores.compute.api/messaging/workunit_protocol.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/api/include/ores.compute.api/messaging/workunit_protocol.hpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/workunit_entity.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/workunit_entity.hpp
+Generated projects/ores.compute/core/src/repository/workunit_entity.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/workunit_entity.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/workunit_mapper.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/workunit_mapper.hpp
+Generated projects/ores.compute/core/src/repository/workunit_mapper.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/workunit_mapper.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/repository/workunit_repository.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/repository/workunit_repository.hpp
+Generated projects/ores.compute/core/src/repository/workunit_repository.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/repository/workunit_repository.cpp
+Generated projects/ores.compute/core/include/ores.compute.core/service/workunit_service.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/include/ores.compute.core/service/workunit_service.hpp
+Generated projects/ores.compute/core/src/service/workunit_service.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.compute/core/src/service/workunit_service.cpp
+Generated projects/ores.shell/compute/include/ores.shell/app/commands/compute/workunit_commands.hpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/include/ores.shell/app/commands/compute/workunit_commands.hpp
+Generated projects/ores.shell/compute/src/app/commands/compute/workunit_commands.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/src/app/commands/compute/workunit_commands.cpp
+Generated projects/ores.shell/compute/tests/workunit_commands_tests.cpp
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.shell/compute/tests/workunit_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+INFO Regeneration complete.
+Regenerating component 'compute-cpp' at address 'ores.doc'...
+INFO Regenerating 8 models for component 'compute-cpp' (address: ores.doc)...
+WARNING component_overview.org: nothing to generate for 'ores.doc' (model type 'component')
+Generated doc/recipes/shell/apps/app.org
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/apps/app.org
+Generated doc/recipes/shell/app_versions/app_version.org
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/app_versions/app_version.org
+Generated doc/recipes/shell/app_version_platforms/app_version_platform.org
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/app_version_platforms/app_version_platform.org
+Generated doc/recipes/shell/batches/batch.org
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/batches/batch.org
+Generated doc/recipes/shell/hosts/host.org
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/hosts/host.org
+Generated doc/recipes/shell/results/result.org
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/results/result.org
+Generated doc/recipes/shell/workunits/workunit.org
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/doc/recipes/shell/workunits/workunit.org
+INFO Regeneration complete.
+Regenerating component 'compute-cpp' at address 'ores.plantuml'...
+INFO Regenerating 8 models for component 'compute-cpp' (address: ores.plantuml)...
+INFO Regeneration complete.
+Regenerating component 'compute-cpp' at address 'ores.shell'...
+INFO Regenerating 8 models for component 'compute-cpp' (address: ores.shell)...
+INFO Regeneration complete.
+Regenerating component 'compute-cpp' at address 'ores.sql'...
+INFO Regenerating 8 models for component 'compute-cpp' (address: ores.sql)...
+Generated projects/ores.sql/create/compute/compute_apps_create.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_apps_create.sql
+Generated projects/ores.sql/drop/compute/compute_apps_drop.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_apps_drop.sql
+Generated projects/ores.sql/create/compute/compute_apps_notify_trigger_create.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_apps_notify_trigger_create.sql
+Generated projects/ores.sql/drop/compute/compute_apps_notify_trigger_drop.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_apps_notify_trigger_drop.sql
+Generated projects/ores.sql/create/compute/compute_app_versions_create.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_app_versions_create.sql
+Generated projects/ores.sql/drop/compute/compute_app_versions_drop.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_app_versions_drop.sql
+Generated projects/ores.sql/create/compute/compute_app_versions_notify_trigger_create.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_app_versions_notify_trigger_create.sql
+Generated projects/ores.sql/drop/compute/compute_app_versions_notify_trigger_drop.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_app_versions_notify_trigger_drop.sql
+Generated projects/ores.sql/create/compute/compute_app_version_platform_create.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_app_version_platform_create.sql
+Generated projects/ores.sql/create/compute/compute_batches_create.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_batches_create.sql
+Generated projects/ores.sql/drop/compute/compute_batches_drop.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_batches_drop.sql
+Generated projects/ores.sql/create/compute/compute_batches_notify_trigger_create.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_batches_notify_trigger_create.sql
+Generated projects/ores.sql/drop/compute/compute_batches_notify_trigger_drop.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_batches_notify_trigger_drop.sql
+Generated projects/ores.sql/create/compute/compute_hosts_create.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_hosts_create.sql
+Generated projects/ores.sql/drop/compute/compute_hosts_drop.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_hosts_drop.sql
+Generated projects/ores.sql/create/compute/compute_hosts_notify_trigger_create.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_hosts_notify_trigger_create.sql
+Generated projects/ores.sql/drop/compute/compute_hosts_notify_trigger_drop.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_hosts_notify_trigger_drop.sql
+Generated projects/ores.sql/create/compute/compute_results_create.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_results_create.sql
+Generated projects/ores.sql/drop/compute/compute_results_drop.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_results_drop.sql
+Generated projects/ores.sql/create/compute/compute_results_notify_trigger_create.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_results_notify_trigger_create.sql
+Generated projects/ores.sql/drop/compute/compute_results_notify_trigger_drop.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_results_notify_trigger_drop.sql
+Generated projects/ores.sql/create/compute/compute_workunits_create.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_workunits_create.sql
+Generated projects/ores.sql/drop/compute/compute_workunits_drop.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_workunits_drop.sql
+Generated projects/ores.sql/create/compute/compute_workunits_notify_trigger_create.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/create/compute/compute_workunits_notify_trigger_create.sql
+Generated projects/ores.sql/drop/compute/compute_workunits_notify_trigger_drop.sql
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.sql/drop/compute/compute_workunits_notify_trigger_drop.sql
+INFO Regeneration complete.
+Regenerating component 'compute-cpp' at address 'ores.ts.domain'...
+INFO Regenerating 8 models for component 'compute-cpp' (address: ores.ts.domain)...
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/domain/app.ts
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/domain/app.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/domain/app_version.ts
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/domain/app_version.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/domain/app_version_platform.ts
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/domain/app_version_platform.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/domain/batch.ts
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/domain/batch.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/domain/host.ts
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/domain/host.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/domain/result.ts
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/domain/result.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/domain/workunit.ts
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/domain/workunit.ts
+INFO Regeneration complete.
+Regenerating component 'compute-cpp' at address 'ores.ts.protocol'...
+INFO Regenerating 8 models for component 'compute-cpp' (address: ores.ts.protocol)...
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_protocol.ts
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_version_protocol.ts
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_version_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_version_platform_protocol.ts
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_version_platform_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/batch_protocol.ts
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/batch_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/host_protocol.ts
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/host_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/result_protocol.ts
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/result_protocol.ts
+Generated projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/workunit_protocol.ts
+INFO Wrote /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/workunit_protocol.ts
+INFO Regeneration complete.
+
+--- drifted file(s) ---
+ .../domain/app_version_platform.hpp                |   7 +-
+ ...itory_app_version_platform_repository_tests.cpp | 183 +++------------------
+ .../ores.compute.app_version_platform_junction.org |   8 +-
+ .../compute_app_version_platform_create.sql        |   7 +-
+ 4 files changed, 28 insertions(+), 177 deletions(-)
+
+--- unified diff ---
+diff --git a/projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp b/projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp
+index 49c1ee3621..a4accedee1 100644
+--- a/projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp
++++ b/projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp
+@@ -42,10 +42,9 @@ namespace ores::compute::domain {
+  *
+  * The junction uses the full generated stack: NATS protocol, handler
+  * and registrar. The generated list_by_app_version op returns the
+- * platform rows enriched with the platform code, and
+- * replace_by_app_version replaces the active platform set of an app
+- * version. Both are consumed by the desktop console and by the
+- * repository tests.
++ * platform rows enriched with the platform code. Both it and the write
++ * and remove ops are consumed by the desktop console and by the repository
++ * tests.
+  */
+ struct app_version_platform final {
+     /**
+diff --git a/projects/ores.compute/core/tests/repository_app_version_platform_repository_tests.cpp b/projects/ores.compute/core/tests/repository_app_version_platform_repository_tests.cpp
+index 5006cfa799..a6c4c8a8d2 100644
+--- a/projects/ores.compute/core/tests/repository_app_version_platform_repository_tests.cpp
++++ b/projects/ores.compute/core/tests/repository_app_version_platform_repository_tests.cpp
+@@ -28,6 +28,11 @@
+ #include <string>
+ #include <vector>
+ 
++// The canonical junction surface writes and removes rows one claim at a time:
++// the repository offers no operation that replaces a whole set for one parent,
++// because the protocol retired that operation. A caller that wants the set
++// replaced composes the writes and the removals itself.
++
+ namespace {
+ 
+ const std::string_view test_suite("ores.compute.tests");
+@@ -41,7 +46,7 @@ using ores::compute::repository::platform_repository;
+ using namespace ores::logging;
+ 
+ /// Look up the seeded compute platforms; most tests need at least two
+-/// distinct rows to exercise add/remove semantics on the junction.
++/// distinct rows to exercise the junction.
+ std::vector<compute_platform> seeded_platforms(database_helper& h) {
+     platform_repository repo;
+     auto platforms = repo.read_active(h.context());
+@@ -62,136 +67,8 @@ app_version_platform make_row(database_helper& h,
+     return r;
+ }
+ 
+-/// read_latest_by_app_version reports platform_code via a JOIN — callers
+-/// compare codes rather than ids, so surface them sorted for stable equality.
+-std::vector<std::string> sorted_codes(const std::vector<app_version_platform>& rows) {
+-    std::vector<std::string> codes;
+-    codes.reserve(rows.size());
+-    for (const auto& r : rows)
+-        codes.push_back(r.platform_code);
+-    std::sort(codes.begin(), codes.end());
+-    return codes;
+-}
+-
+ } // namespace
+ 
+-TEST_CASE("replace_by_app_version_initial_insert_lists_all_rows", tags) {
+-    auto lg(make_logger(test_suite));
+-    database_helper h;
+-    const auto platforms = seeded_platforms(h);
+-    const auto av_id = boost::uuids::random_generator()();
+-
+-    app_version_platform_repository repo(h.context());
+-    std::vector<app_version_platform> rows{
+-        make_row(h, av_id, platforms[0], "pkg-a.tar.gz"),
+-        make_row(h, av_id, platforms[1], "pkg-b.tar.gz"),
+-    };
+-
+-    CHECK_NOTHROW(repo.replace_by_app_version(
+-        av_id, rows, h.db_user(), h.db_user(), "system.new_record", "initial insert"));
+-
+-    const auto listed = repo.read_latest_by_app_version(av_id);
+-    CHECK(listed.size() == 2);
+-    const auto got = sorted_codes(listed);
+-    const auto want = std::vector<std::string>{platforms[0].code, platforms[1].code};
+-    auto want_sorted = want;
+-    std::sort(want_sorted.begin(), want_sorted.end());
+-    CHECK(got == want_sorted);
+-    for (const auto& r : listed)
+-        CHECK(!r.package_uri.empty());
+-}
+-
+-TEST_CASE("replace_by_app_version_swap_removes_old_adds_new", tags) {
+-    database_helper h;
+-    const auto platforms = seeded_platforms(h);
+-    REQUIRE(platforms.size() >= 3);
+-
+-    const auto av_id = boost::uuids::random_generator()();
+-
+-    app_version_platform_repository repo(h.context());
+-    // Seed with platforms[0] + platforms[1].
+-    repo.replace_by_app_version(av_id,
+-                                {
+-                                    make_row(h, av_id, platforms[0], "old-a.tar.gz"),
+-                                    make_row(h, av_id, platforms[1], "old-b.tar.gz"),
+-                                },
+-                                h.db_user(),
+-                                h.db_user(),
+-                                "system.new_record",
+-                                "initial");
+-
+-    // Replace with platforms[0] + platforms[2]; platforms[1] should be gone.
+-    repo.replace_by_app_version(av_id,
+-                                {
+-                                    make_row(h, av_id, platforms[0], "new-a.tar.gz"),
+-                                    make_row(h, av_id, platforms[2], "new-c.tar.gz"),
+-                                },
+-                                h.db_user(),
+-                                h.db_user(),
+-                                "system.new_record",
+-                                "swap");
+-
+-    const auto listed = repo.read_latest_by_app_version(av_id);
+-    CHECK(listed.size() == 2);
+-    const auto got = sorted_codes(listed);
+-    auto want = std::vector<std::string>{platforms[0].code, platforms[2].code};
+-    std::sort(want.begin(), want.end());
+-    CHECK(got == want);
+-
+-    // URI for the platform that survived must be the new one, not the old one.
+-    for (const auto& r : listed) {
+-        if (r.platform_code == platforms[0].code)
+-            CHECK(r.package_uri.find("new-a.tar.gz") != std::string::npos);
+-        else if (r.platform_code == platforms[2].code)
+-            CHECK(r.package_uri.find("new-c.tar.gz") != std::string::npos);
+-    }
+-}
+-
+-TEST_CASE("replace_by_app_version_empty_set_drops_all_active", tags) {
+-    database_helper h;
+-    const auto platforms = seeded_platforms(h);
+-    const auto av_id = boost::uuids::random_generator()();
+-
+-    app_version_platform_repository repo(h.context());
+-    repo.replace_by_app_version(av_id,
+-                                {
+-                                    make_row(h, av_id, platforms[0], "seed.tar.gz"),
+-                                },
+-                                h.db_user(),
+-                                h.db_user(),
+-                                "system.new_record",
+-                                "seed");
+-    REQUIRE(repo.read_latest_by_app_version(av_id).size() == 1);
+-
+-    repo.replace_by_app_version(av_id, {}, h.db_user(), h.db_user(), "system.new_record", "clear");
+-
+-    CHECK(repo.read_latest_by_app_version(av_id).empty());
+-}
+-
+-TEST_CASE("replace_by_app_version_is_idempotent", tags) {
+-    database_helper h;
+-    const auto platforms = seeded_platforms(h);
+-    const auto av_id = boost::uuids::random_generator()();
+-
+-    std::vector<app_version_platform> rows{
+-        make_row(h, av_id, platforms[0], "same.tar.gz"),
+-        make_row(h, av_id, platforms[1], "same.tar.gz"),
+-    };
+-
+-    app_version_platform_repository repo(h.context());
+-    repo.replace_by_app_version(
+-        av_id, rows, h.db_user(), h.db_user(), "system.new_record", "first");
+-    repo.replace_by_app_version(
+-        av_id, rows, h.db_user(), h.db_user(), "system.new_record", "same again");
+-
+-    const auto listed = repo.read_latest_by_app_version(av_id);
+-    CHECK(listed.size() == 2);
+-    const auto got = sorted_codes(listed);
+-    auto want = std::vector<std::string>{platforms[0].code, platforms[1].code};
+-    std::sort(want.begin(), want.end());
+-    CHECK(got == want);
+-}
+-
+ TEST_CASE("read_latest_by_app_version_returns_empty_for_unknown_id", tags) {
+     database_helper h;
+     const auto unknown = boost::uuids::random_generator()();
+@@ -200,30 +77,16 @@ TEST_CASE("read_latest_by_app_version_returns_empty_for_unknown_id", tags) {
+     CHECK(repo.read_latest_by_app_version(unknown).empty());
+ }
+ 
+-TEST_CASE("read_latest_by_app_version_filters_by_app_version", tags) {
++TEST_CASE("read_latest_by_app_version_reports_the_rows_written_for_each_parent", tags) {
+     database_helper h;
+     const auto platforms = seeded_platforms(h);
+     const auto av_a = boost::uuids::random_generator()();
+     const auto av_b = boost::uuids::random_generator()();
+ 
+     app_version_platform_repository repo(h.context());
+-    repo.replace_by_app_version(av_a,
+-                                {
+-                                    make_row(h, av_a, platforms[0], "a0.tar.gz"),
+-                                    make_row(h, av_a, platforms[1], "a1.tar.gz"),
+-                                },
+-                                h.db_user(),
+-                                h.db_user(),
+-                                "system.new_record",
+-                                "av_a");
+-    repo.replace_by_app_version(av_b,
+-                                {
+-                                    make_row(h, av_b, platforms[0], "b0.tar.gz"),
+-                                },
+-                                h.db_user(),
+-                                h.db_user(),
+-                                "system.new_record",
+-                                "av_b");
++    repo.write({make_row(h, av_a, platforms[0], "a0.tar.gz"),
++                make_row(h, av_a, platforms[1], "a1.tar.gz")});
++    repo.write({make_row(h, av_b, platforms[0], "b0.tar.gz")});
+ 
+     const auto a_rows = repo.read_latest_by_app_version(av_a);
+     const auto b_rows = repo.read_latest_by_app_version(av_b);
+@@ -236,26 +99,18 @@ TEST_CASE("read_latest_by_app_version_filters_by_app_version", tags) {
+         CHECK(r.package_uri.find("/b") != std::string::npos);
+ }
+ 
+-TEST_CASE("replace_by_app_version_stamps_the_context_tenant", tags) {
++TEST_CASE("remove_by_app_version_leaves_the_other_parent_alone", tags) {
+     database_helper h;
+     const auto platforms = seeded_platforms(h);
+-    const auto av_id = boost::uuids::random_generator()();
+-
+-    // A client must not assert its own tenant, so the shell sends rows with
+-    // tenant_id unset. The repository stamps the context tenant on each one
+-    // before the insert, which keeps the close and the insert on one tenant.
+-    auto a = make_row(h, av_id, platforms[0], "stamped-a.tar.gz");
+-    auto b = make_row(h, av_id, platforms[1], "stamped-b.tar.gz");
+-    a.tenant_id.clear();
+-    b.tenant_id.clear();
++    const auto av_a = boost::uuids::random_generator()();
++    const auto av_b = boost::uuids::random_generator()();
+ 
+     app_version_platform_repository repo(h.context());
+-    CHECK_NOTHROW(repo.replace_by_app_version(
+-        av_id, {a, b}, h.db_user(), h.db_user(), "system.new_record", "stamp"));
++    repo.write({make_row(h, av_a, platforms[0], "a0.tar.gz")});
++    repo.write({make_row(h, av_b, platforms[0], "b0.tar.gz")});
++
++    CHECK_NOTHROW(repo.remove_by_app_version(av_a));
+ 
+-    const auto expected = h.tenant_id().to_string();
+-    const auto listed = repo.read_latest_by_app_version(av_id);
+-    CHECK(listed.size() == 2);
+-    for (const auto& r : listed)
+-        CHECK(r.tenant_id == expected);
++    CHECK(repo.read_latest_by_app_version(av_a).empty());
++    CHECK(repo.read_latest_by_app_version(av_b).size() == 1);
+ }
+diff --git a/projects/ores.compute/modeling/ores.compute.app_version_platform_junction.org b/projects/ores.compute/modeling/ores.compute.app_version_platform_junction.org
+index 1d3290ab80..6a66ef943a 100644
+--- a/projects/ores.compute/modeling/ores.compute.app_version_platform_junction.org
++++ b/projects/ores.compute/modeling/ores.compute.app_version_platform_junction.org
+@@ -24,10 +24,9 @@ assignments without the wrapper needing to negotiate package selection.
+ 
+ The junction uses the full generated stack: NATS protocol, handler
+ and registrar. The generated list_by_app_version op returns the
+-platform rows enriched with the platform code, and
+-replace_by_app_version replaces the active platform set of an app
+-version. Both are consumed by the desktop console and by the
+-repository tests.
++platform rows enriched with the platform code. Both it and the write
++and remove ops are consumed by the desktop console and by the repository
++tests.
+ 
+ * Flags
+ :PROPERTIES:
+@@ -43,7 +42,6 @@ repository tests.
+ :cpp_type:      boost::uuids::uuid
+ :index_comment: Index for looking up platforms for an app version
+ :list_by:       true
+-:replace_by:    true
+ :END:
+ 
+ FK reference to ores_compute_app_versions_tbl.
+diff --git a/projects/ores.sql/create/compute/compute_app_version_platform_create.sql b/projects/ores.sql/create/compute/compute_app_version_platform_create.sql
+index d2bcbb38bd..d95ef68381 100644
+--- a/projects/ores.sql/create/compute/compute_app_version_platform_create.sql
++++ b/projects/ores.sql/create/compute/compute_app_version_platform_create.sql
+@@ -32,10 +32,9 @@
+  *
+  * The junction uses the full generated stack: NATS protocol, handler
+  * and registrar. The generated list_by_app_version op returns the
+- * platform rows enriched with the platform code, and
+- * replace_by_app_version replaces the active platform set of an app
+- * version. Both are consumed by the desktop console and by the
+- * repository tests.
++ * platform rows enriched with the platform code. Both it and the write
++ * and remove ops are consumed by the desktop console and by the repository
++ * tests.
+  */
+ 
+ create table if not exists "ores_compute_app_version_platforms_tbl" (
+
+Generated output does not match what's checked in -- a generated file was hand-edited, or its .org model changed without running `compass codegen regenerate` afterwards. Run the regenerate command locally and commit the result.

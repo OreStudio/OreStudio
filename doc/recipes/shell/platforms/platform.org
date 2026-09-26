@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: B07AA915-541C-55EB-BBC1-9DEA5AB1421F
+:END:
+#+title: How do I run the platforms commands from the shell?
+#+description: Every command the platforms submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:platforms:
+
+This file documents the platforms resource at the shell, one section per command. Every command is a subcommand of =platforms=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: FEDEA36D-53A1-515D-9CC8-C810024B9FD5
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+platforms list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.platforms.list=.
+
+#+name: platforms-list
+#+begin_src ores-shell :tangle platforms-list.ores :exports none
+platforms list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0013B902-7326-5E95-A41A-C8D51E0D9935
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+platforms get <code>
+#+end_example
+
+It is addressed at =compute.v1.platforms.get=.
+
+#+name: platforms-get
+#+begin_src ores-shell :tangle platforms-get.ores :exports none
+platforms get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 7ADD78C4-F750-5461-B439-C2095293F397
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+platforms get-many <code>
+#+end_example
+
+It is addressed at =compute.v1.platforms.get_many=.
+
+#+name: platforms-get-many
+#+begin_src ores-shell :tangle platforms-get-many.ores :exports none
+platforms get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D3A03A9D-975C-53D7-BB70-F3C5EBFFE5AB
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+platforms add <code> <display_name> <description> <os_family> <cpu_arch> <abi> <is_active> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.platforms.put=.
+
+#+name: platforms-add
+#+begin_src ores-shell :tangle platforms-add.ores :exports none
+platforms add __none__ __none__ __none__ __none__ __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: FEDB4798-4D92-59DE-B422-C8CF6C3B6C74
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+platforms set <id> <code> <display_name> <description> <os_family> <cpu_arch> <abi> <is_active> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =compute.v1.platforms.put=.
+
+#+name: platforms-set
+#+begin_src ores-shell :tangle platforms-set.ores :exports none
+platforms set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 4481616E-03D2-57B0-A69B-6BA3866A1915
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+platforms put-many --count <n> <id> <code> <display_name> <description> <os_family> <cpu_arch> <abi> <is_active> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.platforms.put_many=.
+
+#+name: platforms-put-many
+#+begin_src ores-shell :tangle platforms-put-many.ores :exports none
+platforms put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 8EDC84D6-1108-5318-8BEE-62FCF863E4FE
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+platforms delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =compute.v1.platforms.delete=.
+
+#+name: platforms-delete
+#+begin_src ores-shell :tangle platforms-delete.ores :exports none
+platforms delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: E5BEBF8D-2628-5FEC-B604-49368261B9F4
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+platforms delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =compute.v1.platforms.delete_many=.
+
+#+name: platforms-delete-many
+#+begin_src ores-shell :tangle platforms-delete-many.ores :exports none
+platforms delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 0247815C-198A-5CD0-B890-D95BB8C4F6E6
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+platforms versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.platforms_versions.list=.
+
+#+name: platforms-versions
+#+begin_src ores-shell :tangle platforms-versions.ores :exports none
+platforms versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 04A3AE9C-D07F-59DF-B216-C389A48AF304
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+platforms version <code> --version <n>
+#+end_example
+
+It is addressed at =compute.v1.platforms_versions.get=.
+
+#+name: platforms-version
+#+begin_src ores-shell :tangle platforms-version.ores :exports none
+platforms version __none__ --version 1
+#+end_src
+

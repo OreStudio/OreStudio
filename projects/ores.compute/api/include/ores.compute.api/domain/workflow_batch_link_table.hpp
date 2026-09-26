@@ -17,33 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_DOMAIN_COMPUTE_PLATFORM_HPP
-#define ORES_COMPUTE_DOMAIN_COMPUTE_PLATFORM_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_COMPUTE_API_DOMAIN_WORKFLOW_BATCH_LINK_TABLE_HPP
+#define ORES_COMPUTE_API_DOMAIN_WORKFLOW_BATCH_LINK_TABLE_HPP
 
-#include <boost/uuid/uuid.hpp>
-#include <optional>
+#include "ores.compute.api/domain/workflow_batch_link.hpp"
+#include "ores.compute.api/export.hpp"
 #include <string>
+#include <vector>
 
 namespace ores::compute::domain {
 
 /**
- * @brief A known compute platform, identified by its vcpkg target triplet.
- *
- * System-owned data: owned by the system tenant and visible read-only to all
- * tenants via RLS. The @c code matches VCPKG_TARGET_TRIPLET used at build
- * time and ORES_PLATFORM_TRIPLET stamped into each binary at runtime, so a
- * single identifier links build output, runtime host and DB row.
+ * @brief Converts workflow_batch_links to the table format.
  */
-struct compute_platform final {
-    boost::uuids::uuid id;
-    std::string code;         // e.g. "x64-linux"
-    std::string display_name; // e.g. "Linux x86-64"
-    std::string description;
-    std::string os_family;          // linux / macos / windows
-    std::string cpu_arch;           // x86_64 / aarch64
-    std::optional<std::string> abi; // gnu / musl / msvc / mingw / nullopt
-    bool is_active = true;
-};
+ORES_COMPUTE_API_EXPORT std::string convert_to_table(const std::vector<workflow_batch_link>& v);
 
 }
 

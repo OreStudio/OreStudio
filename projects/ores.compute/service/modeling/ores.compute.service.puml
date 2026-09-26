@@ -27,6 +27,8 @@ namespace ores #F2F2F2 {
             namespace app #F2F2F2 {
                 class application {
                 }
+                class application_exception {
+                }
                 class batch_workflow_bridge {
                     -interval_seconds_ : uint32_t
                     -nats_ : ores::nats::service::client&
@@ -38,14 +40,37 @@ namespace ores #F2F2F2 {
                 }
                 class host {
                 }
+                class workunit_dispatcher {
+                    -nats_ : ores::nats::service::client&
+                    -ctx_ : ores::database::context
+                }
             }
             namespace config #F2F2F2 {
                 class options <<struct>> {
                     +logging : optional<ores::logging::logging_options>
                     +nats : ores::nats::config::nats_options
                     +database : ores::database::database_options
+                    +telemetry_interval_seconds : uint32_t
                 }
                 class parser {
+                }
+                class parser_exception {
+                }
+            }
+            namespace messaging #F2F2F2 {
+                class app_event_registrar {
+                }
+                class app_version_event_registrar {
+                }
+                class batch_event_registrar {
+                }
+                class host_event_registrar {
+                }
+                class platform_event_registrar {
+                }
+                class result_event_registrar {
+                }
+                class workunit_event_registrar {
                 }
             }
         }

@@ -22,7 +22,6 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/postgres_listener_service.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
@@ -40,9 +39,12 @@ namespace ores::eventing::service {
 /**
  * @brief Event source that bridges PostgreSQL LISTEN/NOTIFY to the event bus.
  *
- * This class wraps postgres_listener_service and translates low-level
- * entity_change_event notifications into typed domain events that are
- * published to the event bus.
+ * This class wraps postgres_listener_service and turns the notify trigger's
+ * canonical notification into typed domain events on the event bus. One
+ * channel can serve two mappings, and the notification carries what both
+ * need: register_entity_event_mapping() converts it through the event's own
+ * traits, key record included, and register_mapping() builds an event from
+ * the notification's time, its changed ids and its tenant.
  *
  * Components can register their entity-to-event mappings via register_mapping(),
  * enabling the event source to automatically publish the correct typed event
@@ -115,7 +117,7 @@ public:
      *
      * When a notification is received for the specified entity, the event
      * source will publish an instance of Event to the bus with the
-     * notification's timestamp.
+     * notification's timestamp, its changed ids and its tenant.
      *
      * @tparam Event The domain event type to publish (must have a timestamp member).
      * @param entity_name The fully qualified entity name (e.g., "ores.refdata.currency").
@@ -127,6 +129,7 @@ public:
         BOOST_LOG_SEV(lg(), info) << "Registering entity-to-event mapping: entity='" << entity_name
                                   << "', channel='" << channel_name << "'";
 
+        channel_entities_[channel_name] = entity_name;
         entity_mappings_[entity_name] = entity_mapping{
             .channel_name = channel_name,
             .publisher = [this, entity_name](std::chrono::system_clock::time_point ts,
@@ -210,13 +213,6 @@ public:
 
 private:
     /**
-     * @brief Handle incoming entity change events.
-     *
-     * Maps the entity name to the appropriate typed event and publishes it.
-     */
-    void on_entity_change(const domain::entity_change_event& e);
-
-    /**
      * @brief Dispatches a canonical notification to its registered mapping.
      */
     void on_entity_event(const std::string& channel, const domain::entity_event_notification& e);
@@ -225,6 +221,16 @@ private:
     ores::database::service::postgres_listener_service listener_;
     std::unordered_map<std::string, entity_mapping> entity_mappings_;
     std::unordered_map<std::string, entity_event_mapping> entity_event_mappings_;
+    /**
+     * @brief The entity each channel serves, for the older mapping.
+     *
+     * entity_mappings_ is keyed by entity name, so a notification arriving on a
+     * channel cannot find its mapping without this index. It exists because one
+     * channel can serve both mappings: the canonical one publishes the typed
+     * event to NATS, and the older one hands the change to an in-process
+     * subscriber that needs the tenant and the changed ids.
+     */
+    std::unordered_map<std::string, std::string> channel_entities_;
     std::string registered_entities_;
     std::atomic<std::uint64_t> parse_failure_count_{0};
 };

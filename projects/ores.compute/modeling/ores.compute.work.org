@@ -1,0 +1,416 @@
+:PROPERTIES:
+:ID: 91711BF9-DF21-424B-9EF0-B955A6F8A7DD
+:END:
+#+title: ores.compute.work
+#+description: Codegen operation model for the compute work protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: compute
+#+subcomponent: api
+#+entity_singular: work
+#+namespace: ores::compute::messaging
+#+brief: compute work protocol messages.
+#+filetags: :model:operation:compute:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The machine channel between wrapper nodes and the service: pull a unit of
+work, announce a live node, requeue the work of a dead one, and hand back a
+finished job.
+
+These are operations rather than entity verbs. A pull assigns the next
+unsent result, a heartbeat touches a host row, a reap moves results back to
+the queue, and a submit closes a result and signs off its workunit. None of
+them is a row a caller addresses by key, so none of them is derived from an
+entity.
+
+Three of the four carry no session. A wrapper node holds no user JWT, so
+the heartbeat, the reap and the submit are trusted at the transport layer,
+and their handlers read the service context directly. The pull is the
+exception: its handler makes a request context and checks
+=compute::batches:write=, so it states a session.
+
+The handlers stay hand-written beside this model. An operation model
+generates no service handler.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <string_view>
+#+end_src
+
+* Messages
+
+** pull_work_request
+:PROPERTIES:
+:subject: compute.v1.work.pull
+:response: pull_work_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks the grid for one unit of work to run.
+ *
+ * Session gated: the handler checks compute::batches:write before it
+ * assigns anything.
+ */
+#+end_src
+
+*** host_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The node that will run the work.
+ */
+#+end_src
+
+** pull_work_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The assignment, or the reason there is none.
+ *
+ * A successful reply names the result, its workunit and the app version
+ * whose package the node needs.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether work was assigned.
+ */
+#+end_src
+
+*** result_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The result row the node must fill in.
+ */
+#+end_src
+
+*** workunit_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workunit the result belongs to.
+ */
+#+end_src
+
+*** app_version_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The app version whose cached package the node runs.
+ */
+#+end_src
+
+*** input_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where the node fetches the job input.
+ */
+#+end_src
+
+*** config_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where the node fetches the job config.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why no work was assigned, when none was.
+ */
+#+end_src
+
+** work_assignment_event
+:PROPERTIES:
+:subject: compute.v1.work.assignments
+:auth: none
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The payload published to the COMPUTE JetStream stream on dispatch.
+ *
+ * A producer addresses it at the subject below extended with the tenant and
+ * the platform code, and carries everything the wrapper needs to execute the
+ * job, so no additional round trip to the server is required. A wrapper
+ * subscribes only to its own triplet, so it never sees an assignment it
+ * could not run.
+ */
+#+end_src
+
+*** result_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The result row the node must fill in.
+ */
+#+end_src
+
+*** workunit_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workunit the result belongs to.
+ */
+#+end_src
+
+*** app_version_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Identifies the cached package.
+ */
+#+end_src
+
+*** package_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Engine bundle (.tar.gz) to download and cache.
+ */
+#+end_src
+
+*** package_sha256
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Expected SHA256 of the downloaded package bundle.
+ */
+#+end_src
+
+*** input_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Job input data (HTTP GET).
+ */
+#+end_src
+
+*** config_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Job config passed through to the engine (HTTP GET).
+ */
+#+end_src
+
+*** output_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Pre-assigned upload location for the result (HTTP PUT).
+ */
+#+end_src
+
+** heartbeat_message
+:PROPERTIES:
+:subject: compute.v1.work.heartbeat
+:auth: none
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A wrapper node's liveness signal.
+ *
+ * Fire-and-forget and unauthenticated: the handler touches the host row
+ * with the service context, and registers the host on its first heartbeat.
+ */
+#+end_src
+
+*** host_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The node that is alive.
+ */
+#+end_src
+
+** reap_work_message
+:PROPERTIES:
+:subject: compute.v1.work.reap
+:auth: none
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks the service to requeue the work of stale hosts.
+ *
+ * It carries no fields, because the stale threshold is the service's own.
+ */
+#+end_src
+
+** submit_result_request
+:PROPERTIES:
+:subject: compute.v1.results.submit
+:auth: none
+:response: submit_result_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Hands a finished job back from a wrapper node.
+ *
+ * This is the wrapper-to-service machine channel, kept distinct from the
+ * generated save_result CRUD flow: wrapper nodes hold no user JWT, so the
+ * user-session-gated save flow rejects them. Like the heartbeat, the submit
+ * is trusted at the transport layer.
+ */
+#+end_src
+
+*** result_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The result row that finished.
+ */
+#+end_src
+
+*** host_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief UUID string of the wrapper node that ran the job.
+ */
+#+end_src
+
+*** output_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where the result archive was uploaded.
+ */
+#+end_src
+
+*** outcome
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief 1=Success, 3=ClientError, 4=NoReply.
+ */
+#+end_src
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Human-readable failure reason; empty on success.
+ */
+#+end_src
+
+** submit_result_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the result was accepted.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the result was accepted.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it was not, when it was not.
+ */
+#+end_src
+
+* See also
+
+- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.

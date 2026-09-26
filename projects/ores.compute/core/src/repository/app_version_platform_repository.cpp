@@ -29,7 +29,10 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <cstddef>
+#include <optional>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
 #include <unordered_map>
 
 namespace ores::compute::repository {
@@ -46,23 +49,80 @@ std::string app_version_platform_repository::sql() {
 app_version_platform_repository::app_version_platform_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
+ores::utility::domain::precondition
+app_version_platform_repository::replace_claim(const domain::app_version_platform& v) {
+    const auto current = read_latest(v.app_version_id, v.platform_id);
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
+
+domain::app_version_platform
+app_version_platform_repository::apply_claim(const domain::app_version_platform& v,
+                                             const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(v.app_version_id, v.platform_id);
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
+
 void app_version_platform_repository::write(
     const domain::app_version_platform& app_version_platform) {
+    write(app_version_platform, replace_claim(app_version_platform));
+}
+
+void app_version_platform_repository::write(
+    const std::vector<domain::app_version_platform>& app_version_platforms) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(app_version_platforms.size());
+    for (const auto& item : app_version_platforms)
+        claims.push_back(replace_claim(item));
+    write(app_version_platforms, claims);
+}
+
+void app_version_platform_repository::write(
+    const domain::app_version_platform& app_version_platform,
+    const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing app version platform to database: "
                                << app_version_platform.app_version_id << "/"
                                << app_version_platform.platform_id;
+    const auto t = apply_claim(app_version_platform, claim);
     execute_write_query(ctx_,
-                        app_version_platform_mapper::map(app_version_platform),
+                        app_version_platform_mapper::map(t),
                         lg(),
                         "writing app version platform to database");
 }
 
 void app_version_platform_repository::write(
-    const std::vector<domain::app_version_platform>& app_version_platforms) {
+    const std::vector<domain::app_version_platform>& app_version_platforms,
+    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing app version platforms to database. Count: "
                                << app_version_platforms.size();
+    std::vector<domain::app_version_platform> batch;
+    batch.reserve(app_version_platforms.size());
+    for (std::size_t i = 0; i < app_version_platforms.size(); ++i)
+        batch.push_back(apply_claim(app_version_platforms[i], claims[i]));
     execute_write_query(ctx_,
-                        app_version_platform_mapper::map(app_version_platforms),
+                        app_version_platform_mapper::map(batch),
                         lg(),
                         "writing app version platforms to database");
 }
@@ -99,6 +159,28 @@ app_version_platform_repository::read_latest(std::uint32_t offset, std::uint32_t
         [](const auto& entities) { return app_version_platform_mapper::map(entities); },
         lg(),
         "Reading latest app version platforms (paginated).");
+}
+
+std::vector<domain::app_version_platform>
+app_version_platform_repository::read_latest(const boost::uuids::uuid& app_version_id,
+                                             const boost::uuids::uuid& platform_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest app version platform. " << app_version_id << "/"
+                               << platform_id;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto app_version_id_str = boost::uuids::to_string(app_version_id);
+    const auto platform_id_str = boost::uuids::to_string(platform_id);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<app_version_platform_entity>> |
+                       where("tenant_id"_c == tid && "app_version_id"_c == app_version_id_str &&
+                             "platform_id"_c == platform_id_str && "valid_to"_c == max.value());
+
+    return execute_read_query<app_version_platform_entity, domain::app_version_platform>(
+        ctx_,
+        query,
+        [](const auto& entities) { return app_version_platform_mapper::map(entities); },
+        lg(),
+        "Reading latest app version platform by key.");
 }
 
 std::uint32_t app_version_platform_repository::get_total_app_version_platform_count() {
@@ -305,17 +387,56 @@ std::uint32_t app_version_platform_repository::get_total_app_version_platform_co
 
 void app_version_platform_repository::remove(const boost::uuids::uuid& app_version_id,
                                              const boost::uuids::uuid& platform_id) {
+    static_cast<void>(remove(app_version_id, platform_id, std::nullopt));
+}
+
+app_version_platform_repository::remove_status
+app_version_platform_repository::remove(const boost::uuids::uuid& app_version_id,
+                                        const boost::uuids::uuid& platform_id,
+                                        std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing app version platform from database: " << app_version_id
                                << "/" << platform_id;
 
+    const auto current = read_latest(app_version_id, platform_id);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto app_version_id_str = boost::uuids::to_string(app_version_id);
     const auto platform_id_str = boost::uuids::to_string(platform_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<app_version_platform_entity> |
                        where("tenant_id"_c == tid && "app_version_id"_c == app_version_id_str &&
-                             "platform_id"_c == platform_id_str);
+                             "platform_id"_c == platform_id_str && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(ctx_, query, lg(), "removing app version platform from database");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(app_version_id, platform_id).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void app_version_platform_repository::remove(const std::vector<boost::uuids::uuid>& app_version_ids,
+                                             const std::vector<boost::uuids::uuid>& platform_ids) {
+    // A junction's key is the pair of columns, and a per-column .in() DELETE
+    // would be a cross-product over-delete (rows outside the requested pairs),
+    // so each pair is removed on its own.
+    if (app_version_ids.size() != platform_ids.size())
+        throw std::invalid_argument(
+            "app_version_platform_repository::remove: key column vectors must be the same length");
+    for (std::size_t i = 0; i < app_version_ids.size(); ++i)
+        static_cast<void>(remove(app_version_ids[i], platform_ids[i], std::nullopt));
 }
 
 void app_version_platform_repository::remove_by_app_version(
@@ -331,41 +452,5 @@ void app_version_platform_repository::remove_by_app_version(
     execute_delete_query(ctx_, query, lg(), "removing all app version platforms from database");
 }
 
-void app_version_platform_repository::replace_by_app_version(
-    const boost::uuids::uuid& app_version_id,
-    const std::vector<domain::app_version_platform>& app_version_platforms,
-    const std::string& modified_by,
-    const std::string& performed_by,
-    const std::string& change_reason_code,
-    const std::string& change_commentary) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Replacing app version platforms for app version: "
-                               << app_version_id;
-    const auto app_version_id_str = boost::uuids::to_string(app_version_id);
-    const auto tid = ctx_.tenant_id().to_string();
-
-    // Soft-close the currently active rows for this side so rows absent
-    // from the new set disappear from the active set. Rows in @p
-    // app_version_platforms are re-inserted below; the insert trigger takes care
-    // of the bitemporal bookkeeping.
-    execute_parameterized_command(ctx_,
-                                  "UPDATE ores_compute_app_version_platforms_tbl"
-                                  "   SET valid_to = current_timestamp"
-                                  " WHERE tenant_id = $1::uuid"
-                                  "   AND app_version_id = $2::uuid"
-                                  "   AND valid_to = ores_utility_infinity_timestamp_fn()",
-                                  {tid, app_version_id_str},
-                                  lg(),
-                                  "Closing existing app version platforms for app version " +
-                                      app_version_id_str);
-
-    for (auto app_version_platform : app_version_platforms) {
-        app_version_platform.tenant_id = tid;
-        app_version_platform.modified_by = modified_by;
-        app_version_platform.performed_by = performed_by;
-        app_version_platform.change_reason_code = change_reason_code;
-        app_version_platform.change_commentary = change_commentary;
-        write(app_version_platform);
-    }
-}
 }

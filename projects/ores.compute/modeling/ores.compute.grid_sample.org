@@ -1,0 +1,240 @@
+:PROPERTIES:
+:ID: 7C4E1A62-9B3D-4F18-A5E2-6D8C0F3B7A94
+:END:
+#+title: ores.compute.grid_sample
+#+description: Codegen entity model for the compute grid_samples hypertable, one point-in-time snapshot of server-side grid metrics.
+#+type: ores.codegen.entity
+#+component: compute
+#+filetags: :model:entity:compute:
+#+entity_singular: grid_sample
+#+entity_plural: grid_samples
+#+entity_title: Grid Sample
+#+brief: One point-in-time snapshot of server-side compute grid metrics; a TimescaleDB hypertable partitioned by sampled_at.
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+One snapshot of the grid, written by the compute service's poller on its
+own interval. The counters mirror what the database holds at that moment,
+so a dashboard reads one stored row rather than aggregating on every
+refresh.
+
+The table is append-only and carries no validity window: a sample is a
+fact about an instant, and nothing edits it. That is why the model states
+=:current_state:=, which drops the transaction-time pair the bi-temporal
+shape would add and lets the partition column sit in the primary key.
+
+The reads the codegen cannot express live beside it. A per-node newest row
+is a =DISTINCT ON (host_id)= and the live summary is a call to
+=ores_compute_grid_stats_fn=, so both stay hand-written in
+=compute_telemetry_repository=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     compute
+:has_tenant_id: true
+:profile:       readonly-timeseries
+:subcomponent:  api
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
+:primary_key:     true
+:skip_uuid_check: true
+:END:
+
+Surrogate key. A hypertable's partition column must sit in the primary
+key, and a surrogate key lets it do so without the tenant joining the key.
+
+** sampled_at
+:PROPERTIES:
+:type:        timestamp with time zone
+:cpp_type:    std::chrono::system_clock::time_point
+:primary_key: true
+:nullable:    false
+:END:
+
+When the sample was taken.
+
+** total_hosts
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Total registered hosts.
+
+** online_hosts
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Hosts whose last heartbeat is inside the reaper window.
+
+** idle_hosts
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Online hosts with no result in flight.
+
+** results_inactive
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Results in server state 1.
+
+** results_unsent
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Results in server state 2.
+
+** results_in_progress
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Results in server state 4.
+
+** results_done
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Results in server state 5.
+
+** total_workunits
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Workunits the tenant holds.
+
+** total_batches
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Batches the tenant holds.
+
+** active_batches
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Batches that are not closed.
+
+** outcomes_success
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Results that finished with outcome 1 in the last day.
+
+** outcomes_client_error
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Results that finished with outcome 3 in the last day.
+
+** outcomes_no_reply
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:default:  0
+:END:
+
+Results that finished with outcome 4 in the last day.
+
+* C++
+
+** Conventions
+:PROPERTIES:
+:iterator_var: gs
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                     ores_compute_grid_samples_tbl
+:current_state:                 true
+:hypertable:                    true
+:hypertable_partition_column:   sampled_at
+:hypertable_chunk_interval:     1 day
+:hypertable_retention_interval: 30 days
+:no_audit_columns:              true
+:suppress_nk_index:             true
+:rls_tenant_isolation:          true
+:newest_by:                     sampled_at
+:END:
+
+The newest read exists because the dashboard wants the last sample and a
+paged read walks the key from its oldest end. The retention policy keeps
+thirty days, which is what the hand-written table set.
+
+** Indexes
+
+| name                 | columns                     | unique | current_only | where_extra |
+|----------------------+-----------------------------+--------+--------------+-------------|
+| grid_samples_tenant  | tenant_id, sampled_at desc  | false  | false        |             |
+
+* Physical space
+
+The table is internal: the service writes it and the dashboard protocol
+reads it through the handler. Nothing reaches it over the wire, so only
+the data layer and the SQL schema are generated.
+
+| Address                             | Enabled |
+|-------------------------------------+---------|
+| ores.cpp.service                    | false   |
+| ores.cpp.protocol                   | false   |
+| ores.cpp.nats-handler               | false   |
+| ores.cpp.nats-sub-registrar         | false   |
+| ores.cpp.nats-event-registrar       | false   |
+| ores.cpp.nats-eventing              | false   |
+| ores.cpp.nats-event-cache           | false   |
+| ores.cpp.history-provider-registrar | false   |
+| ores.cpp.presentation               | false   |
+| ores.cpp.eventing-integration-test  | false   |
+| ores.cpp.shell                      | false   |
+| ores.sql.schema.notify_trigger      | false   |
+| ores.sql.schema.notify_trigger_drop | false   |
+| ores.ts.protocol                    | false   |
+| ores.ts.domain                      | false   |
+
+* See also
+
+- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.

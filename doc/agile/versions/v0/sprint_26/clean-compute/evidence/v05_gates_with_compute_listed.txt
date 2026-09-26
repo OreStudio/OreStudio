@@ -1,0 +1,24 @@
+## check_model_drift.py --summary
+projects/ores.reporting/modeling/ores.reporting.report_definition.org: has_workspace_id contradicts its profile, allowed by KNOWN_MODEL_DRIFT
+
+154 of 297 models bind to a profile; 13 profiles defined.
+No model drift: every bound model agrees with its profile (1 known exception(s)).
+
+## check_protocol_twin_coverage.py
+Protocol twin coverage intact: all 30 generated protocol header(s) in 2 committed component(s) have a TypeScript twin, and no model opts out.
+
+## check_handler_permissions.py
+handler permissions are seeded (1 component(s), 144 distinct code(s)).
+
+## check_populate_references.py
+populate references resolve.
+
+## regenerate_shell_recipe_inventory.py --check
+exit=0
+
+## regenerate_cmake_component_files.py --all --check (compute only)
+All component_files.cmake up to date.
+All component_files.cmake up to date.
+All component_files.cmake up to date.
+All component_files.cmake up to date.
+All component_files.cmake up to date.

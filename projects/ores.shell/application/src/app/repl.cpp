@@ -26,6 +26,14 @@
 #include "ores.shell/app/commands/change_reason_categories_commands.hpp"
 #include "ores.shell/app/commands/change_reasons_commands.hpp"
 #include "ores.shell/app/commands/compute_commands.hpp"
+#include "ores.shell/app/commands/compute/app_commands.hpp"
+#include "ores.shell/app/commands/compute/app_version_commands.hpp"
+#include "ores.shell/app/commands/compute/app_version_platform_commands.hpp"
+#include "ores.shell/app/commands/compute/batch_commands.hpp"
+#include "ores.shell/app/commands/compute/host_commands.hpp"
+#include "ores.shell/app/commands/compute/platform_commands.hpp"
+#include "ores.shell/app/commands/compute/result_commands.hpp"
+#include "ores.shell/app/commands/compute/workunit_commands.hpp"
 #include "ores.shell/app/commands/connection_commands.hpp"
 #include "ores.shell/app/commands/iam/iam_commands.hpp"
 #include "ores.shell/app/commands/lei_commands.hpp"
@@ -101,6 +109,14 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     workflow_commands::register_commands(*root, session_);
     lei_commands::register_commands(*root, session_);
     compute_commands::register_commands(*root, session_);
+    app_commands::register_commands(*root, session_);
+    app_version_commands::register_commands(*root, session_);
+    app_version_platform_commands::register_commands(*root, session_);
+    batch_commands::register_commands(*root, session_);
+    host_commands::register_commands(*root, session_);
+    platform_commands::register_commands(*root, session_);
+    result_commands::register_commands(*root, session_);
+    workunit_commands::register_commands(*root, session_);
     marketdata_commands::register_commands(*root, session_);
     synthetic_commands::register_commands(*root, session_);
     synthetic_entity_commands::register_commands(*root, session_, pagination_);

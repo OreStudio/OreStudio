@@ -78,7 +78,7 @@ record each item's result in the table below.
 | P05 | Not applicable yet. There is no protocol change to follow until the operation model replaces the hand-written headers; the consumers are then updated in the same piece of work. | — |
 | P06 | Not applicable: the component has no event cache, and B03 found none among its 53 files. | B03 survey. |
 | G01 | Pass. Regeneration is byte-identical and idempotent. The first run wrote 75 files; the second wrote nothing and reported "No drift: regenerated output matches the checked-in tree", exit 0, with the tree untouched. | Two runs of =check_component_drift.py --component workflow-cpp=, the second after committing the first. |
-| G02 | Open, and it is a build blocker rather than tidiness. Compiling the component after the regeneration fails with a redefinition: the hand-written =core/include/ores.workflow.core/domain/workflow_instance.hpp= and the generated =api/include/ores.workflow.api/domain/workflow_instance.hpp= both define =ores::workflow::domain::workflow_instance=. The generated type is a strict superset, so the hand-written one is superseded and its call sites have to move with it. | =cmake --build ... --target ores.workflow.core.lib=: "error: redefinition of 'workflow_instance'", naming both headers. Detail below. |
+| G02 | In progress, and it is a build blocker rather than tidiness. First half done: the six superseded core domain and json-io files are deleted, the engine points at the generated =ores.workflow.api/domain= headers, =ores.history.core.lib= is linked because the generated history registrar needs it, and the source list is regenerated. Compiling then exposed a model gap rather than a code one, recorded against M02. | =cmake --build ... --target ores.workflow.core.lib=, error by error. Detail below. |
 | G03 | Pass in part. The component holds 97 C++ files outside tests where the baseline held 53: 56 carry the generated marker and 41 remain hand-written, against a baseline of 0 and 53. Twelve of the original files are now generated, which is the 12 the baseline predicted would change. | File census over =projects/ores.workflow=, marker =AUTO-GENERATED FILE=. |
 | G06 | Pass for this component. All three modules report "All component_files.cmake up to date", each regenerated through the =ores.cmake.component.files= archetype rather than edited by hand. | =regenerate_cmake_component_files.py --component ores.workflow.{api,core,service}=. =--all= still fails on 24 components, verified pre-existing because =ores.reporting.core= is stale on a component this work never touched. |
 | W01 | Finding: the registrar families exist but are not composed. Generation materialised =workflow_instance_registrar.cpp=, =workflow_step_registrar.cpp=, their two history-provider registrars and the service's two event registrars, and the hand-written aggregate =core/src/messaging/registrar.cpp= references none of them. | The aggregate registrar's include list and =register_handlers= body, against the files generation wrote. Detail below. |
@@ -588,6 +588,43 @@ One process note worth carrying: the regeneration and its deletions belong in th
 same commit, or at least the same wave. Committing the regeneration alone left
 the branch red for several commits, which the standard's sequencing is meant to
 avoid.
+
+** G02 the compiler found a model gap, not a code gap
+
+Deleting the six files and swapping the engine's include cleared the redefinition
+and revealed two more layers.
+
+First, a missing build declaration: the generated history-provider registrar
+includes =ores.history.core/service/dispatch_registry.hpp=, which nothing linked.
+=ores.compute= already links =ores.history.core.lib= for the same reason, so the
+fix is that one line. This is a G06-class defect rather than a generator one: the
+generated code needs a dependency the CMake did not declare.
+
+Second, and this is the interesting one, the hand-written query handler calls
+=workflow_step_repository::find_by_workflow_id=, which the generated repository
+does not have. The generated API offers =read_latest=, =read_all=,
+=read_at_version=, a paged =read_latest=, =write= and =remove= -- and no
+parent-scoped read.
+
+The cause is in the model, not the template. =book='s parent column carries a
+second property block naming the parent:
+
+#+begin_example
+:table:         ores_refdata_portfolios_tbl
+:parent_entity: portfolio
+:nullable:      false
+:error_message: Invalid parent_portfolio_id: %. No active portfolio found with this id.
+#+end_example
+
+and that is what makes generation emit =read_latest_by_parent_portfolio_id=.
+=workflow_step='s =workflow_id= carries only =:type:= and =:cpp_type:=, so
+generation has no parent to scope by and emits nothing. The fix is to declare the
+parent on the column.
+
+This is the sub-decision M02 left open -- whether =workflow_step= takes the parent
+linkage -- arriving as a compile error, which is better evidence than the guess it
+replaces. The answer is that it must, because the component's query surface reads
+steps by their workflow.
 
 * Test Scenarios
 

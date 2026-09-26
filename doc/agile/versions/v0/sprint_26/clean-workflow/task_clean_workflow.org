@@ -552,6 +552,34 @@ the =ores.shell.workflow= module while =repl.cpp= lives in
 =ores.shell.application=, so that module has to link the new one; and the shell's
 CMake source lists follow the same regeneration rules as the rest.
 
+** S01 the generated shell module is not built at all
+
+Registering the generated command units in =repl.cpp= is not enough, and the
+reason is one level below it. =projects/ores.shell/workflow/= holds six generated
+files and **no CMakeLists.txt**: no module CMakeLists, no =src/CMakeLists.txt=, no
+=component_files.cmake=. The shell's own top-level CMakeLists adds api, trading,
+iam, refdata, compute, application and modeling, and does not add workflow. And
+=ores.shell.application=, which owns =repl.cpp=, links the other four generated
+command modules but not this one.
+
+So the six files are not compiled into anything. That is why W01's phrase -- a
+family generation materialised and nothing composes it -- is literally true here
+rather than a figure of speech.
+
+The sibling modules are not generated into place either; they were scaffolded once
+and generation writes into them. What is missing for workflow is that scaffolding:
+a module CMakeLists chain, a source list, an =add_subdirectory= in the shell, and a
+link line in =ores.shell.application=.
+
+That makes S01 three pieces rather than one: scaffold the module into the build,
+register the two generated units in =repl.cpp=, and move =wait_for_instance= out of
+the class being retired so =ore_commands= and =provision_commands= keep working.
+The last piece is the only one that touches behaviour; the first two are wiring.
+
+Worth checking at the same time whether generation is supposed to emit those build
+files and does not, because if it is, this is a generator defect to fix at source
+under G05 rather than a one-off scaffold.
+
 ** H01 the diagrams are skeletons
 
 The item asks for two passes and says why: the automated pass reads data members

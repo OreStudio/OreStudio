@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: BE48603C-18AC-4C98-8E1F-221D1E43F350
+:END:
+#+title: Refresh the stale ER diagram from its generator
+#+description: The committed projects/ores.sql/modeling/ores_schema.puml lags its own generator by 26 hunks; regenerate and review it on its own branch.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Regenerate =projects/ores.sql/modeling/ores_schema.puml= from
+=projects/ores.codegen/plantuml_er_generate.sh= and review the result on its
+own branch, then wire a drift check so it cannot fall behind again.
+
+* Why
+
+The committed diagram does not match its own generator. Running the generator
+on 2026-09-26 produced 26 hunks against the checked-in file: table notes in
+=iam=, =trading= and elsewhere, and column order changes. None of it is
+schema-shape change; it is the generator's newer description and ordering
+conventions that the committed file predates. The generated file is 383 lines
+away from what the tool produces.
+
+The gap is invisible today because no gate compares the diagram with its
+source. The ER generator has a parse, render and diagram stage, and
+=plantuml_er_parse_sql.py --validate-only= guards the SQL, but nothing checks
+that =.puml= equals a fresh render.
+
+The work is not a one-line regeneration. The diff is large and mostly
+unrelated to any one component, so it belongs on its own branch with its own
+review, not inside a per-component clean-up story. The capture exists because
+the =ores.database= clean-up needed one table's description preserved and
+declined to drag those 383 lines into its diff.
+
+* References
+
+- =projects/ores.codegen/plantuml_er_generate.sh= — the three-stage pipeline.
+- =doc/knowledge/architecture/plantuml_er_diagram_conventions.org= — the
+  conventions the committed file predates.
+
+* See also
+
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] — item H01
+  makes a current diagram part of a clean component; the component that
+  raised this capture could not satisfy that item without the churn.

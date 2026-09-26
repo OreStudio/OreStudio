@@ -67,13 +67,15 @@ initialisation.
 ** ores.database
 
 PostgreSQL access layer — connection pool, tenant/party context, bitemporal CRUD
-helpers, repository base classes, a health monitor, and LISTEN/NOTIFY
+helpers, repository mapper helpers, a health monitor, and LISTEN/NOTIFY
 integration. All domain services build on this component to access their
-isolated tables.
+isolated tables. A simple component with no sub-parts. It is hand-written
+infrastructure with no codegen entity model, and it owns the bootstrap table
+=ores_database_info_tbl= that records the checkout which built the database.
 
-| Sub-component | Role                                        | Dependencies        |
-|---------------+---------------------------------------------+---------------------|
-| [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] | PostgreSQL connection pool, bitemporal CRUD | [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]] |
+| Component      | Role                                        | Dependencies                                                     |
+|----------------+---------------------------------------------+------------------------------------------------------------------|
+| [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] | PostgreSQL connection pool, bitemporal CRUD | [[id:1FBCC86B-8E04-4F81-8558-85C0B6C54836][ores.logging]], [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]] |
 
 ** ores.variability
 

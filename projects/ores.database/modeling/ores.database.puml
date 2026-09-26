@@ -28,8 +28,11 @@ namespace ores #F2F2F2 {
         class context {
             -connection_pool_ : connection_pool_type
             -credentials_ : sqlgen::postgres::Credentials
+            -policy_ : pool_acquire_policy
             -service_account_ : string
             -roles_ : vector<string>
+            -workspace_id_ : string
+            -workspace_resolution_ : vector<string>
         }
         class database_options <<struct>> {
             +user : string
@@ -38,8 +41,12 @@ namespace ores #F2F2F2 {
             +database : string
             +port : int
             +tenant : string
+            +pool_size : int
+            +pool_backoff : string
         }
         class db_connection_exception {
+        }
+        enum pool_backoff_strategy {
         }
         class context_factory {
         }
@@ -51,30 +58,9 @@ namespace ores #F2F2F2 {
             -status_callback_ : status_change_callback
             -stop_signal_ : boost::asio::cancellation_signal
         }
-        namespace domain #F2F2F2 {
-            class database_info <<struct>> {
-                +id : boost::uuids::uuid
-                +schema_version : string
-                +build_environment : string
-                +git_commit : string
-                +git_date : string
-                +created_at : chrono::system_clock::time_point
-            }
-        }
         namespace repository #F2F2F2 {
-            class database_info_entity <<struct>> {
-                +schema : constexpr static const char*
-                +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
-                +schema_version : string
-                +build_environment : string
-                +git_commit : string
-                +git_date : string
-                +created_at : optional<db_timestamp>
-            }
-            class database_info_mapper {
-            }
-            class database_info_repository {
+            class repository_exception {
+                -message_ : string
             }
         }
         namespace service #F2F2F2 {
@@ -84,6 +70,7 @@ namespace ores #F2F2F2 {
             class postgres_listener_service {
                 -ctx_ : context
                 -notification_callback_ : notification_callback_t
+                -application_name_ : string
                 -mutex_ : mutable mutex
                 -connection_ : optional<rfl::Ref<sqlgen::postgres::Connection>>
                 -subscribed_channels_ : vector<string>
@@ -92,6 +79,17 @@ namespace ores #F2F2F2 {
                 -ready_cv_ : condition_variable
             }
             class tenant_context {
+            }
+        }
+    }
+    namespace utility #F2F2F2 {
+        namespace repository #F2F2F2 {
+            class version_conflict_exception {
+                -entity_type_ : optional<string>
+                -entity_id_ : optional<string>
+                -expected_version_ : optional<int>
+                -actual_version_ : optional<int>
+                -message_ : string
             }
         }
     }

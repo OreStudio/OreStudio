@@ -18,5 +18,4 @@
  *
  */
 
-\ir ./database_database_infos_create.sql
-\ir ./database_info_fn_create.sql
+\ir ./database_database_info_create.sql

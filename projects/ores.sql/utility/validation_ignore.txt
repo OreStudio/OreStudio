@@ -519,11 +519,3 @@ WIRE_001 iam_tenant_terminator_drop.sql
 # them.
 # =============================================================================
 WIRE_001 mq_scrape_functions_drop.sql
-
-# =============================================================================
-# Database info -- database_info_drop.sql drops ores_database_info_tbl, the
-# table the wired database/database_database_infos_create.sql creates.
-# drop/database/ has no aggregator file and drop.sql never reaches into it, so
-# the table is dropped only by whole-database recreate.
-# =============================================================================
-WIRE_001 database_info_drop.sql

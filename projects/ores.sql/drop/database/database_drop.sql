@@ -17,19 +17,5 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/**
- * Stores the schema version, git commit, and build environment inserted at
- * database creation time. Used to correlate service behaviour with the
- * database schema in use. Contains exactly one row.
- */
 
-create table if not exists "ores_database_info_tbl" (
-    "id" uuid not null,
-    "schema_version" text not null,
-    "build_environment" text not null,
-    "git_commit" text not null,
-    "git_date" text not null,
-    "created_at" timestamp with time zone not null default current_timestamp,
-    primary key (id),
-    check ("id" <> ores_utility_nil_uuid_fn())
-);
+\ir ./database_database_info_drop.sql

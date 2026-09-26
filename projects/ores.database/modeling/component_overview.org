@@ -4,6 +4,7 @@
 #+title: ores.database
 #+name: database
 #+full_name: ores.database
+#+brief: Shared PostgreSQL access layer for every ORE Studio service.
 #+description: PostgreSQL database access layer — connection pool, tenant context, bitemporal operations, and repository helpers.
 #+type: ores.codegen.component
 #+level: cross
@@ -22,9 +23,15 @@
 =ores.database= is the shared PostgreSQL access layer used by every domain
 service. It provides a connection pool (=tenant_aware_pool=), tenant and party
 context management, bitemporal CRUD operations, repository base helpers, and
-database-info entities for schema introspection. It also exposes a
-=health_monitor= and a =postgres_listener_service= for LISTEN/NOTIFY
-integration. All persistence code in domain services builds on this library.
+the mapper and exception scaffolding the generated repositories build on. It
+also exposes a =health_monitor= and a =postgres_listener_service= for
+LISTEN/NOTIFY integration. All persistence code in domain services builds on
+this library.
+
+The component owns no codegen entity models. It is hand-written
+infrastructure, and every type it exposes stays below the audit, history and
+eventing stacks it would otherwise have to link. The =ores_database_info_tbl=
+table lives in the SQL technical space under =projects/ores.sql=.
 
 * Inputs
 
@@ -51,9 +58,7 @@ integration. All persistence code in domain services builds on this library.
 
 * Entity modules
 
-| Module | Brief |
-|--------+-------|
-| [[id:FA8AC6C4-C41E-4A1F-ACDB-5756DBFE9CF6][ores.database]] | Logical entities for the database namespace. |
+None. The component has no codegen entity models.
 
 * See also
 

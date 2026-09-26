@@ -30,7 +30,6 @@ separate per-address component entries are needed.
 | analytics-cpp | projects/ores.analytics/modeling | |
 | compute-cpp | projects/ores.compute/modeling | |
 | controller-cpp | projects/ores.controller/modeling | |
-| database-cpp | projects/ores.database/modeling | |
 | dq-cpp | projects/ores.dq/modeling | |
 | iam-cpp | projects/ores.iam/modeling | |
 | scheduler-cpp | projects/ores.scheduler/modeling | |

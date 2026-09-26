@@ -413,8 +413,13 @@ def test_a_declared_key_that_is_not_the_storage_key_gets_a_read():
     assert key_finders(entity) == [{"column": "code", "suffix": "code"}]
 
 
-def test_the_older_opt_in_keeps_its_method_name_whatever_column_it_reads():
-    """Hand-written callers spell `read_latest_by_code`, so it cannot move."""
+def test_the_older_opt_in_keeps_its_method_name_beside_the_declared_read():
+    """Hand-written callers spell `read_latest_by_code`, so it cannot move.
+
+    `counterparty` and `party` declare `short_code` as their key and opt in on
+    the same column, so the read the service resolves their key through is
+    spelled `read_latest_by_short_code` and needs declaring too.
+    """
     entity = _entity("short_code")
     entity["service_find_by_code"] = {"column": "short_code"}
     assert key_finders(entity) == [

@@ -65,7 +65,7 @@ record each item's result in the table below.
 | M01  | Pass. Every model is on the current org format. No JSON model and no =lookup_entity= remains. | B02 inventory; =find= and =grep= over =modeling/= |
 | M02  | Pass. All four entities bind to a variability profile; no no-match to record. | model =:profile:=; =check_model_drift.py --summary= |
 | M03  | Pass. No model states a property its profile already fixes. | =check_model_drift.py --summary=: no drift |
-| M04  | Pass. The =ores.cpp.shell-command.enabled= opt-in sits at the entity root, where =org_loader= reads it, and the regeneration it enables produces the shell units and the table columns. | =org_loader.py= line 3764; G01 diff |
+| M04  | Pass. The =ores.cpp.shell-command.enabled= opt-in sits at the entity root, where =org_loader= reads it, and it is what makes the regeneration emit the shell units. The =Table display= section added under M09 is a separate edit and is what fills the generated table columns. | =org_loader.py=; shell facet spec =projects/modeling/shell_facet.org= |
 | M05  | Pass. Each entity describes one table with history; no joined or denormalised shape. | model review; generated SQL |
 | M06  | Pass. Every wire type is modelled and generated. All four protocol headers are generated; none is hand-written. | B03; generated headers |
 | M07  | Not applicable. The component has no junction model. | B02 inventory |
@@ -78,7 +78,7 @@ record each item's result in the table below.
 | P04  | Not applicable. The component has no operation model. | B02 inventory |
 | P05  | Pass. Every consumer moves in the same change: =application.cpp=, the core registrar, =repl.cpp= and the shell aggregator. | commit a74ebddd1e |
 | P06  | Not applicable. No analytics entity declares an event cache. | no =nats-event-cache= output generated |
-| G01  | Pending V06. | =check_component_drift.py --all= |
+| G01  | Pass. Regeneration is byte-identical to the checked-in tree and idempotent. | =check_component_drift.py --all= (exit 0, no drift) |
 | G02  | Pass. No generatable file was hand-written; the four superseded =*_changed_event.hpp= headers are deleted. | commit a74ebddd1e; B03 |
 | G03  | Pass. Every generated file carries the marker and no hand-written file does. | marker =grep= against the B03 inventory |
 | G04  | Pass. The regenerated output matches the reference shapes; no template defect surfaced. | generated-code review record |
@@ -237,9 +237,14 @@ column alone. The two are one method only when the suffix agrees, because
 the method is spelled for its suffix; the service resolves a caller's key
 through the declared-key read, so the two differ exactly when the legacy
 column is the declared key and the legacy method keeps the name =code=.
-The fix compares column and suffix together. An entity whose key is
-=code= stays byte-identical, which keeps iam's tree unchanged. The
-regression test is in =test_org_loader_keys.py=.
+The fix compares column and suffix together. An entity whose declared key is
+=code= is unaffected, which is iam's case. It also repairs four refdata
+entities that opt in on a column they declare as their key: =counterparty=
+and =party= on =short_code=, =counterparty_contact_information= and
+=party_contact_information= on =contact_type=. Each gains the declared-key
+read beside the legacy one. No gate sees that side effect today, because the
+drift registry holds iam and analytics only and refdata already reports
+pre-existing drift. The regression test is in =test_org_loader_keys.py=.
 
 The build then completed clean, and =check_component_drift.py --all=
 reports no drift.
@@ -319,7 +324,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The =key_finders= fix is right, but "output-neutral" holds only for entities whose declared key is =code=; four refdata entities change too. | =org_loader.py=; task doc | Accepted | The code is correct and the four entities needed the same repair. The task doc's claim is narrowed to name them. |
+| 2 | =read_latest_by_code= and =read_latest_by_name= are byte-identical apart from the name, so the generator emits two methods where one would do. | =pricing_model_config_repository.cpp= | Accepted, recorded | No action here: it is generated output and both call sites exist. The codegen round that owns =key_finders= should make the declared-key read reuse the legacy method when the columns agree. |
+| 3 | The older opt-in test's name and docstring contradict its own assertion, and the neighbouring test covers the same case. | =test_org_loader_keys.py= | Accepted | Renamed and the docstring now states what it asserts and names the two refdata entities that hit it. |
+| 4 | The generated shell unit include guard omits the part name its own path uses, a latent cross-part collision. | =pricing_engine_type_commands.hpp= and the other three units | Accepted, recorded | Template-level and consistent with every existing component. Fixing it rewrites every component's units, so it belongs to the codegen round, not this story. |
+| 5 | The shell group overview gained =analytics= in =#+parts:= but its Part/Role table still listed three parts. | =projects/ores.shell/modeling/component_overview.org= | Accepted | Table now lists every part in build order, and the closing paragraph no longer promises a "later wave" that has arrived. |
+| 6 | M04 credits the shell opt-in with producing the table columns; the =Table display= section does that. | task doc | Accepted | Corrected. |
+| 7 | "All five suites pass" rests partly on a =CHECK(true)= smoke test. | =pricing_model_config_commands_tests.cpp= | Declined | The assertion is template-inherited and matches the reference components; the suite's value is that the unit registers and links, which it proves. |
 
 * Result
 
@@ -356,5 +367,7 @@ the service called =repo.read_latest_by_name= while the repository
 declared only =read_latest_by_code=. =key_finders= deduplicated a legacy
 finder against the declared key by column alone, and the two are one
 method only when the suffix agrees. =org_loader.py= now compares column
-and suffix together, with a regression test; an entity whose key is =code=
-stays byte-identical, so iam is unchanged.
+and suffix together, with a regression test. An entity whose declared key is
+=code= is unaffected, so iam is unchanged; four refdata entities that
+declare the column they opt in on gain the declared-key read beside the
+legacy one, which is the same repair analytics needed.

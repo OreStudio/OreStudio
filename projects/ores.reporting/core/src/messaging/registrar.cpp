@@ -95,6 +95,31 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                         [rth](ores::nats::message msg) {
                                             rth->list_report_type_versions(std::move(msg));
                                         }));
+    subs.push_back(nats.queue_subscribe(get_report_type_request::nats_subject,
+                                        group,
+                                        [rth](ores::nats::message msg) {
+                                            rth->get_report_type(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(get_many_report_types_request::nats_subject,
+                                        group,
+                                        [rth](ores::nats::message msg) {
+                                            rth->get_many_report_types(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(put_many_report_types_request::nats_subject,
+                                        group,
+                                        [rth](ores::nats::message msg) {
+                                            rth->put_many_report_types(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(delete_many_report_types_request::nats_subject,
+                                        group,
+                                        [rth](ores::nats::message msg) {
+                                            rth->delete_many_report_types(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(get_report_type_version_request::nats_subject,
+                                        group,
+                                        [rth](ores::nats::message msg) {
+                                            rth->get_report_type_version(std::move(msg));
+                                        }));
 
     // ----------------------------------------------------------------
     // Report definitions (generated CRUD handler)
@@ -119,6 +144,31 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                         group,
                                         [rdh](ores::nats::message msg) {
                                             rdh->list_report_definition_versions(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(get_report_definition_request::nats_subject,
+                                        group,
+                                        [rdh](ores::nats::message msg) {
+                                            rdh->get_report_definition(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(get_many_report_definitions_request::nats_subject,
+                                        group,
+                                        [rdh](ores::nats::message msg) {
+                                            rdh->get_many_report_definitions(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(put_many_report_definitions_request::nats_subject,
+                                        group,
+                                        [rdh](ores::nats::message msg) {
+                                            rdh->put_many_report_definitions(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(delete_many_report_definitions_request::nats_subject,
+                                        group,
+                                        [rdh](ores::nats::message msg) {
+                                            rdh->delete_many_report_definitions(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(get_report_definition_version_request::nats_subject,
+                                        group,
+                                        [rdh](ores::nats::message msg) {
+                                            rdh->get_report_definition_version(std::move(msg));
                                         }));
 
     // ----------------------------------------------------------------
@@ -162,6 +212,31 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                         [rih](ores::nats::message msg) {
                                             rih->list_report_instance_versions(std::move(msg));
                                         }));
+    subs.push_back(nats.queue_subscribe(get_report_instance_request::nats_subject,
+                                        group,
+                                        [rih](ores::nats::message msg) {
+                                            rih->get_report_instance(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(get_many_report_instances_request::nats_subject,
+                                        group,
+                                        [rih](ores::nats::message msg) {
+                                            rih->get_many_report_instances(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(put_many_report_instances_request::nats_subject,
+                                        group,
+                                        [rih](ores::nats::message msg) {
+                                            rih->put_many_report_instances(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(delete_many_report_instances_request::nats_subject,
+                                        group,
+                                        [rih](ores::nats::message msg) {
+                                            rih->delete_many_report_instances(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(get_report_instance_version_request::nats_subject,
+                                        group,
+                                        [rih](ores::nats::message msg) {
+                                            rih->get_report_instance_version(std::move(msg));
+                                        }));
 
     // ----------------------------------------------------------------
     // Report instance trigger (hand-crafted handler — not codegen)
@@ -199,6 +274,31 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                         group,
                                         [cph](ores::nats::message msg) {
                                             cph->list_concurrency_policy_versions(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(get_concurrency_policy_request::nats_subject,
+                                        group,
+                                        [cph](ores::nats::message msg) {
+                                            cph->get_concurrency_policy(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(get_many_concurrency_policies_request::nats_subject,
+                                        group,
+                                        [cph](ores::nats::message msg) {
+                                            cph->get_many_concurrency_policies(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(put_many_concurrency_policies_request::nats_subject,
+                                        group,
+                                        [cph](ores::nats::message msg) {
+                                            cph->put_many_concurrency_policies(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(delete_many_concurrency_policies_request::nats_subject,
+                                        group,
+                                        [cph](ores::nats::message msg) {
+                                            cph->delete_many_concurrency_policies(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(get_concurrency_policy_version_request::nats_subject,
+                                        group,
+                                        [cph](ores::nats::message msg) {
+                                            cph->get_concurrency_policy_version(std::move(msg));
                                         }));
 
     // ----------------------------------------------------------------

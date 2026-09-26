@@ -505,6 +505,35 @@ a family and nothing composes it. The deletion is not a one-line matter, because
 three other command units reference the hand-written pair and their call sites
 have to move to the generated units in the same piece of work.
 
+** S01 part of the hand-written unit is not a duplicate
+
+Reading the call sites changes the shape of the fix, the same way it did for W04.
+The hand-written =workflow_commands= class holds two things, and only one of them
+is superseded.
+
+The command registration is. The generated units expose the identical seam --
+=static void register_commands(cli::Menu& root_menu,
+ores::nats::service::nats_client& session)= in =ores::shell::app::commands= -- so
+=repl.cpp='s single =workflow_commands::register_commands(*root, session_)=
+becomes the two generated calls.
+
+The polling helper is not. =workflow_commands::wait_for_instance= is called from
+=ore_commands.cpp:272= and from =provision_commands.cpp= at lines 385, 571 and
+623, and =bundles_commands.hpp= documents its =--wait= flag in terms of it. It is
+shared infrastructure that the per-entity generated units have no reason to
+provide, so deleting the class wholesale would break three other command units.
+
+So the fix is: register the generated pair, keep =wait_for_instance=, and decide
+where the survivor lives. It is workflow's concept, so it does not belong in a
+command unit being retired; a small shared header is the likely home. The one call
+inside =workflow_commands.cpp= at line 144 moves with the rest of that file's
+superseded surface.
+
+Two build facts the change needs, neither verified yet: the generated units are in
+the =ores.shell.workflow= module while =repl.cpp= lives in
+=ores.shell.application=, so that module has to link the new one; and the shell's
+CMake source lists follow the same regeneration rules as the rest.
+
 ** H01 the diagrams are skeletons
 
 The item asks for two passes and says why: the automated pass reads data members

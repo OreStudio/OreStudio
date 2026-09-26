@@ -15,10 +15,17 @@ The =ores.iam= module groups all logical entities in the =ores.iam= namespace. E
 
 | Entity | Brief |
 |--------+-------|
-| [[id:11ED9447-461D-4074-9663-E83190BA7371][ores.iam.tenant]] | A tenant representing an isolated organisation or the system platform. |
-| [[id:0B64E03F-1EDE-43E9-BEDA-96CDF9822B3F][ores.iam.tenant_type]] | Classification of tenant types. |
-| [[id:22C2020E-E745-4D7B-B2BF-C17659DFCE6E][ores.iam.tenant_status]] | Tenant lifecycle status definitions. |
+| [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] | An account that can authenticate against the system. |
+| [[id:892C7799-23B7-4D3D-900D-8A2D08D62A6C][ores.iam.account_contact_information]] | Real name and contact details for an account. |
+| [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]] | Links an IAM account to a party. |
 | [[id:C9C16C50-C9DF-4D56-8E6B-FCCB0D29BA97][ores.iam.account_type]] | Classification of account types. |
+| [[id:8A507DA9-1FFE-4DD3-992F-7359F5531253][ores.iam.login_info]] | Login tracking and security state for an account. |
+| [[id:76B113F4-410A-4DE5-9757-A4E263B7B8E7][ores.iam.permission]] | An atomic permission that can be granted to roles. |
+| [[id:6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30][ores.iam.role]] | A named collection of permissions that can be assigned to accounts. |
+| [[id:7A3E9C41-2B6D-4F58-9E10-8C2A5D4B7F63][ores.iam.session]] | A user session, recorded in the TimescaleDB sessions hypertable. |
+| [[id:11ED9447-461D-4074-9663-E83190BA7371][ores.iam.tenant]] | A tenant representing an isolated organisation or the system platform. |
+| [[id:22C2020E-E745-4D7B-B2BF-C17659DFCE6E][ores.iam.tenant_status]] | Tenant lifecycle status definitions. |
+| [[id:0B64E03F-1EDE-43E9-BEDA-96CDF9822B3F][ores.iam.tenant_type]] | Classification of tenant types. |
 
 * See also
 

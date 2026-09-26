@@ -18,13 +18,13 @@
  *
  */
 #include "ores.iam.api/domain/account.hpp"
-#include "ores.iam.api/domain/account_json.hpp"
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_table.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -256,8 +256,9 @@ TEST_CASE("account_convert_single_to_json", tags) {
     acc.totp_secret = "TOTP789";
     acc.email = "john.doe@example.com";
 
-    std::vector<account> accounts = {acc};
-    auto json = convert_to_json(accounts);
+    std::ostringstream os;
+    os << acc;
+    const auto json = os.str();
 
     BOOST_LOG_SEV(lg, info) << "JSON: " << json;
 
@@ -283,17 +284,17 @@ TEST_CASE("account_convert_multiple_to_json", tags) {
         accounts.push_back(acc);
     }
 
-    auto json = convert_to_json(accounts);
+    for (const auto& acc : accounts) {
+        std::ostringstream os;
+        os << acc;
+        const auto json = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "JSON: " << json;
+        BOOST_LOG_SEV(lg, info) << "JSON: " << json;
 
-    CHECK(!json.empty());
-    CHECK(json.find("user0") != std::string::npos);
-    CHECK(json.find("user1") != std::string::npos);
-    CHECK(json.find("user2") != std::string::npos);
-    CHECK(json.find("user0@example.com") != std::string::npos);
-    CHECK(json.find("user1@example.com") != std::string::npos);
-    CHECK(json.find("user2@example.com") != std::string::npos);
+        CHECK(!json.empty());
+        CHECK(json.find(acc.username) != std::string::npos);
+        CHECK(json.find(acc.email) != std::string::npos);
+    }
 }
 
 TEST_CASE("account_convert_empty_vector_to_table", tags) {
@@ -304,7 +305,8 @@ TEST_CASE("account_convert_empty_vector_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
-    CHECK(!table.empty()); // Table should still have headers
+    // Even with no rows the table still has headers.
+    CHECK(!table.empty());
 }
 
 TEST_CASE("account_table_with_faker_data", tags) {

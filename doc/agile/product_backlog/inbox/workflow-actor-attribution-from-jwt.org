@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: EF502706-A19C-4B20-9CB5-42DF16A00F38
+:END:
+#+title: Workflow records the service account as the actor, not the caller
+#+description: The workflow engine sets created_by and modified_by to its own service account, so a user-initiated workflow is attributed to the service. The caller's identity is on the wire as a bearer token and the house pattern is to take claims->username from it, but this service holds no verifier and start_workflow_message carries no identity field.
+#+type: capture
+#+level: cross
+#+filetags: :workflow:iam:provenance:attribution:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The workflow engine stamps =created_by= and =modified_by= with its own service
+account, so a workflow a person started is recorded as having been changed by
+=ores_<env>_workflow_service=. The actor should come from the caller's bearer
+token, which is the house pattern: iam's handlers validate the bearer and take
+=claims->username=, and the iam provisioning path already sends an
+impersonation token on this very call.
+
+* Why
+
+=modified_by= is the actor and =performed_by= is the service that executed --
+the insert trigger stamps the latter itself from =ores_iam_current_service_fn()=.
+Setting both to the service account collapses that distinction and loses the
+only record of who asked for the change.
+
+It is not a small change, which is why it is recorded rather than done:
+=start_workflow_message= carries no identity field, the workflow engine holds
+no verifier at all, and the workflow service wires no JWT key -- only iam holds
+the private key, and other services fetch the public one from
+=iam.v1.auth.public-key=. The engine also starts workflows with no caller at
+all, on recovery and self-dispatch, so a fallback is needed whatever the
+caller story is.
+
+* References
+
+- Found on 2026-09-26 while fixing [[id:C9A76A2E-E780-4457-8E60-096B96780398][No workflow can start once the system has an account]]; the surgical fix set =modified_by= to the service account so the pipeline could work at all, and this is the attribution it leaves behind.
+- =projects/ores.workflow/core/src/service/workflow_engine.cpp= — the four creation sites, and the comment recording the limitation.
+- =projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp= — =signer_.validate(bearer)= and =claims->username=, the pattern to follow.
+- =projects/ores.nats/src/service/jwks.cpp= — the public-key fetch a verifier would use.
+
+* See also
+
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] — the provenance fields are part of every entity's shape, so attribution is a house-wide question rather than this engine's alone.
+
+-

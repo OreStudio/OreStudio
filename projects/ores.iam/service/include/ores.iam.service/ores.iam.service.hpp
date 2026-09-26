@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_SERVICE_HPP
-#define ORES_IAM_SERVICE_HPP
+#ifndef ORES_IAM_SERVICE_ORES_IAM_SERVICE_HPP
+#define ORES_IAM_SERVICE_ORES_IAM_SERVICE_HPP
 
 /**
  * @brief Identity and access management service

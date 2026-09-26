@@ -99,7 +99,9 @@ struct account_contact_information final {
     /**
      * @brief ISO 3166-1 alpha-2 country code.
      *
-     * References the countries table (soft FK).
+     * References the countries table (soft FK). The generator leaves it blank: the tenant-scoped
+     * countries table is unseeded in isolated test tenants, and an empty value skips the
+     * insert-trigger validation.
      */
     std::string country_code;
 

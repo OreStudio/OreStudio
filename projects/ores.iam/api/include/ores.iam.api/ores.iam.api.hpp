@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,19 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.api/domain/role_json.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_IAM_API_ORES_IAM_API_HPP
+#define ORES_IAM_API_ORES_IAM_API_HPP
 
-namespace ores::iam::domain {
+/**
+ * @brief Shared IAM contract: domain types, JSON/table I/O, and NATS protocol schemas.
+ *
+ * Header-only library defining the shared contract for the IAM domain. It
+ * provides domain types for accounts, roles, tenants, parties, and session
+ * tokens, JSON and table I/O via rfl, and the NATS message protocol schemas
+ * for the 0x2000-0x2FFF range consumed by ores.iam.core and the client
+ * components.
+ */
+namespace ores::iam::api {}
 
-std::string convert_to_json(const role& v) {
-    return rfl::json::write(v);
-}
-
-std::string convert_to_json(const std::vector<role>& v) {
-    return rfl::json::write(v);
-}
-
-}
+#endif

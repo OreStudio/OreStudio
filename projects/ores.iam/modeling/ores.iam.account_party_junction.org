@@ -17,7 +17,6 @@
 #+brief: Links an IAM account to a party.
 #+product: ores
 #+schema: public
-#+has_tenant_id: true
 #+created: 2026-06-02
 #+updated: 2026-09-20
 

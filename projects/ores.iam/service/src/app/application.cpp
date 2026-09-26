@@ -19,8 +19,11 @@
  */
 #include "ores.iam.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.iam.core/messaging/registrar.hpp"
 #include "ores.iam.service/app/application_exception.hpp"
+#include "ores.iam.service/messaging/event_registrar.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.service/service/signing_service_runner.hpp"
@@ -32,6 +35,8 @@
 namespace ores::iam::service::app {
 
 using namespace ores::logging;
+
+namespace ev = ores::eventing;
 
 namespace {
 constexpr std::string_view service_name = "ores.iam.service";
@@ -61,6 +66,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
 
+    // Entity change event pipeline: PostgreSQL LISTEN/NOTIFY -> NATS publish.
+    // The per-entity registrars are composed in event_registrar.cpp. Without
+    // this call iam's change events stay on their Postgres channels and never
+    // reach their subjects.
+    ev::service::event_bus event_bus;
+    ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
+    auto event_subs =
+        messaging::event_registrar::register_event_mappings(event_source, event_bus, nats);
+    event_source.start();
+
     co_await ores::service::service::run_signing(
         io_ctx,
         nats,
@@ -76,6 +91,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
+    event_source.stop();
     co_return;
 }
 

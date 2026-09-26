@@ -77,7 +77,8 @@ void check_bootstrap_status(ores::nats::service::nats_client& session, std::ostr
         if (result->is_in_bootstrap_mode) {
             out << "\n⚠ WARNING: System is in BOOTSTRAP MODE\n"
                 << "  " << result->message << "\n"
-                << "  Use 'bootstrap <principal> <password> <email>' to create admin.\n\n";
+                << "  Use 'bootstrap create-initial-admin <principal> <password> <email>' "
+                   "to create admin.\n\n";
         }
     } catch (...) {
         BOOST_LOG_SEV(anon_lg(), debug) << "Bootstrap status check failed";

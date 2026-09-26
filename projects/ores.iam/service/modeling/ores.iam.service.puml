@@ -27,6 +27,9 @@ namespace ores #F2F2F2 {
             namespace app #F2F2F2 {
                 class application {
                 }
+                class application_exception {
+                    -message_ : string
+                }
                 class host {
                 }
             }
@@ -39,12 +42,276 @@ namespace ores #F2F2F2 {
                 }
                 class parser {
                 }
+                class parser_exception {
+                    -message_ : string
+                }
+            }
+            namespace messaging #F2F2F2 {
+                class event_registrar {
+                }
             }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass reads data members and little else, so in this component
+' it draws the process shell as empty boxes: application, host and parser hold
+' only methods, the two exception types lose their what(), and the whole
+' message-registration facet is invisible because the per-entity registrars
+' are free functions. The blocks below fill those boxes and draw the
+' relationships the pass cannot see.
+'
+' Fully-qualified class names are used rather than a reopened namespace block,
+' because this PlantUML version crashes when a namespace that already holds
+' classes is declared a second time; redeclaring a class merges its members
+' into the box the automated pass drew.
+
+class ores::iam::service::app::application {
+    +application()
+    +run(io_ctx : io_context&, cfg : config::options) : awaitable<void>
+    {static} -make_context(db_opts : database_options) : ores::database::context
+}
+note right of "ores::iam::service::app::application"
+The composition root and the service's start-up order:
+connect the NATS client, stand up the Postgres event pipeline
+(an event_bus and a postgres_event_source over their own
+database context), subscribe the ten entity mappings through
+the event registrar and start the source, then hand over to
+the shared signing-service lifecycle. That lifecycle builds
+the RS256 signer from cfg.jwt_private_key, lets
+ores.iam.core's registrar subscribe every IAM subject,
+co_spawns the heartbeat publisher, waits on
+SIGINT/SIGTERM/SIGQUIT, and drains NATS. The event source is
+stopped last.
+end note
+note bottom of "ores::iam::service::app::application"
+run() is const and keeps no state: the connection, the two
+database contexts, the event pipeline and the subscriptions
+are all locals, so the service's lifetime is the coroutine's.
+make_context asks ores.database's context_factory for a pool
+of db_opts.pool_size connections, ten attempts one second
+apart, and stamps the context's service account as
+db_opts.user. The context is built twice, once for the event
+source and once for the handler registrar, because those are
+two independent consumers of the database.
+end note
+
+class ores::iam::service::app::host {
+    {static} +execute(args : vector<string>, std_output : ostream&, error_output : ostream&, io_ctx : io_context&) : awaitable<int>
+}
+note right of "ores::iam::service::app::host"
+The console workflow, and its return value is the exit code.
+Every member is a static method, which is why the automated
+pass drew this box empty. It delegates to ores.service's
+run_host_async<parser, application>, which parses the command
+line, returns EXIT_SUCCESS on an empty parse result (the
+--help and --version paths), starts logging from the parsed
+options, logs the argument vector at info and the
+configuration at debug, default-constructs the application
+and awaits run(). A failure is logged and rethrown, and
+main() maps it to the exit code: a parser_exception is a
+plain EXIT_FAILURE, a db_connection_exception is
+exit_code::db_connection_failed, and anything else is
+reported on the error stream.
+end note
+
+class ores::iam::service::config::parser {
+    +parse(arguments : vector<string>, info : ostream&, error : ostream&) : optional<options>
+}
+note right of "ores::iam::service::config::parser"
+An empty optional is the help/version answer, not an error:
+the help text, the version, the GPL notice and the build
+details are written to the info stream and the caller exits
+zero. A parse failure writes "Usage error: ..." and the
+"Try '--help'" line to the error stream and then throws
+parser_exception, which main() turns into EXIT_FAILURE
+without printing anything further. Logging is unavailable
+here by design, because the logger starts only after the
+parse succeeds, so the error stream is the only diagnostic.
+The option set is the shared service set (common, logging,
+database, NATS) plus IAM's own --jwt-private-key, read from
+ORES_IAM_SERVICE_JWT_PRIVATE_KEY when the option is absent
+and defaulting to the empty string.
+end note
+
+class ores::iam::service::app::application_exception {
+    +application_exception(message : string_view = "")
+    +what() : const char*
+}
+note right of "ores::iam::service::app::application_exception"
+The declared fatal-error type for the running application.
+It derives from boost::exception as well as std::exception,
+so the shared host runner logs diagnostic_information() for
+it rather than what(); no source in the component throws it
+today.
+end note
+
+class ores::iam::service::config::parser_exception {
+    +parser_exception(message : string_view = "")
+    +what() : const char*
+}
+note right of "ores::iam::service::config::parser_exception"
+Thrown by parser::parse for a program_options failure and for
+a nested parser_exception, in both cases after the usage line
+has already reached the error stream.
+end note
+
+note bottom of "ores::iam::service::config::options"
+operator<< is what the debug-level "Configuration:" line of
+the shared host runner streams, and it writes the whole
+configuration as JSON with one field replaced:
+jwt_private_key becomes "***". That key signs every token this
+service issues, so a log reader who saw it could mint a
+session for any account.
+end note
+
+' The message-registration facet. The automated pass draws the composer empty
+' (its only member is a static method) and the ten per-entity registrars not
+' at all, because they are free functions.
+
+class ores::iam::messaging::registrar {
+    {static} +register_handlers(nats : ores::nats::service::client&, ctx : ores::database::context, signer : jwt_authenticator, service_password : string) : vector<subscription>
+}
+note right of "ores::iam::messaging::registrar"
+ores.iam.core's registrar, not this component's: it is drawn
+because application::run drives it. It wires every IAM subject
+on the ores.iam.service queue group: signup, login, logout,
+public key, refresh and service login; bootstrap status,
+initial admin and tenant provisioning; accounts, account
+parties and account operations; sessions and their operations;
+roles and authorization; tenants, tenant statuses and tenant
+types; system reset; the publish-from-DQ steps; the
+ores.variability.system_setting_changed subscription that
+reloads token settings without a restart; and the generic
+history.v1.get subject. It logs its subscription count, then
+arms the party cache with a token minted from IAM's own
+service account and the password handed in here.
+end note
+
+class ores::iam::service::messaging::event_registrar {
+    {static} +register_event_mappings(event_source : postgres_event_source&, event_bus : event_bus&, nats : nats::client&) : vector<subscription>
+}
+note right of "ores::iam::service::messaging::event_registrar"
+The one hand-maintained line-per-entity call site, the same
+shape ores.refdata, ores.dq and ores.synthetic use. It calls
+the ten generated per-entity registrars below and takes
+ownership of the subscriptions they return, because a mapping
+with no live subscription never reaches its subject.
+application::run is its only caller in the tree.
+end note
+
+' The ten per-entity event registrars, one per IAM table that publishes a
+' change event. Each is a free function, so the automated pass cannot see it.
+
+class ores::iam::service::messaging::register_account_event_mapping {
+    {static} +register_account_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : nats::client&) : subscription
+}
+note right of "ores::iam::service::messaging::register_account_event_mapping"
+Free function, one per entity, and the reason the box is
+hand-drawn. Each does two things:
+register_entity_event_mapping binds the table's own Postgres
+NOTIFY channel to the entity's event type, and event_bus's
+subscribe returns the subscription that republishes each
+notification to NATS. One payload is addressed by three
+subjects, so the event's action completes the subject:
+prefix.created, prefix.updated or prefix.deleted. The other
+nine carry the same three arguments and the same two steps.
+end note
+note bottom of "ores::iam::service::messaging::register_account_event_mapping"
+The ten channel-to-prefix pairs, one per IAM table:
+ores_iam_accounts to iam.v1.accounts_events,
+ores_iam_account_contact_informations to
+iam.v1.account_contact_informations_events,
+ores_iam_account_types to iam.v1.account_types_events,
+ores_iam_login_info to iam.v1.login_info_events,
+ores_iam_permissions to iam.v1.permissions_events,
+ores_iam_roles to iam.v1.roles_events,
+ores_iam_sessions to iam.v1.sessions_events,
+ores_iam_tenants to iam.v1.tenants_events,
+ores_iam_tenant_statuses to iam.v1.tenant_statuses_events
+and ores_iam_tenant_types to iam.v1.tenant_types_events.
+These are the only entity change mappings this component
+registers.
+end note
+
+class ores::iam::service::messaging::register_account_contact_information_event_mapping {
+    {static} +register_account_contact_information_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : nats::client&) : subscription
+}
+
+class ores::iam::service::messaging::register_account_type_event_mapping {
+    {static} +register_account_type_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : nats::client&) : subscription
+}
+
+class ores::iam::service::messaging::register_login_info_event_mapping {
+    {static} +register_login_info_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : nats::client&) : subscription
+}
+
+class ores::iam::service::messaging::register_permission_event_mapping {
+    {static} +register_permission_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : nats::client&) : subscription
+}
+
+class ores::iam::service::messaging::register_role_event_mapping {
+    {static} +register_role_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : nats::client&) : subscription
+}
+
+class ores::iam::service::messaging::register_session_event_mapping {
+    {static} +register_session_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : nats::client&) : subscription
+}
+
+class ores::iam::service::messaging::register_tenant_event_mapping {
+    {static} +register_tenant_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : nats::client&) : subscription
+}
+
+class ores::iam::service::messaging::register_tenant_status_event_mapping {
+    {static} +register_tenant_status_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : nats::client&) : subscription
+}
+
+class ores::iam::service::messaging::register_tenant_type_event_mapping {
+    {static} +register_tenant_type_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : nats::client&) : subscription
+}
+
+' Relationships the automated pass cannot infer.
+
+ores::iam::service::app::host ..> ores::iam::service::config::parser : parses the command line with
+ores::iam::service::app::host ..> ores::iam::service::app::application : runs
+ores::iam::service::app::application ..> ores::iam::service::config::options : reads its configuration from
+ores::iam::service::app::application ..> ores::database::context_factory : makes both database contexts with
+ores::iam::service::app::application ..> ores::database::context : passes one to the event source and one to the registrar
+ores::iam::service::app::application ..> ores::nats::service::client : owns the connection
+ores::iam::service::app::application ..> ores::eventing::service::postgres_event_source : starts and stops the event pipeline with
+ores::iam::service::app::application ..> ores::eventing::service::event_bus : owns
+ores::iam::service::app::application ..> ores::iam::service::messaging::event_registrar : starts the event pipeline with
+ores::iam::service::app::application ..> ores::iam::messaging::registrar : registers every handler through
+ores::iam::service::app::application ..> ores::service::service::heartbeat_publisher : starts the heartbeat with
+ores::iam::service::config::parser ..> ores::service::config::standard_service_options : builds the shared options with
+ores::iam::service::config::parser ..> ores::iam::service::config::parser_exception : throws
+
+ores::iam::service::messaging::event_registrar ..> ores::iam::service::messaging::register_account_event_mapping : composes
+ores::iam::service::messaging::event_registrar ..> ores::iam::service::messaging::register_account_contact_information_event_mapping : composes
+ores::iam::service::messaging::event_registrar ..> ores::iam::service::messaging::register_account_type_event_mapping : composes
+ores::iam::service::messaging::event_registrar ..> ores::iam::service::messaging::register_login_info_event_mapping : composes
+ores::iam::service::messaging::event_registrar ..> ores::iam::service::messaging::register_permission_event_mapping : composes
+ores::iam::service::messaging::event_registrar ..> ores::iam::service::messaging::register_role_event_mapping : composes
+ores::iam::service::messaging::event_registrar ..> ores::iam::service::messaging::register_session_event_mapping : composes
+ores::iam::service::messaging::event_registrar ..> ores::iam::service::messaging::register_tenant_event_mapping : composes
+ores::iam::service::messaging::event_registrar ..> ores::iam::service::messaging::register_tenant_status_event_mapping : composes
+ores::iam::service::messaging::event_registrar ..> ores::iam::service::messaging::register_tenant_type_event_mapping : composes
+
+' The three edges below belong to every registrar in the family; they are
+' drawn once, on the account instance, and hold for the other nine.
+
+ores::iam::service::messaging::register_account_event_mapping ..> ores::eventing::service::postgres_event_source : registers the entity channel on
+ores::iam::service::messaging::register_account_event_mapping ..> ores::eventing::service::event_bus : subscribes
+ores::iam::service::messaging::register_account_event_mapping ..> ores::nats::service::client : republishes through
+
+note bottom of "ores::iam::service::messaging::event_registrar"
+The automated pass draws no edge anywhere in this component:
+it reads data members and the service's own classes hold
+almost none. Every line above is hand-drawn from a call in
+the component's own sources.
+end note
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.iam.service.puml"

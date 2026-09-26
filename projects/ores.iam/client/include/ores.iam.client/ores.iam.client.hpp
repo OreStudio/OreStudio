@@ -17,18 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_MESSAGING_PROTOCOL_HPP
-#define ORES_IAM_MESSAGING_PROTOCOL_HPP
+#ifndef ORES_IAM_CLIENT_ORES_IAM_CLIENT_HPP
+#define ORES_IAM_CLIENT_ORES_IAM_CLIENT_HPP
 
-#include "ores.iam.api/messaging/account_party_protocol.hpp"
-#include "ores.iam.api/messaging/account_protocol.hpp"
-#include "ores.iam.api/messaging/authorization_protocol.hpp"
-#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
-#include "ores.iam.api/messaging/login_protocol.hpp"
-#include "ores.iam.api/messaging/session_protocol.hpp"
-#include "ores.iam.api/messaging/signup_protocol.hpp"
-#include "ores.iam.api/messaging/tenant_protocol.hpp"
-#include "ores.iam.api/messaging/tenant_status_protocol.hpp"
-#include "ores.iam.api/messaging/tenant_type_protocol.hpp"
+/**
+ * @brief Client-side IAM session management.
+ *
+ * Lightweight client-side library that manages IAM session state for UI
+ * components and other service consumers. It provides a service_token_provider
+ * that holds an authenticated session token, handles token renewal, and
+ * supplies the token to outgoing NATS requests.
+ */
+namespace ores::iam::client {}
 
 #endif

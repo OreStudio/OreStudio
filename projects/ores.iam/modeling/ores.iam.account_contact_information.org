@@ -128,11 +128,11 @@ std::string("")
 
 ISO 3166-1 alpha-2 country code.
 
-References the countries table (soft FK).
+References the countries table (soft FK). The generator leaves it blank:
+the tenant-scoped countries table is unseeded in isolated test tenants,
+and an empty value skips the insert-trigger validation.
 
 #+begin_src cpp :name generator
-// Left blank: validated against the tenant-scoped countries table, which
-// isolated test tenants don't seed; empty skips validation.
 std::string("")
 #+end_src
 

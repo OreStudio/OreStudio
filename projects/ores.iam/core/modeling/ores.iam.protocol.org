@@ -2,42 +2,104 @@
 :ID: D3C4E5F6-A7B8-9012-CDEF-123456789012
 :END:
 #+title: ores.iam Messaging Reference
+#+description: Namespace guide to the NATS subject families owned by ores.iam, each mapped to the generated protocol header that declares it.
+#+type: knowledge
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil author:nil date:nil toc:t html-postamble:nil
 #+startup: overview
 
-NATS messaging reference for [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]]. All subjects use the
-=iam.v1.>= namespace. See [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for transport details.
+Namespace guide for the NATS subjects owned by [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]]. All subjects use the
+=iam.v1.>= namespace. This page maps every subject family to the protocol header
+that owns it. It does not restate the subjects. The authoritative catalogue is
+the generated headers under
+=projects/ores.iam/api/include/ores.iam.api/messaging/= — one header per entity
+or operation area, each declaring its subjects as =nats_subject= or
+=event_subjects= constants — together with the event payload types under
+=projects/ores.iam/api/include/ores.iam.api/eventing/=. The registrars
+subscribe to those constants, so the headers and the running service cannot
+disagree. The tree declares 151 subjects today: 121 request subjects and 30
+event subjects. See [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for
+transport details.
 
-* Authentication
+* Entity subject families
 
-| Subject | Description |
-|---------+-------------|
-| =iam.v1.auth.login= | Authenticate a user with username and password; returns JWT |
-| =iam.v1.auth.logout= | Invalidate the current session token |
-| =iam.v1.auth.signup= | Register a new user account |
+Each entity declares the canonical verbs =list=, =get=, =get_many=, =put=,
+=put_many=, =delete= and =delete_many= under =iam.v1.<resource>.=; a versioned
+table adds =iam.v1.<resource>_versions.list= and =.get=; an eventing entity adds
+=iam.v1.<resource>_events.created=, =.updated= and =.deleted=. A read-only
+entity declares no writes.
 
-* Bootstrap
+| Subject family | Owning protocol header | Carries |
+|----------------+------------------------+---------|
+| =iam.v1.accounts.*= | =account_protocol.hpp= | =list=, =get=, =get_many= (the entity is read-only) |
+| =iam.v1.accounts_versions.*= | =account_protocol.hpp= | =list=, =get= |
+| =iam.v1.accounts_events.*= | =account_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.account_contact_informations.*= | =account_contact_information_protocol.hpp= | the seven canonical verbs plus =list_by_account_id= |
+| =iam.v1.account_contact_informations_versions.*= | =account_contact_information_protocol.hpp= | =list=, =get= |
+| =iam.v1.account_contact_informations_events.*= | =account_contact_information_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.account-contact-informations.*= | =account_contact_information_protocol.hpp= | =publish-from-dq= (the one family whose resource segment is hyphenated) |
+| =iam.v1.account_parties.*= | =account_party_protocol.hpp= | the seven canonical verbs plus =list_by_account_id= (junction: no versions, no events) |
+| =iam.v1.account_types.*= | =account_type_protocol.hpp= | the seven canonical verbs |
+| =iam.v1.account_types_versions.*= | =account_type_protocol.hpp= | =list=, =get= |
+| =iam.v1.account_types_events.*= | =account_type_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.login_info.*= | =login_info_protocol.hpp= | =list=, =get=, =get_many= (the entity is read-only) |
+| =iam.v1.login_info_events.*= | =login_info_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.permissions.*= | =permission_protocol.hpp= | the seven canonical verbs |
+| =iam.v1.permissions_events.*= | =permission_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.roles.*= | =role_protocol.hpp= | the seven canonical verbs |
+| =iam.v1.roles_versions.*= | =role_protocol.hpp= | =list=, =get= |
+| =iam.v1.roles_events.*= | =role_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.sessions.*= | =session_protocol.hpp= | the seven canonical verbs |
+| =iam.v1.sessions_events.*= | =session_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.tenants.*= | =tenant_protocol.hpp= | the seven canonical verbs |
+| =iam.v1.tenants_versions.*= | =tenant_protocol.hpp= | =list=, =get= |
+| =iam.v1.tenants_events.*= | =tenant_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.tenant_statuses.*= | =tenant_status_protocol.hpp= | the seven canonical verbs |
+| =iam.v1.tenant_statuses_versions.*= | =tenant_status_protocol.hpp= | =list=, =get= |
+| =iam.v1.tenant_statuses_events.*= | =tenant_status_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.tenant_types.*= | =tenant_type_protocol.hpp= | the seven canonical verbs |
+| =iam.v1.tenant_types_versions.*= | =tenant_type_protocol.hpp= | =list=, =get= |
+| =iam.v1.tenant_types_events.*= | =tenant_type_protocol.hpp= | =created=, =updated=, =deleted= |
 
-| Subject | Description |
-|---------+-------------|
-| =iam.v1.auth.bootstrap.status= | Check whether the system is in bootstrap mode (no admin exists) |
-| =iam.v1.auth.bootstrap.create-admin= | Create the initial administrator account (bootstrap mode only) |
+* Operation subject families
 
-* Accounts
+Every non-entity operation is declared as a =:subject:= property in a
+=projects/ores.iam/modeling/ores.iam.*_messages.org= model and generated into
+the header named below.
 
-| Subject | Description |
-|---------+-------------|
-| =iam.v1.accounts.list= | Retrieve all accounts |
-| =iam.v1.accounts.save= | Create or update an account |
-| =iam.v1.accounts.delete= | Delete an account |
-| =iam.v1.accounts.lock= | Lock an account (admin only) |
-| =iam.v1.accounts.unlock= | Unlock a locked account (admin only) |
-| =iam.v1.accounts.login-info= | Retrieve login information records |
-| =iam.v1.accounts.select-party= | Select the active party for the current session |
+| Subject family | Owning model | Owning protocol header | Carries |
+|----------------+--------------+------------------------+---------|
+| =iam.v1.auth.*= | =ores.iam.login_messages.org=, =ores.iam.signup_messages.org= | =login_protocol.hpp=, =signup_protocol.hpp= | =login=, =logout=, =refresh=, =service-login=, =public-key=, =signup= |
+| =iam.v1.bootstrap.*= | =ores.iam.bootstrap_messages.org= | =bootstrap_protocol.hpp= | =status=, =create-admin=, =provision-tenant= |
+| =iam.v1.accounts.*= (operation verbs) | =ores.iam.account_messages.org= | =account_operations_protocol.hpp= | =save=, =update=, =delete=, =lock=, =unlock=, =reset-password=, =update-email=, =set-default-party=, =select-party=, =switch-party=, =change-password=, =publish-from-dq= |
+| =iam.v1.roles.*= (operation verbs) | =ores.iam.authorization_messages.org= | =authorization_protocol.hpp= | =assign=, =assign-by-name=, =revoke=, =revoke-by-name=, =by-account=, =permissions=, =permissions-by-account=, =suggest-commands= |
+| =iam.v1.system.*= | =ores.iam.reset_messages.org= | =reset_protocol.hpp= | =reset=, =reset-tenant= |
+| =iam.v1.sessions.*= (operation verb) | =ores.iam.session_messages.org= | =session_operations_protocol.hpp= | =active= |
+| =iam.v1.sessions.*= (samples) | =ores.iam.session_samples_messages.org= | =session_samples_protocol.hpp= | =samples= |
+| =iam.v1.tenants.*= (operation verbs) | =ores.iam.tenant_provisioning_messages.org= | =tenant_provisioning_protocol.hpp= | =complete-provisioning=, =provision-acme= |
+
+Four prefixes are shared between the two tables. =iam.v1.accounts.*=,
+=iam.v1.roles.*=, =iam.v1.sessions.*= and =iam.v1.tenants.*= carry both the
+canonical entity verbs above and the operation verbs listed here. The
+distinction matters: because the account entity is read-only,
+=iam.v1.accounts.delete= is an operation, not the canonical delete.
+
+* Subjects not declared in an iam model
+
+- =iam.v1.history.get= — served by the iam history registrar, but the subject is
+  derived by =ores::history::messaging::history_subject_by_component("iam")= in
+  =projects/ores.history/api/include/ores.history.api/messaging/history_protocol.hpp=.
+
+* In-process event names
+
+The hand-written headers =role_assigned_event.hpp=, =role_revoked_event.hpp= and
+=account_permissions_changed_event.hpp= declare =ores.eventing= types whose
+=event_traits<...>::name= values are =ores.iam.role_assigned=,
+=ores.iam.role_revoked= and =ores.iam.account_permissions_changed=. They are
+in-process event-bus names, not =iam.v1.*= NATS subjects.
 
 * Useful Pages
 
 - [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — transport layer: request/reply, subject naming, configuration
-- [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]] — all services overview
+- [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]] — cross-service namespace index
 - [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] — component documentation

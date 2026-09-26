@@ -25,6 +25,10 @@ Usage:
     With no group named it replays the assets groups, which is what it did
     before it took an argument.
 
+A destructive recipe is named in --skip and recorded NOT_REPLAYED rather than
+run.  A component whose sign-in is a hand-written command names it in
+--login-command; the default is the top-level 'login'.
+
 Writes a TSV and a per-recipe raw log under --out-dir, which defaults to
 .audit/clean-shell-recipes/. The .audit tree is not committed, so rerun this
 script to regenerate the evidence.
@@ -52,14 +56,23 @@ DEFAULT_OUT_DIR = REPO / ".audit/clean-shell-recipes"
 # other refusal is the command answering, which is what V04 asks for.
 NOT_WIRED = "Wrong command"
 
+# An aborted script is not an answer.  The shell stops a script at its first
+# failing command, so everything after it never ran: counting an abort as an
+# answer hides both the failing preamble and the command that never executed.
+ABORTED = "Script aborted"
 
-def recipe_paths(groups: tuple[str, ...]) -> list[Path]:
+# A recipe that must not be run against the fleet says so.  Skipping is a
+# verdict, not a silence: the row is written with its reason.
+NOT_REPLAYED = "NOT_REPLAYED"
+
+
+def recipe_paths(groups: tuple[str, ...], skip: set[str]) -> list[Path]:
     found: list[Path] = []
     for group in groups:
         directory = LIBRARY / group
         if not directory.is_dir():
             raise SystemExit(f"no recipe group at {directory}")
-        found.extend(sorted(directory.glob("*.ores")))
+        found.extend(sorted(p for p in directory.glob("*.ores") if p.stem not in skip))
     return found
 
 
@@ -87,6 +100,11 @@ def classify(recipe: Path, transcript: str) -> tuple[str, str]:
     for line in outcome:
         if NOT_WIRED in line:
             return "NOT_WIRED", line.strip()[:200]
+    # An abort is checked before a refusal, because the shell prints both and the
+    # abort is the one that says the command did not finish.
+    for line in outcome:
+        if ABORTED in line:
+            return "ABORTED", line.strip()[:200]
     refusals = [ln.strip() for ln in outcome if "\u2717" in ln]
     if refusals:
         return "ANSWERED_WITH_ERROR", refusals[-1][:200]
@@ -110,6 +128,19 @@ def main() -> int:
         help="where the TSV and the per-recipe logs go "
              f"(default: {DEFAULT_OUT_DIR.relative_to(REPO)})",
     )
+    parser.add_argument(
+        "--skip",
+        default="",
+        help="comma-separated recipe stems to record as NOT_REPLAYED, such as a "
+             "destructive command the fleet must not be asked to run",
+    )
+    parser.add_argument(
+        "--login-command",
+        default="login",
+        help="the shell command that signs in, without its arguments; pass the "
+             "component's own when sign-in is a hand-written command, for "
+             "example 'accounts login'",
+    )
     args = parser.parse_args()
 
     out_dir = Path(args.out_dir)
@@ -118,6 +149,7 @@ def main() -> int:
     out_dir = out_dir.resolve()
     log_dir = out_dir / "logs"
     tsv = out_dir / "recipes.tsv"
+    skip = {s.strip() for s in args.skip.split(",") if s.strip()}
 
     principal = os.environ.get("V04_PRINCIPAL")
     password = os.environ.get("V04_PASSWORD")
@@ -129,12 +161,15 @@ def main() -> int:
         return 2
 
     log_dir.mkdir(parents=True, exist_ok=True)
-    recipes = recipe_paths(tuple(args.groups))
+    recipes = recipe_paths(tuple(args.groups), skip)
     rows: list[tuple[str, str, str, str]] = []
 
     for recipe in recipes:
         command = body_of(recipe)
-        script = f"login {principal} {password}\n{command}\n"
+        # The password is quoted: the shell's tokeniser refuses a bare token
+        # that carries punctuation, and a generated credential may.
+        quoted_password = "'" + password.replace("'", "'\\''") + "'"
+        script = f"{args.login_command} {principal} {quoted_password}\n{command}\n"
         transcript = ""
         with tempfile.NamedTemporaryFile("w", suffix=".ores", delete=False) as handle:
             handle.write(script)
@@ -159,6 +194,11 @@ def main() -> int:
         rows.append((rel, command, status, reason))
         print(f"{status:20} {recipe.name:32} {reason[:90]}")
 
+    for stem in sorted(skip):
+        rows.append((f"{PREFIX}/*/{stem}.ores", "", NOT_REPLAYED,
+                     "not replayed: named in --skip"))
+        print(f"{NOT_REPLAYED:20} {stem:32} not replayed: named in --skip")
+
     with tsv.open("w") as handle:
         handle.write("recipe\tcommand\tstatus\treason\n")
         for rel, command, status, reason in rows:
@@ -169,7 +209,8 @@ def main() -> int:
         tally[status] = tally.get(status, 0) + 1
     print(f"\n{len(rows)} recipes: " + ", ".join(f"{k}={v}" for k, v in sorted(tally.items())))
     print(f"evidence: {tsv.relative_to(REPO)}")
-    return 1 if tally.get("NOT_WIRED") or tally.get("CRASHED") else 0
+    failing = ("NOT_WIRED", "ABORTED", "CRASHED")
+    return 1 if any(tally.get(k) for k in failing) else 0
 
 
 if __name__ == "__main__":

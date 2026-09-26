@@ -96,8 +96,8 @@ component sends one subject.
 | V07  | Pass   | No vacuous test. Every case asserts a literal expected value, and each `REQUIRE_NOTHROW` is followed by an assertion on the value the call produced. Evidence in `evidence/v07_vacuous_tests.txt`. |
 | V08  | Pass   | `evidence/v08_source_files.txt` records all nine sources and the test that covers each; five have none and are the coverage work item. |
 | V01  | Pass   | `./compass.sh build` reaches 100 percent with exit code 0, run after the last source edit, so every consumer of the deleted API still builds. Evidence in `evidence/v01_v02_build_and_tests.txt`. |
-| V02  | Pass   | `ores.nats.tests` passes at 55 assertions in 28 test cases, and the codegen suite passes at 578 tests. The fleet-dependent half of V02 belongs to the components that serve; this one owns no service. Evidence in `evidence/v01_v02_build_and_tests.txt`. |
-| V05  | Pass   | Every gate green, with the pre-existing repo-wide CMake staleness recorded: `check_component_drift.py --all` no drift, model drift clean, protocol twin coverage intact, handler permissions seeded, populate references resolve, recipe inventory checked, and this component's source lists up to date. `regenerate_cmake_component_files.py --all --check` reports 104 stale lists elsewhere, none of them ores.nats. `validate_docs.sh` passes all 40 components. The physical-space inventory check reports one stale table on main, `ores.doc.knowledge.org`, which this branch does not touch. Evidence in `evidence/v05_gates.txt`. |
+| V02  | Pass   | `ores.nats.tests` passes at 55 assertions in 28 test cases, and the codegen suite passes at 593 tests. The fleet-dependent half of V02 belongs to the components that serve; this one owns no service. Evidence in `evidence/v01_v02_build_and_tests.txt`. |
+| V05  | Pass   | Every gate green, with the pre-existing repo-wide CMake staleness recorded: `check_component_drift.py --all` no drift, model drift clean, protocol twin coverage intact, handler permissions seeded, populate references resolve, recipe inventory checked, and this component's source lists up to date. `regenerate_cmake_component_files.py --all --check` reports 97 stale lists elsewhere, none of them ores.nats. `validate_docs.sh` passes all 40 components. The physical-space inventory check reports one stale table on main, `ores.doc.knowledge.org`, which this branch does not touch. Evidence in `evidence/v05_gates.txt`. |
 
 Every item is now recorded.
 
@@ -221,7 +221,7 @@ component's own source lists up to date, and model drift, protocol twin
 coverage, handler permissions, populate references, the recipe inventory and
 the documentation checks all pass. The whole tree builds with every consumer,
 and the component's suite passes at 55 assertions in 28 cases. The one gate
-that is not green repo-wide is the CMake source-list check, which reports 104
+that is not green repo-wide is the CMake source-list check, which reports 97
 stale lists in other components; none of them is this one, and the
 clean-compute task recorded that sweep as a codegen-wide finding. The
 physical-space inventory check reports one stale table on main,

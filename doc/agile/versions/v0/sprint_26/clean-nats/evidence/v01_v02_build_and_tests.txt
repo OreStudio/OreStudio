@@ -22,7 +22,13 @@ $ build/output/linux-clang-debug-make/publish/bin/ores.nats.tests
 All tests passed (55 assertions in 28 test cases)
 
 $ ./projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q
-578 passed in 14.63s
+593 passed in 10.58s
 
 # The fleet-dependent half of V02 belongs to the components that serve. This
 # component owns no service, so nothing here starts a fleet of its own.
+#
+# The build above ran before the second rebase onto main (84 commits on). The
+# suite figure is from the re-run after it. That rebase changed main's files
+# only: the one conflict was the generated inbox index, and a grep over
+# projects/ after the rebase finds no new caller of any deleted symbol, so the
+# deletion still stands. The pull request's own build covers the merged tree.

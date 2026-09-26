@@ -573,6 +573,7 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | https://github.com/OreStudio/OreStudio/pull/2189 | [dq] Generate the ores.dq artefact tables from the entity models |
+| https://github.com/OreStudio/OreStudio/pull/2190 | [dq] Put the badge family on the generated stack and wire its history |
 
 * Review
 
@@ -588,4 +589,4 @@ The design question is answered affirmatively and the answer is enforced by temp
 
 The remaining work is named: six entities whose canonical output the generator already emits and whose hand-written duplicates must be deleted, the shell unit that must be wired before the change-reason pair can move, one decision about `subject_area`'s composite history identity, and the line that adds dq to =COMPONENTS_UNDER_TEST=. Each is recorded above with the evidence that it is a deletion problem rather than a modelling problem.
 
-Landed as https://github.com/OreStudio/OreStudio/pull/2189.
+Landed as https://github.com/OreStudio/OreStudio/pull/2189 and https://github.com/OreStudio/OreStudio/pull/2190.

@@ -53,6 +53,31 @@ def _generate_name(parent_dir: Path) -> str:
 from env_init import _scan_ports
 
 
+def _skeleton_env(name: str, env_type: str, base_port: int, nats_port: int,
+                  nats_monitor_port: int, use_busctl: bool,
+                  timestamp: str) -> str:
+    """The initial .env that compass env provision writes.
+
+    compass env configure completes this file and preserves the values it
+    finds, so the pre-assigned ports and the transport choice survive the
+    round trip. ORES_USE_BUSCTL defaults to on because compass drives the
+    fleet with systemctl --user, which cannot reach the user manager from
+    inside the DSH sandbox."""
+    return (
+        f"# ORE Studio Environment: {name}\n"
+        f"# Provisioned by compass env provision on {timestamp}\n"
+        f"# Run 'compass env configure --preset <preset>' to complete setup.\n"
+        f"# DO NOT COMMIT — this file contains secrets.\n"
+        f"\n"
+        f"ORES_ENV_NAME={name}\n"
+        f"ORES_PROVISION_TYPE={env_type}\n"
+        f"ORES_BASE_PORT={base_port}\n"
+        f"ORES_NATS_PORT={nats_port}\n"
+        f"ORES_NATS_MONITOR_PORT={nats_monitor_port}\n"
+        f"ORES_USE_BUSCTL={1 if use_busctl else 0}\n"
+    )
+
+
 def run_provision(argv: list[str], project_root: Path) -> int:
     """compass env provision — provision a new named worktree."""
     p = argparse.ArgumentParser(
@@ -82,6 +107,13 @@ def run_provision(argv: list[str], project_root: Path) -> int:
     p.add_argument("--min-free-gb", type=int, default=None,
                    help="Override the low-disk-space warning threshold in GiB "
                         "(default 20). Useful for testing the warning.")
+    p.add_argument("--use-busctl", action=argparse.BooleanOptionalAction,
+                   default=True,
+                   help="Write ORES_USE_BUSCTL=1 into the .env (default). compass "
+                        "drives the fleet with systemctl --user, which cannot reach "
+                        "the user manager from inside the DSH sandbox, so it goes "
+                        "through busctl instead. Pass --no-use-busctl on a host "
+                        "where plain systemctl --user works.")
     args = p.parse_args(argv)
 
     parent_dir = project_root.parent
@@ -153,18 +185,9 @@ def run_provision(argv: list[str], project_root: Path) -> int:
     # Write skeleton .env so compass env configure picks up the pre-assigned values.
     env_file = worktree_dir / ".env"
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    env_file.write_text(
-        f"# ORE Studio Environment: {name}\n"
-        f"# Provisioned by compass env provision on {ts}\n"
-        f"# Run 'compass env configure --preset <preset>' to complete setup.\n"
-        f"# DO NOT COMMIT — this file contains secrets.\n"
-        f"\n"
-        f"ORES_ENV_NAME={name}\n"
-        f"ORES_PROVISION_TYPE={args.env_type}\n"
-        f"ORES_BASE_PORT={base_port}\n"
-        f"ORES_NATS_PORT={nats_port}\n"
-        f"ORES_NATS_MONITOR_PORT={nats_monitor_port}\n"
-    )
+    env_file.write_text(_skeleton_env(
+        name, args.env_type, base_port, nats_port, nats_monitor_port,
+        args.use_busctl, ts))
     env_file.chmod(0o600)
     print(f"  Wrote skeleton .env to {env_file}")
 

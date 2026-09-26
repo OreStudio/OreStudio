@@ -35,7 +35,6 @@
 
 namespace {
 
-const std::string_view test_suite("ores.compute.tests");
 const std::string tags("[repository][app_version_platform]");
 
 using ores::testing::database_helper;

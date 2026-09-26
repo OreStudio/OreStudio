@@ -271,6 +271,13 @@ TEST_CASE("round_trip_cds_index", tags) {
     REQUIRE(original == roundtripped);
 }
 
+TEST_CASE("round_trip_index_cds_tranche", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&point=5y,0.07"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
 TEST_CASE("round_trip_commodity", tags) {
     const auto original =
         oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote&quote=spot"));
@@ -358,6 +365,28 @@ TEST_CASE("round_trip_ir_zero_yield_spread", tags) {
 TEST_CASE("round_trip_ir_oi_future_price", tags) {
     const auto original = oresmd_parser::parse(uri(
         "oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_discount", tags) {
+    const auto original = oresmd_parser::parse(uri(
+        "oresmd://ir/"
+        "usd?index=libor&tenor=3m&role=projection&type=quote&quote=discount&metric=rate&point=6m"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_bma_swap_ratio", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_cc_fix_float_swap", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/usd?tenor=3m&type=quote&quote=cc_fix_float_swap&metric=rate&point=5y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
@@ -476,6 +505,20 @@ TEST_CASE("parse_inflation_zc_swap", tags) {
 TEST_CASE("round_trip_inflation", tags) {
     const auto original =
         oresmd_parser::parse(uri("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_inflation_yy_swap", tags) {
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://inflation/ukrpi?type=quote&quote=yy_swap&point=5y"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_inflation_seasonality", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://inflation/ukrpi?type=quote&quote=seasonality&point=jan"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }

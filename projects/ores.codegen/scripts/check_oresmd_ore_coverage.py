@@ -158,6 +158,49 @@ VOL_DECLARED_UNWIRED: dict[str, str] = {
     "fx": "FX_OPTION has no inverse projection",
 }
 
+# Modelled quote types with no projection test, because pinning the key the
+# projection currently emits would enshrine the defect the shape record
+# already names. Keyed by ``asset_class.enum_name``.
+TEST_COVERAGE_EXEMPT: dict[str, str] = {
+    "commodity.cpr": (
+        "CPR is modelled as a ccy-keyed curve, and ORE writes "
+        "CPR/RATE/ISIN:<isin> with no currency and no point. There is no "
+        "correct key to assert until SHAPE_MISMATCH's CPR entry is fixed, "
+        "and a test of the current key would pin the wrong shape."
+    ),
+}
+
+# Requirement: every modelled quote type carries both a projection test and
+# a round-trip test. A type with only one of the two is declared but
+# unexercised in one direction, which is how a projection that emits a key
+# its own inverse cannot read survives a green suite.
+_REQUIRED_TEST_KINDS = ("projections", "round_trip")
+
+
+def quote_type_test_coverage() -> dict[str, tuple[str, int, int]]:
+    """``asset_class.enum_name`` -> (ore_type, projection cases, round trips)."""
+    model = load_org_oresmd_quote_type_model(ORESMD_MODELING / "model.org")
+    out: dict[str, tuple[str, int, int]] = {}
+    for spec in model.get("oresmd_quote_types") or []:
+        asset_class = spec.get("asset_class", "")
+        cases = spec.get("test_cases") or {}
+        for qt in spec.get("quote_types") or []:
+            enum_name = (qt.get("enum_name") or "").strip()
+            ore_type = (qt.get("ore_type") or "").strip()
+            projections = round_trips = 0
+            for kind, rows in cases.items():
+                for row in rows:
+                    uri = row.get("uri") or ""
+                    expected = row.get("expected") or ""
+                    if kind.startswith("projections") and (
+                            f"quote={enum_name}" in uri
+                            or expected.startswith(ore_type + "/")):
+                        projections += 1
+                    if kind.startswith("round_trip") and f"quote={enum_name}" in uri:
+                        round_trips += 1
+            out[f"{asset_class}.{enum_name}"] = (ore_type, projections, round_trips)
+    return out
+
 
 def ore_types() -> list[str]:
     """The ORE series types the shape table defines."""
@@ -297,6 +340,32 @@ def coverage_problems() -> list[str]:
                 f"{asset_class}: VOL_DECLARED_UNWIRED entry is stale because "
                 f"the model declares no vol field"
             )
+
+    # Every modelled quote type proves itself in both directions, or says
+    # why it cannot.
+    coverage = quote_type_test_coverage()
+    for key, (ore_type, projections, round_trips) in sorted(coverage.items()):
+        missing = [k for k, n in (("projection", projections),
+                                  ("round-trip", round_trips)) if not n]
+        if not missing:
+            continue
+        if key in TEST_COVERAGE_EXEMPT:
+            continue
+        problems.append(
+            f"{key} ({ore_type}): no {' and no '.join(missing)} test"
+        )
+    for key in TEST_COVERAGE_EXEMPT:
+        if key not in coverage:
+            problems.append(
+                f"{key}: TEST_COVERAGE_EXEMPT entry names no modelled quote type"
+            )
+        else:
+            _, projections, round_trips = coverage[key]
+            if projections and round_trips:
+                problems.append(
+                    f"{key}: TEST_COVERAGE_EXEMPT entry is stale because the "
+                    f"type now has both tests"
+                )
 
     return problems
 

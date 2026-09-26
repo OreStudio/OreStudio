@@ -86,6 +86,7 @@ A logical, possibly-partial oresmd requirement for a credit instrument.
 | oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=sr,5y | round_trip_hazard_rate |
 | oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&point=sr | round_trip_recovery_rate |
 | oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1 | round_trip_cds_index |
+| oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&point=5y,0.07 | round_trip_index_cds_tranche |
 
 ** Rejection
 

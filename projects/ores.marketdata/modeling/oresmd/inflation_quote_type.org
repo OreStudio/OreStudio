@@ -67,3 +67,5 @@ A logical, possibly-partial oresmd requirement for an inflation instrument.
 | uri | description |
 |-----+-------------|
 | oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y | round_trip_inflation |
+| oresmd://inflation/ukrpi?type=quote&quote=yy_swap&point=5y | round_trip_inflation_yy_swap |
+| oresmd://inflation/ukrpi?type=quote&quote=seasonality&point=jan | round_trip_inflation_seasonality |

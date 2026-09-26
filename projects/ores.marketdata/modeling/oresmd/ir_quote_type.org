@@ -192,6 +192,9 @@ IR has the most complex qualifier shape variants:
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme | round_trip_ir_mm_future_price |
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y | round_trip_ir_zero_yield_spread |
 | oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme | round_trip_ir_oi_future_price |
+| oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=discount&metric=rate&point=6m | round_trip_ir_discount |
+| oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y | round_trip_ir_bma_swap_ratio |
+| oresmd://ir/usd?tenor=3m&type=quote&quote=cc_fix_float_swap&metric=rate&point=5y | round_trip_ir_cc_fix_float_swap |
 
 ** Rejection
 

@@ -75,3 +75,29 @@ def test_an_unwired_vol_asset_class_is_reported(monkeypatch):
     problems = check.coverage_problems()
     assert any(asset_class in p and "no inverse projection" in p
                for p in problems), problems
+
+
+def test_every_modelled_quote_type_is_exercised_both_ways():
+    """A type tested one way only is how a projection its inverse cannot read
+    survives a green suite."""
+    coverage = check.quote_type_test_coverage()
+    assert coverage, "no quote types were discovered"
+    untested = [
+        key for key, (_, projections, round_trips) in coverage.items()
+        if not projections or not round_trips
+    ]
+    assert set(untested) <= set(check.TEST_COVERAGE_EXEMPT), (
+        f"quote types with one-sided test coverage and no recorded reason: "
+        f"{sorted(set(untested) - set(check.TEST_COVERAGE_EXEMPT))}"
+    )
+
+
+def test_a_one_sided_quote_type_is_reported(monkeypatch):
+    """The check must fail when a round trip is dropped."""
+    monkeypatch.setattr(
+        check, "quote_type_test_coverage",
+        lambda: {"ir.ir_swap": ("IR_SWAP", 3, 0)},
+    )
+    problems = check.coverage_problems()
+    assert any("ir.ir_swap" in p and "no round-trip test" in p
+               for p in problems), problems

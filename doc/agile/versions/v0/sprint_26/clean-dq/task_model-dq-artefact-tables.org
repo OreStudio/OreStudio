@@ -106,6 +106,33 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part eight: the vocabulary exists, and three rounds of "gaps" were search failures
+
+Run on 2026-09-26. Parts five, six and seven reported that the remaining entities need model vocabulary the component does not have. **Most of that was wrong.** The vocabulary exists. I did not find it because I searched the models instead of the templates.
+
+**A natural key is one group per model, and its members are flagged.** =subject_area= is the worked example: =name= and =domain_name= both carry =:primary_key: true=, which is how the model states a true compound physical key. =dataset_bundle= flags =code= and =name= each =:natural_key: true= and gets **one** index on both together, =dataset_bundles_code_name_uniq_idx= — not two. So a composite natural key is expressed by flagging every member, and the loader collects them into a single group ([[file:projects/ores.codegen/src/codegen/org_loader.py::943][=org_loader.py:943=]]).
+
+**Extra indexes are declared in a table.** Under =* SQL=, an =** Indexes= table with the columns =name | columns | unique | current_only | where_extra=, read at [[file:projects/ores.codegen/src/codegen/org_loader.py::1452][=org_loader.py:1452=]] and rendered by =sql_schema_domain_entity_create.mustache= as ={prefix}_{name}_idx=. =ores.compute.grid_sample= is the worked example.
+
+**What that means for the two entities this blocked.**
+
+- =dataset= has **two** natural keys: =(tenant_id, code)= and =(tenant_id, name, subject_area_name, domain_name)=. One group per model covers the first by flagging =code=; the second is an extra unique, current-only index on the three columns. So part seven's "nothing structural, authoring only" was wrong in the other direction: it does need a second key, and the second key is expressible.
+- =fsm_states= and =fsm_transitions= need a composite key on =(machine_id, name)=, which is two flags, plus an index on =machine_id=, which is one extra index row. Part five's "no natural key anywhere" was wrong, and part six's "three specific vocabulary gaps" was wrong in the same way: two of the three are ordinary declarations.
+
+**What remains genuinely different, and is a real decision.**
+
+- Function defaults: =gen_random_uuid()=, =default current_timestamp=.
+- =bigint= columns.
+- A **non-bitemporal primary key** on =id= alone, as the two publication run logs have.
+- Two protocols with **no table at all**: =lei_entity_summary_protocol.hpp= and =report_definition_template_protocol.hpp=.
+- =publish_from_dq_protocol.hpp=, which is an operation with no subjects of its own.
+
+Those five are the decisions, not seven. And the badge projection is hand-written by design.
+
+**A method note, because this is the lesson.** Three rounds went into a vocabulary that was already documented in the templates. The move that found it in one step is to grep the **template org files** for the mustache variables — ={{#domain_entity.indexes}}= — rather than the models for a use of them. A shape no model exercises still has a template that names it. That should be the first move next time, before any claim that something is unsupported.
+
+**Evidence.** No source change: the working tree is clean and =check_component_drift.py --component dq= reports no drift on =main=. The syntax above was read from =ores.dq.subject_area.org=, =ores.dq.dataset_bundle.org=, =ores.compute.grid_sample.org=, =org_loader.py:943= and =:1452=, and =sql_schema_domain_entity_create.mustache:245=.
+
 * Step 8 part seven: a decision request for the remaining nine
 
 Run on 2026-09-26. Parts five and six established that the remaining nine protocols do not need one more shape repeated. This part states, per protocol, exactly why it cannot be modelled with today's vocabulary, so the decision that unblocks each is a decision and not more discovery.

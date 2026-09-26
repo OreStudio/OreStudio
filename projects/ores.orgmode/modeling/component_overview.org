@@ -5,9 +5,9 @@
 #+description: Pure C++ library parsing org-mode agile/knowledge docs into a document structure and resolving id: links via the org-roam SQLite index.
 #+type: ores.codegen.component
 #+level: cross
-#+filetags: 
+#+filetags: :orgmode:foundation:component:
 #+created: 2026-07-06
-#+updated: 2026-07-06
+#+updated: 2026-09-26
 #+name: orgmode
 #+full_name: ores.orgmode
 #+brief: C++ org-mode parsing and link resolution

@@ -85,7 +85,7 @@ record each item's result in the table below.
 | G04 | Sampled review only. The regenerated protocol, handler, service, repository and eventing-test shapes match the canonical output the clean iam component carries. One template-level observation is carried forward: generated domain, eventing, protocol, entity and handler types carry no export macro, in synthetic and in refdata alike, so the fix belongs to the templates and to a house-wide change, not to this component. | =git diff= of the regenerated api and core files; build/audit_synthetic/leg_d_tests_naming.md |
 | G05 | Two generator defects found and fixed at source. The eventing test's FK-chain seed variable was named after the FK column, so a chain step whose column repeated an earlier step's column declared the same variable twice and compiled the wrong type. A system-tenant soft-FK parent was generated and written in the test tenant, so the referencing row's trigger could not see it; it is now read from its system catalogue. Both carry a regression case. Two findings are recorded, not fixed: generated types carry no export macro, and the generator appends a uniqueness counter to every text code, so a code-validated lookup cannot carry a valid value in a seeded test. | commits 75190421a3, 498c0a01a3; =pytest projects/ores.codegen/tests= (524 passed) |
 | G06 | The three parts' source lists are regenerated from the tree. Repo-wide =--all --check= also reports stale lists on other components, which predate this branch. | =regenerate_cmake_component_files.py --component ores.synthetic.<part>= |
-| G07 | Pass after a review finding. The command tests were generated while their template still asserted a bare truth, which this item forbids; the template is now fixed at source and the tests regenerated, with a stub proof that they fail when =register_commands= does nothing. On diagrams: synthetic has no component class diagram to refresh, because =projects/ores.synthetic/modeling/= holds only =component_overview.org= and the nine entity models, and the part =modeling/= directories are empty. The audit counts a missing diagram as a finding, so that is the H01 gap recorded in review row 7, not an exemption. The ER diagram that does carry synthetic's tables was regenerated to test it: synthetic's tables come back byte-identical, and the churn the run produces belongs to iam and ore, plus a defect that leaks the model's generated-file banner into the note text. That work belongs to =ores.sql= and is not carried here. | =ores.cpp.shell-command.command_tests.org=; commit f6a46d2b05; =plantuml_er_generate.sh= |
+| G07 | Pass after two review findings. The command tests were generated while their template still asserted a bare truth, which this item forbids; the template is now fixed at source and the tests regenerated, with a stub proof that they fail when =register_commands= does nothing. On diagrams: the earlier entry here claimed synthetic had no component diagram and so owed no two-pass pass. That was wrong. Each part carries a =.puml= and a rendered image, and the hand-authored section of all three was empty — a skeleton, which H01 forbids. The automated sections had also gone stale against this branch's regeneration. Both are refreshed and massaged in this pass, and the shell part, which had no =modeling/= at all, now carries the full set. The ER diagram that also carries synthetic's tables is =ores.sql='s: its churn belongs to iam and ore, and the run exposes a defect that leaks the model banner into a note. | =ores.cpp.shell-command.command_tests.org=; =projects/ores.synthetic/*/modeling/=; =generate_component_puml.py= |
 | W01 | Defect found and fixed. =service/src/messaging/event_registrar.cpp= composed eight of nine event mappings, so =register_folder_event_mapping= had no caller and folder change events never reached NATS even though the generated SQL notify trigger publishes the channel. The folder mapping is now composed at the same point as the other eight. The nine history-provider registrars are composed in core's =registrar.cpp=. | =event_registrar.cpp=; =core/src/messaging/registrar.cpp= |
 | W02 | Pass. The gate is green with synthetic registered. | =check_handler_permissions.py= |
 | W03 | Pass. The gate is green with synthetic registered. | =check_populate_references.py= |
@@ -96,11 +96,12 @@ record each item's result in the table below.
 | H02 | Nine dead generated event headers and the superseded hand-written shell command units are deleted; the remaining findings are recorded in the audit reports. | commit 4d2dd48559 |
 | H03 | Pass. No commented-out code, no TODO or FIXME, no hand-edited comment in a generated file. | leg_d_tests_naming.md |
 | H04 | Pass. No hand-rolled per-platform shim exists in the component, so there is nothing to replace with a standard facility: no =_WIN32=, =__APPLE__= or =_MSC_VER= guard appears anywhere under =projects/ores.synthetic=. | =grep= over the component |
+| H05 | Found by review and closed in this pass, not deferred. The three synthetic parts each carry a =component_overview.org= with the six required sections, a =Diagram= section, a =.puml= and a committed rendered image. The shell part, =ores.shell.synthetic=, had none of that: it had no =modeling/= directory at all, so the docs gate skipped it in silence. It now carries an overview with the six sections and a =Diagram= section, a =.puml= with a hand-authored pass, a rendered =.png=, and the =modeling/= CMake wiring its siblings have. Both underlying tool defects are fixed: the diagram capture could not see a composite's parts, and =validate_docs.py= skipped any part with no =modeling/= directory. The gate now reports all 40 components passing. | =projects/ores.shell/synthetic/modeling/=; =generate_component_puml.py=; =validate_docs.py=; =validate_docs.sh= |
 | V01 | Pass. The whole tree builds, including the three synthetic libraries, their three test executables, the ores.shell.synthetic part, the shell application and the ores.iam consumer. | =compass build= |
 | V02 | Pass, with no exception. All four suites pass against a database recreated from scratch, on the trunk after the rebase onto =origin/main= and a whole-tree build: =ores.synthetic.api.tests=, =ores.synthetic.core.tests= (67 cases), =ores.synthetic.service.tests= and =ores.shell.synthetic.tests=, and the codegen suite passes with 533 tests. The value eventing test is re-enabled: it seeds a VASICEK definition through a =parent_seed= block, and the table's party policy now lets a session with no party restriction read its own row back. The organisation publisher seed stays idempotent. | =ctest -R synthetic= (4/4 passed); build/audit_synthetic/ctest_green.txt; build/audit_synthetic/value_row_rls_diagnosis.md |
 | V03 | Pass. The database recreates from scratch and seeds cleanly (run three times on this branch), and the fleet starts and serves. =ores.web.service= does not come ready because Node is not installed in this environment; every C++ service does. | =compass db recreate -y -k=; =compass services start --use-busctl= |
 | V04 | OPEN exception. The generated shell commands need an authenticated live fleet, which this environment does not have, so they are unexercised. | |
-| V05 | Pass, with one pre-existing repo-wide exception. Model drift, protocol twin coverage (iam only; synthetic has no twin, see M06), handler permissions, populate references, the shell recipe inventory and the synthetic CMake source lists are all green. =validate_docs.sh= reports one violation, =MISSING_PUML ores.shell.iam=, which is already absent on =origin/main= and belongs to another component. | Each check script; =validate_docs.sh= |
+| V05 | Pass. Model drift, protocol twin coverage (iam only; synthetic has no twin, see M06), handler permissions, populate references, the shell recipe inventory and the synthetic CMake source lists are all green. =validate_docs.sh= now reports all 40 components passing with no exception: the entry this row used to carry, =MISSING_PUML ores.shell.iam=, does not reproduce, and the gate no longer skips a part that has no =modeling/= directory. | Each check script; =validate_docs.sh= |
 | V07 | Pass for the generated command tests, with the audit scope stated. The review found the registration case asserting a bare truth and the arity case asserting only failure; both are fixed at the template, regenerated, and proved non-vacuous by stubbing =register_commands=, which fails all ten assertions. The remaining test files were not individually stubbed. | =ores.cpp.shell-command.command_tests.org=; commit f6a46d2b05 |
 | V08 | OPEN. The per-file survey is not done. The component carries 71 source files under =core/src= against 14 test files, so a large share is exercised only indirectly through the eventing and repository suites. The survey that names each uncovered file is the work item. | not run |
 | V06 | HELD. The disabled eventing test is gone, but five items are open rather than passed: B06 and V08 (surveys not run), M06 (no TypeScript twin), P03 (the messaging reference is stale) and V04 (no live fleet). The standard keeps the component out of the registry until an exception is resolved or accepted, so =COMPONENTS_UNDER_TEST= stays =("iam",)= and the entry is a one-line change once the exceptions are accepted. | =component_registry.py= |
@@ -127,17 +128,36 @@ record each item's result in the table below.
   database recreate.
 - The regime error-handling question (61 throw sites in this component)
   belongs to the house-wide capture, not to this pass.
-- Diagram position, verified rather than assumed. synthetic has no component
-  class diagram: =projects/ores.synthetic/modeling/= carries only
-  =component_overview.org= and the nine entity models, and the three part
-  =modeling/= directories are empty. So no two-pass capture-and-massage was
-  owed for a diagram that exists, and none was done. The ER diagram
-  (=projects/ores.sql/modeling/ores_schema.puml=) does carry synthetic's 18
-  tables. It is fully generated with no sentinel section, and re-running
-  =plantuml_er_generate.sh= returns synthetic's tables byte-identical: the
-  churn belongs to iam and ore. The same run also shows the model's
-  =AUTO-GENERATED FILE - DO NOT EDIT MANUALLY= banner leaking into a rendered
-  note. Both are =ores.sql='s to fix and are not carried in this branch.
+- Diagrams, corrected. An earlier entry on this task claimed synthetic had no
+  component diagram. That was wrong: each part carries
+  =projects/ores.synthetic/<part>/modeling/{component_overview.org,
+  ores.synthetic.<part>.puml, ores.synthetic.<part>.png}=, and the overview's
+  =Diagram= section points at the image. Two real defects were behind the
+  confusion. The automated section of all three diagrams predated this
+  branch's regeneration, so it was stale, and the hand-authored section was
+  empty in all three -- a skeleton of empty boxes, which H01 forbids. Both are
+  fixed in this pass: the automated pass was re-run, and the manual pass fills
+  the boxes with the API and draws the relationships the automated pass cannot
+  infer, with 458 hand-authored lines for api, 574 for core and 250 for
+  service, and 51, 29 and 27 relationship edges respectively. Each render was
+  read, not merely re-run, and a second capture reports no changes, so the
+  sentinel contract holds. The capture had a defect behind the missing
+  members: a line counted as a method whenever it held a parenthesis, so
+  =tenant_id= vanished from all nine generated entities. A parenthesis now
+  means a signature only when it precedes any equals sign. The shell part, =ores.shell.synthetic=, had no =modeling/=
+  directory at all and now carries the full set. The ER diagram
+  (=projects/ores.sql/modeling/ores_schema.puml=) is fully generated with no
+  sentinel section, and re-running =plantuml_er_generate.sh= returns synthetic's
+  tables byte-identical: the churn belongs to iam and ore, and the same run
+  shows the model's =AUTO-GENERATED FILE - DO NOT EDIT MANUALLY= banner leaking
+  into a rendered note. Both are =ores.sql='s to fix and are not carried here.
+- Repo-wide scale of the diagram gap, measured after H05 made it explicit.
+  Of 90 component =*.puml= files, 82 have a rendered image beside them and
+  only 9 carry any hand-authored content. So roughly 81 diagrams are bare
+  skeletons, including those of =ores.iam= and =ores.compute=, the two
+  components already listed in =COMPONENTS_UNDER_TEST=. H01 has been unmet
+  across the tree, and H05 now states the requirement so the gap is visible.
+  Closing it is a house-wide task, not synthetic's.
 - One generator defect found by the build is fixed at source: the eventing
   test's FK-chain seed variable was named after the FK column, so a chain
   step whose column repeated an earlier step's column declared the same
@@ -189,7 +209,7 @@ via its "Verifies task" field.
 | 4 | The Notes bullet runs into the =* Test Scenarios= heading | this task | Accept | Blank line added. |
 | 5 | The ancestor seed name dropped the chain-depth qualification, so two chains reaching one entity collide | =core.py= | Accept | Named after the referencing row and the entity; a regression case covers two chains meeting. Commit bfe5a3dad6. |
 | 6 | The synthetic registrar takes a =pagination_context= it never forwards | =synthetic_entity_commands.cpp= | Accept | Parameter removed from the header, the unit and the REPL call. Commit 57989d32ca. |
-| 7 | The shell part has no =modeling/= directory and no diagram, and =validate_docs.py= skips a missing one | =projects/ores.shell/synthetic/= | Accept, deferred | Real gap against H01. The sibling parts carry =modeling/=, so the fix is to scaffold it and draw the diagram. Follow-up check: =ores.synthetic= has no component class diagram at all — neither the composite root nor any part — so nothing of synthetic's was massaged in this pass. The ER diagram that carries synthetic's tables regenerates them byte-identical; its staleness is iam's and ore's, and the run also exposes a generator defect that leaks the model banner into a note. Both belong to =ores.sql=. Recorded as open work rather than done under this pass. |
+| 7 | The shell part has no =modeling/= directory and no diagram, and =validate_docs.py= skips a missing one | =projects/ores.shell/synthetic/=; =validate_docs.py=; =generate_component_puml.py= | Accept | Closed, not deferred. The shell part now carries an overview with the six sections and a Diagram section, a =.puml= with a hand-authored pass, a rendered image and the modeling/ CMake wiring. The gate blind spot that let it pass in silence is fixed, as is the capture script's inability to refresh a composite's parts. Correcting an earlier claim on this row: =ores.synthetic= does have per-part diagrams; theirs were stale above the sentinel and empty below it, and both are fixed in this pass. |
 | 8 | The eventing test works around the sibling-field trigger in the model instead of the template, reads the catalogue twice, and leaves the =use_system_tenant= path dormant | model, =core.py=, generated test | Accept, deferred | The template cannot yet match a system-tenant parent against a sibling field. Recorded as open work with the shape sketched: a model knob that filters the catalogue read, replacing the snippet. |
 | 9 | The system-tenant regression case asserts a flag, not behaviour | =test_eventing_seed_plan.py= | Accept, deferred | Needs a case that drives the propagation rather than reading the flag back. |
 | 10 | =parse_token= is a pure delegating wrapper in the enum headers | =binding_mode.hpp=, =scope.hpp= | Decline | It is the ADL point the generated shell parser calls uniformly for every enum flag; removing it means specialising the parser per enum, which is worse. The placement in the domain header is what makes the generated unit compile without knowing the enum's owner. |

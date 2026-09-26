@@ -17,8 +17,8 @@
  *
  */
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
+#include "ores.ore.core/xml/roundtrip.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -33,12 +33,12 @@
  * @file xml_exporter_directory_roundtrip_tests.cpp
  * @brief Directory-level round trip over the vendored ORE example corpus.
  *
- * Drives exporter::roundtrip over directories under external/ore/examples and
- * asserts that the walk accounts for every file it sees, that each written
- * document reads back as a document of the same kind, and that every mapped
- * trade reaches an output. The per-document suites assert deep field fidelity
- * for the products they name; this suite asserts the walk itself, over the
- * whole corpus, which nothing else does.
+ * Drives the xml facet's round trip over directories under
+ * external/ore/examples and asserts that the walk accounts for every file it
+ * sees, that each written document reads back as a document of the same kind,
+ * and that every mapped trade reaches an output. The per-document suites
+ * assert deep field fidelity for the products they name; this suite asserts
+ * the walk itself, over the whole corpus, which nothing else does.
  */
 
 namespace {
@@ -106,8 +106,8 @@ const std::set<std::string>& known_export_gaps() {
 /**
  * @brief Counts the trades a document contributes to the walk's mapped tally.
  *
- * Mirrors the rule exporter::roundtrip applies: an instrument that encodes to
- * monostate is a passthrough and does not count as mapped.
+ * Mirrors the rule the walk applies: an instrument that encodes to monostate
+ * is a passthrough and does not count as mapped.
  */
 std::size_t count_mapped_trades(const fs::path& document) {
     std::size_t mapped = 0;
@@ -118,25 +118,42 @@ std::size_t count_mapped_trades(const fs::path& document) {
     return mapped;
 }
 
+/**
+ * @brief Reports every document the walk could not convert.
+ *
+ * Built into one assertion so a failure names all of them at once rather
+ * than stopping at the first.
+ */
+void check_no_conversion_failures(const ores::ore::xml::roundtrip_summary& summary) {
+    if (summary.failures.empty())
+        return;
+    std::string joined;
+    for (const auto& failure : summary.failures)
+        joined += "\n  " + failure;
+    FAIL_CHECK("documents failed to round trip:" << joined);
+}
+
 } // namespace
 
 TEST_CASE("roundtrip mirrors every portfolio in the ORE example corpus", tags) {
-    using ores::ore::xml::exporter;
     using ores::platform::filesystem::file;
 
     const auto input = examples_dir("Products/Example_Trades");
     REQUIRE(fs::exists(input));
 
     scratch_dir out("ores_ore_directory_roundtrip");
-    const auto summary = exporter::roundtrip(input, out.path);
+    const auto summary = ores::ore::xml::roundtrip(input, out.path);
 
-    INFO("total=" << summary.total_xml_files << " skipped=" << summary.skipped << " written="
+    INFO("total=" << summary.total_xml_files << " unsupported=" << summary.unsupported
+                  << " failed=" << summary.failed << " written="
                   << summary.output_files_written << " mapped=" << summary.trades_mapped
                   << " passthrough=" << summary.trades_passthrough);
 
     CHECK(summary.total_xml_files > 0);
-    CHECK(summary.output_files_written + summary.skipped == summary.total_xml_files);
+    CHECK(summary.output_files_written + summary.unsupported + summary.failed ==
+          summary.total_xml_files);
     CHECK(summary.trades_mapped > 0);
+    check_no_conversion_failures(summary);
 
     std::set<std::string> unreadable;
     std::size_t trades_in_outputs = 0;
@@ -181,25 +198,26 @@ TEST_CASE("roundtrip mirrors every portfolio in the ORE example corpus", tags) {
 }
 
 TEST_CASE("roundtrip classifies a mixed ORE input directory", tags) {
-    using ores::ore::xml::exporter;
-
     const auto input = examples_dir("Input");
     REQUIRE(fs::exists(input));
 
     scratch_dir out("ores_ore_directory_roundtrip_mixed");
-    const auto summary = exporter::roundtrip(input, out.path);
+    const auto summary = ores::ore::xml::roundtrip(input, out.path);
 
-    INFO("total=" << summary.total_xml_files << " skipped=" << summary.skipped << " currencies="
-                  << summary.currency_files << " calendars=" << summary.calendar_files
+    INFO("total=" << summary.total_xml_files << " unsupported=" << summary.unsupported
+                  << " failed=" << summary.failed << " currencies=" << summary.currency_files
+                  << " calendars=" << summary.calendar_files
                   << " conventions=" << summary.convention_files);
 
-    CHECK(summary.output_files_written + summary.skipped == summary.total_xml_files);
+    CHECK(summary.output_files_written + summary.unsupported + summary.failed ==
+          summary.total_xml_files);
     CHECK(summary.currency_files >= 1);
     CHECK(summary.calendar_files >= 1);
     CHECK(summary.convention_files >= 1);
+    check_no_conversion_failures(summary);
 
     // The corpus carries documents of kinds the walk does not support, so the
-    // skip counter has to move. A walk that silently ignored them would pass
-    // the accounting check above only by counting them as written.
-    CHECK(summary.skipped >= 1);
+    // unsupported counter has to move. A walk that silently ignored them would
+    // pass the accounting check above only by counting them as written.
+    CHECK(summary.unsupported >= 1);
 }

@@ -31,12 +31,8 @@
 #include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
-#include "ores.ore.core/xml/importer.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include <cctype>
-#include <chrono>
-#include <fstream>
 #include <optional>
 
 namespace ores::ore::xml {
@@ -54,52 +50,6 @@ using trading::domain::composite_instrument_data;
 using trading::domain::scripted_instrument;
 
 namespace {
-
-std::string read_header(const std::filesystem::path& file) {
-    constexpr std::size_t kPeek = 4096;
-    std::ifstream ifs(file, std::ios::binary);
-    if (!ifs)
-        return {};
-    std::string buf(kPeek, '\0');
-    ifs.read(buf.data(), static_cast<std::streamsize>(kPeek));
-    buf.resize(static_cast<std::size_t>(ifs.gcount()));
-    return buf;
-}
-
-/**
- * @brief Reads the name of a document's root element.
- *
- * The reader is chosen from the root element alone. Searching the header
- * for a keyword instead would read a curve configuration that names a
- * conventions block in its opening lines as a conventions document, and
- * rewrite it as an empty one.
- */
-std::string read_root_element(const std::filesystem::path& file) {
-    const auto header = read_header(file);
-    auto at = header.find('<');
-    while (at != std::string::npos) {
-        if (header.compare(at, 4, "<!--") == 0) {
-            const auto end = header.find("-->", at + 4);
-            if (end == std::string::npos)
-                return {};
-            at = header.find('<', end + 3);
-            continue;
-        }
-        if (header.compare(at, 2, "<?") == 0 || header.compare(at, 2, "<!") == 0) {
-            const auto end = header.find('>', at + 2);
-            if (end == std::string::npos)
-                return {};
-            at = header.find('<', end + 1);
-            continue;
-        }
-        auto end = at + 1;
-        while (end < header.size() && (std::isalpha(static_cast<unsigned char>(header[end])) ||
-                                       header[end] == '_' || header[end] == ':'))
-            ++end;
-        return header.substr(at + 1, end - at - 1);
-    }
-    return {};
-}
 
 void fill_envelope(domain::trade& t,
                    const trading::domain::trade& src,
@@ -481,131 +431,4 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
     BOOST_LOG_SEV(lg(), debug) << "Finished portfolio export. Trades: " << p.Trade.size();
     return result;
 }
-
-roundtrip_summary exporter::roundtrip(const std::filesystem::path& input_dir,
-                                      const std::filesystem::path& output_dir) {
-    BOOST_LOG_SEV(lg(), debug) << "Starting roundtrip. Input: " << input_dir
-                               << " Output: " << output_dir;
-
-    using clock = std::chrono::steady_clock;
-    using ms = std::chrono::milliseconds;
-
-    roundtrip_summary summary;
-    namespace fs = std::filesystem;
-
-    const auto wall_start = clock::now();
-
-    for (const auto& entry : fs::recursive_directory_iterator(input_dir)) {
-        if (!entry.is_regular_file())
-            continue;
-        if (entry.path().extension() != ".xml")
-            continue;
-
-        ++summary.total_xml_files;
-        const auto& file = entry.path();
-        BOOST_LOG_SEV(lg(), trace) << "Processing: " << file;
-
-        const auto root = read_root_element(file);
-        const bool is_portfolio = root == "Portfolio";
-        const bool is_currency = root == "CurrencyConfig";
-        const bool is_calendar = root == "CalendarAdjustments";
-        const bool is_conventions = root == "Conventions";
-
-        if (!is_portfolio && !is_currency && !is_calendar && !is_conventions) {
-            BOOST_LOG_SEV(lg(), debug) << "Skipping unrecognised XML: " << file.filename();
-            ++summary.skipped;
-            continue;
-        }
-
-        std::string xml;
-        try {
-            if (is_portfolio) {
-                const auto t0 = clock::now();
-                auto import_items = importer::import_portfolio_with_context(file);
-                summary.import_ms += std::chrono::duration_cast<ms>(clock::now() - t0).count();
-
-                std::vector<trading::messaging::trade_export_item> export_items;
-                export_items.reserve(import_items.size());
-                for (const auto& item : import_items) {
-                    trading::messaging::trade_export_item ei;
-                    ei.trade = item.trade;
-                    ei.instrument = trading::domain::encode_instrument(item.instrument);
-                    ei.envelope = item.envelope;
-                    if (std::holds_alternative<std::monostate>(item.instrument))
-                        ++summary.trades_passthrough;
-                    else
-                        ++summary.trades_mapped;
-                    export_items.push_back(std::move(ei));
-                }
-
-                const auto t1 = clock::now();
-                xml = export_portfolio(export_items);
-                summary.export_ms += std::chrono::duration_cast<ms>(clock::now() - t1).count();
-
-            } else if (is_currency) {
-                const auto t0 = clock::now();
-                auto currencies = importer::import_currency_config(file);
-                summary.import_ms += std::chrono::duration_cast<ms>(clock::now() - t0).count();
-
-                const auto t1 = clock::now();
-                xml = export_currency_config(currencies);
-                summary.export_ms += std::chrono::duration_cast<ms>(clock::now() - t1).count();
-                ++summary.currency_files;
-
-            } else if (is_calendar) {
-                const auto t0 = clock::now();
-                auto adjustments = importer::import_calendar_adjustments(file);
-                summary.import_ms += std::chrono::duration_cast<ms>(clock::now() - t0).count();
-
-                const auto t1 = clock::now();
-                xml = export_calendar_adjustments(adjustments);
-                summary.export_ms += std::chrono::duration_cast<ms>(clock::now() - t1).count();
-                ++summary.calendar_files;
-
-            } else { // is_conventions
-                const auto t0 = clock::now();
-                auto mc = importer::import_conventions(file);
-                summary.import_ms += std::chrono::duration_cast<ms>(clock::now() - t0).count();
-
-                const auto t1 = clock::now();
-                xml = export_conventions(mc);
-                summary.export_ms += std::chrono::duration_cast<ms>(clock::now() - t1).count();
-                ++summary.convention_files;
-            }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), debug) << "Skipping " << file.filename() << ": " << e.what();
-            ++summary.skipped;
-            continue;
-        }
-
-        const auto out_path = output_dir / fs::relative(file, input_dir);
-        try {
-            fs::create_directories(out_path.parent_path());
-            platform::filesystem::file::write_content(out_path, xml);
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to write " << out_path << ": " << e.what();
-            ++summary.skipped;
-            continue;
-        }
-        ++summary.output_files_written;
-        BOOST_LOG_SEV(lg(), trace) << "Written: " << out_path;
-    }
-
-    summary.total_ms = std::chrono::duration_cast<ms>(clock::now() - wall_start).count();
-
-    BOOST_LOG_SEV(lg(), debug) << "Roundtrip complete." << " Total: " << summary.total_xml_files
-                               << " Skipped: " << summary.skipped
-                               << " Written: " << summary.output_files_written
-                               << " Mapped: " << summary.trades_mapped
-                               << " Passthrough: " << summary.trades_passthrough
-                               << " Currencies: " << summary.currency_files
-                               << " Calendars: " << summary.calendar_files
-                               << " Conventions: " << summary.convention_files
-                               << " Import ms: " << summary.import_ms
-                               << " Export ms: " << summary.export_ms
-                               << " Total ms: " << summary.total_ms;
-
-    return summary;
-}
-
 }

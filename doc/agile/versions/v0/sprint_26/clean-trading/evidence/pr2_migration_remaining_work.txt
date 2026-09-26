@@ -136,3 +136,29 @@ the compiler named, reaches three errors:
 The first three are mechanical. The fourth is the second place a person
 chooses the request: a removal record carries the key and the version it
 expects, so the delete needs the version the old call did not state.
+
+Update, sixth trial (6 errors)
+------------------------------
+With the wire-member map keyed correctly the migration reaches six
+errors, and one of them is not mechanical.
+
+- Four are the known over-rewrite: the four families with no model take
+  a result member their consolidated response does not have. Restore
+  those four lines after the run.
+- One is product_type again: the enum-to-text rule did not fire in the
+  batch expansion. Whether the domain type map or the expansion is at
+  fault is for the next run to say; the conversion is
+  ores::trading::domain::to_string(...).
+- One is a protocol gap, not a rewrite. The trade's declared key is its
+  external_id, not its uuid:
+
+      struct trade_key { std::string external_id; };
+
+  The rollback path holds saved_trade_ids, which are uuids, so it cannot
+  name the rows it wants to remove. The consolidated protocol accepted a
+  list of ids; the canonical one addresses a trade by the key the model
+  declares. Either the handler records the external ids as it saves (the
+  value is in hand at the save site, and the log line already prints it),
+  or the trade model declares the storage key as the wire key, or the
+  protocol gains a removal by storage key. That is a decision for the
+  task, and PR 3 owns the model if the answer is the second.

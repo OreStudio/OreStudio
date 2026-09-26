@@ -52,3 +52,19 @@ Fourteen recipes are ready to run and none can, for that one reason. The
 commands themselves are not in doubt: the same generated units are linked
 into ores.shell and exercised by the shell's own tests, and the recipes'
 answer shapes come from the protocols the component now generates.
+
+Run again after the telemetry entities were modelled and the database was
+recreated, so the new schema is the one under test. The compute service
+log carries no decode failure, and the tables hold what the live path
+wrote:
+
+  select count(*), max(sampled_at) from ores_compute_node_samples_tbl;
+   10 | 2026-09-26 03:51:12+01
+
+  select count(*), max(sampled_at) from ores_compute_grid_samples_tbl;
+   14 | 2026-09-26 03:51:04+01
+
+The first goes through the generated node_sample_repository::write and the
+second through the generated grid_sample_repository::write. The dashboard
+recipe reads them back through the generated read_newest and the
+hand-written per-node read.

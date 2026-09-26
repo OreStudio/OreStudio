@@ -3217,6 +3217,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['current_state'] = bool(
             sql_section.get('current_state', False))
         current_state = domain_entity['current_state']
+        # A time-series table is read from its newest end. A paged read walks
+        # the key in order, so it answers "the first page" and never "the last
+        # row"; a caller that wants the latest states the column it is the
+        # latest of. The read is generated only for a current-state table,
+        # where every row is current and the newest is the one written last.
+        domain_entity['has_newest_read'] = bool(
+            current_state and sql_section.get('newest_by'))
         # Compute has_tenant_in_pk: tenant_id is in the primary key when has_tenant_id
         # is set but neither system_scope nor nullable_tenant_id overrides the PK.
         # A current-state table keys on the model's own primary key alone --

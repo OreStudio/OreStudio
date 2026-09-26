@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,9 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.compute.api/domain/node_sample_table.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
 
-drop policy if exists grid_samples_tbl_tenant_isolation_policy on "ores_compute_grid_samples_tbl";
-drop rule if exists ores_compute_grid_samples_delete_rule on "ores_compute_grid_samples_tbl";
-drop trigger if exists ores_compute_grid_samples_insert_trg on "ores_compute_grid_samples_tbl";
-drop function if exists ores_compute_grid_samples_insert_fn;
-drop table if exists "ores_compute_grid_samples_tbl";
+namespace ores::compute::domain {
+
+
+std::string convert_to_table(const std::vector<node_sample>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header << fort::endr;
+
+    for ([[maybe_unused]] const auto& ns : v) {
+        table << fort::endr;
+    }
+    return table.to_string();
+}
+
+}

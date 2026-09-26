@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,9 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.compute.core/repository/grid_sample_entity.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
-drop policy if exists grid_samples_tbl_tenant_isolation_policy on "ores_compute_grid_samples_tbl";
-drop rule if exists ores_compute_grid_samples_delete_rule on "ores_compute_grid_samples_tbl";
-drop trigger if exists ores_compute_grid_samples_insert_trg on "ores_compute_grid_samples_tbl";
-drop function if exists ores_compute_grid_samples_insert_fn;
-drop table if exists "ores_compute_grid_samples_tbl";
+namespace ores::compute::repository {
+
+std::ostream& operator<<(std::ostream& s, const grid_sample_entity& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}

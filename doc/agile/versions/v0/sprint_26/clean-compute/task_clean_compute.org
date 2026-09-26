@@ -28,10 +28,10 @@ ores.compute passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:543DE51B-B9D8-4261-9DB1-9B97D4C9F187][Clean ores.compute to the component clean standard]] |
-| Now          | Every section is worked and every applicable item passes except G02, on the two telemetry tables the codegen cannot express. |
-| Waiting on   | A decision on whether the codegen gains an append-only fact-table entity shape. |
-| Next         | That decision. Nothing else on the component is open. |
-| Last touched | 2026-09-23                               |
+| Now          | Every applicable item passes except G02. The two telemetry tables are modelled, so M06 and B03 close with them. |
+| Waiting on   | G02's last three files: the workflow batch link, whose polling read crosses tenants. |
+| Next         | Decide how a service-level poller reads tenant-owned rows, then model the workflow batch link. |
+| Last touched | 2026-09-26                               |
 
 * Acceptance
 
@@ -59,11 +59,11 @@ record each item's result in the table below.
 |------+---------+----------|
 | B01  | Pass    | =evidence/b01_component_drift_baseline.txt= records 88 changed and 34 created files. =evidence/b01_model_drift_baseline.txt= records two known exceptions, one of them compute's =result.has_change_reason_cache= and the other =reporting.report_definition.has_workspace_id=. |
 | B02  | Pass    | =evidence/b02_b03_b04_inventory.txt=: nine models. Six entity, one junction, one module and one component overview. The module and the overview carry no variability. |
-| B03  | Partial | Re-surveyed after the work operation model: 285 C++ files outside tests, 225 generated and 60 hand-written, against 258, 189 and 69 at the baseline. Messaging headers 45, with 5 hand-written. Evidence in =evidence/b02_b03_b04_inventory_after_work.txt=. |
+| B03  | Pass    | Re-surveyed after the telemetry entities: 310 C++ files outside tests, 255 generated and 55 hand-written, against 258, 189 and 69 at the baseline. Messaging headers 45, with 5 hand-written, all five live handlers and the registrar composition point. Every one of the 55 is classified below. Evidence in =evidence/b02_b03_b04_inventory_after_telemetry_entities.txt=. |
 | B04  | Pass    | Same file: 80 subjects across ten protocol headers, and no raw subject literal is left in hand-written code. The four that built a =compute.v1.work.assignments.= subject at runtime now build it from the generated constant. |
 | B05  | Pass    | Nothing blocks the work. PR #2138 merged, so the branch rebased onto =origin/main= at =5de59e3fb8= and picked up its M09 chrome removal. No other in-flight branch touches =projects/ores.compute=. |
 | G01  | Pass    | Regeneration is byte-clean and idempotent, and the component builds. =check_component_drift.py --component compute-cpp= reports no drift, and it reported no drift on the two runs before it as well. =evidence/g01_regeneration_run8.txt=. |
-| G02  | Partial | Every hand-written file the generation supersedes is generated now, at the path it was hand-written at: the three protocol headers and the platform domain, entity, mapper, repository, service, handler and registrar. No dead header remains and there is no hand-written protocol umbrella. Nine files remain that the generation does not supersede: the two telemetry tables with the reads over them, which the codegen cannot express, and the workflow batch link, which is open work. Recorded in Notes. |
+| G02  | Partial | Every file the generation supersedes is generated now, at the path it was hand-written at, and the two telemetry tables' domain, entity, mapper and repository are among them. Three files remain that the generation does not supersede: the workflow batch link's entity and repository. Its table is a current-state entity the codegen can express, but the bridge that polls it reads across tenants, and no generated read does that. Recorded in Notes. |
 | G03  | Pass    | 225 files under =projects/ores.compute= carry the generated marker and 60 do not, and the 60 are the hand-written set B03 classified. The argument that every generated file is marked is the empty drift list: the generator writes the marker, so a generated file missing it would always differ from the tree and appear there. =evidence/b02_b03_b04_inventory_after_work.txt=. |
 | G04  | Pass    | The generated output was read against the hand-written code it replaced, facet by facet, over the platform model and the two operation models. Two defects came out of it and are fixed in the templates: a response member that collided with an entity named =result=, and TypeScript domain imports that collided with the public types. Details in Notes. |
 | G05  | Pass    | Eight generator defects, fixed at source with fifteen new cases across =test_protocol_name_collisions.py=, =test_junction_protocol_verbs.py= and =test_shell_entities.py=. Five are in =org_loader.py=, two in the shell command template, and one in the junction derivation. Details in Notes. |
@@ -71,7 +71,7 @@ record each item's result in the table below.
 | M02  | Pass    | All seven entity and junction models bind to a profile: six to =uuid-identified-lookup= and the junction to =tenant-scoped-junction=. No model needed a no-match record. |
 | M04  | Pass    | No property sits in a namespace the loader does not read for it. The one that did was =has_change_reason_cache=, moved to the model root for M09, and it is now removed as dead. |
 | M05  | Pass    | Each model describes one table. The junction is modelled as a junction and no joined shape is modelled as an entity. No compute table is current-state, so no model needs the current-state shape. |
-| M06  | Partial | =platform=, the telemetry protocol and the work protocol are modelled. The platform model generates its domain, protocol, entity, repository, service, handler, registrar, SQL, shell unit and TypeScript twin, and the hand-written versions are deleted. The two operation models generate their protocol and TypeScript twin from one source. No hand-written protocol header remains. The telemetry tables remain: =grid_sample= and =node_sample= are append-only hypertables whose reads the codegen cannot express. Recorded in Notes. |
+| M06  | Pass    | Every wire type the component exchanges is modelled. The seven entities, the junction and the two operations are all org models, and the two telemetry tables are entities now, so no hand-written wire type and no hand-written protocol header remains. =check_protocol_twin_coverage.py= passes over both components under test. |
 | M07  | Pass    | The junction names its singular (=#+name_singular: app_version_platform=), gives both key columns their real type (uuid), and its row-level security is tenant scoped, =ores_compute_app_version_platforms_tbl= with a =tenant_id= policy and a current-tenant check. =read_only=, =client_read_only= and =party_id_is_target= do not apply: the junction is written by publish, and it has no party column. |
 | M08  | Pass    | Every =cpp_type= in the component is a scalar or a registered built-in, so no custom type needs a header binding. =validate_schemas.sh= passes with 303 tables and no warnings, so the SQL spellings are canonical. No flag is an integer. |
 | M10  | Pass    | The component overview declares the parts and the composite generates its root =CMakeLists.txt= (the file carries the generated marker). =validate_docs.py= passes all 41 components. |
@@ -182,95 +182,76 @@ lists outside the branch against 0 for compute, iam and shell.
 
 * Notes
 
-** G02, the two telemetry tables
+** G02, the telemetry tables and the workflow batch link
 
-This is the one item compute does not close, so it is written out in
-full.
+This note is the item's history and its remaining part, in that order.
 
-=grid_sample= and =node_sample= are append-only hypertables. Six
-hand-written files describe them: the two domain structs, their two sqlgen
-entities, and one repository with five methods. Generation does not
-supersede those files, so G02's deletion has nothing to delete here, and
-B03 cannot classify them as infrastructure either: a domain type and a
-repository are the two things the generator normally writes.
+*** The telemetry tables, closed
 
-The earlier note in this section claimed the tables map cleanly onto
-=ores.marketdata.market_observation=. They do not. That model is the
-closest shape the codegen has and it differs in four ways, each of which
-the generator cannot express.
+=grid_sample= and =node_sample= were the item's centre. Six hand-written
+files described them: two domain structs, two sqlgen entities and one
+repository with five methods. All six are generated now.
 
-- *A hypertable entity must carry a surrogate uuid key.*
-  =market_observation= declares =id= as its primary key, and the
-  hypertable template composes =primary key (id, observation_datetime)=.
-  Compute's two tables have no surrogate key at all, so their primary key
-  is =sampled_at= plus =tenant_id= (and =host_id= for the node samples).
-- *A hypertable's primary key cannot be the partition column alone, and
-  cannot name the tenant.* The template appends the partition column to
-  the model's declared key, so declaring =sampled_at= renders
-  =primary key (sampled_at, sampled_at)=, and declaring nothing renders an
-  empty key list. =has_tenant_in_pk= exists but only on the bi-temporal
-  branch, which a hypertable does not take.
-- *There is no retention-policy flag.* Both hand-written tables call
-  =add_retention_policy(..., drop_after => interval '30 days')=. The
-  generated hypertable block emits =create_hypertable= and stops.
-- *There is no newest read.* =compute_telemetry_repository::
-  latest_grid_sample= wants the newest row for the tenant, and
-  =latest_node_samples= wants the newest row per host, which is a
-  =DISTINCT ON (host_id)=. The generated repository offers =read_latest=,
-  which returns every row for a table with no version column, a read by
-  key, and a page in key order.
+The earlier reading of this item was that the tables needed a fourth
+entity shape, an append-only fact table with no surrogate key and no
+validity window. That reading was wrong, and =ores.iam.session= showed
+why: it is a current-state entity *and* a hypertable, and the codegen
+already expresses that. A current-state entity takes the model's own
+primary key, so declaring a surrogate =id= and the partition column
+=sampled_at= as key columns renders =primary key (id, sampled_at)=, which
+is what TimescaleDB requires and what the hand-written tables could not
+express without the tenant joining the key. Four gaps became two.
 
-Adding the missing reads is the smaller half. The table shape is the
-larger one: an append-only fact table with no surrogate key and no
-validity window is a third entity shape, next to the bi-temporal entity
-and the current-state entity, and giving the codegen that shape is a
-design decision about every component that stores measurements. It is not
-a clean-compute decision, so it is recorded rather than forced.
+- *No retention policy.* The hypertable block created the hypertable and
+  stopped, while both hand-written tables dropped chunks after thirty
+  days. A new =:hypertable_retention_interval:= flag renders the policy,
+  and it reports rather than ignores the interval when the TimescaleDB
+  licence has no retention job. The local licence is =apache=, so no job
+  is set here, which is what the hand-written block did too.
+- *No newest read.* A paged read walks the key from its oldest end, so it
+  cannot answer "the last sample" without reading everything before it. A
+  new =:newest_by:= flag names the column the newest is measured by and
+  renders =read_newest=, which is one indexed row.
 
-Two further facts bound the risk of the work. The handler also calls
-=ores_compute_grid_stats_fn=, a SQL function that returns the computed
-grid summary; no generated read will ever express that, so some
-hand-written query object survives any version of this fix. And the
-handler and the two repository reads are the only consumers, so the tables
-are internal: modelling them as entities would also add a CRUD wire
-surface that nothing calls, which the physical-space table could switch
-off, but which is surface nothing asks for.
+Both flags are generator features with cases in
+=test_current_state_shape.py=, and both were proved on a throwaway probe
+model before either table was touched.
 
-The read gap is what the handler hits first.
-=telemetry_handler::get_grid_stats= reads
-=compute_telemetry_repository::latest_grid_sample=, the newest stored
-sample for the tenant. The generated repository offers =read_latest(ctx)=,
-which returns every row, =read_latest(ctx, sampled_at)=, which wants the
-key, and a paged read in key order. None of them answers "the newest one",
-and for a hypertable the first is not affordable.
+What stays hand-written is =compute_telemetry_repository=, and it is
+infrastructure rather than a generatable file: a per-node newest row is a
+=DISTINCT ON (host_id)=, which is neither a read of the newest nor a read
+scoped to one host, and the live summary is a call to
+=ores_compute_grid_stats_fn=, a SQL function no template expresses. The
+file went from five methods to two.
 
-Two routes were weighed before the shape was understood.
+A defect came out of the work. The table renderer emitted
+=for ([[maybe_unused]] const auto& : v)=, with no variable, because the
+template reads ={{cpp.iterator_var}}= from the model's C++ drawer and the
+loader defaulted it only for the table-display items. The loader now
+defaults it in both places, and the two new models state theirs like every
+other compute entity.
 
-- *Teach the codegen a most-recent read.* An entity keyed by a timestamp
-  has no way to ask for its latest row. A plain-list order, or a
-  =latest= read, would serve it. That is a codegen change with a
-  regression test, and it would serve every time-series entity, not just
-  this one.
-- *Decide the handler computes live.* =compute_telemetry_repository::
-  compute_grid_stats= calls the =ores_compute_grid_stats_fn= SQL function
-  and returns a computed sample. The handler could call that instead of
-  reading the stored one, which would make the stored samples historical
-  only and =latest_grid_sample= dead.
+*** The workflow batch link, still open
 
-The second is a product decision about what the telemetry surface is for,
-so it is not mine to take. The first does not close the item either, which
-the four gaps above show. So the attempt was reverted rather than forced,
-and the tree is as it was.
+Three files remain: =workflow_batch_link_entity.hpp= and
+=workflow_batch_link_repository.hpp/.cpp=. The table is a current-state
+entity the codegen can express, and a model would replace all three.
 
-The exception this item records is: G02 is partial, on the two telemetry
-tables and the reads over them, because the codegen has no append-only
-fact-table shape and no newest read. Everything else the generation
-supersedes is deleted. A reader who wants the item closed should decide
-whether the codegen gains that shape; until someone does, these six files
-stay hand-written and are classified as such rather than as infrastructure.
+What stops it is one read. =batch_workflow_bridge= polls every pending
+link across every tenant, because it is a service-level bridge and each
+link's tenant is what it needs in order to publish the step completion.
+Every generated read is scoped to the caller's tenant, and the model flag
+that removes that filter, =:tenant_read_scope: shared=, hands the row set
+to row-level security rather than to the service.
 
-The blocker stops the two telemetry *entities*. It does not stop the
-protocol, which is a separate model, as the next note records.
+So the item needs one decision, and it is the same shape as the one the
+telemetry tables needed: how does a service-level poller read
+tenant-owned rows? Three answers fit. Keep the bridge's read hand-written
+and classify the repository as infrastructure, as
+=compute_telemetry_repository= is. Give the table a system-tenant read
+scope and have the bridge run as the system tenant. Or build the poll on a
+generated per-tenant read, one call per tenant, which is a scheduling
+change rather than a codegen one.
 
 ** A login could never find a bootstrap account
 
@@ -574,41 +555,32 @@ because the retired replace swapped the whole platform set for a version;
 a per-row write replaces one row, so the other platforms are untouched and
 there is nothing left to preserve.
 
-** B03 classification of the 60 hand-written C++ files
+** B03 classification of the 55 hand-written C++ files
 
-The baseline held 69. Nine are gone: the platform model replaced five at
-their own paths, the telemetry operation model replaced one, and the work
-operation model replaced one, all by taking the path over. The class sizes
-below are the baseline ones unless a row says otherwise.
+The baseline held 69. Fourteen are generated now: the platform model
+replaced five at their own paths, the telemetry and work operation models
+replaced two, and the two telemetry tables replaced their domain, entity
+and repository files when the entity models landed.
 
-- *Generatable, superseded*: three protocol headers and five handlers are
-  now generated, at the same paths they were hand-written at:
-  =platform_protocol.hpp=, =telemetry_protocol.hpp= and =work_protocol.hpp=,
-  and =platform_handler.hpp= plus the =platform_registrar= family. The
-  platform model carries its domain, entity, mapper, repository and
-  service too, so those five files are generated rather than hand-written.
-- *Generatable, still hand-written, and blocked*: the two telemetry tables
-  and the reads over them: =grid_sample.hpp=, =node_sample.hpp=,
-  =grid_sample_entity.hpp=, =node_sample_entity.hpp= and
-  =compute_telemetry_repository.hpp/.cpp=. The codegen cannot express those
-  tables, for the four reasons the G02 note gives.
-- *Generatable, still hand-written, and open work*:
-  =workflow_batch_link_entity.hpp= and
-  =workflow_batch_link_repository.hpp/.cpp=. The table has no temporal
-  window, so it is a current-state entity, which the SQL drawer can opt
-  into with =:current_state: true=. Its right side is a text step id rather
-  than a foreign key, so a junction does not fit it. It is work not yet
-  done rather than blocked.
+- *Generatable, superseded and generated*: the three protocol headers, the
+  platform domain, entity, mapper, repository, service, handler and
+  registrar, the telemetry protocol and the work protocol, and
+  =grid_sample= and =node_sample= with their entities, mappers,
+  repositories, generators and table renderers.
 - *Infrastructure that stays hand-written*: the =export.hpp= files, the
-  component umbrella headers, every =config/= options and parser pair,
-  the service and wrapper =application=, =host=, =main.cpp=,
-  =archiver=, =http_client=, =log_publisher=, =compute_grid_poller=,
-  =batch_workflow_bridge=, =workunit_dispatcher=, =package_publisher= and
-  the messaging =registrar.hpp= composition point.
-- *Dead*: the four handlers =telemetry_handler.hpp=, =work_handler.hpp=,
-  =report_submit_handler.hpp= and =result_submit_handler.hpp= stay because
-  an operation model generates no service handler; they are live, not dead.
-  Nothing in the component was found dead.
+  component umbrella headers, every =config/= options and parser pair, the
+  service and wrapper =application=, =host=, =main.cpp=, =archiver=,
+  =http_client=, =log_publisher=, =compute_grid_poller=,
+  =batch_workflow_bridge=, =workunit_dispatcher=, =package_publisher=, the
+  messaging =registrar.hpp= composition point, =compute_telemetry_repository=,
+  and the four handlers the operation models leave hand-written.
+- *Generatable, still hand-written, and open*:
+  =workflow_batch_link_entity.hpp= and
+  =workflow_batch_link_repository.hpp/.cpp=. The table is a current-state
+  entity, and the one read that stops a model is the bridge's cross-tenant
+  poll. The G02 note states the decision it needs.
+- *Dead*: none. Every hand-written file that remains is reached by a
+  caller.
 
 ** The shell component tree, and what stays hand-written
 

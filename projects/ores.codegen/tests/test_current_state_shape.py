@@ -232,3 +232,21 @@ def test_current_state_facet_gate_drops_history_only_archetypes():
     # what stops it being enabled into generated code that cannot compile.
     assert "ores.cpp.eventing-integration-test.nats_integration_test" in \
         _NO_TEMPORAL_HISTORY_ARCHETYPES
+
+
+def test_current_state_table_renderer_names_the_row_it_streams(tmp_path):
+    """A model that leaves out the C++ Conventions drawer, or states the
+    iterator variable empty, still has to render a loop variable: the table
+    renderer streams each row, and `const auto& : v` does not compile."""
+    body = CURRENT_STATE_MODEL.replace(
+        ":current_state:    true\n", ":current_state:    true\n").replace(
+        ":END:\n\n* Columns", ":END:\n\n* C++\n\n** Conventions\n:PROPERTIES:\n"
+        ":iterator_var:\n:END:\n\n* Columns", 1)
+    rendered = _render(tmp_path, "cpp_domain_type_table.cpp.mustache",
+                       "entity_table.cpp", body)
+    assert "const auto& e : v" in rendered
+
+    named = _render(tmp_path, "cpp_domain_type_table.cpp.mustache",
+                    "entity_table_named.cpp",
+                    body.replace(":iterator_var:\n", ":iterator_var: cse\n"))
+    assert "const auto& cse : v" in named

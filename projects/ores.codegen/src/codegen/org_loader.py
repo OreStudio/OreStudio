@@ -1544,6 +1544,12 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         td = _section(cpp_section, "Table display")
         if td:
             cpp_out["table_display"] = _table_display(td)
+        # The table renderer names the row it is streaming, and a model that
+        # leaves the drawer out or states it empty renders `const auto& : v`,
+        # which does not compile. One default, stated here, is what
+        # _prepare_table_display() already assumes for its own loop.
+        if not str(cpp_out.get("iterator_var", "")).strip():
+            cpp_out["iterator_var"] = "e"
         if cpp_out:
             de["cpp"] = cpp_out
 

@@ -18,8 +18,5 @@
  *
  */
 
-drop policy if exists grid_samples_tbl_tenant_isolation_policy on "ores_compute_grid_samples_tbl";
-drop rule if exists ores_compute_grid_samples_delete_rule on "ores_compute_grid_samples_tbl";
-drop trigger if exists ores_compute_grid_samples_insert_trg on "ores_compute_grid_samples_tbl";
-drop function if exists ores_compute_grid_samples_insert_fn;
-drop table if exists "ores_compute_grid_samples_tbl";
+drop trigger if exists ores_compute_grid_samples_notify_trg on "ores_compute_grid_samples_tbl";
+drop function if exists ores_compute_grid_samples_notify_fn;

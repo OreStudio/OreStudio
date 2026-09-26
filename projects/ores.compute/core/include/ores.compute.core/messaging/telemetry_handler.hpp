@@ -23,6 +23,8 @@
 #include "ores.compute.api/messaging/telemetry_protocol.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/compute_telemetry_repository.hpp"
+#include "ores.compute.core/repository/grid_sample_repository.hpp"
+#include "ores.compute.core/repository/node_sample_repository.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -32,6 +34,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <format>
@@ -78,8 +81,11 @@ public:
 
         get_grid_stats_response resp;
         try {
+            // The newest stored sample, which the entity model generates as
+            // read_newest: a paged read walks the key from its oldest end.
+            repository::grid_sample_repository grid_repo;
+            const auto grid = grid_repo.read_newest(ctx);
             repository::compute_telemetry_repository repo;
-            const auto grid = repo.latest_grid_sample(ctx);
             if (grid) {
                 resp.total_hosts = grid->total_hosts;
                 resp.online_hosts = grid->online_hosts;
@@ -140,6 +146,7 @@ public:
 
         try {
             domain::node_sample s;
+            s.id = boost::uuids::random_generator()();
             s.sampled_at = std::chrono::system_clock::now();
             s.host_id = boost::lexical_cast<boost::uuids::uuid>(parsed->host_id);
             s.tasks_completed = parsed->tasks_completed;
@@ -151,7 +158,7 @@ public:
             s.output_bytes_uploaded = parsed->output_bytes_uploaded;
             s.seconds_since_hb = parsed->seconds_since_hb;
 
-            repository::compute_telemetry_repository repo;
+            repository::node_sample_repository node_repo;
 
             // The wrapper's --tenant-id is a NATS routing label (e.g.
             // "ores.dev.local1"), not a database UUID.  Attempt to parse it as
@@ -160,10 +167,10 @@ public:
             if (tid) {
                 s.tenant_id = *tid;
                 auto write_ctx = ctx_.with_tenant(*tid, "telemetry_handler");
-                repo.insert_node_sample(write_ctx, s);
+                node_repo.write(write_ctx, s);
             } else {
                 s.tenant_id = ctx_.tenant_id();
-                repo.insert_node_sample(ctx_, s);
+                node_repo.write(ctx_, s);
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(telemetry_handler_lg(), error)

@@ -940,6 +940,26 @@ begin
             chunk_time_interval => interval '{{domain_entity.sql.hypertable_chunk_interval}}',
             if_not_exists => true
         );
+{{#domain_entity.sql.hypertable_retention_interval}}
+        -- A hypertable grows without bound unless a retention policy drops the
+        -- chunks that have aged out. The licence decides whether the policy can
+        -- be set: the community edition has no retention job, so the model's
+        -- interval is reported rather than silently ignored.
+        declare
+            current_license text;
+        begin
+            select current_setting('timescaledb.license', true) into current_license;
+            if current_license = 'timescale' then
+                perform public.add_retention_policy(
+                    '"{{domain_entity.sql_name_base}}_tbl"',
+                    drop_after => interval '{{domain_entity.sql.hypertable_retention_interval}}',
+                    if_not_exists => true
+                );
+            else
+                raise notice 'TimescaleDB community edition - no retention policy is set for {{domain_entity.sql_name_base}}_tbl';
+            end if;
+        end;
+{{/domain_entity.sql.hypertable_retention_interval}}
     else
         raise notice 'TimescaleDB not available - using regular table (manual cleanup required)';
     end if;

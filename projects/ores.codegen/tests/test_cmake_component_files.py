@@ -4,13 +4,12 @@ Run::
 
     python3 -m pytest projects/ores.codegen/tests/test_cmake_component_files.py
 
-The src source-list template listed every public header "for AUTOMOC to
-find Q_OBJECT declarations". Qt was retired, so that line named a
-technology the tree no longer carries, and it shipped into every
-component's generated list. The drift gate cannot see it: the gate proves
-regeneration is stable against the checked-in tree, which stays true while
-the stale line is regenerated along with everything else. These tests pin
-what the template renders, so the retired fragment cannot come back.
+The template renders each component's checked-in source list. These tests
+pin what it renders: the source files, the header list, and the absence of
+any presentation-toolkit fragment. The drift gate cannot cover this,
+because the gate proves regeneration is stable against the checked-in
+tree, which stays true while a stale line is regenerated along with
+everything else.
 """
 import sys
 from pathlib import Path

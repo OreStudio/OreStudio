@@ -38,6 +38,29 @@ using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
 /**
+ * @brief Runs one seed statement, treating an already-present row as success.
+ *
+ * The reference tables' insert triggers refuse a create when a live row for the
+ * natural key already exists, and the guard each seed statement carries does not
+ * always see that row: the trigger's lookup and the guard's read disagree on
+ * macOS, so the create is refused. The seed's contract is that the row exists,
+ * so a row that is already there is the outcome the seed wants.
+ */
+void seed_row(ores::database::context& ctx,
+              const std::string& sql,
+              const std::string& what,
+              logger_t& lg) {
+    try {
+        ores::database::repository::execute_raw_command(ctx, sql, lg, "Seeding " + what);
+    } catch (const std::exception& e) {
+        const std::string msg(e.what());
+        if (msg.find("Row already exists") == std::string::npos)
+            throw;
+        BOOST_LOG_SEV(lg, warn) << "Already present, nothing to seed: " << what;
+    }
+}
+
+/**
  * @brief Seeds the minimum reference data needed for the organisation tree.
  *
  * The organisation generator produces parties and counterparties that reference
@@ -64,8 +87,7 @@ void seed_reference_data(ores::database::context& ctx,
                          "WHERE code = '" +
                          code + "' AND tenant_id = '" + tenant_id +
                          "'::uuid AND valid_to = ores_utility_infinity_timestamp_fn())";
-        ores::database::repository::execute_raw_command(
-            ctx, sql, lg, "Seeding business centre " + code);
+        seed_row(ctx, sql, "business centre " + code, lg);
     };
 
     if (country == "GB") {
@@ -77,7 +99,6 @@ void seed_reference_data(ores::database::context& ctx,
         seed_bc("USBO", "Boston");
         seed_bc("USSF", "San Francisco");
     }
-
     const auto seed_country = [&](const std::string& alpha2,
                                   const std::string& alpha3,
                                   const std::string& numeric,
@@ -96,7 +117,7 @@ void seed_reference_data(ores::database::context& ctx,
                          "WHERE alpha2_code = '" +
                          alpha2 + "' AND tenant_id = '" + tenant_id +
                          "'::uuid AND valid_to = ores_utility_infinity_timestamp_fn())";
-        ores::database::repository::execute_raw_command(ctx, sql, lg, "Seeding country " + alpha2);
+        seed_row(ctx, sql, "country " + alpha2, lg);
     };
 
     if (country == "GB") {

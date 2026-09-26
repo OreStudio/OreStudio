@@ -110,14 +110,6 @@ tangled into the runnable script library
 - [[id:41576369-A684-4BC4-AF5E-32ECDAADAA7C][List accounts on Tenant]]
 - [[id:4406CC4D-23BF-4A8F-AB95-FFED42437ED7][Tenant History]]
 
-* Variability
-
-- [[id:E53146D5-0B0C-4760-BBCC-400AA9C445CA][Add Feature Flag]]
-- [[id:61B7F668-5B49-4470-9C52-4BC547E3AB4F][Delete Feature Flag]]
-- [[id:660DD54D-8319-4508-B398-C02AA956C979][Feature Flag History]]
-- [[id:1CA91A21-F6F3-4089-9C36-DED598DBB19E][Help Menu]]
-- [[id:0DA49716-852D-4814-AA83-13452DB3FAE4][List Feature Flags]]
-
 * Currencies
 
 - [[id:1C8E834C-6C3E-5655-9887-6CB58081498C][How do I run the currencies commands from the shell?]]
@@ -631,3 +623,7 @@ tangled into the runnable script library
 * Scheduler
 
 - [[id:FFE1A375-412F-4557-883F-586460533BA4][How do I schedule a job from the shell, and watch it fire?]]
+
+* System Settings
+
+- [[id:1AE52616-1E2F-5164-9765-76457B907EF3][How do I run the system_settings commands from the shell?]]

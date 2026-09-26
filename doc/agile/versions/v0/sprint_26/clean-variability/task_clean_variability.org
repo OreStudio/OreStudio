@@ -7,35 +7,35 @@
 #+level: s1
 #+filetags: :clean-variability:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/clean-variability
+#+pr: 2176
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE43B02A-BBD7-426E-8803-722506B0D51B][Clean ores.variability to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-ores.variability passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] for a component of kind *Protocol*.
+ores.variability passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] for a component of kinds *Entity* and *Protocol*.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BE43B02A-BBD7-426E-8803-722506B0D51B][Clean ores.variability to the component clean standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing for the scaffold. D2 (the two domain operations) and D4 (the never-published event) carry recommendations and no confirmation yet. |
+| Next         | Nothing. |
+| Last touched | 2026-09-26                               |
 
 * Acceptance
 
-- Every checklist item that applies to a component of kind *Protocol* passes, with its evidence recorded on the task.
+- Every checklist item that applies to a component of kind *Entity* and *Protocol* passes, with its evidence recorded on the task.
 - Every item that does not apply is recorded as not applicable, with the reason.
 - Every generator defect found is fixed at its source, with a regression test.
 - ores.variability is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
@@ -45,21 +45,373 @@ ores.variability passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component
 Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order, one entity at a time, and
 record each item's result in the table below.
 
-1. Baseline and inventory (B01 to B05). Record the baseline before any
+1. Baseline and inventory (B01 to B06). Record the baseline before any
    edit.
 2. Models (M01 to M10).
 3. Protocol (P01 to P06).
-4. Generation (G01 to G06).
+4. Generation (G01 to G08).
 5. Wiring and data (W01 to W04).
 6. Shell (S01, S02).
-7. Structure and hygiene (H01 to H03).
-8. Verification (V01 to V06), ending with the registry entry.
+7. Structure and hygiene (H01 to H04).
+8. Verification (V01 to V08), ending with the registry entry.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | Baseline captured before any edit. Five read-only gates green: model drift (one known exception, =report_definition=), handler permissions (3 components, 166 codes), populate references, protocol twin coverage (34 headers across 4 components) and =validate_docs.sh= (40 of 40 components). One gate red repo-wide: =regenerate_cmake_component_files.py --all --check= reports 100 stale source lists, none of them variability's. Recorded as a pre-existing exception under G06, not fixed here. | =.audit/clean-variability/B01_*.txt= |
+| B02 | 0 models. =projects/ores.variability/modeling= does not exist. The three ={api,core,service}/modeling/= directories hold three sub-component overviews and one hand-written protocol reference; the survey excludes them by path, and codegen never reads them. | =.audit/clean-variability/B02_B03_B04_survey_variability.txt= |
+| B03 | 45 C++ files outside tests, 0 generated (0%). 20 hand-written files sit in generatable families: the =system_setting= domain type and its container, JSON and table I/O, the entity, mapper and repository, the service, the handler, the registrar and the protocol header. 23 are infrastructure (export and umbrella headers, the service application, config, and the tests). 2 are unclassified: the eventing pair. | =.audit/clean-variability/B02_B03_B04_survey_variability.txt= |
+| B04 | One hand-written protocol header declares 6 subjects, 0 of them declared in a model. Subjects are =variability.v1.settings.{list,save,delete,history,clear_bootstrap_mode,complete_party_onboarding}=. Both the resource segment (=settings=, singular) and two verbs (=save=, =history=) are outside the canonical grammar, and the same 6 appear in a hand-written modelling reference that declares nothing. | =.audit/clean-variability/B02_B03_B04_survey_variability.txt=; =projects/ores.variability/api/include/ores.variability.api/messaging/system_settings_protocol.hpp= |
+| B05 | No open capture names variability, and no in-flight branch touches it. Two commits reached the component in the last 30 days and both are foreign: a build-wide composite CMake change and an iam regeneration. Two live captures sit in =product_backlog/next/= and both concern the onboarding flags this work moves: =add_party_onboarding_regression_tests= and =add_tenant_provisioner_seeding_tests=. | =git log --since=2026-08-27 --name-only -- projects/ores.variability= |
+| B06 | 27 public headers surveyed symbol by symbol against a whole-tree consumer census. Every symbol the *service* part declares is internal to the component. In the =api= and =core= parts, production consumers exist for =domain::system_setting= (shell), the vector =operator<<= (shell), =system_setting_changed_event= (http), all 12 protocol structs but one, =system_settings_repository= and =read_latest(ctx, name)= (refdata), and =system_settings_service= (http and iam). Dead, with no caller anywhere: =convert_to_json= on both the entity and the domain type, =repository::sql=, =get_total_count=, =read_latest(offset, limit)=, =read_all(ctx)=, =write(ctx, vector)=, and 8 =system_settings_service= methods. | =.audit/clean-variability/B06_symbol_census.txt= |
+| — | Component kind corrected. variability owns a SQL table, a generated-shape repository, a NATS service and a protocol, so the *Entity* items apply as well as *All* and *Protocol*. The story labels the component *Protocol*, which understates the work by roughly half. | =projects/ores.sql/create/variability/=; =.audit/clean-variability/B02_B03_B04_survey_variability.txt= |
+| — | The component has no entry in the component catalogue, so codegen has never run on it: =check_component_drift.py --component variability= answers =Unknown component=, and the root =CMakeLists.txt= is hand-written rather than generated from =cmake_composite_root.mustache=. The scaffold is the first unit of work for any option below. | =projects/ores.codegen/library/component_catalogue.org=; =projects/ores.codegen/library/templates/cmake_composite_root.mustache= |
+| M10 (part) | Scaffold done. =variability-cpp= registered in the catalogue, the component given a composite root model declaring =api core service=, and the hand-written root =CMakeLists.txt= replaced by the generated one. The dry run showed one file changing, a licence rewrap and the generated marker, and nothing created or deleted; the applied regeneration is byte-identical on a second run, and every read-only gate stays green. | =projects/ores.variability/modeling/component_overview.org=; =.audit/clean-variability/A2_*.txt= |
+| M01, M05 | =system_setting= modelled on the current format at =projects/ores.variability/modeling/ores.variability.system_setting.org=: surrogate =id= uuid, =name= and =party_id= as the two natural keys, and =value=, =data_type=, =description=. The identity is the pair, because the same name may hold different values for two parties, and the generated composite unique index on =(tenant_id, name, party_id)= says so. | =.audit/clean-variability/render/projects/ores.sql/create/variability/variability_system_settings_create.sql= |
+| M02, M03 | Bound to =uuid-identified-lookup=: it fixes uuid surrogate key, tenant scope, standard presentation tier and no parent or workspace, and the model authors nothing that contradicts it. =party_id= and =rls_party_isolation= are authored, which M03 permits because the profile does not fix either. No new profile: =variability_profiles.org= admits one only when a combination recurs across more than one entity, and this entity is the first. | =projects/modeling/variability_uuid_identified_lookup.org= |
+| M06, P01 to P03 | The model renders the whole wire surface: =variability.v1.system_settings.{list,get,get_many,put,put_many,delete,delete_many}= and =variability.v1.system_settings_versions.{list,get}=, with a key record, a write record that carries only user-owned fields, a change record with a precondition, and a canonical event subject group. Every raw subject literal and the hand-written protocol header go. | =.audit/clean-variability/render/projects/ores.variability/api/include/ores.variability.api/messaging/system_setting_protocol.hpp= |
+| P04 | The two operations that are not entity verbs are modelled, at =ores.variability.operations=: =clear_bootstrap_mode= and =complete_party_onboarding=, under =variability.v1.ops.*= as the specification's domain-operations namespace requires. Both answer with the same =result= envelope the entity operations use, and both require a session, because the tenant is derived from the validated token. =complete_party_onboarding= carries the party being onboarded, which is not the caller's own party and so cannot be an ordinary write; the tenant still comes from the token, so it can only affect a party inside the caller's own tenant. The handlers stay hand-written, as every operation's do. | =.audit/clean-variability/render/projects/ores.variability/api/include/ores.variability.api/messaging/operations_protocol.hpp= |
+| G05 | Generator defect found by the prototype and fixed at its source. A write record must carry every user-owned field, and =write_record_fields= states that a key column is never stripped even when its name is also server-owned. The filter consulted only the primary key, so =party_id= — server-owned, and half the natural key here — was dropped: a create could not say which party's row it wrote. Both derivation sites had it; the protocol builder now calls =write_record_for=, so there is one derivation. Three regression tests, all failing before the fix. | commit =f279e62557=; =projects/ores.codegen/tests/test_org_loader_keys.py= |
+| — | Filed, not fixed here: an entity's key on the wire cannot be composite. =declared_key_field= returns one field, so the generated by-name read and delete are not party-scoped. RLS T3 confines a single-party session to its own rows, so the exposure is a session whose visible-party set spans parties — a tenant admin or a service context. The junction path already emits composite key records, so the shape exists to copy. The table's identity is stated correctly and the storage layer enforces it; only the wire layer cannot express it. | =doc/agile/product_backlog/inbox/an-entity-key-on-the-wire-cannot-be-composite.org= (id =E48F9C2E-E0FB-4B60-A0D5-A43E732B5FC5=) |
+| W04 (part) | The generated create file carries its own row-level security inline: the permissive tenant policy and the restrictive party policy, replacing the hand-written =variability_rls_policies_create.sql=. variability sits at =create/create.sql:48=, after iam at 47, so inline emission is legal. That removes the =RLS_002= suppression for =ores_variability_system_settings_tbl= at =validation_ignore.txt:361=, which exists only because =party_id= was added with no party policy to match it. | =.audit/clean-variability/render/projects/ores.sql/create/variability/variability_system_settings_create.sql= |
+| G01, G02, G03 | Applied, not previewed. The generation owns the component's SQL, C++, shell and TypeScript, and the hand-written files it supersedes are deleted: the old protocol header, the change-event header, the previous message registrar, the repository and the settings service's storage implementation. Regeneration is byte-identical on a committed tree, and the generated marker is on every generated file and no hand-written one. | =.audit/clean-variability/A3_cmake_lists_check.txt=; =projects/ores.codegen/scripts/render_component_draft.py= |
+| G04, H03 | The generated code was read rather than accepted: it is what exposed the write-record defect and the party default the trigger has to carry. Comments follow the project rules; the hand-written files added here carry no edit history. | this task's Notes; commit =f279e62557= |
+| G06 | variability's own eight source lists are current: no =stale:= line in the repo-wide check names the component. The gate is red repo-wide with 94 stale lists belonging to other components, as it is on main, and is recorded as a pre-existing exception rather than fixed here. | =.audit/clean-variability/A3_cmake_lists_check.txt= |
+| G07 | No artefact was refreshed while its generator had a known defect. The draft was rendered and read before anything landed, and the one defect found was fixed at its source before the apply. The diagrams honour the two-pass contract in the only way the tooling allows, recorded under H01. | =.audit/clean-variability/render/=; this task's H01 row |
+| G08 | The component keeps its namespace headers: =ores.variability.api.domain.hpp=, =ores.variability.repository.hpp= and =ores.variability.hpp=, each carrying the =@brief= doxygen renders. The outermost one claimed the retired feature-flag surface and is corrected. | =projects/ores.variability/core/include/ores.variability.core/ores.variability.hpp= |
+| W01 | Every registrar family is composed. The generated entity registrar wires the seven verbs and the version reads; the hand-written component registrar folds it together with the two operations, and is the single call the service host makes. The event mapping is registered at the composition point, which is what makes the notify trigger reach NATS. | =projects/ores.variability/core/src/messaging/registrar.cpp=; =projects/ores.variability/service/src/app/application.cpp= |
+| W02 | Both permissions the handlers check — =variability::flags:create= and =variability::flags:delete= — are seeded, and the handler that checks no permission is the deliberate case recorded on it. The gate is green. | =projects/ores.codegen/scripts/check_handler_permissions.py= |
+| W03 | Every name a populate script uses is defined by a populate script. The gate is green. | =projects/ores.codegen/scripts/check_populate_references.py= |
+| W04 | The database recreates from scratch with the generated table, its three triggers and both row-level security policies, and the eleven settings land. Two defects only this check could find: the seed upsert and set functions inserted without the row's =id=, which the generated table requires; and the party default the generated trigger does not carry is a hand-written trigger of its own. | =.audit/clean-variability/db_recreate.log=; commit =ac9f81a1c6= |
+| S01 | The four hand-written command units are deleted and the generated unit replaces them: ten commands, one per verb, with its own test. The shell application links the new shell part. | =projects/ores.shell/variability/=; =ores.shell.variability.tests= |
+| S02 | The five recipes under =doc/recipes/shell/variability/= and the scripts tangled from them ran =add-flag=, =delete-flag=, =flag-history= and =list-flags= — commands the shell has not had since the feature-flag surface became system settings. All five are deleted, the settings recipe is tangled in their place, and the inventory lists it. The inventory gate is green. | =doc/recipes/shell/system_settings/system_setting.org=; =.audit/clean-variability/A3_recipe_inventory_check.txt= |
+| H01 | Accepted exception, with the reason. The three part diagrams were stale, still drawing the superseded hand-written classes, and are refreshed from the code; the shell part gained the diagram it never had, and every rendered image was read rather than merely regenerated. The gap: the automated pass reads data members and not methods, so a class whose content is methods arrives without them, and PlantUML will not attach members declared in the manual section below the sentinel to a class inside a nested namespace — it draws a second, empty namespace instead. Every class is present; the API of the method-only ones is not drawn. The merged precedent has the same shape and an empty manual section. | =projects/ores.variability/{api,core,service}/modeling/*.puml= and their =.png=; =.audit/clean-variability/A3_validate_docs.txt= |
+| H02 | No legacy code remains. The retired feature-flag surface is gone from the models, the shell commands, the recipes and the namespace header; the dead accessors the census found are deleted; the hand-written duplicates of generated artefacts are deleted; and the dead =ores.variability.core= link in =ores.assets=, which no source referenced, is removed. | =.audit/clean-variability/B06_symbol_census.txt=; commit =c965d5bb8a= |
+| H04 | Not applicable, with the reason. The component carries no hand-rolled per-platform shim: it has no platform-conditional code, and the only preprocessor conditions in its sources are include guards. | =grep -rn "#if" projects/ores.variability= |
+| V01 | The whole tree builds, with the component's tests and every consumer. This is the only check that sees every consumer, and it is what found the generator expressions that mixed =std::string= with faker-cxx's =std::string_view=, and the four libraries the generated code needs that the component did not link. | =.audit/clean-variability/build_all.log=; =.audit/clean-variability/build_final.log= |
+| V02 | The codegen suite passes, 649 tests, and the component's four suites pass: api, core, service and the shell unit. The core suite runs the generated eventing integration test, which writes a setting, watches the notify trigger fire, and asserts the event reaches NATS. Re-run after the rebase on a database built from nothing: four of four. | =.audit/clean-variability/ctest_variability_final.log= |
+| V03 | The database recreates from scratch and the schema is correct: the generated primary key =(tenant_id, id, valid_from, valid_to)=, all three triggers, both policies, and the eleven seeded settings under one party. Proven on a database built from nothing, which is also what verified the two review fixes: =set_fn= leaves a closed version 1 and a current version 2 sharing one =id=, and the =SECURITY DEFINER= reader is executable by variability, iam and http and by nobody else. | =compass db recreate -y -k= exit 0; =pg_policies=, =pg_trigger= and =has_function_privilege= queries |
+| V04 | Every generated shell recipe runs against the live fleet and answers: ten of ten, =ANSWERED=. The sweep signs in, replays each recipe in its own shell process and classifies the transcript, so a command that names a verb the shell does not know is a wiring defect and anything else is the command answering. The answers are substantive: =system_settings list --limit 1= returns the specification's =result= envelope with =outcome: ok=, a fully populated setting and =total: 11=, the seeded count. Verified twice, the second time on a database built from nothing with all 23 service units ready. | =.audit/clean-variability/v04/recipes.tsv=; =projects/ores.codegen/scripts/check_shell_recipes.py= |
+| V05 | Every codegen gate is green with the component added: component drift, model drift, protocol twin coverage, handler permissions, populate references and the recipe inventory. The CMake source-list gate is the one exception, red repo-wide on main with 94 stale lists belonging to other components, as recorded under G06. | =projects/ores.codegen/scripts/component_registry.py=; =.audit/clean-variability/A3_*.txt= |
+| V06 | Done. =variability-cpp= is listed in =COMPONENTS_UNDER_TEST=, and the two items it does not pass are recorded as accepted exceptions in the same registry: H01 and V08, each with its reason and who accepted it. The registry was all-or-nothing when this task began, so listing it here first required changing what listing means, which is recorded under "Partial checks" below. | =projects/ores.codegen/scripts/component_registry.py=; =projects/ores.codegen/scripts/check_registry_exceptions.py= |
+| V07 | No vacuous test. The component's suites assert literal values: the api suite compares a rendered table and a JSON round-trip against their expected text, the service suite asserts parsed option values, and the generated eventing test asserts the event's key, action and version. The repository suite the generation superseded was deleted rather than left passing against nothing. | =projects/ores.variability/{api,service,core}/tests/= |
+| V08 | Accepted exception. Every source file has a test that exercises it, or is recorded with the reason it does not. the in-process facade added here (=system_settings_service=) has no unit test of its own; its behaviour is covered end to end by the iam and http suites and by the eventing integration test, but not directly. | =projects/ores.variability/core/src/service/system_settings_service.cpp= |
 
 * Notes
+
+** Partial checks
+
+Listing a component in =COMPONENTS_UNDER_TEST= was all or nothing. A component
+was listed when every checklist item passed and otherwise no gate checked it, so
+one item that cannot be verified where the work is done -- a check that needs a
+live fleet, a tool that cannot draw what the item asks for -- cost the component
+every other gate as well. The standard said the component "stays out of the
+registry until the exception is resolved or accepted", and there was nowhere to
+record an acceptance, so the sentence could only be obeyed by waiting.
+
+The registry now records the gap. =COMPONENTS_UNDER_TEST= still lists the
+components the gates check; =ACCEPTED_EXCEPTIONS= names, per component, each
+item it does not pass with its reason and the person who accepted it. An item is
+never simply omitted:
+=projects/ores.codegen/scripts/check_registry_exceptions.py= reads the
+checklist's own item list from the standard and refuses an exception that names
+an item the standard does not define, states no reason, names nobody or carries
+no date, and refuses one recorded against a component the gates do not check. It
+runs as its own job in =codegen-drift.yml=, and seven tests in
+=projects/ores.codegen/tests/test_component_registry.py= cover it.
+
+Deriving the item list rather than repeating it caught H05, which main added
+while this task was in flight: the registry needed no change to accept it.
+
+This component is listed with two accepted exceptions, H01 and V08. V04 was the
+third until the fleet was brought up, which is what an exception is for: it is
+not a way to skip work, it is a way to keep the gates running while the work
+that cannot be done here is recorded for whoever can do it.
+
+** Two gaps main carried, now closed there
+
+The rebase onto main brought 120 commits, and two of them left the tree short of
+what the standard asks, in components this task does not own. Both are now fixed
+on main and this branch inherited the fix; they are recorded here because the
+earlier runs of this task measured against them.
+
+- =ores.workflow.core.tests= did not build: its eventing integration tests
+  included the event publisher and its test =CMakeLists.txt= linked no eventing
+  library, and two generated symbols were missing. The whole tree now builds
+  with no errors.
+- =ores.shell.workflow= had no =modeling/= directory, so =validate_docs.sh=
+  failed on it for a missing overview and diagram. All 40 components pass now.
+
+A third gap in the same component blocked =compass db recreate= outright:
+=workflow_constraints_create.sql= declared a cascading foreign key onto a
+temporal parent, whose only uniqueness over =(tenant_id, id)= is a partial
+index, which PostgreSQL refuses as a foreign key target. The file now records
+why the key was removed. That one mattered beyond the component: no database
+could be built at all, so V03 could not pass for anything.
+
+** Rendering a draft model before it lands** Rendering a draft model before it lands
+
+The drift check's =--dry-run= is the safe way to draft a model, but it throws
+the rendered tree away, so the only thing a reader sees is the list of paths
+that would change. =projects/ores.codegen/scripts/render_component_draft.py=
+does the same render into a directory it keeps. It calls the same
+=_generate_single= the in-place mode uses, so the units are identical, and it
+writes nothing into the repository. The draft's whole output — 40 files across
+SQL, C++, shell and recipes — can then be read line by line before anything
+lands, which is how the write-record defect below was found rather than
+shipped. It takes any component's catalogue slug, so the next clean-standard
+task can use it too.
+
+** What the component is
+
+=ores.variability= is a composite of =api=, =core= and =service=
+([[id:8C604D55-6F20-41D2-A66A-12A767B81D07][ores.assets]] is the same shape).
+=api= holds the domain type, its JSON and table I/O, the wire protocol and an
+event type; =core= holds the entity, mapper, repository, service, handler and
+registrar; =service= is the runnable host.
+
+It owns one entity and one table, =ores_variability_system_settings_tbl=. The
+table is bitemporal: its primary key is
+=(tenant_id, party_id, name, valid_from, valid_to)= with a GiST exclusion over
+the validity window. A setting is named by a dotted string such as
+=system.bootstrap_mode= or =onboarding.party=, typed =boolean=, =integer=,
+=string= or =json=, and scoped to a tenant and a party; =party_id= defaults to
+the tenant's system party, so most settings are tenant-wide.
+
+** The gap against the standard
+
+The component has one defect with two faces, and it is the same finding under
+M06 and P01 to P04: no wire type is modelled, and the hand-written protocol
+predates the canonical grammar. Measured against
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]]:
+
+- The resource segment is =settings=, not =system_settings=.
+- =save= and =history= are not verbs. The closed set has =put= for the first
+  and no verb for the second: an entity's versions are a sub-resource read with
+  the standard verbs.
+- The read type and the write type are the same type. =domain::system_setting=
+  carries =tenant_id=, =party_id=, =version=, =modified_by=, =performed_by=
+  and =recorded_at=, and a write sends that same struct. The specification
+  makes tenancy, version and provenance server-owned and forbids them in a
+  write record, precisely so that a round-tripped read cannot be used to lie.
+  The handler papers over this by re-stamping the fields after decoding, which
+  hides the defect from every gate.
+- Responses are ={success, message}= rather than the specification's =result=,
+  and a failure carries the exception text in the payload.
+- The list is unpaged and unordered, and there is no =get=, =get_many=,
+  =put_many=, =delete_many= or precondition.
+- =clear_bootstrap_mode= and =complete_party_onboarding= are genuine domain
+  operations in the common namespace. The specification reserves
+  =variability.v1.ops.*= for exactly this.
+
+** Pre-existing defects the inventory found
+
+None of these is the clean-standard work itself. Each is a real defect the
+census exposed, and each is either fixed here or filed with a reason.
+
+*** One subscriber listens on a subject nobody owns, and the event never reached NATS
+
+Two halves of one pipeline were built and only one was wired.
+
+=system_setting_changed_event= is declared in =api=. The =http= server registers
+the table's PostgreSQL channel and subscribes to the event in process, so its
+own settings cache does refresh when a setting changes — that half worked. What
+no component did is publish the event onto NATS: the variability service opened
+no event source, registered no mapping and had no outbound subject, so the event
+existed only inside whichever process happened to be listening.
+
+=ores.iam/core/src/messaging/registrar.cpp:370= is that second subscriber, and it
+subscribes to the raw literal ="ores.variability.system_setting_changed"=, which
+is not the event's own name, not a subject any component declares, and not the
+canonical event form. Its comment says an update to =iam.token.*= takes effect
+without a restart; nothing published to that subject, so it never fired and the
+reload never happened.
+
+Both halves are now wired: the generated event registrar maps the channel and
+publishes on the canonical =variability.v1.system_settings_events.*= subjects,
+and =iam= subscribes to the generated constants rather than to a literal. The
+generated eventing integration test asserts the round trip.
+
+*** Four components link the component's core library in production
+
+| Consumer | What it calls |
+|----------+---------------|
+| =ores.iam= | =system_settings_service::{get_int, refresh, is_bootstrap_mode_enabled, set_bootstrap_mode, is_user_signups_enabled, is_signup_requires_authorization_enabled, is_onboarding_party_complete}=, from =token_settings.cpp=, =bootstrap_mode_service.cpp=, =signup_service.cpp=, =iam_routes.cpp=, =auth_handler.hpp= and =account_operations_handler.hpp=. |
+| =ores.http= | =system_settings_service::get_all()= from =routes/variability_routes.cpp:66=. |
+| =ores.refdata= | =system_settings_repository= and =read_latest(ctx, name)= from =calendar_materialisation_service.cpp:112,118,152=. |
+| =ores.assets= | Nothing. =core/src/CMakeLists.txt:42= links =ores.variability.core.lib=, and the string =variability= appears nowhere else in the project. A dead build dependency, left from the feature-flag era, which no gate notices. |
+
+This is not an aberration. In-process consumption of another component's
+=core= library is an established pattern: =ores.history.core= is linked in
+production by thirteen components, and =ores.http= links five, because it is
+the HTTP front end that composes them. The pattern is structural rather than
+incidental. =iam= reads a setting during startup and inside auth handlers, and
+=refdata= reads one inside a materialisation service, so a bus round trip on
+those paths buys a failure mode and nothing else; =history= cannot be a round
+trip at all, because its rows must land in the caller's transaction. The
+setting-change event exists for the same reason: read in process, invalidate by
+event.
+
+A generated stack replaces the entity, mapper, repository, service and handler.
+This is decision D3 below.
+
+*** The shell recipe set documents a surface that no longer exists
+
+The five recipes under =doc/recipes/shell/variability/= and their generated
+=scripts/library/variability/*.ores= invoke =variability add-flag=,
+=delete-flag=, =flag-history= and =list-flags=. The shell has not had those
+commands since the feature-flag surface became system settings; it has
+=list-settings=, =save-setting=, =delete-setting= and =setting-history=. No
+recipe exists for any current command, and =regenerate_shell_recipe_inventory.py=
+is green because it only reports what the recipe sources say.
+
+*** Smaller findings
+
+- 14 public symbols have no caller anywhere: =convert_to_json= on both the
+  domain type and the vector, =repository::{sql, get_total_count, read_all(ctx),
+  read_latest(offset, limit), write(ctx, vector)}=, and
+  =service::{get_json, set_user_signups, set_signup_requires_authorization,
+  is_password_validation_disabled, is_onboarding_system_complete,
+  set_onboarding_system_complete, is_onboarding_tenant_complete}=.
+- The variability seed is not reachable from =populate/populate.sql=. It is
+  reached from =setup_schema.sql:64= through
+  =foundation_populate.sql:169=. Every script is reachable, but the aggregator
+  the standard names is not the one that runs them.
+- =validation_ignore.txt:361= carries an =RLS_002= suppression for
+  =ores_variability_system_settings_tbl=: =party_id= was added without a
+  matching =AS RESTRICTIVE= party isolation policy, recorded as a stopgap.
+- The component has 28 Catch2 cases across three suites and no test touches a
+  protocol type. The repository suite is its only integration test.
+
+** Consumers that must move in the same unit (P05)
+
+| Consumer | How it reaches variability |
+|----------+----------------------------|
+| =ores.iam= (=core=) | In process, through =system_settings_service= (nine accessors); over the wire, the hand-written =tenant_provisioning_handler.hpp= sends =variability.v1.settings.clear_bootstrap_mode= at lines 152-165 and =complete_party_onboarding= at line 1203. Its registrar also subscribes to the never-published raw event subject at line 370. |
+| =ores.http= (=core= and =server=) | In process, =system_settings_service::get_all()= at =routes/variability_routes.cpp:66=; the server subscribes to the typed event at =application.cpp:93-97=. |
+| =ores.refdata= (=core=) | In process, =system_settings_repository= and =read_latest(ctx, name)= at =calendar_materialisation_service.cpp:112,118,152=. |
+| =ores.shell= | The hand-written =variability_commands.cpp= carries four commands (=list-settings=, =save-setting=, =delete-setting=, =setting-history=) publishing raw subject literals, and =provision_commands.cpp:677= sends =complete_party_onboarding=. |
+| =ores.compass= | =src/compass_db.py= reads =ores_variability_system_settings_tbl= by raw SQL, so a column change reaches Python. |
+| tests | The api and core suites compile against the hand-written protocol and domain types. |
+
+Generating the protocol also obliges a TypeScript twin: the protocol twin gate
+requires one for every generated protocol header, and the twins live under
+=projects/ores.web/packages/wire-protocol/src/generated/<component>/=. There is
+no variability twin today.
+
+** Decisions
+
+*** D1. What identifies a setting on the wire
+
+The table's identity is the composite =(tenant_id, party_id, name)=, and two of
+those three columns are server-owned. So the wire key is one of:
+
+- *(a) =name= alone*, with tenancy and party read from the authenticated
+  context. This is the =ores.iam.account= precedent, where the key is the
+  username and the tenant comes from the token. It needs no new column, no seed
+  rewrite and no compass change. It cannot address another party's setting,
+  which no caller does today.
+- *(b) A new surrogate =id= uuid*, with =name= as the natural key. This is the
+  =ores.assets.tag= precedent, binding =uuid-identified-lookup=. It costs a
+  schema change, a data migration, an edit to every seed script, an edit to
+  =compass_db.py=, and a change to the upsert function.
+
+*Decision: (b)*, taken on 2026-09-26. The cost is accepted because the natural
+key is what makes codegen emit =get_system_setting_by_name(...)=, the accessor
+the in-process consumers need (see D3). Option (a) would have left them
+scanning a list for a row they can name. The two decisions are one.
+
+Consequences to carry through the change: the seed scripts and the upsert
+function gain an id, =compass_db.py= and the per-tenant seeding function follow,
+and the new column changes the table's primary key, so this is a schema break
+rather than an addition. The database is recreated from scratch, so there is no
+migration to write.
+
+*** D2. The two domain operations
+
+=clear_bootstrap_mode= clears =system.bootstrap_mode= and sets
+=onboarding.tenant=; =complete_party_onboarding= sets =onboarding.party= for a
+party named in the request. Two options:
+
+- *(a) Model them as operation models under =variability.v1.ops.*=*, which is
+  what P04 asks for. The party named by =complete_party_onboarding= is the
+  party being onboarded, not the caller's own party, so it is a target rather
+  than a claim of tenancy and it belongs in a domain operation. Record the
+  reason, because the specification's server-owned rule otherwise reads as
+  forbidding it.
+- *(b) Re-express both as ordinary writes* of =system.bootstrap_mode= and
+  =onboarding.party=. This removes two subjects and two handler methods, but it
+  puts a party scope on the wire, which D1 rules out.
+
+Recommendation: *(a)*.
+
+*** D3. How the in-process consumers survive the generation
+
+Three components call variability in process: =iam= through nine typed
+accessors, =http= through =get_all()=, =refdata= through the repository and
+=read_latest(ctx, name)=. A fourth, =assets=, links the library and uses
+nothing. This is an established pattern, not an accident: thirteen components
+link =ores.history.core= the same way, because an in-process shared capability
+is the only correct shape for a read that must be synchronous with the caller,
+and the only possible shape for a write that must share the caller's
+transaction.
+
+*Codegen already supports this.* Every generated entity's =core= library
+exports a documented service class with a visibility macro, in the public
+include tree, and an entity that declares a natural key gets a by-natural-key
+read: =assets= has =tag_service::get_tag_by_name(const std::string&)= and
+=image_service::get_image_by_code(const std::string&)=. For =system_setting=
+the same generation yields =get_system_setting_by_name("system.bootstrap_mode")=
+-- which is exactly the call the typed accessors need.
+
+So the options are:
+
+- *(a) Bind the natural-key profile and let the generated service be the
+  in-process API.* Codegen owns the entity, the wire protocol, the handler, the
+  SQL and the shell surface; the component keeps a small hand-written facade
+  holding only the typed interpretation of a named setting
+  (=is_bootstrap_mode_enabled()= becomes =get_system_setting_by_name(...)=, a
+  parse, and a default). This is the split the architecture pages already give
+  =core=: repositories and a service layer. The nine live accessors survive;
+  the seven dead ones and the dead repository methods go.
+- *(b) Migrate all three consumers to the wire.* It removes the library edges,
+  but it puts a bus round trip inside startup, inside authentication and inside
+  a materialisation service, and =refdata= would have to grow a client for one
+  setting.
+- *(c) Keep the in-process stack hand-written and generate only the wire
+  types.* This passes M06 and P01 to P04 while leaving the entity, mapper,
+  repository and service as hand-written duplicates of what codegen emits for
+  every other entity, which is what G02 forbids.
+
+Recommendation: *(a)*. The decisive point is D1: without a natural key the
+generated service has no =get_by_name=, and every typed accessor would have to
+scan a list. The surrogate-UUID answer to D1 and this question are one decision.
+
+*** D3a. The gap this exposes in the standard
+
+The in-process surface is load-bearing and undeclared. =component_architecture.org=
+records services and NATS subjects, not library edges. No item in the Component
+Clean Standard covers it, so the only thing that notices a broken in-process API
+is V01, the whole-tree build, and only at compile time. Nothing notices an edge
+that outlives its caller, which is how =ores.assets= came to link
+=ores.variability.core.lib= and use nothing from it.
+
+The standard has grown before, when a survey found a gap: B06, H04, G07, V07 and
+V08 were added after four infrastructure components were surveyed. A candidate
+item here: every library edge into a component's =core= is recorded with the
+symbols the consumer calls, and every edge has at least one caller. It is cheap
+to check mechanically and it would have caught the assets edge.
+
+*** D4. The never-published change event
+
+Two subscribers, two different subjects, no publisher. Options: publish the
+event from the generated write path and point both subscribers at the canonical
+subject, or delete the event and the two subscriptions. P06 asks for an event
+cache that warms through the canonical list and follows the canonical event
+actions, so the first is the standard-compliant answer; the second is honest if
+the reload is not wanted. Recommendation: publish it, and fold the =iam=
+subscription's raw literal into the canonical generated constant. The reload
+the IAM comment promises has never worked, so this is a behaviour change that
+needs a test.
 
 * Test Scenarios
 
@@ -76,12 +428,76 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2176][#2176]] | [variability] Bring ores.variability to the Component Clean Standard |
 
 * Review
 
+The on-demand review of PR #2176 raised six findings. Each was checked against
+the code before it was acted on; two turned out to be defects the reviewer could
+not have seen were already known, and one is not this component's at all.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The two =SECURITY DEFINER= functions take the tenant as a parameter and PostgreSQL grants =EXECUTE= to =PUBLIC=, so every service role could read any tenant's settings | =projects/ores.sql/create/variability/variability_system_settings_functions_create.sql= | Fixed | Confirmed: there is no =REVOKE EXECUTE= anywhere in the tree, so the pattern is repo-wide and predates this work. Both functions are now revoked from =PUBLIC=, and =get_system_settings_fn= is granted to the three roles that read through it -- variability, iam and http, traced from every construction site. Verified on the database: those three can execute and =assets=, =dq=, =refdata= and =test_dml= cannot. |
+| 2 | =system_setting_key= carries only =name=, so =get=, =put=, =delete= and the precondition checks resolve to an arbitrary row when two parties share a setting name | =projects/ores.variability/api/include/ores.variability.api/messaging/system_setting_protocol.hpp= | Filed, tracked | Confirmed, and already found by this task before the review: it is the composite declared key =declared_key_field= cannot express, filed as =an-entity-key-on-the-wire-cannot-be-composite= (id =E48F9C2E-E0FB-4B60-A0D5-A43E732B5FC5=). Not fixed here because the change reaches every entity's wire shape. RLS T3 bounds it to a session whose visible-party set spans parties. |
+| 3 | =set_fn= closes the current row and inserts a replacement with a fresh =id=, so the trigger resets the version to 1 and the history is severed | =projects/ores.sql/create/seed/upsert_functions_create.sql= | Fixed | Confirmed, and introduced by this task's own seed fix. =set_fn= now reads the current row's =id= and =version= and writes those, leaving versioning to the generated trigger. Verified on the database: two writes leave one closed version 1 and one current version 2, both carrying the same =id=. Before the fix they were two rows both at version 1 with different ids. |
+| 4 | The notify trigger never publishes =deleted=, because the delete rule rewrites =DELETE= into an =UPDATE= and the notify function returns null on =UPDATE= | =projects/ores.sql/create/variability/variability_system_settings_notify_trigger_create.sql= | Filed | Confirmed, and it is not this component's: 99 generated notify triggers return null on UPDATE and 232 generated create files carry a soft-delete rule, so =deleted= fires nowhere in the tree. Filed as =the-deleted-event-never-fires= (id =BDB2C758-9BD3-4A08-A5A2-09BAD46A62C2=), because the fix is a template change and every component's trigger moves with it. |
+| 5 | Subscribing =reload_token_settings= to the setting-change event puts a plain =token_settings_= member under a second thread, racing every request handler | =projects/ores.iam/core/include/ores.iam.core/messaging/auth_handler.hpp= and =account_operations_handler.hpp= | Fixed | Confirmed, and this task's event wiring is what makes it reachable: before it the subject had no publisher. Both handlers now hold the settings in a =shared_ptr= published by an atomic store, and handlers take a snapshot, so a reload landing mid-request cannot change the lifetimes the request is answering with. |
+| 6 | =complete_party_onboarding= logs a decode failure and returns without replying, so the caller waits for its own timeout | =projects/ores.variability/core/include/ores.variability.core/messaging/operations_handler.hpp= | Fixed | Confirmed. It now answers =bad_request=, as every generated handler does. The sibling operation takes no payload, so it has no decode to fail and no gap. |
 
 * Result
+
+Delivered on =feature/clean-variability=, rebased onto main with a linear history
+and no merge commits.
+
+=ores.variability= had no catalogue entry, so codegen had never run on it: the
+entity, mapper, repository, service, handler, registrar, protocol, SQL and shell
+surface were all hand-written and its wire protocol predated the canonical
+grammar. It is now generated from two models -- =system_setting= and the
+component's two domain operations -- and the files the generation supersedes are
+deleted.
+
+Three things stay hand-written, each because generation has no equivalent and
+each recorded with its reason: the component registrar, which composes the
+generated entity registrar with the component's operations; the operations
+handler; and the party scope, which is a trigger resolving the tenant's system
+party for a tenant-wide setting plus a =SECURITY DEFINER= reader for the service
+contexts that hold no direct =SELECT= grant.
+
+Four defects reached this work and were fixed at their source. One is codegen's
+and carries three regression tests: a write record dropped a natural key spelled
+like a server-owned field, so a create could not say which party's row it wrote.
+Two were found only by running things rather than reading them: the seed
+functions inserted without the row's =id=, which the database recreate found, and
+the generator expressions mixed =std::string= with faker-cxx's =std::string_view=,
+which only the compiler found. The fourth is the shell composite's =#+parts:=,
+which disagreed with its own tree.
+
+One thing is not a fix but a first: the event pipeline is wired. The generated
+notify trigger published to a PostgreSQL channel nothing listened on, and no
+component published the event to NATS, so the subscription in =ores.http= and
+the token-settings reload in =ores.iam= could not both work. Both halves are
+wired and the generated eventing integration test asserts the round trip.
+
+Verification, all of it re-run after the final rebase: =compass db recreate -y -k=
+exits 0, the whole tree builds with no errors, =validate_docs.sh= passes for all
+40 components, the codegen suite is 649 passed, the component's four suites pass
+against the live fleet, and the ten generated shell recipes answer. Every codegen
+gate is green with the component listed.
+
+Two checklist items are accepted exceptions, recorded in the registry rather than
+left out of it: =H01=, because the automated diagram pass cannot draw a
+method-only class's API and PlantUML will not attach members to a class inside a
+nested namespace, and =V08=, because the in-process facade has no unit test of
+its own. =variability-cpp= is in =COMPONENTS_UNDER_TEST=, and
+=check_registry_exceptions.py= checks those records against the standard's own
+item list.
+
+The review of PR #2176 raised six findings. Four are fixed here -- the
+=SECURITY DEFINER= functions were executable by =PUBLIC= so any service could
+read any tenant's settings; =set_fn= reset the version to 1 and severed a
+setting from its own history; the event wiring put iam's =token_settings_= under
+a second thread; and an operations handler answered nothing on a decode failure.
+Two are filed with their reasons: the composite declared key, which this task had
+already found, and the =deleted= event, which fires nowhere in the tree because
+99 notify triggers suppress the update their own delete rule produces.

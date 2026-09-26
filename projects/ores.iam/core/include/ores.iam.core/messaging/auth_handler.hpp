@@ -52,6 +52,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <atomic>
 #include <memory>
 #include <rfl/json.hpp>
 #include <stdexcept>
@@ -190,12 +191,26 @@ public:
         reload_token_settings();
     }
 
+    /**
+     * @brief The token settings as of the last reload.
+     *
+     * A handler holds the snapshot it read for the whole of its work, so a
+     * reload landing mid-request cannot change the lifetimes the request is
+     * already answering with.
+     */
+    [[nodiscard]] std::shared_ptr<const domain::token_settings> token_settings() const {
+        return token_settings_.load(std::memory_order_acquire);
+    }
+
     void reload_token_settings() {
         try {
             variability::service::system_settings_service svc(
                 ctx_, database::service::tenant_context::system_tenant_id);
             svc.refresh();
-            token_settings_ = domain::token_settings::load(svc);
+            token_settings_.store(
+                std::make_shared<const domain::token_settings>(
+                    domain::token_settings::load(svc)),
+                std::memory_order_release);
         } catch (const std::exception& e) {
             using namespace ores::logging;
             BOOST_LOG_SEV(auth_handler_lg(), warn)
@@ -310,7 +325,7 @@ public:
                 security::jwt::jwt_claims claims;
                 claims.subject = boost::uuids::to_string(acct.id);
                 claims.issued_at = now;
-                claims.expires_at = now + std::chrono::seconds(token_settings_.access_lifetime_s);
+                claims.expires_at = now + std::chrono::seconds(token_settings()->access_lifetime_s);
                 claims.username = acct.username;
                 claims.email = acct.email;
                 claims.tenant_id = acct.tenant_id.to_string();
@@ -330,7 +345,7 @@ public:
                 resp.email = acct.email;
                 resp.selected_party_id = boost::uuids::to_string(party_id);
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
-                resp.access_lifetime_s = token_settings_.access_lifetime_s;
+                resp.access_lifetime_s = token_settings()->access_lifetime_s;
                 resp.session_id = session_id_str;
                 for (const auto& ap : account_parties) {
                     auto p =
@@ -375,7 +390,7 @@ public:
                 claims.subject = boost::uuids::to_string(acct.id);
                 claims.issued_at = now;
                 claims.expires_at =
-                    now + std::chrono::seconds(token_settings_.party_selection_lifetime_s);
+                    now + std::chrono::seconds(token_settings()->party_selection_lifetime_s);
                 claims.audience = "select_party_only";
                 claims.username = acct.username;
                 claims.email = acct.email;
@@ -392,7 +407,7 @@ public:
                 resp.username = acct.username;
                 resp.email = acct.email;
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
-                resp.access_lifetime_s = token_settings_.party_selection_lifetime_s;
+                resp.access_lifetime_s = token_settings()->party_selection_lifetime_s;
                 resp.session_id = session_id_str;
                 if (acct.default_party_id) {
                     const auto default_id = *acct.default_party_id;
@@ -528,7 +543,7 @@ public:
             const auto now = std::chrono::system_clock::now();
             if (claims_result->session_start_time) {
                 const auto session_age = now - *claims_result->session_start_time;
-                const auto max_session = std::chrono::seconds(token_settings_.max_session_s);
+                const auto max_session = std::chrono::seconds(token_settings()->max_session_s);
                 if (session_age >= max_session) {
                     BOOST_LOG_SEV(auth_handler_lg(), info)
                         << "Max session exceeded for subject: " << claims_result->subject;
@@ -550,7 +565,7 @@ public:
             security::jwt::jwt_claims new_claims;
             new_claims.subject = claims_result->subject;
             new_claims.issued_at = now;
-            new_claims.expires_at = now + std::chrono::seconds(token_settings_.access_lifetime_s);
+            new_claims.expires_at = now + std::chrono::seconds(token_settings()->access_lifetime_s);
             new_claims.username = claims_result->username;
             new_claims.email = claims_result->email;
             new_claims.tenant_id = claims_result->tenant_id;
@@ -581,7 +596,7 @@ public:
                   msg,
                   refresh_response{.success = true,
                                    .token = new_token,
-                                   .access_lifetime_s = token_settings_.access_lifetime_s});
+                                   .access_lifetime_s = token_settings()->access_lifetime_s});
 
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
@@ -628,7 +643,7 @@ public:
             security::jwt::jwt_claims claims;
             claims.subject = boost::uuids::to_string(sess->account_id);
             claims.issued_at = now;
-            claims.expires_at = now + std::chrono::seconds(token_settings_.access_lifetime_s);
+            claims.expires_at = now + std::chrono::seconds(token_settings()->access_lifetime_s);
             claims.username = req->username;
             claims.tenant_id = sess->tenant_id.to_string();
             claims.session_id = boost::uuids::to_string(sess->id);
@@ -659,7 +674,7 @@ public:
                   msg,
                   service_login_response{.success = true,
                                          .token = std::move(token),
-                                         .access_lifetime_s = token_settings_.access_lifetime_s});
+                                         .access_lifetime_s = token_settings()->access_lifetime_s});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, service_login_response{.success = false, .message = e.what()});
@@ -688,7 +703,14 @@ private:
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;
     std::shared_ptr<service::cache::party_cache> party_cache_;
-    domain::token_settings token_settings_;
+    // Written by reload_token_settings, which the settings-change event now
+    // calls from a NATS dispatch thread, and read by every request handler on
+    // its own thread. Handlers take a snapshot through token_settings(), so a
+    // reader sees one whole settings object rather than a half-written one.
+    // Initialised rather than left empty, because the reload can fail and a
+    // handler that reads it anyway must find the defaults, not a null pointer.
+    std::atomic<std::shared_ptr<const domain::token_settings>> token_settings_{
+        std::make_shared<const domain::token_settings>()};
 };
 
 } // namespace ores::iam::messaging

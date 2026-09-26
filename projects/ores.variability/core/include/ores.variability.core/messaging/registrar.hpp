@@ -30,6 +30,14 @@
 
 namespace ores::variability::messaging {
 
+/**
+ * @brief Composes every subscription this component serves.
+ *
+ * The entity surface is the generated registrar's to wire; the two domain
+ * operations are this component's own and are wired here. Keeping one
+ * aggregator means the service host makes a single call however many entities
+ * the component gains, and it is the only caller of the generated registrar.
+ */
 class ORES_VARIABILITY_CORE_EXPORT registrar {
 public:
     static std::vector<ores::nats::service::subscription> register_handlers(

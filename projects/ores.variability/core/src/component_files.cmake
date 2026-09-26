@@ -16,24 +16,36 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "messaging/registrar.cpp"
+    "messaging/system_setting_history_provider_registrar.cpp"
+    "messaging/system_setting_registrar.cpp"
+    "presentation/system_setting_history_field_mapper.cpp"
     "repository/system_setting_entity.cpp"
     "repository/system_setting_mapper.cpp"
-    "repository/system_settings_repository.cpp"
+    "repository/system_setting_repository.cpp"
+    "service/system_setting_service.cpp"
     "service/system_settings_service.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/messaging/operations_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/messaging/registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/messaging/system_setting_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/messaging/system_setting_history_provider_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/messaging/system_setting_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/ores.variability.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/presentation/system_setting_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/repository/ores.variability.repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/repository/system_setting_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/repository/system_setting_mapper.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/repository/system_settings_repository.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/repository/system_setting_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/service/ores.variability.service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/service/system_setting_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.core/service/system_settings_service.hpp"
 )

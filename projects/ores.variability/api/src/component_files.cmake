@@ -16,20 +16,28 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "domain/system_setting_json_io.cpp"
+    "domain/system_setting_table.cpp"
     "domain/system_setting_table_io.cpp"
+    "generators/system_setting_generator.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/domain/ores.variability.api.domain.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/domain/system_setting.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/domain/system_setting_json_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/domain/system_setting_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/domain/system_setting_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/domain/system_settings.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/eventing/ores.variability.api.eventing.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/eventing/system_setting_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/eventing/system_setting_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/export.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/messaging/system_settings_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/generators/system_setting_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/messaging/operations_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/messaging/system_setting_protocol.hpp"
 )

@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/system_settings/system_setting.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+system_settings get __none__

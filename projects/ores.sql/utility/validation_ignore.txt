@@ -353,12 +353,11 @@ RLS_002 ores_marketdata_crm_topology_configs_tbl
 RLS_002 ores_marketdata_crm_driver_pairs_tbl
 RLS_002 ores_marketdata_crm_enabled_derived_pairs_tbl
 
-# Variability system settings — party_id added without a matching AS
-# RESTRICTIVE party isolation policy (only a tenant-isolation policy
-# exists in variability_rls_policies_create.sql). Ignored here as a
-# stopgap to unblock CI; a RESTRICTIVE policy should be added and this
-# entry then removed.
-RLS_002 ores_variability_system_settings_tbl
+# Variability system settings previously sat here: party_id had been added
+# without a matching AS RESTRICTIVE party isolation policy, and the entry was
+# a stopgap. The table is now generated from ores.variability.system_setting
+# with :rls_party_isolation: true, so it carries the restrictive policy and
+# the entry is no longer needed.
 
 
 # =============================================================================

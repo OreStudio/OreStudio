@@ -23,7 +23,10 @@
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.variability.core/messaging/registrar.hpp"
+#include "ores.variability.service/messaging/system_setting_event_registrar.hpp"
 #include "ores.variability.service/app/application_exception.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -59,6 +62,19 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
+
+    // Setting changes reach subscribers through the table's notify trigger:
+    // PostgreSQL LISTEN/NOTIFY carries the change, this maps the channel onto
+    // the component's event subject, and the mapping publishes it on NATS. It
+    // is what makes the subscription in ores.http and the token-settings
+    // reload in ores.iam fire at all; before it was wired, the trigger fired
+    // into a channel nothing listened on.
+    ores::eventing::service::event_bus event_bus;
+    ores::eventing::service::postgres_event_source event_source(make_context(cfg.database),
+                                                                event_bus);
+    auto event_subscription =
+        ores::variability::service::messaging::register_system_setting_event_mapping(
+            event_source, event_bus, nats);
 
     co_await ores::service::service::run(
         io_ctx,

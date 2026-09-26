@@ -2770,10 +2770,18 @@ def write_record_for(entity: dict[str, Any]) -> list[dict[str, Any]]:
     The protocol twin renders these as the record's members and the service
     builds a domain object from them, so a field the record carries and a
     field the service sets cannot disagree.
+
+    Every key column is spared, not only the primary one: a natural key that
+    happens to be spelled like a server-owned field is still half the identity
+    a caller addresses. ``party_id`` is the usual case -- server-owned on most
+    entities, and half the key on a setting or a market series whose rows are
+    scoped per party. Dropping it emits a write that cannot say which party's
+    row it creates.
     """
     key_columns = frozenset(
         _column_name(column)
-        for column in (entity.get("primary_key") or {}).get("columns") or [])
+        for column in ((entity.get("primary_key") or {}).get("columns") or [])
+        + list(entity.get("natural_keys") or []))
     return write_record_fields(write_record_columns(entity), key_columns)
 
 
@@ -3136,9 +3144,6 @@ def entity_protocol_messages(
     facet_stem = (
         plural if f"{singular}_version" in (sibling_singulars or ()) else singular)
     payload_member = response_payload_member(entity)
-    key_columns = frozenset(
-        _column_name(column)
-        for column in (entity.get("primary_key") or {}).get("columns") or [])
 
     filter_fields = filter_record_fields(entity)
 
@@ -3147,8 +3152,7 @@ def entity_protocol_messages(
     # subject: a record is a shape, an operation is something a caller sends.
     messages = [
         _ts_message(key, fields=key_record_fields(entity)),
-        _ts_message(f"{singular}_write", fields=write_record_fields(
-            write_record_columns(entity), key_columns)),
+        _ts_message(f"{singular}_write", fields=write_record_for(entity)),
         _ts_message(f"{singular}_change", fields=[
             _ts_field("write", f"{singular}_write"),
             _ts_field("precondition", _PRECONDITION)]),

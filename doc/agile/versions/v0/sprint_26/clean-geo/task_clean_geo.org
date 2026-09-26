@@ -147,8 +147,9 @@ Work items, and their outcome.
 
 1. Overview rewritten. Done, see M10.
 2. Stale ground truth fixed on the Foundation layer page. The
-   =ores.utility.hpp= stub that carried the same claim was deleted on the
-   ores.utility clean-up pass, not here. Done.
+   =ores.utility.hpp= header that carried the same claim no longer does: the
+   geo facet it advertised never existed, and its restored text drops it.
+   Done.
 3. Unused =ores.geo.lib= link removed from =ores.iam/core=. Done, see H02.
 4. =See also= filled with id links to =ores.database=, =ores.http.core=,
    =ores.http.server= and the Foundation layer page. Done.

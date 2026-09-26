@@ -59,15 +59,15 @@ record each item's result in the table below.
 |------+--------+----------|
 | B01 | pass | Baseline before any edit, on `feature/clean-utility` at `89cc8d8acd`. Build 0 at 100 percent. `ores.utility.tests` passes at 476 assertions in 141 test cases. `regenerate_cmake_component_files.py --component ores.utility --check` reports 2 stale files, `src/component_files.cmake` and `tests/component_files.cmake`. No catalogue row, so the drift gate cannot name the component. |
 | B02 | pass | 0 entity, junction, operation and message models. |
-| B03 | pass | 65 production C++ files at the survey, 44 headers and 21 sources, plus 15 files under `tests/`. Six sub-trees had no consumer outside their own test, and eleven umbrella headers had no consumer at all. The component now holds 41 production files, 25 headers and 16 sources, and 15 files under `tests/`, of which 14 are suites and one is `main.cpp`. Every surviving facet reaches at least one C++ file outside the component: `rfl` 856, `generation` 460, `uuid` 432, `domain` 251, `streaming` 80, `version` 41, `faker` 10, `program_options` 6, `convert` 4, `crypto` 3, `compression` 2, `serialization` 1 and `string` 1. |
+| B03 | pass | 65 production C++ files at the survey, 44 headers and 21 sources, plus 15 files under `tests/`. Six sub-trees had no consumer outside their own test, and eleven umbrella headers had no consumer at all. The component now holds 52 production files, 36 headers and 16 sources, and 15 files under `tests/`, of which 14 are suites and one is `main.cpp`. The eleven namespace documentation headers are counted among the headers; they were restored after the first cut deleted them. Every surviving facet reaches at least one C++ file outside the component: `rfl` 856, `generation` 460, `uuid` 432, `domain` 251, `streaming` 80, `version` 41, `faker` 10, `program_options` 6, `convert` 4, `crypto` 3, `compression` 2, `serialization` 1 and `string` 1. |
 | B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. |
 | B05 | pass | This story is the only live capture naming the component. |
 | M01 to M05, M07 to M09 | not applicable | No org model. |
 | M06 | not applicable, with a recorded exception | `domain/protocol.hpp` is a hand-written wire type: 124 lines, reached by 245 C++ files outside the component, and the codegen templates include it, so it cannot become a per-entity model. The exception and its reason are recorded under /Recorded exceptions/. |
-| M10 | fixed | `component_overview.org` claimed the component had no dependency on any other ORE Studio component while `src/CMakeLists.txt` links `ores.platform.lib` `PUBLIC`. It listed `include/ores.utility/datetime/`, which never existed, advertised a geo facet with no code, named Base32 and TOTP, and omitted 8 of the facets. It is rewritten: the dependency is stated, all thirteen facets are listed with their external reach, and `See also` is filled. The `ores.utility.hpp` stub that repeated the same claims is deleted. |
+| M10 | fixed | `component_overview.org` claimed the component had no dependency on any other ORE Studio component while `src/CMakeLists.txt` links `ores.platform.lib` `PUBLIC`. It listed `include/ores.utility/datetime/`, which never existed, advertised a geo facet with no code, named Base32 and TOTP, and omitted 8 of the facets. It is rewritten: the dependency is stated, all thirteen facets are listed with their external reach, and `See also` is filled. The `ores.utility.hpp` namespace header repeated the same claims and is corrected in place; the first cut deleted it and the deletion was wrong. |
 | P01 to P06 | not applicable | No entity and no protocol. |
 | G01 | not applicable | No model, so nothing regenerates from one. |
-| G02 | fixed | The six dead or test-only sub-trees are deleted with their tests, the two `Reflector<>` specialisations for the non-existent `ores::comms::messaging` are deleted, and the eleven consumer-less umbrella stubs are deleted. The CMake lists are regenerated. |
+| G02 | fixed | The six dead or test-only sub-trees are deleted with their tests, and the two `Reflector<>` specialisations for the non-existent `ores::comms::messaging` are deleted. The eleven namespace documentation headers were deleted in the first cut and are restored, because every component keeps them for doxygen; see Review row 18. The CMake lists are regenerated. |
 | G03 | fixed | The two `component_files.cmake` files now carry the generated marker. |
 | G04 | not applicable | No generated code beyond the two CMake-stamped version templates, which stay. |
 | G05 | fixed | The generator defect that reached this component dropped any data member with a brace initialiser, so `hierarchy_flat_row::id` and `hierarchy_node::id` vanished from the refresh. It is fixed at source with three regression cases that fail against the unfixed parser. The wrapped-declaration defect the platform pass fixed also reached here and is gone with the same script. |
@@ -75,7 +75,7 @@ record each item's result in the table below.
 | W01 to W04 | not applicable | No entity, registrar, handler, populate script or SQL script. |
 | S01, S02 | not applicable | No entity and no shell unit. |
 | H01 | pass | `validate_docs.py` reports only the pre-existing `ores.shell.iam` finding. No leftover artefact, every file and type name snake_case, the CMake lists match the tree, no commented-out code, no stub header left. The rendered diagram was read: every box carries its API, the free-function facets are drawn rather than omitted, and every edge is one the code supports. |
-| H02 | fixed | The six sub-trees, the retired reflector specialisations, the eleven umbrellas, and the `converter` namespace that did not match its `convert` folder. |
+| H02 | fixed | The six sub-trees, the retired reflector specialisations, and the `converter` namespace that did not match its `convert` folder. The eleven namespace headers were removed and restored; see Review row 18. |
 | H03 | fixed | The six end-of-line comments moved above their code, and the `Step 1` to `Step 4` narration left `short_code_generator.cpp`. |
 | V01 | pass | Whole-tree build 0 at 100 percent. |
 | V02 | fixed | `gzip` had no direct test in the component while `ores.nats` and `ores.storage` call it, and `ores.nats` exercised it only indirectly through its own compression suite; it now has 7 cases that call it directly. The live files with no test of their own gained two suites: 13 cases for the generation engine, context, environment and keys, and 4 for the faker datetime helpers. The suite went from 476 assertions in 141 test cases to 614 in 128: three test files holding 38 cases left with the deleted sub-trees, 24 cases arrived, and the tautological determinism case in `tree_builder_tests.cpp` became one that pins the shape for a known seed and one that proves the seed selects the shape. |
@@ -102,11 +102,17 @@ sub-tree's own test, which is the B06 test-only case.
 Sixteen files and 1526 lines left with the sub-trees and their tests: 947
 lines across the thirteen sub-tree files in the table, and 579 across the
 three test files that covered them.
-Eleven umbrella stubs left as well: `ores.utility.hpp` and the ten
-facet-level files that held nothing but a `namespace` declaration and a
-`@brief` comment, 346 lines in total, none of them included anywhere.
+Eleven namespace documentation headers were deleted as well in the first
+cut: `ores.utility.hpp` and the ten facet-level files that hold nothing but a
+`namespace` declaration and a `@brief` comment, 346 lines in total, none of
+them included anywhere. *That was wrong and they are restored.* Every
+component keeps a header for each of its namespaces; its content is the
+`@brief` doxygen renders, and the diagram conventions read the outermost one
+when they label the component, so a consumer census does not apply to it.
 `ores.utility.hpp` carried four claims the tree does not support, and two
-facet files advertised functions that do not exist.
+facet files advertised functions that do not exist, and those claims are
+corrected in place rather than removed with the file. See Review row 18 and
+G08 of the standard.
 
 One file with the same shape stays. =serialization/error_code.hpp= is
 hand-written wire material, but `ores.iam.core` includes it, so it is
@@ -147,7 +153,7 @@ Twelve items were planned. Each one is recorded here with its outcome.
 |------+---------|
 | 1. Decide the six sub-trees as a group | done. All six deleted, with their tests, on the B06 test-only rule. Recorded above. |
 | 2. Delete the `ores::comms::messaging` reflector specialisations | done. Both go, with the forward declarations that existed only for them. `ores.comms` does not exist. |
-| 3. Deal with the eleven umbrella headers | done. All eleven deleted. The facet inventory they duplicated lives on the rewritten component overview. |
+| 3. Deal with the eleven umbrella headers | the first cut deleted all eleven, and that was wrong. They are namespace documentation headers, which every component keeps, so they are restored with their claims corrected in place and the facet inventory lives on both the headers and the rewritten component overview. See Review row 18. |
 | 4. Rewrite `component_overview.org` | done, including the false dependency claim, the non-existent `datetime/` facet, the geo facet with no code, and all thirteen facets. |
 | 5. Fix the same claims in `ores.utility.hpp` | done by deletion. The file was a stub with no consumer. |
 | 6. Test the live untested files | done. `gzip` had no direct test in the component and now has 7 cases; `ores.nats` covered it indirectly before this pass. Two new suites cover the generation facet and the faker datetime helpers. |
@@ -225,7 +231,10 @@ Work items, in the order they land.
    the subsystem they marshal no longer exists.
 3. Delete the eleven umbrella headers with no consumer, or keep
    `ores.utility.hpp` alone and rewrite it. Two pairs are duplicates, and
-   two advertise functions that do not exist.
+   two advertise functions that do not exist. *The survey's premise was
+   wrong*: these are the component's namespace documentation headers, which
+   every component keeps, so the answer is to keep all eleven and correct
+   their claims. See Review row 18.
 4. Rewrite `component_overview.org`. Fix the dependency claim, drop
    `datetime/` and geo, list every facet, fill `See also`, and bump
    `#+updated`.
@@ -293,6 +302,7 @@ via its "Verifies task" field.
 | 15 | The commit count in the Result was six `[utility]` commits, and the correction commit for rows 5 to 13 is itself tagged `[utility]`, making seven | task_clean_utility.org | fixed | The Result now says seven and names what the seventh is. It is the same defect that was caught when the count was eight, and it recurs for the same reason: the count depends on how the correcting commit is tagged, so the sentence now says which commit is which instead of leaving the reader to count. |
 | 16 | The replacement sentence in the retry-strategy capture named `process_supervisor.cpp`, which exists nowhere in the repository, and the capture's other reference named a controller populate script that is also gone | doc/agile/product_backlog/next/root_cause_wt_service_glibc_crash.org | fixed by retiring the capture | The controller binary and `projects/ores.controller/` were removed in sprint 24 (PR #1806), which the sprint 25 investigation confirmed, and `ores.wt.service` was removed with the `ores.qt` tree in sprint 25, by PR #2106 and its task `retire_qt_and_emit_ui_metadata_to_typescript/task_remove-qt-and-wt.org`. The capture is superseded rather than repairable, so it moves to the discarded bucket with both removals recorded and the glibc `RLIMIT_RTPRIO` finding kept, because that part is about the environment and not about Wt. The first cut of this row credited the sprint 26 Qt pass with the removal; the verifier checked the commit history and it was sprint 25. |
 | 17 | The task and the story had an empty `#+environment:` while every generated commit carries `Environment: merry_newton` | task_clean_utility.org, story.org | fixed | Both now carry `merry_newton`, matching the traceability the commits assert. The verifier notes that the sibling clean tasks are split on this, so it looks like a programme habit rather than a defect of this component. |
+| 18 | The cleanup deleted the component's namespace documentation headers, eleven of them, on the reading that a header nothing includes is a dead header | projects/ores.utility/include/ores.utility/ores.utility.hpp and the ten facet-level headers | fixed by restoring them | Raised by the maintainer: every component keeps a header for each of its namespaces, its content is the `@brief` doxygen renders, and the diagram conventions read the outermost one when they label the component, so a consumer census does not apply. G02 said dead headers go and did not exempt these, so G08 now states the rule. The eleven files are restored with their claims corrected in place, their line count returns to the component, and the geo task's instruction that names `ores.utility.hpp` is reinstated. |
 
 * Result
 
@@ -301,9 +311,11 @@ component. Twelve work items landed across seven `[utility]` commits: the
 six that carry the work, and the seventh carrying the corrections from the
 first verification round.
 
-The component lost 27 files and 1872 lines: six sub-trees whose only
-consumer was their own test, and eleven umbrella stubs that held nothing
-but a namespace declaration. It gained a component overview that describes
+The component lost 16 files and 1526 lines: six sub-trees whose only
+consumer was their own test. (The first cut also deleted eleven namespace
+documentation headers and counted 27 files and 1872 lines; those are
+restored, because every component keeps them for doxygen. See Review row
+18.) It gained a component overview that describes
 what is actually there, a rendered diagram whose boxes carry their APIs,
 and 24 test cases, of which 7 are the first direct tests `gzip` has had in
 the component. Its test suite went from 476 assertions in 141 test cases to

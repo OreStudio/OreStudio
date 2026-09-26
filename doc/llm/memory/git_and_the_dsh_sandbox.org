@@ -8,10 +8,25 @@
 #+level: cross
 #+filetags: :memory:project:
 #+created: 2026-09-19
-#+updated: 2026-09-19
+#+updated: 2026-09-26
 
-The DSH sandbox grants write access to the shared bare repository =/mnt/development/OreStudio/ores.git=. Git commands work in every worktree without approval. All other paths outside the workspace stay read-only. The =write= and =edit= tools cannot write to =ores.git=; use git commands for changes there. A =read-only= session has no access.
+The DSH sandbox grants write access to the shared bare repository
+=~/Development/OreStudio/ores.git=, so git commands work in every worktree
+without approval: =add=, =commit=, =fetch=, =push= and =ls-remote= were each run
+confined on 2026-09-26, including the SSH transport that push and fetch use. All
+other paths outside the workspace stay read-only. The =write= and =edit= tools
+cannot write to =ores.git=; use git commands for changes there. A =read-only=
+session has no access.
 
-*Why:* Git operations failed with 'Read-only file system' because the shared git directory sits outside the workspace, and the agent had to request an escalation for every fetch, branch and commit.
+*Why:* Git operations failed with 'Read-only file system' because the shared git
+directory sits outside the workspace, and the agent had to request an escalation
+for every fetch, branch and commit. Each escalation is an approval prompt for
+the user, so an unnecessary one costs a prompt and buys nothing. This supersedes
+the older "Git add and commit require sandbox disabled" memory, which described
+a worktree layout that no longer exists and contradicted this one.
 
-*How to apply:* Run git commands directly, with no sandbox escalation. Do not hand-edit anything under =ores.git=: the file tools cannot write there. Keep every other outside-workspace path read-only.
+*How to apply:* Run git commands directly, with no sandbox escalation — push and
+fetch included. Do not hand-edit anything under =ores.git=: the file tools
+cannot write there. Keep every other outside-workspace path read-only. If a git
+command ever does fail with a sandbox error, escalate that one command and
+record what it needed here, so the next agent does not escalate preemptively.

@@ -105,3 +105,31 @@ create or replace function ores_variability_get_system_settings_fn(
       and valid_to = ores_utility_infinity_timestamp_fn()
     order by name;
 $$ language sql stable security definer set search_path = public, pg_temp;
+
+-- -----------------------------------------------------------------------------
+-- Least privilege
+-- -----------------------------------------------------------------------------
+-- Both functions above are SECURITY DEFINER, so they run as their owner and
+-- bypass row-level security by design: that is what lets a service context read
+-- settings at all, and what lets a tenant-wide write resolve a party. A definer
+-- function that takes the tenant as a parameter is therefore only safe if the
+-- set of roles that may call it is the set of roles that are meant to see
+-- across tenants. PostgreSQL grants EXECUTE to PUBLIC on every new function, so
+-- without the revoke below every role in the database -- including each of the
+-- other services -- could call it with any tenant's id and read that tenant's
+-- settings.
+--
+-- The revokes are not decoration. A new function is world-executable until
+-- told otherwise, and nothing else in this schema says otherwise.
+
+revoke execute on function ores_variability_resolve_system_party_fn(uuid)
+    from public;
+
+revoke execute on function ores_variability_get_system_settings_fn(uuid, uuid)
+    from public;
+
+-- The three roles that read settings through the definer function rather than
+-- holding a direct grant on the table: variability's own service and the two
+-- that read settings in process, iam and http.
+grant execute on function ores_variability_get_system_settings_fn(uuid, uuid)
+    to :"variability_service_user", :"iam_service_user", :"http_user";

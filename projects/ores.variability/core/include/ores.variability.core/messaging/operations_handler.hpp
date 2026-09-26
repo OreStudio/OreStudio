@@ -119,6 +119,7 @@ public:
         auto req = ores::service::messaging::decode<complete_party_onboarding_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(operations_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ores::service::messaging::error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
 

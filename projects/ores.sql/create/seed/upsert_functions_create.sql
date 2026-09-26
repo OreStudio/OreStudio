@@ -846,27 +846,36 @@ create or replace function ores_variability_system_settings_set_fn(
 ) returns void as $$
 declare
     v_party_id uuid := coalesce(p_party_id, ores_variability_resolve_system_party_fn(p_tenant_id));
+    v_id uuid;
+    v_version integer := 0;
 begin
     perform ores_seed_validate_not_empty_fn(p_name, 'System setting name');
     perform ores_seed_validate_not_empty_fn(p_data_type, 'System setting data_type');
 
-    -- Close the current row (bitemporal expiry)
-    update ores_variability_system_settings_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-      and party_id = v_party_id
-      and name = p_name
-      and valid_to = ores_utility_infinity_timestamp_fn();
+    -- The generated insert trigger owns versioning: it closes the row the id
+    -- names and increments its version. So this reads the current row's id and
+    -- version and writes those, rather than closing the row itself and writing
+    -- a new one. A fresh id would present the store with a row it has never
+    -- seen and reset the version to 1, severing the setting from its own
+    -- history; passing version 0 for a row that exists would be refused as a
+    -- create that collides with a live row.
+    select id, version
+      into v_id, v_version
+      from ores_variability_system_settings_tbl
+     where tenant_id = p_tenant_id
+       and party_id = v_party_id
+       and name = p_name
+       and valid_to = ores_utility_infinity_timestamp_fn();
 
-    -- Insert new value
     insert into ores_variability_system_settings_tbl (
         id, tenant_id, party_id, name, value, data_type, description,
         modified_by, performed_by, change_reason_code, change_commentary,
-        valid_from, valid_to)
+        version, valid_from, valid_to)
     values (
-        gen_random_uuid(), p_tenant_id, v_party_id, p_name, p_value, p_data_type, p_description,
+        coalesce(v_id, gen_random_uuid()), p_tenant_id, v_party_id, p_name, p_value,
+        p_data_type, p_description,
         p_modified_by, p_modified_by, p_change_reason_code, p_commentary,
-        current_timestamp, ores_utility_infinity_timestamp_fn());
+        coalesce(v_version, 0), current_timestamp, ores_utility_infinity_timestamp_fn());
 
     raise notice 'Updated system setting: % = % (%)', p_name, p_value, p_data_type;
 end;

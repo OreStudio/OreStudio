@@ -50,17 +50,20 @@ void seed_reference_data(ores::database::context& ctx,
                          logger_t& lg) {
 
     const auto seed_bc = [&](const std::string& code, const std::string& description) {
+        // The insert trigger rejects a second insert for a natural key that
+        // already has a current row, before ON CONFLICT can absorb it, so
+        // the three GB cases sharing the tenant must guard the insert.
         const auto sql = "INSERT INTO ores_refdata_business_centres_tbl "
                          "(code, tenant_id, version, coding_scheme_code, description, "
                          "modified_by, performed_by, change_reason_code, change_commentary) "
-                         "VALUES ('" +
-                         code + "', '" + tenant_id +
-                         "'::uuid, 0, 'NONE', "
-                         "'" +
-                         description +
+                         "SELECT '" +
+                         code + "', '" + tenant_id + "'::uuid, 0, 'NONE', '" + description +
                          "', current_user, current_user, "
-                         "'system.new_record', 'Test seed') "
-                         "ON CONFLICT DO NOTHING";
+                         "'system.new_record', 'Test seed' "
+                         "WHERE NOT EXISTS (SELECT 1 FROM ores_refdata_business_centres_tbl "
+                         "WHERE code = '" +
+                         code + "' AND tenant_id = '" + tenant_id +
+                         "'::uuid AND valid_to = ores_utility_infinity_timestamp_fn())";
         ores::database::repository::execute_raw_command(
             ctx, sql, lg, "Seeding business centre " + code);
     };
@@ -84,18 +87,15 @@ void seed_reference_data(ores::database::context& ctx,
                          "(alpha2_code, tenant_id, version, alpha3_code, numeric_code, "
                          "name, official_name, modified_by, performed_by, "
                          "change_reason_code, change_commentary) "
-                         "VALUES ('" +
-                         alpha2 + "', '" + tenant_id +
-                         "'::uuid, 0, "
-                         "'" +
-                         alpha3 + "', '" + numeric +
-                         "', "
-                         "'" +
-                         name + "', '" + official_name +
-                         "', "
-                         "current_user, current_user, "
-                         "'system.new_record', 'Test seed') "
-                         "ON CONFLICT DO NOTHING";
+                         "SELECT '" +
+                         alpha2 + "', '" + tenant_id + "'::uuid, 0, '" + alpha3 + "', '" +
+                         numeric + "', '" + name + "', '" + official_name +
+                         "', current_user, current_user, "
+                         "'system.new_record', 'Test seed' "
+                         "WHERE NOT EXISTS (SELECT 1 FROM ores_refdata_countries_tbl "
+                         "WHERE alpha2_code = '" +
+                         alpha2 + "' AND tenant_id = '" + tenant_id +
+                         "'::uuid AND valid_to = ores_utility_infinity_timestamp_fn())";
         ores::database::repository::execute_raw_command(ctx, sql, lg, "Seeding country " + alpha2);
     };
 

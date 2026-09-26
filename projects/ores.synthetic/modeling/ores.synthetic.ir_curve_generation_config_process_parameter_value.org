@@ -43,6 +43,21 @@ rows via the normal codegen repositories.
 :profile:   uuid-identified-lookup
 :END:
 
+The generated eventing integration test is disabled for this entity. Its
+insert trigger cross-checks the referenced config's =process_type= against
+the referenced definition's =process_type_code=, and both parents are
+system-tenant catalogue rows. The generic test seeds a config from the
+generator and a definition from the catalogue, but it cannot know that the
+two process types must agree, so no generic seeding satisfies the check.
+Re-enable it when the test template can seed a system-tenant parent that
+matches a sibling field.
+
+* Physical space
+
+| Address                              | Enabled |
+|--------------------------------------+---------|
+| =ores.cpp.eventing-integration-test= | false   |
+
 * Columns
 
 ** id

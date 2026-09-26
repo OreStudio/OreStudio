@@ -652,3 +652,91 @@ tangled into the runnable script library
 * Synthetic Fx Spot Configs
 
 - [[id:433F316B-EEFE-5C37-B7C8-2C6DA4D0B817][How do I run the synthetic_fx_spot_configs commands from the shell?]]
+
+* Equity Accumulator Instruments
+
+- [[id:384232C0-B215-5394-8808-EA1B0FB0D153][How do I run the equity_accumulator_instruments commands from the shell?]]
+
+* Equity Asian Option Instruments
+
+- [[id:59B22122-3AB0-5853-99D4-DF91120AB583][How do I run the equity_asian_option_instruments commands from the shell?]]
+
+* Equity Barrier Option Instruments
+
+- [[id:F4751013-C336-5F25-9116-5E9A521DAADE][How do I run the equity_barrier_option_instruments commands from the shell?]]
+
+* Equity Digital Option Instruments
+
+- [[id:2162E85C-CA17-5666-9B1F-6544C341EABB][How do I run the equity_digital_option_instruments commands from the shell?]]
+
+* Equity Forward Instruments
+
+- [[id:6C33B7E9-4DC1-54C6-8606-989D027270D0][How do I run the equity_forward_instruments commands from the shell?]]
+
+* Equity Option Instruments
+
+- [[id:D0C4E959-D25F-5FC0-980D-159920EF48B1][How do I run the equity_option_instruments commands from the shell?]]
+
+* Equity Position Instruments
+
+- [[id:8255D54F-6D95-588F-BDF8-1E06BBFC7B68][How do I run the equity_position_instruments commands from the shell?]]
+
+* Equity Swap Instruments
+
+- [[id:BD3BB49E-C252-5274-8A20-30A17E5385ED][How do I run the equity_swap_instruments commands from the shell?]]
+
+* Equity Variance Swap Instruments
+
+- [[id:EE48156B-E386-5263-8A18-B3B361FE494B][How do I run the equity_variance_swap_instruments commands from the shell?]]
+
+* Fx Accumulator Instruments
+
+- [[id:A1438125-412B-5FF7-96EB-CB8DEB8E477F][How do I run the fx_accumulator_instruments commands from the shell?]]
+
+* Fx Asian Forward Instruments
+
+- [[id:774C2505-6BBD-5EFF-B749-2B7068EF9945][How do I run the fx_asian_forward_instruments commands from the shell?]]
+
+* Fx Barrier Option Instruments
+
+- [[id:5A439E3C-126A-550D-812F-CE1ECB81F7AD][How do I run the fx_barrier_option_instruments commands from the shell?]]
+
+* Fx Digital Option Instruments
+
+- [[id:B770F15A-D256-5FD2-A967-49332A2119C3][How do I run the fx_digital_option_instruments commands from the shell?]]
+
+* Fx Forward Instruments
+
+- [[id:8F3A3A44-D28F-5064-A4BB-2167FF836A59][How do I run the fx_forward_instruments commands from the shell?]]
+
+* Fx Vanilla Option Instruments
+
+- [[id:6CDE7FDD-633C-50FC-BB31-63E4C1AD1F29][How do I run the fx_vanilla_option_instruments commands from the shell?]]
+
+* Fx Variance Swap Instruments
+
+- [[id:5D8DF61B-D774-510C-8A63-BFC543186AD6][How do I run the fx_variance_swap_instruments commands from the shell?]]
+
+* Lifecycle Events
+
+- [[id:4F3BF010-EA22-5293-A3EF-BD608B810F4C][How do I run the lifecycle_events commands from the shell?]]
+
+* Party Role Types
+
+- [[id:A9F15744-5DAD-524E-91B5-8BA3DBD8D9CF][How do I run the party_role_types commands from the shell?]]
+
+* Trade Id Types
+
+- [[id:43A2CAE6-BAB9-5371-BFBB-4F396F14208A][How do I run the trade_id_types commands from the shell?]]
+
+* Trade Identifiers
+
+- [[id:6BCB9BAC-789A-5D5F-9AE3-B803F0358655][How do I run the trade_identifiers commands from the shell?]]
+
+* Trade Party Roles
+
+- [[id:3907B9D9-5A0A-5533-910F-C42F701E6BA7][How do I run the trade_party_roles commands from the shell?]]
+
+* Trade Types
+
+- [[id:571DB331-F3D8-5715-86C9-18ED3958B95E][How do I run the trade_types commands from the shell?]]

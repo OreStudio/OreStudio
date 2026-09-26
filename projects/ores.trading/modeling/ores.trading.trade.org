@@ -662,7 +662,7 @@ save path reads its transitions from.
 #include "ores.dq.api/messaging/fsm_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
-#include "ores.storage/net/storage_transfer.hpp"
+#include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"

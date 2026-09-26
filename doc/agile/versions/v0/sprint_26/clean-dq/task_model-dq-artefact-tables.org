@@ -76,6 +76,23 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 10. Eventing headers | TODO | |
 | 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
 
+* Step 3 revisited: a real divergence versus a stale file
+
+Run on 2026-09-26, while working step 4. Step 3 classified 12 tables as =divergent= because the hand-written artefact differs from its base table. That measurement is against the *hand-written file*, and a hand-written file can differ because nobody regenerated it rather than because the import contract genuinely differs. The census cannot tell the two apart. **The authoritative test is to enable the facet and read the diff**, and it splits the 12 in two.
+
+| Case | Example | What the diff shows | What it needs |
+|------+---------+---------------------+---------------|
+| Genuine divergence | =currencies= | the projection drops a column the artefact needs | a =* Artefact columns= section that keeps it |
+| Stale hand-written file | =countries= | the projection changes only what was already wrong | the facet switched on, and no section |
+
+**=countries= is landed, and it is the stale-file case.** Its hand-written artefact was missing =coding_scheme_code= and carried a dead =ores_dq_countries_artefact_insert_fn=. Switching the facet on wanted to add the column back. Adding it would have created a dead column, because =ores_refdata_publish_countries_from_dq_fn= takes =coding_scheme_code= from the dataset it publishes rather than from the staged row. So the model declares an =* Artefact columns= section that lists the staging columns and leaves =coding_scheme_code= out. That is the feature built in step 11 earning its place: the diff is now =image_id uuid= becoming =image_id uuid null= plus the removal of the dead insert function, and not one column changes.
+
+Nothing calls =ores_dq_countries_artefact_insert_fn=; the only reference left is a =drop function if exists= in the drop script, which is a no-op once the function is gone. Emptying it is H02 dead-code removal, not a loss.
+
+**=currencies= is the genuine-divergence case, and it is next.** Its artefact carries =holiday_calendar=, which the base table does not have. That column is live: =populate/iso/iso_currencies_artefact_populate.sql= writes it and =populate/refdata/refdata_currency_calendars_seed_populate.sql= reads it from the artefact to derive currency-to-calendar assignments. So the projection must be told to keep it, exactly as step 3 said an import-only extra requires.
+
+**Consequence for the plan.** The remaining =divergent= count overstates the work. Each of the 11 needs the same five-minute test, and only some will need a section. Step 3's six difference classes stand as the vocabulary for writing one; they are not a prediction that all 12 need one.
+
 * Step 4 results (part two): the junction archetype
 
 Run on 2026-09-26. Step 4's page said "the owning component's model gains the artefact facet" for all six. That holds for the three domain entities and is impossible for the three junctions, because no junction could reach a staging table at all. This part builds the missing route.

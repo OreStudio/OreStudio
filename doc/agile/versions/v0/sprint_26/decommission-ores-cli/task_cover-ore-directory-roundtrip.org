@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 5864A5C1-0F16-45BA-9F5B-26727E148127
+:END:
+#+title: Task: Cover the ORE directory round trip with a test over external/ore data
+#+description: Task for: Decommission ores.cli
+#+type: task
+#+level: s1
+#+filetags: :decommission-ores-cli:sprint_26:v0:
+#+owner: marco
+#+branch: feature/finish-mop-up-ores-cli
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give ores::ore::xml::exporter::roundtrip a caller and a fidelity assertion. The method walks a directory of ORE XML, round-trips every supported document through the import to export pipeline, and mirrors the outputs under a second directory. It lost its only caller when ores.cli retired, and round-trip coverage that reads external/ore/examples is wanted, so the method is kept and tested rather than deleted.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- A Catch2 test in ores.ore.core.tests drives exporter::roundtrip over a directory under external/ore/examples and asserts the accounting invariant, that every written document keeps its root element, and that the mapped trade count survives the round trip.
+- The test fails if the walk skips a supported document, writes a document of the wrong kind, or drops trades.
+- ores.ore.core.tests builds and the new test passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

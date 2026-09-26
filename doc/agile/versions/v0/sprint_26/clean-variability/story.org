@@ -23,9 +23,9 @@ ores.variability meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Baseline and inventory recorded on the task; the component kind corrected. |
-| Waiting on    | A decision on the protocol redesign, because it moves every consumer in the same unit. |
-| Next          | Decide the protocol shape, then scaffold the catalogue entry and the composite root model. |
+| Now           | Baseline and inventory recorded on the task. The wire key and the in-process surface are decided. |
+| Waiting on    | Nothing for the scaffold; the two domain operations and the never-published event carry recommendations only. |
+| Next          | Scaffold the catalogue entry and the composite root model. |
 | Last touched  | 2026-09-26                               |
 
 * Acceptance
@@ -50,6 +50,9 @@ ores.variability meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component 
 - It has no entry in the component catalogue, so codegen has never run on it and =check_component_drift.py= cannot address it by name. The scaffold comes first.
 
 * Decisions
+
+- The wire key is a new surrogate =id= uuid, with =name= kept as the natural key. The schema break is accepted because the natural key is what makes codegen emit =get_system_setting_by_name(...)=, the accessor the in-process consumers need. Taken 2026-09-26; reasoning in D1 of the task.
+- The component is consumed in process as well as over NATS, and that surface is not an aberration: four components link =ores.variability.core.lib= from production code, and thirteen link =ores.history.core= the same way. Codegen already supports it, because a generated entity's =core= library exports a documented service class and an entity with a natural key gets a by-natural-key read. The component keeps a small hand-written facade for the typed interpretation of a named setting, and codegen owns everything else. Reasoning in D3 of the task.
 
 * Out of scope
 

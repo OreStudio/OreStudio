@@ -28,9 +28,9 @@ ores.variability passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:BE43B02A-BBD7-426E-8803-722506B0D51B][Clean ores.variability to the component clean standard]] |
-| Now          | Baseline and inventory (B01 to B05) recorded, the component kind corrected, and the survey lever run. |
-| Waiting on   | A decision on the protocol redesign, because it moves every consumer in the same unit. |
-| Next         | Decide the protocol shape, then scaffold the catalogue entry and the composite root model. |
+| Now          | B01 to B05 recorded, the component kind corrected, and the wire key and in-process surface decided (D1 and D3). |
+| Waiting on   | Nothing for the scaffold. D2 (the two domain operations) and D4 (the never-published event) carry recommendations and no confirmation yet. |
+| Next         | Scaffold the catalogue entry and the composite root model. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -128,20 +128,28 @@ comment says an update to =iam.token.*= takes effect without a restart; nothing
 publishes, so it never fires and the reload never happens. Two subscriptions,
 two different subjects, zero publishers.
 
-*** Three components use variability as an in-process settings library
-
-The wire protocol is only half the component's interface. In process:
+*** Four components link the component's core library in production
 
 | Consumer | What it calls |
 |----------+---------------|
 | =ores.iam= | =system_settings_service::{get_int, refresh, is_bootstrap_mode_enabled, set_bootstrap_mode, is_user_signups_enabled, is_signup_requires_authorization_enabled, is_onboarding_party_complete}=, from =token_settings.cpp=, =bootstrap_mode_service.cpp=, =signup_service.cpp=, =iam_routes.cpp=, =auth_handler.hpp= and =account_operations_handler.hpp=. |
 | =ores.http= | =system_settings_service::get_all()= from =routes/variability_routes.cpp:66=. |
 | =ores.refdata= | =system_settings_repository= and =read_latest(ctx, name)= from =calendar_materialisation_service.cpp:112,118,152=. |
+| =ores.assets= | Nothing. =core/src/CMakeLists.txt:42= links =ores.variability.core.lib=, and the string =variability= appears nowhere else in the project. A dead build dependency, left from the feature-flag era, which no gate notices. |
+
+This is not an aberration. In-process consumption of another component's
+=core= library is an established pattern: =ores.history.core= is linked in
+production by thirteen components, and =ores.http= links five, because it is
+the HTTP front end that composes them. The pattern is structural rather than
+incidental. =iam= reads a setting during startup and inside auth handlers, and
+=refdata= reads one inside a materialisation service, so a bus round trip on
+those paths buys a failure mode and nothing else; =history= cannot be a round
+trip at all, because its rows must land in the caller's transaction. The
+setting-change event exists for the same reason: read in process, invalidate by
+event.
 
 A generated stack replaces the entity, mapper, repository, service and handler.
-The generated service will not carry =is_bootstrap_mode_enabled= or the other
-typed accessors, because those are this component's domain logic rather than
-entity verbs. This is the decision D3 below.
+This is decision D3 below.
 
 *** The shell recipe set documents a surface that no longer exists
 
@@ -204,8 +212,16 @@ those three columns are server-owned. So the wire key is one of:
   schema change, a data migration, an edit to every seed script, an edit to
   =compass_db.py=, and a change to the upsert function.
 
-Recommendation: *(a)*. It is the smaller change, it matches how the settings are
-actually addressed, and (b) buys nothing a current caller needs.
+*Decision: (b)*, taken on 2026-09-26. The cost is accepted because the natural
+key is what makes codegen emit =get_system_setting_by_name(...)=, the accessor
+the in-process consumers need (see D3). Option (a) would have left them
+scanning a list for a row they can name. The two decisions are one.
+
+Consequences to carry through the change: the seed scripts and the upsert
+function gain an id, =compass_db.py= and the per-tenant seeding function follow,
+and the new column changes the table's primary key, so this is a schema break
+rather than an addition. The database is recreated from scratch, so there is no
+migration to write.
 
 *** D2. The two domain operations
 
@@ -227,34 +243,60 @@ Recommendation: *(a)*.
 
 *** D3. How the in-process consumers survive the generation
 
-Three components call variability in process, not over the wire: =iam= through
-nine typed accessors, =http= through =get_all()=, =refdata= through the
-repository and =read_latest(ctx, name)=. A generated stack replaces the entity,
-mapper, repository, service and handler, and the generated service carries
-entity verbs only. It will not carry =is_bootstrap_mode_enabled=,
-=is_signup_requires_authorization_enabled= or the rest, because those are this
-component's domain logic, not entity operations. Three options:
+Three components call variability in process: =iam= through nine typed
+accessors, =http= through =get_all()=, =refdata= through the repository and
+=read_latest(ctx, name)=. A fourth, =assets=, links the library and uses
+nothing. This is an established pattern, not an accident: thirteen components
+link =ores.history.core= the same way, because an in-process shared capability
+is the only correct shape for a read that must be synchronous with the caller,
+and the only possible shape for a write that must share the caller's
+transaction.
 
-- *(a) Generate the CRUD and keep a hand-written typed settings service on top
-  of the generated repository.* Codegen owns the entity, the wire protocol, the
-  handler, the SQL and the shell surface; the component keeps a small
-  hand-written facade holding only the typed accessors its three in-process
-  consumers need. This is the split the architecture pages already describe for
-  =core=: repositories and a service layer. The dead accessors and the dead
-  repository methods go; the nine live ones stay.
+*Codegen already supports this.* Every generated entity's =core= library
+exports a documented service class with a visibility macro, in the public
+include tree, and an entity that declares a natural key gets a by-natural-key
+read: =assets= has =tag_service::get_tag_by_name(const std::string&)= and
+=image_service::get_image_by_code(const std::string&)=. For =system_setting=
+the same generation yields =get_system_setting_by_name("system.bootstrap_mode")=
+-- which is exactly the call the typed accessors need.
+
+So the options are:
+
+- *(a) Bind the natural-key profile and let the generated service be the
+  in-process API.* Codegen owns the entity, the wire protocol, the handler, the
+  SQL and the shell surface; the component keeps a small hand-written facade
+  holding only the typed interpretation of a named setting
+  (=is_bootstrap_mode_enabled()= becomes =get_system_setting_by_name(...)=, a
+  parse, and a default). This is the split the architecture pages already give
+  =core=: repositories and a service layer. The nine live accessors survive;
+  the seven dead ones and the dead repository methods go.
 - *(b) Migrate all three consumers to the wire.* It removes the library edges,
-  but =iam= reads settings during startup and inside request handlers, and a
-  synchronous bus round trip on that path buys a failure mode the in-process
-  call cannot have. =refdata= reaches for the repository, not even the service,
-  and would have to grow a client for one setting.
-- *(c) Keep the whole in-process stack hand-written and generate only the wire
+  but it puts a bus round trip inside startup, inside authentication and inside
+  a materialisation service, and =refdata= would have to grow a client for one
+  setting.
+- *(c) Keep the in-process stack hand-written and generate only the wire
   types.* This passes M06 and P01 to P04 while leaving the entity, mapper,
   repository and service as hand-written duplicates of what codegen emits for
-  every other component, which is what G02 forbids.
+  every other entity, which is what G02 forbids.
 
-Recommendation: *(a)*. It satisfies G02, keeps the in-process path as cheap as
-it is today, and makes the surviving hand-written surface a deliberate, small
-facade rather than a parallel implementation.
+Recommendation: *(a)*. The decisive point is D1: without a natural key the
+generated service has no =get_by_name=, and every typed accessor would have to
+scan a list. The surrogate-UUID answer to D1 and this question are one decision.
+
+*** D3a. The gap this exposes in the standard
+
+The in-process surface is load-bearing and undeclared. =component_architecture.org=
+records services and NATS subjects, not library edges. No item in the Component
+Clean Standard covers it, so the only thing that notices a broken in-process API
+is V01, the whole-tree build, and only at compile time. Nothing notices an edge
+that outlives its caller, which is how =ores.assets= came to link
+=ores.variability.core.lib= and use nothing from it.
+
+The standard has grown before, when a survey found a gap: B06, H04, G07, V07 and
+V08 were added after four infrastructure components were surveyed. A candidate
+item here: every library edge into a component's =core= is recorded with the
+symbols the consumer calls, and every edge has at least one caller. It is cheap
+to check mechanically and it would have caught the assets edge.
 
 *** D4. The never-published change event
 

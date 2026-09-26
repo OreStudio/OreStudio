@@ -77,10 +77,10 @@ std::vector<domain::{{entity_singular}}> read_one(repository::{{entity_singular}
                                                 const messaging::{{entity_singular}}_key& key) {
 {{#key_is_primary}}
     return repo.read_latest(ctx,
-                            {{#primary_key.key_columns}}{{#is_uuid}}boost::uuids::to_string(key.{{column}}){{/is_uuid}}{{#is_timestamp}}ores::platform::time::datetime::to_db_string(key.{{column}}){{/is_timestamp}}{{^is_uuid}}{{^is_timestamp}}key.{{column}}{{/is_timestamp}}{{/is_uuid}}{{^last}}, {{/last}}{{/primary_key.key_columns}});
+                            {{#primary_key.key_columns}}{{{key_text}}}{{^last}}, {{/last}}{{/primary_key.key_columns}});
 {{/key_is_primary}}
 {{^key_is_primary}}
-    return repo.read_latest_by_{{declared_key}}(ctx, {{#declared_key_is_uuid}}boost::uuids::to_string(key.{{declared_key}}){{/declared_key_is_uuid}}{{^declared_key_is_uuid}}key.{{declared_key}}{{/declared_key_is_uuid}});
+    return repo.read_latest_by_{{declared_key}}(ctx, {{{declared_key_text}}});
 {{/key_is_primary}}
 }
 {{#put_operations}}
@@ -95,11 +95,11 @@ messaging::{{entity_singular}}_key key_from(const domain::{{entity_singular}}& v
     messaging::{{entity_singular}}_key key;
 {{#key_is_primary}}
 {{#primary_key.key_columns}}
-    key.{{column}} = v.{{column}};
+    key.{{column}} = v.{{group_prefix}}{{column}};
 {{/primary_key.key_columns}}
 {{/key_is_primary}}
 {{^key_is_primary}}
-    key.{{declared_key}} = v.{{declared_key}};
+    key.{{declared_key}} = v.{{declared_key_group_prefix}}{{declared_key}};
 {{/key_is_primary}}
     return key;
 }
@@ -368,12 +368,12 @@ messaging::{{response}}
 {{#key_is_primary}}
     {{column}}_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        {{column}}_keys.push_back({{#is_uuid}}boost::uuids::to_string(removal.key.{{column}}){{/is_uuid}}{{#is_timestamp}}ores::platform::time::datetime::to_db_string(removal.key.{{column}}){{/is_timestamp}}{{^is_uuid}}{{^is_timestamp}}removal.key.{{column}}{{/is_timestamp}}{{/is_uuid}});
+        {{column}}_keys.push_back({{{removal_key_text}}});
 {{/key_is_primary}}
 {{^key_is_primary}}
     {{column}}_keys.reserve(resolved.size());
     for (const auto& row : resolved)
-        {{column}}_keys.push_back({{#is_uuid}}boost::uuids::to_string(row.{{column}}){{/is_uuid}}{{#is_timestamp}}ores::platform::time::datetime::to_db_string(row.{{column}}){{/is_timestamp}}{{^is_uuid}}{{^is_timestamp}}row.{{column}}{{/is_timestamp}}{{/is_uuid}});
+        {{column}}_keys.push_back({{{row_text}}});
 {{/key_is_primary}}
 {{/primary_key.key_columns}}
     repo_.remove(ctx_, {{{primary_key.batch_keys_args}}});
@@ -482,7 +482,7 @@ ores::utility::domain::result
         // The protocol states the version as a uint32 and the row carries it
         // as an int, so the comparison states the conversion.
         if (!change.precondition.version
-            || static_cast<std::uint32_t>(current.front().version)
+            || static_cast<std::uint32_t>(current.front().{{domain_entity.scaffold_prefix}}version)
                    != *change.precondition.version) {
             result.outcome = outcome::conflict;
             result.code = "version_conflict";
@@ -507,7 +507,7 @@ ores::utility::domain::result
               ? std::string(ores::service::messaging::change_reasons::new_record)
               : intent.reason_code);
 {{#has_audit_columns}}
-    out.change_commentary = intent.commentary;
+    out.{{domain_entity.audit_prefix}}change_commentary = intent.commentary;
 {{/has_audit_columns}}
     return result;
 }
@@ -1202,7 +1202,7 @@ ores::utility::domain::result
         // The protocol states the version as a uint32 and the row carries it
         // as an int, so the comparison states the conversion.
         if (!change.precondition.version
-            || static_cast<std::uint32_t>(current.front().version)
+            || static_cast<std::uint32_t>(current.front().{{domain_entity.scaffold_prefix}}version)
                    != *change.precondition.version) {
             result.outcome = outcome::conflict;
             result.code = "version_conflict";

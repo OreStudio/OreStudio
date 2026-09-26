@@ -3592,6 +3592,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 _enrich_primary_key_field(field)
             _mark_last_item(pk_columns)
             pk['is_compound'] = len(pk_columns) > 1
+            # The text form each key conversion takes. Prepared here, after
+            # the columns' type flags are set, so a template splices one
+            # expression rather than repeating the arms inline.
+            for col in pk_columns:
+                name = col.get('column') or col.get('name')
+                col['key_text'] = _key_as_text(f'key.{name}', col)
+                col['removal_key_text'] = _key_as_text(f'removal.key.{name}', col)
+                col['row_text'] = _key_as_text(
+                    f'row.{col.get("group_prefix") or ""}{name}', col)
             # A compound key with a timestamp column needs the mapper's
             # datetime include and conversion just as a timestamp natural
             # key or column does. Fold it into the flag the mapper template
@@ -4350,6 +4359,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['declared_key'] = declared_key_field(domain_entity)
         domain_entity['key_is_primary'] = key_is_primary(domain_entity)
         _declared_column = declared_key_column(domain_entity)
+        domain_entity['declared_key_text'] = (
+            _key_as_text(f'key.{domain_entity["declared_key"]}', _declared_column)
+            if _declared_column else f'key.{domain_entity["declared_key"]}')
+        domain_entity['declared_key_group_prefix'] = (
+            (_declared_column or {}).get('group_prefix') or '')
         domain_entity['declared_key_is_uuid'] = bool(
             _declared_column
             and (str(_declared_column.get('cpp_type', '')).find('boost::uuids::uuid') >= 0

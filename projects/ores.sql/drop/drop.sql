@@ -54,7 +54,13 @@
 \ir ./dq/dq_drop.sql
 
 -- =============================================================================
--- 4. Utility Functions (dropped last)
+-- 5. Bootstrap Metadata (nothing references it; dropped before the functions
+--    its nil-uuid check depends on)
+-- =============================================================================
+\ir ./database/database_drop.sql
+
+-- =============================================================================
+-- 6. Utility Functions (dropped last)
 -- =============================================================================
 \ir ./seed/seed_drop.sql
 \ir ./utility/utility_drop.sql

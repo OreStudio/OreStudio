@@ -74,6 +74,15 @@ create index if not exists workflow_instances_tenant_idx
 on "ores_workflow_workflow_instances_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create index if not exists workflow_instances_tenant_id_idx
+on "ores_workflow_workflow_instances_tbl" (tenant_id);
+
+create index if not exists workflow_instances_state_id_idx
+on "ores_workflow_workflow_instances_tbl" (state_id);
+
+create index if not exists workflow_instances_tenant_type_idx
+on "ores_workflow_workflow_instances_tbl" (tenant_id, type);
+
 create or replace function ores_workflow_workflow_instances_insert_fn()
 returns trigger as $$
 declare

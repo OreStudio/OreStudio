@@ -207,6 +207,16 @@ Timestamp when the step reached a terminal state.
 :list_by_order_by:  step_index
 :END:
 
+* Indexes
+
+Every step read is scoped by its workflow, which is also the generated
+parent-scoped list's filter, so this index is its hot path.
+
+** workflow_id
+:PROPERTIES:
+:columns: workflow_id
+:END:
+
 * C++
 
 ** Flags

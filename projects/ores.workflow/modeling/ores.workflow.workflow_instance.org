@@ -156,6 +156,26 @@ Timestamp of the most recent step-completed event processed.
 :tablename: ores_workflow_workflow_instances_tbl
 :END:
 
+* Indexes
+
+The list query filters by state and orders by type, and the engine's recovery
+pass reads every instance for a tenant, so the tenant index is the hot path.
+
+** tenant_id
+:PROPERTIES:
+:columns: tenant_id
+:END:
+
+** state_id
+:PROPERTIES:
+:columns: state_id
+:END:
+
+** tenant_type
+:PROPERTIES:
+:columns: tenant_id, type
+:END:
+
 * C++
 
 ** Flags

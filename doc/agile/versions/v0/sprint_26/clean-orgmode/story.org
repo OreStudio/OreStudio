@@ -68,12 +68,15 @@ exception on the task.
 - *The registry item is the accepted exception.* V06 asks a clean component
   to join =COMPONENTS_UNDER_TEST=. ores.orgmode is not a codegen component:
   it has no entity, junction or operation model and no row in
-  =component_catalogue.org=. Adding a row makes the codegen scaffold a flat
-  component and materialise the stub trio, whose template text is "STUB code
-  to be removed"; H02 forbids that dead code. This is the same gap the
-  connections story recorded for the model-less tier-1 components, and
-  orgmode is the second of them to meet it. The task carries the dry-run
-  proof.
+  =component_catalogue.org=. Neither available component kind fits it. The
+  codegen treats an undeclared kind as =flat=, and the flat archetypes
+  materialise the stub trio, whose template text is "STUB code to be
+  removed"; H02 forbids that dead code. Declaring =composite= avoids the
+  stubs but rewrites the root =CMakeLists.txt= as a parent of parts a simple
+  component does not have, and stops the two file lists generating. This is
+  the same gap the connections story recorded for the model-less tier-1
+  components, and orgmode is the second of them to meet it. The task carries
+  the two dry-run proofs.
 - *The diagram is refreshed through both passes.* The automated capture
   gives the current types; the hand pass adds the parser entry points, the
   compositions and the resolver note that the header scan cannot infer.
@@ -94,9 +97,17 @@ exception on the task.
   =component_files.cmake= files still lack the generated-file marker. That is
   each of their own G06 items under this programme; orgmode's own two are
   fixed here.
-- The codegen's missing model-less flat profile. The gap the registry
-  exception exposes is a programme-level question, and the connections story
-  already records it. Adding the profile is new capability, not a clean-up.
+- The shared template's Qt comment. The regenerated
+  =src/component_files.cmake= carries
+  =# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.=,
+  present in 79 =component_files.cmake= files and sourced from
+  =cmake_component_files_src.mustache=. Removing it is a codegen template
+  change with a regression test, which belongs to the Qt-removal work.
+- The codegen's missing model-less flat profile. The flat archetypes scaffold
+  a stub trio, and no profile keeps a flat component's hand-authored
+  CMakeLists files. That gap is a programme-level question, and the
+  connections story already records it. Adding the profile is new capability,
+  not a clean-up.
 - =projects/modeling/ores.puml= is a curated foundation diagram that omits
   orgmode along with =diff=, =nats=, =storage= and =eventing=. Bringing it
   current is a repo-wide diagram pass, not this component's audit item.

@@ -62,6 +62,9 @@ namespace ores #F2F2F2 {
                 +headers : vector<string>
                 +rows : vector<vector<string>>
             }
+            class join_paragraph_lines <<function>> {
+                +join_paragraph_lines(lines : const vector<string>&) : string
+            }
             document *-- "0..*" heading
             document *-- "0..*" keyword
             document *-- "0..*" property

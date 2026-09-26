@@ -90,14 +90,14 @@ item's result in the table below.
 | S01 | not applicable | No entity or junction, so no shell command unit. |
 | S02 | not applicable | No command, so no recipe and no destructive flag. |
 | H01 | pass | The Component Architecture Audit ran and its record is this task. Shape: a simple component, matching the signed-off folder catalogue (=CMakeLists.txt=, =include/=, =src/=, =tests/=, =modeling/=); the facet dirs =domain=, =indexing= and =parser= match the pattern the other hand-written libraries use. No leftover artefact (no =*stub*=, =*.orig=, =*.rej=, =__pycache__=), no platform-specific code (=_WIN32=, =<unistd.h>=, =<sys/...>= all absent), tests present and green, names snake_case and matching their types. Two findings were fixed: the diagram was stale, and the component appeared on no System Model layer page. |
-| H02 | pass | No legacy code remains: no Qt or Wt fragment, no dead code, no commented-out code, and no hand-written duplicate of a generated artefact. The diagram's stale prose was the only surviving scaffold artefact, and H01 removes it. |
+| H02 | pass | No legacy code remains: no dead code, no commented-out code, and no hand-written duplicate of a generated artefact. The component's own sources and models carry no Qt or Wt fragment; the diagram's stale prose was the only surviving scaffold artefact, and H01 removes it. One inherited artefact is out of scope: the regenerated =src/component_files.cmake= carries the shared template's =# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.= comment, present in 79 =component_files.cmake= files repo-wide and sourced from =cmake_component_files_src.mustache=. Removing it is a codegen template change with a regression test, not a component fix, and the story records it as out of scope. |
 | H03 | pass | Comments reviewed against the project comment rules. The Doxygen blocks and the non-obvious why-notes (the elisp quoting, the case-sensitivity choice, the best-effort type lookup) are kept; there is no commented-out code and no edit narration. |
 | V01 | pass | =compass build= over the whole tree reached 100% with exit code 0. |
 | V02 | pass | =compass build test_ores.orgmode.tests= passes: 52 assertions in 17 test cases. The =ores.codegen= suite passes at 522, and the =ores.compass= suite at 215 passed and 1 skipped. No test covers the diagram, the two generated list files or the two doc edits; the renderer's exit code, the check script and =validate_docs.sh= are their evidence. |
 | V03 | not applicable | No entity and no service, so the database holds nothing of this component. |
 | V04 | not applicable | No generated shell command, so nothing to run against the fleet. |
 | V05 | pass | Every gate run and green: component drift (=iam=), model drift (2 known exceptions), protocol twin coverage, handler permissions, populate references, shell recipe inventory, =regenerate_cmake_component_files.py --component ores.orgmode=, =validate_docs.sh= (apart from the pre-existing =ores.shell.iam= finding), =compass lint=, and the six checks of =.github/workflows/doc-lint.yml=. The one inherited repo-wide finding is the CMake source-list drift that G06 records. |
-| V06 | exception | ores.orgmode stays out of =COMPONENTS_UNDER_TEST=. It is not a codegen component: it has no entity, junction or operation model, and it is absent from =component_catalogue.org= by construction. The entry cannot be added safely, and the dry run proves it. Add a catalogue row mapping =orgmode= to =projects/ores.orgmode/modeling=, then run =check_component_drift.py --component orgmode --dry-run=: it reports 9 files would change and 3 would be created, among them =include/ores.orgmode/domain/stub.hpp=, =src/domain/stub.cpp= and =tests/stub_tests.cpp=, whose template text is "STUB code to be removed". The stub trio is dead code, which H02 forbids, and the same run rewrites the hand-written root, src and tests =CMakeLists.txt= and the test main. So the registry entry is superseded and recorded here with its reason. The gate the entry exists to feed still passes: =check_component_drift.py --all= is green for the current list. |
+| V06 | exception | ores.orgmode stays out of =COMPONENTS_UNDER_TEST=. It is not a codegen component: it has no entity, junction or operation model, and it is absent from =component_catalogue.org=. Enrolling it cannot be done safely, and two dry runs prove it. Add a catalogue row mapping =orgmode= to =projects/ores.orgmode/modeling=, then run =check_component_drift.py --component orgmode --dry-run=. In the component's declared shape the codegen treats an undeclared component kind as =flat= (=org_loader.py=), and the flat archetypes match: the run reports 9 files would change and 3 would be created, among them =include/ores.orgmode/domain/stub.hpp=, =src/domain/stub.cpp= and =tests/stub_tests.cpp=, whose template text is "STUB code to be removed". Declaring =#+component_kind: composite= avoids the stub archetypes, but the run then reports 1 file would change: the root =CMakeLists.txt= is regenerated from =cmake_composite_root.mustache=, which adds parts a simple component does not have, and the two =component_files.cmake= lists stop generating because their archetypes exclude =composite=. Neither kind fits, so the registry entry is superseded and recorded here with its reason. The gate the entry exists to feed still passes: =check_component_drift.py --all= is green for the current list. |
 
 * Notes
 
@@ -113,8 +113,10 @@ item's result in the table below.
   =src/parser/parser.cpp=, whose =parse()= is the single warning at CCN 21
   over 90 NLOC. There is no generated source to skew the totals.
 - The codegen's flat profile has never been used: no
-  =component_overview.org= in the tree declares =#+component_kind: flat=,
-  and no committed file carries the stub template's text.
+  =component_overview.org= in the tree declares =#+component_kind: flat=.
+  No component tree holds a generated stub file; the only occurrences of the
+  stub template's text are the two =*.mustache= templates and their two
+  archetype =.org= sources.
 - The refreshed diagram is captured with
   =build/scripts/generate_component_puml.py --project ores.orgmode= and then
   cleaned up by hand. PlantUML resolves a relationship only when it sits in
@@ -148,7 +150,10 @@ the component suite and the gates are the evidence.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The Notes claim "no committed file carries the stub template's text" is literally false; the record itself quotes it | task_clean_orgmode.org | fixed | Real. The sentence now says no component tree holds a generated stub file, and names the four files that do carry the text. |
+| 2 | V06's "adding a catalogue row makes the codegen scaffold a flat component" is contingent, not structural: =flat= is the default for an undeclared kind at =org_loader.py=, and =composite= would not match the stub archetypes | task_clean_orgmode.org | fixed | Real, and the fix is a second experiment. A row plus =#+component_kind: composite= reports 1 file would change: the root =CMakeLists.txt= regenerated from =cmake_composite_root.mustache=, which adds parts a simple component does not have, and the file lists stop generating. V06 now records both dry runs. |
+| 3 | H02's "no Qt or Wt fragment" overlooks the inherited =AUTOMOC= / =Q_OBJECT= comment in the regenerated =src/component_files.cmake= | task_clean_orgmode.org, story.org | fixed, scoped | Real. The comment is in 79 =component_files.cmake= files and comes from =cmake_component_files_src.mustache=, so removing it is a codegen template change with a regression test. H02 now scopes the claim to the component's own sources and models, and the story records the template comment as out of scope. |
+| 4 | The diagram omits =join_paragraph_lines=, an exported function the headers declare | ores.orgmode.puml | fixed | Real. The diagram already lists the other two free functions, so the omission was inconsistent. The function is added and the image re-rendered. |
 
 * Result
 
@@ -170,6 +175,16 @@ Every codegen gate passes, apart from the inherited repo-wide CMake
 source-list drift that G06 records.
 
 The one exception is V06. ores.orgmode does not join
-=COMPONENTS_UNDER_TEST= because it is not a codegen component, and
-enrolling it would generate the stub trio that H02 forbids. The proof is
-the dry run recorded in the table, which a reviewer can rerun.
+=COMPONENTS_UNDER_TEST= because it is not a codegen component. Neither
+available component kind fits it: the default =flat= scaffolds the stub
+trio, and =composite= rewrites the root =CMakeLists.txt= and stops the file
+lists generating. The proof is the two dry runs recorded in the table, which
+a reviewer can rerun.
+
+Verification rounds found defects, and every one is fixed. An independent
+verifier reproduced the V06 dry run, the cmake check, the lizard totals, the
+three test-suite results and the consumer census, and confirmed the rendered
+image matches its source byte for byte. It then failed four statements in
+this record: the refuted Notes sentence, the contingent V06 framing, the
+unscoped H02 Qt claim and the missing =join_paragraph_lines= in the diagram.
+Each is corrected above after I reproduced it.

@@ -26,39 +26,34 @@ namespace ores #F2F2F2 {
         namespace client #F2F2F2 {
             namespace presentation #F2F2F2 {
                 class currency_pair_rate_formatter {
-                    {static} +format_rate(rate : double, convention : optional<ores::refdata::domain::currency_pair_convention>, convention_reversed : bool) : std::string
                 }
-                note top of currency_pair_rate_formatter
-                Convention-aware FX rate formatting for every rate-display surface.
-                end note
             }
         }
         namespace service #F2F2F2 {
             namespace cache #F2F2F2 {
                 class currency_pair_convention_cache {
+                    +operator : currency_pair_convention_cache&
+                    +operator : currency_pair_convention_cache&
                     -nats_ : ores::nats::service::client&
-                    -token_provider_ : std::function<std::string(bool)>
-                    -cache_ : partitioned_cache<std::string, std::string, ores::refdata::domain::currency_pair_convention>
-                    +set_token_provider(token_provider : std::function<std::string(bool)>)
-                    +load(tenant_id : std::string) : std::string
-                    +lookup(tenant_id : std::string, key : std::string) : std::optional<ores::refdata::domain::currency_pair_convention>
+                    -cache_ : cache_t
                 }
-                note top of currency_pair_convention_cache
-                In-process per-tenant cache of currency-pair conventions, loaded over NATS and reloaded on changed events.
-                end note
-                class currency_pair_convention_cache_registrar {
-                    +warm_and_subscribe_currency_pair_convention_cache(nats : ores::nats::service::client&, cache : std::shared_ptr<currency_pair_convention_cache>, tenant_ids : std::vector<std::string>) : ores::nats::service::subscription
-                }
-                note top of currency_pair_convention_cache_registrar
-                Header-only free function: warms the cache per tenant, then subscribes to the changed-event subject.
-                end note
-                currency_pair_convention_cache_registrar ..> currency_pair_convention_cache : warms
             }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+' The consumer side: the formatter reads the convention cache, and the
+' registrar warms the cache and keeps it current.
+ores::refdata::client::presentation::currency_pair_rate_formatter ..> ores::refdata::service::cache::currency_pair_convention_cache : reads conventions
+
+note as N_CLI_WARM
+  The warm path is the canonical list paged to its end: the protocol has no
+  bulk read, so load() walks offset/limit until a response reports none left,
+  and the registrar subscribes the changed events on top of it.
+end note
+ores::refdata::service::cache::currency_pair_convention_cache .. N_CLI_WARM
+
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.refdata.client.puml"

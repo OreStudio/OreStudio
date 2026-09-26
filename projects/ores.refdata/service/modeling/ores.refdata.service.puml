@@ -26,6 +26,7 @@ namespace ores #F2F2F2 {
         namespace service #F2F2F2 {
             namespace app #F2F2F2 {
                 class application {
+                    +operator : application&
                 }
                 class host {
                 }
@@ -38,12 +39,35 @@ namespace ores #F2F2F2 {
                 }
                 class parser {
                 }
+                class parser_exception {
+                    -message_ : string
+                }
+            }
+            namespace messaging #F2F2F2 {
+                class event_registrar {
+                }
             }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+' The stack the composition point above runs inside: the host runs the
+' application, and the application parses the configuration and registers
+' the event mappings.
+ores::refdata::service::app::host ..> ores::refdata::service::app::application : runs
+ores::refdata::service::app::application ..> ores::refdata::service::config::parser : parses the configuration
+ores::refdata::service::app::application ..> ores::refdata::service::messaging::event_registrar : registers the event mappings
+ores::refdata::service::config::parser ..> ores::refdata::service::config::options : produces
+ores::refdata::service::config::parser ..> ores::refdata::service::config::parser_exception : throws
+
+note as N_SVC_SEAM
+  The application is the seam the host template binds: ores.service's
+  run_host_async names this application and these options, so the component's
+  service entrypoint is this file rather than the host.
+end note
+ores::refdata::service::app::application .. N_SVC_SEAM
+
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.refdata.service.puml"

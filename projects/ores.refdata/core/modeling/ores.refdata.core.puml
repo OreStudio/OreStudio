@@ -24,12 +24,22 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace refdata #F2F2F2 {
         namespace messaging #F2F2F2 {
+            class asset_class_code_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
             class asset_class_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
             class book_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class book_purpose_type_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
@@ -44,12 +54,57 @@ namespace ores #F2F2F2 {
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
+            class business_day_convention_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
             class business_unit_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
             class business_unit_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class calendar_adjustment_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class calendar_date_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class calendar_event_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class calendar_exception_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class calendar_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class calendar_materialisation_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class calendar_rule_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class calendar_type_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
@@ -64,7 +119,7 @@ namespace ores #F2F2F2 {
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
-            class counterparty_contact_handler {
+            class counterparty_contact_information_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
@@ -84,6 +139,41 @@ namespace ores #F2F2F2 {
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
+            class crm_driver_pair_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class crm_enabled_derived_pair_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class crm_topology_config_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class currency_calendar_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class currency_country_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class currency_currency_group_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class currency_group_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
             class currency_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
@@ -94,7 +184,52 @@ namespace ores #F2F2F2 {
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
+            class currency_pair_classification_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class currency_pair_convention_calendar_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class currency_pair_convention_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class currency_pair_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class curve_role_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class day_count_fraction_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
             class deposit_convention_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class derivation_kind_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class diary_entry_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class floating_index_type_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
@@ -104,12 +239,32 @@ namespace ores #F2F2F2 {
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
-            class fx_convention_handler {
+            class ibor_index_convention_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
-            class ibor_index_convention_handler {
+            class instrument_code_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class ir_curve_bootstrap_config_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class ir_curve_bootstrap_pillar_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class ledger_feed_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class leg_type_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
@@ -129,7 +284,22 @@ namespace ores #F2F2F2 {
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
-            class party_contact_handler {
+            class party_contact_information_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class party_counterparty_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class party_country_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class party_currency_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
@@ -159,10 +329,19 @@ namespace ores #F2F2F2 {
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
+            class payment_frequency_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
             class portfolio_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class publish_from_dq_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
             }
             class purpose_type_handler {
                 -nats_ : ores::nats::service::client&
@@ -170,14 +349,63 @@ namespace ores #F2F2F2 {
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
             class registrar {
-                +verifier : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class regulatory_book_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
             class rounding_type_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
+            class series_subclass_code_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
             class swap_convention_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class tenor_anchor_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class tenor_convention_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class tenor_convention_resolution_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class tenor_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class tenor_kind_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class tenor_resolution_algorithm_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class tenor_schedule_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class tenor_unit_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
@@ -189,25 +417,48 @@ namespace ores #F2F2F2 {
             }
         }
         namespace repository #F2F2F2 {
+            class asset_class_code_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class asset_class_code_mapper {
+            }
+            class asset_class_code_repository {
+                +remove_status : enum class
+            }
             class asset_class_repository {
-                +limit : uint32_t
             }
             class book_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
+                +workspace_id : string
                 +version : int
                 +party_id : string
                 +name : string
-                +description : string
+                +description : optional<string>
                 +parent_portfolio_id : string
                 +owner_unit_id : optional<string>
                 +functional_currency : string
-                +gl_account_ref : string
-                +cost_center : string
+                +gl_account_ref : optional<string>
+                +cost_center : optional<string>
                 +book_status : string
                 +regulatory_book_type : string
+                +is_sweepable : bool
+                +rates_centre_code : string
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
@@ -217,8 +468,29 @@ namespace ores #F2F2F2 {
             }
             class book_mapper {
             }
+            class book_purpose_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class book_purpose_type_mapper {
+            }
+            class book_purpose_type_repository {
+                +remove_status : enum class
+            }
             class book_repository {
-                -ctx_ : context
+                +remove_status : enum class
             }
             class book_status_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -233,12 +505,13 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class book_status_mapper {
             }
             class book_status_repository {
+                +remove_status : enum class
             }
             class business_centre_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -249,19 +522,40 @@ namespace ores #F2F2F2 {
                 +source : optional<string>
                 +description : optional<string>
                 +city_name : optional<string>
-                +coding_scheme_code : string
                 +country_alpha2_code : optional<string>
-                +image_id : optional<string>
+                +coding_scheme_code : string
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class business_centre_mapper {
             }
             class business_centre_repository {
+                +remove_status : enum class
+            }
+            class business_day_convention_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class business_day_convention_type_mapper {
+            }
+            class business_day_convention_type_repository {
+                +remove_status : enum class
             }
             class business_unit_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -272,9 +566,9 @@ namespace ores #F2F2F2 {
                 +party_id : string
                 +unit_name : string
                 +parent_business_unit_id : optional<string>
+                +unit_code : optional<string>
+                +business_centre_code : optional<string>
                 +unit_type_id : optional<string>
-                +unit_code : string
-                +business_centre_code : string
                 +status : string
                 +modified_by : string
                 +performed_by : string
@@ -286,7 +580,7 @@ namespace ores #F2F2F2 {
             class business_unit_mapper {
             }
             class business_unit_repository {
-                -ctx_ : context
+                +remove_status : enum class
             }
             class business_unit_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -309,13 +603,156 @@ namespace ores #F2F2F2 {
             class business_unit_type_mapper {
             }
             class business_unit_type_repository {
+                +remove_status : enum class
+            }
+            class calendar_date_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +calendar_code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +date : string
+                +version : int
+                +is_business_day : bool
+                +source : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class calendar_date_mapper {
+            }
+            class calendar_date_repository {
+                +remove_status : enum class
                 -ctx_ : context
+            }
+            class calendar_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +calendar_type : string
+                +country_code : string
+                +image_id : optional<string>
+                +source : string
+                +is_editable : bool
+                +base_calendar_code : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class calendar_event_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +calendar_code : string
+                +event_date : string
+                +diary_entry_type : string
+                +name : string
+                +description : optional<string>
+                +source : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class calendar_event_mapper {
+            }
+            class calendar_event_repository {
+                +remove_status : enum class
+            }
+            class calendar_exception_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +calendar_code : string
+                +exception_date : string
+                +is_business_day : bool
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class calendar_exception_mapper {
+            }
+            class calendar_exception_repository {
+                +remove_status : enum class
+            }
+            class calendar_mapper {
+            }
+            class calendar_repository {
+                +remove_status : enum class
+            }
+            class calendar_rule_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +calendar_code : string
+                +kind : string
+                +month : optional<int>
+                +day : optional<int>
+                +weekday : optional<int>
+                +occurrence : optional<int>
+                +day_offset : optional<int>
+                +shift : string
+                +effective_from : optional<int>
+                +effective_to : optional<int>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class calendar_rule_mapper {
+            }
+            class calendar_rule_repository {
+                +remove_status : enum class
+            }
+            class calendar_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class calendar_type_mapper {
+            }
+            class calendar_type_repository {
+                +remove_status : enum class
             }
             class cds_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
+                +workspace_id : string
                 +version : int
                 +settlement_days : int
                 +calendar : string
@@ -331,10 +768,13 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class cds_convention_mapper {
             }
             class cds_convention_repository {
+                +remove_status : enum class
             }
             class contact_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -349,12 +789,13 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class contact_type_mapper {
             }
             class contact_type_repository {
+                +remove_status : enum class
             }
             class counterparty_contact_information_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -364,15 +805,15 @@ namespace ores #F2F2F2 {
                 +version : int
                 +counterparty_id : string
                 +contact_type : string
-                +street_line_1 : string
-                +street_line_2 : string
-                +city : string
-                +state : string
-                +country_code : string
-                +postal_code : string
-                +phone : string
-                +email : string
-                +web_page : string
+                +street_line_1 : optional<string>
+                +street_line_2 : optional<string>
+                +city : optional<string>
+                +state : optional<string>
+                +country_code : optional<string>
+                +postal_code : optional<string>
+                +phone : optional<string>
+                +email : optional<string>
+                +web_page : optional<string>
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
@@ -383,7 +824,7 @@ namespace ores #F2F2F2 {
             class counterparty_contact_information_mapper {
             }
             class counterparty_contact_information_repository {
-                -ctx_ : context
+                +remove_status : enum class
             }
             class counterparty_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -391,13 +832,14 @@ namespace ores #F2F2F2 {
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
                 +version : int
-                +full_name : string
                 +short_code : string
+                +full_name : string
                 +transliterated_name : optional<string>
                 +party_type : string
                 +parent_counterparty_id : optional<string>
                 +business_center_code : string
                 +status : string
+                +image_id : optional<string>
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
@@ -414,7 +856,7 @@ namespace ores #F2F2F2 {
                 +counterparty_id : string
                 +id_scheme : string
                 +id_value : string
-                +description : string
+                +description : optional<string>
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
@@ -425,12 +867,12 @@ namespace ores #F2F2F2 {
             class counterparty_identifier_mapper {
             }
             class counterparty_identifier_repository {
-                -ctx_ : context
+                +remove_status : enum class
             }
             class counterparty_mapper {
             }
             class counterparty_repository {
-                -ctx_ : context
+                +remove_status : enum class
             }
             class country_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -443,16 +885,146 @@ namespace ores #F2F2F2 {
                 +name : string
                 +official_name : string
                 +image_id : optional<string>
+                +coding_scheme_code : optional<string>
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class country_mapper {
             }
             class country_repository {
+                +remove_status : enum class
+            }
+            class crm_driver_pair_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +config_id : string
+                +base_currency_code : string
+                +quote_currency_code : string
+                +enabled : bool
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class crm_driver_pair_mapper {
+            }
+            class crm_driver_pair_repository {
+                +remove_status : enum class
+            }
+            class crm_enabled_derived_pair_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +config_id : string
+                +base_currency_code : string
+                +quote_currency_code : string
+                +enabled : bool
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class crm_enabled_derived_pair_mapper {
+            }
+            class crm_enabled_derived_pair_repository {
+                +remove_status : enum class
+            }
+            class crm_topology_config_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +name : string
+                +pivot_currency_code : string
+                +enabled : bool
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class crm_topology_config_mapper {
+            }
+            class crm_topology_config_repository {
+                +remove_status : enum class
+            }
+            class currency_calendar_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +currency_iso_code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +calendar_code : string
+                +version : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class currency_calendar_mapper {
+            }
+            class currency_calendar_repository {
+                +remove_status : enum class
+                -ctx_ : context
+            }
+            class currency_country_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +currency_iso_code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +country_alpha2_code : string
+                +version : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class currency_country_mapper {
+            }
+            class currency_country_repository {
+                +remove_status : enum class
+                -ctx_ : context
+            }
+            class currency_currency_group_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +currency_iso_code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +currency_group_code : string
+                +version : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class currency_currency_group_mapper {
+            }
+            class currency_currency_group_repository {
+                +remove_status : enum class
+                -ctx_ : context
             }
             class currency_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -471,19 +1043,21 @@ namespace ores #F2F2F2 {
                 +monetary_nature : string
                 +market_tier : string
                 +image_id : optional<string>
+                +spot_days : int
+                +day_basis : string
+                +base_precedence : int
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
-            class currency_mapper {
-            }
-            class currency_market_tier_entity <<struct>> {
+            class currency_group_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
                 +version : int
                 +name : string
                 +description : string
@@ -492,20 +1066,174 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class currency_group_mapper {
+            }
+            class currency_group_repository {
+                +remove_status : enum class
+            }
+            class currency_mapper {
+            }
+            class currency_market_tier_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class currency_market_tier_mapper {
             }
             class currency_market_tier_repository {
+                +remove_status : enum class
+            }
+            class currency_pair_classification_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class currency_pair_classification_mapper {
+            }
+            class currency_pair_classification_repository {
+                +remove_status : enum class
+            }
+            class currency_pair_convention_calendar_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +pair_code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +calendar_code : string
+                +version : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class currency_pair_convention_calendar_mapper {
+            }
+            class currency_pair_convention_calendar_repository {
+                +remove_status : enum class
+                -ctx_ : context
+            }
+            class currency_pair_convention_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +pair_code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +pip_factor : double
+                +tick_size : double
+                +decimal_places : int
+                +business_day_convention : optional<string>
+                +spot_relative : optional<bool>
+                +end_of_month : optional<bool>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class currency_pair_convention_mapper {
+            }
+            class currency_pair_convention_repository {
+                +remove_status : enum class
+            }
+            class currency_pair_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +pair_code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +base_currency : string
+                +quote_currency : string
+                +classification : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class currency_pair_mapper {
+            }
+            class currency_pair_repository {
+                +remove_status : enum class
             }
             class currency_repository {
+                +remove_status : enum class
+            }
+            class curve_role_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class curve_role_mapper {
+            }
+            class curve_role_repository {
+                +remove_status : enum class
+            }
+            class day_count_fraction_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class day_count_fraction_type_mapper {
+            }
+            class day_count_fraction_type_repository {
+                +remove_status : enum class
             }
             class deposit_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
+                +workspace_id : string
                 +version : int
                 +index_based : bool
                 +index : optional<string>
@@ -518,55 +1246,101 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class deposit_convention_mapper {
             }
             class deposit_convention_repository {
+                +remove_status : enum class
+            }
+            class derivation_kind_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class derivation_kind_mapper {
+            }
+            class derivation_kind_repository {
+                +remove_status : enum class
+            }
+            class diary_entry_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class diary_entry_type_mapper {
+            }
+            class diary_entry_type_repository {
+                +remove_status : enum class
+            }
+            class floating_index_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class floating_index_type_mapper {
+            }
+            class floating_index_type_repository {
+                +remove_status : enum class
             }
             class fra_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
+                +workspace_id : string
                 +version : int
                 +index : string
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class fra_convention_mapper {
             }
             class fra_convention_repository {
-            }
-            class fx_convention_entity <<struct>> {
-                +schema : constexpr static const char*
-                +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
-                +tenant_id : string
-                +version : int
-                +spot_days : int
-                +source_currency : string
-                +target_currency : string
-                +points_factor : double
-                +advance_calendar : optional<string>
-                +spot_relative : optional<bool>
-                +end_of_month : optional<bool>
-                +convention : optional<string>
-                +modified_by : string
-                +performed_by : string
-                +change_reason_code : string
-                +change_commentary : string
-            }
-            class fx_convention_mapper {
-            }
-            class fx_convention_repository {
+                +remove_status : enum class
             }
             class ibor_index_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
+                +workspace_id : string
                 +version : int
                 +fixing_calendar : string
                 +day_count_fraction : string
@@ -577,15 +1351,93 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class ibor_index_convention_mapper {
             }
             class ibor_index_convention_repository {
+                +remove_status : enum class
             }
-            class monetary_nature_entity <<struct>> {
+            class instrument_code_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +asset_class : optional<string>
+                +ore_trade_type : optional<string>
+                +display_order : int
+                +curve_role : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class instrument_code_mapper {
+            }
+            class instrument_code_repository {
+                +remove_status : enum class
+            }
+            class ir_curve_bootstrap_config_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +output_series_id : string
+                +party_id : string
+                +source_series_id : string
+                +curve_family_role : string
+                +discount_curve_config_id : string
+                +interpolation_method : string
+                +day_count_convention : string
+                +split_tenor_code : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class ir_curve_bootstrap_config_mapper {
+            }
+            class ir_curve_bootstrap_config_repository {
+                +remove_status : enum class
+            }
+            class ir_curve_bootstrap_pillar_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +bootstrap_config_id : string
+                +sequence_index : int
+                +start_tenor_code : string
+                +end_tenor_code : string
+                +curve_role_code : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class ir_curve_bootstrap_pillar_mapper {
+            }
+            class ir_curve_bootstrap_pillar_repository {
+                +remove_status : enum class
+            }
+            class ledger_feed_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
                 +version : int
                 +name : string
                 +description : string
@@ -594,18 +1446,60 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class ledger_feed_type_mapper {
+            }
+            class ledger_feed_type_repository {
+                +remove_status : enum class
+            }
+            class leg_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class leg_type_mapper {
+            }
+            class leg_type_repository {
+                +remove_status : enum class
+            }
+            class monetary_nature_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class monetary_nature_mapper {
             }
             class monetary_nature_repository {
+                +remove_status : enum class
             }
             class ois_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
+                +workspace_id : string
                 +version : int
                 +spot_lag : int
                 +index : string
@@ -623,16 +1517,20 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class ois_convention_mapper {
             }
             class ois_convention_repository {
+                +remove_status : enum class
             }
             class overnight_index_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
+                +workspace_id : string
                 +version : int
                 +fixing_calendar : string
                 +day_count_fraction : string
@@ -641,10 +1539,13 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class overnight_index_convention_mapper {
             }
             class overnight_index_convention_repository {
+                +remove_status : enum class
             }
             class party_contact_information_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -654,15 +1555,15 @@ namespace ores #F2F2F2 {
                 +version : int
                 +party_id : string
                 +contact_type : string
-                +street_line_1 : string
-                +street_line_2 : string
-                +city : string
-                +state : string
-                +country_code : string
-                +postal_code : string
-                +phone : string
-                +email : string
-                +web_page : string
+                +street_line_1 : optional<string>
+                +street_line_2 : optional<string>
+                +city : optional<string>
+                +state : optional<string>
+                +country_code : optional<string>
+                +postal_code : optional<string>
+                +phone : optional<string>
+                +email : optional<string>
+                +web_page : optional<string>
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
@@ -673,7 +1574,7 @@ namespace ores #F2F2F2 {
             class party_contact_information_mapper {
             }
             class party_contact_information_repository {
-                -ctx_ : context
+                +remove_status : enum class
             }
             class party_counterparty_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -692,6 +1593,7 @@ namespace ores #F2F2F2 {
             class party_counterparty_mapper {
             }
             class party_counterparty_repository {
+                +remove_status : enum class
                 -ctx_ : context
             }
             class party_country_entity <<struct>> {
@@ -711,6 +1613,7 @@ namespace ores #F2F2F2 {
             class party_country_mapper {
             }
             class party_country_repository {
+                +remove_status : enum class
                 -ctx_ : context
             }
             class party_currency_entity <<struct>> {
@@ -730,6 +1633,7 @@ namespace ores #F2F2F2 {
             class party_currency_mapper {
             }
             class party_currency_repository {
+                +remove_status : enum class
                 -ctx_ : context
             }
             class party_entity <<struct>> {
@@ -738,8 +1642,8 @@ namespace ores #F2F2F2 {
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
                 +version : int
-                +full_name : string
                 +short_code : string
+                +full_name : string
                 +codename : string
                 +transliterated_name : optional<string>
                 +party_category : string
@@ -747,6 +1651,7 @@ namespace ores #F2F2F2 {
                 +parent_party_id : optional<string>
                 +business_center_code : string
                 +status : string
+                +image_id : optional<string>
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
@@ -762,18 +1667,20 @@ namespace ores #F2F2F2 {
                 +version : int
                 +name : string
                 +description : string
-                +coding_scheme_code : string
+                +coding_scheme_code : optional<string>
                 +display_order : int
+                +max_cardinality : optional<int>
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class party_id_scheme_mapper {
             }
             class party_id_scheme_repository {
+                +remove_status : enum class
             }
             class party_identifier_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -784,7 +1691,7 @@ namespace ores #F2F2F2 {
                 +party_id : string
                 +id_scheme : string
                 +id_value : string
-                +description : string
+                +description : optional<string>
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
@@ -795,12 +1702,12 @@ namespace ores #F2F2F2 {
             class party_identifier_mapper {
             }
             class party_identifier_repository {
-                -ctx_ : context
+                +remove_status : enum class
             }
             class party_mapper {
             }
             class party_repository {
-                -ctx_ : context
+                +remove_status : enum class
             }
             class party_status_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -815,12 +1722,13 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class party_status_mapper {
             }
             class party_status_repository {
+                +remove_status : enum class
             }
             class party_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -835,27 +1743,52 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class party_type_mapper {
             }
             class party_type_repository {
+                +remove_status : enum class
+            }
+            class payment_frequency_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +period_unit : string
+                +period_multiplier : optional<int>
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class payment_frequency_mapper {
+            }
+            class payment_frequency_repository {
+                +remove_status : enum class
             }
             class portfolio_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
+                +workspace_id : string
                 +version : int
                 +party_id : string
                 +name : string
-                +description : string
+                +description : optional<string>
                 +parent_portfolio_id : optional<string>
                 +owner_unit_id : optional<string>
                 +purpose_type : string
-                +aggregation_ccy : string
-                +is_virtual : int
+                +aggregation_ccy : optional<string>
+                +is_virtual : bool
                 +status : string
                 +modified_by : string
                 +performed_by : string
@@ -867,7 +1800,7 @@ namespace ores #F2F2F2 {
             class portfolio_mapper {
             }
             class portfolio_repository {
-                -ctx_ : context
+                +remove_status : enum class
             }
             class purpose_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -882,17 +1815,19 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class purpose_type_mapper {
             }
             class purpose_type_repository {
+                +remove_status : enum class
             }
-            class rounding_type_entity <<struct>> {
+            class regulatory_book_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
                 +version : int
                 +name : string
                 +description : string
@@ -901,18 +1836,62 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class regulatory_book_type_mapper {
+            }
+            class regulatory_book_type_repository {
+                +remove_status : enum class
+            }
+            class rounding_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class rounding_type_mapper {
             }
             class rounding_type_repository {
+                +remove_status : enum class
+            }
+            class series_subclass_code_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class series_subclass_code_mapper {
+            }
+            class series_subclass_code_repository {
+                +remove_status : enum class
             }
             class swap_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
+                +workspace_id : string
                 +version : int
                 +fixed_calendar : optional<string>
                 +fixed_frequency : string
@@ -925,16 +1904,196 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class swap_convention_mapper {
             }
             class swap_convention_repository {
+                +remove_status : enum class
+            }
+            class tenor_anchor_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : optional<string>
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class tenor_anchor_mapper {
+            }
+            class tenor_anchor_repository {
+                +remove_status : enum class
+            }
+            class tenor_convention_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : optional<string>
+                +measured_from : string
+                +resolution_algorithm : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class tenor_convention_mapper {
+            }
+            class tenor_convention_repository {
+                +remove_status : enum class
+            }
+            class tenor_convention_resolution_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +convention_code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +tenor_code : string
+                +version : int
+                +anchor_override : optional<string>
+                +offset_unit : optional<string>
+                +offset_multiplier : optional<int>
+                +schedule_code : optional<string>
+                +schedule_step_count : optional<int>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class tenor_convention_resolution_mapper {
+            }
+            class tenor_convention_resolution_repository {
+                -ctx_ : context
+            }
+            class tenor_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +display_name : string
+                +description : optional<string>
+                +sort_order : int
+                +kind : string
+                +unit : string
+                +multiplier : optional<int>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class tenor_kind_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class tenor_kind_mapper {
+            }
+            class tenor_kind_repository {
+                +remove_status : enum class
+            }
+            class tenor_mapper {
+            }
+            class tenor_repository {
+                +remove_status : enum class
+            }
+            class tenor_resolution_algorithm_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class tenor_resolution_algorithm_mapper {
+            }
+            class tenor_resolution_algorithm_repository {
+                +remove_status : enum class
+            }
+            class tenor_schedule_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +schedule_source : string
+                +calendar_code : optional<string>
+                +diary_entry_type : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class tenor_schedule_mapper {
+            }
+            class tenor_schedule_repository {
+                +remove_status : enum class
+            }
+            class tenor_unit_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class tenor_unit_mapper {
+            }
+            class tenor_unit_repository {
+                +remove_status : enum class
             }
             class zero_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
+                +workspace_id : string
                 +version : int
                 +tenor_based : bool
                 +day_count_fraction : string
@@ -949,17 +2108,27 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class zero_convention_mapper {
             }
             class zero_convention_repository {
+                +remove_status : enum class
             }
         }
         namespace service #F2F2F2 {
+            class asset_class_code_service {
+                -ctx_ : context
+                -repo_ : repository::asset_class_code_repository
+            }
             class asset_class_service {
-                +limit : uint32_t
                 -ctx_ : context
                 -repo_ : repository::asset_class_repository
+            }
+            class book_purpose_type_service {
+                -ctx_ : context
+                -repo_ : repository::book_purpose_type_repository
             }
             class book_service {
                 -ctx_ : context
@@ -973,9 +2142,47 @@ namespace ores #F2F2F2 {
                 -ctx_ : context
                 -repo_ : repository::business_centre_repository
             }
+            class business_day_convention_type_service {
+                -ctx_ : context
+                -repo_ : repository::business_day_convention_type_repository
+            }
             class business_unit_service {
                 -ctx_ : context
                 -repo_ : repository::business_unit_repository
+            }
+            class business_unit_type_service {
+                -ctx_ : context
+                -repo_ : repository::business_unit_type_repository
+            }
+            class calendar_adjustment_export_service {
+                -ctx_ : context
+            }
+            class calendar_date_service {
+                -ctx_ : context
+                -repo_ : repository::calendar_date_repository
+            }
+            class calendar_event_service {
+                -ctx_ : context
+                -repo_ : repository::calendar_event_repository
+            }
+            class calendar_exception_service {
+                -ctx_ : context
+                -repo_ : repository::calendar_exception_repository
+            }
+            class calendar_materialisation_service {
+                -ctx_ : context
+            }
+            class calendar_rule_service {
+                -ctx_ : context
+                -repo_ : repository::calendar_rule_repository
+            }
+            class calendar_service {
+                -ctx_ : context
+                -repo_ : repository::calendar_repository
+            }
+            class calendar_type_service {
+                -ctx_ : context
+                -repo_ : repository::calendar_type_repository
             }
             class cds_convention_service {
                 -ctx_ : context
@@ -994,7 +2201,6 @@ namespace ores #F2F2F2 {
                 -repo_ : repository::counterparty_identifier_repository
             }
             class counterparty_service {
-                +offset : uint32_t
                 -ctx_ : context
                 -repo_ : repository::counterparty_repository
             }
@@ -1003,30 +2209,110 @@ namespace ores #F2F2F2 {
                 -repo_ : repository::country_repository
                 -junction_repo_ : repository::party_country_repository
             }
+            class crm_driver_pair_service {
+                -ctx_ : context
+                -repo_ : repository::crm_driver_pair_repository
+            }
+            class crm_enabled_derived_pair_service {
+                -ctx_ : context
+                -repo_ : repository::crm_enabled_derived_pair_repository
+            }
+            class crm_topology_config_service {
+                -ctx_ : context
+                -repo_ : repository::crm_topology_config_repository
+            }
+            class currency_calendar_service {
+                -ctx_ : context
+                -repo_ : repository::currency_calendar_repository
+            }
+            class currency_country_service {
+                -ctx_ : context
+                -repo_ : repository::currency_country_repository
+            }
+            class currency_currency_group_service {
+                -ctx_ : context
+                -repo_ : repository::currency_currency_group_repository
+            }
+            class currency_group_service {
+                -ctx_ : context
+                -repo_ : repository::currency_group_repository
+            }
             class currency_market_tier_service {
                 -ctx_ : context
                 -repo_ : repository::currency_market_tier_repository
+            }
+            class currency_pair_classification_service {
+                -ctx_ : context
+                -repo_ : repository::currency_pair_classification_repository
+            }
+            class currency_pair_convention_calendar_service {
+                -ctx_ : context
+                -repo_ : repository::currency_pair_convention_calendar_repository
+            }
+            class currency_pair_convention_service {
+                -ctx_ : context
+                -repo_ : repository::currency_pair_convention_repository
+            }
+            class currency_pair_service {
+                -ctx_ : context
+                -repo_ : repository::currency_pair_repository
             }
             class currency_service {
                 -ctx_ : context
                 -repo_ : repository::currency_repository
                 -junction_repo_ : repository::party_currency_repository
             }
+            class curve_role_service {
+                -ctx_ : context
+                -repo_ : repository::curve_role_repository
+            }
+            class day_count_fraction_type_service {
+                -ctx_ : context
+                -repo_ : repository::day_count_fraction_type_repository
+            }
             class deposit_convention_service {
                 -ctx_ : context
                 -repo_ : repository::deposit_convention_repository
+            }
+            class derivation_kind_service {
+                -ctx_ : context
+                -repo_ : repository::derivation_kind_repository
+            }
+            class diary_entry_type_service {
+                -ctx_ : context
+                -repo_ : repository::diary_entry_type_repository
+            }
+            class floating_index_type_service {
+                -ctx_ : context
+                -repo_ : repository::floating_index_type_repository
             }
             class fra_convention_service {
                 -ctx_ : context
                 -repo_ : repository::fra_convention_repository
             }
-            class fx_convention_service {
-                -ctx_ : context
-                -repo_ : repository::fx_convention_repository
-            }
             class ibor_index_convention_service {
                 -ctx_ : context
                 -repo_ : repository::ibor_index_convention_repository
+            }
+            class instrument_code_service {
+                -ctx_ : context
+                -repo_ : repository::instrument_code_repository
+            }
+            class ir_curve_bootstrap_config_service {
+                -ctx_ : context
+                -repo_ : repository::ir_curve_bootstrap_config_repository
+            }
+            class ir_curve_bootstrap_pillar_service {
+                -ctx_ : context
+                -repo_ : repository::ir_curve_bootstrap_pillar_repository
+            }
+            class ledger_feed_type_service {
+                -ctx_ : context
+                -repo_ : repository::ledger_feed_type_repository
+            }
+            class leg_type_service {
+                -ctx_ : context
+                -repo_ : repository::leg_type_repository
             }
             class monetary_nature_service {
                 -ctx_ : context
@@ -1043,6 +2329,18 @@ namespace ores #F2F2F2 {
             class party_contact_information_service {
                 -ctx_ : context
                 -repo_ : repository::party_contact_information_repository
+            }
+            class party_counterparty_service {
+                -ctx_ : context
+                -repo_ : repository::party_counterparty_repository
+            }
+            class party_country_service {
+                -ctx_ : context
+                -repo_ : repository::party_country_repository
+            }
+            class party_currency_service {
+                -ctx_ : context
+                -repo_ : repository::party_currency_repository
             }
             class party_id_scheme_service {
                 -ctx_ : context
@@ -1064,6 +2362,10 @@ namespace ores #F2F2F2 {
                 -ctx_ : context
                 -repo_ : repository::party_type_repository
             }
+            class payment_frequency_service {
+                -ctx_ : context
+                -repo_ : repository::payment_frequency_repository
+            }
             class portfolio_service {
                 -ctx_ : context
                 -repo_ : repository::portfolio_repository
@@ -1072,13 +2374,53 @@ namespace ores #F2F2F2 {
                 -ctx_ : context
                 -repo_ : repository::purpose_type_repository
             }
+            class regulatory_book_type_service {
+                -ctx_ : context
+                -repo_ : repository::regulatory_book_type_repository
+            }
             class rounding_type_service {
                 -ctx_ : context
                 -repo_ : repository::rounding_type_repository
             }
+            class series_subclass_code_service {
+                -ctx_ : context
+                -repo_ : repository::series_subclass_code_repository
+            }
             class swap_convention_service {
                 -ctx_ : context
                 -repo_ : repository::swap_convention_repository
+            }
+            class tenor_anchor_service {
+                -ctx_ : context
+                -repo_ : repository::tenor_anchor_repository
+            }
+            class tenor_convention_resolution_service {
+                -ctx_ : context
+                -repo_ : repository::tenor_convention_resolution_repository
+            }
+            class tenor_convention_service {
+                -ctx_ : context
+                -repo_ : repository::tenor_convention_repository
+            }
+            class tenor_kind_service {
+                -ctx_ : context
+                -repo_ : repository::tenor_kind_repository
+            }
+            class tenor_resolution_algorithm_service {
+                -ctx_ : context
+                -repo_ : repository::tenor_resolution_algorithm_repository
+            }
+            class tenor_schedule_service {
+                -ctx_ : context
+                -repo_ : repository::tenor_schedule_repository
+            }
+            class tenor_service {
+                -ctx_ : context
+                -repo_ : repository::tenor_repository
+            }
+            class tenor_unit_service {
+                -ctx_ : context
+                -repo_ : repository::tenor_unit_repository
             }
             class zero_convention_service {
                 -ctx_ : context
@@ -1089,6 +2431,23 @@ namespace ores #F2F2F2 {
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+' One entity's stack, which every entity repeats. country shows it: the
+' composition point hands the registry to the entity's registrar, the
+' registrar subscribes the handler, and the handler drives the service.
+ores::refdata::messaging::registrar ..> ores::refdata::messaging::country_handler : registers
+ores::refdata::messaging::country_handler --> ores::refdata::service::country_service : applies a change
+ores::refdata::service::country_service --> ores::refdata::repository::country_repository : reads and writes
+ores::refdata::repository::country_repository --> ores::refdata::repository::country_mapper : maps
+ores::refdata::repository::country_repository --> ores::refdata::repository::country_entity : stores
+ores::refdata::messaging::registrar ..> ores::refdata::messaging::publish_from_dq_handler : subscribes the publish-from-dq subjects
+
+note as N_CORE_COMPOSITION
+  registrar.cpp is the composition point: it names every entity's registrar
+  and every history provider, and a subject no registrar is handed to is
+  served by nothing.
+end note
+ores::refdata::messaging::registrar .. N_CORE_COMPOSITION
+
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.refdata.core.puml"

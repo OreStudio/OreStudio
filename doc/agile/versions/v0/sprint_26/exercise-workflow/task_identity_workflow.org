@@ -195,16 +195,34 @@ iam provider and returns a well-formed response, and an unknown entity type fail
 with the subject it tried, because the entity type's component segment selects the
 subject. The addressing rule works.
 
-** Open: what an empty history result means
+** History verified end to end, and the empty account result narrowed
 
-Reading the bootstrapped =super_admin= account returns no versions although the row
-exists with =version = 1=. The provider ran -- a missing provider is a failure
-response and this was a success with an empty list -- so the read found nothing
-where a row exists. The likely cause is tenant scoping: the provider is handed the
-caller's resolved context, and the bootstrap account's tenant is the all-ones uuid
-rather than a tenant the read is scoped to. That is a hypothesis, not a finding,
-and it must be settled before any configuration can assert on history. It does not
-affect the command, whose contract is to report what the provider answers.
+Reading a real entity's history works. A =workflow_instance= was created and then
+updated to a second version, and the command reported both:
+
+#+begin_src text
+History of 51766dac-4e75-4f95-bb8b-8706e4c811e9 (2 version(s)):
+  v2  2026-09-26 19:16:46Z  super_admin  18 field(s)
+  v1  2026-09-26 19:16:39Z  super_admin  18 field(s)
+#+end_src
+
+and =--diff --version 2= printed the fields that moved: the step index, the step
+count, the two timestamps, the commentary and the recorded-at stamp.
+
+The empty result for the bootstrapped =super_admin= account is therefore *not*
+tenant scoping, which was the first hypothesis and is wrong -- the workflow instance
+read answers on the same all-ones tenant. The account case is narrower and still
+unexplained, most likely because iam's account provider keys on something other than
+the row's uuid. It is left as an open question rather than a theory.
+
+** Blocker before the fixture can be started: the shell cannot publish
+
+=workflow start= must publish =start_workflow_message= to a JetStream subject, and
+the shell's =nats_client= exposes only =request= and =authenticated_request= -- no
+=publish=, no =js_publish=. The underlying =ores.nats::service::client= has them;
+the wrapper the command units hold does not. So the first piece of this task is a
+publish path on that wrapper, in a shared component rather than in the shell. Worth
+knowing before the fixture is written, because it changes the order of the work.
 
 ** Why the fixture has to live in the service, not the shell
 

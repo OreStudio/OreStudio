@@ -174,18 +174,18 @@ begin
     return query
     select
         case
-            when existing.image_id is not null then 'update'
+            when existing.id is not null then 'update'
             else 'insert'
         end as action,
         dq.key as image_key,
         dq.description,
         case
-            when existing.image_id is not null then 'Image with this key already exists'
+            when existing.id is not null then 'Image with this key already exists'
             else 'New image'
         end as reason
     from ores_dq_images_artefact_tbl dq
     left join ores_assets_images_tbl existing
-        on existing.key = dq.key
+        on existing.code = dq.key
         and existing.valid_to = ores_utility_infinity_timestamp_fn()
     where dq.dataset_id = p_dataset_id
     order by dq.key;

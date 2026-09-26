@@ -140,9 +140,9 @@ begin
     )
     select
         v_dataset_id,
-        image_id,
+        id,
         version,
-        key,
+        code,
         description,
         convert_from(decode(data, 'base64'), 'UTF8')
     from ores_assets_images_tbl

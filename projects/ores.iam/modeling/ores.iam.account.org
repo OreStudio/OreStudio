@@ -255,7 +255,7 @@ no reporting line is recorded.
 ** image_id
 :PROPERTIES:
 :table:          ores_assets_images_tbl
-:target_column:  image_id
+:target_column:  id
 :nullable:       true
 :error_message:  Invalid image_id: %. Image must exist.
 :END:

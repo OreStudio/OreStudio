@@ -203,7 +203,7 @@ begin
         if not exists (
             select 1 from ores_assets_images_tbl
             where tenant_id = NEW.tenant_id
-              and image_id = NEW.image_id
+              and id = NEW.image_id
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             raise exception 'Invalid image_id: %. Image must exist.', NEW.image_id

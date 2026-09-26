@@ -244,6 +244,14 @@ stays hand-written. What it added:
 - Model prose is the generated documentation. An instruction to the generator
   written into a model arrives in the generated header as the entity
   description, so a model states facts and a task states instructions.
+- A unique index on a nullable tenant does not make NULL one tenant.
+  PostgreSQL treats NULLs as distinct in a unique index unless the index says
+  =nulls not distinct=, so a tenant-scoped natural key still admits duplicate
+  system-scope rows. The =ores.scheduler= pass shipped the index, its own
+  verification passed it, and only a live duplicate insert -- two NULL-tenant
+  rows with the same name, accepted -- and then the reviewer found it. Where a
+  scope value can be NULL, say what NULL means to every constraint that reads
+  it, and prove it against the database rather than the generated text.
 
 * See also
 

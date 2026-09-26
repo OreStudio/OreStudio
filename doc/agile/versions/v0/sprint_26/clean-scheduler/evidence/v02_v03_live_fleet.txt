@@ -73,7 +73,7 @@ V02, the suites with the database and NATS serving
 --------------------------------------------------
 
     codegen suite                         608 passed, 0 failed
-    ores.scheduler.api.tests              All tests passed (33 assertions in 6 test cases)
+    ores.scheduler.api.tests              All tests passed (38 assertions in 8 test cases)
     ores.scheduler.service.tests          All tests passed (26 assertions in 10 test cases)
     ores.scheduler.core.tests             All tests passed (84 assertions in 22 test cases)
 

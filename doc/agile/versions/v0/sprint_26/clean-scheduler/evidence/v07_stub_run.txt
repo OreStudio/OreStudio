@@ -26,7 +26,11 @@ the file pass, so the probe is specific to the subject and not a build
 accident. The stub was then reverted (`git checkout` on
 `cron_expression.cpp`), and the suite returned green:
 
-    All tests passed (33 assertions in 6 test cases)
+    All tests passed (33 assertions in 6 test cases)   [the run this file
+                                                       records; the suite stood
+                                                       at 38 in 8 after the
+                                                       review added two
+                                                       reflector cases]
 
 The two cases before the fix, for contrast, were one case asserting
 `CHECK(next > now)` with a wall-clock `now`, which any implementation that

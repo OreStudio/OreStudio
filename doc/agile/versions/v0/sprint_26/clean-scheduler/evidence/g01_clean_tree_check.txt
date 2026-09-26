@@ -99,7 +99,7 @@ At the same revision, with the fleet up:
     codegen suite                          608 passed, 0 failed
                                            (projects/ores.codegen/venv/bin/python
                                            -m pytest projects/ores.codegen/tests -q)
-    ores.scheduler.api.tests               All tests passed (33 assertions in 6 test cases)
+    ores.scheduler.api.tests               All tests passed (38 assertions in 8 test cases)
     ores.scheduler.core.tests              All tests passed (84 assertions in 22 test cases)
     ores.scheduler.service.tests           All tests passed (26 assertions in 10 test cases)
 

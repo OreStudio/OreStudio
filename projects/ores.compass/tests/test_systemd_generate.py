@@ -80,39 +80,81 @@ class TestFetchServiceDefinitions:
         assert defs[0]["entry_point"] == "packages/bff/dist/main.js"
 
 
-class TestBusctlFlag:
-    """`compass systemd` accepts the transport flag the services pillar has.
+class TestTransportSelection:
+    """Where the busctl choice comes from.
 
-    The flag has to reach systemctl_bus, or a sandboxed caller keeps the
-    unreachable-manager failure it passed the flag to avoid. Unlike the rest
-    of this module these cases drive run(), so the transport global is reset
-    around each one."""
+    compass reads .env into a dict and never writes os.environ, so a value
+    that lives only in the file is invisible to use_busctl() unless it is
+    handed over. These cases drive run() against a real env file, which is
+    the only way to catch that; the transport global is reset around each."""
 
-    @staticmethod
-    def _bare_checkout(tmp_path):
-        # load_env exits when the file is absent, and the deploy only needs
-        # to get past it to prove the flag landed.
-        (tmp_path / ".env").write_text("")
-
-    def test_the_flag_selects_the_bus(self, tmp_path, monkeypatch):
+    def _selection(self, tmp_path, env_text, argv, monkeypatch):
         monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
-        self._bare_checkout(tmp_path)
+        (tmp_path / ".env").write_text(env_text)
         systemctl_bus.set_use_busctl(False)
         try:
-            systemd_generate.run(["deploy", "--use-busctl"], tmp_path)
-            assert systemctl_bus.use_busctl() is True
+            systemd_generate.run(list(argv), tmp_path)
+            return systemctl_bus.use_busctl()
         finally:
             systemctl_bus.set_use_busctl(False)
 
-    def test_without_the_flag_plain_systemctl_is_kept(self, tmp_path, monkeypatch):
-        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
-        self._bare_checkout(tmp_path)
+    def test_the_checkout_file_selects_the_bus(self, tmp_path, monkeypatch):
+        assert self._selection(
+            tmp_path, "ORES_USE_BUSCTL=1\n", ["deploy"], monkeypatch) is True
+
+    def test_a_word_form_in_the_file_is_accepted(self, tmp_path, monkeypatch):
+        assert self._selection(
+            tmp_path, "ORES_USE_BUSCTL=yes\n", ["deploy"], monkeypatch) is True
+
+    def test_the_file_saying_off_keeps_plain_systemctl(
+            self, tmp_path, monkeypatch):
+        assert self._selection(
+            tmp_path, "ORES_USE_BUSCTL=0\n", ["deploy"], monkeypatch) is False
+
+    def test_no_file_value_and_no_flag_keeps_plain_systemctl(
+            self, tmp_path, monkeypatch):
+        assert self._selection(tmp_path, "", ["deploy"], monkeypatch) is False
+
+    def test_the_flag_selects_the_bus_without_a_file_value(
+            self, tmp_path, monkeypatch):
+        assert self._selection(
+            tmp_path, "", ["deploy", "--use-busctl"], monkeypatch) is True
+
+    def test_the_flag_wins_over_a_file_that_says_off(
+            self, tmp_path, monkeypatch):
+        assert self._selection(
+            tmp_path, "ORES_USE_BUSCTL=0\n",
+            ["deploy", "--use-busctl"], monkeypatch) is True
+
+
+class TestAdoptTransportSetting:
+    """The handover itself, independent of any command's argument parsing."""
+
+    def setup_method(self):
         systemctl_bus.set_use_busctl(False)
-        try:
-            systemd_generate.run(["deploy"], tmp_path)
-            assert systemctl_bus.use_busctl() is False
-        finally:
-            systemctl_bus.set_use_busctl(False)
+
+    def teardown_method(self):
+        systemctl_bus.set_use_busctl(False)
+
+    def test_a_true_file_value_turns_the_bus_on(self, monkeypatch):
+        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
+        systemctl_bus.adopt_transport_setting({"ORES_USE_BUSCTL": "1"})
+        assert systemctl_bus.use_busctl() is True
+
+    def test_a_false_file_value_leaves_it_off(self, monkeypatch):
+        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
+        systemctl_bus.adopt_transport_setting({"ORES_USE_BUSCTL": "0"})
+        assert systemctl_bus.use_busctl() is False
+
+    def test_a_missing_key_leaves_it_off(self, monkeypatch):
+        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
+        systemctl_bus.adopt_transport_setting({})
+        assert systemctl_bus.use_busctl() is False
+
+    def test_the_flag_turns_it_on_with_no_file_value(self, monkeypatch):
+        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
+        systemctl_bus.adopt_transport_setting({}, flag=True)
+        assert systemctl_bus.use_busctl() is True
 
 
 class TestReloadSystemd:

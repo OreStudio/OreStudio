@@ -17,6 +17,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import compass_services
+import systemctl_bus
 
 REGISTRY = ["ores.iam.service", "ores.web.service", "ores.http.server",
             "ores.compute.wrapper"]
@@ -142,3 +143,39 @@ class TestStartOne:
         assert compass_services._start_one(
             ctx, SimpleNamespace(service="nope"), start_ts=0.0) == 1
         assert seen == []
+
+
+class TestTransportSelection:
+    """The services pillar takes the transport from the checkout file.
+
+    compass reads .env into a dict and never writes os.environ, so the file's
+    choice reaches systemctl_bus only if run() hands it over. A sandboxed
+    `compass services status` otherwise reports the units as missing rather
+    than stopped, which is the symptom this guards."""
+
+    def _selection(self, tmp_path, env_text, argv, monkeypatch):
+        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
+        (tmp_path / ".env").write_text("ORES_PRESET=preset\n" + env_text)
+        monkeypatch.setattr(compass_services, "validate_env_version",
+                            lambda *a, **k: None)
+        monkeypatch.setattr(compass_services, "cmd_status",
+                            lambda ctx, args: 0)
+        systemctl_bus.set_use_busctl(False)
+        try:
+            compass_services.run(list(argv), tmp_path)
+            return systemctl_bus.use_busctl()
+        finally:
+            systemctl_bus.set_use_busctl(False)
+
+    def test_the_checkout_file_selects_the_bus(self, tmp_path, monkeypatch):
+        assert self._selection(
+            tmp_path, "ORES_USE_BUSCTL=1\n", ["status"], monkeypatch) is True
+
+    def test_without_a_file_value_plain_systemctl_is_kept(
+            self, tmp_path, monkeypatch):
+        assert self._selection(
+            tmp_path, "", ["status"], monkeypatch) is False
+
+    def test_the_flag_selects_the_bus(self, tmp_path, monkeypatch):
+        assert self._selection(
+            tmp_path, "", ["status", "--use-busctl"], monkeypatch) is True

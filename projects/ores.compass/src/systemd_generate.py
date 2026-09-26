@@ -1081,9 +1081,8 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
         _busctl_argument(sub_parser)
     args = parser.parse_args(argv)
 
-    systemctl_bus.set_use_busctl(getattr(args, "use_busctl", False))
-
     env = load_env(project_root, env_file)
+    systemctl_bus.adopt_transport_setting(env, getattr(args, "use_busctl", False))
 
     if args.cmd == "generate":
         return cmd_generate(project_root, env, args)

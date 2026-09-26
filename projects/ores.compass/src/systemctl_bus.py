@@ -50,6 +50,14 @@ _LIST_UNITS_FIELDS = 10
 _use_busctl = False
 _hint_printed = False
 
+# The spellings compass accepts for a true flag in .env. Kept in one place so
+# the file's value and the process environment cannot drift apart.
+_TRUTHY = ("1", "true", "yes", "on")
+
+
+def _truthy(value) -> bool:
+    return str(value if value is not None else "").strip().lower() in _TRUTHY
+
 
 def set_use_busctl(enabled: bool) -> None:
     """Force the busctl transport on or off for this process."""
@@ -57,12 +65,24 @@ def set_use_busctl(enabled: bool) -> None:
     _use_busctl = bool(enabled)
 
 
+def adopt_transport_setting(env: dict, flag: bool = False) -> None:
+    """Take the transport choice from a checkout's .env, and the flag if given.
+
+    compass reads .env into a dict and never writes os.environ, so a value
+    that lives only in the file is invisible to use_busctl(). Every caller
+    that has the dict must hand it over, or the file's choice does nothing.
+    The flag being absent means "no opinion", never "off": it cannot undo a
+    checkout that asked for the bus.
+    """
+    if flag or _truthy(env.get("ORES_USE_BUSCTL")):
+        set_use_busctl(True)
+
+
 def use_busctl() -> bool:
     """Whether systemctl calls go through busctl."""
     if _use_busctl:
         return True
-    value = os.environ.get("ORES_USE_BUSCTL", "").strip().lower()
-    return value in ("1", "true", "yes", "on")
+    return _truthy(os.environ.get("ORES_USE_BUSCTL", ""))
 
 
 def _escape_unit(name: str) -> str:

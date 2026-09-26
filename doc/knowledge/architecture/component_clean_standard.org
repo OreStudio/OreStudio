@@ -179,10 +179,11 @@ standard now holds 47 items. The findings behind the new items:
   the defect reaches all seven. Run the generator's dry run and read its
   diff before accepting a refresh.
 - An automated diagram pass is a skeleton, so the manual pass is not
-  optional polish. The pass reads data members only, which means every
-  interface and every static facade arrives as an empty box, and free
-  functions do not arrive at all. The first =ores.platform= diagram passed
-  a refresh check, a render and a file review, and still showed an
+  optional polish. The pass reads data members only. An interface, and any
+  class whose content is methods, arrives as an empty box; a class with
+  state arrives with its fields and no API; and a facet of free functions
+  does not arrive at all. The first =ores.platform= diagram passed a
+  refresh check, a render and a file review, and still showed an
   =environment_provider= with no methods and a class relationship the code
   does not have. Read the rendered image before calling a diagram done.
 - The same defect recurs across components. 147 =component_files.cmake=

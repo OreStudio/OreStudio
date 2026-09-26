@@ -221,6 +221,7 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
     next_step.idempotency_key = boost::uuids::to_string(next_id);
     next_step.compensation_subject = step_def.compensation_subject;
     next_step.recorded_at = std::chrono::system_clock::now();
+    next_step.modified_by = ctx_.service_account();
 
     // Persist before publishing (ensures restart can re-dispatch).
     step_repo_.write(ctx_, next_step);
@@ -301,6 +302,7 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
         comp_step.command_json = comp_json;
         comp_step.idempotency_key = boost::uuids::to_string(comp_id);
         comp_step.recorded_at = std::chrono::system_clock::now();
+        comp_step.modified_by = ctx_.service_account();
         step_repo_.write(ctx_, comp_step);
 
         // Publish compensation command with tenant header.
@@ -502,6 +504,11 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     instance.request_json = req.request_json;
     instance.correlation_id = req.correlation_id;
     instance.created_by = ctx_.service_account();
+    // The insert trigger resolves modified_by as an account username and
+    // raises once the tenant holds one, so every insert sets it. Attribution
+    // to the caller behind the request is a separate change: the request
+    // carries no identity and this service holds no verifier.
+    instance.modified_by = ctx_.service_account();
     instance.current_step_index = 0;
     instance.step_count = static_cast<int>(steps.size());
     instance.materialised_steps_json = materialise_steps_json(steps);
@@ -531,6 +538,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         step.idempotency_key = boost::uuids::to_string(step_id);
         step.compensation_subject = step_def.compensation_subject;
         step.recorded_at = std::chrono::system_clock::now();
+        step.modified_by = ctx_.service_account();
 
         step_repo_.write(ctx_, step);
         step_created = true;

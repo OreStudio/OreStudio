@@ -8,7 +8,7 @@
 #+filetags: :clean-analytics:sprint_26:v0:
 #+owner: marco
 #+branch: feature/clean-analytics
-#+pr:
+#+pr: 2145
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -329,7 +329,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2145][#2145]] | [analytics,shell] Bring ores.analytics to the clean standard |
 
 * Review
 

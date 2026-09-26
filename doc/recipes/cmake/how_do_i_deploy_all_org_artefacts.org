@@ -49,7 +49,7 @@ environment (no cmake/vcpkg) build the non-diagram artefacts directly:
 
 ** Individual targets
 
-Run a single target if you only changed one kind of artefact. The three
+Run a single target if you only changed one kind of artefact. The four
 org-export artefacts have a light-environment (=--direct=) path; diagrams
 need cmake:
 
@@ -57,8 +57,12 @@ need cmake:
 |-------------------+-----------------------------------+-------------------------------------------------|
 | =deploy_site=     | =compass build --direct site=     | HTML website under =build/output/site/=         |
 | =deploy_skills=   | =compass build --direct skills=   | Claude Code skills under [[proj:.claude/skills][=.claude/skills/=]]      |
-| =deploy_settings= | =compass build --direct settings= | [[proj:.claude/settings.json][=.claude/settings.json=]] from its org source     |
+| =deploy_settings= | =compass build --direct settings --claude= | [[proj:.claude/settings.json][=.claude/settings.json=]] from its org source |
+| =deploy_dsh_settings= | =compass build --direct settings --dsh= | =.dsh/=, copied into =~/.dsh=              |
 | =make_all_diagrams= (=mad=) | cmake only (PlantUML)   | PlantUML diagrams across the repository         |
+
+The =settings= alias deploys both agent surfaces; =--claude= and =--dsh=
+narrow it to one, as the two rows above do.
 
 ** Prerequisites
 
@@ -69,13 +73,13 @@ need cmake:
 * Script
 
 The =deploy_org= target has no script of its own — it delegates to the
-four sub-targets listed above. The CMake definition lives in
+five sub-targets listed above. The CMake definition lives in
 =CMakeLists.txt= near =add_custom_target(deploy_org ...)=.
 
 * Tested by
 
 Manual. Run =dorg= after any change to [[proj:doc/llm][=doc/llm/=]], [[proj:doc/recipes][=doc/recipes/=]], or any
-=.org= file. Verified working when all four sub-targets complete without
+=.org= file. Verified working when all five sub-targets complete without
 error.
 
 * See also

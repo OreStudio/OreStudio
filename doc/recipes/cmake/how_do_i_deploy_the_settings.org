@@ -2,52 +2,75 @@
 :ID: 3DDB2AFA-9CAA-44A0-A91A-645A95320A5F
 :END:
 #+title: How do I deploy the settings?
-#+description: Regenerate .claude/settings.json from its literate org source with compass build --direct settings (no cmake/vcpkg needed).
+#+description: Regenerate the agent settings — .claude/settings.json and the DSH sandbox rules — from their literate org sources with compass build --direct settings (no cmake/vcpkg needed).
 #+type: recipe
 #+level: cross
-#+filetags: :cmake:build:settings:claude_code:emacs:recipe:
+#+filetags: :cmake:build:settings:claude_code:dsh:emacs:recipe:
 #+created: 2026-05-22
-#+updated: 2026-05-22
+#+updated: 2026-09-26
 
-The authoritative source for [[proj:.claude/settings.json][=.claude/settings.json=]] is
-[[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] ([[proj:doc/llm/claude_code_settings.org][=doc/llm/claude_code_settings.org=]]). Never
-edit the JSON file directly. For CMake setup and preset names see
+Two harnesses run agents in this checkout, and each has its own generated
+settings. The authoritative source for [[proj:.claude/settings.json][=.claude/settings.json=]] is
+[[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] ([[proj:doc/llm/claude_code_settings.org][=doc/llm/claude_code_settings.org=]]); for the
+DSH sandbox rules it is [[id:93AB3ADB-9694-4451-A4B9-4FBABBB0B826][DSH Settings]] ([[proj:doc/llm/dsh_settings.org][=doc/llm/dsh_settings.org=]]).
+Never edit the generated files directly. For CMake setup and preset names see
 [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
 
 * Question
 
-How do I regenerate [[proj:.claude/settings.json][=.claude/settings.json=]] from its literate org source?
+How do I regenerate the agent settings from their literate org sources?
 
 * Answer
 
-=compass build --direct settings= deletes the existing
-[[proj:.claude/settings.json][=.claude/settings.json=]] and runs Emacs in batch mode to tangle
-[[proj:doc/llm/claude_code_settings.org][=doc/llm/claude_code_settings.org=]] in its place. It calls Emacs
-directly (no cmake, no vcpkg), so it works in a light environment. The
-tangle output path is derived from =ores/repo-root= (defined in
-=projects/ores.lisp/ores-babel.el=), so no hardcoded relative path
-appears in the org source.
+=compass build --direct settings= runs Emacs in batch mode to tangle each
+surface's document, and calls Emacs directly (no cmake, no vcpkg), so it works
+in a light environment. The =settings= alias deploys *both* surfaces; =--claude=
+and =--dsh= narrow it to one:
 
 #+begin_src sh :results verbatim
-./compass.sh build --direct settings
+./compass.sh build --direct settings            # both surfaces
+./compass.sh build --direct settings --claude   # .claude/settings.json only
+./compass.sh build --direct settings --dsh      # .dsh/, copied into ~/.dsh
 #+end_src
 
-Expected output:
+A surface flag with any other target is refused rather than ignored, because
+=build ores.storage.tests --dsh= would otherwise report a successful build of
+something the caller did not ask for.
+
+Expected output for =--claude=:
 
 #+begin_example
-Removing settings file
-Loading …/projects/ores.lisp/ores-babel.el (source)...
-Tangled 1 code block from claude_code_settings.org
+Tangled 7 code blocks from claude_code_settings.org
 Settings deployed to …/.claude/settings.json
 #+end_example
 
-This must be run outside the sandbox (Emacs and the =ores-babel.el=
-project detection need a full environment); use
-=dangerouslyDisableSandbox: true= on the Bash tool call.
+And for =--dsh=, which tangles into the checkout and then copies the result to
+=~/.dsh=, the directory the harness reads:
 
-In a full environment the equivalent =deploy_settings= CMake target
-(=cmake --build --preset <preset> --target deploy_settings=) runs the
-same script; prefer the compass command above.
+#+begin_example
+Tangled 2 code blocks from dsh_settings.org
+DSH settings tangled to …/.dsh
+Installed …/.dsh/sandbox-writable-paths
+Installed …/.dsh/bin/dsh-bwrap-writable-ores.sh
+The home patch selects the runner: …/.dsh/cordis.patch.yml
+#+end_example
+
+The two halves place their output differently. The Claude half derives its
+tangle target from =ores/repo-root= (defined in
+=projects/ores.lisp/ores-babel.el=), so no path appears in its document. The
+DSH half declares its targets on the master blocks of its own document,
+relative to that document, because org resolves a relative =:tangle= against
+the file it is reading rather than against the working directory.
+
+Both halves must run outside the sandbox. The Claude half needs a full
+environment for the =ores-babel.el= project detection; the DSH half writes
+=~/.dsh=, which the sandbox deliberately does not grant, so that the rules
+cannot rewrite the sandbox that reads them. Use =dangerouslyDisableSandbox:
+true= on the Bash tool call.
+
+In a full environment the equivalent CMake targets (=deploy_settings= and
+=deploy_dsh_settings=, both dependencies of =deploy_org=) run the same
+scripts; prefer the compass command above.
 
 ** Prerequisites
 
@@ -64,6 +87,18 @@ The output should be valid JSON with a =permissions.allow= array and a
 =sandbox= object. The number of allow entries is small by design (25 as
 of the initial version); if the count grows unexpectedly the source
 file should be audited.
+
+For the DSH half, read the live rules and compare them with what the document
+generated:
+
+#+begin_src sh :results verbatim
+cat ~/.dsh/sandbox-writable-paths
+diff .dsh/sandbox-writable-paths ~/.dsh/sandbox-writable-paths
+#+end_src
+
+The =diff= is empty when the deploy is current. A difference means the host is
+running rules the document no longer states, which is worth resolving before
+trusting either.
 
 * Script
 
@@ -83,6 +118,16 @@ The equivalent =deploy_settings= CMake target (used for full-environment
 builds) lives in =CMakeLists.txt= near
 =add_custom_target(deploy_settings ...)= and invokes the same script.
 
+The DSH half has its own script,
+[[proj:projects/ores.lisp/src/ores-build-dsh-settings.el][=projects/ores.lisp/src/ores-build-dsh-settings.el=]], and the same shape: it
+makes =ores/repo-root= available, tangles [[proj:doc/llm/dsh_settings.org][=doc/llm/dsh_settings.org=]], then
+*copies* the two generated files into =~/.dsh= and marks the runner
+executable. The copy is the point — a symbolic link would sit in the checkout,
+which a confined command can write, so the sandbox could widen itself. The
+script reports whether =~/.dsh/cordis.patch.yml= selects the runner rather than
+writing that file, because the harness manages part of it. Its CMake target is
+=add_custom_target(deploy_dsh_settings ...)=.
+
 * Tested by
 
 Manual. Run the target and verify [[proj:.claude/settings.json][=.claude/settings.json=]] is valid
@@ -92,5 +137,6 @@ CMake reconfiguration was not required on a warm build.
 * See also
 
 - [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] — the literate source; edit permissions here.
+- [[id:93AB3ADB-9694-4451-A4B9-4FBABBB0B826][DSH Settings]] — the literate source for the DSH sandbox rules; edit grants here.
 - [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — parallel target for Claude Code skills.
 - [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset names and output layout.

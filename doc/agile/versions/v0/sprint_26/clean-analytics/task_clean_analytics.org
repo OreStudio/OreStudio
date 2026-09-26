@@ -96,7 +96,7 @@ record each item's result in the table below.
 | V01  | Pass. The whole tree builds, the shell adapter part and =ores.shell.exe= included. | =compass build= (exit 0) |
 | V02  | Pass. The codegen suite passes, all five analytics suites pass against the running fleet, and the full suite is 69 of 70. | =pytest projects/ores.codegen/tests= (531 passed); =ctest -R analytics= (5/5); full =ctest= (69/70) |
 | V03  | Pass. The database recreates from scratch, and the Acme Corporation tenant provisions end to end on top of it. | =compass db recreate -y -k= (exit 0); Acme provision script (exit 0, all workflow steps completed) |
-| V04  | Pass with two recorded exceptions. All 40 generated analytics scripts ran against the live fleet as the Acme tenant admin: 10 answered =ok=, 15 =missing=, 14 =failed= and one aborted in the client. Three of the failures are a repository defect, recorded below. | =compass shell -l= over each script in =projects/ores.shell/scripts/library/=; V04 note below |
+| V04  | Pass with two recorded exceptions. All 40 generated analytics scripts ran against the live fleet as the Acme tenant admin: 14 answered =ok=, 15 =missing=, 8 =failed= on a database validation of the sentinel they send, and 3 aborted in the client. One of the eight failures is a repository defect, recorded below. | =compass shell -l= over each script in =projects/ores.shell/scripts/library/=; V04 note below |
 | V05  | Pass. component drift, model drift, protocol twin coverage (24 headers, 2 components), handler permissions (2 components, 152 codes), populate references, recipe inventory and this component's CMake source lists are all clean. | each check script, exit 0 |
 | V06  | Pass. =analytics-cpp= is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= reports no drift. | =component_registry.py=; =check_component_drift.py --all= (exit 0) |
 
@@ -291,58 +291,73 @@ the whole cycle was then run from scratch on 2026-09-26:
 - V04. All 40 generated analytics scripts ran against the live fleet as
   =tenant_admin@acme_corporation=, each one through =compass shell -l= on
   its own script under =projects/ores.shell/scripts/library/=. Every script
-  in that library is committed, so the run reproduces from a clone. Ten answered
-  =ok=, among them the four =list= reads and the =pricing_engine_types= read
-  that returns the 44 seeded engine types. Fifteen answered =missing=, for a
-  key that addresses no row. Fourteen answered =failed=, and each carries
-  the verdict of a database validation function: =Invalid
-  instrument_type_code: __none__=, =Invalid change_reason_code: __none__=,
-  or the id check constraint on the zero uuid. That is the command working,
-  not failing. Three of the fourteen are a defect rather than a sentinel
-  verdict, and one script aborted in the client; both are recorded below. The
-  verdicts were read from the output because =compass shell -l= exits 0 on an
-  abort ([[id:7A821ED8-764C-48FA-962A-CBA7947E449B][capture]]).
-- The sentinel writes left nothing behind. The three analytics tables hold
-  zero rows for the Acme tenant, so a sentinel write either failed
-  validation or addressed no row.
-- Re-run on the rebased base. After the third rebase the fleet was stopped
-  and started again on the rebuilt binaries, and the whole V04 sweep was
-  repeated through =compass shell -l=. Every verdict matched the run above,
-  and the login resolved to tenant =abd61d4a-aaaf-440d-857f-5e69365ffa06=
-  (Acme Corporation Plc) as before. Twenty-three units run; only
-  =ores.web.service= stays down. =ores.iam.service= answered the login
-  before its readiness line appeared, so the start wait timed out on it
-  while the service was serving.
+  in that library is committed, so the run reproduces from a clone. Fourteen
+  answered =ok=, among them the four =list= reads, the =pricing_engine_types=
+  read that returns the 44 seeded engine types, and the =add= of the two
+  uuid-keyed entities that the shared-template fix unblocked. Fifteen answered
+  =missing=, for a key that addresses no row. Eight answered =failed=, each
+  carrying the verdict of a database validation or constraint: =Invalid
+  instrument_type_code: __none__=, or the =_id_check= constraint on the zero
+  uuid a recipe sends for a declared id. That is the command working, not
+  failing. One of the eight is a repository defect, and three scripts aborted in
+  the client; both are recorded below. The verdicts were read from the output
+  because =compass shell -l= exits 0 on an abort
+  ([[id:7A821ED8-764C-48FA-962A-CBA7947E449B][capture]]).
+- The sweep leaves the tables as it found them. The two =add= commands that
+  answered =ok= insert a row named =__none__=, and the =delete-many= that
+  follows each one removes it; the three analytics tables hold no rows for the
+  Acme tenant at the end.
+- Third cycle on a rebased base. The fleet was stopped, the database recreated,
+  the environment refreshed to format version 24, and the system provisioned
+  with the Acme holding group before this sweep, which logged in as tenant
+  =69b28d7e-dfb6-4697-8541-f5eb883a2b28=. Twenty-three units run, and only
+  =ores.web.service= stays down.
 
 ** V04 recorded defect
 
-The =delete-many= script of the three uuid-keyed entities answers
-=internal_error= with a syntax error at =)= rather than a verdict:
-=pricing_model_configs=, =pricing_model_products= and
-=pricing_model_product_parameters=. The recipe sends =__none__=, the client
-parses no keys, the service resolves no rows, and the repository is called
-with an empty id list; the generated =sqlgen= predicate renders it as
-=IN () =, which Postgres refuses. =pricing_engine_types delete-many= answers
-=ok= because that entity is keyed by text. The service guards
-=request.removals.empty()= and not the resolved set, and generated code sits
-on both sides of the join, so the fix is a codegen change with a regression
-test. Recorded as
+=pricing_model_product_parameters delete-many= answers =internal_error= with a
+syntax error at =)= rather than a verdict:
+
+#+begin_src text
+Repository error: Query execution failed: ERROR:  syntax error at or near ")"
+LINE 1: ...') AND ("id" IN ())) AND ("...
+#+end_src
+
+The service guards =request.removals.empty()= but not the set it resolves, so
+when the script's =__none__= key matches no row the repository is called with an
+empty id list and the generated =sqlgen= predicate renders =IN () =.
+
+The defect is context-dependent, and both branches were observed on this base.
+=pricing_model_configs delete-many= answers =ok= when the =add= before it created
+a row named =__none__=, and the same command run alone against a tenant with no
+such row answers =internal_error= with the empty =IN () =. The
+=pricing_model_product_parameters= script reaches the failing branch on every
+sweep because its =add= aborts in the client and leaves no row behind, which is
+why it is the one that fails there.
+
+Generated code sits on both sides of the join, so the fix is a codegen change
+with a regression test. Recorded as
 [[id:D3D78161-377F-4970-998F-37C7359761DA][Refuse an empty key list before delete-many renders IN ()]].
 
 ** V04 recorded exception
 
-=pricing_model_product_parameters put-many= aborts before it leaves the
-client: its optional =pricing_model_product_id= receives =__none__=, and
-=command_token.hpp= reserves ='-'= for an absent optional, so the token
-does not parse. This is a generator defect in
-=org_loader._sentinel_value=, which carries no =std::optional= entry and
-falls back to =__none__=. iam declares seven optional uuid columns, so the
-fix changes iam's committed recipes and its script library as well. That
-makes it a codegen-round change rather than one this story can carry
-without editing a closed component's tree, so it is recorded as
+The three =pricing_model_product_parameters= write scripts abort before they
+leave the client. =add=, =set= and =put-many= each pass =__none__= for
+=pricing_model_product_id=, whose declared =:cpp_type:= is
+=std::optional<boost::uuids::uuid>=, and =command_token.hpp= reserves ='-'= for
+an absent optional, so the token does not parse and the shell prints
+=✗ Invalid value for pricing_model_product_id: __none__=. The other three
+entities' writes reach the service because their recipes carry no such optional
+uuid.
+
+This is a generator defect in =org_loader._sentinel_value=, which carries no
+=std::optional= entry and falls back to =__none__=. iam declares seven optional
+uuid columns, so the fix changes iam's committed recipes and its script library
+as well. That makes it a codegen-round change rather than one this story can
+carry without editing a closed component's tree, so it is recorded as
 [[id:90BDBB0E-45D6-4B38-A2F2-5573306E0B1B][Fix the shell recipe sentinel for optional columns]].
-V04's own rule allows a command that cannot run to be recorded with its
-reason, which is what this is; the other 39 answered.
+V04's own rule allows a command that cannot run to be recorded with its reason,
+which is what these three are; the other 37 answered.
 
 ** V02 recorded limitation
 

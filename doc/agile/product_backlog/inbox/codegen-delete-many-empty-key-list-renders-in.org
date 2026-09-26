@@ -2,7 +2,7 @@
 :ID: D3D78161-377F-4970-998F-37C7359761DA
 :END:
 #+title: Refuse an empty key list before delete-many renders IN ()
-#+description: A generated delete-many builds its SQL predicate with an empty IN list when the client sends no usable keys, and Postgres rejects it with a syntax error at or near ')'. Observed on the three uuid-keyed analytics entities during the ores.analytics clean pass: the generated recipe passes the __none__ sentinel, the client parses it to no keys, and the service answers internal_error with 'Query execution failed'. The repository should refuse an empty key list with a validation verdict, or treat it as a no-op, rather than emit a statement that cannot parse.
+#+description: A generated delete-many builds its SQL predicate with an empty IN list when the key it resolves matches no row, and Postgres rejects it with a syntax error at or near ')'. Found during the ores.analytics clean pass: the generated recipe passes the __none__ sentinel and the service answers internal_error with 'Query execution failed'. The same command answers ok when a preceding add created the row, so the condition is 'no row matched', not the entity's key type. The repository should refuse an empty key list with a validation verdict, or treat it as a no-op, rather than emit a statement that cannot parse.
 #+type: capture
 #+level: cross
 #+filetags: :codegen:repository:sql:tech_debt:shell:
@@ -33,27 +33,32 @@ already promises: *a row that is already gone is not a failure*.
 * Why
 
 Found on 2026-09-26 during the =ores.analytics= clean pass, in the live V04 run
-of the 40 generated scripts against the Acme tenant. Three of the forty answer
-with this error and all three are the =delete-many= script of a uuid-keyed
-entity:
+of the 40 generated scripts against the Acme tenant. The trigger is narrow and
+was measured directly: the command fails when its key resolves no row, and
+answers =ok= when one matches. Both branches were observed on the same base with
+the same command, =pricing_model_configs delete-many=:
 
-| Entity | Script | Verdict |
-|--------+--------+---------|
-| =pricing_model_configs= | =delete-many= | =internal_error=, syntax error at =)= |
-| =pricing_model_products= | =delete-many= | =internal_error=, syntax error at =)= |
-| =pricing_model_product_parameters= | =delete-many= | =internal_error=, syntax error at =)= |
+| Run | State when it ran | Verdict |
+|-----+-------------------+---------|
+| Sweep | the =add= before it had inserted a row named =__none__= | =ok= |
+| Alone | no such row in the tenant | =internal_error=, syntax error at =)= |
 
-=pricing_engine_types delete-many= answers =ok=, and it is the one entity keyed
-by text rather than by uuid. The recipes send =__none__= for the key, so the
-client parses no keys and the service resolves no rows.
+=pricing_model_product_parameters delete-many= fails in the sweep because its
+=add= aborts in the client and leaves no row behind, so the empty branch is the
+one it always takes. =pricing_engine_types delete-many= answers =ok= because that
+entity is keyed by text and its key always resolves to a non-empty predicate.
+
+So the condition is "no row matched", not "the entity is uuid-keyed": a caller
+reaches it whenever the row is already gone, which is exactly the case the
+service's own comment calls a success.
 
 The failure is worth its own capture because it is not the sentinel defect: the
-sentinel decides *which* key arrives, but a caller can reach this path with a
-key for a row that is already gone, which is the case the service explicitly
-treats as a success. A caller cannot tell an empty batch from a broken server,
-and the answer names an internal error rather than the batch. It is generated
-code on both sides of the join, so the fix belongs on a codegen story with a
-regression test.
+sentinel decides *which* key arrives, but a caller can reach this path with a key
+for a row that is already gone, which is the case the service explicitly treats
+as a success. A caller cannot tell an empty batch from a broken server, and the
+answer names an internal error rather than the batch. It is generated code on
+both sides of the join, so the fix belongs on a codegen story with a regression
+test.
 
 * References
 

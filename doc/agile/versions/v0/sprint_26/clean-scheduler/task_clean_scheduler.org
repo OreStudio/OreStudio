@@ -247,9 +247,14 @@ three were silent.
    this project's flags, and happens to mean =true=, which is why no gate saw
    it. The sibling model =ores.marketdata.feed_binding= writes the value
    unquoted and generates the clean =bool enabled = true;=. The scheduler model
-   now does the same. No check in the codegen suite covers the class -- a string
-   default on a scalar column -- so the defect reached the tree twice over, once
-   through the model and once through the absence of a guard.
+   now does the same. No check in the codegen suite covered the class -- a
+   string default on a scalar column -- so the defect reached the tree twice
+   over, once through the model and once through the absence of a guard. The
+   guard now exists: =org_loader= refuses a quoted =:default_value:= on a bool,
+   an int or a float rather than stripping the quotes, so the model reads the
+   way the C++ does. Regression test =test_quoted_scalar_default.py=, three
+   cases: the quoted bool is refused, the unquoted one renders as a scalar, and
+   a quoted string default still renders quoted.
 2. *A dead symbol the census missed.* =cron_scheduler= had no consumer
    anywhere: not the service, not a test, only its own source and the CMake
    file list. The census classified symbols by their consumer outside the
@@ -273,7 +278,11 @@ out of the primary key for another reason -- a =current_state= or
 =system_scope= table -- which would get an unscoped index where its composite
 sibling would be scoped. No such model exists in the tree today, so this is a
 hole rather than a live defect, and it is recorded here instead of widened
-into a template change with no entity to test it against.
+into a template change with no entity to test it against. A ={{! ... }}= comment
+now sits above the single-key branch in
+=ores.sql.schema.domain_entity_create.org= telling the next reader to read the
+two branches together; it emits nothing into the SQL and changes no output,
+which the shared gate confirms.
 
 * Generator defects found
 

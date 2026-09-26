@@ -150,6 +150,14 @@ on "{{domain_entity.sql_name_base}}_tbl" ({{domain_entity.natural_keys_composite
 {{^domain_entity.has_multiple_natural_keys}}
 {{#domain_entity.natural_keys}}
 
+{{! The single-natural-key branch below scopes the index on has_tenant_in_pk
+    OR nullable_tenant_id, while the composite branch above scopes on
+    has_tenant_id. The two agree for every entity that exists today: a
+    nullable-tenant entity is the only shape that has a tenant, keeps it out of
+    the primary key, and carries a single natural key. They would disagree for
+    a current_state or system_scope entity with one natural key, which would get
+    an unscoped index where its composite sibling would scope it. Read the two
+    branches together before changing either. }}
 -- Unique {{column}} for active records
 {{#domain_entity.has_tenant_in_pk}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx

@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 0D169880-EA3B-4C19-8CCB-C06EFC775EBE
+:END:
+#+title: Cli clean-ups
+#+description: Discarded. A list of CLI command-syntax and output nits. The CLI retired on 2026-09-23, so most items are void; two are not CLI-specific and are worth re-filing if still wanted.
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:discarded:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog. The idea is ruled out rather than deferred, and the file stays as the record of why.
+
+- we still seem to support =--entity currencies=. This should now be invalid.
+  Done.
+- we are still exporting as JSON. We should instead allow CSV and XML exports
+  only.
+- add recipes for all commands.
+- should be able to list all admin accounts.
+- list command should support table output.
+- is admin should be a bool: =--is-admin arg (=0)=
+- add account duplicates logic. We should have a single service for this.
+- split application into entities.
+
+* Why discarded
+
+=ores.cli= retired on 2026-09-23 (story
+[[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]]), so the
+items about command syntax, output formats, list formatting and
+splitting =application.cpp= target a component that no longer exists.
+
+Two items were never CLI-specific. Listing admin accounts and
+detecting duplicate accounts are service-layer concerns that the shell
+reaches like any other client. They are not carried by this capture
+and should be filed on their own if they are still wanted.

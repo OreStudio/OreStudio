@@ -2,7 +2,7 @@
 :ID: 03EBF563-B711-4B61-8785-A15C41CB004A
 :END:
 #+title: Design standard_service_options as composable opt-in blocks
-#+description: E3647ADD's standard_service_options assumes nats+database always present; redesigning it as composable opt-in blocks would let ores.wt.service/http.server/cli/shell/compute.wrapper adopt it too, not just the 17 domain services.
+#+description: E3647ADD's standard_service_options assumes nats+database always present; redesigning it as composable opt-in blocks would let ores.wt.service/http.server/shell/compute.wrapper adopt it too, not just the 17 domain services.
 #+type: capture
 #+level: cross
 #+filetags: :codegen:cpp:service-app:config:

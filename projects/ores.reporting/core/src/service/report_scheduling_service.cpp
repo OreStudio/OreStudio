@@ -23,6 +23,7 @@
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.api/messaging/report_scheduling_protocol.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
@@ -92,7 +93,7 @@ report_scheduling_service::build_job_change(const domain::report_definition& def
 
     const report_trigger_action_payload payload{
         .subject =
-            std::string(ores::reporting::messaging::trigger_report_instance_message::nats_subject),
+            std::string(ores::reporting::messaging::trigger_report_instance_request::nats_subject),
         .report_definition_id = boost::uuids::to_string(def.id),
         .tenant_id = def.tenant_id.to_string()};
 

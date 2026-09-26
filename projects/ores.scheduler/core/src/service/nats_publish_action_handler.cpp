@@ -19,9 +19,14 @@
  */
 #include "ores.scheduler.core/service/nats_publish_action_handler.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <cstdint>
+#include <optional>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
+#include <string>
 
 namespace ores::scheduler::service {
 
@@ -41,17 +46,25 @@ struct nats_publish_payload {
     std::optional<std::string> tenant_id;
 };
 
-// Body published to the NATS subject on each job firing.
+// The body published to the subject on each firing.
+//
+// Its field order and types are the reporting operation's
+// trigger_report_instance_request: the definition, the tenant, then the run.
+// A report trigger and its receiver are two ends of one contract, and the
+// codec is positional, so the order is the contract.
 struct nats_trigger_body {
+    std::string report_definition_id;
+    std::string tenant_id;
     std::int64_t job_instance_id = 0;
-    std::optional<std::string> report_definition_id;
-    std::optional<std::string> tenant_id;
 };
 
 } // anonymous namespace
 
-nats_publish_action_handler::nats_publish_action_handler(ores::nats::service::client& nats)
-    : nats_(nats) {}
+nats_publish_action_handler::nats_publish_action_handler(
+    ores::nats::service::client& nats,
+    ores::nats::service::nats_client& svc_nats)
+    : nats_(nats)
+    , svc_nats_(svc_nats) {}
 
 boost::asio::awaitable<std::expected<void, std::string>>
 nats_publish_action_handler::execute(const action_context& ctx) {
@@ -73,10 +86,34 @@ nats_publish_action_handler::execute(const action_context& ctx) {
             co_return std::unexpected(msg);
         }
 
-        const nats_trigger_body body{.job_instance_id = ctx.inst_id,
-                                     .report_definition_id = parsed->report_definition_id,
-                                     .tenant_id = parsed->tenant_id};
-        nats_.publish(subject, ores::nats::default_wire_codec().encode(body));
+        const nats_trigger_body body{.report_definition_id =
+                                         parsed->report_definition_id.value_or(""),
+                                     .tenant_id = parsed->tenant_id.value_or(""),
+                                     .job_instance_id = ctx.inst_id};
+
+        // A job that names no report definition is a notification nothing
+        // answers, so it stays fire-and-forget.
+        if (!parsed->report_definition_id) {
+            nats_.publish(subject, ores::nats::default_wire_codec().encode(body));
+            BOOST_LOG_SEV(lg(), info)
+                << "NATS publish action succeeded for job: " << ctx.job.job_name
+                << " (subject: " << subject << ")";
+            co_return std::expected<void, std::string>{};
+        }
+
+        // A report trigger is a request: the reporting service answers, and a
+        // refusal has to reach the job rather than being discarded. The reply
+        // carries no subject of its own, so a rejection arrives as an X-Error
+        // header.
+        const auto reply = svc_nats_.authenticated_request(
+            subject, ores::nats::default_wire_codec().encode(body));
+        const auto err = reply.headers.find(std::string(ores::nats::headers::x_error));
+        if (err != reply.headers.end()) {
+            const auto msg = "Subject " + subject + " refused the trigger: " + err->second;
+            BOOST_LOG_SEV(lg(), error) << msg << " (job: " << ctx.job.job_name << ")";
+            co_return std::unexpected(msg);
+        }
+
         BOOST_LOG_SEV(lg(), info) << "NATS publish action succeeded for job: " << ctx.job.job_name
                                   << " (subject: " << subject << ")";
         co_return std::expected<void, std::string>{};

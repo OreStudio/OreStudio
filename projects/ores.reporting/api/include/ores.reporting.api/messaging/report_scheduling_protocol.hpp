@@ -59,20 +59,6 @@ struct unschedule_report_definitions_response {
     std::vector<std::string> failed_ids;
 };
 
-/**
- * @brief Fire-and-forget message published by the scheduler when a report job fires.
- *
- * The scheduler's nats_publish_action_handler publishes this to
- * reporting.v1.report-instances.trigger on each job firing.
- * The reporting service handles it by creating a new report_instance.
- */
-struct trigger_report_instance_message {
-    static constexpr std::string_view nats_subject = "reporting.v1.report-instances.trigger";
-    std::string report_definition_id;
-    std::string tenant_id;
-    std::int64_t job_instance_id = 0;
-};
-
 }
 
 #endif

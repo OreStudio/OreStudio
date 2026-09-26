@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.testing/logging_listener.hpp"
+#include "ores.testing/test_timeout_listener.hpp"
+#include <boost/scope_exit.hpp>
+#include <catch2/catch_session.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
+#include <openssl/crypto.h>
 
-drop function if exists ores_reporting_initial_definition_state_fn();
-drop function if exists ores_reporting_active_definition_state_fn();
-drop function if exists ores_reporting_suspended_definition_state_fn();
-drop function if exists ores_reporting_in_flight_instance_fn(uuid, uuid);
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::test_timeout_listener)
+
+int main(int argc, char* argv[]) {
+    BOOST_SCOPE_EXIT(void) {
+        OPENSSL_cleanup();
+    }
+    BOOST_SCOPE_EXIT_END
+
+    ores::testing::logging_listener::set_test_module_name("ores.shell.reporting.tests");
+    return Catch::Session().run(argc, argv);
+}

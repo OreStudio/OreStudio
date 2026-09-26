@@ -20,23 +20,34 @@
 #pragma once
 
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.scheduler.core/export.hpp"
 #include "ores.scheduler.core/service/action_handler.hpp"
 
 namespace ores::scheduler::service {
 
 /**
- * @brief Fires a NATS publish on each job firing.
+ * @brief Fires a NATS message on each job firing.
  *
  * Handles jobs with action_type == "nats_publish". The action_payload JSON
- * must contain: {"subject":"<nats-subject>"}.
+ * names the subject, and may name a report definition and its tenant.
  *
- * The message body is empty — the subject alone is sufficient to trigger
- * fire-and-forget compute operations such as the stale-result reaper.
+ * Two kinds of job use this action and they need different treatment.
+ *
+ * A job that names a report definition is asking the reporting service to run
+ * a report, and that service answers. The trigger is sent as an authenticated
+ * request, with the scheduler's own service account, so the reporting service
+ * can name the caller and so a refusal comes back as a job failure rather than
+ * being lost. The body is the report instance trigger request, and its field
+ * order and types are the reporting operation's.
+ *
+ * Any other job is a fire-and-forget notification, such as the stale-result
+ * reaper. It is published, with no reply read, because nothing answers it.
  */
 class ORES_SCHEDULER_CORE_EXPORT nats_publish_action_handler final : public action_handler {
 public:
-    explicit nats_publish_action_handler(ores::nats::service::client& nats);
+    nats_publish_action_handler(ores::nats::service::client& nats,
+                                ores::nats::service::nats_client& svc_nats);
 
     [[nodiscard]] std::string_view action_type() const noexcept override {
         return "nats_publish";
@@ -47,6 +58,7 @@ public:
 
 private:
     ores::nats::service::client& nats_;
+    ores::nats::service::nats_client& svc_nats_;
 };
 
 } // namespace ores::scheduler::service

@@ -31,6 +31,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <optional>
 #include <string>
 #include <vector>
@@ -94,7 +95,8 @@ public:
             std::string first_error;
             for (const auto& id : req->ids) {
                 try {
-                    auto def = svc.get_definition(id);
+                    boost::uuids::string_generator sg;
+                    auto def = svc.get_definition(sg(id));
                     if (!def)
                         continue;
                     auto result = scheduler.schedule_one(*def, actor);
@@ -145,7 +147,8 @@ public:
             std::string first_error;
             for (const auto& id : req->ids) {
                 try {
-                    auto def = svc.get_definition(id);
+                    boost::uuids::string_generator sg;
+                    auto def = svc.get_definition(sg(id));
                     if (!def)
                         continue;
                     auto result = scheduler.unschedule_one(*def, actor);

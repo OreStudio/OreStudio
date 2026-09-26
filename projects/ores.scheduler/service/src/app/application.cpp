@@ -21,6 +21,7 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.scheduler.core/messaging/registrar.hpp"
 #include "ores.scheduler.core/service/mq_action_handler.hpp"
@@ -72,6 +73,14 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
 
+    // The scheduler's own identity on the bus. A report trigger is a request to
+    // another service, and every other service-to-service call in the tree
+    // authenticates with the caller's service token, so this one does too.
+    ores::nats::service::nats_client svc_nats(
+        nats,
+        ores::iam::client::make_service_token_provider(
+            nats, cfg.database.user, cfg.database.password()));
+
     // Entity change event pipeline: PostgreSQL LISTEN/NOTIFY → NATS publish.
     // The generated registrar owns the job definition's mapping and its NATS
     // publication: it reads the trigger's channel and publishes the canonical
@@ -89,7 +98,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     handlers.push_back(std::make_unique<ores::scheduler::service::sql_action_handler>());
     handlers.push_back(std::make_unique<ores::scheduler::service::mq_action_handler>());
     handlers.push_back(
-        std::make_unique<ores::scheduler::service::nats_publish_action_handler>(nats));
+        std::make_unique<ores::scheduler::service::nats_publish_action_handler>(nats, svc_nats));
 
     auto loop = std::make_shared<ores::scheduler::service::scheduler_loop>(
         nats, db_ctx, std::move(handlers));

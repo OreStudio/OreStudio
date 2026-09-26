@@ -291,6 +291,15 @@ retired bucket names, so the migration onto the protocol in [[*Buckets and
 keys][Buckets and keys]] is the live work, and the items below that describe the
 callers, the generation gap and the raw shell surface still stand.
 
+One defect on that list is not a leftover but a live blocker. The routes
+authenticate and authorise, and no first-party C++ caller sends a token:
+=ores.storage.core= carries no =Authorization= support at all, so every shell
+upload and download and every service-side blob transfer answers 401, while the
+bus interface works. The capture
+[[id:15062C8E-3282-4A84-B3BC-40C286388993][Storage routes demand a token no C++
+caller sends]] holds the reproducer and the fix, and the consumer verbs cannot
+be run until it lands.
+
 1. *No NATS interface.* The only transport is HTTP.
 2. *Not modelled, so nothing generates.* No protocol, handler, permission,
    shell command or TypeScript twin is generated for storage. Its shell verbs

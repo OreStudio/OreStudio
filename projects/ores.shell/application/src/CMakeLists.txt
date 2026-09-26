@@ -62,6 +62,7 @@ target_link_libraries(${lib_target_name}
         ores.shell.refdata.lib
         ores.shell.compute.lib
         ores.shell.analytics.lib
+        ores.shell.workflow.lib
         ores.trading.api.lib
         ores.workflow.api.lib
         ores.logging.lib

@@ -619,6 +619,40 @@ that has to land and build together, and a half-added =add_subdirectory= breaks 
 shell for everyone. The plan is recorded so the next pass can execute it in one
 piece rather than rediscovering the template.
 
+** S01 the scaffold exposed a generator defect
+
+Scaffolding the module was the easy half. Building it fails inside the generated
+command unit:
+
+#+begin_src text
+command_token.hpp:99:23: error: static assertion failed due to requirement
+'detail::always_false_v<std::chrono::time_point<std::chrono::system_clock,
+std::chrono::duration<long, std::ratio<1, 1000000000>>>>':
+from_token has no conversion for this column type. Add one to command_token.hpp
+before generating a shell command unit for an entity that uses it.
+#+end_src
+
+The shell command token converter has no conversion for a timestamp. Both of this
+component's entities carry timestamp columns -- =last_event_at= and =completed_at=
+on the instance, =command_published_at=, =started_at= and =completed_at= on the
+step -- so the generated units cannot compile.
+
+This is a generator defect of the kind G05 owns, and the message says so: the
+generator emits the shell unit and a converter that does not know one of the
+column types the model declares. It is not this component's model being wrong, and
+it cannot be fixed by changing the model without removing real columns. The fix is
+a conversion in =command_token.hpp= plus a regression test in the codegen suite,
+and then every component with a timestamp column gets working shell units rather
+than only this one.
+
+It also explains the shape of the original defect. The units were reachable by
+nothing because nothing built them, and nothing built them because they do not
+compile. Wiring the module was necessary and is done; it is not sufficient, and
+the remaining work is upstream of this component.
+
+Recorded with the exact message, because the message names the file and the
+condition and is the whole brief for the fix.
+
 ** H01 the diagrams are skeletons
 
 The item asks for two passes and says why: the automated pass reads data members

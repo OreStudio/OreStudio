@@ -16,14 +16,5 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/api)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/trading)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/iam)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/synthetic)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/refdata)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/assets)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/compute)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/analytics)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/workflow)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/application)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)

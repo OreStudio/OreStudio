@@ -108,7 +108,9 @@ _ENUM_CLASS_RE = re.compile(r'^\s*enum\s+class\s+(\w+)\s*(?::\s*[\w:]+\s*)?\{')
 _ENUM_RE = re.compile(r'^\s*enum\s+(\w+)\s*\{')
 
 # Field patterns inside struct/class bodies
-_FIELD_RE = re.compile(r'^\s*([\w:*&<>, ]+?)\s+(\w+)\s*(?:=\s*[^;]+)?\s*;')
+_FIELD_RE = re.compile(
+    r'^\s*([\w:*&<>, ]+?)\s+(\w+)\s*'
+    r'(?:=\s*[^;]+|\{(?:[^{}]|\{[^{}]*\})*\})?\s*;')
 _ENUM_VAL_RE = re.compile(r'^\s*(\w+)\s*(?:=\s*[^,\n]+)?\s*,?\s*$')
 
 # Visibility labels
@@ -313,6 +315,25 @@ def parse_header(path: Path) -> dict[tuple[str, ...], list[TypeInfo]]:
             # --- Inside a type body ---
             opens = stripped.count('{')
             closes = stripped.count('}')
+
+            # A member may carry a brace initialiser, so its line holds braces
+            # that balance on the line itself. Read it before the brace
+            # bookkeeping below, which would otherwise consume the line as a
+            # brace event and drop the member from the diagram. A wrapped
+            # declaration leaves an unmatched parenthesis on its continuation
+            # line, which would otherwise read as a field.
+            if (type_member_depth == 0 and opens > 0 and opens == closes
+                    and not stripped.startswith('#') and ';' in stripped
+                    and stripped.count('(') == stripped.count(')')):
+                m = _FIELD_RE.match(line)
+                if m:
+                    t = _simplify_type(m.group(1))
+                    n = m.group(2)
+                    if t and n and not t.isupper() and not n.isupper():
+                        current_type.members.append(
+                            MemberInfo(name=n, type_str=t, visibility=visibility))
+                        i += 1
+                        continue
 
             # Closing brace(s): check if we're leaving the type
             if closes > 0:

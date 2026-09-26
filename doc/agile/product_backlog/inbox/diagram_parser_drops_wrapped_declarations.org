@@ -31,9 +31,13 @@ The three shapes, all found while refreshing the `ores.telemetry` diagrams:
 - a member whose initialiser continues on the next line, so the declaration
   never reaches its semicolon.
 
-A fix was written and measured before it was withdrawn. `--all --dry-run`
-reports **72 of 85 projects would change**, because every committed `.puml`
-carries an automated section this script owns. A component clean-up must not
+A fix was written and measured before it was withdrawn. The measurement
+corrects the first reading of it: `--all --dry-run` with the parser untouched
+already reports **69 of 85 projects would change**, so most of the churn is
+pre-existing staleness in the committed diagrams rather than the fix. What
+the fix adds on top of that baseline is still not confined to one component:
+the `static` member fix reaches 23 projects outside `ores.telemetry`, each
+join step reaches 4, and all three together reach 28. A component clean-up must not
 rewrite 72 other components' diagrams, and several of those components belong
 to environments with work in flight, so the fix needs its own story with the
 whole-tree regeneration as its change. The clean standard's G05 asks for the

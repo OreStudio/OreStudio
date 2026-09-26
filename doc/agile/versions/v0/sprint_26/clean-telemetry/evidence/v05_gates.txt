@@ -51,4 +51,8 @@ exit 1
   facet inventory that lists it.
 
 $ pytest projects/ores.codegen/tests -q
-594 passed.
+602 passed.
+
+  The suite grew from 594 during this task, and not from this component:
+  main's own test_validate_docs_backtick_link.py (1cd9a899ff) adds eight
+  cases. Nothing this task changed contributes a codegen case.

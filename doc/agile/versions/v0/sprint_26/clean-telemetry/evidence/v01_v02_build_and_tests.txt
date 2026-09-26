@@ -44,7 +44,7 @@ All tests passed: core 2175 assertions in 50 cases, database 70 in 12,
 service 32 in 10.
 
 $ ./projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q
-594 passed.
+602 passed.
 
 # The fleet-dependent half of V02 belongs to the components that serve; this
 # one owns no service of its own, and the tests that need a database run

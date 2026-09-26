@@ -39,7 +39,7 @@ already reproduces the tree's semantics.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
 | Now          | Not yet started.                       |
 | Waiting on   | PR 1 merged, so the decisions are on the main branch. |
@@ -81,6 +81,41 @@ projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_compon
 The classification to expect: banner only, eventing rename, the trigger
 template, and the creates. If a block appears under a cause the PR 1
 baseline does not have, stop and explain it before regenerating.
+
+Measured at 39f99acef3: 1636 would change and 115 would be created,
+unchanged from PR 1. The record is =evidence/pr2_drift_baseline.txt=.
+
+** What the survey before regeneration found
+
+=instrument_protocol.hpp= holds two groups, and only one can go here.
+
+- The nine rates families. Their structs go, because the generated
+  per-family headers replace them.
+- Four families with no model at all: =commodity=, =composite=,
+  =credit= and =scripted=. Their messages live only in this header, so
+  deleting the whole file would break their handlers and their shell
+  units. They stay until PR 3 models them, and the header disappears
+  when the last one moves.
+
+Consumers of the nine families' consolidated request types outside the
+trading component, all of which this PR migrates:
+
+- Nine hand-written shell units under
+  =projects/ores.shell/application/src/app/commands/trading/=, one for
+  each rates family.
+- =projects/ores.ore/service/src/messaging/ore_import_execute_handler.cpp=.
+
+The shell has two trading command trees. The generated one is
+=projects/ores.shell/trading/= and the regeneration rewrites 66 of its
+files. The rates units and the four unmodelled families' units are
+hand-written under =ores.shell/application/=. Check both when the
+protocol moves.
+
+=registrar_rates.cpp= registers the nine families against
+=rates_instrument_handler.hpp=. Both are deleted, and the generated
+per-family registrars are wired at the same composition point. Read the
+composition point before deleting, because the drift gate cannot see an
+unwired registrar.
 
 ** 2. Apply D1 before regenerating, not after
 

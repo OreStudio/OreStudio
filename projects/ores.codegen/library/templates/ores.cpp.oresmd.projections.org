@@ -252,6 +252,17 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
         // model, and the coordinate carries the shift and strip flags the
         // market data catalogue names, not a swaption's expiry-and-tenor pair.
         if (id.quote_type == ir_quote_type::capfloor) {
+            // The shift names the displaced log-normal model rather than a
+            // surface coordinate of its own: CAPFLOOR/SHIFT/CCY/FLOAT_TENOR.
+            if (id.vol && id.vol->model_subtype == volatility_model_subtype::shift) {
+                if (!id.tenor)
+                    return std::nullopt;
+                return std::format("{}/{}/{}/{}",
+                                   ore_type(ir_quote_type::capfloor),
+                                   ore_vol_spec::shift,
+                                   id.ccy,
+                                   to_upper(*id.tenor));
+            }
             if (!id.vol || !id.tenor || !id.shift || !id.strip)
                 return std::nullopt;
             return std::format("{}/{}/{}/{}/{}/{}/{}/{}",
@@ -901,6 +912,23 @@ from_ir_no_index(ir_quote_type qt, const std::vector<std::string>& parts) {
     return id;
 }
 
+std::optional<market_data_identifier>
+from_ir_capfloor_shift(const std::vector<std::string>& parts) {
+    // CAPFLOOR/SHIFT/CCY/FLOAT_TENOR -- the displaced log-normal shift, keyed
+    // by currency and tenor with no surface coordinate.
+    if (parts.size() != 4 || !metric_is(parts[1], ore_vol_spec::shift))
+        return std::nullopt;
+    ir_market_data_identifier id;
+    id.ccy = to_upper(parts[2]);
+    id.type = instrument_type::vol;
+    id.quote_type = ir_quote_type::capfloor;
+    id.tenor = to_lower(parts[3]);
+    volatility_surface_point v;
+    v.model_subtype = volatility_model_subtype::shift;
+    id.vol = std::move(v);
+    return id;
+}
+
 std::optional<market_data_identifier> from_ir_capfloor(const std::vector<std::string>& parts) {
     // CAPFLOOR/MODEL/CCY/MATURITY/FLOAT_TENOR/SHIFT/STRIP/STRIKE. The metric
     // segment is the vol model, so RATE_NVOL and RATE_LNVOL are the same
@@ -1203,6 +1231,8 @@ inverse_projection(const std::vector<std::string>& parts,
         // under rather than to a normalised one.
         if (parts.size() == 8)
             return from_ir_capfloor(parts);
+        if (parts.size() == 4)
+            return from_ir_capfloor_shift(parts);
         if (parts.size() == 6)
             return from_inflation_capfloor(inflation_quote_type::cf_price, parts);
         return std::nullopt;

@@ -238,6 +238,11 @@ TEST_CASE("ir_capfloor_log_normal_vol_quote_key_matches_the_corpus", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "CAPFLOOR/RATE_LNVOL/CHF/5Y/6M/0/0/0.03");
 }
 
+TEST_CASE("ir_capfloor_shift_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://ir/eur?type=vol&quote=capfloor&model=shift&tenor=6m");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "CAPFLOOR/SHIFT/EUR/6M");
+}
+
 TEST_CASE("ir_bond_option_vol_quote_key_matches_the_corpus", tags) {
     const auto id = parse("oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm");
     REQUIRE(oresmd_projections::to_quote_key(id) ==

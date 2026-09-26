@@ -229,8 +229,16 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
             }
         }
     }
-    if (qp.model && id.type == instrument_type::vol && id.vol)
+    if (qp.model && id.type == instrument_type::vol) {
+        // A shift quote names its surface with no coordinate of its own:
+        // CAPFLOOR/SHIFT/CCY/TENOR arrives as
+        // type=vol&quote=capfloor&model=shift&tenor=6m. The surface is built
+        // from the model alone, so it is created here when the point block
+        // above did not.
+        if (!id.vol)
+            id.vol.emplace();
         id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
+    }
     if (id.type == instrument_type::fixing && id.index && !is_overnight(*id.index) && !id.tenor)
         BOOST_THROW_EXCEPTION(oresmd_exception(
             std::format("oresmd://ir/... a term index ('{}') fixing requires a tenor.",

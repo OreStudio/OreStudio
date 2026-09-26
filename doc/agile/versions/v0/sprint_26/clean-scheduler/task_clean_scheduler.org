@@ -26,11 +26,11 @@ ores.scheduler passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | IN PROGRESS                          |
 | Parent story | [[id:C4D6F313-B475-4E81-B743-268050B25430][Clean ores.scheduler to the component clean standard]] |
-| Now          | Baseline and inventory recorded; model resync and the nullable-tenant generator fix in progress. |
-| Waiting on   | Nothing.                               |
-| Next         | Regenerate the job_definition stack and delete what it supersedes. |
+| Now          | The pass is verified and open as PR #2169. The component's one entity is modelled and generated, the artefacts generation supersedes are deleted, and all 49 of the standard's items carry a result: 32 pass, 6 are baseline items done, 5 do not apply, 2 are partly (M06 and V05), 3 are held (S01, S02 and V06), and V08 is recorded as the per-file survey. |
+| Waiting on   | The merge of PR #2169, and the two follow-up units the "What this unit leaves open" list gives: the =job_instance= model (M06, V06, and V05's last clause) and the scheduler shell part (S01, S02, V04). |
+| Next         | Merge #2169, then work the follow-ups in the order that list gives, starting with the =job_instance= model, because it is also what lets the component join =COMPONENTS_UNDER_TEST=. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -437,3 +437,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The pass is complete for the component's existing surface, and verified at the
+head after the rebase onto the current main.
+
+What it produced:
+
+- =job_definition=, the component's one entity, is described by its model and
+  generated end to end: domain, JSON, table and table I/O, entity, mapper,
+  repository, service, handler and the canonical protocol. The hand-written
+  versions of all of those are deleted, and so are the =builder= facet whose
+  only caller was its own test, the dead =cron_scheduler=, the second reflector
+  for =cron_expression=, and the hand-written protocol header.
+- The generated tree matches the models: the drift check passes in its writing
+  mode and the shared list passes in dry-run mode.
+- The suites pass: the codegen suite at 608, and the component's three at 33
+  assertions in 6 cases, 84 in 22, and 26 in 10.
+- The database recreates from scratch and the schema reads back as the model
+  says: a nullable =tenant_id=, a tenant-scoped unique index on the natural
+  key, both triggers, and the job-instance policies.
+- Five generator defects were found and fixed at source, each with a regression
+  test, and the whole tree builds with the component and its consumer.
+
+What it does not do, and why:
+
+- =job_instance= stays hand-written. Its table is a TimescaleDB hypertable with
+  a composite primary key and a =bigserial= surrogate, which the generator
+  cannot state yet, and its read policy treats SQL NULL as the system scope,
+  which the RLS template does not emit. Modelled generation for it is the first
+  follow-up unit.
+- The shell part is absent. The =ores.cpp.shell-command= facet generates the
+  command units but not the per-component aggregator that registers them, so
+  the unit needs a template that does not exist. The model disables the facet
+  with that reason in its =* Physical space= table.
+- Every other open item, with its size, is in "What this unit leaves open".
+
+Nothing in this record is a plan: each row names the check that was run and the
+file that holds its output.

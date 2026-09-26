@@ -76,6 +76,7 @@ comment is explicit isn't a sentinel hack either.
 :schema:        public
 :product:       ores
 :component:     refdata
+:profile:       uuid-surrogate-lookup
 :has_tenant_id: true
 :END:
 

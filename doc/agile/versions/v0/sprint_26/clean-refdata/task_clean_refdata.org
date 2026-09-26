@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-refdata:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-refdata
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:70CC87FB-BA24-4B22-827F-F4F42C1F5A1B][Clean ores.refdata to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ ores.refdata passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:70CC87FB-BA24-4B22-827F-F4F42C1F5A1B][Clean ores.refdata to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Sections 1 and 2 recorded. Next is the regeneration (G01). |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | Regenerate ores.refdata in place, then build and test. |
+| Last touched | 2026-09-26                               |
 
 * Acceptance
 
@@ -57,9 +57,60 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | FAIL — the checked-in tree is 516 files behind its models. | =check_component_drift.py --component refdata --dry-run=: 516 would change, 0 would be created. =check_model_drift.py --summary=: no model drift; 1 known exception (ores.reporting). |
+| B01 | Drift split: 375 ores.refdata, 104 ores.shell/refdata, 16 shell recipes, 11 refdata SQL notify triggers, 9 TypeScript protocol files, 1 ores.iam party cache. | Raw logs in =build/audit/refdata-clean/B01-component-drift-dry-run.txt=. |
+| B01 | Cause is shared-template progress, not hand edits: the generated-file marker on the composite root CMakeLists, domain =operator==(const T&, const T&) = default=, the =<key>= shell menu signature, the notify-trigger key column, and the removal of the TypeScript =*Event= interfaces. | Diff hunks in the dry-run log. |
+| B02 | 79 models: 65 entity, 9 junction, 3 operation, 1 component, 1 module. 77 carry variability. The =component= and =module= metatypes are excluded, with reason. | =survey_component.py --component refdata=, section B02. |
+| B03 | 2241 C++ files; 2142 generated (95.6%), 99 hand-written: 30 generatable, 59 infrastructure, 0 dead, 10 unclassified. | =survey_component.py=, section B03. |
+| B04 | 979 distinct subjects. The survey prints the protocol headers, every subject literal with its file and line, every subject a model declares, and the two-way cross-reference. | =survey_component.py=, section B04. |
+| B05 | No refdata work is in flight. =origin/feature/adopt-the-protocol-in-refdata= is fully merged into main (0 commits ahead). No fleet worktree owns refdata. | =git merge-base --is-ancestor=; =compass fleet=. |
+| B05 | Four open captures touch refdata: stale generated output (47134F35), unregistered =*_changed_event= types (6908F023), generator change-reason literals (008F2F44), junction profile binding (493D1539). | Capture UUIDs. |
+| B05 | Capture 493D1539 is already fixed: the four junctions now carry =#+has_tenant_id: true= in front matter, and their create SQL is not in the drift set. Tenant scoping survives regeneration. | =head -20= of the four junction models; absent from the B01 drift list. |
+| B06 | Not started. | — |
+| M01 | PASS — every model is on the current org format. No legacy JSON model and no =lookup_entity= remains. | 79 =*.org= model files; 0 =*.json=; =grep -rl lookup_entity= returns nothing. |
+| M02 | PASS — every one of the 74 entity and junction models now binds a profile. The two that did not, =ir_curve_bootstrap_config= and =ir_curve_bootstrap_pillar=, both bind =uuid-surrogate-lookup=. | =Flags= drawer of both models; =check_model_drift.py --summary= reports 166 bound models and no drift. |
+| M02 | The bind is proven, not forced. Each candidate profile was applied to a scratch copy and the loader's resolved model was compared. =uuid-surrogate-lookup= is the only profile whose live features the two entities already satisfy. =ir_curve_bootstrap_pillar= has no =** Presentation= drawer, so the presentation half is inert and the match is on the root and SQL features. | Live-delta table per profile, in =build/audit/refdata-clean/= (case logs =M02-config.txt=, =M02-pillar.txt=). |
+| M02 | =has_change_reason_cache= was the one unset feature the profile fixes. It is a genuine gap by the sprint 24 =leg_type= precedent: 50 refdata models bind a profile that fixes it true. | =grep -l= over the modeling directory. |
+| M02 | The bind's only regeneration delta is the surface every sibling already has: it creates the shell command header, source and test, and the literate recipe. 72 of 74 entities already had that surface; these two did not, because no profile enabled =ores.cpp.shell-command=. This is items S01 and S02. | =check_component_drift.py --component refdata --dry-run= with each bind applied: 516 changed, 4 created, no other difference. |
+| M02 | =fk-scoped-child= is rejected for the pillar, not skipped: it fixes =has_workspace_id=true=, which would add a real workspace column for no product reason. The =business_unit= precedent governs. | Live-delta table. |
+| M02 | A parent foreign key does not disqualify =uuid-surrogate-lookup=: =calendar_event= binds it and carries a foreign key with =:list_by: true=. | =ores.refdata.calendar_event.org=. |
+| M02 | The 3 operation models bind no profile by design. M02 applies to entities; the message models carry no table. | =asset_class_messages=, =calendar_adjustment_messages=, =calendar_materialisation_messages=. |
+| M02 | The sprint 24 pilot bound 58 entities and all 9 junctions. The two unbound entities are later arrivals: both are dated 2026-08-05. | =task_pilot-refdata-classification.org=. |
+| M03 | PASS — no model contradicts the profile it binds. | =check_model_drift.py --summary=: no model drift; the one known exception is =ores.reporting=, outside this component. |
+| M04 | PASS — no feature sits where the loader does not read it. | Drawer scan of all 79 models against =_FEATURE_NAMESPACE= in =org_loader.py= returns no misplaced statement. The nine junctions carry =#+has_tenant_id:= in front matter, which is the place the junction loader reads it (=org_loader.py= line 2004), not a misplaced assignment. |
+| M05 | PASS — every entity describes its table, and no joined shape is modelled as an entity. All 65 entities declare =:tablename:=. The 3 operation models declare messages and no table. | Drawer scan; =load_org_model= plus =validate_model= over all 65 entities returns no issue. |
+| M06 | PASS — every wire type is modelled and every protocol header has its TypeScript twin: 77 refdata protocol headers, 77 generated TypeScript protocol files. No hand-written wire type remains. The 15 hand-written files under a =messaging/= directory are handlers and registrars, not wire types. | File counts; the 15 files carry no generated marker and none is in the regeneration set. |
+| M06 | Operation handlers are hand-written by convention, not by gap: =ores.iam= is a registered component and hand-writes =account_operations_handler.hpp= and =session_operations_handler.hpp= while generating every entity handler. | =ores.iam/core/include/ores.iam.core/messaging/=. |
+| M07 | PASS — all 9 junctions name their singular, give each key column its real type (=text=, =date=, =boolean=, =uuid=, =integer=), and carry the flags that apply: =:party_id_is_target: true= on the 3 party junctions, =:client_read_only: true= on =calendar_date=, =:read_only: true= on =tenor_convention_resolution=. All 9 bind =tenant-scoped-junction=, and their create SQL keeps the tenant column and its RLS policy. | Front matter and =Columns= drawers; the junction create SQL is absent from the B01 drift set. |
+| M08 | PASS — every model loads with no custom-type or SQL-type error. | =load_org_model= and =load_org_junction_model= plus =validate_model= over every entity, junction and operation model. |
+| M09 | PASS — no retired Qt or Wt fragment remains in the modeling directory. | =grep -rniE 'Q_OBJECT\|QWidget\|Wt::\|presentation_drawer' projects/ores.refdata/modeling= returns nothing. This is the pattern =projects/ores.database/scripts/check_clean_standard.sh= implements for M09. |
+| M09 | The implemented pattern is narrower than the item text. Three things it does not catch are recorded here rather than hidden: (a) four models carry prose that names the deleted Qt layer — =currency= (=CurrencyDetailDialog.ui=), =floating_index_type= and =leg_type= (=RefdataPlugin=), and =ir_curve_bootstrap_config= (controller, detail dialog, desktop client); (b) 52 models carry a =*** Detail fields= table, which no template reads and core.py regenerates as a default when absent; (c) 8 models state =:has_pagination:= and =calendar= states =:has_version_navigation: false=, and those toggles are marked retired yet still read. | (a) =grep= for the legacy names; (b) =grep -rl '^\*\*\* Detail fields'= and a reader census; (c) reader census in =org_loader.py=, =core.py= and =doc_generate.py=. |
+| H02 | Finding, minor — the four prose passages above narrate the deleted Qt client as history. The clean-scheduler precedent deletes such prose rather than repairing it. This is a prose rewrite with no generated output, so it does not gate the registry entry. | Model prose; =clean-scheduler/task_clean_scheduler.org= notes. |
+| M09 | The retired toggles cannot be retired from refdata alone. =has_version_navigation= derives =has_toolbar= (=org_loader.py= line 1716), =has_csv_xml_io= drives the import-dialog preview columns (line 1667), and =has_pagination= is defaulted in =core.py= line 4134. Six of the nine models bind a profile that does not fix the toggle, so deleting the line alone changes their output. The clean components reached zero: =analytics=, =iam= and =ore= state no retired toggle in any model. | Reader census; =ores.iam.account.org= and =ores.analytics.pricing_engine_type.org=. |
+| M10 | PASS — the component model and the group model are present, and the group model produces the root =CMakeLists.txt=: that file is in the B01 drift set with the generated marker. =validate_docs.sh= reports no refdata finding. | =component_overview.org=, =ores.refdata.module.org=, =validate_docs.sh=. |
+| B03 | Correction — the survey's "generatable 30" is an over-count. Regeneration supersedes none of the 30: not one appears in the 516-file drift set or in the created set. The family name alone is not evidence. | Path-by-path test of all 30 against the B01 path list, in =build/audit/refdata-clean/b01-paths.txt=. |
+| B03 | The same families are hand-written in the registered component =ores.iam=: =login_info_json.hpp=, =account_json.cpp=, =permission_json.hpp= and the operation handlers all carry no generated marker. Refdata matches that convention. | =ores.iam= api and core trees. |
+| G02 | Nothing to delete on this ground: generation produces no file that a hand-written file already occupies. The regeneration creates exactly 4 files, all of them for the two entities that had no shell unit. | B01 dry run: 516 changed, 0 created; the two binds add exactly their own shell unit, test and recipe. |
+| G06 | FAIL — 79 =component_files.cmake= files are stale tree-wide, 8 of them under ores.refdata plus 2 under ores.shell/refdata. | =regenerate_cmake_component_files.py --all --check=. |
+| V05 | Baseline gates: protocol twin coverage green (5 registered components, refdata not among them); handler permissions green (4 components); populate references green; shell recipes blocked on V04 credentials. | =build/audit/refdata-clean/V05-*.txt=. |
 
 * Notes
+
+- The 516-file drift is one unit of work: a single in-place regeneration of
+  ores.refdata materialises all of it, because every cause is a shared
+  template that moved on after refdata's last regeneration. The standard's
+  G01 covers it.
+- Do not run the in-place mode yet. G07 forbids a refresh while its generator
+  has a known defect. The B01 dry run shows no such defect for refdata: no
+  file would be created, and the four tenant-scoped junctions keep their
+  SQL. Record the finding, then regenerate.
+- Workspace anomaly seen at task start: the working tree held the pre-20cd5089d5
+  revision of =projects/ores.compass/tests/test_deny_bare_stash_hook.py= with no
+  local edit made by this session. The file is restored to HEAD. The writer is
+  unknown; watch for a recurrence.
+- Scratch evidence for this task lives in =build/audit/refdata-clean/=, which is
+  untracked. The B01 drift run needs a tree that is clean apart from that
+  directory.
 
 * Test Scenarios
 

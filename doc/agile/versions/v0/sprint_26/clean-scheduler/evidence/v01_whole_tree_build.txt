@@ -2,8 +2,15 @@ V01 whole-tree build
 ====================
 
 Command:  ./compass.sh build          (no target: the whole tree)
-Revision: 20e4da0fca (working tree clean)
+Revision: ecfc331c59, the head after rebasing onto main (tree clean)
 Result:   exit 0
+
+This is the third such run. The first two predate the rebase, which brought in
+140 commits from other environments, including changes to core.py and the
+templates under this component. This run is the one that matters: the whole
+tree builds with the rebased head, and the scheduler's three libraries, its
+three test binaries, its service entry point and ores.reporting are all in its
+log as built targets.
 
 What it built, from the log: every component library and service, every test
 binary, the shell executable, and the one consumer of this component,

@@ -8,7 +8,7 @@
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,12 +21,12 @@ ores.testing meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-26                               |
 
 * Acceptance
 
@@ -39,14 +39,19 @@ ores.testing meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:AAA67332-2182-41BE-9A69-7D5F0F053EEA][Bring ores.testing to the clean standard]] | BACKLOG | | | Work ores.testing through the Component Clean Standard in order and record each item. |
+| [[id:AAA67332-2182-41BE-9A69-7D5F0F053EEA][Bring ores.testing to the clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Work ores.testing through the Component Clean Standard in order and record each item. |
 
 * Notes
 
 - Survey on 2026-09-23: 0 entity, junction or operation models; 23 C++ files outside tests, 0 of them generated (0%); 0 messaging headers, 0 of them hand-written.
 - Test support. Most items apply only as hygiene (G03, H01, H02); record the rest as not applicable.
+- The 2026-09-23 note held, with one addition. The component had no tests, which the Component Architecture Audit calls a finding, so the pass adds a Catch2 suite. The standard had also grown from 42 to 48 items since the story was written, and the task records all 48.
 
 * Decisions
+
+- The component keeps its place outside =COMPONENTS_UNDER_TEST=. The enrolment is not a formality: the dry run empties both generated source lists and makes a database mandatory for the component's own unit suite, so V06 records it as an exception with the proof.
+- The suite covers the surface that needs neither a database nor a fleet. The database-bound classes stay with the consumer suites that already exercise them, and V08 records the five files no test of the component reaches.
+- Two findings leave this pass with a home rather than a fix: the unsanitised log filename, which is =sanitize_test_log_filename_from_test_name=, and the scanner's cyclomatic complexity of 29, which the complexity measure surfaces for a later refactoring pass.
 
 * Out of scope
 

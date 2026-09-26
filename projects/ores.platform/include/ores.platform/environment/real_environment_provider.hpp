@@ -21,6 +21,7 @@
 #define ORES_PLATFORM_ENVIRONMENT_REAL_ENVIRONMENT_PROVIDER_HPP
 
 #include "ores.platform/environment/environment_provider.hpp"
+#include "ores.platform/export.hpp"
 
 namespace ores::platform::environment {
 
@@ -33,7 +34,7 @@ namespace ores::platform::environment {
  * go through this provider: std::getenv is deprecated in MSVC's STL
  * (in favour of _dupenv_s) and breaks the Windows build under -Werror.
  */
-class real_environment_provider final : public environment_provider {
+class ORES_PLATFORM_EXPORT real_environment_provider final : public environment_provider {
 public:
     std::optional<std::string> get(const std::string& name) const override;
     void set(const std::string& name, const std::string& value) override;

@@ -1,0 +1,54 @@
+# V05: every codegen gate, run on the committed tree
+# 2026-09-26, branch feature/clean-telemetry. Under each gate is what it said.
+
+$ check_component_drift.py --component telemetry-cpp --dry-run
+No drift: generated output matches the checked-in tree. (exit 0)
+
+$ check_model_drift.py
+No model drift: every bound model agrees with its profile (1 known exception(s)).
+
+$ check_protocol_twin_coverage.py
+Protocol twin coverage intact: all 38 generated protocol header(s) in 6
+committed component(s) have a TypeScript twin, and no model opts out.
+
+  This component contributes three of them: logs_protocol.ts,
+  nats_samples_protocol.ts and service_samples_protocol.ts.
+
+$ check_handler_permissions.py
+handler permissions are seeded (4 component(s), 174 distinct code(s)).
+
+$ check_populate_references.py
+populate references resolve.
+
+$ regenerate_shell_recipe_inventory.py --check
+exit 0.
+
+$ regenerate_cmake_component_files.py --component ores.telemetry.<part> --check
+core:     All component_files.cmake up to date.
+database: All component_files.cmake up to date.
+service:  All component_files.cmake up to date.
+
+$ validate_docs.sh
+FAIL: 2 violation(s) found:
+  [MISSING_OVERVIEW] ores.shell.workflow: modeling/component_overview.org not found
+  [MISSING_PUML] ores.shell.workflow: no .puml diagram in modeling/
+
+  Not this component's. ores.telemetry reports nothing. The two violations
+  are pre-existing on main, from the clean-workflow merge, and the same
+  change left that part's test directory without a main.cpp, which is why the
+  full build stops there. Recorded as the captures
+  shell_workflow_tests_link_without_a_main and
+  no_ci_job_runs_the_component_doc_check.
+
+$ regenerate_physical_space_inventories.py --check
+stale: projects/ores.codegen/library/templates/ores.doc.knowledge.org
+exit 1
+
+  Not this component's either. It is the pre-existing staleness the
+  ores.nats clean-up found and captured as
+  physical_space_inventory_check_has_no_ci_job: main changed the description
+  of the ores.doc.knowledge.investigation template and did not regenerate the
+  facet inventory that lists it.
+
+$ pytest projects/ores.codegen/tests -q
+594 passed.

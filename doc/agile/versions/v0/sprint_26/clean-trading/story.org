@@ -400,6 +400,17 @@ row is updated as each PR lands.
   it scaffolds is superseded.
 - *D7, the shape of PR 1.* Documentation and evidence only, so that the
   decisions are on the record before 1751 files move.
+- *D8, how a rollback names a trade.* The trade model declares its wire
+  key as =external_id=, so the canonical protocol cannot remove a row by
+  the uuid the import rollback holds. The options are: the handler records
+  the external ids as it saves, which it has in hand at the save site; the
+  trade model declares the storage key as its wire key, which is PR 3
+  model work; or the protocol gains a removal by storage key, which is a
+  generator change. Recommendation: record the external ids in the
+  handler now, because it changes no model and no protocol, and revisit
+  the key declaration in PR 3 when the model shape is being settled
+  anyway. The decision is recorded here rather than left in the trial
+  log, because a successor cannot infer it from the compiler output.
 
 * Delivery plan
 

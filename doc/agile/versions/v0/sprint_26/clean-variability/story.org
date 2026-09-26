@@ -21,11 +21,11 @@ ores.variability meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The component is generated and its consumers migrated; the tree builds, the tests pass, the database recreates, the recipes answer against the live fleet, every gate is green with it listed, and the two items it does not pass are recorded as accepted exceptions. |
+| Now           | Nothing. Delivered on =feature/clean-variability=, PR #2176. |
 | Waiting on    | Nothing. |
-| Next          | Review and merge the pull request. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-26                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ ores.variability meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:86F868EA-A157-40A4-8B53-44AAF96F1C27][Bring ores.variability to the clean standard]] | STARTED | 2026-09-26 | | Work ores.variability through the Component Clean Standard in order and record each item. |
+| [[id:86F868EA-A157-40A4-8B53-44AAF96F1C27][Bring ores.variability to the clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Work ores.variability through the Component Clean Standard in order and record each item. |
 
 * Notes
 

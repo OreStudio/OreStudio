@@ -26,11 +26,11 @@ ores.variability passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BE43B02A-BBD7-426E-8803-722506B0D51B][Clean ores.variability to the component clean standard]] |
-| Now          | B01 to B05 recorded, the component kind corrected, and the wire key and in-process surface decided (D1 and D3). |
+| Now          | Nothing. |
 | Waiting on   | Nothing for the scaffold. D2 (the two domain operations) and D4 (the never-published event) carry recommendations and no confirmation yet. |
-| Next         | Scaffold the catalogue entry and the composite root model. |
+| Next         | Nothing. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -446,3 +446,58 @@ not have seen were already known, and one is not this component's at all.
 | 6 | =complete_party_onboarding= logs a decode failure and returns without replying, so the caller waits for its own timeout | =projects/ores.variability/core/include/ores.variability.core/messaging/operations_handler.hpp= | Fixed | Confirmed. It now answers =bad_request=, as every generated handler does. The sibling operation takes no payload, so it has no decode to fail and no gap. |
 
 * Result
+
+Delivered on =feature/clean-variability=, rebased onto main with a linear history
+and no merge commits.
+
+=ores.variability= had no catalogue entry, so codegen had never run on it: the
+entity, mapper, repository, service, handler, registrar, protocol, SQL and shell
+surface were all hand-written and its wire protocol predated the canonical
+grammar. It is now generated from two models -- =system_setting= and the
+component's two domain operations -- and the files the generation supersedes are
+deleted.
+
+Three things stay hand-written, each because generation has no equivalent and
+each recorded with its reason: the component registrar, which composes the
+generated entity registrar with the component's operations; the operations
+handler; and the party scope, which is a trigger resolving the tenant's system
+party for a tenant-wide setting plus a =SECURITY DEFINER= reader for the service
+contexts that hold no direct =SELECT= grant.
+
+Four defects reached this work and were fixed at their source. One is codegen's
+and carries three regression tests: a write record dropped a natural key spelled
+like a server-owned field, so a create could not say which party's row it wrote.
+Two were found only by running things rather than reading them: the seed
+functions inserted without the row's =id=, which the database recreate found, and
+the generator expressions mixed =std::string= with faker-cxx's =std::string_view=,
+which only the compiler found. The fourth is the shell composite's =#+parts:=,
+which disagreed with its own tree.
+
+One thing is not a fix but a first: the event pipeline is wired. The generated
+notify trigger published to a PostgreSQL channel nothing listened on, and no
+component published the event to NATS, so the subscription in =ores.http= and
+the token-settings reload in =ores.iam= could not both work. Both halves are
+wired and the generated eventing integration test asserts the round trip.
+
+Verification, all of it re-run after the final rebase: =compass db recreate -y -k=
+exits 0, the whole tree builds with no errors, =validate_docs.sh= passes for all
+40 components, the codegen suite is 649 passed, the component's four suites pass
+against the live fleet, and the ten generated shell recipes answer. Every codegen
+gate is green with the component listed.
+
+Two checklist items are accepted exceptions, recorded in the registry rather than
+left out of it: =H01=, because the automated diagram pass cannot draw a
+method-only class's API and PlantUML will not attach members to a class inside a
+nested namespace, and =V08=, because the in-process facade has no unit test of
+its own. =variability-cpp= is in =COMPONENTS_UNDER_TEST=, and
+=check_registry_exceptions.py= checks those records against the standard's own
+item list.
+
+The review of PR #2176 raised six findings. Four are fixed here -- the
+=SECURITY DEFINER= functions were executable by =PUBLIC= so any service could
+read any tenant's settings; =set_fn= reset the version to 1 and severed a
+setting from its own history; the event wiring put iam's =token_settings_= under
+a second thread; and an operations handler answered nothing on a decode failure.
+Two are filed with their reasons: the composite declared key, which this task had
+already found, and the =deleted= event, which fires nowhere in the tree because
+99 notify triggers suppress the update their own delete rule produces.

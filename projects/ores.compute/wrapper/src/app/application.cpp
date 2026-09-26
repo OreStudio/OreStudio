@@ -62,6 +62,16 @@ namespace {
 constexpr std::string_view service_name = "ores.compute.wrapper";
 constexpr std::string_view service_version = ORES_VERSION;
 
+/**
+ * @brief The bearer token a wrapper node presents to the storage gateway.
+ *
+ * A wrapper node holds no JWT: assignments arrive on the trusted wrapper
+ * channel with no credential, and the node's IAM service account has no role
+ * assignment to log in with. The storage client requires a token, so the node
+ * presents an empty one and the gateway answers 401. A service credential for
+ * the node is a prerequisite for these transfers to succeed.
+ */
+constexpr std::string_view storage_bearer_token;
 
 /**
  * @brief Format a time_point as ISO-8601 UTC string (YYYY-MM-DDTHH:MM:SSZ).
@@ -463,7 +473,9 @@ void process_assignment(ores::nats::service::client& nats,
             BOOST_LOG_SEV(lg, debug) << "Downloading package: " << evt.app_version_id;
             const fs::path pkg_archive =
                 pkg_cache_dir.parent_path() / (evt.app_version_id + ".tar.gz");
-            ores::storage::net::http_client::get(make_url(cfg.http_base_url, evt.package_uri), pkg_archive);
+            ores::storage::net::http_client::get(make_url(cfg.http_base_url, evt.package_uri),
+                                                pkg_archive,
+                                                std::string(storage_bearer_token));
 
             const auto actual_sha256 =
                 ores::utility::crypto::sha256::hex_digest_of_file(pkg_archive);
@@ -489,7 +501,9 @@ void process_assignment(ores::nats::service::client& nats,
         // Download input archive and unpack into job_dir.
         const fs::path input_archive = job_dir / "input.tar.gz";
         BOOST_LOG_SEV(lg, debug) << "Downloading input";
-        ores::storage::net::http_client::get(make_url(cfg.http_base_url, evt.input_uri), input_archive);
+        ores::storage::net::http_client::get(make_url(cfg.http_base_url, evt.input_uri),
+                                            input_archive,
+                                            std::string(storage_bearer_token));
         input_bytes = static_cast<std::int64_t>(fs::file_size(input_archive));
         BOOST_LOG_SEV(lg, debug) << "Extracting input (" << input_bytes << " bytes)"
                                  << " to: " << job_dir.string();
@@ -591,7 +605,8 @@ void process_assignment(ores::nats::service::client& nats,
                 BOOST_LOG_SEV(lg, debug) << "Uploading output archive: " << output_archive.string()
                                          << " (" << output_bytes << " bytes)";
                 ores::storage::net::http_client::put(make_url(cfg.http_base_url, evt.output_uri),
-                                         output_archive);
+                                                    output_archive,
+                                                    std::string(storage_bearer_token));
             }
             BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
             // Success.

@@ -34,6 +34,7 @@
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
+#include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -89,6 +90,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
         ctx, database::service::tenant_context::system_tenant_id);
     system_flags->refresh();
     auto sessions = std::make_shared<iam::service::auth_session_service>();
+    auto auth_service = std::make_shared<iam::service::authorization_service>(ctx);
 
     BOOST_LOG_SEV(lg(), info) << "Initializing event bus...";
     eventing::service::event_bus event_bus;

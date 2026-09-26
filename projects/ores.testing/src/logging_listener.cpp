@@ -28,7 +28,6 @@
 #include "ores.testing/test_database_manager.hpp"
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
-#include <catch2/reporters/catch_reporter_registrars.hpp>
 #include <filesystem>
 #include <iostream>
 #include <memory>

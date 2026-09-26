@@ -57,7 +57,7 @@
 #include "ores.shell/app/commands/variability/system_setting_commands.hpp"
 #include "ores.shell/app/commands/workflow/workflow_instance_commands.hpp"
 #include "ores.shell/app/commands/workflow/workflow_step_commands.hpp"
-#include "ores.shell/app/commands/workflow/workflow_wait_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
@@ -117,7 +117,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     bundles_commands::register_commands(*root, session_);
     workflow_instance_commands::register_commands(*root, session_);
     workflow_step_commands::register_commands(*root, session_);
-    workflow_wait_commands::register_commands(*root, session_);
+    workflow_operation_commands::register_commands(*root, session_);
     scheduler_commands::register_commands(*root, session_);
     lei_commands::register_commands(*root, session_);
     compute_commands::register_commands(*root, session_);

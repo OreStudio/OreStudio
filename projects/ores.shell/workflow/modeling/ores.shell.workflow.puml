@@ -32,7 +32,7 @@ namespace ores #F2F2F2 {
                     class workflow_step_commands {
                         {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
                     }
-                    class workflow_wait_commands {
+                    class workflow_operation_commands {
                         {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
                     }
                 }
@@ -54,7 +54,7 @@ ores.workflow.api ..> ores.shell.workflow : domain, messaging
 ' Three other command units -- bundles, provision and ORE import -- call its
 ' wait_for_instance at four sites, so retiring it would break them.
 
-note bottom of "ores::shell::app::commands::workflow::workflow_wait_commands"
+note bottom of "ores::shell::app::commands::workflow::workflow_operation_commands"
 Answers `workflow wait <instance_id> [--timeout] [--expect-steps]`,
 and exposes wait_for_instance for the command units that dispatch a
 workflow and then block on it.

@@ -496,6 +496,27 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     } else {
         instance_id = boost::uuids::random_generator()();
     }
+
+    // A caller may supply the id, which is what makes a retried start address
+    // the run it already asked for. Recognise the repeat here rather than let
+    // the store's create-over-live-row guard refuse it, because a refusal the
+    // caller cannot see is worse than the no-op the repeat actually is.
+    try {
+        const auto existing =
+            instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
+        if (!existing.empty()) {
+            BOOST_LOG_SEV(lg(), info)
+                << "Workflow already started; leaving it alone:" << " type=" << req.type
+                << " workflow=" << boost::uuids::to_string(instance_id);
+            return;
+        }
+    } catch (const std::exception& e) {
+        // The read is a courtesy and the write is the authority, so a read that
+        // fails must not stop a start that would otherwise succeed.
+        BOOST_LOG_SEV(lg(), warn)
+            << "Could not check for an existing workflow instance: " << e.what();
+    }
+
     domain::workflow_instance instance;
     instance.id = instance_id;
     instance.tenant_id = utility::uuid::tenant_id::from_uuid(tenant_id).value();

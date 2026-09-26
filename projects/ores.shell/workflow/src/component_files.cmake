@@ -21,13 +21,13 @@
 # To modify, update the template and regenerate.
 set(files
     "app/commands/workflow/workflow_instance_commands.cpp"
+    "app/commands/workflow/workflow_operation_commands.cpp"
     "app/commands/workflow/workflow_step_commands.cpp"
-    "app/commands/workflow/workflow_wait_commands.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/workflow/workflow_instance_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/workflow/workflow_step_commands.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/workflow/workflow_wait_commands.hpp"
 )

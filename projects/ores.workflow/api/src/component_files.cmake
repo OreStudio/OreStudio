@@ -55,4 +55,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/ores.workflow.api.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/service/workflow_definition.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/service/workflow_registry.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/workflow/identity_workflow.hpp"
 )

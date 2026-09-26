@@ -22,6 +22,6 @@
 set(files
     "main.cpp"
     "workflow_instance_commands_tests.cpp"
+    "workflow_operation_commands_tests.cpp"
     "workflow_step_commands_tests.cpp"
-    "workflow_wait_commands_tests.cpp"
 )

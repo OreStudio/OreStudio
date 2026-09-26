@@ -55,10 +55,10 @@ namespace ores::shell::app::commands {
  * P04 records the operation model that would let generation take this
  * over, as it does for iam's generated *_operations_commands units.
  */
-class workflow_wait_commands {
+class workflow_operation_commands {
 private:
     inline static std::string_view logger_name =
-        "ores.shell.app.commands.workflow.workflow_wait_commands";
+        "ores.shell.app.commands.workflow.workflow_operation_commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -93,6 +93,32 @@ public:
                                   const std::string& instance_id,
                                   std::chrono::seconds timeout,
                                   std::size_t expected_steps = 0);
+
+    /**
+     * @brief List the workflow types the service has registered.
+     *
+     * Usage: workflow definitions
+     *
+     * A workflow cannot be started without knowing its type name, and until this
+     * command existed nothing in the shell could tell you one.
+     */
+    static void process_definitions(std::ostream& out,
+                                    ores::nats::service::nats_client& session,
+                                    const std::vector<std::string>& args);
+
+    /**
+     * @brief Start a workflow by type and print the instance id to follow.
+     *
+     * Usage: workflow start <type> <request_json>
+     *
+     * The instance id is generated here rather than by the engine, because the
+     * start is fire-and-forget: the reply is an acknowledgement, not the result,
+     * so the caller needs the id in hand to wait on it. Same reason the
+     * commissioners pre-generate it.
+     */
+    static void process_start(std::ostream& out,
+                              ores::nats::service::nats_client& session,
+                              const std::vector<std::string>& args);
 };
 
 }

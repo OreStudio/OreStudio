@@ -1,0 +1,454 @@
+:PROPERTIES:
+:ID: 0442FD13-1833-427F-B6CA-C4B5877C452B
+:END:
+#+title: Task: Add the identity workflow and the commands that drive it
+#+description: Give the workflow component a fixture it can run against itself: an identity workflow whose steps the request declares, plus the shell commands that start it and read the engine back.
+#+type: task
+#+level: s1
+#+filetags: :workflow:testing:shell:exercise-workflow:sprint_26:v0:
+#+owner: marco
+#+branch: feature/workflow-identity
+#+pr: 2184
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The workflow engine's every path runs against the live fleet from ores.shell, driven by one registered fixture whose steps are declared by the request, so different configurations emulate the real workflows the component runs for other components.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] |
+| Now          | The fixture runs. Every engine path has executed against the live fleet and settled at the state it should. |
+| Waiting on   | Nothing.                               |
+| Next         | Name the configurations and check each one from a script that asserts its terminal state. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- A definition named identity_workflow is registered by the workflow component, and its steps, their behaviours and their compensations all come from the request.
+- A step handler in the workflow service serves the fixture's command subject and answers the engine through the shared workflow_step_context helper.
+- The shell can list the registered definitions, start a workflow by type, read the instance summaries, read a step result, and read an entity's history.
+- Each configuration runs as a script and asserts its terminal state: instance state, step count, per-step state, and whether workflow wait returns true.
+- The engine's duplicate-completion, empty-definition, unknown-type and recovery paths each have a configuration or an integration test that covers them.
+- No recipe or script is vacuous: each assertion fails when the path it covers does nothing.
+
+* Plan
+
+** The command surface as it stands
+
+Two surfaces, easy to confuse because the shell reaches both.
+
+The generated entity surface is 23 commands: =workflow_instances= (list, get,
+get-many, add, set, put-many, delete, delete-many, versions, version),
+=workflow_steps= (the same ten plus =by-workflow-id=), and the hand-written
+=workflow wait=. These read and write the two tables. They are not the engine.
+
+The engine's conversation is start, dispatch a step, record a completion,
+compensate, recover. None of it is reachable from the shell, and the four gaps that
+block it are:
+
+| Gap | Evidence |
+|-----+----------|
+| Nothing can start a workflow | =start_workflow_message= is published only by a commissioner's own command. =workflow.v1.start= is subscribed and unreachable. |
+| No definition is exercise-able alone | All four are commissioned -- dq's =bundle_publish_workflow=, ore's =ore_import_workflow=, refdata's =provision_parties_workflow=, reporting's =report_execution_workflow= -- and each needs that component's data and step handlers. |
+| You cannot see what is registered | Three operation queries have no command: =workflow.v1.definitions.list=, =workflow.v1.instances.list= (the summary projection, distinct from the generated table read), =workflow.v1.steps.get-result=. Only =workflow.v1.instances.steps= is used, by =workflow wait=. |
+| No entry point to history | The generated units ship no =history= verb while trading's do, because =trading-instrument= enables it and =uuid-identified-lookup= does not. The family W01 wired is served but unreadable from the shell. |
+
+** The fixture: identity_workflow
+
+Named for what it does rather than for being a test: its steps perform no domain
+work, they identify and echo, and everything about them comes from the request. That
+is what makes one definition cover many workflow configurations.
+
+- =ores.workflow.api/workflow/identity_workflow.hpp= registers =identity_workflow=.
+  Its =build_steps= reads the request and emits one step per declared entry.
+- =ores.workflow.core/messaging/identity_step_handler.{hpp,cpp}= serves
+  =workflow.v1.identity.step=. =ores.service/messaging/workflow_helpers.hpp= already
+  extracts the step context from the message headers and offers =complete=, =warn= and
+  =fail=, so the handler is small.
+- Both are registered in the aggregate registrar beside the other definitions.
+
+A step declares its own behaviour, so the request is the configuration:
+
+#+begin_src json
+{"configuration": "saga",
+ "steps": [{"name": "reserve",  "behaviour": "complete",   "compensate": true},
+           {"name": "allocate", "behaviour": "complete",   "compensate": true},
+           {"name": "commit",   "behaviour": "fail"}]}
+#+end_src
+
+The behaviour vocabulary, which is what makes the configurations different shapes
+rather than different data:
+
+| Behaviour | What it drives |
+|-----------+----------------|
+| =complete= | the ordinary advance path |
+| =warn= | =completed_with_warnings= and a populated =step_log_json= |
+| =fail= | the failure path, and compensation when an earlier step has one |
+| =sleep:<seconds>= | an observable in-flight window, for watching a run and for recovery |
+| =echo-twice= | a duplicate =step_completed_event=, which the engine must ignore |
+| =compensate= (attribute) | whether the step declares a compensation subject, which decides whether a failure compensates or simply fails |
+
+** Configurations that emulate real workflows
+
+Each is a named request the shell can ask for by name, and each exists because it is
+a shape the component actually runs for someone:
+
+| Configuration | Emulates | Asserts |
+|---------------+----------+---------|
+| =happy_path= | any three-step provision | instance completes; three step rows; =current_step_index= reaches 2 |
+| =fan_out= | =bundle_publish_workflow='s one-step-per-dataset | step count follows the requested width |
+| =with_warnings= | =ore_import_workflow='s lossy-but-successful run | the step log is populated and the instance still completes |
+| =fail_fast= | a workflow with nothing to undo | instance failed, the failing step failed, later steps absent |
+| =saga= | =provision_parties_workflow='s compensable prefix | =compensating= then =compensated=, earlier steps compensated in reverse |
+| =long_running= | a run whose progress an operator watches | =in_progress= is observable; =workflow wait= prints transitions |
+| =recovery= | a service restart mid-flight | the same =step_id= is re-dispatched and the step completes exactly once |
+| =empty= | a definition whose =build_steps= yields nothing | the engine's guard puts the instance failed rather than leaving it in progress |
+| =unknown_type= | a typo'd type name | the registry miss is reported, not silently accepted |
+
+** The shell commands this needs
+
+Generic rather than fixture-specific, because each is a missing piece of the
+operation surface and several are what P04 is to model:
+
+| Command | Subject |
+|---------+---------|
+| =workflow definitions= | =workflow.v1.definitions.list= |
+| =workflow start <type> <request_json>= | publishes =start_workflow_message= |
+| =workflow status [--status <s>]= | =workflow.v1.instances.list= |
+| =workflow step-result <step_id>= | =workflow.v1.steps.get-result= |
+| =workflow history <instance_id>= | =workflow.v1.history.get= |
+
+=workflow start= being generic is deliberate: it drives the identity configurations
+and the real commissioned workflows alike, so nothing here is a test-only command.
+
+** Open decision: gated or always registered
+
+Always-on makes the component self-verifiable in the fleet, which is the point, at the
+cost of a fixture inside a production service. Gated keeps production clean but means
+it is exercised only where someone remembers to enable it, which is the failure mode
+this task exists to fix. The lean is always-on with naming that cannot be mistaken for
+domain code.
+
+** Sequencing
+
+1. =workflow definitions= and =workflow start=, which unblock everything else.
+2. The fixture with =happy_path= and =fail_fast=.
+3. =with_warnings=, =saga=, =fan_out=, =empty=, =unknown_type=.
+4. =long_running= and =recovery=, which need a service restart mid-flight and so
+   cannot be a pure shell script; a runbook step or a C++ integration test.
+5. A recipe and a tangled =.ores= script per configuration, so the sweep is one
+   command and the transcripts are the evidence.
+
+* Notes
+
+** The generator emits no history message, and that is why history is unreachable
+
+The gap is not workflow's. The protocol generator builds an entity's messages in
+=entity_protocol_messages()= and emits no history message at all: no template
+contains one, no code path constructs one, and the string appears nowhere in the
+generator. So a per-entity =history= command exists only where a protocol still
+carries what an *older* generator emitted, or where the protocol is hand-written.
+
+The evidence is a regeneration. Applying the generator to =reporting= removes its
+history subscription:
+
+#+begin_src text
+-   get_report_type_history_request::nats_subject, queue_group,
+-       [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+#+end_src
+
+The same holds for marketdata and trading's =trade=. Every component already
+brought to the clean standard carries none: workflow, iam, refdata, analytics,
+assets and compute all have zero protocols with a history message, while dq's
+eighteen are hand-written files.
+
+The consequence worth stating plainly: the components that cannot be regenerated
+without losing history are exactly the ones whose protocols are stale, so that
+staleness is the only reason the feature still appears to exist there. Adding a
+history message back to the generator changes generated output for every versioned
+entity in the tree, which is a tree-wide wave rather than a workflow fix, and it is
+why this task does not attempt it.
+
+** What was done instead, and why it is the right shape anyway
+
+=history get <entity_type> <entity_id>= reads =<component>.v1.history.get=, the
+generic subject a service serves for all of its entities through a dispatch
+registry. It needs no per-entity protocol, works for every component rather than
+workflow alone, and gives the history family wired during the clean-up its first
+client: until now that subject was subscribed everywhere and read by nobody. It
+reuses =render_history_diff=, which the per-entity commands already share, so the
+listing is the only thing it adds.
+
+Verified against the live fleet: =history get ores.iam.account <uuid>= reaches the
+iam provider and returns a well-formed response, and an unknown entity type fails
+with the subject it tried, because the entity type's component segment selects the
+subject. The addressing rule works.
+
+** History verified end to end, and the empty account result narrowed
+
+Reading a real entity's history works. A =workflow_instance= was created and then
+updated to a second version, and the command reported both:
+
+#+begin_src text
+History of 51766dac-4e75-4f95-bb8b-8706e4c811e9 (2 version(s)):
+  v2  2026-09-26 19:16:46Z  super_admin  18 field(s)
+  v1  2026-09-26 19:16:39Z  super_admin  18 field(s)
+#+end_src
+
+and =--diff --version 2= printed the fields that moved: the step index, the step
+count, the two timestamps, the commentary and the recorded-at stamp.
+
+The empty result for the bootstrapped =super_admin= account is therefore *not*
+tenant scoping, which was the first hypothesis and is wrong -- the workflow instance
+read answers on the same all-ones tenant. The account case is narrower and still
+unexplained, most likely because iam's account provider keys on something other than
+the row's uuid. It is left as an open question rather than a theory.
+
+** Blocker before the fixture can be started: the shell cannot publish
+
+=workflow start= must publish =start_workflow_message= to a JetStream subject, and
+the shell's =nats_client= exposes only =request= and =authenticated_request= -- no
+=publish=, no =js_publish=. The underlying =ores.nats::service::client= has them;
+the wrapper the command units hold does not. So the first piece of this task is a
+publish path on that wrapper, in a shared component rather than in the shell. Worth
+knowing before the fixture is written, because it changes the order of the work.
+
+** Why the fixture has to live in the service, not the shell
+
+A step's command must be consumed and answered by a service: the engine publishes the
+command and waits for a =step_completed_event= on JetStream. The shell is a client and
+cannot reply, so a fixture whose commands it served itself would hang every step until
+the wait timed out. The workflow service is the only service with no domain
+dependency, so it is the only place a self-contained fixture can be served.
+
+** The two list projections are not the same thing
+
+=workflow.v1.instances.list= carries =workflow_instance_summary= with a status filter:
+the engine's view, for an operator. The generated =workflow_instances list= carries
+the entity table's rows. Both are wanted and neither replaces the other, which is why
+the fixture uses the summary projection to report progress and the generated commands
+to inspect state.
+
+** Recipe coverage is the generated commands' only
+
+=regenerate_shell_recipe_inventory.py= derives recipes from the models' shell-command
+facet, so hand-written commands have none: =workflow wait= has no recipe today. The
+five commands above are hand-written, so their recipes and scripts have to be written
+rather than generated, or the inventory stays green while covering less than it
+appears to.
+
+** What this task is not
+
+It is not P04. Modelling the operation conversation, and moving each commissioner's
+payload beside its own definition, is separate work on the component clean standard.
+This task only needs the conversation to be reachable, and it is written so the
+commands survive that change because they address the messages rather than the
+fixture.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2184][#2184]] | [workflow] Add the identity workflow and the commands that drive it |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The fixture is in and every engine path has now run against the live fleet. It
+found four defects on the way, one of which made every workflow in the product
+unstartable.
+
+** The four defects
+
+| Defect | What it did | Fix |
+|--------+-------------+-----|
+| The engine never stamped =modified_by= | No workflow could start, of any type. The shared insert trigger resolves the field as an account username and raises once the tenant holds one, so instance creation failed for dq's publish, ORE's import, refdata's provisioning and reporting's execution alike. | The instance, step 0, the next step and a compensation step each set it to the service account, the value =created_by= already used. =performed_by= needs no help: the trigger overwrites it. |
+| A step's members were required, not defaulted | ={"steps":[{"name":"one"}]}= parsed to an empty list, and the engine reported "Workflow definition has no steps". A member initialiser is a default for C++ callers only; the JSON reader requires every member unless it is an =std::optional=. | The three optional members became =std::optional=, with =outcome()=, =compensates()= and =delay()= so a call site reads a value rather than an optional. |
+| The step handler read the payload through the wire codec | =Failed to parse the identity step command: Could not cast to a map.= The engine publishes a step command as JSON whatever the process wire format is, and this environment runs =msgpack=, so the codec was the wrong reader. | It reads the payload with =rfl::json::read=, as every other step handler does. |
+| An unknown behaviour passed for a completion | ={"behaviour":"cmplete"}= completed the step, so a typo in a configuration would have looked like success. | The handler fails the step, naming the behaviour it did not recognise. |
+
+The first is the one that mattered. It is a regression from this component's own
+clean-up: porting the engine onto the generated repository dropped the audit
+stamping the hand-written repository had done for the caller. Nothing noticed
+because nothing exercised the start path -- which is the argument for the fixture.
+
+=feature/clean-iam= ([[https://github.com/OreStudio/OreStudio/pull/2180][#2180]])
+carries the same =modified_by= hunk, found independently. That PR is conflicting
+against main, so this branch carries the fix rather than wait; whoever lands
+second drops the duplicate.
+
+** Verified end to end
+
+From =ores.shell= against the live fleet, as =super_admin=.
+
+=workflow definitions= lists all five registered types. =workflow start= dispatches
+and prints the instance id it generated.
+
+The happy path, two steps, the second reporting warnings:
+
+#+begin_example
+workflow wait 1a529bd2-3345-41f8-b8ff-ab9334509c1e --timeout 60 --expect-steps 2
+  [1/2] one: completed
+  [2/2] two: completed_with_warnings
+      warn: identity step 'two' deliberately warned [two]
+✓ All 2 step(s) completed.
+#+end_example
+
+The failure and compensation path, a compensatable step followed by a failing one,
+settled in the database as:
+
+#+begin_example
+ workflow_id          | step_index |      name       | step_state
+ 8c44ed99-c261-...    |         -1 | ok_compensation | completed
+ 8c44ed99-c261-...    |          0 | ok              | completed
+ 8c44ed99-c261-...    |          1 | boom            | failed
+ instance_state: compensated
+#+end_example
+
+The engine's log for the same run reports =beginning compensation= and then
+=Workflow COMPENSATED (all rollback steps complete)=, so the unwind is the engine's
+own, not a state written by hand.
+
+An unrecognised behaviour fails the step rather than completing it, and an
+unregistered type is refused:
+
+#+begin_example
+identity step 'typo' asked for unknown behaviour 'cmplete'
+No workflow definition for type: no_such_workflow
+#+end_example
+
+History is readable for the run: three versions, the diff from v1 to v2 showing
+=Current Step Index= move 0 to 1, and =Modified By= and =Performed By= both reading
+=ores_brave_hopper_workflow_service=.
+
+** Unit tests
+
+=ores.workflow.api.tests= gained five cases over the definition's contract: that an
+omitted member takes its default, that a declared behaviour and delay survive into
+the command payload, that one step is built per declared entry, that compensation
+completes, and that a request which is not a step list builds nothing. The first of
+those fails without the =std::optional= change, which is what it is for.
+
+** The instance id belongs to the caller
+
+=workflow start= takes =--instance-id <uuid>=. Absent, the id is minted as before.
+Supplied, the start becomes repeatable: a second request for an id that already
+exists reports the run and starts nothing.
+
+The reason is not scripting, although a script is what benefits. The engine
+already honoured a caller-supplied id, and =start_workflow_message='s own
+documentation names the case -- ORE's import pre-generates one so it can return
+the id before the engine has processed anything. The shell was the only caller
+that minted an id and kept it to itself. It also gives a run an idempotency key,
+which matters more than the convenience: the start subject is a durable
+JetStream subscription, so a redelivered start must not become a second run.
+
+A repeat is refused in two places because the two answer different questions. The
+shell looks the id up first, so an ordinary repeat is reported rather than
+dispatched. The engine checks before it writes, which covers a repeat that
+arrives before the first one has written its row.
+
+Verified against the live fleet. A caller-chosen id is accepted and dispatched.
+The same id in a later invocation reports instead:
+
+#+begin_example
+Workflow instance aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee already exists (completed);
+nothing was started.
+✓ All 1 step(s) completed.
+#+end_example
+
+The race path -- a brand-new id given twice back to back, so neither request can
+see the other's row -- leaves exactly one run:
+
+#+begin_example
+ live_instances | all_versions | live_steps
+              1 |            1 |          1
+#+end_example
+
+and the engine recorded the refusal as information, not as a failure:
+
+#+begin_example
+Workflow already started; leaving it alone: type=identity_workflow workflow=99999999-...
+#+end_example
+
+The restart that followed redelivered five earlier starts; all five were declined
+the same way. Before this change the same replay met the store's
+create-over-live-row guard, which is a logged failure.
+
+** A test target ctest could not see
+
+=ores.shell.workflow.tests= was built and wired into =run_all_tests= but never
+registered with =add_test=, so =compass test run= and any ctest-based gate skipped
+it. Every sibling shell test directory has the registration; this one, created by
+the clean-up, did not. The new =workflow start= cases could not have been run at
+all without it.
+
+** Found on the rebased branch: the engine races itself on one step row
+
+After rebasing onto a main 76 commits further on, a plain two-step run stalled:
+=workflow wait= reported =[1/1] one: in_progress= and timed out, while the log
+showed that step's command had completed.
+
+#+begin_example
+Publishing step command:  step_index=0 step_name=one step_id=c3f1d1ce-...
+Step-completed event received: step=c3f1d1ce-... outcome=completed
+Workflow STARTED: step_count=2 first_step=one
+ERROR Executing INSERT failed: Version conflict: expected version 1, but current version is 2
+ERROR Unhandled exception in NATS message handler for subject '...events.step-completed'
+#+end_example
+
+Two handlers write the same step row with a read-modify-write and optimistic
+locking. =on_start_workflow= calls =stamp_command_published= after it publishes,
+and =on_step_completed= calls =set_step_state= when the answer arrives. The
+fixture answers in about two milliseconds, so the second callback runs while the
+first is still finishing, and one of the two writes loses. The loser here was
+=set_step_state=, so the step never left =in_progress= and the instance stalled
+with nothing the shell could report as an error.
+
+The engine's own header claims "each NATS message callback runs on the NATS IO
+thread; a single engine instance is shared across all queue-group subscribers,
+protected by the NATS library's serialisation guarantees". The timestamps say
+otherwise: the completion was received at .775478 and =Workflow STARTED= was
+logged at .786977, so the completion was processed inside the start. The start
+subscription and the step-completed subscription are two callbacks, and they are
+not serialised against each other.
+
+The instance id work did not cause this and the defect is not new: it is a race
+the fixture makes easy to hit because it is the fastest step the engine can be
+given. The earlier verified runs were the same code winning the same race. It
+wants its own change, and the fix needs care rather than a mutex bolted on. If a
+publish can re-enter a handler on the same thread, a plain =std::mutex= would
+deadlock where a recursive one would only paper over the re-entrancy. Until it is
+fixed, a configuration cannot be trusted to report a stall.
+
+** What is left
+
+The configurations are designed but not yet named or scripted. Each still needs a
+script that asserts its terminal state rather than printing it.
+

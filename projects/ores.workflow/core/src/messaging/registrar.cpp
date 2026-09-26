@@ -30,6 +30,8 @@
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
+#include "ores.workflow.api/workflow/identity_workflow.hpp"
+#include "ores.workflow.core/messaging/identity_step_handler.hpp"
 #include "ores.workflow.core/messaging/workflow_handler.hpp"
 #include "ores.workflow.core/messaging/workflow_instance_history_provider_registrar.hpp"
 #include "ores.workflow.core/messaging/workflow_instance_registrar.hpp"
@@ -80,6 +82,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     };
     fold(register_workflow_instance_handlers(nats, ctx, signer));
     fold(register_workflow_step_handlers(nats, ctx, signer));
+    fold(register_identity_step_handlers(nats, qg));
 
     // The history family is the same shape as the messaging one: a generated
     // provider per entity, composed here. One generic subject serves both, so
@@ -105,6 +108,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     ore::workflow::register_ore_import_workflow(*registry);
     reporting::workflow::register_report_execution_workflow(*registry);
     dq::workflow::register_bundle_publish_workflow(*registry);
+    ores::workflow::workflow::register_identity_workflow(*registry);
 
     // ----------------------------------------------------------------
     // Create the engine (shared across all engine subscriptions).

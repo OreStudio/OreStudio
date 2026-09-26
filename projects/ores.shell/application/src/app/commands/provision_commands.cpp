@@ -33,7 +33,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"
 #include "ores.shell/app/commands/synthetic_commands.hpp"
-#include "ores.shell/app/commands/workflow/workflow_wait_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.variability.api/messaging/operations_protocol.hpp"
@@ -382,7 +382,7 @@ void provision_commands::process_tenant(std::ostream& out,
         }
         out << "  Dispatched " << published->datasets_dispatched
             << " dataset(s); workflow instance: " << published->instance_id << std::endl;
-        if (!workflow_wait_commands::wait_for_instance(
+        if (!workflow_operation_commands::wait_for_instance(
                 out,
                 session,
                 published->instance_id,
@@ -568,7 +568,7 @@ void provision_commands::process_party(std::ostream& out,
         }
         out << "  Dispatched " << published->datasets_dispatched
             << " dataset(s); workflow instance: " << published->instance_id << std::endl;
-        if (!workflow_wait_commands::wait_for_instance(
+        if (!workflow_operation_commands::wait_for_instance(
                 out,
                 session,
                 published->instance_id,
@@ -620,7 +620,7 @@ void provision_commands::process_party(std::ostream& out,
             return published;
         },
         [&](const std::string& instance_id, std::size_t expected) {
-            return workflow_wait_commands::wait_for_instance(
+            return workflow_operation_commands::wait_for_instance(
                 out, session, instance_id, *wait_timeout, expected);
         },
         [&](const auto& step) {

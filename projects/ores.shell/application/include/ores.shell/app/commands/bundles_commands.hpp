@@ -39,7 +39,7 @@ namespace ores::shell::app::commands {
  * Lists the bundles available for publication and publishes one,
  * mirroring what the provisioning wizards do behind their bundle
  * pages. Publication dispatches a workflow; --wait blocks on it via
- * workflow_wait_commands::wait_for_instance.
+ * workflow_operation_commands::wait_for_instance.
  */
 class bundles_commands {
 private:

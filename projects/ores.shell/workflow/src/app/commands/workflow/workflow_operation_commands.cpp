@@ -17,14 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.shell/app/commands/workflow/workflow_wait_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
 #include "ores.nats/service/request_helpers.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/request_helpers.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
 #include <expected>
 #include <map>
+#include <optional>
 #include <ostream>
 #include <thread>
 #include <vector>
@@ -94,9 +102,31 @@ void print_step(std::ostream& out,
     print_step_log(out, step);
 }
 
+/**
+ * @brief The canonical spelling of a UUID, or nothing when the value is not one.
+ *
+ * A supplied instance id is how a caller addresses a run it may already have
+ * asked for, so the text is parsed rather than trusted. Parsing buys more than a
+ * rejection: the canonical spelling is what gets echoed and dispatched, so a
+ * caller who wrote the id with braces or without dashes still reads back the id
+ * the engine holds; and the nil UUID is refused, because it parses but every nil
+ * run would be the same run, so a placeholder id would quietly collapse
+ * unrelated workflows into one.
+ */
+std::optional<std::string> canonical_uuid(const std::string& value) {
+    try {
+        const auto parsed = boost::uuids::string_generator()(value);
+        if (parsed.is_nil())
+            return std::nullopt;
+        return boost::uuids::to_string(parsed);
+    } catch (const std::exception&) {
+        return std::nullopt;
+    }
 }
 
-void workflow_wait_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
+}
+
+void workflow_operation_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto workflow_menu = std::make_unique<cli::Menu>("workflow");
 
     workflow_menu->Insert(
@@ -139,10 +169,26 @@ void workflow_wait_commands::register_commands(cli::Menu& root_menu, nats_client
         "Wait for a workflow instance to reach a terminal state",
         {"instance_id [--timeout <seconds>] [--expect-steps <n>]"});
 
+    workflow_menu->Insert(
+        "definitions",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_definitions(std::ref(out), std::ref(session), args);
+        },
+        "List the workflow types the service has registered",
+        {});
+
+    workflow_menu->Insert(
+        "start",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_start(std::ref(out), std::ref(session), args);
+        },
+        "Start a workflow and print the instance id to follow",
+        {"<type> <request_json> [--instance-id <uuid>]"});
+
     root_menu.Insert(std::move(workflow_menu));
 }
 
-bool workflow_wait_commands::wait_for_instance(std::ostream& out,
+bool workflow_operation_commands::wait_for_instance(std::ostream& out,
                                                nats_client& session,
                                                const std::string& instance_id,
                                                std::chrono::seconds timeout,
@@ -226,6 +272,121 @@ bool workflow_wait_commands::wait_for_instance(std::ostream& out,
         }
         std::this_thread::sleep_for(poll_interval);
     }
+}
+
+void workflow_operation_commands::process_definitions(std::ostream& out,
+                                                      nats_client& session,
+                                                      const std::vector<std::string>& args) {
+    (void)args;
+    BOOST_LOG_SEV(lg(), debug) << "Listing workflow definitions.";
+
+    if (!session.is_logged_in()) {
+        fail(out) << "You must be logged in to list workflow definitions." << std::endl;
+        return;
+    }
+
+    workflow::messaging::list_workflow_definitions_request req;
+    auto result = do_auth_request<workflow::messaging::list_workflow_definitions_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    if (!result->success) {
+        fail(out) << result->message << std::endl;
+        return;
+    }
+
+    if (result->definitions.empty()) {
+        out << "No workflow definitions are registered." << std::endl;
+        return;
+    }
+
+    for (const auto& def : result->definitions) {
+        out << def.type_name << "  (" << def.step_count << " step(s))" << std::endl;
+        if (!def.description.empty())
+            out << "  " << def.description << std::endl;
+    }
+}
+
+void workflow_operation_commands::process_start(std::ostream& out,
+                                               nats_client& session,
+                                               const std::vector<std::string>& args) {
+    auto parsed = parse_args(args, {{.name = "instance-id", .requires_value = true}});
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    if (parsed->positionals.size() != 2) {
+        fail(out) << "Usage: workflow start <type> <request_json> [--instance-id <uuid>]"
+                  << std::endl;
+        fail(out) << "Wrap the request in single quotes. The command line reads a double quote "
+                     "as a quote character, so unquoted JSON loses its own."
+                  << std::endl;
+        fail(out) << "For example: workflow start identity_workflow "
+                     "'{\"steps\":[{\"name\":\"a\"}]}'"
+                  << std::endl;
+        return;
+    }
+
+    const auto& type = parsed->positionals[0];
+    const auto& request_json = parsed->positionals[1];
+    const auto& supplied_id = parsed->flag("instance-id");
+
+    // A supplied id is what makes a start repeatable: a script that runs twice
+    // asks for the same run rather than for a second one. Left out, the id is
+    // minted here so the caller can follow it, as the engine would otherwise
+    // keep the one it made to itself.
+    std::string instance_id;
+    if (supplied_id.empty()) {
+        boost::uuids::random_generator rng;
+        instance_id = boost::uuids::to_string(rng());
+    } else if (const auto canonical = canonical_uuid(supplied_id)) {
+        instance_id = *canonical;
+    } else {
+        fail(out) << "--instance-id must be a UUID and not the nil UUID: " << supplied_id
+                  << std::endl;
+        return;
+    }
+
+    if (!session.is_logged_in()) {
+        fail(out) << "You must be logged in to start a workflow." << std::endl;
+        return;
+    }
+
+    // With a supplied id the run can be looked for before it is asked for, so a
+    // repeat reports the run that exists instead of dispatching a request the
+    // engine would only have to refuse.
+    if (!supplied_id.empty()) {
+        auto existing = fetch_steps(session, instance_id);
+        if (existing && existing->success) {
+            out << "Workflow instance " << instance_id << " already exists (" << existing->status
+                << "); nothing was started." << std::endl;
+            out << "Follow progress with: workflow wait " << instance_id << std::endl;
+            return;
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Starting workflow of type: " << type;
+
+    workflow::messaging::start_workflow_message msg;
+    msg.type = type;
+    msg.tenant_id = session.auth().tenant_id;
+    msg.request_json = request_json;
+    msg.instance_id = instance_id;
+
+    try {
+        session.transport().js_publish(
+            workflow::messaging::start_workflow_message::nats_subject,
+            ores::nats::default_wire_codec().encode(msg));
+    } catch (const std::exception& e) {
+        fail(out) << "Failed to start the workflow: " << e.what() << std::endl;
+        return;
+    }
+
+    out << "Dispatched " << type << "." << std::endl;
+    out << "workflow_instance_id: " << instance_id << std::endl;
+    out << "Follow progress with: workflow wait " << instance_id << std::endl;
 }
 
 }

@@ -22,6 +22,7 @@
 set(files
     "messaging/image_history_provider_registrar.cpp"
     "messaging/image_registrar.cpp"
+    "messaging/image_tag_registrar.cpp"
     "messaging/publish_from_dq_handler.cpp"
     "messaging/registrar.cpp"
     "messaging/tag_history_provider_registrar.cpp"
@@ -38,6 +39,7 @@ set(files
     "repository/tag_mapper.cpp"
     "repository/tag_repository.cpp"
     "service/image_service.cpp"
+    "service/image_tag_service.cpp"
     "service/tag_service.cpp"
 )
 
@@ -47,6 +49,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_tag_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_tag_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/publish_from_dq_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/tag_handler.hpp"
@@ -66,5 +70,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/repository/tag_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/repository/tag_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/service/image_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/service/image_tag_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/service/tag_service.hpp"
 )

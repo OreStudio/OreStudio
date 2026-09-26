@@ -1,7 +1,7 @@
 :PROPERTIES:
-:ores.cpp.nats-handler.enabled: nil
-:ores.cpp.nats-sub-registrar.enabled: nil
-:ores.cpp.service.enabled: nil
+:ores.cpp.nats-handler.enabled: true
+:ores.cpp.nats-sub-registrar.enabled: true
+:ores.cpp.service.enabled: true
 :ores.cpp.shell-command.enabled: true
 :ID: 7E4B2D18-9C63-4A05-B781-3F5D9E2C6A47
 :END:

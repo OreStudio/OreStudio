@@ -122,6 +122,10 @@ node_modules/
 # ores.shell runtime log, written at the repo root
 /log/
 
+# per-recipe transcripts from the assets V04 shell sweep; regenerate with
+# .audit/clean-assets/run_v04_recipes.py
+/.audit/clean-assets/A30_logs/
+
 # LaTeX intermediate artefacts from deploy_manual
 doc/manual/user_guide/user_manual.tex
 doc/manual/user_guide/user_manual.aux

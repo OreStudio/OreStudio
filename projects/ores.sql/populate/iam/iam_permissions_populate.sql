@@ -567,6 +567,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'assets::tags:read',   'View asset tags');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'assets::tags:write',  'Create and modify asset tags');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'assets::tags:delete', 'Delete asset tags');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'assets::image_tags:read',   'View image tag associations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'assets::image_tags:write',  'Attach and modify image tag associations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'assets::image_tags:delete', 'Remove image tag associations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'assets::*', 'Full access to all assets operations');
 
     -- =============================================================================

@@ -19,6 +19,7 @@
  */
 #include "ores.assets.core/messaging/registrar.hpp"
 #include "ores.assets.core/messaging/image_registrar.hpp"
+#include "ores.assets.core/messaging/image_tag_registrar.hpp"
 #include "ores.assets.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.assets.core/messaging/tag_registrar.hpp"
 #include <iterator>
@@ -33,17 +34,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
-    // Generated per-entity registrars: images and tags each wire the standard
-    // CRUD surface. The image_tag junction has no handler of its own, because
-    // its protocol is generic. subscription is move-only, so each returned
-    // vector folds in with move iterators. This aggregator is the only caller
-    // of the generated registrars, which is what keeps application.cpp a
-    // single call as the component gains entities.
+    // Generated per-entity registrars: images, tags and the image_tag junction
+    // each wire the surface their model enables. subscription is move-only, so
+    // each returned vector folds in with move iterators. This aggregator is the
+    // only caller of the generated registrars, which is what keeps
+    // application.cpp a single call as the component gains entities.
     const auto fold = [&subs](std::vector<ores::nats::service::subscription> s) {
         subs.insert(
             subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
     };
     fold(register_image_handlers(nats, ctx, verifier));
+    fold(register_image_tag_handlers(nats, ctx, verifier));
     fold(register_tag_handlers(nats, ctx, verifier));
 
     // ----------------------------------------------------------------

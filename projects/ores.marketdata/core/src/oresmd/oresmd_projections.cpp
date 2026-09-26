@@ -370,11 +370,13 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
         if (qt == ir_quote_type::ir_swap)
             return std::format("{}/{}/{}/2D/{}/{}", ore_type(qt), ore_metric(m), id.ccy, t, point);
         if (qt == ir_quote_type::discount)
+            // Emitted as the key spells it when the inverse kept it, and
+            // rebuilt from the currency and tenor otherwise.
             return std::format("{}/{}/{}/{}/{}",
                                ore_type(qt),
                                ore_metric(m),
                                id.ccy,
-                               curve_id(id.ccy, *id.tenor),
+                               id.curve_id ? *id.curve_id : curve_id(id.ccy, *id.tenor),
                                point);
         if (!id.index) {
             // MM is the one indexed family ORE writes both ways: ccy/settle/tenor
@@ -484,19 +486,14 @@ std::optional<std::string> quote_key_equity(const equity_market_data_identifier&
             return std::format("{}/{}/{}/{}/{}/{}/{}",
                                head,
                                id.ccy,
-                               to_upper(v.expiry),
-                               to_upper(*v.delta_type),
-                               to_upper(*v.premium_type),
-                               to_upper(*v.call_put),
-                               to_upper(v.strike));
+                               v.expiry,
+                               *v.delta_type,
+                               *v.premium_type,
+                               *v.call_put,
+                               v.strike);
         if (v.call_put)
-            return std::format("{}/{}/{}/{}/{}",
-                               head,
-                               id.ccy,
-                               to_upper(v.expiry),
-                               to_upper(v.strike),
-                               to_upper(*v.call_put));
-        return std::format("{}/{}/{}/{}", head, id.ccy, to_upper(v.expiry), to_upper(v.strike));
+            return std::format("{}/{}/{}/{}/{}", head, id.ccy, v.expiry, v.strike, *v.call_put);
+        return std::format("{}/{}/{}/{}", head, id.ccy, v.expiry, v.strike);
     }
     if (id.type != instrument_type::quote)
         return std::nullopt;
@@ -857,15 +854,20 @@ std::optional<market_data_identifier> from_ir_discount(const std::vector<std::st
     if (!m)
         return std::nullopt;
     const auto ccy = to_upper(parts[2]);
-    const auto curve_id = to_upper(parts[3]);
-    if (curve_id.size() <= ccy.size() || curve_id.substr(0, ccy.size()) != ccy)
+    const auto curve = parts[3];
+    if (curve.size() <= ccy.size() || to_upper(curve).substr(0, ccy.size()) != ccy)
         return std::nullopt;
     ir_market_data_identifier id;
     id.ccy = ccy;
     id.type = instrument_type::quote;
     id.quote_type = ir_quote_type::discount;
     id.metric = *m;
-    id.tenor = to_lower(curve_id.substr(ccy.size()));
+    id.tenor = to_lower(to_upper(curve).substr(ccy.size()));
+    // Recorded only when it is not the canonical derivation, so that one key has
+    // one URI: USD3M is what the forward rebuilds from USD and 3M, while
+    // USD-FedFunds is a spelling the derivation cannot reproduce.
+    if (curve != curve_id(ccy, id.tenor.value()))
+        id.curve_id = curve;
     id.point = to_lower(parts[4]);
     return id;
 }
@@ -1069,7 +1071,7 @@ std::optional<market_data_identifier> from_equity_option(const std::vector<std::
     if (!model)
         return std::nullopt;
     equity_market_data_identifier id;
-    id.ticker = to_upper(parts[2]);
+    id.ticker = parts[2];
     id.ccy = to_upper(parts[3]);
     id.type = instrument_type::vol;
     // The parser keeps the point composite lowercased and the surface's own
@@ -1083,17 +1085,19 @@ std::optional<market_data_identifier> from_equity_option(const std::vector<std::
     id.point = std::move(point);
     volatility_surface_point v;
     v.model_subtype = *model;
-    v.expiry = to_upper(parts[4]);
+    // Verbatim, not uppercased: the corpus writes these in mixed case
+    // (AtmDeltaNeutral, Spot, Call) and the spelling is data.
+    v.expiry = parts[4];
     if (parts.size() == 6) {
-        v.strike = to_upper(parts[5]);
+        v.strike = parts[5];
     } else if (parts.size() == 7) {
-        v.strike = to_upper(parts[5]);
-        v.call_put = to_upper(parts[6]);
+        v.strike = parts[5];
+        v.call_put = parts[6];
     } else {
-        v.delta_type = to_upper(parts[5]);
-        v.premium_type = to_upper(parts[6]);
-        v.call_put = to_upper(parts[7]);
-        v.strike = to_upper(parts[8]);
+        v.delta_type = parts[5];
+        v.premium_type = parts[6];
+        v.call_put = parts[7];
+        v.strike = parts[8];
     }
     id.vol = std::move(v);
     return id;
@@ -1104,7 +1108,7 @@ std::optional<market_data_identifier> from_equity_spot(const std::vector<std::st
     if (parts.size() != 4 || !metric_is(parts[1], ore_metric_spec::price))
         return std::nullopt;
     equity_market_data_identifier id;
-    id.ticker = to_upper(parts[2]);
+    id.ticker = parts[2];
     id.ccy = to_upper(parts[3]);
     id.type = instrument_type::quote;
     id.quote_type = equity_quote_type::spot;
@@ -1119,7 +1123,7 @@ std::optional<market_data_identifier> from_equity_curve(equity_quote_type qt,
     if (parts.size() != 5 || !metric_is(parts[1], expected))
         return std::nullopt;
     equity_market_data_identifier id;
-    id.ticker = to_upper(parts[2]);
+    id.ticker = parts[2];
     id.ccy = to_upper(parts[3]);
     id.type = instrument_type::quote;
     id.quote_type = qt;
@@ -1132,7 +1136,7 @@ std::optional<market_data_identifier> from_commodity_spot(const std::vector<std:
     if (parts.size() != 4 || !metric_is(parts[1], ore_metric_spec::price))
         return std::nullopt;
     commodity_market_data_identifier id;
-    id.commodity_code = to_upper(parts[2]);
+    id.commodity_code = parts[2];
     id.ccy = to_upper(parts[3]);
     id.type = instrument_type::quote;
     id.quote_type = commodity_quote_type::spot;
@@ -1147,7 +1151,7 @@ std::optional<market_data_identifier> from_commodity_curve(commodity_quote_type 
     if (parts.size() != 5 || !metric_is(parts[1], expected))
         return std::nullopt;
     commodity_market_data_identifier id;
-    id.commodity_code = to_upper(parts[2]);
+    id.commodity_code = parts[2];
     id.ccy = to_upper(parts[3]);
     id.type = instrument_type::quote;
     id.quote_type = qt;
@@ -1164,7 +1168,7 @@ std::optional<market_data_identifier> from_credit_curve(credit_quote_type qt,
     if (parts.size() != 6 || !metric_is(parts[1], expected))
         return std::nullopt;
     credit_market_data_identifier id;
-    id.reference_entity = to_upper(parts[2]);
+    id.reference_entity = parts[2];
     id.ccy = to_upper(parts[4]);
     id.type = instrument_type::quote;
     id.quote_type = qt;
@@ -1177,7 +1181,7 @@ std::optional<market_data_identifier> from_credit_recovery(const std::vector<std
     if (parts.size() != 5 || !metric_is(parts[1], ore_metric_spec::rate))
         return std::nullopt;
     credit_market_data_identifier id;
-    id.reference_entity = to_upper(parts[2]);
+    id.reference_entity = parts[2];
     id.ccy = to_upper(parts[4]);
     id.type = instrument_type::quote;
     id.quote_type = credit_quote_type::recovery_rate;
@@ -1193,7 +1197,7 @@ std::optional<market_data_identifier> from_credit_index(credit_quote_type qt,
     if (parts.size() != 5 || !metric_is(parts[1], ore_metric_spec::base_correlation))
         return std::nullopt;
     credit_market_data_identifier id;
-    id.reference_entity = to_upper(parts[2]);
+    id.reference_entity = parts[2];
     id.type = instrument_type::quote;
     id.quote_type = qt;
     id.point = to_lower(parts[3]) + "," + to_lower(parts[4]);

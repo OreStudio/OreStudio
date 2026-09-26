@@ -235,9 +235,7 @@ TEST_CASE("only_the_recorded_types_lose_keys_on_the_way_back", tags) {
     // A key that projects to a URI and does not read back as itself is the
     // silent kind of loss: the projection reports success and the caller has no
     // reason to look. These are measured, not assumed, and a new one fails.
-    const std::set<std::string> recorded{
-        "CDS", "COMMODITY_FWD", "DISCOUNT", "EQUITY",
-        "EQUITY_FWD", "EQUITY_OPTION", "IR_SWAP", "RECOVERY_RATE"};
+    const std::set<std::string> recorded{"IR_SWAP"};
 
     REQUIRE(types_with_round_trip_gaps() == recorded);
 }

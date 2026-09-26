@@ -48,6 +48,33 @@ ores.telemetry meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 * Decisions
 
+- *A Protocol component models its messages, not its tables.* The survey
+  found five SQL tables, a repository and a service, and no model at all.
+  Modelling the tables would have moved this story into the Entity items the
+  sprint did not scope it for, so the three message surfaces are modelled and
+  the tables stay hand-written. The repository reads the generated payload
+  types, which is the consequence: the wire payload is where the type lives.
+- *A test is not a consumer.* B06 found the distributed-tracing API reached
+  only from tests and four stats reads in the same position. Both are kept,
+  and each has a capture naming the consumer that should reach it, rather
+  than being deleted out from under a working aggregation.
+- *An unreached read behind a live subject is a defect, not dead code.* The
+  two NATS sample handlers answered every request with an empty sample list
+  while the repository reads that answer it sat unreached. The handlers call
+  them now.
+- *Correct a wrong claim in a documentation header rather than delete the
+  header.* Three namespace headers named the wrong namespace, the wrong
+  module or an exporter this task deletes. All three are kept and corrected.
+
 * Out of scope
 
--
+- The stats surface. The four reads and their SQL functions compute the
+  statistics, and nothing can ask for them until a subject and its models
+  exist. Recorded as the `expose_the_telemetry_stats_surface` capture.
+- The distributed-tracing API. It is complete and tested and no component
+  calls it yet. Recorded as the `instrument_components_with_telemetry_context`
+  capture.
+- Generating the messaging registrar. The component's registrar stays
+  hand-written; the `codegen_messaging_registrars` capture owns that change.
+- The five tables and their RLS policies, which the Protocol scope leaves
+  hand-written.

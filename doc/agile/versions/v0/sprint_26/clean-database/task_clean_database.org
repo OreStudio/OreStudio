@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-database:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-database
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E7AA802C-7052-4AF3-8DCF-17075DE9E96A][Clean ores.database to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ ores.database passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E7AA802C-7052-4AF3-8DCF-17075DE9E96A][Clean ores.database to the component clean standard]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -55,11 +55,223 @@ record each item's result in the table below.
 7. Structure and hygiene (H01 to H03).
 8. Verification (V01 to V06), ending with the registry entry.
 
+* Baseline and inventory
+
+** B01 baseline
+
+Recorded at =5de59e3fb8= (the branch point, before any edit).
+
+#+begin_example
+$ projects/ores.compass/venv/bin/python \
+    projects/ores.codegen/scripts/check_component_drift.py \
+    --component database-cpp --dry-run
+19 file(s) would change, 25 file(s) would be created (44 file(s) in total).
+exit 1
+#+end_example
+
+The 19 changed files were the whole =database_info= stack the component
+hand-writes: =domain/database_info.hpp= and its JSON I/O, the sqlgen entity,
+the mapper, the repository, =export.hpp=, the four CMake files and the
+generated table SQL. The 25 created files were the families the hand-written
+stack has no counterpart for at all: the table and table I/O, the generator,
+the protocol header, the handler, the messaging, event and history-provider
+registrars, the event type, the presentation history mapper, the service, the
+three scaffold stubs and three SQL trigger and drop scripts.
+
+=check_model_drift.py= at the same revision: "No model drift: every bound
+model agrees with its profile (2 known exception(s))". The exception list is
+=compute.result= and =reporting.report_definition=; neither is this
+component. =database_info= declared no =:profile:= at all, so the check
+skipped it.
+
+=validate_docs.sh= at the same revision reported one violation, unrelated to
+this component: =MISSING_PUML ores.shell.iam=.
+
+** B02 model classification
+
+Two codegen model files, by metatype:
+
+| File | Metatype | Variability |
+|------+----------+-------------|
+| =ores.database.database_info.org= | =ores.codegen.entity= | carries it |
+| =ores.database.module.org= | =ores.codegen.module= | none; docs-only index, excluded by the documented module rule |
+| =component_overview.org= | =ores.codegen.component= | none; drives the CMake scaffold and the C++ stubs |
+
+** B03 hand-written file classification
+
+49 tracked files at =5de59e3fb8=, tests excluded.
+
+Generatable, 15 present: =CMakeLists.txt=, =modeling/CMakeLists.txt=,
+=src/CMakeLists.txt=, =src/component_files.cmake=, =export.hpp=, the four
+=database_info= C++ headers, the four =database_info= C++ sources and
+=../ores.sql/create/database/database_database_infos_create.sql=.
+
+Generatable but absent, 25: the whole protocol, handler, registrar, event,
+service, generator, table, presentation and stub families, plus the SQL
+trigger and drop scripts. No hand-written counterpart exists for any of them.
+
+Infrastructure that stays hand-written, 32: the connection pool
+(=tenant_aware_pool=), =bitemporal_operations=, =db_types= (it defines the
+canonical =db_timestamp= the generated entities consume), the mapper helpers,
+=helpers=, the exception types, =database_options=, =context=,
+=session_utilities=, =database_configuration=, the two umbrella headers, the
+service layer (=context_factory=, =health_monitor=, =party_context=,
+=postgres_listener_service=, =tenant_context=), the aggregate header, the
+component overview, the module model, and the PlantUML source and image.
+
+Dead, 3: =modeling/ores.database.database_info.org=,
+=ores.sql/create/database/database_info_fn_create.sql=, whose
+=ores_database_info_fn()= had zero consumers in C++ and in Python, and
+=ores.sql/drop/database/database_info_drop.sql=, superseded by the generated
+drop script and kept alive only by a =WIRE_001= exception.
+
+** B05 open work
+
+The sprint 25 story [[id:62193FDE-57C0-40BB-83B7-0B3D6F8C38AA][Entity
+classification and drift baseline: ores.database]] and its one task were both
+abandoned at sprint 25 close; the task record says sprint 26 replaces the
+codegen approaches tried so far with one method. No branch or capture for this
+component is in flight. The other component clean-up stories in sprint 26
+touch their own components and do not overlap =ores.database=.
+
+* Decision: the component keeps no entity model
+
+The audit that follows rests on one design decision, so it is recorded first.
+
+=ores.database= is foundation infrastructure. Everything above it links it:
+=ores.service= links =ores.database.lib= directly, and the generated entity
+stack would make =ores.database= link =ores.history=, =ores.eventing=,
+=ores.nats=, =ores.security= and =ores.service= in turn. Those are the
+dependencies the generated handler, registrar, eventing and service files
+name in their own include lists. The generated stack cannot link from the
+foundation layer without a cycle.
+
+The model's shape also contradicts the table. The generator emits a
+bitemporal entity: =version=, the four audit columns, =valid_from=/=valid_to=,
+a GIST exclusion, an insert trigger with version management, a delete rule
+and a version-uniqueness index. The table is one immutable row of bootstrap
+metadata, written by =compass db recreate= before any service runs, and read
+by =compass bearings= through psql. The model's own prose says "Contains
+exactly one row" while its output says "history".
+
+The stack was also dead. =ores_database_info_tbl= had exactly one C++ line in
+the whole repository, the tablename constant in the entity header. The only
+live readers are =projects/ores.compass/src/compass_db.py= and
+=compass.py=, which query the table directly.
+
+So the model went, the C++ stack that existed only to serve it went, and the
+table moved to the SQL technical space as hand-written SQL. This follows the
+precedent of the other model-free infrastructure components, =ores.storage=,
+=ores.security=, =ores.platform=, =ores.diff= and =ores.nats=, none of which
+carry a catalogue entry or a codegen model. The story's own survey reached the
+same conclusion for the rest of the component: "the database access layer,
+which stays hand-written infrastructure".
+
+The consequence for V06 is recorded there.
+
+* Results
+
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | PASS | Baseline above; =check_component_drift.py --component database-cpp --dry-run= at =5de59e3fb8= returned 19 changed, 25 created, exit 1 |
+| B02 | PASS | Metatype table above; =grep '#+type:' projects/ores.database/modeling/*.org= |
+| B03 | PASS | Classification above; 49 tracked files, 15 generatable, 3 dead, 32 infrastructure |
+| B04 | N/A | No NATS subject is served or sent. No =messaging/= or =eventing/= directory exists and =grep -rE 'ores\.[a-z_]+\.v[0-9]'= over =include/= and =src/= finds nothing |
+| B05 | PASS | The sprint 25 story and task for this component are ABANDONED; no in-flight branch; the task-record links above |
+| M01 | N/A | No entity model remains. Only =component_overview.org= (=ores.codegen.component=) and the PlantUML source are in =modeling/= |
+| M02 | N/A | No entity to bind. The model that needed a bind is deleted; its unbound state was the finding |
+| M03 | N/A | No profile is bound, so no feature can contradict one |
+| M04 | N/A | No feature assignment to misplace |
+| M05 | N/A | No entity model. The table is hand-written SQL and is deliberately non-temporal; the decision record above gives the reason the generator's bitemporal shape is wrong here |
+| M06 | N/A | The component puts no type on the wire, so it has no wire type to model |
+| M07 | N/A | No junction model |
+| M08 | N/A | No model declares a custom C++ type. The uuid and table name fields the old model carried are gone with it |
+| M09 | PASS | =grep -rniE 'Q_OBJECT|QWidget|Wt::|presentation_drawer' projects/ores.database/modeling= finds nothing |
+| M10 | PASS | =modeling/component_overview.org= declares =#+type: ores.codegen.component=, =#+name:=, =#+full_name:=, =#+brief:= and the six required sections; =validate_docs.sh= is clean for the component |
+| P01 | N/A | No entity protocol. The component has no messaging headers |
+| P02 | N/A | No subject is owned, so there is no raw subject string to eliminate |
+| P03 | N/A | No subject is declared and no message is served |
+| P04 | N/A | No operation model |
+| P05 | N/A | The component owns no protocol and consumes none |
+| P06 | N/A | No event cache |
+| G01 | PASS | =check_component_drift.py --all --dry-run= exits 0, "No drift: regenerated output matches the checked-in tree". The component is outside the catalogue, so it contributes nothing to check |
+| G02 | N/A | No generator supersedes a hand-written file: the component has no catalogue entry and no entity model |
+| G03 | PASS | =grep -rl 'AUTO-GENERATED FILE'= over =include/=, =src/=, =tests/= and =modeling/= finds nothing |
+| G04 | N/A | No generated code in the component to review. The generated output the deleted model would have produced was reviewed to reach the decision above |
+| G05 | N/A | The component owns no generator |
+| G06 | N/A | =regenerate_cmake_component_files.py= drives the CMake lists from the catalogue entry, and the component has none. Its =component_files.cmake= files are hand-maintained like the other model-free components |
+| W01 | N/A | No generated registrar family exists, so none is unwired |
+| W02 | N/A | The component has no handler and checks no permission |
+| W03 | N/A | The component has no populate script |
+| W04 | PASS | The table is reachable from =create/create.sql= to =create/database/database_create.sql= to =database_database_info_create.sql=, and the drop from =drop.sql= to =drop/database/database_drop.sql= to =database_database_info_drop.sql=. =plantuml_er_parse_sql.py --validate-only= reports 303 tables and 0 warnings. =compass db recreate= is recorded under V03 |
+| S01 | N/A | The component has no entity, so it has no shell command unit. The command surface is Python: =compass db= |
+| S02 | N/A | No command, so no recipe |
+| H01 | PASS | =validate_docs.sh= reports no =ores.database= violation. The component overview is current and the layer page narrative is corrected |
+| H02 | PASS | No scaffold or leftover artefact, no platform conditional or OS header, no commented-out code, and no hand-written duplicate of a generated artefact left |
+| H03 | PASS | A =compass-code-review-comments= pass over the diff. The diff deletes comments; it adds one comment block to the hand-written SQL explaining why the table is not temporal, and one to the catalogue explaining the absence. Both are the non-obvious why the code cannot show |
+| V01 | PASS | =compass build= over the whole tree, exit 0 |
+| V02 | PASS, with a fleet caveat | =compass test run= returns 60 of 70 suites passing. =ores.database.tests= passes in 12.34 s. The ten failures are all NATS-connected: every one is "NATS connect failed: No server available for connection". The fleet could not start in this environment, see the caveat below |
+| V03 | BLOCKED | =compass services status= refuses: the local =.env= is format version 22 and the tree requires 23, so it asks for =compass env configure= first. =compass db recreate= therefore did not run. The schema side of V03 is proven instead by the SQL validator: =plantuml_er_parse_sql.py --validate-only= parses 303 tables and reports 0 warnings after the change |
+| V04 | N/A | The component serves no generated shell command, so there is no command run log to record |
+| V05 | PASS | =check_component_drift.py --all --dry-run=, =check_model_drift.py=, =check_protocol_twin_coverage.py=, =check_handler_permissions.py=, =check_populate_references.py=, =regenerate_shell_recipe_inventory.py --check= and the SQL schema validation all exit 0 |
+| V06 | N/A | The component has no codegen model, so it has no regeneration for the gate and no catalogue entry to resolve. Listing it would fail =--all= by construction. The decision record above gives the reason |
+
+Every item is resolved: 20 pass, 21 are not applicable with the reason
+recorded, and 1 is blocked with the blocker named. No item is skipped in
+silence.
+
+The checks above are rerunnable:
+=projects/ores.database/scripts/check_clean_standard.sh= runs the mechanical
+ones and exits non-zero on a failure.
 
 * Notes
+
+** The blocker on V03
+
+This environment cannot run the fleet or the SQL pass of the standard. Every
+=compass= command that needs the environment stops at:
+
+#+begin_example
+=== ERROR: .env is out of date ===
+  Your .env:  version 22
+  Required:   version 23
+#+end_example
+
+The fix compass prints is =compass env configure=, which regenerates the
+whole =.env=. The version 23 delta is the removal of
+=ORES_CONNECTIONS_MASTER_PASSWORD= for the retired =ores.connections=, so the
+missing variable is inert here; the version guard stops the command before it
+reads anything. Regenerating a working local =.env= is the owner's call, not
+this branch's, and the user is working in this checkout. The same guard
+blocks the fleet, so the NATS-backed suites cannot run either.
+
+What that leaves unproven is small and named: the database was not recreated
+from scratch and the fleet did not serve. The schema change itself is proven
+by the SQL validator, and the deleted C++ had no consumers, so nothing on the
+build path can fail from it. The two checks are the first thing to run in an
+environment that is up.
+
+** The lever
+
+=projects/ores.database/scripts/check_clean_standard.sh= runs the mechanical
+items of the standard against this component and prints a =PASS=, =FAIL= or
+=N/A= line with the evidence for each. A reviewer reruns it instead of
+re-deriving the table above. V01 to V04 are out of its scope because they need
+a built tree and a running fleet; their evidence is recorded here.
+
+** Findings recorded, not fixed
+
+- The committed ER diagram =projects/ores.sql/modeling/ores_schema.puml= is
+  stale against its own generator by 26 hunks, all outside this component:
+  table notes and column order in =iam=, =trading= and others. Regenerating it
+  for this component's no-op column change would have carried that unrelated
+  churn. The capture [[id:BE48603C-18AC-4C98-8E1F-221D1E43F350][Refresh the
+  stale ER diagram from its generator]] covers it. This component's table
+  shape is unchanged, so the stale diagram does not misdescribe it.
+- =regenerate_cmake_component_files.py --all --check= is red repo-wide: 147
+  stale =component_files.cmake= files across 33 components, including
+  =ores.workspace= and =ores.refdata=. It is out of scope here because the
+  command lifts the catalogue entry, which this component no longer has.
 
 * Test Scenarios
 

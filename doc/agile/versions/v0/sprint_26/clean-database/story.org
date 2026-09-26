@@ -8,7 +8,7 @@
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ ores.database meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | Not yet started. |
 | Waiting on    | Nothing.                               |
@@ -39,15 +39,41 @@ ores.database meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:37D7571E-A298-4388-AFD5-568D12BE8FEF][Bring ores.database to the clean standard]] | BACKLOG | | | Work ores.database through the Component Clean Standard in order and record each item. |
+| [[id:37D7571E-A298-4388-AFD5-568D12BE8FEF][Bring ores.database to the clean standard]] | STARTED | 2026-09-26 | | Work ores.database through the Component Clean Standard in order and record each item. |
 
 * Notes
 
 - Survey on 2026-09-23: 1 entity, junction or operation models; 40 C++ files outside tests, 0 of them generated (0%); 0 messaging headers, 0 of them hand-written.
 - One entity model (=database_info=) and its SQL. The rest is the database access layer, which stays hand-written infrastructure (B03).
+- Survey on 2026-09-26, worked: the one entity model was not reproducible and
+  the component cannot host a generated entity. The generator emits a
+  bitemporal stack whose handler and registrars link =ores.history=,
+  =ores.eventing=, =ores.nats=, =ores.security= and =ores.service=, and
+  =ores.service= links =ores.database=, so the generated stack cannot link from
+  the foundation layer. The model also contradicted the table: its prose says
+  "Contains exactly one row" and its output says "history". The model and the
+  dead hand-written stack that served it are gone, and the table is
+  hand-written SQL in the SQL technical space. The task record carries the
+  decision and the per-item evidence.
+- The component now sits with the other model-free foundation components,
+  =ores.storage=, =ores.security=, =ores.platform=, =ores.diff= and =ores.nats=,
+  none of which carry a codegen catalogue entry or a model.
 
 * Decisions
 
+- The component keeps no codegen entity model. The generated stack cannot link
+  from the foundation layer, and the table is one immutable row of bootstrap
+  metadata rather than a domain entity. Full reasoning on the task record.
+- The component does not join =COMPONENTS_UNDER_TEST=. It has no regeneration
+  to gate, and the gate resolves its members through the codegen catalogue,
+  which the component no longer has an entry in. The task record records this
+  against item V06.
+
 * Out of scope
 
--
+- Refreshing the stale ER diagram, which is pre-existing drift outside this
+  component. The capture
+  [[id:BE48603C-18AC-4C98-8E1F-221D1E43F350][Refresh the stale ER diagram
+  from its generator]] covers it.
+- The repo-wide =component_files.cmake= staleness: 147 files across 33
+  components.

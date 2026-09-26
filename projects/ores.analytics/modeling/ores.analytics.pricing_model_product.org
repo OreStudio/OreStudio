@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.shell-command.enabled: true
 :ID: BDECF3A4-4A7C-4F64-94C1-A106E215F88D
 :END:
 #+title: ores.analytics.pricing_model_product
@@ -143,22 +144,20 @@ std::string("DiscountingSwapEngine")
 :iterator_var: pmp
 :END:
 
+** Table display
+
+| column                   | header      |
+|--------------------------+-------------|
+| pricing_engine_type_code | Engine Type |
+| model                    | Model       |
+| engine                   | Engine      |
+| modified_by              | Modified By |
+| version                  | Version     |
+
 ** Presentation
 :PROPERTIES:
-:domain_include:         ores.analytics.api/domain/pricing_model_product.hpp
-:domain_class:           analytics::domain::pricing_model_product
-:protocol_include:       ores.analytics.api/messaging/pricing_model_product_protocol.hpp
-:collection_name:        products
-:key_field:              pricing_engine_type_code
-:get_request_class:      analytics::messaging::get_pricing_model_products_request
-:get_response_class:     analytics::messaging::get_pricing_model_products_response
-:get_message_type:       get_pricing_model_products_request
-:save_request_class:     analytics::messaging::save_pricing_model_product_request
-:save_response_class:    analytics::messaging::save_pricing_model_product_response
-:save_message_type:      save_pricing_model_product_request
-:delete_request_class:   analytics::messaging::delete_pricing_model_product_request
-:delete_response_class:  analytics::messaging::delete_pricing_model_product_response
-:delete_message_type:    delete_pricing_model_product_request
+:collection_name:  products
+:key_field:        pricing_engine_type_code
 :END:
 
 *** Detail fields

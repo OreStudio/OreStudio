@@ -1,0 +1,6 @@
+# =get-many=
+#
+# GENERATED from doc/recipes/shell/ois_conventions/ois_convention.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+ois_conventions get-many __none__

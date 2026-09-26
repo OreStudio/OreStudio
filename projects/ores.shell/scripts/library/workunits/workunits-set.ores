@@ -1,0 +1,6 @@
+# =set=
+#
+# GENERATED from doc/recipes/shell/workunits/workunit.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+workunits set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 0 00000000-0000-0000-0000-000000000000 system.new_record generated_script

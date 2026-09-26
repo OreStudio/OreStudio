@@ -1,0 +1,6 @@
+# =versions=
+#
+# GENERATED from doc/recipes/shell/pricing_engine_types/pricing_engine_type.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+pricing_engine_types versions __none__ --limit 1

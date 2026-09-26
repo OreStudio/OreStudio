@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/currency_countries/currency_country.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+currency_countries get __none__ __none__

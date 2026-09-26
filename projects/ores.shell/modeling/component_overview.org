@@ -7,7 +7,7 @@
 #+description: Interactive REPL for connecting to ORE Studio via NATS — currency queries, account management, and auto-login.
 #+type: ores.codegen.component
 #+component_kind: composite
-#+parts: api trading iam refdata application modeling
+#+parts: api trading iam refdata analytics application modeling
 #+level: cross
 #+filetags: :shell:repl:tool:component:
 #+created: 2026-05-20
@@ -34,14 +34,19 @@ directory adds its parts. The parts are:
 | Part | Role |
 |------|------|
 | =api= | Shared shell plumbing: argument parsing, feedback, pagination, request helpers, history rendering. Links =ores.nats= and =ores.history.api= only. |
-| =application= | The runnable host: process entry point, config parsing, REPL loop, script runner, and the command units. Builds =ores.shell.exe=. |
+| =trading= | Generated command units projecting the trading domain onto the REPL menu. |
+| =iam= | Generated command units projecting the IAM domain onto the REPL menu. |
+| =refdata= | Generated command units projecting the reference-data domain onto the REPL menu. |
+| =analytics= | Generated command units projecting the analytics domain onto the REPL menu. |
+| =application= | The runnable host: process entry point, config parsing, REPL loop, script runner, the hand-written command units, and the per-domain aggregators. Builds =ores.shell.exe=. |
 | =modeling= | Component documentation and the PlantUML diagram target. Not a compilable library. |
 
 The =api= / =application= split is what lets a domain adapter part link the
 shell plumbing without pulling in the REPL host. Each command unit names the
-domain it projects, and a later wave moves it into its own
-=ores.shell.<domain>= part, following the fractal naming rule in
-[[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]].
+domain it projects, and a domain whose models opt into the shell facet gets
+its own =ores.shell.<domain>= part, following the fractal naming rule in
+[[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]]. The
+hand-written units no model generates yet still live in =application=.
 
 * Inputs
 

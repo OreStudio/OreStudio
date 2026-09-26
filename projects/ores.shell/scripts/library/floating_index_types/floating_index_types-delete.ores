@@ -1,0 +1,6 @@
+# =delete=
+#
+# GENERATED from doc/recipes/shell/floating_index_types/floating_index_type.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+floating_index_types delete __none__ system.new_record generated_script

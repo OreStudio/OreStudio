@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/currencies/currency.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+currencies list --limit 1

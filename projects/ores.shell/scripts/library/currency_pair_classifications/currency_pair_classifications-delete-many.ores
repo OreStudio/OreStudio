@@ -1,0 +1,6 @@
+# =delete-many=
+#
+# GENERATED from doc/recipes/shell/currency_pair_classifications/currency_pair_classification.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+currency_pair_classifications delete-many __none__ system.new_record generated_script

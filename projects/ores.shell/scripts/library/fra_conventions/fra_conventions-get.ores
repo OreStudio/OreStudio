@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/fra_conventions/fra_convention.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+fra_conventions get __none__

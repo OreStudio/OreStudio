@@ -1,0 +1,6 @@
+# =get-many=
+#
+# GENERATED from doc/recipes/shell/currency_pair_convention_calendars/currency_pair_convention_calendar.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+currency_pair_convention_calendars get-many __none__ __none__

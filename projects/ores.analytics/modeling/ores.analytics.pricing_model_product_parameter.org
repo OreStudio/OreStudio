@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.shell-command.enabled: true
 :ID: 4B17A175-E34F-45A2-AADB-D61517A53578
 :END:
 #+title: ores.analytics.pricing_model_product_parameter
@@ -158,22 +159,20 @@ std::string("0.03")
 :iterator_var: pp
 :END:
 
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| parameter_scope | Scope       |
+| parameter_name  | Name        |
+| parameter_value | Value       |
+| modified_by     | Modified By |
+| version         | Version     |
+
 ** Presentation
 :PROPERTIES:
-:domain_include:         ores.analytics.api/domain/pricing_model_product_parameter.hpp
-:domain_class:           analytics::domain::pricing_model_product_parameter
-:protocol_include:       ores.analytics.api/messaging/pricing_model_product_parameter_protocol.hpp
-:collection_name:        parameters
-:key_field:              parameter_name
-:get_request_class:      analytics::messaging::get_pricing_model_product_parameters_request
-:get_response_class:     analytics::messaging::get_pricing_model_product_parameters_response
-:get_message_type:       get_pricing_model_product_parameters_request
-:save_request_class:     analytics::messaging::save_pricing_model_product_parameter_request
-:save_response_class:    analytics::messaging::save_pricing_model_product_parameter_response
-:save_message_type:      save_pricing_model_product_parameter_request
-:delete_request_class:   analytics::messaging::delete_pricing_model_product_parameter_request
-:delete_response_class:  analytics::messaging::delete_pricing_model_product_parameter_response
-:delete_message_type:    delete_pricing_model_product_parameter_request
+:collection_name:  parameters
+:key_field:        parameter_name
 :END:
 
 *** Detail fields

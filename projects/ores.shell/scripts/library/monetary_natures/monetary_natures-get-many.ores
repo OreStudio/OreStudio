@@ -1,0 +1,6 @@
+# =get-many=
+#
+# GENERATED from doc/recipes/shell/monetary_natures/monetary_nature.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+monetary_natures get-many __none__

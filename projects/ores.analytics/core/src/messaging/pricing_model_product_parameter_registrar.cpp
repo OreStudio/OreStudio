@@ -40,20 +40,56 @@ std::vector<ores::nats::service::subscription> register_pricing_model_product_pa
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<pricing_model_product_parameter_handler>(
         nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_pricing_model_product_parameters_request::nats_subject,
+    subs.push_back(nats.queue_subscribe(list_pricing_model_product_parameters_request::nats_subject,
                                         queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_pricing_model_product_parameter_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+                                        [h](ores::nats::message msg) {
+                                            h->list_pricing_model_product_parameters(
+                                                std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(
+        get_pricing_model_product_parameter_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_pricing_model_product_parameter(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_many_pricing_model_product_parameters_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->get_many_pricing_model_product_parameters(std::move(msg));
+                             }));
+    subs.push_back(nats.queue_subscribe(
+        put_pricing_model_product_parameter_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_pricing_model_product_parameter(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(put_many_pricing_model_product_parameters_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->put_many_pricing_model_product_parameters(std::move(msg));
+                             }));
     subs.push_back(
         nats.queue_subscribe(delete_pricing_model_product_parameter_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->delete_pricing_model_product_parameter(std::move(msg));
+                             }));
     subs.push_back(
-        nats.queue_subscribe(get_pricing_model_product_parameter_history_request::nats_subject,
+        nats.queue_subscribe(delete_many_pricing_model_product_parameters_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->delete_many_pricing_model_product_parameters(std::move(msg));
+                             }));
+    subs.push_back(
+        nats.queue_subscribe(list_pricing_model_product_parameter_versions_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_pricing_model_product_parameter_versions(std::move(msg));
+                             }));
+    subs.push_back(
+        nats.queue_subscribe(get_pricing_model_product_parameter_version_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->get_pricing_model_product_parameter_version(std::move(msg));
+                             }));
     return subs;
 }
 

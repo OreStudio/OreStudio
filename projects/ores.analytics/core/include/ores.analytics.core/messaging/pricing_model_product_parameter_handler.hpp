@@ -65,7 +65,16 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves analytics.v1.pricing_model_product_parameters.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_pricing_model_product_parameters(ores::nats::message msg) {
         BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -74,31 +83,133 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::pricing_model_product_parameter_service svc(req_ctx);
-        get_pricing_model_product_parameters_response resp;
-        if (auto req = decode<get_pricing_model_product_parameters_request>(msg)) {
-            try {
-                resp.parameters = svc.list_parameters(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_parameters());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
+        auto req = decode<list_pricing_model_product_parameters_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
-            << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        service::pricing_model_product_parameter_service svc(req_ctx);
+        try {
+            auto response = svc.list_pricing_model_product_parameters(*req);
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_pricing_model_product_parameters_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves analytics.v1.pricing_model_product_parameters.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_pricing_model_product_parameter(ores::nats::message msg) {
+        BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_pricing_model_product_parameter_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::pricing_model_product_parameter_service svc(req_ctx);
+        try {
+            auto response = svc.get_pricing_model_product_parameter(*req);
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_pricing_model_product_parameter_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves analytics.v1.pricing_model_product_parameters.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_pricing_model_product_parameters(ores::nats::message msg) {
+        BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_pricing_model_product_parameters_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::pricing_model_product_parameter_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_pricing_model_product_parameters(*req);
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_pricing_model_product_parameters_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves analytics.v1.pricing_model_product_parameters.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_pricing_model_product_parameter(ores::nats::message msg) {
         BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -111,29 +222,43 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::pricing_model_product_parameter_service svc(req_ctx);
-        if (auto req = decode<save_pricing_model_product_parameter_request>(msg)) {
-            try {
-                svc.save_parameter(req->data);
-                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, save_pricing_model_product_parameter_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      save_pricing_model_product_parameter_response{.success = false,
-                                                                    .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_pricing_model_product_parameter_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::pricing_model_product_parameter_service svc(req_ctx);
+        try {
+            auto response = svc.put_pricing_model_product_parameter(*req);
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_pricing_model_product_parameter_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves analytics.v1.pricing_model_product_parameters.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_pricing_model_product_parameters(ores::nats::message msg) {
         BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -142,32 +267,47 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::pricing_model_product_parameter_service svc(req_ctx);
-        if (auto req = decode<get_pricing_model_product_parameter_history_request>(msg)) {
-            try {
-                auto hist = svc.get_parameter_history(req->id);
-                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_pricing_model_product_parameter_history_response{
-                          .history = std::move(hist), .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      get_pricing_model_product_parameter_history_response{.success = false,
-                                                                           .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "analytics::pricing_model_product_parameters:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_pricing_model_product_parameters_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::pricing_model_product_parameter_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_pricing_model_product_parameters(*req);
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_many_pricing_model_product_parameters_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves analytics.v1.pricing_model_product_parameters.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_pricing_model_product_parameter(ores::nats::message msg) {
         BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -180,25 +320,169 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::pricing_model_product_parameter_service svc(req_ctx);
-        if (auto req = decode<delete_pricing_model_product_parameter_request>(msg)) {
-            try {
-                svc.delete_parameters(req->ids);
-                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, delete_pricing_model_product_parameter_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      delete_pricing_model_product_parameter_response{.success = false,
-                                                                      .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_pricing_model_product_parameter_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::pricing_model_product_parameter_service svc(req_ctx);
+        try {
+            auto response = svc.delete_pricing_model_product_parameter(*req);
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_pricing_model_product_parameter_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves analytics.v1.pricing_model_product_parameters.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_pricing_model_product_parameters(ores::nats::message msg) {
+        BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "analytics::pricing_model_product_parameters:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_pricing_model_product_parameters_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::pricing_model_product_parameter_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_pricing_model_product_parameters(*req);
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_many_pricing_model_product_parameters_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves analytics.v1.pricing_model_product_parameters_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_pricing_model_product_parameter_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_pricing_model_product_parameter_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::pricing_model_product_parameter_service svc(req_ctx);
+        try {
+            auto response = svc.list_pricing_model_product_parameter_versions(*req);
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_pricing_model_product_parameter_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves analytics.v1.pricing_model_product_parameters_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_pricing_model_product_parameter_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_pricing_model_product_parameter_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::pricing_model_product_parameter_service svc(req_ctx);
+        try {
+            auto response = svc.get_pricing_model_product_parameter_version(*req);
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_pricing_model_product_parameter_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

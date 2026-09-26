@@ -1,0 +1,6 @@
+# =version=
+#
+# GENERATED from doc/recipes/shell/crm_driver_pairs/crm_driver_pair.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+crm_driver_pairs version 00000000-0000-0000-0000-000000000000 --version 1

@@ -26,6 +26,7 @@
 #define ORES_ANALYTICS_CORE_SERVICE_PRICING_MODEL_PRODUCT_SERVICE_HPP
 
 #include "ores.analytics.api/domain/pricing_model_product.hpp"
+#include "ores.analytics.api/messaging/pricing_model_product_protocol.hpp"
 #include "ores.analytics.core/export.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_repository.hpp"
 #include "ores.database/domain/context.hpp"
@@ -67,6 +68,36 @@ public:
     explicit pricing_model_product_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_pricing_model_products_response
+    list_pricing_model_products(const messaging::list_pricing_model_products_request& request);
+    messaging::get_pricing_model_product_response
+    get_pricing_model_product(const messaging::get_pricing_model_product_request& request);
+    messaging::get_many_pricing_model_products_response get_many_pricing_model_products(
+        const messaging::get_many_pricing_model_products_request& request);
+    messaging::put_pricing_model_product_response
+    put_pricing_model_product(const messaging::put_pricing_model_product_request& request);
+    messaging::put_many_pricing_model_products_response put_many_pricing_model_products(
+        const messaging::put_many_pricing_model_products_request& request);
+    messaging::delete_pricing_model_product_response
+    delete_pricing_model_product(const messaging::delete_pricing_model_product_request& request);
+    messaging::delete_many_pricing_model_products_response delete_many_pricing_model_products(
+        const messaging::delete_many_pricing_model_products_request& request);
+    messaging::list_pricing_model_product_versions_response list_pricing_model_product_versions(
+        const messaging::list_pricing_model_product_versions_request& request);
+    messaging::get_pricing_model_product_version_response get_pricing_model_product_version(
+        const messaging::get_pricing_model_product_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists pricing model products with pagination support.
      *
      * @param offset Number of records to skip.
@@ -91,15 +122,31 @@ public:
      * @param version The version to fetch.
      * @return The pricing model product at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::pricing_model_product> get_product_at_version(const std::string& id,
-                                                                        std::uint32_t version);
+    std::optional<domain::pricing_model_product>
+    get_product_at_version(const boost::uuids::uuid& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single pricing model product by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The pricing model product if found, std::nullopt otherwise.
      */
-    std::optional<domain::pricing_model_product> get_product(const std::string& id);
+    std::optional<domain::pricing_model_product> get_product(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single pricing model product by the key the model
+     * declares -- the human-readable key a caller holds.
+     *
+     * This is the counterpart of the uuid overload above: the two keys an
+     * entity holds are different keys, and a call site has to say which one it
+     * means.
+     *
+     * @return The pricing model product if found, std::nullopt otherwise.
+     */
+    std::optional<domain::pricing_model_product>
+    get_product_by_pricing_engine_type_code(const std::string& pricing_engine_type_code);
 
     /**
      * @brief Retrieves a single pricing model product by its uuid primary key.
@@ -107,6 +154,11 @@ public:
      * @return The pricing model product if found, std::nullopt otherwise.
      */
     std::optional<domain::pricing_model_product> find_product(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a batch of pricing model products by primary key.
+     */
+    std::vector<domain::pricing_model_product> get_products(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a pricing model product (creates or updates).
@@ -129,7 +181,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_product(const std::string& id);
+    void delete_product(const boost::uuids::uuid& id);
 
     /**
      * @brief Removes a pricing model product by its uuid primary key.
@@ -145,8 +197,12 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a pricing model product.
+     *
+     * Addressed by the key the model declares, which is the one a caller
+     * holds; the storage key is resolved from it here, the same step every
+     * other read makes.
      */
-    std::vector<domain::pricing_model_product> get_product_history(const std::string& id);
+    std::vector<domain::pricing_model_product> get_product_history(const std::string& key);
 
     /**
      * @brief Retrieves all historical versions of a pricing model product
@@ -157,6 +213,24 @@ public:
 private:
     context ctx_;
     repository::pricing_model_product_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const messaging::pricing_model_product_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::pricing_model_product& out);
 };
 
 }

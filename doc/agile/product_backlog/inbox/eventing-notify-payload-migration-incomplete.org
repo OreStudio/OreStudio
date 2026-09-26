@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 80C846D1-4A13-4331-A88C-727D6C3D861C
+:END:
+#+title: Finish the eventing payload migration, or read the legacy shape
+#+description: postgres_event_source parses every database notification with rfl::json::read<entity_event_notification>, whose struct requires event_id, entity, key, action, version, occurred_at and tenant_id, and returns on a parse failure. 86 of the 209 *_notify_trigger_create.sql files emit that canonical shape and 123 still emit the older {entity, timestamp, entity_ids, tenant_id}. Every notification from the 123 fails to parse, so those entities publish no entity_change_event at all. Observed as 322 parse failures in the trading service log and as twenty-one failed eventing assertions in ores.trading.core.tests.
+#+type: capture
+#+level: cross
+#+filetags: :eventing:codegen:sql:tech_debt:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Every database change notification must be readable by the process that turns it
+into a NATS event. Today 123 of the 209 generated triggers emit a payload the
+reader rejects.
+
+=projects/ores.eventing/core/src/service/postgres_event_source.cpp= reads each
+notification with =rfl::json::read<domain::entity_event_notification>(payload)=,
+which is strict: the struct requires =event_id=, =entity=, =key=, =action=,
+=version=, =occurred_at= and =tenant_id=, and a missing field fails the read. On
+failure the callback logs and returns, so the notification is dropped rather than
+converted.
+
+The generated triggers emit two shapes. 86 of the 209
+=projects/ores.sql/create/**/*_notify_trigger_create.sql= files build the
+canonical one; the other 123 still build the older
+
+#+begin_src json
+{"entity": "...", "timestamp": "...", "entity_ids": ["..."], "tenant_id": "..."}
+#+end_src
+
+so their channels publish nothing at all. The code's own comment says the legacy
+shape is meant to be *converted* rather than parsed as an entity change event —
+but the conversion is unreachable, because the parse fails first and the function
+returns before the =channel_entities_= lookup.
+
+Either finish the migration (regenerate the remaining 123 triggers from the
+canonical template) or make the reader fall back to the legacy shape and convert
+it, which is what the comment already promises. The first is the smaller change
+and the one the model generator already supports.
+
+* Why
+
+Found on 2026-09-26 while re-verifying the =ores.analytics= clean pass on the
+rebased base. The full suite fell from 69 of 70 to 66 of 71, and every new
+failure was the same assertion — =!(received.empty())= in a
+=*_eventing_integration_tests= case — in =ores.trading.core.tests=,
+=ores.ore.core.tests=, =ores.reporting.core.tests= and
+=ores.marketdata.core.tests=, plus several in =ores.synthetic.core.tests=.
+
+The trading service log carries the cause verbatim, 322 times in one run:
+
+#+begin_src text
+[ERROR] [ores.eventing.service.postgres_event_source] Failed to deserialize
+notification payload (total failures: 322): {"entity":
+"ores.trading.fx_forward_instrument", "tenant_id": "...", "timestamp": "...",
+"entity_ids": ["..."]}
+#+end_src
+
+The trigger fires and the listener delivers; the payload cannot be read. The
+entities affected are exactly the ones whose migrations have not yet moved them
+to the canonical trigger, which is why whole components fail rather than single
+cases.
+
+Two things make this worth fixing promptly:
+
+- It is silent in production. A change commits, the UI's notification path
+  receives nothing, and the only trace is an ERROR line in a service log. Nothing
+  in CI can see it: the assertion needs a live fleet and a database, which no
+  workflow has.
+- It is a half-finished migration, so it grows. Every component still to be
+  converted adds more entities whose events are dropped, and the failure is
+  invisible until someone runs the live suite.
+
+* References
+
+- =projects/ores.eventing/core/src/service/postgres_event_source.cpp= — the
+  strict read, the early return and the unreachable conversion.
+- =projects/ores.eventing/api/include/ores.eventing.api/domain/entity_event.hpp=
+  — =entity_event_notification= and the fields it requires.
+- =projects/ores.sql/create/trading/trading_equity_swap_instruments_notify_trigger_create.sql=
+  — one of the 123 legacy triggers.
+- =projects/ores.eventing= history: =d6701b43b6= and =0597a51525= changed the
+  struct; the trigger migration followed only for the components converted since.
+
+* See also
+
+- [[id:B64C92DE-56F6-40D1-A080-16A6690E40E6][Bring ores.analytics to the clean standard]] — where this was found, and the V02 limitation it is recorded as.

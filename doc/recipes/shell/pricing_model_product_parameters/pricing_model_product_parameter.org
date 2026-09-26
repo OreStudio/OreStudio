@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: DECF1C94-5624-50A9-9183-786E3E039827
+:END:
+#+title: How do I run the pricing_model_product_parameters commands from the shell?
+#+description: Every command the pricing_model_product_parameters submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:pricing_model_product_parameters:
+
+This file documents the pricing_model_product_parameters resource at the shell, one section per command. Every command is a subcommand of =pricing_model_product_parameters=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 2E9B88A6-F671-5813-A801-79B1CEB66CCF
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_product_parameters list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_product_parameters.list=.
+
+#+name: pricing_model_product_parameters-list
+#+begin_src ores-shell :tangle pricing_model_product_parameters-list.ores :exports none
+pricing_model_product_parameters list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: CB980F4B-6ADC-55D0-AEAB-AF2EA6FECDDB
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_product_parameters get <parameter_name>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_product_parameters.get=.
+
+#+name: pricing_model_product_parameters-get
+#+begin_src ores-shell :tangle pricing_model_product_parameters-get.ores :exports none
+pricing_model_product_parameters get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 8A63402F-C9E6-55D8-BA13-65FAB44B1259
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_product_parameters get-many <parameter_name>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_product_parameters.get_many=.
+
+#+name: pricing_model_product_parameters-get-many
+#+begin_src ores-shell :tangle pricing_model_product_parameters-get-many.ores :exports none
+pricing_model_product_parameters get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 86610F86-6090-5B22-99C4-901D54B562CC
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_product_parameters add <pricing_model_config_id> <pricing_model_product_id> <parameter_scope> <parameter_name> <parameter_value> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_product_parameters.put=.
+
+#+name: pricing_model_product_parameters-add
+#+begin_src ores-shell :tangle pricing_model_product_parameters-add.ores :exports none
+pricing_model_product_parameters add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 2BC90B43-A9EB-516C-807A-F7C75F954AE8
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_product_parameters set <id> <pricing_model_config_id> <pricing_model_product_id> <parameter_scope> <parameter_name> <parameter_value> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_product_parameters.put=.
+
+#+name: pricing_model_product_parameters-set
+#+begin_src ores-shell :tangle pricing_model_product_parameters-set.ores :exports none
+pricing_model_product_parameters set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 277E51DE-9EA6-52AE-BCDD-054B804EA9D8
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_product_parameters put-many --count <n> <id> <pricing_model_config_id> <pricing_model_product_id> <parameter_scope> <parameter_name> <parameter_value> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_product_parameters.put_many=.
+
+#+name: pricing_model_product_parameters-put-many
+#+begin_src ores-shell :tangle pricing_model_product_parameters-put-many.ores :exports none
+pricing_model_product_parameters put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 25AF447B-A06A-588B-8297-F49AD1339E8F
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_product_parameters delete <parameter_name> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_product_parameters.delete=.
+
+#+name: pricing_model_product_parameters-delete
+#+begin_src ores-shell :tangle pricing_model_product_parameters-delete.ores :exports none
+pricing_model_product_parameters delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 86B24B3D-3B8A-5B7E-AF92-D2AC5EF3F619
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_product_parameters delete-many <parameter_name> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_product_parameters.delete_many=.
+
+#+name: pricing_model_product_parameters-delete-many
+#+begin_src ores-shell :tangle pricing_model_product_parameters-delete-many.ores :exports none
+pricing_model_product_parameters delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: DC776B71-2CC8-5290-A102-707FB77C36AB
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_product_parameters versions <parameter_name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_product_parameters_versions.list=.
+
+#+name: pricing_model_product_parameters-versions
+#+begin_src ores-shell :tangle pricing_model_product_parameters-versions.ores :exports none
+pricing_model_product_parameters versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 26BB8282-2A85-54B5-94F1-F5C6CD90F9B3
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_product_parameters version <parameter_name> --version <n>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_product_parameters_versions.get=.
+
+#+name: pricing_model_product_parameters-version
+#+begin_src ores-shell :tangle pricing_model_product_parameters-version.ores :exports none
+pricing_model_product_parameters version __none__ --version 1
+#+end_src
+

@@ -1,0 +1,6 @@
+# =set=
+#
+# GENERATED from doc/recipes/shell/currency_pairs/currency_pair.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+currency_pairs set __none__ __none__ __none__ __none__ system.new_record generated_script

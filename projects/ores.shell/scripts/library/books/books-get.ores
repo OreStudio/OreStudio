@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/books/book.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+books get 00000000-0000-0000-0000-000000000000

@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 1630D3EF-FC1F-4928-A106-04BEE3238435
+:END:
+#+title: Make the build's systemd probe test what the build actually runs
+#+description: compass build wraps cmake in 'systemd-run --user --scope' whenever compass_claude._has_user_systemd() passes, but the probe only runs 'systemctl --user show-environment'. In a sandbox where systemctl reaches the manager and systemd-run cannot open the scope bus, the probe passes and the build dies with 'Failed to connect to user scope bus via local transport'. The probe should exercise the thing the build depends on, or the scope wrap should honour the ORES_USE_BUSCTL transport that the rest of compass adopted.
+#+type: capture
+#+level: cross
+#+filetags: :compass:build:sandbox:tech_debt:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=compass build= runs the configure step plainly and wraps only the
+=cmake --build= step in a memory-capped scope:
+
+#+begin_src python
+if not args.dry_run and slot_name is not None and compass_claude._has_user_systemd():
+    build_cmd = [
+        "systemd-run", "--user", "--scope", "-q", "--collect", ...
+    ] + build_cmd
+#+end_src
+
+The probe asks a different question than the wrap needs answered:
+
+#+begin_src python
+def _has_user_systemd() -> bool:
+    if shutil.which("systemd-run") is None:
+        return False
+    try:
+        systemctl_bus.run(["show-environment"], ..., check=True)
+        return True
+    except (subprocess.CalledProcessError, OSError):
+        return False
+#+end_src
+
+=systemctl show-environment= can succeed where =systemd-run --scope= cannot,
+because the scope needs a connection systemctl never opens. When that happens
+the probe says yes, the wrap is added, and the build dies before compiling
+anything:
+
+#+begin_src text
+Failed to connect to user scope bus via local transport: No such file or directory
+❌ Command failed with exit code 1: systemd-run --user --scope -q --collect ...
+#+end_src
+
+The probe should exercise what the wrap depends on — for example a trivial
+=systemd-run --user --scope true= — or the wrap should go through the
+=ORES_USE_BUSCTL= transport that the rest of compass now adopts, so one setting
+governs every systemd call.
+
+Two further traps for whoever picks this up:
+
+- =compass build --dry-run= cannot show the problem. A dry run does not take the
+  build lock, so =slot_name= is =None= and the wrap is skipped; the dry run
+  prints a plain =cmake= command and looks healthy.
+- Unsetting =DBUS_SESSION_BUS_ADDRESS= and pointing =XDG_RUNTIME_DIR= at an empty
+  directory does make the probe fail and the build proceed, which is how the
+  analytics verification finished on 2026-09-26. That is a workaround for one
+  sandbox, not a fix.
+
+* Why
+
+Found on 2026-09-26 while re-verifying the =ores.analytics= clean pass after
+rebasing onto a main that carries the =.env= transport adoption. Builds that had
+succeeded earlier in the same sandbox began failing immediately, with no source
+change involved: main moved the systemd calls onto =systemctl_bus=, the probe
+started passing where it used to fail, and the scope wrap became reachable.
+
+The cost is that the sandbox cannot build at all, so no local verification is
+possible there without the workaround — and the failure names a transport problem
+rather than the probe, which sends a reader looking at systemd instead of at
+compass.
+
+* References
+
+- =projects/ores.compass/src/compass.py= — the scope wrap in the build command
+  builder.
+- =projects/ores.compass/src/compass_claude.py= — =_has_user_systemd()=.
+- =projects/ores.compass/src/systemctl_bus.py= — =use_busctl()= and
+  =configure_from_env()=; the docstring warns that a .env value nothing hands
+  over does nothing.
+- =doc/knowledge/architecture/env_format_version_log.org= — version 24 introduced
+  =ORES_USE_BUSCTL=.
+
+* See also
+
+- [[id:B64C92DE-56F6-40D1-A080-16A6690E40E6][Bring ores.analytics to the clean standard]] — the verification this blocked.
+- [[id:80C846D1-4A13-4331-A88C-727D6C3D861C][Finish the eventing payload migration, or read the legacy shape]] — the other base-level defect found in the same session.

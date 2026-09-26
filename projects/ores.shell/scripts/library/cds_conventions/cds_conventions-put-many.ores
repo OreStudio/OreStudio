@@ -1,0 +1,6 @@
+# =put-many=
+#
+# GENERATED from doc/recipes/shell/cds_conventions/cds_convention.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+cds_conventions put-many --count 1 __none__ 0 __none__ __none__ __none__ __none__ __none__ false false __none__ __none__ system.new_record generated_script

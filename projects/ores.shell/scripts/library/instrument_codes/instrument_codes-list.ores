@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/instrument_codes/instrument_code.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+instrument_codes list --limit 1

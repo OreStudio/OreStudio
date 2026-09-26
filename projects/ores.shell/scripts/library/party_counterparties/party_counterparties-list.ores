@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/party_counterparties/party_counterparty.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+party_counterparties list --limit 1

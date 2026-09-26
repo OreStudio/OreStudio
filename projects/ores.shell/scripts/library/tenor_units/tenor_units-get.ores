@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/tenor_units/tenor_unit.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+tenor_units get __none__

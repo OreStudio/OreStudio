@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "domain/pricing_engine_type_json_io.cpp"
     "domain/pricing_engine_type_table.cpp"
@@ -53,10 +56,10 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/domain/pricing_model_product_parameter_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/domain/pricing_model_product_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/domain/pricing_model_product_table_io.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/eventing/pricing_engine_type_changed_event.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/eventing/pricing_model_config_changed_event.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/eventing/pricing_model_product_changed_event.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/eventing/pricing_model_product_parameter_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/eventing/pricing_engine_type_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/eventing/pricing_model_config_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/eventing/pricing_model_product_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/eventing/pricing_model_product_parameter_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/generators/pricing_engine_type_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/generators/pricing_model_config_generator.hpp"

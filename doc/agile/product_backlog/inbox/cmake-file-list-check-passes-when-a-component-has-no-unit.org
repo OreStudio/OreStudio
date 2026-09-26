@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: B4A528D7-EF42-4134-9796-C492CB5553BD
+:END:
+#+title: Fail the CMake file-list check when a component has no unit to check
+#+description: regenerate_cmake_component_files.py --component ores.analytics --check exits 0 having inspected no file: ores.analytics is a modeled component with a component_overview.org but no src/ or tests/, so regenerate_one skips both units and the run prints 'All component_files.cmake up to date.' The guard that rejects an unknown slug does not cover a known component with zero CMake units, so a group name reads as evidence when it is a false green.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:cmake:testing:tech_debt:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A check that inspects nothing must not report success. Name the group:
+
+#+begin_src sh :results verbatim
+python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.analytics --check
+# All component_files.cmake up to date.
+echo $?
+# 0
+#+end_src
+
+Nothing was read. =ores.analytics= is a modeled component: it has
+=modeling/component_overview.org= with =#+full_name: ores.analytics=, so it is in
+=discover_models()= and passes the guard that rejects an unknown slug. It has no
+=src/= and no =tests/=, so =regenerate_one= skips both units — the skip is
+deliberate and correct, for the non-C++ components (ores.compass, ores.lisp,
+ores.seeder) that carry an overview for the physical-space graph. =touched=
+stays empty and =--check= reports a clean tree.
+
+The fix is to make an explicit =--component= fail when the named component has no
+CMake unit to inspect, and to say which leaf to name instead. Under =--all= the
+skip stays correct: the group is one of many and the leaves are checked.
+
+* Why
+
+Found on 2026-09-26 during the =ores.analytics= clean pass, when the group slug
+was used as the G06 evidence command and passed. The per-part runs were the only
+real check; =--component ores.analytics --check= would have been cited as proof
+of a tree it never opened. That is worse than a missing check: the gate answers
+in the affirmative, so a reviewer stops looking.
+
+The class of defect is worth a fix rather than a note, because the tool's
+=--component= argument reads as a natural way to scope a check to a component
+group, and it silently degrades to a no-op.
+
+* References
+
+- =projects/ores.codegen/scripts/regenerate_cmake_component_files.py= —
+  =discover_models()=, the unknown-slug guard in =main()=, and the
+  =out_dir.is_dir()= skip in =regenerate_one()=.
+- =projects/ores.analytics/modeling/component_overview.org= — the group overview
+  whose =#+full_name:= makes the slug look known.
+- [[id:01193D52-DD7C-4276-B6C2-E4B7F137B99E][How do I test the shell?]] — the recipe beside this one, whose testing
+  conventions made the same distinction between a real check and a vacuous one.
+
+* See also
+
+- [[id:B64C92DE-56F6-40D1-A080-16A6690E40E6][Bring ores.analytics to the clean standard]] — where this was found, and the G06 row it corrected.

@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/counterparty_identifiers/counterparty_identifier.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+counterparty_identifiers list --limit 1

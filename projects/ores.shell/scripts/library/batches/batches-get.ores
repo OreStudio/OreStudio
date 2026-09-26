@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/batches/batch.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+batches get __none__

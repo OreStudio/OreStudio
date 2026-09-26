@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/app_version_platforms/app_version_platform.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+app_version_platforms list --limit 1

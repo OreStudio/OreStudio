@@ -1,0 +1,6 @@
+# =add=
+#
+# GENERATED from doc/recipes/shell/calendars/calendar.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+calendars add __none__ __none__ __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script

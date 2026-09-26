@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.shell-command.enabled: true
 :ID: 93F6A725-496B-4BE8-9AC0-BA5BC1B7CAB0
 :END:
 #+title: ores.analytics.pricing_engine_type
@@ -107,22 +108,20 @@ std::string("NONE")
 :iterator_var: pet
 :END:
 
+** Table display
+
+| column               | header          |
+|----------------------+-----------------|
+| code                 | Code            |
+| description          | Description     |
+| instrument_type_code | Instrument Type |
+| modified_by          | Modified By     |
+| version              | Version         |
+
 ** Presentation
 :PROPERTIES:
-:domain_include:         ores.analytics.api/domain/pricing_engine_type.hpp
-:domain_class:           analytics::domain::pricing_engine_type
-:protocol_include:       ores.analytics.api/messaging/pricing_engine_type_protocol.hpp
-:collection_name:        types
-:key_field:              code
-:get_request_class:      analytics::messaging::get_pricing_engine_types_request
-:get_response_class:     analytics::messaging::get_pricing_engine_types_response
-:get_message_type:       get_pricing_engine_types_request
-:save_request_class:     analytics::messaging::save_pricing_engine_type_request
-:save_response_class:    analytics::messaging::save_pricing_engine_type_response
-:save_message_type:      save_pricing_engine_type_request
-:delete_request_class:   analytics::messaging::delete_pricing_engine_type_request
-:delete_response_class:  analytics::messaging::delete_pricing_engine_type_response
-:delete_message_type:    delete_pricing_engine_type_request
+:collection_name:  types
+:key_field:        code
 :END:
 
 *** Detail fields

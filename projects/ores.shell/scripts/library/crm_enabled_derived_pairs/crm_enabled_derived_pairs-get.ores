@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/crm_enabled_derived_pairs/crm_enabled_derived_pair.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+crm_enabled_derived_pairs get 00000000-0000-0000-0000-000000000000

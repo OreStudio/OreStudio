@@ -1,0 +1,6 @@
+# =add=
+#
+# GENERATED from doc/recipes/shell/currency_groups/currency_group.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+currency_groups add __none__ __none__ __none__ 0 system.new_record generated_script

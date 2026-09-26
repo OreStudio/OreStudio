@@ -40,7 +40,7 @@ namespace ores #F2F2F2 {
                 +id : boost::uuids::uuid
                 +name : string
                 +description : string
-                +config_variant : optional<string>
+                +config_variant : string
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
@@ -75,172 +75,478 @@ namespace ores #F2F2F2 {
                 +recorded_at : chrono::system_clock::time_point
             }
         }
-        namespace eventing #F2F2F2 {
-            class pricing_engine_type_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +pricing_engine_type_codes : vector<string>
-                +tenant_id : string
-            }
-            class pricing_model_config_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +config_ids : vector<string>
-                +tenant_id : string
-            }
-            class pricing_model_product_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +product_ids : vector<string>
-                +tenant_id : string
-            }
-            class pricing_model_product_parameter_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +parameter_ids : vector<string>
-                +tenant_id : string
-            }
-        }
         namespace messaging #F2F2F2 {
-            class get_pricing_engine_types_request <<struct>> {
-            }
-            class get_pricing_engine_types_response <<struct>> {
-                +types : vector<ores::analytics::domain::pricing_engine_type>
-                +total_available_count : int
-                +success : bool
-                +message : string
-            }
-            class save_pricing_engine_type_request <<struct>> {
-                +data : ores::analytics::domain::pricing_engine_type
-            }
-            class save_pricing_engine_type_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class delete_pricing_engine_type_request <<struct>> {
-                +codes : vector<string>
-            }
-            class delete_pricing_engine_type_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class get_pricing_engine_type_history_request <<struct>> {
+            class pricing_engine_type_key <<struct>> {
                 +code : string
             }
-            class get_pricing_engine_type_history_response <<struct>> {
+            class pricing_engine_type_write <<struct>> {
+                +code : string
+                +description : string
+                +instrument_type_code : string
+            }
+            class pricing_engine_type_change <<struct>> {
+                +write : pricing_engine_type_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class pricing_engine_type_removal <<struct>> {
+                +key : pricing_engine_type_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class pricing_engine_type_lookup <<struct>> {
+                +key : pricing_engine_type_key
+                +pricing_engine_type : optional<ores::analytics::domain::pricing_engine_type>
+            }
+            class pricing_engine_type_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : pricing_engine_type_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class pricing_engine_type_version_key <<struct>> {
+                +pricing_engine_type : pricing_engine_type_key
+                +version : uint32_t
+            }
+            class pricing_engine_type_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_pricing_engine_types_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_pricing_engine_types_response <<struct>> {
+                +result : ores::utility::domain::result
                 +types : vector<ores::analytics::domain::pricing_engine_type>
-                +success : bool
-                +message : string
+                +total : uint64_t
             }
-            class get_pricing_model_configs_request <<struct>> {
+            class get_pricing_engine_type_request <<struct>> {
+                +key : pricing_engine_type_key
             }
-            class get_pricing_model_configs_response <<struct>> {
+            class get_pricing_engine_type_response <<struct>> {
+                +result : ores::utility::domain::result
+                +pricing_engine_type : optional<ores::analytics::domain::pricing_engine_type>
+            }
+            class get_many_pricing_engine_types_request <<struct>> {
+                +keys : vector<pricing_engine_type_key>
+            }
+            class get_many_pricing_engine_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<pricing_engine_type_lookup>
+            }
+            class put_pricing_engine_type_request <<struct>> {
+                +change : pricing_engine_type_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_pricing_engine_type_response <<struct>> {
+                +result : ores::utility::domain::result
+                +pricing_engine_type : ores::analytics::domain::pricing_engine_type
+            }
+            class put_many_pricing_engine_types_request <<struct>> {
+                +changes : vector<pricing_engine_type_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_pricing_engine_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +types : vector<ores::analytics::domain::pricing_engine_type>
+            }
+            class delete_pricing_engine_type_request <<struct>> {
+                +removal : pricing_engine_type_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_pricing_engine_type_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_pricing_engine_types_request <<struct>> {
+                +removals : vector<pricing_engine_type_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_pricing_engine_types_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_pricing_engine_type_versions_request <<struct>> {
+                +key : pricing_engine_type_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<pricing_engine_type_versions_filter>
+            }
+            class list_pricing_engine_type_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::analytics::domain::pricing_engine_type>
+                +total : uint64_t
+            }
+            class get_pricing_engine_type_version_request <<struct>> {
+                +key : pricing_engine_type_version_key
+            }
+            class get_pricing_engine_type_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::analytics::domain::pricing_engine_type
+            }
+            class pricing_model_config_key <<struct>> {
+                +name : string
+            }
+            class pricing_model_config_write <<struct>> {
+                +id : boost::uuids::uuid
+                +name : string
+                +description : string
+                +config_variant : string
+            }
+            class pricing_model_config_change <<struct>> {
+                +write : pricing_model_config_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class pricing_model_config_removal <<struct>> {
+                +key : pricing_model_config_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class pricing_model_config_lookup <<struct>> {
+                +key : pricing_model_config_key
+                +pricing_model_config : optional<ores::analytics::domain::pricing_model_config>
+            }
+            class pricing_model_config_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : pricing_model_config_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class pricing_model_config_version_key <<struct>> {
+                +pricing_model_config : pricing_model_config_key
+                +version : uint32_t
+            }
+            class pricing_model_config_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_pricing_model_configs_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_pricing_model_configs_response <<struct>> {
+                +result : ores::utility::domain::result
                 +configs : vector<ores::analytics::domain::pricing_model_config>
-                +total_available_count : int
-                +success : bool
-                +message : string
+                +total : uint64_t
             }
-            class save_pricing_model_config_request <<struct>> {
-                +data : ores::analytics::domain::pricing_model_config
+            class get_pricing_model_config_request <<struct>> {
+                +key : pricing_model_config_key
             }
-            class save_pricing_model_config_response <<struct>> {
-                +success : bool
-                +message : string
+            class get_pricing_model_config_response <<struct>> {
+                +result : ores::utility::domain::result
+                +pricing_model_config : optional<ores::analytics::domain::pricing_model_config>
+            }
+            class get_many_pricing_model_configs_request <<struct>> {
+                +keys : vector<pricing_model_config_key>
+            }
+            class get_many_pricing_model_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<pricing_model_config_lookup>
+            }
+            class put_pricing_model_config_request <<struct>> {
+                +change : pricing_model_config_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_pricing_model_config_response <<struct>> {
+                +result : ores::utility::domain::result
+                +pricing_model_config : ores::analytics::domain::pricing_model_config
+            }
+            class put_many_pricing_model_configs_request <<struct>> {
+                +changes : vector<pricing_model_config_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_pricing_model_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +configs : vector<ores::analytics::domain::pricing_model_config>
             }
             class delete_pricing_model_config_request <<struct>> {
-                +ids : vector<boost::uuids::uuid>
+                +removal : pricing_model_config_removal
+                +intent : ores::utility::domain::change_intent
             }
             class delete_pricing_model_config_response <<struct>> {
-                +success : bool
-                +message : string
+                +result : ores::utility::domain::result
             }
-            class get_pricing_model_config_history_request <<struct>> {
+            class delete_many_pricing_model_configs_request <<struct>> {
+                +removals : vector<pricing_model_config_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_pricing_model_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_pricing_model_config_versions_request <<struct>> {
+                +key : pricing_model_config_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<pricing_model_config_versions_filter>
+            }
+            class list_pricing_model_config_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::analytics::domain::pricing_model_config>
+                +total : uint64_t
+            }
+            class get_pricing_model_config_version_request <<struct>> {
+                +key : pricing_model_config_version_key
+            }
+            class get_pricing_model_config_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::analytics::domain::pricing_model_config
+            }
+            class pricing_model_product_parameter_key <<struct>> {
+                +parameter_name : string
+            }
+            class pricing_model_product_parameter_write <<struct>> {
                 +id : boost::uuids::uuid
+                +pricing_model_config_id : boost::uuids::uuid
+                +pricing_model_product_id : optional<boost::uuids::uuid>
+                +parameter_scope : string
+                +parameter_name : string
+                +parameter_value : string
             }
-            class get_pricing_model_config_history_response <<struct>> {
-                +configs : vector<ores::analytics::domain::pricing_model_config>
-                +success : bool
-                +message : string
+            class pricing_model_product_parameter_change <<struct>> {
+                +write : pricing_model_product_parameter_write
+                +precondition : ores::utility::domain::precondition
             }
-            class get_pricing_model_product_parameters_request <<struct>> {
-                +config_id : string
+            class pricing_model_product_parameter_removal <<struct>> {
+                +key : pricing_model_product_parameter_key
+                +precondition : ores::utility::domain::precondition
             }
-            class get_pricing_model_product_parameters_response <<struct>> {
+            class pricing_model_product_parameter_lookup <<struct>> {
+                +key : pricing_model_product_parameter_key
+            }
+            class pricing_model_product_parameter_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : pricing_model_product_parameter_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class pricing_model_product_parameter_version_key <<struct>> {
+                +pricing_model_product_parameter : pricing_model_product_parameter_key
+                +version : uint32_t
+            }
+            class pricing_model_product_parameter_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_pricing_model_product_parameters_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_pricing_model_product_parameters_response <<struct>> {
+                +result : ores::utility::domain::result
                 +parameters : vector<ores::analytics::domain::pricing_model_product_parameter>
-                +total_available_count : int
-                +success : bool
-                +message : string
+                +total : uint64_t
             }
-            class save_pricing_model_product_parameter_request <<struct>> {
-                +data : ores::analytics::domain::pricing_model_product_parameter
+            class get_pricing_model_product_parameter_request <<struct>> {
+                +key : pricing_model_product_parameter_key
             }
-            class save_pricing_model_product_parameter_response <<struct>> {
-                +success : bool
-                +message : string
+            class get_pricing_model_product_parameter_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class get_many_pricing_model_product_parameters_request <<struct>> {
+                +keys : vector<pricing_model_product_parameter_key>
+            }
+            class get_many_pricing_model_product_parameters_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<pricing_model_product_parameter_lookup>
+            }
+            class put_pricing_model_product_parameter_request <<struct>> {
+                +change : pricing_model_product_parameter_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_pricing_model_product_parameter_response <<struct>> {
+                +result : ores::utility::domain::result
+                +pricing_model_product_parameter : ores::analytics::domain::pricing_model_product_parameter
+            }
+            class put_many_pricing_model_product_parameters_request <<struct>> {
+                +changes : vector<pricing_model_product_parameter_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_pricing_model_product_parameters_response <<struct>> {
+                +result : ores::utility::domain::result
+                +parameters : vector<ores::analytics::domain::pricing_model_product_parameter>
             }
             class delete_pricing_model_product_parameter_request <<struct>> {
-                +ids : vector<boost::uuids::uuid>
+                +removal : pricing_model_product_parameter_removal
+                +intent : ores::utility::domain::change_intent
             }
             class delete_pricing_model_product_parameter_response <<struct>> {
-                +success : bool
-                +message : string
+                +result : ores::utility::domain::result
             }
-            class get_pricing_model_product_parameter_history_request <<struct>> {
+            class delete_many_pricing_model_product_parameters_request <<struct>> {
+                +removals : vector<pricing_model_product_parameter_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_pricing_model_product_parameters_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_pricing_model_product_parameter_versions_request <<struct>> {
+                +key : pricing_model_product_parameter_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<pricing_model_product_parameter_versions_filter>
+            }
+            class list_pricing_model_product_parameter_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::analytics::domain::pricing_model_product_parameter>
+                +total : uint64_t
+            }
+            class get_pricing_model_product_parameter_version_request <<struct>> {
+                +key : pricing_model_product_parameter_version_key
+            }
+            class get_pricing_model_product_parameter_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::analytics::domain::pricing_model_product_parameter
+            }
+            class pricing_model_product_key <<struct>> {
+                +pricing_engine_type_code : string
+            }
+            class pricing_model_product_write <<struct>> {
                 +id : boost::uuids::uuid
+                +pricing_model_config_id : boost::uuids::uuid
+                +pricing_engine_type_code : string
+                +model : string
+                +engine : string
             }
-            class get_pricing_model_product_parameter_history_response <<struct>> {
-                +parameters : vector<ores::analytics::domain::pricing_model_product_parameter>
-                +success : bool
-                +message : string
+            class pricing_model_product_change <<struct>> {
+                +write : pricing_model_product_write
+                +precondition : ores::utility::domain::precondition
             }
-            class get_pricing_model_product_parameters_for_config_request <<struct>> {
-                +config_id : string
+            class pricing_model_product_removal <<struct>> {
+                +key : pricing_model_product_key
+                +precondition : ores::utility::domain::precondition
             }
-            class get_pricing_model_product_parameters_for_config_response <<struct>> {
-                +parameters : vector<ores::analytics::domain::pricing_model_product_parameter>
-                +success : bool
-                +message : string
+            class pricing_model_product_lookup <<struct>> {
+                +key : pricing_model_product_key
+                +pricing_model_product : optional<ores::analytics::domain::pricing_model_product>
             }
-            class get_pricing_model_product_parameters_for_product_request <<struct>> {
-                +product_id : string
+            class pricing_model_product_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : pricing_model_product_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
             }
-            class get_pricing_model_product_parameters_for_product_response <<struct>> {
-                +parameters : vector<ores::analytics::domain::pricing_model_product_parameter>
-                +success : bool
-                +message : string
+            class pricing_model_product_version_key <<struct>> {
+                +pricing_model_product : pricing_model_product_key
+                +version : uint32_t
             }
-            class get_pricing_model_products_request <<struct>> {
-                +config_id : string
+            class pricing_model_product_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
             }
-            class get_pricing_model_products_response <<struct>> {
+            class list_pricing_model_products_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_pricing_model_products_response <<struct>> {
+                +result : ores::utility::domain::result
                 +products : vector<ores::analytics::domain::pricing_model_product>
-                +total_available_count : int
-                +success : bool
-                +message : string
+                +total : uint64_t
             }
-            class save_pricing_model_product_request <<struct>> {
-                +data : ores::analytics::domain::pricing_model_product
+            class get_pricing_model_product_request <<struct>> {
+                +key : pricing_model_product_key
             }
-            class save_pricing_model_product_response <<struct>> {
-                +success : bool
-                +message : string
+            class get_pricing_model_product_response <<struct>> {
+                +result : ores::utility::domain::result
+                +pricing_model_product : optional<ores::analytics::domain::pricing_model_product>
+            }
+            class get_many_pricing_model_products_request <<struct>> {
+                +keys : vector<pricing_model_product_key>
+            }
+            class get_many_pricing_model_products_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<pricing_model_product_lookup>
+            }
+            class put_pricing_model_product_request <<struct>> {
+                +change : pricing_model_product_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_pricing_model_product_response <<struct>> {
+                +result : ores::utility::domain::result
+                +pricing_model_product : ores::analytics::domain::pricing_model_product
+            }
+            class put_many_pricing_model_products_request <<struct>> {
+                +changes : vector<pricing_model_product_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_pricing_model_products_response <<struct>> {
+                +result : ores::utility::domain::result
+                +products : vector<ores::analytics::domain::pricing_model_product>
             }
             class delete_pricing_model_product_request <<struct>> {
-                +ids : vector<boost::uuids::uuid>
+                +removal : pricing_model_product_removal
+                +intent : ores::utility::domain::change_intent
             }
             class delete_pricing_model_product_response <<struct>> {
-                +success : bool
-                +message : string
+                +result : ores::utility::domain::result
             }
-            class get_pricing_model_product_history_request <<struct>> {
-                +id : boost::uuids::uuid
+            class delete_many_pricing_model_products_request <<struct>> {
+                +removals : vector<pricing_model_product_removal>
+                +intent : ores::utility::domain::change_intent
             }
-            class get_pricing_model_product_history_response <<struct>> {
-                +products : vector<ores::analytics::domain::pricing_model_product>
-                +success : bool
-                +message : string
+            class delete_many_pricing_model_products_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_pricing_model_product_versions_request <<struct>> {
+                +key : pricing_model_product_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<pricing_model_product_versions_filter>
+            }
+            class list_pricing_model_product_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::analytics::domain::pricing_model_product>
+                +total : uint64_t
+            }
+            class get_pricing_model_product_version_request <<struct>> {
+                +key : pricing_model_product_version_key
+            }
+            class get_pricing_model_product_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::analytics::domain::pricing_model_product
             }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+' The four entities share one canonical shape. pricing_model_config shows it.
+ores::analytics::messaging::pricing_model_config_change *-- ores::analytics::messaging::pricing_model_config_write
+ores::analytics::messaging::pricing_model_config_removal *-- ores::analytics::messaging::pricing_model_config_key
+ores::analytics::messaging::pricing_model_config_lookup *-- ores::analytics::messaging::pricing_model_config_key
+ores::analytics::messaging::pricing_model_config_lookup o-- ores::analytics::domain::pricing_model_config
+ores::analytics::messaging::pricing_model_config_event *-- ores::analytics::messaging::pricing_model_config_key
+ores::analytics::messaging::pricing_model_config_version_key *-- ores::analytics::messaging::pricing_model_config_key
+ores::analytics::messaging::put_pricing_model_config_request *-- ores::analytics::messaging::pricing_model_config_change
+ores::analytics::messaging::delete_pricing_model_config_request *-- ores::analytics::messaging::pricing_model_config_removal
+ores::analytics::messaging::get_pricing_model_config_request *-- ores::analytics::messaging::pricing_model_config_key
+ores::analytics::messaging::get_many_pricing_model_configs_request *-- ores::analytics::messaging::pricing_model_config_key
+ores::analytics::messaging::put_many_pricing_model_configs_request *-- ores::analytics::messaging::pricing_model_config_change
+ores::analytics::messaging::delete_many_pricing_model_configs_request *-- ores::analytics::messaging::pricing_model_config_removal
+ores::analytics::messaging::list_pricing_model_configs_response o-- ores::analytics::domain::pricing_model_config
+ores::analytics::messaging::get_pricing_model_config_response o-- ores::analytics::domain::pricing_model_config
+ores::analytics::messaging::put_pricing_model_config_response o-- ores::analytics::domain::pricing_model_config
+
+note as N1
+  One payload, three subjects. The collection prefix is
+  analytics.v1.pricing_model_configs_events and the action completes it.
+end note
+ores::analytics::messaging::pricing_model_config_event .. N1
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.analytics.api.puml"

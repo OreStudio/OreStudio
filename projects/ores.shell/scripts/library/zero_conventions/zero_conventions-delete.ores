@@ -1,0 +1,6 @@
+# =delete=
+#
+# GENERATED from doc/recipes/shell/zero_conventions/zero_convention.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+zero_conventions delete __none__ system.new_record generated_script

@@ -2824,6 +2824,11 @@ def key_finders(entity: dict[str, Any]) -> list[dict[str, Any]]:
 
     When both name the same column the two are one method and it is stated
     once, which is what keeps an entity that already opted in byte-identical.
+    One method only when the suffixes agree: the method is spelled for its
+    suffix, and the service resolves a caller's key through the declared-key
+    read, so a legacy finder whose suffix differs from the declared key needs
+    the declared-key read beside it or the service calls a method no
+    repository declares.
     """
     finders: list[dict[str, Any]] = []
     legacy = entity.get("service_find_by_code") or {}
@@ -2834,7 +2839,7 @@ def key_finders(entity: dict[str, Any]) -> list[dict[str, Any]]:
         finders.append(finder)
     declared = declared_key_field(entity)
     if declared and not key_is_primary(entity):
-        if not any(f["column"] == declared for f in finders):
+        if not any(f["column"] == declared and f["suffix"] == declared for f in finders):
             # A model may already state this read itself, as a paste block, and
             # emitting a second declaration of the same method is a redefinition
             # rather than an addition. The model's own is kept: it is the one a

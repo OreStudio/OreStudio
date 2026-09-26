@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: 01193D52-DD7C-4276-B6C2-E4B7F137B99E
+:END:
+#+title: How do I test the shell?
+#+description: Exercise the shell at its three levels: the offline ctest suites that pin command registration and the session guard, the generated script library run against a live fleet through compass shell, and the interactive REPL that lists a command's arguments.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:testing:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The command unit's shape and file locations are in
+[[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]], and the recipe that creates a
+unit is [[id:083C1060-F952-4505-B066-FED5684CDD5D][How do I create shell commands for a new entity?]].
+
+* Question
+
+How do I test the shell?
+
+* Answer
+
+The shell has three levels, and each answers a different question. Run the
+level that matches what you changed.
+
+** Level 1: the suites, with no fleet
+
+#+begin_src sh :results verbatim
+./compass.sh test run --preset <preset> -- -R ores.shell
+#+end_src
+
+This runs six targets: =ores.shell.api.tests=, =ores.shell.application.tests=,
+=ores.shell.analytics.tests=, =ores.shell.iam.tests=,
+=ores.shell.refdata.tests= and =ores.shell.trading.tests=. They run in process
+and open no NATS connection, so they pass with the fleet down.
+
+They answer "is the command wired?". A suite proves that a generated unit
+registers every derived verb, that each verb refuses to run without a session
+(=You must be logged in=) and that the output names the field it rejected. It
+cannot prove that a service answers the subject, because it never sends one.
+See [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] for the per-component targets and
+the logging knobs.
+
+** Level 2: the script library, against a live fleet
+
+Every recipe under =doc/recipes/shell/<entity>/= tangles to one script per
+command under =projects/ores.shell/scripts/library/<category>/. Run one:
+
+#+begin_src sh :results verbatim
+./compass.sh shell -l projects/ores.shell/scripts/library/<category>/<script>.ores
+#+end_src
+
+=compass shell= resolves the NATS URL, the TLS material, the subject prefix and
+the login from =.env=, then connects, logs in and runs the script. The options
+worth knowing:
+
+- =--dry-run= prints the exact =ores.shell= command and runs nothing. The
+  password is masked.
+- =-u= and =-p= override the login. The defaults are =ORES_SHELL_LOGIN_USERNAME=
+  and =ORES_SHELL_LOGIN_PASSWORD=.
+- =--log-enabled= and =--log-level= forward to the shell's own log file. The run
+  also prints a progress log path.
+
+This is the only level that answers "does a service answer this subject, and do
+the request and the response decode?". It needs the three prerequisites in
+[[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]: a current build, a current
+database and a provisioned tenant. Run
+[[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]]
+first to have a tenant to log in as.
+
+** Read the verdict, not the exit code
+
+The exit code does not report the outcome. =compass shell -l= exits 0 even when
+a script aborts, so a wrapper that trusts it reports success on a broken script.
+Read the output:
+
+- ={"result":{"outcome":"ok",...}}= — the command reached a subscriber and the
+  request decoded. This is the pass.
+- ={"result":{"outcome":"missing",...}}= — the key addresses no row. The
+  generated recipes send the sentinel =__none__=, so this is what a fresh
+  tenant answers.
+- ={"result":{"outcome":"failed",...}}= — the service refused the values. Read
+  =message= before you call it a defect: a database validation function naming
+  the sentinel is the command working as designed.
+- =✗ Script aborted at line N= — the client rejected the input before the
+  request left. Treat this as a failure and read the field it names.
+
+The shell stops at the first failing command, so sweep the library one script
+per invocation. That is why the library keeps one script per command: a failure
+cannot hide the commands after it. With 40 scripts, expect a handful of =missing=
+and =failed= verdicts from the sentinels and at least one abort; the run passes
+when every verdict is explained, not when every verdict is =ok=.
+
+** Regenerate the scripts, never edit them
+
+The =.ores= files are generated from the recipes:
+
+#+begin_src sh :results verbatim
+./compass.sh build --direct tangle_shell_scripts
+#+end_src
+
+The =Shell script drift= CI job re-tangles and fails on a tracked script that no
+longer matches its recipe, so change the recipe and regenerate.
+
+** Level 3: the interactive REPL
+
+#+begin_src sh :results verbatim
+./compass.sh shell
+#+end_src
+
+Type =help= for the command list. Type an entity name on its own to enter that
+entity's sub-REPL, then =help= again to list its verbs with their arguments —
+for example =pricing_engine_types= then =help= prints
+=add <code> <description> <instrument_type_code> <reason> <commentary>=. Use
+this level to learn a command's argument list and to reproduce a failure by hand
+before you change a recipe.
+
+** The inventory gate
+
+=doc/recipes/shell/shell.org= is generated from the recipes, so a recipe that is
+not listed there is invisible to a reader browsing the inventory. Check it
+before you raise a PR:
+
+#+begin_src sh :results verbatim
+python3 projects/ores.codegen/scripts/regenerate_shell_recipe_inventory.py --check
+#+end_src
+
+* Script
+
+No wrapper. Each level delegates to =compass test run=, =compass shell= or the
+inventory script, which is the point: the levels stay independent, so a failing
+level names its own cause.
+
+* Tested by
+
+Manual: run all three levels on a feature branch that adds a shell command, and
+confirm that the level-2 run reaches a subscribing service and that the level-3
+sub-REPL lists the new verb.
+
+* See also
+
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]
+- [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]
+- [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]]
+- [[id:083C1060-F952-4505-B066-FED5684CDD5D][How do I create shell commands for a new entity?]]
+- [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]]
+- =projects/ores.shell/scripts/README.org= — the layout of the script library.

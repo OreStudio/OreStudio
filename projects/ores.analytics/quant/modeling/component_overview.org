@@ -102,11 +102,15 @@ unit-testable without pulling in a service binary.
 
 * See also
 
-- [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/story.org][Story: Cross-rates matrix (CRM)]]
-- [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_model_driver_derived_topology.org][Task: Model the driver/derived spanning-tree topology]]
-- [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_implement_triangulation_derivation.org][Task: Implement triangulation/derivation]]
-- [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_implement_risk_recentering.org][Task: Implement risk recentering]]
-- [[file:../../../doc/knowledge/domain/crm_graph_topology.org][CRM graph topology and spanning tree]]
-- [[file:../../../doc/knowledge/domain/crm_driver_and_derived_rates.org][Driver and derived rates]]
-- [[file:../../../doc/knowledge/domain/crm_risk_and_recentering.org][CRM risk: recentering and artefacts]]
-- [[file:../../../doc/agile/versions/v0/sprint_23/extract-quant-processes-from-synthetic/story.org][Story: Extract stochastic process math from ores.synthetic into ores.analytics.quant]]
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.
+- [[id:66D3F1D6-1926-40CF-BCF5-AA42F14AD6D5][ores.analytics.api]] — protocol types and domain entities.
+- [[id:BC804C31-D6F7-4E4E-9C4F-F4578BEAF4F5][ores.analytics.core]] — business logic, persistence, and NATS handlers.
+- [[id:E5952F27-53BD-4C4D-85CD-556B6421B768][ores.analytics.service]] — NATS service entrypoint.
+- [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][CRM graph topology and spanning tree]]
+- [[id:A1BA9EE6-313E-4802-8F63-FEE6BFB63A69][Driver and derived rates]]
+- [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk: recentering and artefacts]]
+- [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Story: Extract stochastic process math from ores.synthetic into ores.analytics.quant]]
+- [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Story: Cross-rates matrix (CRM)]]
+- [[id:E7E31384-3616-4DFB-AB20-6CB099114FB3][Task: Model the driver/derived spanning-tree topology]]
+- [[id:96522E06-2067-4058-86FC-27B6086DCC26][Task: Implement triangulation/derivation]]
+- [[id:6EA4B5FC-4581-484C-B5EB-ECF868B3A61D][Task: Implement risk recentering]]

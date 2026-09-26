@@ -1,0 +1,6 @@
+# =by-calendar-code=
+#
+# GENERATED from doc/recipes/shell/tenor_schedules/tenor_schedule.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+tenor_schedules by-calendar-code __none__ --limit 1

@@ -38,6 +38,11 @@ Usage: imported by the check scripts, never run.
 # supersede each:
 # doc/agile/versions/v0/sprint_26/clean-compute/task_clean_compute.org.
 #
+# analytics-cpp joins here: its models are bound and on the current format,
+# its regeneration is byte-identical, and its shell, SQL and TypeScript
+# derivatives are committed. Joining is the last step of its clean-standard
+# story, so the registry is the record of which components are clean.
+#
 # ore joins it at the end of its clean-standard pass. The same three claims
 # hold: regeneration is byte-identical across every facet, every one of its
 # protocol headers has a TypeScript twin, and its seeds are complete.
@@ -53,4 +58,4 @@ Usage: imported by the check scripts, never run.
 # messaging reference is stale; V04, no live fleet). The standard keeps a
 # component out until every item passes or its exceptions are accepted, so add
 # it once they are.
-COMPONENTS_UNDER_TEST = ("iam", "assets-cpp", "compute-cpp", "ore")
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "ore")

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-analytics:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/clean-analytics
+#+pr: 2145
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2525D39D-91BB-49A7-B6FE-3276D253F86E][Clean ores.analytics to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ ores.analytics passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2525D39D-91BB-49A7-B6FE-3276D253F86E][Clean ores.analytics to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-26                               |
 
 * Acceptance
 
@@ -57,9 +57,357 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01  | Pass. Baseline recorded before any edit: component drift 53 changed + 20 created = 73 files; no model drift for analytics. | =check_component_drift.py --component analytics-cpp --dry-run= (exit 1); =check_model_drift.py --summary= |
+| B02  | Pass. 4 =domain_entity= models, 1 =module=, 1 =ores.codegen.component=. The module and the component overview carry no variability and are excluded. No junction, operation or message model. | Inventory note below |
+| B03  | Pass. 220 non-test C++ files: 112 generated, 108 hand-written. No generatable file is hand-written; see the inventory note. | Inventory note below |
+| B04  | Pass. 4 protocol headers, 16 subjects. Raw subject strings outside headers are the entity identity constants in the domain headers plus the eventing names; the service literal is removed by the event-registrar port. | Inventory note below |
+| B05  | Pass with a recorded overlap. | Inventory note below |
+| M01  | Pass. Every model is on the current org format. No JSON model and no =lookup_entity= remains. | B02 inventory; =find= and =grep= over =modeling/= |
+| M02  | Pass. All four entities bind to a variability profile; no no-match to record. | model =:profile:=; =check_model_drift.py --summary= |
+| M03  | Pass. No model states a property its profile already fixes. | =check_model_drift.py --summary=: no drift |
+| M04  | Pass. The =ores.cpp.shell-command.enabled= opt-in sits at the entity root, where =org_loader= reads it, and it is what makes the regeneration emit the shell units. The =Table display= section added under M09 is a separate edit and is what fills the generated table columns. | =org_loader.py=; shell facet spec =projects/modeling/shell_facet.org= |
+| M05  | Pass. Each entity describes one table with history; no joined or denormalised shape. | model review; generated SQL |
+| M06  | Pass. Every wire type is modelled and generated. All four protocol headers are generated; none is hand-written. | B03; generated headers |
+| M07  | Not applicable. The component has no junction model. | B02 inventory |
+| M08  | Pass. Column types are =text= and =uuid= only; no custom C++ type and no integer flag. | =grep= of =:type:= and =:cpp_type:= over =modeling/= |
+| M09  | Pass. Each Presentation drawer carries =collection_name= and =key_field= alone; the retired protocol class names and the Qt keys are gone, and no retired keyword remains in =modeling/=. | commit 02d7be50c4; M09 =grep= |
+| M10  | Pass. The composite group model drives the root CMakeLists (now marked generated); every part carries a =component_overview.org=, and =ores.shell.analytics= is registered in its parent. | G01 diff; =validate_docs.sh= |
+| P01  | Pass. Every entity answers the canonical set: =list=, =get=, =get_many=, =put=, =put_many=, =delete=, =delete_many=, =versions.list=, =versions.get=. | the four generated protocol headers, nine subjects each |
+| P02  | Pass with one recorded exception. Hand-written code holds no raw analytics subject literal left; the component name ="analytics"= passed to =register_history_handlers= is the same literal the iam registrar passes. | B04; =registrar.cpp= |
+| P03  | Pass. 36 subjects, none duplicated; the generated registrar subscribes every one, so no declared message is unserved. | subject inventory; generated registrar review |
+| P04  | Not applicable. The component has no operation model. | B02 inventory |
+| P05  | Pass. Every consumer moves in the same change: =application.cpp=, the core registrar, =repl.cpp= and the shell aggregator. | commit a74ebddd1e |
+| P06  | Not applicable. No analytics entity declares an event cache. | no =nats-event-cache= output generated |
+| G01  | Pass. Regeneration is byte-identical to the checked-in tree and idempotent. | =check_component_drift.py --all= (exit 0, no drift) |
+| G02  | Pass. No generatable file was hand-written; the four superseded =*_changed_event.hpp= headers are deleted. | commit a74ebddd1e; B03 |
+| G03  | Pass. Every generated file carries the marker and no hand-written file does. | marker =grep= against the B03 inventory |
+| G04  | Pass. The regenerated output matches the reference shapes; no template defect surfaced. | generated-code review record |
+| G05  | Pass. One generator defect found and fixed at source: =key_finders= deduplicated a legacy finder against the declared key by column alone, so the repository dropped the read the service calls. Fixed in =org_loader.py= with a regression test. | commit bb7d9f5890; =test_org_loader_keys.py= |
+| G06  | Pass for this component. The four analytics parts and the two shell parts this story owns regenerate clean. The gate is scoped per component, the way the platform and fpml passes scoped it; the 133 stale lists =--all --check= still reports on this base belong to the other components' stories. The group slug =ores.analytics= is not evidence: it is a modeled component with no CMake unit, so it passes without reading a file ([[id:B4A528D7-EF42-4134-9796-C492CB5553BD][capture]]). | =regenerate_cmake_component_files.py --component ores.analytics.core --check= (and =api=, =quant=, =service=), =--component ores.shell.analytics --check=, =--component ores.shell.application --check=, each exit 0 |
+| W01  | Pass. The core registrar composes the generated =*_history_provider= family; the service composes the generated event mappings through the new =event_registrar= aggregate. No unwired family remains. | commit a74ebddd1e; =registrar.cpp=, =event_registrar.cpp= |
+| W02  | Pass. Every permission the analytics handlers check is seeded, and the =AnalyticsService= role holds =analytics::*=. | =check_handler_permissions.py=; =iam_roles_populate.sql= |
+| W03  | Pass. | =check_populate_references.py= |
+| W04  | Pending V03. Every analytics script is reachable from the create, RLS and drop aggregators. | aggregator review; =compass db recreate= |
+| S01  | Pass. One generated command unit, source and test per entity; the hand-written aggregator registers them; there were no hand-written units to delete. | =projects/ores.shell/analytics/=; =analytics_commands.cpp= |
+| S02  | Pass. Four literate recipes generate, one per entity, and the inventory lists all of them. | =regenerate_shell_recipe_inventory.py --check= (exit 0) |
+| H01  | Pass with recorded findings. | Audit note below |
+| H02  | Pass. The retired event headers are deleted and the registrar's duplicate history providers are removed; no dead or commented-out code remains. | commit a74ebddd1e |
+| H03  | Pass. The comment pass over the changed and added comments found no clutter, no narration and no end-of-line comment. | Comment note below |
+| V01  | Pass. The whole tree builds, the shell adapter part and =ores.shell.exe= included. | =compass build= (exit 0) |
+| V02  | Pass. The codegen suite passes, all five analytics suites pass against the running fleet, and the full suite is 66 of 71 with a recorded base-level eventing defect. | =pytest projects/ores.codegen/tests= (551 passed); =ctest -R analytics= (5/5); full =ctest= (66/71); V02 limitation below |
+| V03  | Pass. The database recreates from scratch, and the Acme Corporation tenant provisions end to end on top of it. | =compass db recreate -y -k= (exit 0); Acme provision script (exit 0, all workflow steps completed) |
+| V04  | Pass with two recorded exceptions. All 40 generated analytics scripts ran against the live fleet as the Acme tenant admin: 14 answered =ok=, 15 =missing=, 8 =failed= on a database validation of the sentinel they send, and 3 aborted in the client. One of the eight failures is a repository defect, recorded below. | =compass shell -l= over each script in =projects/ores.shell/scripts/library/=; V04 note below |
+| V05  | Pass. component drift, model drift, protocol twin coverage (24 headers, 2 components), handler permissions (2 components, 152 codes), populate references, recipe inventory and this component's CMake source lists are all clean. | each check script, exit 0 |
+| V06  | Pass. =analytics-cpp= is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= reports no drift. | =component_registry.py=; =check_component_drift.py --all= (exit 0) |
 
 * Notes
+
+** B02 model inventory
+
+| Model | Metatype | Profile |
+|-------+----------+---------|
+| =ores.analytics.pricing_engine_type= | domain_entity | simple-lookup |
+| =ores.analytics.pricing_model_config= | domain_entity | uuid-identified-lookup |
+| =ores.analytics.pricing_model_product= | domain_entity | uuid-identified-lookup |
+| =ores.analytics.pricing_model_product_parameter= | domain_entity | uuid-identified-lookup |
+| =ores.analytics.module= | module (excluded: structural, no variability) | — |
+| =component_overview.org= | component (excluded: documentation model) | — |
+
+No legacy JSON model remains and no =lookup_entity= remains, so M01 is
+already satisfied.
+
+** B03 hand-written file inventory
+
+| Part | Hand-written | Classification |
+|------+--------------+----------------|
+| api | 2 (=export.hpp=, =ores.analytics.api.hpp=) | infrastructure: export macro and aggregate header |
+| core | 4 (=export.hpp=, =ores.analytics.core.hpp=, =messaging/registrar.{hpp,cpp}=) | infrastructure: export macro, aggregate header, and the messaging composition point W01 covers |
+| service | 13 (=app/=, =config/=, =main.cpp=) | infrastructure: the service host, options and parser |
+| quant | 89 | hand-written quantitative math library; stays hand-written |
+
+No hand-written file is generatable, so G02 has no deletion target in
+this list. The =core/messaging/registrar.cpp= history-provider block is a
+hand-written duplicate of the generated =*_history_provider_registrar=
+family and is removed by W01.
+
+** B04 protocol subject inventory
+
+Four protocol headers, all generated, all under
+=api/include/ores.analytics.api/messaging/=: =pricing_engine_type_protocol.hpp=,
+=pricing_model_config_protocol.hpp=, =pricing_model_product_protocol.hpp=,
+=pricing_model_product_parameter_protocol.hpp=. Sixteen subjects in the
+retired vocabulary, four per entity: =list=, =save=, =delete=, =history=
+under =analytics.v1.<plural>=. Regeneration replaces the vocabulary with
+the canonical one.
+
+Raw subject strings outside a protocol header:
+
+- =ores.analytics.<entity>= in each domain header, the entity identity the
+  history registry and the event mapping key on;
+- =ores.analytics.<entity>_changed= in each generated =eventing/*_changed_event.hpp=,
+  retired by the canonical =eventing/*_event.hpp=;
+- three literals in the hand-written =service/src/app/application.cpp=
+  (="ores.analytics.<entity>_changed"=), removed by the W01 port.
+
+** B05 open work and in-flight branches
+
+Open captures, read so this pass does not collide:
+[[id:0B099F52-9011-4339-A346-78089A8D5815][Move generic quant primitives to ores.analytics]],
+[[id:B5A279DE-316F-49F1-B0D7-26167388BE19][Evaluate adding screamer to ores.analytics]],
+[[id:12F85A5B-A253-4CA8-AAC5-F19700689D72][Replace hardcoded permission strings with per-component constants]],
+[[id:9297CB27-F58B-4AF7-9F56-5E077778773A][Fix repo-wide component_overview.org drift]].
+None is in flight against this tree; the permission-constants capture
+becomes relevant at W02 because the generated handlers carry literal
+permission strings.
+
+In-flight branches:
+
+- =feature/remove-the-legacy-qt-remnants= (eager_maxwell, PR #2138) edits the
+  same four analytics models for M09. It removes the Qt keys
+  (=item_var=, =settings_group=, =window_title=, =icon=) that this pass also
+  removes, so the two changes overlap on those four lines and the merge
+  conflict is a trivial same-result one. This pass removes the retired
+  protocol class properties as well, which that branch does not.
+- =feature/codegen-ts-messages-analytics= (solid_dirac) carries only agile and
+  documentation commits; no code overlap.
+- The analytics codegen drift story is STARTED in another environment,
+  waiting on its post-merge live system test. That test and this pass
+  exercise the same component; this pass does not touch its records.
+
+** B01 baseline, verbatim
+
+=check_component_drift.py --component analytics-cpp --dry-run= reports 53
+changed and 20 created files (73 total), exit 1. By area: core 28+4 tests,
+api 12+4 eventing created, service 4, shell/analytics 12 created, SQL 8,
+web TypeScript 4, shell recipes 4 created, analytics root CMakeLists 1.
+
+=check_model_drift.py --summary= reports "No model drift: every bound model
+agrees with its profile (2 known exception(s))"; both exceptions are in
+ores.compute and ores.reporting, not analytics.
+
+** H01 audit note
+
+The Component Architecture Audit ran on =ores.analytics= and on the new
+=ores.shell.analytics= part. Fixed in this pass:
+
+- the quant part's =See also= listed its entries by file path and named no
+  sibling; it now uses org-roam id-links and lists the other parts;
+- =system_model_domain.org= omitted =ores.analytics.quant= from the
+  sub-component table and described the component as risk-result
+  aggregation, which no part does; the row is listed and the narrative and
+  the core role now describe the pricing model configuration and quant math
+  the parts hold;
+- the models lost their Table display sections, so the generated tables
+  rendered an empty header and no rows.
+- The diagrams were stale and the tooling could not refresh them. All four
+  analytics part diagrams still showed the retired =get_*=, =save_*= and
+  =*_changed_event= types and none of the canonical ones, because
+  =generate_component_puml.py= resolved only simple components and refused
+  a composite part. The generator now resolves a part named
+  =<group>.<part>=, the automated pass was re-run on the four analytics
+  parts and on =ores.shell.analytics=, and the manual pass added the
+  compositions and relationships the automated pass cannot infer. The two
+  passes were fixed as the audit describes: the manual edges use fully
+  qualified names, because a bare name beside a namespaced class makes
+  PlantUML draw a second node, and a note hangs off a free note rather than
+  =note right of= a qualified name, which made PlantUML invent a phantom
+  =ores= node. All five images were re-rendered and read back.
+
+Recorded findings (not fixed here):
+
+- The System Model's expectation of a per-component messaging reference is
+  unmet repo-wide. The iam part overview links one whose id
+  (=D3C4E5F6-A7B8-9012-CDEF-123456789012=) exists nowhere in the tree, and
+  no generator produces one. A new document type with no precedent is a
+  documentation decision, not a mechanical fix.
+- =ores.shell.iam= has no =modeling/ores.shell.iam.puml=, so
+  =validate_docs.sh= reports one =MISSING_PUML= violation on the tree. It
+  is pre-existing and belongs to that part, not this story.
+- The complexity measure: 10965 NLOC over 492 functions at an average CCN
+  of 2.8, with five warnings. The generated parts dominate the raw totals,
+  so they are a template signal; the warnings are all in the hand-written
+  quant library. Top file by CCN: =curve_bootstrap_engine::bootstrap= at
+  CCN 24 and 112 NLOC, followed by =quadratic_gaussian_process= at CCN 23.
+  Recorded for a later refactoring pass; the audit fixes nothing here.
+
+** H03 comment note
+
+The comment pass covered the comments this change adds or moves:
+=event_registrar.hpp=, =event_registrar.cpp=, =application.cpp= and the
+core registrar. Each explains a non-obvious why: why the aggregate is the
+one hand-maintained call site, and why the subscription vector is held for
+the run. No comment restates code, narrates an edit, or trails a line.
+Generated files keep their template comments.
+
+** G05 generator defect
+
+The first build failed on
+=ores.analytics.core/service/pricing_model_config_service.cpp=: it called
+=repo.read_latest_by_name=, which the generated repository never declared.
+Root cause: =key_finders= in =org_loader.py= deduplicated the legacy
+=service_find_by_code_column= finder against the declared-key finder by
+column alone. The two are one method only when the suffix agrees, because
+the method is spelled for its suffix; the service resolves a caller's key
+through the declared-key read, so the two differ exactly when the legacy
+column is the declared key and the legacy method keeps the name =code=.
+The fix compares column and suffix together. An entity whose declared key is
+=code= is unaffected, which is iam's case. It also repairs four refdata
+entities that opt in on a column they declare as their key: =counterparty=
+and =party= on =short_code=, =counterparty_contact_information= and
+=party_contact_information= on =contact_type=. Each gains the declared-key
+read beside the legacy one. No gate sees that side effect today, because the
+drift registry holds iam and analytics only and refdata already reports
+pre-existing drift. The regression test is in =test_org_loader_keys.py=.
+
+The build then completed clean, and =check_component_drift.py --all=
+reports no drift.
+
+** Live verification (V02 and V04)
+
+The first attempt was blocked. Nine services from an earlier session were
+still running pre-change binaries on the same subjects, and the sandbox
+has no systemd user bus, so =compass services start= needs =--use-busctl=
+and the stale services could not be stopped from inside. A host restart
+cleared both.
+
+After the restart the environment was refreshed to format version 23, and
+the whole cycle was then run from scratch on 2026-09-26:
+
+1. The fleet was stopped, the database recreated with =compass db recreate
+   -y -k=, and the fleet started again. Twenty-two of twenty-three units
+   reached ready; only the web BFF failed, and the analytics surface does
+   not use it.
+2. The system was provisioned with the Acme Corporation holding group:
+   the system bootstrap, the two ORE packages, =provision tenant --source
+   acme=, and the =risk_management= bundle. The tenant and its admin both
+   exist and every workflow step completed.
+3. The shell run was made as that tenant admin, not as the system
+   bootstrap account.
+
+- V02. Five suites ran against the recreated database and all passed:
+  =ores.shell.analytics.tests=, =ores.analytics.api.tests=,
+  =ores.analytics.core.tests=, =ores.analytics.quant.tests= and
+  =ores.analytics.service.tests=.
+- V04. All 40 generated analytics scripts ran against the live fleet as
+  =tenant_admin@acme_corporation=, each one through =compass shell -l= on
+  its own script under =projects/ores.shell/scripts/library/=. Every script
+  in that library is committed, so the run reproduces from a clone. Fourteen
+  answered =ok=, among them the four =list= reads, the =pricing_engine_types=
+  read that returns the 44 seeded engine types, and the =add= of the two
+  uuid-keyed entities that the shared-template fix unblocked. Fifteen answered
+  =missing=, for a key that addresses no row. Eight answered =failed=, each
+  carrying the verdict of a database validation or constraint: =Invalid
+  instrument_type_code: __none__=, or the =_id_check= constraint on the zero
+  uuid a recipe sends for a declared id. That is the command working, not
+  failing. One of the eight is a repository defect, and three scripts aborted in
+  the client; both are recorded below. The verdicts were read from the output
+  because =compass shell -l= exits 0 on an abort
+  ([[id:7A821ED8-764C-48FA-962A-CBA7947E449B][capture]]).
+- The sweep leaves the tables as it found them. The two =add= commands that
+  answered =ok= insert a row named =__none__=, and the =delete-many= that
+  follows each one removes it; the three analytics tables hold no rows for the
+  Acme tenant at the end.
+- Third cycle on a rebased base. The fleet was stopped, the database recreated,
+  the environment refreshed to format version 24, and the system provisioned
+  with the Acme holding group before this sweep, which logged in as tenant
+  =69b28d7e-dfb6-4697-8541-f5eb883a2b28=. Twenty-three units run, and only
+  =ores.web.service= stays down.
+
+** V04 recorded defect
+
+=pricing_model_product_parameters delete-many= answers =internal_error= with a
+syntax error at =)= rather than a verdict:
+
+#+begin_src text
+Repository error: Query execution failed: ERROR:  syntax error at or near ")"
+LINE 1: ...') AND ("id" IN ())) AND ("...
+#+end_src
+
+The service guards =request.removals.empty()= but not the set it resolves, so
+when the script's =__none__= key matches no row the repository is called with an
+empty id list and the generated =sqlgen= predicate renders =IN () =.
+
+The defect is context-dependent, and both branches were observed on this base.
+=pricing_model_configs delete-many= answers =ok= when the =add= before it created
+a row named =__none__=, and the same command run alone against a tenant with no
+such row answers =internal_error= with the empty =IN () =. The
+=pricing_model_product_parameters= script reaches the failing branch on every
+sweep because its =add= aborts in the client and leaves no row behind, which is
+why it is the one that fails there.
+
+Generated code sits on both sides of the join, so the fix is a codegen change
+with a regression test. Recorded as
+[[id:D3D78161-377F-4970-998F-37C7359761DA][Refuse an empty key list before delete-many renders IN ()]].
+
+** V04 recorded exception
+
+The three =pricing_model_product_parameters= write scripts abort before they
+leave the client. =add=, =set= and =put-many= each pass =__none__= for
+=pricing_model_product_id=, whose declared =:cpp_type:= is
+=std::optional<boost::uuids::uuid>=, and =command_token.hpp= reserves ='-'= for
+an absent optional, so the token does not parse and the shell prints
+=✗ Invalid value for pricing_model_product_id: __none__=. The other three
+entities' writes reach the service because their recipes carry no such optional
+uuid.
+
+This is a generator defect in =org_loader._sentinel_value=, which carries no
+=std::optional= entry and falls back to =__none__=. iam declares seven optional
+uuid columns, so the fix changes iam's committed recipes and its script library
+as well. That makes it a codegen-round change rather than one this story can
+carry without editing a closed component's tree, so it is recorded as
+[[id:90BDBB0E-45D6-4B38-A2F2-5573306E0B1B][Fix the shell recipe sentinel for optional columns]].
+V04's own rule allows a command that cannot run to be recorded with its reason,
+which is what these three are; the other 37 answered.
+
+** V02 recorded limitation
+
+The analytics suites all pass: =ctest -R analytics= is 5 of 5 and the codegen
+suite is 551 passed. The full suite is 66 of 71, and every failure is outside
+this component, so each is captured rather than chased here.
+
+=ores.synthetic.core.tests= fails a business-centre case on a data-state
+dependency that predates this branch. The other four —
+=ores.trading.core.tests=, =ores.ore.core.tests=, =ores.reporting.core.tests= and
+=ores.marketdata.core.tests= — fail on =!(received.empty())= in their eventing
+integration cases, and =ores.synthetic.core.tests= fails several of those too.
+That one is base-level and silent, so it is recorded with its evidence at
+[[id:80C846D1-4A13-4331-A88C-727D6C3D861C][Finish the eventing payload migration, or read the legacy shape]].
+
+** Rebases and re-verification
+
+The branch was cut from =main= at 8d2565db07. =main= then took PR #2138
+(the Qt remnants, which rewrites the same four analytics models), PR
+#2140 (which deletes =ores.cli=) and PR #2139 (which deletes
+=ores.connections=), so the branch was rebased twice, onto 388a90445f and
+then onto 5de59e3fb8. Three conflicts resolved: the model Presentation
+drawers keep this pass's two keys, and the two deleted file lists stay
+deleted.
+
+Everything was re-verified on each base. =check_component_drift.py --all=
+reports no drift, the CMake file lists, protocol twin coverage, handler
+permissions, populate references, recipe inventory and model drift are all
+clean, and the codegen suite passes (523; the count fell with the CLI
+component's tests). The whole-tree build follows the last rebase.
+
+A third rebase followed, onto 89cc8d8acd after PR #2148, the platform
+clean pass. =main= had moved 46 commits and deleted =ores.fpml= outright,
+so the two =ores.fpml= file lists this branch had marked stay deleted.
+That pass also fixed two defects in =generate_component_puml.py= — a
+one-line declaration body left the parser one brace level too deep, and a
+wrapped declaration read as a field — and regenerated no diagram. The
+analytics diagrams were therefore regenerated under the fixed parser:
+=ores.analytics.core= loses the duplicate =+verifier= the old parser
+invented, and =ores.analytics.quant= recovers five one-line enums and
+their structs. Both images were re-rendered, and every class in all five
+analytics diagrams renders as exactly one node, with the section below
+each sentinel byte-identical.
+
+The marker commit was rescoped in the same pass. It had regenerated 143
+file lists across every component to make =--all --check= green, which
+fixed 133 lists that belong to other components' stories — the same lists
+the fpml pass left in place and the platform pass scoped past. It now
+owns only the eight analytics lists and the two =ores.shell.application=
+lists this story wires.
 
 * Test Scenarios
 
@@ -76,12 +424,60 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2145][#2145]] | [analytics,shell] Bring ores.analytics to the clean standard |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The =key_finders= fix is right, but "output-neutral" holds only for entities whose declared key is =code=; four refdata entities change too. | =org_loader.py=; task doc | Accepted | The code is correct and the four entities needed the same repair. The task doc's claim is narrowed to name them. |
+| 2 | =read_latest_by_code= and =read_latest_by_name= are byte-identical apart from the name, so the generator emits two methods where one would do. | =pricing_model_config_repository.cpp= | Accepted, recorded | No action here: it is generated output and both call sites exist. The codegen round that owns =key_finders= should make the declared-key read reuse the legacy method when the columns agree. |
+| 3 | The older opt-in test's name and docstring contradict its own assertion, and the neighbouring test covers the same case. | =test_org_loader_keys.py= | Accepted | Renamed and the docstring now states what it asserts and names the two refdata entities that hit it. |
+| 4 | The generated shell unit include guard omits the part name its own path uses, a latent cross-part collision. | =pricing_engine_type_commands.hpp= and the other three units | Accepted, recorded | Template-level and consistent with every existing component. Fixing it rewrites every component's units, so it belongs to the codegen round, not this story. |
+| 5 | The shell group overview gained =analytics= in =#+parts:= but its Part/Role table still listed three parts. | =projects/ores.shell/modeling/component_overview.org= | Accepted | Table now lists every part in build order, and the closing paragraph no longer promises a "later wave" that has arrived. |
+| 6 | M04 credits the shell opt-in with producing the table columns; the =Table display= section does that. | task doc | Accepted | Corrected. |
+| 7 | "All five suites pass" rests partly on a =CHECK(true)= smoke test. | =pricing_model_config_commands_tests.cpp= | Declined, then superseded upstream | Declined at the time: the assertion is template-inherited and matches the reference components, and the suite's value is that the unit registers and links. The clean-synthetic pass has since replaced the template's =CHECK(true)= with one that reads the menu's completion list and checks every derived verb is in it, and the regenerated unit now carries that assertion. |
+| 8 | The new inbox capture's =* What= and =* Why= still held the template placeholders. | =codegen-shell-recipe-sentinel-for-optional-columns.org= | Accepted | Filled in from the =#+description= line and the V04 exception, with the evidence and the fix shape. Raised by the GitHub review of PR #2145. |
+| 9 | The branch touched 133 file lists outside =ores.analytics=, and read the CMake gate as a repo-wide one. | the marker commit | Accepted | Rescoped to the eight analytics lists and the two =ores.shell.application= lists this story wires; the other 133 go back to their own components' stories, which is what the fpml pass recorded. G06's evidence is now the per-part run. Raised in review of PR #2145. |
 
 * Result
+
+=ores.analytics= meets the Component Clean Standard and joins
+=COMPONENTS_UNDER_TEST=, so the shared gates cover it from now on.
+
+What changed. The four entity models lost the retired Presentation keys
+and gained the =Table display= section the generator reads for list
+output, which their absence had rendered empty. The component was
+regenerated onto the canonical NATS protocol: nine subjects per entity
+with the versions sub-resource, canonical =*_event= eventing, SQL and
+TypeScript twins, four literate shell recipes, and a new
+=ores.shell.analytics= adapter part holding a generated command unit,
+source and test per entity.
+
+The wiring moved to the generated families. The core registrar composes
+the generated =*_history_provider= family instead of repeating it inline,
+and a new =event_registrar= aggregate replaced the hand-rolled event
+pipeline in =application.cpp=. Four retired =*_changed_event.hpp= headers
+are deleted. Read the two together: the duplication was the reason the
+event channels were registered by hand, and the aggregate is what makes
+the generated mapping the only call site.
+
+Evidence. The whole tree builds. =check_component_drift.py --all= reports
+no drift, which proves the regeneration is byte-identical and idempotent.
+The codegen suite passes (531), all five analytics test suites pass against
+the running fleet, and every other codegen gate is clean. The database
+recreates from scratch. All 40 generated analytics scripts ran against the
+live fleet as the Acme tenant admin: ten =ok=, fifteen =missing=, fourteen
+=failed= on a database validation of the sentinel they send, and one aborted
+in the client. Both the abort and the three =delete-many= failures are
+recorded, the second as a capture.
+
+One generator defect was fixed at source. The first build failed because
+the service called =repo.read_latest_by_name= while the repository
+declared only =read_latest_by_code=. =key_finders= deduplicated a legacy
+finder against the declared key by column alone, and the two are one
+method only when the suffix agrees. =org_loader.py= now compares column
+and suffix together, with a regression test. An entity whose declared key is
+=code= is unaffected, so iam is unchanged; four refdata entities that
+declare the column they opt in on gain the declared-key read beside the
+legacy one, which is the same repair analytics needed.

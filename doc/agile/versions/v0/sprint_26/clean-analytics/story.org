@@ -8,7 +8,7 @@
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,12 +21,12 @@ ores.analytics meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Next          | Nothing. The PR carries the work. |
+| Last touched  | 2026-09-26                               |
 
 * Acceptance
 
@@ -39,13 +39,31 @@ ores.analytics meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B64C92DE-56F6-40D1-A080-16A6690E40E6][Bring ores.analytics to the clean standard]] | BACKLOG | | | Work ores.analytics through the Component Clean Standard in order and record each item. |
+| [[id:B64C92DE-56F6-40D1-A080-16A6690E40E6][Bring ores.analytics to the clean standard]] | DONE | 2026-09-23 | 2026-09-26 | Work ores.analytics through the Component Clean Standard in order and record each item. |
 
 * Notes
 
 - Survey on 2026-09-23: 4 entity, junction or operation models; 220 C++ files outside tests, 112 of them generated (50%); 21 messaging headers, 1 of them hand-written.
 
 * Decisions
+
+- 2026-09-26. The shell recipe sentinel for optional columns is recorded
+  as a capture, not fixed here. =_sentinel_value= carries no
+  =std::optional= entry, so an optional column falls back to =__none__=,
+  while the shell reserves ='-'= for an absent optional. One generated
+  analytics script aborts as a result. iam declares seven optional uuid
+  columns, so the fix changes a closed component's committed recipes and
+  its script library as well. One codegen-level change is better than two
+  component stories each carrying half of it, and V04 explicitly permits
+  recording a command that cannot run with its reason.
+- 2026-09-26. The declared-key finder defect is fixed inside this story.
+  Analytics is where it first failed to build, the fix is output-neutral
+  for every entity whose key is =code=, and the regression test belongs to
+  the codegen suite rather than to the component.
+- 2026-09-26. The model section this pass added is the generator's input,
+  not cosmetic. Without =Table display= the generated list tables rendered
+  an empty header and no rows, so the section is what makes the component's
+  list surface exist at all.
 
 * Out of scope
 

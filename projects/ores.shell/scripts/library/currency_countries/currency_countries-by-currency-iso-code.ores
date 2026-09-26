@@ -1,0 +1,6 @@
+# =by-currency-iso-code=
+#
+# GENERATED from doc/recipes/shell/currency_countries/currency_country.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+currency_countries by-currency-iso-code __none__ --limit 1

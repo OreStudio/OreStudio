@@ -599,3 +599,23 @@ tangled into the runnable script library
 * Tags
 
 - [[id:B08A234B-9FEF-5B71-B0FC-DC4A43CAA19A][How do I run the tags commands from the shell?]]
+
+* Pricing Engine Types
+
+- [[id:DBF608CE-EB7D-5AD6-B2A0-2CAD7A624046][How do I run the pricing_engine_types commands from the shell?]]
+
+* Pricing Model Configs
+
+- [[id:AF548E17-F214-5E57-B859-68C197C7003F][How do I run the pricing_model_configs commands from the shell?]]
+
+* Pricing Model Product Parameters
+
+- [[id:DECF1C94-5624-50A9-9183-786E3E039827][How do I run the pricing_model_product_parameters commands from the shell?]]
+
+* Pricing Model Products
+
+- [[id:DF802ADC-80A2-5CAA-8311-928BBD8F40B2][How do I run the pricing_model_products commands from the shell?]]
+
+* Testing
+
+- [[id:01193D52-DD7C-4276-B6C2-E4B7F137B99E][How do I test the shell?]]

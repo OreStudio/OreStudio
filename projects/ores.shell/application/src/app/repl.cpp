@@ -22,6 +22,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"
+#include "ores.shell/app/commands/analytics/analytics_commands.hpp"
 #include "ores.shell/app/commands/bundles_commands.hpp"
 #include "ores.shell/app/commands/change_reason_categories_commands.hpp"
 #include "ores.shell/app/commands/change_reasons_commands.hpp"
@@ -99,6 +100,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     iam_commands::register_commands(*root, session_, pagination_);
     assets_commands::register_commands(*root, session_);
     refdata_commands::register_commands(*root, session_);
+    analytics_commands::register_commands(*root, session_);
     accounts_commands::register_commands(*root, session_, pagination_);
     variability_commands::register_commands(*root, session_);
     subscription_commands::register_commands(*root, session_);

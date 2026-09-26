@@ -94,9 +94,9 @@ record each item's result in the table below.
 | H02  | Pass. The retired event headers are deleted and the registrar's duplicate history providers are removed; no dead or commented-out code remains. | commit a74ebddd1e |
 | H03  | Pass. The comment pass over the changed and added comments found no clutter, no narration and no end-of-line comment. | Comment note below |
 | V01  | Pass. The whole tree builds, the shell adapter part and =ores.shell.exe= included. | =compass build= (exit 0) |
-| V02  | Pass. The codegen suite passes, all five analytics suites pass against the running fleet, and the full suite is 70 of 71. | =pytest projects/ores.codegen/tests= (523 passed); =ctest -R analytics= (5/5); full =ctest= (70/71) |
+| V02  | Pass. The codegen suite passes, all five analytics suites pass against the running fleet, and the full suite is 69 of 70. | =pytest projects/ores.codegen/tests= (531 passed); =ctest -R analytics= (5/5); full =ctest= (69/70) |
 | V03  | Pass. The database recreates from scratch, and the Acme Corporation tenant provisions end to end on top of it. | =compass db recreate -y -k= (exit 0); Acme provision script (exit 0, all workflow steps completed) |
-| V04  | Pass with one recorded exception. All 40 generated analytics scripts ran against the live fleet as the Acme tenant admin; 39 answered, one aborted in the client. | live run log; V04 note below |
+| V04  | Pass with two recorded exceptions. All 40 generated analytics scripts ran against the live fleet as the Acme tenant admin: 10 answered =ok=, 15 =missing=, 14 =failed= and one aborted in the client. Three of the failures are a repository defect, recorded below. | =compass shell -l= over each script in =projects/ores.shell/scripts/library/=; V04 note below |
 | V05  | Pass. component drift, model drift, protocol twin coverage (24 headers, 2 components), handler permissions (2 components, 152 codes), populate references, recipe inventory and this component's CMake source lists are all clean. | each check script, exit 0 |
 | V06  | Pass. =analytics-cpp= is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= reports no drift. | =component_registry.py=; =check_component_drift.py --all= (exit 0) |
 
@@ -289,16 +289,42 @@ the whole cycle was then run from scratch on 2026-09-26:
   =ores.analytics.core.tests=, =ores.analytics.quant.tests= and
   =ores.analytics.service.tests=.
 - V04. All 40 generated analytics scripts ran against the live fleet as
-  =tenant_admin@acme_corporation=. Ten answered =ok=, among them the read
-  that returns the 44 seeded pricing engine types. Twenty-nine answered
-  with a service verdict: a generated script sends sentinel values, so the
-  service answers =failed= on validation or =missing= for a key that
-  addresses nothing. That is the command working, not failing. One aborted
-  in the client, =pricing_model_product_parameters put-many=, recorded
-  below.
+  =tenant_admin@acme_corporation=, each one through =compass shell -l= on
+  its own script under =projects/ores.shell/scripts/library/=. Ten answered
+  =ok=, among them the four =list= reads and the =pricing_engine_types= read
+  that returns the 44 seeded engine types. Fifteen answered =missing=, for a
+  key that addresses no row. Fourteen answered =failed=, and each carries
+  the verdict of a database validation function: =Invalid
+  instrument_type_code: __none__=, =Invalid change_reason_code: __none__=,
+  or the id check constraint on the zero uuid. That is the command working,
+  not failing. Three of the fourteen are a defect rather than a sentinel
+  verdict, and one script aborted in the client; both are recorded below.
 - The sentinel writes left nothing behind. The three analytics tables hold
   zero rows for the Acme tenant, so a sentinel write either failed
   validation or addressed no row.
+- Re-run on the rebased base. After the third rebase the fleet was stopped
+  and started again on the rebuilt binaries, and the whole V04 sweep was
+  repeated through =compass shell -l=. Every verdict matched the run above,
+  and the login resolved to tenant =abd61d4a-aaaf-440d-857f-5e69365ffa06=
+  (Acme Corporation Plc) as before. Twenty-three units run; only
+  =ores.web.service= stays down. =ores.iam.service= answered the login
+  before its readiness line appeared, so the start wait timed out on it
+  while the service was serving.
+
+** V04 recorded defect
+
+The =delete-many= script of the three uuid-keyed entities answers
+=internal_error= with a syntax error at =)= rather than a verdict:
+=pricing_model_configs=, =pricing_model_products= and
+=pricing_model_product_parameters=. The recipe sends =__none__=, the client
+parses no keys, the service resolves no rows, and the repository is called
+with an empty id list; the generated =sqlgen= predicate renders it as
+=IN () =, which Postgres refuses. =pricing_engine_types delete-many= answers
+=ok= because that entity is keyed by text. The service guards
+=request.removals.empty()= and not the resolved set, and generated code sits
+on both sides of the join, so the fix is a codegen change with a regression
+test. Recorded as
+[[id:D3D78161-377F-4970-998F-37C7359761DA][Refuse an empty key list before delete-many renders IN ()]].
 
 ** V04 recorded exception
 
@@ -317,14 +343,16 @@ reason, which is what this is; the other 39 answered.
 
 ** V02 recorded limitation
 
-The full suite is 70 of 71. The one failure is
+The full suite is 69 of 70, re-run on the rebased base. The one failure is
 =ores.synthetic.core.tests=, whose =organisation_publisher_integration_tests=
 tries to create a business centre the database populate already inserted, and
 the insert function refuses a create over an existing row. Nothing in this
 change touches ores.synthetic or the business-centre path, and the live run
 created no business centres, so this is a data-state dependency in that test
 rather than a regression. Every analytics and shell suite passes, the
-analytics ones included.
+analytics ones included. The suite holds 70 targets rather than the 71 the
+branch was cut against, because the fpml pass deleted =ores.fpml= and its
+test target with it.
 
 ** Rebases and re-verification
 
@@ -417,11 +445,13 @@ the generated mapping the only call site.
 
 Evidence. The whole tree builds. =check_component_drift.py --all= reports
 no drift, which proves the regeneration is byte-identical and idempotent.
-The codegen suite passes (523), all five analytics test suites pass against
+The codegen suite passes (531), all five analytics test suites pass against
 the running fleet, and every other codegen gate is clean. The database
 recreates from scratch. All 40 generated analytics scripts ran against the
-live fleet; 39 answered, and one aborted in the client with its reason
-recorded.
+live fleet as the Acme tenant admin: ten =ok=, fifteen =missing=, fourteen
+=failed= on a database validation of the sentinel they send, and one aborted
+in the client. Both the abort and the three =delete-many= failures are
+recorded, the second as a capture.
 
 One generator defect was fixed at source. The first build failed because
 the service called =repo.read_latest_by_name= while the repository

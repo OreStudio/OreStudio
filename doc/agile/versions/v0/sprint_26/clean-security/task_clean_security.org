@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-security:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-security
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
-#+updated: 2026-09-23
-#+environment:
+#+updated: 2026-09-26
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7EF62300-3026-49F9-A663-A1F3705C70A1][Clean ores.security to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ ores.security passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7EF62300-3026-49F9-A663-A1F3705C70A1][Clean ores.security to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Survey checked against the tree, work landed. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | Verification and review.               |
+| Last touched | 2026-09-26                               |
 
 * Acceptance
 
@@ -57,30 +57,30 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-| B01 | pass | Baseline before any edit. No catalogue row, so the drift gate cannot name the component. `regenerate_cmake_component_files.py --component ores.security --check` reports 2 stale files, `src/component_files.cmake` and `tests/component_files.cmake`. |
+| B01 | pass | Baseline before any edit, on `feature/clean-security` at `230006c221`. Build 0 at 100 percent. `ores.security.tests` passes at 127 assertions in 55 test cases. `regenerate_cmake_component_files.py --component ores.security --check` reports 2 stale files, `src/component_files.cmake` and `tests/component_files.cmake`. No catalogue row, so the drift gate cannot name the component. |
 | B02 | pass | 0 entity, junction, operation and message models. |
-| B03 | pass | 16 production C++ files classified, 11 headers and 5 sources, plus 6 files under `tests/`. `crypto/encryption.cpp` has no consumer outside its own test. `password_hasher.hpp` declares two functions that are never defined. |
+| B03 | pass | 16 production C++ files at the survey, 11 headers and 5 sources, plus 6 files under `tests/`. The component now holds 13 production files, 9 headers and 4 sources, and 5 files under `tests/`, of which 4 are suites and one is `main.cpp`. The consumer census is unchanged by this pass: `jwt_authenticator.hpp` reaches 441 C++ files outside the component, `jwt_claims.hpp` 7, `password_hasher.hpp` 4, `jwt_error.hpp` 2, and the two validators 2 each. |
 | B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. |
 | B05 | pass | This story is the only live capture naming the component. |
-| M01 to M08 | not applicable | No org model. |
-| M09 | not applicable | No model, so no legacy fragment to find in one. |
-| M10 | fail | `component_overview.org` lists `crypto/`, `jwt/` and `validation/` as entry points while `ores.security.hpp:44` includes only the JWT header, and the umbrella then declares nothing. One of the two must move. |
+| M01 to M05, M07 to M09 | not applicable | No org model. |
+| M06 | not applicable | No entity and no hand-written wire type. The only wire artefacts are the JWTs the component signs, and jwt-cpp owns their shape. |
+| M10 | fixed | `component_overview.org` advertised AES-256-GCM and PBKDF2 for a facet this pass deletes, gave the component no consumer, and carried no record of either policy surface. It is rewritten: the facets match the tree, the consumer census is stated, the scrypt cost policy and the JWT constraints are described, the four findings below are recorded, and `See also` is filled. The `ores.security.hpp` stub that included one facet header and documented three is deleted. |
 | P01 to P06 | not applicable | No entity and no protocol. |
-| G01 | not applicable | No model, so nothing regenerates. |
-| G02 | fail | Three dead artefacts remain: `crypto/encryption.cpp` with no consumer, the two never-defined `base64` declarations, and the `jwt_error::missing_claims` enumerator that no code path produces. |
-| G03 | fail | The two `component_files.cmake` files carry no generated marker. |
+| G01 | not applicable | No model, so nothing regenerates from one. |
+| G02 | fixed | The dead `crypto/encryption` pair is deleted with its test, the two never-defined `base64` declarations in `password_hasher.hpp` are deleted, and the `ores.security.hpp` stub is deleted. `jwt_error::missing_claims` is *kept* and now has a producer: the survey proposed removing it because nothing returned it, but nothing returned any of the specific codes, because the mapping could not see them. |
+| G03 | fixed | The two `component_files.cmake` files now carry the generated marker. |
 | G04 | not applicable | No generated code. |
-| G05 | fail | The `generate_component_puml.py` brace defect reaches this component. A dry run deletes 2 lines. |
-| G06 | fail | The same two files as G03. |
+| G05 | fixed | The `generate_component_puml.py` defects are fixed on the two earlier passes; this component picks the fixes up. The refresh drops the deleted types and keeps the manual block. |
+| G06 | fixed | The same two files as G03, now current. |
 | W01 to W04 | not applicable | No entity, registrar, handler, populate script or SQL script. |
 | S01, S02 | not applicable | No entity and no shell unit. |
-| H01 | pass, with findings | `validate_docs.py` passes. No leftover artefact, every file name snake_case, no Qt or Wt reference and no `_WIN32`. The diagram matches the headers and the `.png` was committed with the `.puml`. |
-| H02 | fail | The three dead artefacts above. |
-| H03 | fail | About 15 narration comments in `crypto/encryption.cpp` plus one end-of-line comment, and repeated code restatement in `email_validator.cpp` and `password_hasher.cpp`. |
-| V01 | pending | Whole-tree build, measured after the work. |
-| V02 | fail | The security-weighted test gaps are listed under Notes. The suite passes at 127 assertions in 55 test cases, so the gaps are in what is asserted, not in whether it runs. |
+| H01 | pass | `validate_docs.py` reports only the pre-existing `ores.shell.iam` finding. Every file and type name snake_case, the CMake lists match the tree, no commented-out code, no stub header left. The rendered diagram was read: every box carries its API, `boost_json` shows the type aliases the parser cannot see, and every edge is one the code supports. |
+| H02 | fixed | The dead encryption pair, the two undefined declarations, the umbrella stub, and about fifteen narration comments that went with the deleted file. |
+| H03 | fixed | The end-of-line comment on the scrypt bounds is gone, and the five comments in `email_validator.cpp` plus the two restatements in `password_hasher.cpp` that repeated the next line are gone. |
+| V01 | pass | Whole-tree build 0 at 100 percent. |
+| V02 | fixed | The suite went from 127 assertions in 55 test cases to 149 in 57. Ten cases arrived and the eight encryption cases left with their file: a downgraded scrypt cost is refused while an independently built hash at the floor is accepted, the stored format pins ln=14 with the fast flag absent and ln=10 with it set, empty verify input is refused, and the JWT paths cover a wrong issuer, a wrong audience, a missing claim, the allow-expired leeway on both the accepting and the rejecting side, and the RS256 verifier against an HS256 token signed with the public key. |
 | V03, V04 | not applicable | No entity, no SQL and no generated shell command. |
-| V05 | pending | Every gate, measured after the work. |
+| V05 | pass | Every gate green on the committed head: `regenerate_cmake_component_files.py --component ores.security --check`, `check_component_drift.py --all`, `validate_docs.py`, `./compass.sh lint`, and `clang-format --dry-run --Werror` on every changed and added file. |
 | V06 | not applicable | No catalogue row and no models, so the component cannot join `COMPONENTS_UNDER_TEST`. Recorded as the programme gap. |
 
 * Notes
@@ -95,39 +95,41 @@ weight than an untested path elsewhere.
   `ores.iam`'s account and signup services and its auth handler.
 - Suites pass. `ores.security.tests` runs green, 127 assertions in 55 test
   cases.
-- Keep the component. It is the repo's only home for hashing, encryption,
-  JWTs and the OWASP validators.
+- Keep the component. It is the repo's only home for hashing, JWT and the
+  OWASP validators.
 
-Work items, in the order they land.
+The survey was checked against the tree before any edit. Eight of its
+findings held as written. Two did not: `encryption` turned out to have no
+reference anywhere, not even its own test being a consumer of anything but
+the test, and the `jwt_error::missing_claims` enumerator is not so much dead
+as unreachable, which is a different defect with a different fix.
 
-1. Decide `crypto/encryption.cpp`. It has no consumer at all. Only its own
-   test includes it, and it holds three public statics in 194 lines with no
-   failure-path test. Either name a consumer and test it properly, or
-   delete it with its test. This decision comes first, because several of
-   the gaps below go with it.
-2. Delete the two `base64_encode` and `base64_decode` declarations in
-   `password_hasher.hpp`. They are never defined and never called.
-3. Remove `jwt_error::missing_claims`, or add the claim-presence check that
-   produces it. Nothing returns it today.
-4. Forbid a downgraded scrypt cost at verify. `password_hasher.cpp:117`
-   accepts any `ln` from 1 to 31, and `ln=1` is 8192 times weaker than the
-   production factor. Add the test that rejects it.
-5. Pin the stored hash format and the cost parameter. No test asserts the
-   `$scrypt$ln=14,r=8,p=1$` shape, `get_n_parameter()` is untested, and
-   `CMakeLists.txt:137` sets `ORES_TEST_PASSWORD_FAST=1`, so the suite only
-   ever runs the test factor.
-6. Test `validate_allow_expired`. It carries a 100-year leeway, has no test
-   in the component, and `ores.iam`'s refresh path depends on it. Prove it
-   still rejects a bad signature.
-7. Add the failure-path tests for `decrypt`. Tampered ciphertext, tampered
-   tag, truncation and non-base64 input are all unverified, and the wrong
-   password is the only case covered.
-8. Add the JWT cases. Algorithm confusion, wrong issuer, wrong audience and
-   `nbf`.
-9. Decide the empty-input behaviour of `verify_password`, which returns
-   true today, and pin it either way.
-10. Hygiene. Drop the narration comments in `crypto/encryption.cpp` and the
-    end-of-line comment, and align the overview with the umbrella header.
+* Work items
+
+| Item | Outcome |
+|------+---------|
+| 1. Decide `crypto/encryption.cpp` | deleted with its test. It carried the only AES-256-GCM and PBKDF2 surface, 194 lines and three public statics, and no file in the tree included it. Its own test was the only consumer. |
+| 2. Delete the undefined `base64` declarations | deleted. They were private declarations with no definition and no caller. |
+| 3. `jwt_error::missing_claims` | kept, and given a producer. The defect was not the enumerator but the mapping: every specific code was unreachable because the mapping searched the exception text for words jwt-cpp does not use. Both validation paths now map from jwt-cpp's error code, so `missing_claims` is returned for a token that omits a claim the verifier requires. |
+| 4. Forbid a downgraded scrypt cost | done. Verification refuses a stored hash weaker than the cost the running build produces, and the test proves it by building a valid hash at ln=1 independently with OpenSSL and showing the floor rejects it while accepting the same construction at ln=10. |
+| 5. Pin the stored format and the cost | done. The test pins `$scrypt$ln=14,r=8,p=1$` with the fast flag absent and `$scrypt$ln=10,...` with it set, which required removing the function-local cache that made the production cost unreachable after the first call. |
+| 6. Test `validate_allow_expired` | done, and it found a gap: the path relaxed the expiry and, in doing so, skipped the audience check `validate` applies, so a token minted for another service was accepted. It checks the audience now, and three cases cover the leeway's accepting and rejecting sides. |
+| 7. Failure paths for `decrypt` | not applicable: `decrypt` left with `encryption`. |
+| 8. The JWT cases | done for algorithm confusion, wrong issuer, wrong audience and missing claims. The `nbf` case cannot be written: `create_token` sets only `iat` and `exp`, so the not-yet-valid path is unreachable through this API. Recorded on the overview rather than faked in a test. |
+| 9. Empty-input `verify_password` | not applicable: `verify_password` was a method of the deleted `encryption` class. The surviving `password_hasher::verify` already refuses an empty password and an empty hash, and a test now pins that. |
+| 10. Hygiene | done. The narration went with the deleted file, the end-of-line comment is gone, and the seven restatements in `email_validator.cpp` and `password_hasher.cpp` are gone. The overview is rewritten against the tree. |
+
+* Deletions
+
+| Artefact | Files | Lines | Why it goes |
+|----------+-------+-------+-------------|
+| `crypto/encryption.hpp` and `encryption.cpp` | 2 | 274 | No reference anywhere in the tree. The only AES-256-GCM and PBKDF2 surface the component had, and nothing asked for it. |
+| `tests/crypto_encryption_tests.cpp` | 1 | 158 | The deleted class's only consumer. |
+| `ores.security.hpp` | 1 | 48 | An umbrella with no consumer that included one facet header while documenting three. The overview is the component's documented entry point. |
+| the two `base64` declarations | — | 10 | Declared, never defined, never called. |
+
+Four files and 480 lines left the component, and the suite lost the eight
+cases that covered the deleted class.
 
 * Test Scenarios
 
@@ -150,6 +152,30 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | `validate` and `validate_allow_expired` reported every JWT failure as `invalid_token`; `invalid_signature`, `invalid_issuer`, `invalid_audience` and `missing_claims` had no producer | projects/ores.security/src/jwt/jwt_authenticator.cpp | fixed | Found by writing the tests for the error codes the enum declares: the mapping searched the exception message for words such as "issuer" and "signature", and jwt-cpp's messages do not contain them, so every case fell through to `invalid_token`. Both paths now map from jwt-cpp's `token_verification_error` code and from the signature exception type, and each case has a test. The survey's proposal to delete `missing_claims` would have removed the case rather than noticed that none of them worked. |
+| 2 | `validate_allow_expired` did not check the audience, so it accepted a token minted for another service as long as the signature and issuer matched | projects/ores.security/src/jwt/jwt_authenticator.cpp | fixed | Found by asking why the two validation paths differ: `validate` applies `with_issuer` and `with_audience`, and the allow-expired path applied only `with_issuer`. The refresh path is the one `ores.iam` uses to read an expired token, so the gap was reachable. It applies both now, with a test. |
+| 3 | `get_n_parameter` cached its first answer in a function-local static, so once any test had hashed a password the production cost was unreachable in that process | projects/ores.security/src/crypto/password_hasher.cpp | fixed | Found while trying to pin the stored format: the test could not observe ln=14 because an earlier case had cached the test factor. The flag is read on every call now, and one test pins both costs. This is also what makes the verify floor meaningful, since the floor is the cost the build produces. |
+| 4 | `crypto/encryption` had no consumer anywhere in the tree, and its `verify_password` returned true for empty ciphertext | projects/ores.security/include/ores.security/crypto/encryption.hpp | deleted with its test | The standing rule: no consumer, or a test-only consumer, is dead code. It is 480 lines with its test and the umbrella stub, and the empty-input defect went with it rather than being fixed in code nothing calls. |
 
 * Result
+
+ores.security meets the standard for the items that apply to a model-free
+component. All ten work items landed across four `[security]` commits: the
+deletions, the JWT fixes, the hasher fixes, and the overview and diagram.
+
+The component lost four files and 480 lines: an AES-256-GCM and PBKDF2
+surface nothing referenced, its test, an umbrella stub, and two declarations
+that were never defined. It gained the tests the survey asked for and the
+answers to two questions the survey could not settle: the error codes the
+enum declares now have producers, and the refresh path now checks the
+audience the way the strict path does.
+
+Its suite went from 127 assertions in 55 test cases to 149 in 57. Ten cases
+arrived, the eight that covered the deleted class left, and the surviving
+cases are stronger for the cost floor, the stored format, the empty-input
+refusal, and the four JWT failure paths.
+
+Three things stay as recorded. `nbf` cannot be tested because `create_token`
+never sets it. `crypto/encryption` is gone rather than kept as an unused
+capability, on the standing rule. And the registry gap stands: no catalogue
+row and no models, so V06 is the accepted exception.

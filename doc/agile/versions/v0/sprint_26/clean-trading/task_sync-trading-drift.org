@@ -41,8 +41,8 @@ already reproduces the tree's semantics.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | PR 2 is complete: the tree is regenerated, the consumers migrated and the superseded eventing headers deleted. The whole tree builds, eight suites pass and the drift dry run is empty on two runs. |
-| Waiting on   | The PR review. |
+| Now          | PR [#2204](https://github.com/OreStudio/OreStudio/pull/2204) is raised, with the evidence and an independent verification round running. |
+| Waiting on   | The PR review and CI. |
 | Next         | Raise PR 2, answer the review, merge, then start PR 3. |
 | Last touched | 2026-09-26                               |
 
@@ -529,7 +529,7 @@ component joins the registry and which are still vacuous.
 
 | PR | Title |
 |----+-------|
-|    | Sync ores.trading to its models |
+| https://github.com/OreStudio/OreStudio/pull/2204[#2204] | Sync the ores.trading tree to its models |
 
 * Review
 

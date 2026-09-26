@@ -812,6 +812,37 @@ equivalent.
 Left as a recorded next step rather than half-applied: a model change that is
 regenerated but not verified is how this wave's earlier churn started.
 
+** W04 the foreign key is not a duplicate either
+
+Reducing =workflow_constraints_create.sql= to the partial index looked like the
+last mechanical step. It is not, because the file's FK constraint does something
+the generated soft-FK trigger does not.
+
+#+begin_example
+alter table ores_workflow_workflow_steps_tbl
+    add constraint ores_workflow_workflow_steps_workflow_id_fk
+    foreign key (workflow_id)
+    references ores_workflow_workflow_instances_tbl (id)
+    on delete cascade;
+#+end_example
+
+The generated scripts carry a soft-FK check: a trigger raises when a step names an
+instance that is not there. That validates existence. It does not cascade. So
+deleting the constraint would silently change behaviour -- removing an instance
+would leave its steps behind, orphaned -- and this is a semantics difference
+rather than a duplication.
+
+=ores.compute= is the closest cleaned analogue and carries no real FK constraints
+at all, only the soft-FK triggers, which is what made deletion look right. What it
+does instead about child rows on parent deletion is not established, and that is
+the question to answer before touching this file: either the cascade moves into
+the model and the generator emits it, or the constraint stays and W04's fix keeps
+a hand-written file on purpose.
+
+Recorded rather than acted on. The four indexes were safe to move because their
+absence would have been caught by a query plan; a missing cascade is caught by
+data loss.
+
 ** Correction to W04: the security half was wrong
 
 The paragraph above is wrong and is left here only because the correction is

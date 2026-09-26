@@ -131,7 +131,12 @@ TEST_CASE("create_multiple_random_report_types", tags) {
     for (const auto& [code, name, order] : types) {
         auto sut = make_report_type(code, name, order);
         BOOST_LOG_SEV(lg, info) << "Report type: " << sut;
-        CHECK(!sut.code.empty());
+        // The expected values are the inputs, so assert them rather than that
+        // something non-empty came back: a factory that ignored its arguments
+        // would satisfy the weaker check.
+        CHECK(sut.code == code);
+        CHECK(sut.name == name);
+        CHECK(sut.display_order == order);
         CHECK(sut.version == 1);
     }
 }

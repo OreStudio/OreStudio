@@ -63,8 +63,15 @@ def test_no_stale_controller_entry(services):
     assert "ores.controller.service" not in services
 
 
-def test_nineteen_fleet_processes(services):
-    assert len(services) == 19
+def test_twenty_fleet_processes(services):
+    assert len(services) == 20
+
+
+def test_storage_service_shares_the_http_server_storage_root(services):
+    # The two processes are two front doors onto one set of objects, so they
+    # have to be pointed at one tree; their defaults do not coincide.
+    assert services["ores.storage.service"]["extra_args"] == ["--storage-dir ../storage"]
+    assert "--storage-dir ../storage" in services["ores.http.server"]["extra_args"]
 
 
 def test_node_service_carries_its_entry_point(services):

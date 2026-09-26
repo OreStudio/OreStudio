@@ -76,7 +76,7 @@ record each item's result in the table below.
 | P01 | Fail | The models declare the full canonical verb set for all six entities; the committed tree is still =list/save/delete/history=. No model offers a point-in-time read. Deferred to PR 3. |
 | P03 | Fail | Seven stale generated artefacts, and whole unserved surfaces: =observation_lineages.*= and =series_classification_rules.*= answer nothing because their handler registrars are defined and never composed. |
 | P04 | Fail | No operation model anywhere. Deferred. |
-| W01 | Fail | Only =register_market_observation_handlers= is called from the umbrella registrar; all four history-provider registrars and all six event-mapping registrars are unwired with no reason recorded. The one failing core test is this. Deferred to PR 3. |
+| W01 | Partial | All six event mappings are now composed at the service's composition point, following ores.compute; five of them previously reached NATS from nowhere. Still unwired: =register_observation_lineage_handlers= and =register_series_classification_rule_handlers= are defined and never called, and all four history-provider registrars are unwired with no reason recorded. Deferred to PR 3. |
 | W02 | Fail | The check passes vacuously because =marketdata= is not in its registry. Read by hand: 16 codes are checked, none is seeded exactly as checked, and seven seeded =marketdata::= codes are checked by no handler. |
 | G03 | Pass | Clean in both directions: all 188 marked files name a template that exists, and no hand-written file carries the marker or a near-miss. |
 | G05 | Pass | One generator defect found and fixed at its source with a regression test: the junction shell-command include. |
@@ -85,7 +85,7 @@ record each item's result in the table below.
 | H02 | Fail | 17 dead hand-written files, including the whole client CRM stack (14 files plus tests) whose only consumer was the retired Qt matrix, and two plural repositories that split the read path with their generated singular twins. |
 | H05 | Fail | =client/modeling/component_overview.org= is the scaffold's placeholder text with empty bullets, and its diagram is registered as an exception in =docs_exceptions.txt=. |
 | V01 | Pass | All four test targets build (=compass build= cannot run here; =cmake --build --preset linux-clang-debug-make= used directly, see Notes). |
-| V02 | Pass with one failure | =api.tests= 71 assertions in 14 cases, =client.tests= 52 in 30, =service.tests= 164 in 24, =core.tests= 951 of 952. The single failure is W01's unwired event mapping. |
+| V02 | Pass with one failure | =api.tests= 71 assertions in 14 cases, =client.tests= 52 in 30, =service.tests= 164 in 24, =core.tests= 964 of 965. The single failure is =series_classification_rule_eventing_integration_tests=, which assembles its own DB-notify chain and so is not the service's unwired mapping; its cause is still to be found. |
 | V05 | Not yet | The gates are scoped to =COMPONENTS_UNDER_TEST= and =marketdata= is absent, so their green output says nothing about this component. They are re-run when it joins, at V06. |
 | V06 | Not yet | The registry entry is PR 6. |
 | V07 | Fail | Vacuous tests found in the client CRM suite, which is the dead stack. Deferred with H02. |

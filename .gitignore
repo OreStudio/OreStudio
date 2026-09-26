@@ -101,6 +101,7 @@ build/nats/
 .bash_profile
 .bashrc
 .claude/
+.dsh/
 .gitconfig
 .mcp.json
 .profile

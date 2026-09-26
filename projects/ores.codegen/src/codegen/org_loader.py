@@ -3540,6 +3540,12 @@ def protocol_operations(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "is_put_one": verb == "put",
             "permission": ("delete" if verb in ("delete", "delete_many")
                            else "write" if verb in ("put", "put_many") else ""),
+            # The message's own authentication requirement, carried beside the
+            # verb so a projection that declares a route -- rather than the
+            # protocol header it cannot read at generate time -- states the
+            # same fact the C++ does. A message with no session requirement
+            # is one a caller runs before it has a token.
+            "requires_session": message.get("requires_session") != "false",
         })
     return operations
 
@@ -4374,6 +4380,10 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
                 ("put", "put_many", "delete", "delete_many"),
             "precondition": precondition,
             "allows_version": kind in ("put", "delete") and precondition != "must_not_exist",
+            # The message's own authentication requirement, carried here as it
+            # is on the operation, so an HTTP projection that states a route
+            # reads it from the command rather than re-deriving it.
+            "requires_session": operation.get("requires_session", True),
             # Only what the handler actually asks for: a paged read takes no
             # key, and a write takes the write record rather than the key,
             # because the key travels inside it.
@@ -4481,6 +4491,146 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
         "has_version": bool(kinds & {"version_read", "put", "delete"}),
         "any_versioned": any(command["allows_version"] for command in commands),
         "has_helpers": bool(commands),
+    }
+
+
+# The verb a route states, in the route builder's own spelling: a delete is
+# spelled with its trailing underscore because `delete` is a C++ keyword, and
+# the template calls router->delete_.
+_HTTP_METHODS = {
+    "paged": "get",
+    "key_read": "get",
+    "get_many": "post",
+    "put": "post",
+    "put_many": "post",
+    "delete": "delete_",
+    "delete_many": "post",
+    "versions": "get",
+    "version_read": "get",
+    "list_by": "get",
+}
+
+# What a route's shape promises, in one phrase. Keyed by kind, because a
+# paged read and a versions read are both a GET of a different collection.
+_HTTP_SUMMARIES = {
+    "paged": "List {plural}",
+    "key_read": "Get one {singular}",
+    "get_many": "Get many {plural}",
+    "put_many": "Write many {plural}",
+    "delete": "Delete one {singular}",
+    "delete_many": "Delete many {plural}",
+    "versions": "List the recorded versions of one {singular}",
+    "version_read": "Get one recorded version of one {singular}",
+    "list_by": "List the {plural} that reference one {relation}",
+}
+
+
+def entity_http_route_plan(entity: dict[str, Any]) -> dict[str, Any]:
+    """The entity's HTTP routes, one per derived operation.
+
+    The routes are the shell's command set, addressed over HTTP rather than
+    typed at a prompt: one derived operation becomes one route, a put becomes
+    two (a create and a replace are one verb stating two different claims),
+    and a verb the model gains reaches the gateway without an edit here.
+
+    Only the addressing is decided here. What a route carries, whom it
+    authenticates and what subject it forwards to all follow from the
+    operation the derivation already stated, so the gateway cannot serve a
+    verb the service does not.
+
+    ``requires_session`` is read from the operation, which reads it from the
+    message, which is the same fact the protocol header states as
+    ``requires_session``. The template emits ``auth_required()`` from it, so a
+    route that needs a session cannot be registered without one.
+    """
+    plan = entity_shell_plan(entity)
+    component = entity.get("component", "")
+    singular = entity.get("entity_singular", "")
+    plural = entity.get("entity_plural", "")
+    singular_words = singular.replace("_", " ")
+    plural_words = plural.replace("_", " ")
+    base = f"/api/v1/{component}/{plural}"
+
+    routes: list[dict[str, Any]] = []
+    for command in plan["commands"]:
+        kind = command["kind"]
+        key_path = "/".join(f"{{{key['name']}}}" for key in command["keys"])
+        relation = command.get("relation") or {}
+        if kind == "version_read":
+            pattern = f"{base}/{key_path}/versions/{{version}}"
+        elif kind == "versions":
+            pattern = f"{base}/{key_path}/versions"
+        elif kind == "list_by":
+            relation_name = relation.get("name", "")
+            dashed = relation_name.replace("_", "-")
+            pattern = f"{base}/by-{dashed}/{{{relation_name}}}"
+        elif kind in ("key_read", "delete"):
+            pattern = f"{base}/{key_path}"
+        elif kind in ("get_many", "put_many", "delete_many"):
+            pattern = f"{base}/{kind.replace('_', '-')}"
+        else:
+            pattern = base
+
+        # A replace is a put stated by a route whose method says the row may
+        # exist; a create states the row must not. The two share a path and
+        # differ by method, so a caller reads the claim off the verb.
+        if kind == "put":
+            method = "post" if command["precondition"] == "must_not_exist" else "put"
+            summary = ("Create one {singular}"
+                       if command["precondition"] == "must_not_exist"
+                       else "Replace one {singular}")
+        else:
+            method = _HTTP_METHODS[kind]
+            summary = _HTTP_SUMMARIES.get(kind, "List {plural}")
+        routes.append({
+            "command": command["command"],
+            "identifier": command["identifier"],
+            "kind": kind,
+            "method": method,
+            "method_upper": {"get": "GET", "post": "POST", "put": "PUT",
+                             "delete_": "DELETE"}[method],
+            "pattern": pattern,
+            "summary": summary.format(
+                plural=plural_words, singular=singular_words,
+                relation=relation.get("name", "").replace("_", " ")),
+            # The canonical subject the route forwards to. A caller reading the
+            # OpenAPI document learns which operation answers it.
+            "description": f"Forwards to the {command['subject']} operation.",
+            "subject": command["subject"],
+            "request": command["request"],
+            "response_type": command["response_type"],
+            "requires_session": command.get("requires_session", True),
+            "keys": command["keys"],
+            "relation": relation,
+            "precondition": command["precondition"],
+            "has_order": command["has_order"],
+            "has_scope": kind == "list_by",
+            "allows_version": command["allows_version"],
+            # The shapes the template selects a handler body by. Mustache
+            # cannot compare a string, so each shape is also a flag.
+            "has_body": kind in ("get_many", "put", "put_many", "delete_many"),
+            "has_page": kind in ("paged", "versions", "list_by"),
+            "has_intent": kind == "delete",
+            "is_paged": kind == "paged",
+            "is_key_read": kind == "key_read",
+            "is_get_many": kind == "get_many",
+            "is_put": kind == "put",
+            "is_put_many": kind == "put_many",
+            "is_delete": kind == "delete",
+            "is_delete_many": kind == "delete_many",
+            "is_versions": kind == "versions",
+            "is_version_read": kind == "version_read",
+            "is_list_by": kind == "list_by",
+        })
+
+    return {
+        "routes": routes,
+        "route_count": len(routes),
+        # A verb the projection has no route shape for would be dropped in
+        # silence, and the gateway would publish fewer verbs than the service
+        # answers with nothing to say so. The plan names them instead.
+        "uncovered_verbs": plan["uncovered_verbs"],
+        "has_page": any(route["has_page"] for route in routes),
     }
 
 

@@ -9,13 +9,19 @@
 #
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
 #
 # You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
-# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/api)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/assets)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/core)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/server)
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_tests.mustache
+# To modify, update the template and regenerate.
+set(files
+    "image_routes_tests.cpp"
+    "image_tag_routes_tests.cpp"
+    "main.cpp"
+    "tag_routes_tests.cpp"
+)

@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 1EBDA080-07F6-496D-AA4A-72899E65641C
+:END:
+#+title: ores.cpp.http-route
+#+description: HTTP route units: one route per derived verb, forwarding the caller's canonical request to the domain service over NATS.
+#+type: facet
+#+model_types: domain_entity junction operation
+#+level: cross
+#+facet_group: ores.cpp
+#+default: disabled
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is the literate source for the =ores.cpp.http-route= facet of the
+codegen template library. Each archetype below is documented, and holds its
+=mustache= source, in its own linked page — this page is the facet-level
+summary and the routing table to them.
+
+* Summary
+
+Three templates that project one entity onto one HTTP route unit: a header
+declaring the unit class and its handlers, a source holding the route table
+and the handler bodies, and the test file that pins the table. The unit owns
+one route per verb the entity derives — a put becomes two, because a create
+and a replace are one verb stating two different claims — and registers that
+set on the router and the OpenAPI registry. The templates are opt-in and
+disabled by default.
+
+* The ores.cpp.http-route facet
+
+The facet consumes a =domain_entity= model or a =junction= and writes the
+HTTP gateway's view of it. A junction is an entity whose key spans the two
+sides it links, so it derives the same verb set and reaches the same unit;
+the shape the templates read is the one the protocol was derived from, which
+is why a verb the model gains reaches the protocol and the gateway in the
+same commit rather than the route being written out by hand beside it.
+
+The model already carries everything the templates need: the entity names and
+title, the component, the API sub-component, the primary key and the columns.
+
+The facet writes into the entity's own adapter part under
+=projects/ores.http/=, not into the entity's domain component. A =trading=
+entity lands in =projects/ores.http/trading/=, at =src/routes/trading/= and
+=include/ores.http/routes/trading/=. That part declares
+=#+component_kind: adapter=, so codegen writes only its file lists beside the
+hand-authored CMakeLists, as [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] describes.
+
+One variable places that output. ={component}= resolves to the short
+component name without the product prefix, so a =trading= entity yields
+=trading= and not =ores.trading=. The template body reads the same value
+under ={{component}}=, and uses it for the =ores::<component>::messaging=
+namespace, the =ores.<component>.<subcomponent>= protocol include and the
+=/api/v1/<component>/<entity_plural>= path prefix. Output paths and template
+bodies therefore share one spelling of the component.
+
+The per-entity split is the point of the shape. Each entity owns a file, so a
+component's routes can be added and removed one at a time. A hand-written
+aggregator then calls each unit's =register_routes= in turn, which is what
+the per-component route file does today for the assets domain. That
+aggregator needs a component-scoped archetype and a render-time list of the
+component's opted-in entities, the same pattern the generator already uses
+for =_COMPONENT_FILES_TEMPLATES=.
+
+*Transport: NATS, not the service in process.* A generated route includes
+only =ores.<component>.<subcomponent>/messaging/<entity>_protocol.hpp= and
+speaks the canonical protocol. It builds the canonical request message, sends
+it over the =ores.nats= client on the subject the request states, and maps the
+reply to an HTTP response. The gateway holds no service, repository or
+database context, so it cannot decide anything the service decides.
+
+*Security: one declaration, one enforcement point.* The service's generated
+handler already checks the entity's permission (=assets::images:read=,
+=write=, =delete=). The gateway must not re-implement authorisation, and does
+two things instead:
+
+- it sets =.auth_required()= on a route exactly when the operation states
+  =requires_session=, so a route that needs security cannot be registered
+  without it; and
+- it forwards the caller's own bearer token on the NATS request through
+  =nats_client::with_delegation=, so the service validates that caller and its
+  own permission check governs. A caller the service refuses is refused,
+  whatever the gateway believes.
+
+The token is read from the HTTP request for every route, including the ones
+that require no session (where it is absent and the delegated client behaves
+as the service client it was built from).
+
+*Opt-in, disabled by default* — enabling the facet is a per-entity decision,
+expressed as an =:ores.cpp.http-route.enabled: true= entry in the entity
+model's properties drawer, exactly as =ores.cpp.shell-command= does it. In
+=ores.assets= the three models the gateway first serves state it directly, so
+the facet's blast radius stays the domain it was landed with.
+
+*The route table.* One derived operation becomes one route. The mapping is:
+
+| Verb            | Method | Path                                          | Request source |
+|-----------------+--------+-----------------------------------------------+----------------|
+| list            | GET    | /api/v1/<c>/<plural>                          | query params   |
+| get             | GET    | /api/v1/<c>/<plural>/<key>                    | path params    |
+| get_many        | POST   | /api/v1/<c>/<plural>/get-many                 | JSON body      |
+| put (create)    | POST   | /api/v1/<c>/<plural>                          | JSON body      |
+| put (replace)   | PUT    | /api/v1/<c>/<plural>                          | JSON body      |
+| put_many        | POST   | /api/v1/<c>/<plural>/put-many                 | JSON body      |
+| delete          | DELETE | /api/v1/<c>/<plural>/<key>                    | path + query   |
+| delete_many     | POST   | /api/v1/<c>/<plural>/delete-many              | JSON body      |
+| list_versions   | GET    | /api/v1/<c>/<plural>/<key>/versions           | path params    |
+| get_version     | GET    | /api/v1/<c>/<plural>/<key>/versions/{version} | path params    |
+| list_by_<rel>   | GET    | /api/v1/<c>/<plural>/by-<rel>/{<rel>}         | path params    |
+
+A write carries the canonical request as its body, so the row, the intent and
+the precondition travel exactly as the protocol spells them. A create and a
+replace share a path and differ by method, because that is the whole of what
+separates them: one claims the row is absent, the other that it may exist. A
+key-addressed route states the key in the path because the request's only
+member is that key; a put states it in the body, because the wire write record
+already carries the whole row and a second copy could contradict it. A delete
+has no body to carry an intent, so its reason, commentary and optional version
+arrive as query parameters.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:182DD2AF-9543-4722-B8CA-1A98FABFDF85][ores.cpp.http-route.route_header]] | HTTP route unit header: the unit class, its registration entry point and one handler per derived verb. |
+| [[id:9946AA4E-5C08-4DF4-9D0F-D544D977B264][ores.cpp.http-route.route_implementation]] | HTTP route unit implementation: the route table, the parameter readers and the handler bodies for one entity. |
+| [[id:A1A5750C-705A-43DD-B333-BA545EB3216A][ores.cpp.http-route.route_tests]] | HTTP route unit tests: the registered method and pattern of every derived route, and the auth flag each operation states. |
+
+The facet's =#+model_types:= also admits an =operation= model, whose declared
+messages are what the shell renders for it. The operation archetypes are not
+part of this stage: an operation model that opts in resolves to the facet and
+renders nothing, and the unit it needs lands with the operation work. No
+=ores.assets= model is an operation model, so nothing in this stage is
+affected.
+
+* See also
+
+- [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] — the parent technical space's generated facet/archetype catalogue and shared Mustache conventions.
+- [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] — the facet this one mirrors, which addresses the same derived verb set from the REPL.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — the composite and adapter kinds.

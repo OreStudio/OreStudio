@@ -72,10 +72,9 @@ Folders already linked in compass.org before this task (no changes needed):
 
 - [[proj:doc/meta/meta.org][=doc/meta/meta.org=]] [[[id:82F08C3E-D00F-4888-8C11-CC4358AA9FB7][82F08C3E]]] — created; lists the 5 contract docs.
 - [[proj:doc/analysis/analysis.org][=doc/analysis/analysis.org=]] [[[id:E5DE23FF-8FE6-4B90-BD5A-F19F26D05737][E5DE23FF]]] — created; lists 5 files with IDs.
-- [[proj:doc/investigations/investigations.org][=doc/investigations/investigations.org=]] [[[id:249FEDB9-7010-4124-A593-A01160E4B56E][249FEDB9]]] — created; lists 1 file.
 - [[proj:doc/prompts/prompts.org][=doc/prompts/prompts.org=]] [[[id:9E971D53-0501-4B56-AD85-037057E295D8][9E971D53]]] — created; placeholder (empty folder).
 - [[proj:doc/samples/samples.org][=doc/samples/samples.org=]] [[[id:49FBC025-4B13-47E3-AC85-C86A81CA3056][49FBC025]]] — created; lists all image assets.
 - [[proj:doc/compass.org][=doc/compass.org=]] — added "See =[[id:UUID][Title]]=" reference to: [[proj:doc/meta][=meta/=]], [[proj:doc/agile][=agile/=]],
   [[proj:doc/agile/versions][=agile/versions/=]], [[proj:doc/agile/product_backlog][=agile/product_backlog/=]], [[proj:doc/recipes][=recipes/=]], [[proj:doc/knowledge][=knowledge/=]],
-  [[proj:doc/plans][=plans/=]], [[proj:doc/prompts][=prompts/=]], [[proj:doc/samples][=samples/=]], [[proj:doc/analysis][=analysis/=]], [[proj:doc/investigations][=investigations/=]].
+  [[proj:doc/plans][=plans/=]], [[proj:doc/prompts][=prompts/=]], [[proj:doc/samples][=samples/=]], [[proj:doc/analysis][=analysis/=]].
   Added [[proj:doc/investigations][=investigations/=]] to the folder layout tree.

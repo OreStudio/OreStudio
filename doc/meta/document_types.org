@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :meta:document_types:frontmatter:tags:
 #+created: 2026-05-18
-#+updated: 2026-05-18
+#+updated: 2026-09-26
 
 Every =.org= file in ORE Studio carries a =#+type:= field that places it
 in a shared taxonomy. The taxonomy exists for three reasons. First,
@@ -325,7 +325,13 @@ Each type's contract lives on its own page:
 - [[id:7ADECB4C-3C03-4B8D-BB2F-A9753EFDA866][design]]
 - [[id:8C6D8D83-C78F-4A18-A481-A8398058BE84][decision]]
 - [[id:CE9E4F7C-D14B-46C4-AD3D-39881C466914][retrospective, release_note, audit_report]]
-- [[id:1366553A-4E0F-496F-91DD-19171C003631][investigation]]
+- =investigation= — a point-in-time record of a question one story asked.
+  Lives in that story's folder as =investigation_<slug>.org=, at level =s1=,
+  and is never the place a rule is stated: an investigation's conclusions
+  outlive it, so the durable half is promoted to the page that owns the
+  subject and the code, recipes and models cite that page instead. See
+  [[id:1366553A-4E0F-496F-91DD-19171C003631][Document type: investigation]].
+  Scaffold: =compass add investigation --parent-dir <story folder>=.
 - [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][user_journey]]
 - [[id:973591F1-F2B5-40FF-9B2D-A198D4BB4903][meta]]
 - =test_scenario= — a manual test checklist tied to a task, verified in

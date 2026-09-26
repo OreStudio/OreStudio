@@ -17,6 +17,7 @@ file that already follows the contract in
 | recipe | `<parent-dir>/<slug>.org` (slug typically starts with `how_do_i_`) |
 | knowledge | `<parent-dir>/<slug>.org` |
 | skill | `<parent-dir>/<slug>/SKILL.org` (slug becomes both the folder name and the Claude Code skill `name:`) |
+| investigation | `<parent-dir>/investigation_<slug>.org` (flat file under the story folder that commissioned it; `--parent-dir` is required — an investigation belongs to a story, not to a fixed directory). See `doc/meta/document_type_investigation.org`: it is a point-in-time record, and its durable conclusions are promoted to the page that owns the subject. |
 
 Each output has a fresh UUID in `:ID:` (or a caller-supplied UUID via
 `--id` — see below), today's date in `#+created` and `#+updated`, the

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :meta:document_types:investigation:
 #+created: 2026-06-05
-#+updated: 2026-06-05
+#+updated: 2026-09-26
 
 This page defines the =investigation= document type — one entry in the
 [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
@@ -18,15 +18,31 @@ page carries only what is specific to =investigation=.
 
 - Implements :: loading. See
   [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]].
-- Folder :: [[proj:doc/investigations][=doc/investigations/=]] — historical records of technical
-  investigations.
+- Folder :: /the folder of the story that commissioned it/, as
+  =investigation_<slug>.org=. An investigation answers a question one story
+  asked, so it is that story's record and lives beside its =story.org= and
+  =task_*.org= files.
+- Level :: =s1=, like a task — one story's artifact, not a cross-cutting
+  statement.
 - Title :: =Investigation: <human readable title>=. The
   =Investigation: = prefix is added by the codegen automatically when
   the type is =investigation=.
-- Level :: =cross=.
 - Not stateful — no TODO, no =* Status= table. An investigation
   report is a point-in-time record.
+- /Point in time/ :: say when it was written and that it is a snapshot. Most
+  investigations find things that are later fixed, so a reader arriving a month
+  later must not mistake the record for a description of the system. The body
+  carries the finding and the story links it.
+- /Where the durable half goes/ :: an investigation's conclusions frequently
+  outlive it — a rule the code must keep following, a contract, a grid.
+  Promote that half to the durable page that owns the subject (a knowledge
+  doc, a component overview, a design page) and cite *that* from code, recipes
+  and models. A durable page must not link into a story's folder: the lint
+  flags it, and a reader who follows the link gets a snapshot where they
+  expected the rule.
 - How to create :: see [[id:75F4921B-43D1-4E78-99AB-62A47F761D1D][New investigation report]] in the codegen recipe.
+  =compass add investigation= requires =--parent-dir= and takes the story's
+  folder.
 - Required sections ::
   - =* Context= — one or two paragraphs: what was the original
     problem or research question.

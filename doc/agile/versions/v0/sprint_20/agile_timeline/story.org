@@ -53,6 +53,16 @@ event counts over time with click-through to each bucket's log.
   a clickable chart; clicking a bucket shows its snapshot; defaults to the
   latest bucket.
 
+* Investigations
+
+One point-in-time record, written while scoping this story. It says what the
+temporal surfaces looked like and what was concluded on the day; the rule it
+concluded lives in the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] component overview.
+
+| Investigation | Question it answered |
+|---------------+----------------------|
+| [[id:551FC710-7E3C-484B-AB52-7F2C8DAF3B6F][Temporal command coherence]] | Do the compass commands that answer what happened, what is happening and what was I doing share one model, or are they one-off reports? |
+
 * Tasks
 
 | Task                                                                                              | State   | Start      | End | Description                                                       |

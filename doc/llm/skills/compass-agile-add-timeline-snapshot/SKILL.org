@@ -9,7 +9,7 @@
 #+level: s3
 #+filetags: :llm:skill:agile:timeline:compass:
 #+created: 2026-06-10
-#+updated: 2026-06-10
+#+updated: 2026-09-26
 
 #+begin_export markdown
 ---
@@ -25,7 +25,7 @@ When the user asks to "snapshot the timeline", "create a timeline
 bucket", or record what has happened in the last 20 minutes (or a
 custom window) on the agile board.  The snapshot is stored under the
 current sprint's =timeline/= folder as =<ISO-from>-<ISO-to>.org= and
-read by [[id:551FC710-7E3C-484B-AB52-7F2C8DAF3B6F][the temporal grid's]] =compass timeline show= command.
+read by =compass timeline show=.
 
 * How to use this skill
 
@@ -67,8 +67,8 @@ read by [[id:551FC710-7E3C-484B-AB52-7F2C8DAF3B6F][the temporal grid's]] =compas
 
 - [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] — the story
   this skill delivers.
-- [[id:551FC710-7E3C-484B-AB52-7F2C8DAF3B6F][Temporal command coherence investigation]] — design rationale for
-  the consistent-substrate model the snapshot uses.
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the component overview
+  states the temporal grid and the substrate rule the snapshot uses.
 
 * Artefacts                                                        :noexport:
 

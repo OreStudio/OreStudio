@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:masd:modeling:architecture:component:cmake:codegen:
 #+created: 2026-05-21
-#+updated: 2026-06-26
+#+updated: 2026-09-26
 
 This is the *ground-truth reference* for ORE Studio's component directory layout.
 All tooling (codegen output paths, compass scaffolds, CI) must agree with this document.
@@ -202,15 +202,34 @@ Code is organised into facets within =include/= and =src/=. Each facet belongs
 in exactly one sub-component:
 
 | Facet | =api= | =core= | =service= | Description |
-|-------|-------|--------|-----------|-------------|
+|-------+-------+--------+-----------+-------------|
 | =domain= | ✓ | | | Domain types (POCOs), JSON I/O, table I/O |
 | =generators= | ✓ | | | Test-data generators |
 | =messaging= | ✓ | ✓ | | NATS protocol structs in =api=; handler class in =core= |
 | =eventing= | ✓ | | | Event types |
 | =repository= | | ✓ | | sqlgen entities, mappers, repositories |
 | =service= | | ✓ | | Business-logic service layer |
+| =presentation= | | ✓ | | Drawers and renderers the UI reads; the entity's table display |
+| =log= | | ✓ | | Parsers for a log format the component owns |
+| =net= | ✓ | | | Wire-format helpers for an external endpoint |
+| =workflow= | ✓ | | | Workflow definitions the component registers |
 | =app= | | | ✓ | Executable hosting and startup |
 | =config= | | | ✓ | Argument parsing and configuration structs |
+
+A one-segment component (=ores.platform=, =ores.storage=, =ores.diff=) has no
+part split, so its facets sit directly under =include/ores.<component>/=.
+
+** Local facets
+
+The table is the shared floor, not a closed list. A component may add a facet
+when it holds code that no shared facet covers, and the name states what the
+code does rather than which library it wraps. =ores.ore.core= is the worked
+example: =xml= for the importer, exporter and round trip; =market= for the ORE
+market data readers and the series key registry; =scanner= for the directory
+walk; =planner= for the import plan and its choices; and =hierarchy= for the
+portfolio and book node builder. Each name says what the facet holds, and five
+facets in one part is the signal that the part is doing five jobs — see
+[[id:6EA32258-F1DC-45D2-8913-202E845CD969][what ores.ore should own]].
 
 * CMake dependency chain
 

@@ -47,9 +47,12 @@ The component's catalogue slug is =ore=, not =ores.ore.core=. Any instruction wo
 * Conclusions
 
 /Status at 2026-09-26./ Findings 1 (the root group model), 3 (the xsdcpp pin and
-regeneration), 6 (the documentation cluster) and 7 (the round trip off the
-exporter) are closed. Findings 2, 4 and 5 are open, and finding 5 is the largest
-remaining risk.
+regeneration), 4 (the facet vocabulary), 6 (the documentation cluster) and 7
+(the round trip off the exporter) are closed. Findings 2, 5 and 9 are open.
+Finding 5 is the largest remaining risk and it is the one the others wait on:
+it is a decision about what the component owns, not a defect to fix, and
+[[id:6EA32258-F1DC-45D2-8913-202E845CD969][what ores.ore should own]] now
+carries the measurement and the options.
 
 **1. The mechanical shape passes; the substantive shape does not.** Three correctly-named parts, the full simple layout in each, api to core to service with no cycle, no core linking a service, no api linking a database or repository. But the split is a rename rather than a design: =core/= is the pre-existing simple component =ores.ore= wearing a =core= label (renamed in =ce3fb736ed=, moved in =164255805d=). It holds 136 of 179 files and 96% of the lines. The root CMakeLists registers core before api, the only one of 21 composites that does, and commit =10216d4721= says so on purpose.
 
@@ -65,7 +68,7 @@ The =AUTO-GENERATED FILE= marker is not a reliable classifier in this component.
 
 **3. xsdcpp is a hard, unwritten dependency, and its output is stale against its own schema.** The tool is not vendored, not in =vcpkg.json=, not in CMake and not on =PATH=; the wrapper scripts hard-fail without it. The committed =domain.hpp= and =domain.cpp= were generated from a schema that the vendored =external/ore/xsd/= has since superseded: the local xsdcpp checkout carries the fix for the group-resolution bug that was blocking regeneration, and that bug is still recorded as blocked in the backlog. Regeneration overwrites 4.8 MB wholesale, silently drops the =ORES_ORE_CORE_EXPORT= annotations (restored by a reapply script) and would drop the in-repo hand-patch to =domain_xsd.hpp=.
 
-**4. Seven facet names sit outside every signed-off catalogue**, five of them appearing nowhere else in the repository: =hierarchy=, =market=, =planner=, =scanner=, =xml=, plus =net= and =workflow= which have precedent elsewhere.
+**4. Seven facet names sit outside every signed-off catalogue**, five of them appearing nowhere else in the repository: =hierarchy=, =market=, =planner=, =scanner=, =xml=, plus =net= and =workflow= which have precedent elsewhere. **Resolved 2026-09-26:** the census that checked the precedent found the catalogue itself was incomplete — =presentation= is used by twelve components, =client= is named as a sub-component in the page's own prose, and neither was in the facet table. The table now carries all twelve established facets plus a *Local facets* rule that names this component's five as the worked example.
 
 **5. The wiring behind the generated surface does not exist.** Three of the four registrar families are declared, defined, compiled and called from nowhere, so the regenerated entity protocol is served by nothing. The freshly generated 710-line shell command unit landed in =projects/ores.shell/ore/=, a directory with no =CMakeLists.txt=, absent from the shell's =#+parts:=. The tree builds because the newest artefact is outside the build and the newest handlers are outside the registrar. A diff, the drift check and a typecheck all miss both.
 
@@ -135,7 +138,7 @@ Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] i
 2. **Decide the api/core boundary.** Either move the shared contract material the three consumers reach into the api, or record why =ores.ore.core= is a library other components link. This is the largest structural question and it gates the facet work. **Open, and now framed by [[id:6EA32258-F1DC-45D2-8913-202E845CD969][Investigation: what ores.ore should own]]**, which measures the four jobs the component does and the three external use cases. The owner's stated intent is that =ores.ore= be a library for ORE representation mapping and expose no NATS; on that intent the series key shape entity service and the import orchestration do not belong here.
 3. **Split the two classifiers.** Hoist one root-element classifier and point both the round trip and =scanner::ore_directory_scanner= at it. The scanner's substring rule has already caused silent destruction once.
 4. **Record the xsdcpp dependency.** Vendor or pin the tool, document the invocation and the export-macro reapply step, re-run the generation against the current schema, and close the blocked backlog item. Treat the schema and the generated output as one unit from then on.
-5. **Give the tag and facet vocabulary a home.** Either sign off =hierarchy=, =market=, =planner=, =scanner=, =xml=, =net= and =workflow= in the facet table, or move the material. An unnamed facet is a finding in its own right.
+5. **Give the tag and facet vocabulary a home.** Either sign off =hierarchy=, =market=, =planner=, =scanner=, =xml=, =net= and =workflow= in the facet table, or move the material. An unnamed facet is a finding in its own right. **Resolved 2026-09-26 at the source:** the census found the catalogue was incomplete independently of this component (=presentation= is used by twelve components and was absent; =client= is described as a sub-component in the page's own prose), so [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] now carries all twelve established facets and a *Local facets* rule, with =ores.ore.core='s five names as the worked example.
 6. **Wire the registrars or record why not**, and decide whether =ores.shell/ore= and its generated command unit belong in the build. V01 is currently green for the wrong reason. **Open, but it dissolves if the series key shape entity moves to =ores.marketdata=** — see [[id:6EA32258-F1DC-45D2-8913-202E845CD969][Investigation: what ores.ore should own]]. Wiring the entity protocol would publish a surface whose only real consumer reaches the table directly, so the choice is between moving the entity and recording the surface as deliberately unwired.
 7. **Refresh the documentation once the types stop moving**: the four diagrams (regenerate then do the manual pass are done; the sentinel-and-below manual pass is not), the three part overviews (done), the knowledge links (done), and the stale pages (done — see finding 6).
 8. **Then** work M, P, G, W, S, H and V in order, recording each item's evidence in the task table.

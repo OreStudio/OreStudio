@@ -388,21 +388,11 @@ domain::{{name_singular}}
     r.{{right.column}} = v.{{right.column}};
 {{/right.is_date}}
 {{/right.is_uuid}}
-{{#columns}}
-{{#is_required_timestamp}}
-    r.{{name}} = timestamp_to_timepoint(std::string_view{v.{{name}}});
-{{/is_required_timestamp}}
-{{#is_date}}
-    r.{{name}} = ores::platform::time::datetime::from_iso8601_date(v.{{name}});
-{{/is_date}}
-{{#is_base64}}
-    r.{{name}} = utility::convert::base64_converter::convert(v.{{name}});
-{{/is_base64}}
-{{^is_required_timestamp}}{{^is_date}}{{^is_base64}}
-    r.{{name}} = v.{{name}};
-{{/is_base64}}{{/is_date}}{{/is_required_timestamp}}
-{{/columns}}
-    r.modified_by = v.modified_by;
+{{#columns}}{{#is_required_timestamp}}    r.{{name}} = timestamp_to_timepoint(std::string_view{v.{{name}}});
+{{/is_required_timestamp}}{{#is_date}}    r.{{name}} = ores::platform::time::datetime::from_iso8601_date(v.{{name}});
+{{/is_date}}{{#is_base64}}    r.{{name}} = utility::convert::base64_converter::convert(v.{{name}});
+{{/is_base64}}{{^is_required_timestamp}}{{^is_date}}{{^is_base64}}    r.{{name}} = v.{{name}};
+{{/is_base64}}{{/is_date}}{{/is_required_timestamp}}{{/columns}}    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -443,21 +433,11 @@ domain::{{name_singular}}
 {{/right.is_date}}
 {{/right.is_uuid}}
     r.version = v.version;
-{{#columns}}
-{{#is_required_timestamp}}
-    r.{{name}} = ores::platform::time::datetime::to_iso8601_utc(v.{{name}});
-{{/is_required_timestamp}}
-{{#is_date}}
-    r.{{name}} = ores::platform::time::datetime::to_iso8601_date(v.{{name}});
-{{/is_date}}
-{{#is_base64}}
-    r.{{name}} = utility::convert::base64_converter::convert(v.{{name}});
-{{/is_base64}}
-{{^is_required_timestamp}}{{^is_date}}{{^is_base64}}
-    r.{{name}} = v.{{name}};
-{{/is_base64}}{{/is_date}}{{/is_required_timestamp}}
-{{/columns}}
-    r.modified_by = v.modified_by;
+{{#columns}}{{#is_required_timestamp}}    r.{{name}} = ores::platform::time::datetime::to_iso8601_utc(v.{{name}});
+{{/is_required_timestamp}}{{#is_date}}    r.{{name}} = ores::platform::time::datetime::to_iso8601_date(v.{{name}});
+{{/is_date}}{{#is_base64}}    r.{{name}} = utility::convert::base64_converter::convert(v.{{name}});
+{{/is_base64}}{{^is_required_timestamp}}{{^is_date}}{{^is_base64}}    r.{{name}} = v.{{name}};
+{{/is_base64}}{{/is_date}}{{/is_required_timestamp}}{{/columns}}    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;

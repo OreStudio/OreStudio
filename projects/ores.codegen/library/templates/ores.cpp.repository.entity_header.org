@@ -165,30 +165,14 @@ struct {{name_singular}}_entity {
 {{/has_tenant_id}}
     std::string {{right.column}};
     int version = 0;
-{{#columns}}
-{{#is_uuid}}
-    std::string {{name}};
-{{/is_uuid}}
-{{#is_optional_uuid}}
-    std::optional<std::string> {{name}};
-{{/is_optional_uuid}}
-{{#is_optional_timestamp}}
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> {{name}};
-{{/is_optional_timestamp}}
-{{#is_required_timestamp}}
-    std::string {{name}};
-{{/is_required_timestamp}}
-{{#is_date}}
-    std::string {{name}};
-{{/is_date}}
-{{#is_base64}}
-    std::string {{name}};
-{{/is_base64}}
-{{^is_uuid}}{{^is_optional_uuid}}{{^is_optional_timestamp}}{{^is_required_timestamp}}{{^is_date}}{{^is_base64}}
-    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
-{{/is_base64}}{{/is_date}}{{/is_required_timestamp}}{{/is_optional_timestamp}}{{/is_optional_uuid}}{{/is_uuid}}
-{{/columns}}
-    std::string modified_by;
+{{#columns}}{{#is_uuid}}    std::string {{name}};
+{{/is_uuid}}{{#is_optional_uuid}}    std::optional<std::string> {{name}};
+{{/is_optional_uuid}}{{#is_optional_timestamp}}    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> {{name}};
+{{/is_optional_timestamp}}{{#is_required_timestamp}}    std::string {{name}};
+{{/is_required_timestamp}}{{#is_date}}    std::string {{name}};
+{{/is_date}}{{#is_base64}}    std::string {{name}};
+{{/is_base64}}{{^is_uuid}}{{^is_optional_uuid}}{{^is_optional_timestamp}}{{^is_required_timestamp}}{{^is_date}}{{^is_base64}}    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+{{/is_base64}}{{/is_date}}{{/is_required_timestamp}}{{/is_optional_timestamp}}{{/is_optional_uuid}}{{/is_uuid}}{{/columns}}    std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;

@@ -48,11 +48,8 @@ struct image_tag_entity {
     std::string tenant_id;
     std::string tag_id;
     int version = 0;
-
     std::string assigned_by;
-
     std::string assigned_at;
-
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

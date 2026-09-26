@@ -8,7 +8,7 @@
 #+filetags: :scaffold_is_opt_in:sprint_26:v0:
 #+owner: marco
 #+branch: feature/scaffold-is-opt-in
-#+pr:
+#+pr: 2168
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2168][#2168]] | [codegen] Make first-generation component scaffolding opt-in |
 
 * Review
 

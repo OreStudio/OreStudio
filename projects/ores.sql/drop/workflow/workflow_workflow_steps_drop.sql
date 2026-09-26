@@ -18,4 +18,7 @@
  *
  */
 
+drop rule if exists ores_workflow_workflow_steps_delete_rule on "ores_workflow_workflow_steps_tbl";
+drop trigger if exists ores_workflow_workflow_steps_insert_trg on "ores_workflow_workflow_steps_tbl";
+drop function if exists ores_workflow_workflow_steps_insert_fn;
 drop table if exists "ores_workflow_workflow_steps_tbl";

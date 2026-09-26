@@ -17,16 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.workflow.core/domain/workflow_instance_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/domain/protocol.hpp"
+#include "ores.workflow.api/domain/workflow_instance_json_io.hpp" // IWYU pragma: keep.
 #include "ores.workflow.core/repository/workflow_instance_entity.hpp"
 #include "ores.workflow.core/repository/workflow_instance_mapper.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <chrono>
-#include <optional>
 #include <sqlgen/postgres.hpp>
 
 namespace ores::workflow::repository {
@@ -35,121 +37,248 @@ using namespace sqlgen;
 using namespace sqlgen::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
-using ores::platform::time::datetime;
 
-std::optional<domain::workflow_instance>
-workflow_instance_repository::find_by_id(context ctx, const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding workflow instance by id: "
-                               << boost::uuids::to_string(id);
+std::string workflow_instance_repository::sql() {
+    return generate_create_table_sql<workflow_instance_entity>(lg());
+}
 
-    const auto id_str = boost::uuids::to_string(id);
-    const auto query =
-        sqlgen::read<std::vector<workflow_instance_entity>> | where("id"_c == id_str);
+ores::utility::domain::precondition
+workflow_instance_repository::replace_claim(context ctx, const domain::workflow_instance& v) {
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
 
-    auto results = execute_read_query<workflow_instance_entity, domain::workflow_instance>(
+domain::workflow_instance
+workflow_instance_repository::apply_claim(context ctx,
+                                          const domain::workflow_instance& v,
+                                          const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
+
+void workflow_instance_repository::write(context ctx, const domain::workflow_instance& v) {
+    write(ctx, v, replace_claim(ctx, v));
+}
+
+void workflow_instance_repository::write(context ctx,
+                                         const std::vector<domain::workflow_instance>& v) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void workflow_instance_repository::write(context ctx,
+                                         const domain::workflow_instance& v,
+                                         const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing workflow instance. " << "id: " << v.id;
+    const auto t = apply_claim(ctx, v, claim);
+    execute_write_query(
+        ctx, workflow_instance_mapper::map(t), lg(), "Writing workflow instance to database.");
+}
+
+void workflow_instance_repository::write(
+    context ctx,
+    const std::vector<domain::workflow_instance>& v,
+    const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing workflow instances. Count: " << v.size();
+    std::vector<domain::workflow_instance> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(
+        ctx, workflow_instance_mapper::map(batch), lg(), "Writing workflow instances to database.");
+}
+
+std::vector<domain::workflow_instance> workflow_instance_repository::read_latest(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<workflow_instance_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
+
+    return execute_read_query<workflow_instance_entity, domain::workflow_instance>(
         ctx,
         query,
         [](const auto& entities) { return workflow_instance_mapper::map(entities); },
         lg(),
-        "Finding workflow instance by id");
-
-    if (results.empty())
-        return std::nullopt;
-    return results.front();
+        "Reading latest workflow instances");
 }
 
 std::vector<domain::workflow_instance>
-workflow_instance_repository::find_by_state(context ctx, const boost::uuids::uuid& state_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding workflow instances by state: "
-                               << boost::uuids::to_string(state_id);
-
-    const auto state_id_str = boost::uuids::to_string(state_id);
-    const auto query =
-        sqlgen::read<std::vector<workflow_instance_entity>> | where("state_id"_c == state_id_str);
+workflow_instance_repository::read_latest(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow instance. " << "id: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<workflow_instance_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<workflow_instance_entity, domain::workflow_instance>(
         ctx,
         query,
         [](const auto& entities) { return workflow_instance_mapper::map(entities); },
         lg(),
-        "Finding workflow instances by state");
+        "Reading latest workflow instance by id.");
 }
 
-std::vector<domain::workflow_instance> workflow_instance_repository::read(context ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading workflow instances.";
+
+std::vector<domain::workflow_instance>
+workflow_instance_repository::read_all(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all workflow instance versions. " << "id: " << id;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<workflow_instance_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
+
+    return execute_read_query<workflow_instance_entity, domain::workflow_instance>(
+        ctx,
+        query,
+        [](const auto& entities) { return workflow_instance_mapper::map(entities); },
+        lg(),
+        "Reading all workflow instance versions by id.");
+}
+
+std::optional<domain::workflow_instance> workflow_instance_repository::read_at_version(
+    context ctx, const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading workflow instance at version. " << "id: " << id
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<workflow_instance_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<workflow_instance_entity, domain::workflow_instance>(
+        ctx,
+        query,
+        [](const auto& entities) { return workflow_instance_mapper::map(entities); },
+        lg(),
+        "Reading workflow instance at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+workflow_instance_repository::remove_status workflow_instance_repository::remove(
+    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing workflow instance. " << "id: " << id;
+    const auto current = read_latest(ctx, id);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<workflow_instance_entity> |
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
+
+    execute_delete_query(ctx, query, lg(), "Removing workflow instance from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, id).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void workflow_instance_repository::remove(context ctx, const std::string& id) {
+    static_cast<void>(remove(ctx, id, std::nullopt));
+}
+
+std::vector<domain::workflow_instance>
+workflow_instance_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow instances with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<workflow_instance_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<workflow_instance_entity, domain::workflow_instance>(
+        ctx,
+        query,
+        [](const auto& entities) { return workflow_instance_mapper::map(entities); },
+        lg(),
+        "Reading latest workflow instances with pagination.");
+}
+
+std::uint32_t workflow_instance_repository::get_total_instance_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active workflow instance count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<workflow_instance_entity>> | where("tenant_id"_c == tid);
+        sqlgen::select_from<workflow_instance_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
-    return execute_read_query<workflow_instance_entity, domain::workflow_instance>(
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active workflow instance count: " << count;
+    return count;
+}
+
+std::vector<domain::workflow_instance>
+workflow_instance_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<workflow_instance_entity>> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = execute_read_query<workflow_instance_entity, domain::workflow_instance>(
         ctx,
         query,
         [](const auto& entities) { return workflow_instance_mapper::map(entities); },
         lg(),
-        "Reading workflow instances");
+        "Reading latest workflow instances by ids.");
+    return result;
 }
 
-void workflow_instance_repository::create(context ctx, const domain::workflow_instance& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Creating workflow instance: " << boost::uuids::to_string(v.id);
-
-    const auto entity = workflow_instance_mapper::to_entity(v);
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(insert(entity));
-    ensure_success(r, lg());
-
-    BOOST_LOG_SEV(lg(), debug) << "Workflow instance created.";
+void workflow_instance_repository::remove(context ctx, const std::vector<std::string>& ids) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<workflow_instance_entity> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing workflow instances.");
 }
 
-void workflow_instance_repository::update_state(context ctx,
-                                                const boost::uuids::uuid& id,
-                                                const boost::uuids::uuid& state_id,
-                                                const std::string& result_json,
-                                                const std::string& error) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating workflow instance state: "
-                               << boost::uuids::to_string(id) << " -> "
-                               << boost::uuids::to_string(state_id);
-
-    const auto id_str = boost::uuids::to_string(id);
-    const auto state_id_str = boost::uuids::to_string(state_id);
-    const auto now = datetime::to_db_string(std::chrono::system_clock::now());
-    const auto opt_result = result_json.empty() ? std::optional<std::string>{} :
-                                                  std::optional<std::string>(result_json);
-    const auto opt_error =
-        error.empty() ? std::optional<std::string>{} : std::optional<std::string>(error);
-    using ts_t = ores::database::repository::db_timestamp;
-    const auto opt_now = std::optional<ts_t>(now);
-
-    const auto query = sqlgen::update<workflow_instance_entity>("state_id"_c.set(state_id_str),
-                                                                "result_json"_c.set(opt_result),
-                                                                "error"_c.set(opt_error),
-                                                                "completed_at"_c.set(opt_now)) |
-                       where("id"_c == id_str);
-
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    BOOST_LOG_SEV(lg(), debug) << "Workflow instance state updated.";
-}
-
-void workflow_instance_repository::update_step_progress(context ctx,
-                                                        const boost::uuids::uuid& id,
-                                                        int next_index) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating step progress for instance: "
-                               << boost::uuids::to_string(id) << " -> step " << next_index;
-
-    const auto id_str = boost::uuids::to_string(id);
-    const auto now = datetime::to_db_string(std::chrono::system_clock::now());
-    using ts_t = ores::database::repository::db_timestamp;
-    const auto opt_now = std::optional<ts_t>(now);
-
-    const auto query = sqlgen::update<workflow_instance_entity>(
-                           "current_step_index"_c.set(next_index), "last_event_at"_c.set(opt_now)) |
-                       where("id"_c == id_str);
-
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    BOOST_LOG_SEV(lg(), debug) << "Step progress updated.";
-}
 
 }

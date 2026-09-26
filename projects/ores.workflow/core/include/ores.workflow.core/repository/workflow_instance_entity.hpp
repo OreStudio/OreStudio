@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_INSTANCE_ENTITY_HPP
 #define ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_INSTANCE_ENTITY_HPP
 
@@ -39,6 +44,7 @@ struct workflow_instance_entity {
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
+    int version = 0;
     std::string type;
     std::string state_id;
     std::string request_json;
@@ -49,9 +55,14 @@ struct workflow_instance_entity {
     int current_step_index = 0;
     int step_count = 0;
     std::string materialised_steps_json;
-    std::optional<db_timestamp> completed_at;
-    std::optional<db_timestamp> last_event_at;
-    db_timestamp created_at;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> completed_at;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> last_event_at;
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const workflow_instance_entity& v);

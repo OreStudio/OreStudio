@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_STEP_ENTITY_HPP
 #define ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_STEP_ENTITY_HPP
 
@@ -38,8 +43,10 @@ struct workflow_step_entity {
     constexpr static const char* tablename = "ores_workflow_workflow_steps_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
+    std::string tenant_id;
+    int version = 0;
     std::string workflow_id;
-    int step_index;
+    int step_index = 0;
     std::string name;
     std::string state_id;
     std::string request_json;
@@ -47,14 +54,18 @@ struct workflow_step_entity {
     std::optional<std::string> error;
     std::string command_subject;
     std::string command_json;
-    std::optional<db_timestamp> command_published_at;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> command_published_at;
     std::string idempotency_key;
     std::string compensation_subject;
     std::string compensation_json;
-    std::optional<db_timestamp> started_at;
-    std::optional<db_timestamp> completed_at;
-    db_timestamp created_at;
-    std::optional<std::string> step_log_json;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> started_at;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> completed_at;
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const workflow_step_entity& v);

@@ -76,29 +76,29 @@ record each item's result in the table below.
 | P02 | Three raw subject strings remain in hand-written code and are recorded as exceptions: the =synthetic.v1.theme.publish-from-dq= subscription in core's registrar, and the two JetStream filters =synthetic.v1.tick.>= and =synthetic.v1.sandbox.tick.>= in the service application. The first is a hand-written operation subject with no generated constant; the two filters are wildcards over a subject the feed composes at runtime. Everything else references a generated constant. | =grep= for subject literals in projects/ores.synthetic |
 | P03 | The nine generated registrars each subscribe their own canonical subjects once, with no duplicates. The unserved-subject inventory against the messaging reference is PENDING: the reference lists one row against 88 registered request subjects and is itself stale. | =core/src/messaging/*_registrar.cpp=; build/audit_synthetic/leg_b_docs.md |
 | P04 | The non-entity operation messages (=simulate=, =preview_shape=, =generate_organisation=, =publish-from-dq=, =vintage_validity=, feed start and stop) stay hand-written protocol headers; none is an entity verb. | api/messaging hand-written headers |
-| P05 | IN PROGRESS. Consumers followed in the same change: the shell command units, and the hand-written core and service registrars that regeneration rewrote. | shell integration commit |
+| P05 | Pass. Consumers followed in the same change: the shell command units moved to the new part, the iam provisioning handler migrated from the old list verbs to the canonical ones, and the hand-written core and service registrars that regeneration rewrote. The whole tree builds. | commits 4d2dd48559, f74ab2ce03; =compass build= |
 | P06 | The nine generated event caches warm through the canonical list. | regenerated event registrars |
-| G01 | Regeneration applied in place; 107 files changed and 46 created. Byte-identical and idempotent verification is PENDING the commit of the regenerated tree. | build/audit_synthetic/regen_apply.txt |
+| G01 | Pass. Regeneration is byte-identical to the checked-in tree and idempotent. | =check_component_drift.py --component synthetic= and =--all= both report no drift |
 | G02 | The nine superseded =api/.../eventing/*_changed_event.hpp= files are deleted, and the three parts' =component_files.cmake= pairs are regenerated to drop them. | commit; =regenerate_cmake_component_files.py --component ores.synthetic.<part>= |
 | G03 | Pass. Every regenerated file carries the =AUTO-GENERATED= marker and no hand-written file carries it. The six =component_files.cmake= pairs gained the marker with this regeneration. | marker sweep over =git ls-files projects/ores.synthetic projects/ores.shell/synthetic= |
 | G04 | Sampled review only. The regenerated protocol, handler, service, repository and eventing-test shapes match the canonical output the clean iam component carries. One template-level observation is carried forward: generated domain, eventing, protocol, entity and handler types carry no export macro, in synthetic and in refdata alike, so the fix belongs to the templates and to a house-wide change, not to this component. | =git diff= of the regenerated api and core files; build/audit_synthetic/leg_d_tests_naming.md |
-| G05 | No generator defect found and fixed yet. | |
+| G05 | Partial. One generator defect found and fixed at source: the eventing test's FK-chain seed variable was named after the FK column, so a chain step whose column repeated an earlier step's column declared the same variable twice and compiled the wrong type. Two findings are recorded, not fixed, because both are template-level and house-wide: generated types carry no export macro, and the generator appends a uniqueness counter to every text code, so a code-validated lookup (synthetic's =process_type_code=) can never carry a valid value in a seeded test. | commit a7ee75fb4b; =pytest projects/ores.codegen/tests= (537 passed); V02 |
 | G06 | The three parts' source lists are regenerated from the tree. Repo-wide =--all --check= also reports stale lists on other components, which predate this branch. | =regenerate_cmake_component_files.py --component ores.synthetic.<part>= |
 | W01 | Defect found and fixed. =service/src/messaging/event_registrar.cpp= composed eight of nine event mappings, so =register_folder_event_mapping= had no caller and folder change events never reached NATS even though the generated SQL notify trigger publishes the channel. The folder mapping is now composed at the same point as the other eight. The nine history-provider registrars are composed in core's =registrar.cpp=. | =event_registrar.cpp=; =core/src/messaging/registrar.cpp= |
-| W02 | PENDING with synthetic registered. | |
-| W03 | PENDING with synthetic registered. | |
+| W02 | Pass. The gate is green with synthetic registered. | =check_handler_permissions.py= |
+| W03 | Pass. The gate is green with synthetic registered. | =check_populate_references.py= |
 | W04 | The regenerated create and notify-trigger scripts are reachable from =synthetic_create.sql=. The RLS policy scripts are reachable through the top-level =rls_create.sql= and =rls_drop.sql=. Two drop scripts, =synthetic_yield_curve_process_types_drop.sql= and its notify trigger, were unreachable and recorded as =WIRE_001= exceptions; both are now wired into =synthetic_drop.sql= and the two ignore lines are removed. Schema validation and a database recreate are PENDING. | =synthetic_drop.sql=; projects/ores.sql/utility/validation_ignore.txt |
 | S01 | Generated command units and tests exist for all nine entities under =projects/ores.shell/synthetic/=. The hand-written equivalents under =ores.shell/application= are removed and the part is wired into the shell build. | shell integration commit |
 | S02 | The literate recipes are generated for all nine entities and the recipe inventory is regenerated (193 recipes in 112 categories). | =regenerate_shell_recipe_inventory.py= |
-| H01 | Audit run. The four reports are under build/audit_synthetic/. Two ground-truth documents are corrected: the composite table and the system model layer page. | build/audit_synthetic/*.md |
-| H02 | Nine dead generated headers deleted; the rest is recorded in the audit reports. | commit |
+| H01 | Audit run. The reports are under build/audit_synthetic/. Three ground-truth documents are corrected: the composite table, the system model layer page and the service registry. =validate_docs.sh= is green for synthetic; its one violation is the pre-existing =MISSING_PUML ores.shell.iam=. | build/audit_synthetic/*.md; =validate_docs.sh= |
+| H02 | Nine dead generated event headers and the superseded hand-written shell command units are deleted; the remaining findings are recorded in the audit reports. | commit 4d2dd48559 |
 | H03 | Pass. No commented-out code, no TODO or FIXME, no hand-edited comment in a generated file. | leg_d_tests_naming.md |
-| V01 | IN PROGRESS. The three synthetic libraries and their three test executables build clean. The whole-tree build follows the shell integration. | =compass build ores.synthetic.{api,core,service}.tests= |
-| V02 | PENDING. | |
-| V03 | PENDING. Needs a database recreate and a running fleet. | |
-| V04 | PENDING. | |
-| V05 | PENDING. | |
-| V06 | PENDING. Not added to =COMPONENTS_UNDER_TEST= yet: the drift check needs the regenerated tree committed first. | |
+| V01 | Pass. The whole tree builds, including the three synthetic libraries, their three test executables, the ores.shell.synthetic part, the shell application and the ores.iam consumer. | =compass build= |
+| V02 | Fail on the live half. The codegen suite passes (537 tests), and =ores.synthetic.api.tests=, =ores.synthetic.service.tests= and =ores.shell.synthetic.tests= pass with the fleet up. =ores.synthetic.core.tests= fails 3 of 67: the new parameter-value eventing test seeds a process-parameter definition whose =process_type_code= cannot be one of the five valid codes, because the generator template appends a uniqueness counter to every text code; and two pre-existing =Row already exists= reference-data collisions that a database recreate clears. | =ctest -R synthetic=; =ores.synthetic.core.tests= |
+| V03 | PENDING. The database recreate and fleet start need the environment provisioned (24 service units are not loaded). | =compass services status= |
+| V04 | PENDING. The generated shell commands need the live fleet. | |
+| V05 | Pass, with one pre-existing repo-wide exception. Model drift, protocol twin coverage, handler permissions, populate references, the shell recipe inventory and the synthetic CMake source lists are all green. =validate_docs.sh= reports one violation, =MISSING_PUML ores.shell.iam=, which is already absent on =origin/main= and belongs to another component. | Each check script; =validate_docs.sh= |
+| V06 | PENDING. The registry entry was held back: V02 still fails, and the standard keeps a component out of =COMPONENTS_UNDER_TEST= until every item passes or an exception is accepted. =check_component_drift.py --all= passes with synthetic temporarily listed; restoring the entry is a one-line change once V02 is green. | =check_component_drift.py --all= with synthetic listed |
 
 * Notes
 
@@ -113,11 +113,21 @@ record each item's result in the table below.
   same seven synthetic models. This branch does not touch the dead
   presentation keys, so the two changes do not collide; rebase after #2138
   lands.
-- The whole-tree build, the live fleet checks (V03, V04) and the registry
-  entry (V06) stay open on this branch. The three synthetic test targets
-  build clean.
+- The full tree builds and =check_component_drift.py --all= is green with
+  synthetic registered. What stays open is the live half: the component's
+  ctest suites with the fleet up (V02), the database recreate (V03) and the
+  generated shell commands against the live fleet (V04). The environment
+  has no service units loaded after the machine restart.
 - The regime error-handling question (61 throw sites in this component)
   belongs to the house-wide capture, not to this pass.
+- One generator defect found by the build is fixed at source: the eventing
+  test's FK-chain seed variable was named after the FK column, so a chain
+  step whose column repeated an earlier step's column declared the same
+  variable twice. It now takes the ancestor entity's name, with a
+  regression case in =test_eventing_seed_plan.py=.
+- A second template-level finding is recorded, not fixed: generated domain,
+  eventing, protocol and handler types carry no export macro, in synthetic
+  and in refdata alike, so it belongs to a house-wide template change.
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

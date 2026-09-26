@@ -138,9 +138,12 @@ inline std::vector<std::vector<std::string>> sql_values_rows(const std::string& 
         columns.push_back(trim(column));
 
         // The opening parenthesis of the row was scanned as part of the first
-        // column; it belongs to the row, not to the value.
-        if (!columns.empty() && !columns.front().empty() && columns.front().front() == '(')
+        // column; it belongs to the row, not to the value. Trim again, because
+        // the first trim ran before the parenthesis came off.
+        if (!columns.empty() && !columns.front().empty() && columns.front().front() == '(') {
             columns.front().erase(0, 1);
+            columns.front() = trim(columns.front());
+        }
 
         rows.push_back(std::move(columns));
     }

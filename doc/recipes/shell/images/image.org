@@ -43,14 +43,14 @@ Reads the one row its key addresses. A key states every identifying column, so a
 The command is shaped like this:
 
 #+begin_example
-images get <id>
+images get <code>
 #+end_example
 
 It is addressed at =assets.v1.images.get=.
 
 #+name: images-get
 #+begin_src ores-shell :tangle images-get.ores :exports none
-images get 00000000-0000-0000-0000-000000000000
+images get __none__
 #+end_src
 
 ** =get-many=
@@ -64,14 +64,14 @@ Reads several rows in one request, one key group per row.
 The command is shaped like this:
 
 #+begin_example
-images get-many <id>
+images get-many <code>
 #+end_example
 
 It is addressed at =assets.v1.images.get_many=.
 
 #+name: images-get-many
 #+begin_src ores-shell :tangle images-get-many.ores :exports none
-images get-many 00000000-0000-0000-0000-000000000000
+images get-many __none__
 #+end_src
 
 ** =add=
@@ -148,14 +148,14 @@ Removes a row. The change carries a reason and a commentary, which the server re
 The command is shaped like this:
 
 #+begin_example
-images delete <id> <reason> <commentary> [--version <n>]
+images delete <code> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =assets.v1.images.delete=.
 
 #+name: images-delete
 #+begin_src ores-shell :tangle images-delete.ores :exports none
-images delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+images delete __none__ system.new_record generated_script
 #+end_src
 
 ** =delete-many=
@@ -169,14 +169,14 @@ Removes several rows in one request. The change carries a reason and a commentar
 The command is shaped like this:
 
 #+begin_example
-images delete-many <id> <reason> <commentary>
+images delete-many <code> <reason> <commentary>
 #+end_example
 
 It is addressed at =assets.v1.images.delete_many=.
 
 #+name: images-delete-many
 #+begin_src ores-shell :tangle images-delete-many.ores :exports none
-images delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+images delete-many __none__ system.new_record generated_script
 #+end_src
 
 ** =versions=
@@ -190,14 +190,14 @@ Reads the row's recorded history, newest first.
 The command is shaped like this:
 
 #+begin_example
-images versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+images versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
 #+end_example
 
 It is addressed at =assets.v1.images_versions.list=.
 
 #+name: images-versions
 #+begin_src ores-shell :tangle images-versions.ores :exports none
-images versions 00000000-0000-0000-0000-000000000000 --limit 1
+images versions __none__ --limit 1
 #+end_src
 
 ** =version=
@@ -211,13 +211,13 @@ Reads one recorded version of the row.
 The command is shaped like this:
 
 #+begin_example
-images version <id> --version <n>
+images version <code> --version <n>
 #+end_example
 
 It is addressed at =assets.v1.images_versions.get=.
 
 #+name: images-version
 #+begin_src ores-shell :tangle images-version.ores :exports none
-images version 00000000-0000-0000-0000-000000000000 --version 1
+images version __none__ --version 1
 #+end_src
 

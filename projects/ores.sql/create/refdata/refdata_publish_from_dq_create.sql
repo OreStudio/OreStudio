@@ -128,9 +128,9 @@ begin
         end if;
 
         if r.image_id is not null then
-            select assets.image_id into v_resolved_image_id
+            select assets.id into v_resolved_image_id
             from ores_dq_images_artefact_tbl dq_img
-            join ores_assets_images_tbl assets on assets.key = dq_img.key
+            join ores_assets_images_tbl assets on assets.code = dq_img.key
               and assets.tenant_id = p_target_tenant_id
             where dq_img.image_id = r.image_id
               and dq_img.tenant_id = ores_utility_system_tenant_id_fn()
@@ -266,9 +266,9 @@ begin
         end if;
 
         if r.image_id is not null then
-            select assets.image_id into v_resolved_image_id
+            select assets.id into v_resolved_image_id
             from ores_dq_images_artefact_tbl dq_img
-            join ores_assets_images_tbl assets on assets.key = dq_img.key
+            join ores_assets_images_tbl assets on assets.code = dq_img.key
               and assets.tenant_id = p_target_tenant_id
             where dq_img.image_id = r.image_id
               and dq_img.tenant_id = ores_utility_system_tenant_id_fn()

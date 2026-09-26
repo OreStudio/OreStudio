@@ -46,7 +46,7 @@ domain::image generate_synthetic_image(utility::generation::generation_context& 
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.key = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.description = std::string(faker::word::noun()) + " image";
     r.mime_type = std::string(faker::word::noun());
     r.data = std::string(faker::word::noun());

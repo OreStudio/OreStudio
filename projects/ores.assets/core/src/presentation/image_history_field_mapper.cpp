@@ -34,7 +34,7 @@ std::vector<ores::diff::domain::field_value> render_image_fields(const domain::i
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
-    fields.push_back({.name = "Key", .value = v.key});
+    fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Mime Type", .value = v.mime_type});
     fields.push_back({.name = "Data", .value = v.data});

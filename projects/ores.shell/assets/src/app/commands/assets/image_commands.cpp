@@ -126,63 +126,63 @@ void image_commands::register_commands(cli::Menu& root_menu, nats_client& sessio
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <key>");
+        "get <id>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <key>");
+        "get-many <id>");
 
     menu->Insert(
         "add",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <key> <description> <mime_type> <data> <reason> <commentary>");
+        "add <id> <code> <description> <mime_type> <data> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <key> <description> <mime_type> <data> <reason> <commentary> [--version <n>]");
+        "set <id> <code> <description> <mime_type> <data> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <key> <description> <mime_type> <data> <reason> <commentary>");
+        "put-many --count <n> <id> <code> <description> <mime_type> <data> <reason> <commentary>");
 
     menu->Insert(
         "delete",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <key> <reason> <commentary> [--version <n>]");
+        "delete <id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <key> <reason> <commentary>");
+        "delete-many <id> <reason> <commentary>");
 
     menu->Insert(
         "versions",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <key> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <key> --version <n>");
+        "version <id> --version <n>");
 
     root_menu.Insert(std::move(menu));
 }
@@ -264,7 +264,6 @@ void image_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.key, parsed->positionals[next++], "key");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -309,7 +308,7 @@ void image_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::image_key key;
-            read_token(key.key, parsed->positionals[i + 0], "key");
+            read_token(key.id, parsed->positionals[i + 0], "id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -355,7 +354,7 @@ void image_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.key, parsed->positionals[next++], "key");
+        read_token(req.change.write.code, parsed->positionals[next++], "code");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
         read_token(req.change.write.mime_type, parsed->positionals[next++], "mime_type");
         read_token(req.change.write.data, parsed->positionals[next++], "data");
@@ -407,7 +406,7 @@ void image_commands::process_set(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.key, parsed->positionals[next++], "key");
+        read_token(req.change.write.code, parsed->positionals[next++], "code");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
         read_token(req.change.write.mime_type, parsed->positionals[next++], "mime_type");
         read_token(req.change.write.data, parsed->positionals[next++], "data");
@@ -473,7 +472,7 @@ void image_commands::process_put_many(std::ostream& out,
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::image_change change;
             read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.key, parsed->positionals[next++], "key");
+            read_token(change.write.code, parsed->positionals[next++], "code");
             read_token(change.write.description, parsed->positionals[next++], "description");
             read_token(change.write.mime_type, parsed->positionals[next++], "mime_type");
             read_token(change.write.data, parsed->positionals[next++], "data");
@@ -526,7 +525,6 @@ void image_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.key, parsed->positionals[next++], "key");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -580,7 +578,7 @@ void image_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::image_key key;
-            read_token(key.key, parsed->positionals[i * 1 + 0], "key");
+            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
             req.removals.push_back(messaging::image_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -632,7 +630,6 @@ void image_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.key, parsed->positionals[next++], "key");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -678,7 +675,6 @@ void image_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.image.key, parsed->positionals[next++], "key");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

@@ -57,10 +57,13 @@ struct image final {
     boost::uuids::uuid id;
 
     /**
-     * @brief Human-meaningful image key, unique within the tenant. Callers ask for an image by this
-     * key, for example GBP or gold.
+     * @brief Human-meaningful image code, unique within the tenant. Callers ask for an image by
+     * this code, for example GBP or gold. The column is named code rather than key because the
+     * notify-trigger template derives a changed_<natural key> variable from the column name and
+     * already holds a changed_key of its own, so a natural key called key declares the name twice
+     * and the trigger fails to create.
      */
-    std::string key;
+    std::string code;
 
     /**
      * @brief What the image depicts.

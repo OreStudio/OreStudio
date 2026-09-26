@@ -46,7 +46,7 @@ struct image_entity {
     std::string tenant_id;
     int version = 0;
 
-    std::string key;
+    std::string code;
 
     std::string description;
     std::string mime_type = "image/svg+xml";

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 50148376-3D8B-44A9-A851-2D38CE997B9B
+:END:
+#+title: A notify trigger collides when a natural key is called key
+#+description: The notify-trigger template declares changed_key jsonb and derives a changed_<natural key column> variable for the entity's key. An entity whose natural key column is called key therefore declares changed_key twice, once text and once jsonb, and create function fails with duplicate declaration. Found on ores.assets.image. Fix belongs in the template by namespacing the payload variable, but that rewrites the 210 generated notify triggers tree-wide plus iam, so the assets story renamed its column to code and filed this instead.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:generator-defect:notify-trigger:tech_debt:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

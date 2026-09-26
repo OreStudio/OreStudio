@@ -41,7 +41,7 @@ domain::image image_mapper::map(const image_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
 
-    r.key = v.key;
+    r.code = v.code;
 
     r.description = v.description;
     r.mime_type = v.mime_type;
@@ -64,7 +64,7 @@ image_entity image_mapper::map(const domain::image& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
 
-    r.key = v.key;
+    r.code = v.code;
 
     r.description = v.description;
     r.mime_type = v.mime_type;

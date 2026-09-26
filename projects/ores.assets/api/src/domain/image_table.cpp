@@ -33,11 +33,11 @@ std::string convert_to_table(const std::vector<image>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Key" << "Description" << "Media Type" << "Modified By"
+    table << fort::header << "ID" << "Code" << "Description" << "Media Type" << "Modified By"
           << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& i : v) {
-        table << i.id << i.key << i.description << i.mime_type << i.modified_by << i.recorded_at
+        table << i.id << i.code << i.description << i.mime_type << i.modified_by << i.recorded_at
               << fort::endr;
     }
     return table.to_string();

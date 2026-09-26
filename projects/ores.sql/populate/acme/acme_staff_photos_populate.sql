@@ -42,11 +42,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age20_european_02'
+          and code = 'acme_staff_photo:female_age20_european_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'bce409d9-90ac-51a6-9c30-50be96611e57', ores_utility_system_tenant_id_fn(), 0,
@@ -59,11 +59,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_south_asian_01'
+          and code = 'acme_staff_photo:male_age20_south_asian_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '9be42315-04c8-5230-a5f4-dfd5e1183d10', ores_utility_system_tenant_id_fn(), 0,
@@ -76,11 +76,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age20_african_02'
+          and code = 'acme_staff_photo:female_age20_african_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '049d51ec-6aba-5d14-8333-e46ebf0d2c7c', ores_utility_system_tenant_id_fn(), 0,
@@ -93,11 +93,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_west_asian_01'
+          and code = 'acme_staff_photo:male_age20_west_asian_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '0e7cddd8-5f7c-5726-8deb-487a6be4f743', ores_utility_system_tenant_id_fn(), 0,
@@ -110,11 +110,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age20_european_03'
+          and code = 'acme_staff_photo:female_age20_european_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'c831cc8d-a7a9-515e-a7eb-a0f6784fe40e', ores_utility_system_tenant_id_fn(), 0,
@@ -127,11 +127,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_south_asian_02'
+          and code = 'acme_staff_photo:male_age20_south_asian_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'b7d11740-cb19-54b6-975d-db06ceb5d7cf', ores_utility_system_tenant_id_fn(), 0,
@@ -144,11 +144,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age20_african_03'
+          and code = 'acme_staff_photo:female_age20_african_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '60a13f19-4549-5a2d-8bdf-e402fae4c26b', ores_utility_system_tenant_id_fn(), 0,
@@ -161,11 +161,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_west_asian_02'
+          and code = 'acme_staff_photo:male_age20_west_asian_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'eeac3011-d6d9-5fe0-a2e7-6ddbfff71d00', ores_utility_system_tenant_id_fn(), 0,
@@ -178,11 +178,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age25_european_01'
+          and code = 'acme_staff_photo:female_age25_european_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'f08ca3e2-f585-5396-a051-28fa735676f6', ores_utility_system_tenant_id_fn(), 0,
@@ -195,11 +195,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_south_asian_03'
+          and code = 'acme_staff_photo:male_age20_south_asian_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '184a4c25-7a70-5642-b72b-092e3bdf230e', ores_utility_system_tenant_id_fn(), 0,
@@ -212,11 +212,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age25_african_01'
+          and code = 'acme_staff_photo:female_age25_african_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '2f82de7f-1fdf-5203-bab7-54414d98757e', ores_utility_system_tenant_id_fn(), 0,
@@ -229,11 +229,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_west_asian_03'
+          and code = 'acme_staff_photo:male_age20_west_asian_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '9318b4fd-6c3c-5562-b13a-365ad1a3d56e', ores_utility_system_tenant_id_fn(), 0,
@@ -246,11 +246,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age25_european_02'
+          and code = 'acme_staff_photo:female_age25_european_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'cbd573b3-c912-568d-a534-d0b86081ca51', ores_utility_system_tenant_id_fn(), 0,
@@ -263,11 +263,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age25_south_asian_01'
+          and code = 'acme_staff_photo:male_age25_south_asian_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'ce8a1b87-10bb-5e12-ad24-e650b0696e4b', ores_utility_system_tenant_id_fn(), 0,
@@ -280,11 +280,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age25_african_02'
+          and code = 'acme_staff_photo:female_age25_african_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'fc510d43-7d6c-5257-a2fc-e226ea6a4f0b', ores_utility_system_tenant_id_fn(), 0,
@@ -297,11 +297,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age25_west_asian_01'
+          and code = 'acme_staff_photo:male_age25_west_asian_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '50b4da75-a971-5dd3-9257-a9853d41daee', ores_utility_system_tenant_id_fn(), 0,
@@ -314,11 +314,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age25_european_03'
+          and code = 'acme_staff_photo:female_age25_european_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '45503bec-a119-5e27-b70f-060b7c29fb2b', ores_utility_system_tenant_id_fn(), 0,
@@ -331,11 +331,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age25_south_asian_02'
+          and code = 'acme_staff_photo:male_age25_south_asian_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '005644a9-9ba0-532b-8b70-558f07d0dc42', ores_utility_system_tenant_id_fn(), 0,
@@ -348,11 +348,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age25_african_03'
+          and code = 'acme_staff_photo:female_age25_african_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '64230398-40d9-5658-9af7-32b39ac3b13f', ores_utility_system_tenant_id_fn(), 0,
@@ -365,11 +365,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age30_european_01'
+          and code = 'acme_staff_photo:female_age30_european_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'f99ab39c-d8af-5d6f-a198-b04da59d96c2', ores_utility_system_tenant_id_fn(), 0,
@@ -382,11 +382,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_african_01'
+          and code = 'acme_staff_photo:male_age20_african_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '3c9c0991-c30e-538a-8586-b8ad3818d8dd', ores_utility_system_tenant_id_fn(), 0,
@@ -399,11 +399,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age20_latin_american_01'
+          and code = 'acme_staff_photo:female_age20_latin_american_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'e2521b1d-4aa0-5301-b6f5-d583b01de0c3', ores_utility_system_tenant_id_fn(), 0,
@@ -416,11 +416,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_east_asian_01'
+          and code = 'acme_staff_photo:male_age20_east_asian_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '9df21fc8-b165-5f54-b9b7-1ffca09ce25a', ores_utility_system_tenant_id_fn(), 0,
@@ -433,11 +433,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age20_south_asian_01'
+          and code = 'acme_staff_photo:female_age20_south_asian_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '3f9af1a5-2afd-5c66-9568-e3e95c064bc5', ores_utility_system_tenant_id_fn(), 0,
@@ -450,11 +450,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_european_02'
+          and code = 'acme_staff_photo:male_age20_european_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '7e5a7427-2477-5e8c-b328-d2ec62436a43', ores_utility_system_tenant_id_fn(), 0,
@@ -467,11 +467,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age30_african_01'
+          and code = 'acme_staff_photo:female_age30_african_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '08a8a5c2-91f9-5799-9b87-6df8d9f9d1be', ores_utility_system_tenant_id_fn(), 0,
@@ -484,11 +484,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_latin_american_02'
+          and code = 'acme_staff_photo:male_age20_latin_american_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'e24fad32-77ca-5c56-bbc6-2c1d77a883aa', ores_utility_system_tenant_id_fn(), 0,
@@ -501,11 +501,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age20_east_asian_01'
+          and code = 'acme_staff_photo:female_age20_east_asian_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'f5aba29b-0a3f-575e-8335-4d4880978cc0', ores_utility_system_tenant_id_fn(), 0,
@@ -518,11 +518,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age25_south_asian_03'
+          and code = 'acme_staff_photo:male_age25_south_asian_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '634315fa-86e3-57e1-8048-66acbc305bba', ores_utility_system_tenant_id_fn(), 0,
@@ -535,11 +535,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age30_european_02'
+          and code = 'acme_staff_photo:female_age30_european_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '126a64ed-aa41-57e1-879e-1df3752a8b30', ores_utility_system_tenant_id_fn(), 0,
@@ -552,11 +552,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_african_02'
+          and code = 'acme_staff_photo:male_age20_african_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'f6f4bab0-99da-5315-9de2-e9bff86a28c8', ores_utility_system_tenant_id_fn(), 0,
@@ -569,11 +569,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age20_latin_american_02'
+          and code = 'acme_staff_photo:female_age20_latin_american_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'df748fdd-371c-5ba1-a07b-cba30548fb9d', ores_utility_system_tenant_id_fn(), 0,
@@ -586,11 +586,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_east_asian_02'
+          and code = 'acme_staff_photo:male_age20_east_asian_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'ce77cb1a-d998-5d7e-8e8b-e5636b741144', ores_utility_system_tenant_id_fn(), 0,
@@ -603,11 +603,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age20_south_asian_02'
+          and code = 'acme_staff_photo:female_age20_south_asian_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'f37ec884-13f5-5020-8505-5869ad9de5a6', ores_utility_system_tenant_id_fn(), 0,
@@ -620,11 +620,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age25_european_01'
+          and code = 'acme_staff_photo:male_age25_european_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '37f1ceba-1f0a-592a-82df-cc6744f87f39', ores_utility_system_tenant_id_fn(), 0,
@@ -637,11 +637,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age30_african_03'
+          and code = 'acme_staff_photo:female_age30_african_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '54c9237a-9d7d-5a42-8159-88d28f347097', ores_utility_system_tenant_id_fn(), 0,
@@ -654,11 +654,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_latin_american_03'
+          and code = 'acme_staff_photo:male_age20_latin_american_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'a9a7b2a8-570c-598d-81c0-237d53f8ea48', ores_utility_system_tenant_id_fn(), 0,
@@ -671,11 +671,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age20_east_asian_03'
+          and code = 'acme_staff_photo:female_age20_east_asian_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'ea3790cb-3fe0-59d9-9c18-dda1a1c995e1', ores_utility_system_tenant_id_fn(), 0,
@@ -688,11 +688,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age25_east_asian_01'
+          and code = 'acme_staff_photo:female_age25_east_asian_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '9e5926d4-4c74-512c-8463-b9ac87eacf37', ores_utility_system_tenant_id_fn(), 0,
@@ -705,11 +705,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_southeast_asian_01'
+          and code = 'acme_staff_photo:male_age20_southeast_asian_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '71dde079-2acb-5bb2-8a93-88f84bdd8cdb', ores_utility_system_tenant_id_fn(), 0,
@@ -722,11 +722,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age25_east_asian_02'
+          and code = 'acme_staff_photo:female_age25_east_asian_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '0c602757-c145-577a-ba6d-2558c548277e', ores_utility_system_tenant_id_fn(), 0,
@@ -739,11 +739,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_southeast_asian_02'
+          and code = 'acme_staff_photo:male_age20_southeast_asian_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '5355f8a9-93f4-5c7a-bfe1-baebbe95b8dc', ores_utility_system_tenant_id_fn(), 0,
@@ -756,11 +756,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age25_east_asian_03'
+          and code = 'acme_staff_photo:female_age25_east_asian_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'bcf3575c-dd0b-578a-8f20-24ab38354db1', ores_utility_system_tenant_id_fn(), 0,
@@ -773,11 +773,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_southeast_asian_03'
+          and code = 'acme_staff_photo:male_age20_southeast_asian_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '70dc9a78-c0ca-50df-9b8e-0ba6393ca8ce', ores_utility_system_tenant_id_fn(), 0,
@@ -790,11 +790,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age30_east_asian_01'
+          and code = 'acme_staff_photo:female_age30_east_asian_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '4f126be4-310c-54a4-9cf8-1e8477324e88', ores_utility_system_tenant_id_fn(), 0,
@@ -807,11 +807,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age25_southeast_asian_01'
+          and code = 'acme_staff_photo:male_age25_southeast_asian_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '49aed8e8-1742-51b8-a324-62aace1afec3', ores_utility_system_tenant_id_fn(), 0,
@@ -824,11 +824,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age30_east_asian_03'
+          and code = 'acme_staff_photo:female_age30_east_asian_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '64f3f29b-73fd-5adf-aa64-7611864f54b3', ores_utility_system_tenant_id_fn(), 0,
@@ -841,11 +841,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age25_southeast_asian_03'
+          and code = 'acme_staff_photo:male_age25_southeast_asian_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '73e99189-d602-5c56-97be-0e2def6c5e84', ores_utility_system_tenant_id_fn(), 0,
@@ -858,11 +858,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age35_east_asian_01'
+          and code = 'acme_staff_photo:female_age35_east_asian_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'd2b24e86-20d1-5de7-90c4-72bed117fcba', ores_utility_system_tenant_id_fn(), 0,
@@ -875,11 +875,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age30_southeast_asian_01'
+          and code = 'acme_staff_photo:male_age30_southeast_asian_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '80008440-24ba-5e92-b086-3897864283ba', ores_utility_system_tenant_id_fn(), 0,
@@ -892,11 +892,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age35_east_asian_02'
+          and code = 'acme_staff_photo:female_age35_east_asian_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '817faf61-e40d-5e12-b227-928e5815e8b2', ores_utility_system_tenant_id_fn(), 0,
@@ -909,11 +909,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age30_southeast_asian_02'
+          and code = 'acme_staff_photo:male_age30_southeast_asian_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '79bf9d21-aa87-5ad6-b4bf-3f3d929d3f8f', ores_utility_system_tenant_id_fn(), 0,
@@ -926,11 +926,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age40_east_asian_01'
+          and code = 'acme_staff_photo:female_age40_east_asian_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '8439333f-ba46-5bb3-9648-c3b3181b3c16', ores_utility_system_tenant_id_fn(), 0,
@@ -943,11 +943,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age30_southeast_asian_03'
+          and code = 'acme_staff_photo:male_age30_southeast_asian_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'abd7663c-25f1-5498-84d1-0a012f1d6146', ores_utility_system_tenant_id_fn(), 0,
@@ -960,11 +960,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age40_east_asian_02'
+          and code = 'acme_staff_photo:female_age40_east_asian_02'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'af22f95f-0b8c-5ad2-9b04-411ec1539a86', ores_utility_system_tenant_id_fn(), 0,
@@ -977,11 +977,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age35_southeast_asian_01'
+          and code = 'acme_staff_photo:male_age35_southeast_asian_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '6a3cc706-5903-5aab-b415-5a2df85750b9', ores_utility_system_tenant_id_fn(), 0,
@@ -994,11 +994,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:female_age40_east_asian_03'
+          and code = 'acme_staff_photo:female_age40_east_asian_03'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             'bb1c0ef2-bdd3-5b5b-ade1-305d1ae2db8d', ores_utility_system_tenant_id_fn(), 0,
@@ -1011,11 +1011,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_staff_photo:male_age20_european_01'
+          and code = 'acme_staff_photo:male_age20_european_01'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             '89b3bc34-78ad-5998-b935-23fb06a692da', ores_utility_system_tenant_id_fn(), 0,

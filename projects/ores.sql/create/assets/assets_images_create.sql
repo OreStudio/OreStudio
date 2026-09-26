@@ -35,7 +35,7 @@ create table if not exists "ores_assets_images_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
-    "key" text not null,
+    "code" text not null,
     "description" text not null,
     "mime_type" text not null default 'image/svg+xml',
     "data" text not null,
@@ -55,9 +55,9 @@ create table if not exists "ores_assets_images_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn())
 );
 
--- Unique key for active records
-create unique index if not exists images_key_uniq_idx
-on "ores_assets_images_tbl" (tenant_id, key)
+-- Unique code for active records
+create unique index if not exists images_code_uniq_idx
+on "ores_assets_images_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

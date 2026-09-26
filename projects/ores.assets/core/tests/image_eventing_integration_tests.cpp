@@ -142,7 +142,7 @@ TEST_CASE("write_image_publishes_an_event", tags) {
                 auto decoded = ores::nats::default_wire_codec().decode<event_type>(msg.data);
                 // The event carries the row's own key record, so the row under
                 // test is recognised by comparing it with the row written.
-                if (decoded && decoded->key.key == v.key)
+                if (decoded && decoded->key.id == v.id)
                     received.push_back(msg);
             }
         }

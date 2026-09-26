@@ -83,7 +83,7 @@ messaging::image_key key_from(const domain::image& v) {
 domain::image to_domain(const messaging::image_write& write) {
     domain::image v;
     v.id = write.id;
-    v.key = write.key;
+    v.code = write.code;
     v.description = write.description;
     v.mime_type = write.mime_type;
     v.data = write.data;

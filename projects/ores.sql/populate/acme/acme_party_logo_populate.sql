@@ -45,11 +45,11 @@ BEGIN
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = 'acme_party_logo'
+          and code = 'acme_party_logo'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0,

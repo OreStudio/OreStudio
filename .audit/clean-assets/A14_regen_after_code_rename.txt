@@ -1,0 +1,814 @@
+Regenerating component 'assets-cpp' at address 'ores.cmake'...
+INFO Regenerating 4 models for component 'assets-cpp' (address: ores.cmake)...
+Generated projects/ores.assets/CMakeLists.txt
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/CMakeLists.txt
+INFO Regeneration complete.
+Regenerating component 'assets-cpp' at address 'ores.cpp'...
+INFO Regenerating 4 models for component 'assets-cpp' (address: ores.cpp)...
+WARNING component_overview.org: nothing to generate for 'ores.cpp' (model type 'component')
+Generated projects/ores.assets/api/include/ores.assets.api/domain/image.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/domain/image.hpp
+Generated projects/ores.assets/api/include/ores.assets.api/domain/image_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/domain/image_json_io.hpp
+Generated projects/ores.assets/api/src/domain/image_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/src/domain/image_json_io.cpp
+Generated projects/ores.assets/api/include/ores.assets.api/domain/image_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/domain/image_table.hpp
+Generated projects/ores.assets/api/src/domain/image_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/src/domain/image_table.cpp
+Generated projects/ores.assets/api/include/ores.assets.api/domain/image_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/domain/image_table_io.hpp
+Generated projects/ores.assets/api/src/domain/image_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/src/domain/image_table_io.cpp
+Generated projects/ores.assets/core/tests/image_eventing_integration_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/tests/image_eventing_integration_tests.cpp
+Generated projects/ores.assets/api/include/ores.assets.api/generators/image_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/generators/image_generator.hpp
+Generated projects/ores.assets/api/src/generators/image_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/src/generators/image_generator.cpp
+Generated projects/ores.assets/core/include/ores.assets.core/messaging/image_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/messaging/image_history_provider_registrar.hpp
+Generated projects/ores.assets/core/src/messaging/image_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/messaging/image_history_provider_registrar.cpp
+Generated projects/ores.assets/service/include/ores.assets.service/messaging/image_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/service/include/ores.assets.service/messaging/image_event_registrar.hpp
+Generated projects/ores.assets/service/src/messaging/image_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/service/src/messaging/image_event_registrar.cpp
+Generated projects/ores.assets/api/include/ores.assets.api/eventing/image_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/eventing/image_event.hpp
+Generated projects/ores.assets/core/include/ores.assets.core/messaging/image_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/messaging/image_handler.hpp
+Generated projects/ores.assets/core/include/ores.assets.core/messaging/image_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/messaging/image_registrar.hpp
+Generated projects/ores.assets/core/src/messaging/image_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/messaging/image_registrar.cpp
+Generated projects/ores.assets/core/include/ores.assets.core/presentation/image_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/presentation/image_history_field_mapper.hpp
+Generated projects/ores.assets/core/src/presentation/image_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/presentation/image_history_field_mapper.cpp
+Generated projects/ores.assets/api/include/ores.assets.api/messaging/image_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/messaging/image_protocol.hpp
+Generated projects/ores.assets/core/include/ores.assets.core/repository/image_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/repository/image_entity.hpp
+Generated projects/ores.assets/core/src/repository/image_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/repository/image_entity.cpp
+Generated projects/ores.assets/core/include/ores.assets.core/repository/image_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/repository/image_mapper.hpp
+Generated projects/ores.assets/core/src/repository/image_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/repository/image_mapper.cpp
+Generated projects/ores.assets/core/include/ores.assets.core/repository/image_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/repository/image_repository.hpp
+Generated projects/ores.assets/core/src/repository/image_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/repository/image_repository.cpp
+Generated projects/ores.assets/core/include/ores.assets.core/service/image_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/service/image_service.hpp
+Generated projects/ores.assets/core/src/service/image_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/service/image_service.cpp
+Generated projects/ores.shell/assets/include/ores.shell/app/commands/assets/image_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.shell/assets/include/ores.shell/app/commands/assets/image_commands.hpp
+Generated projects/ores.shell/assets/src/app/commands/assets/image_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.shell/assets/src/app/commands/assets/image_commands.cpp
+Generated projects/ores.shell/assets/tests/image_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.shell/assets/tests/image_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+Generated projects/ores.assets/api/include/ores.assets.api/domain/image_tag.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/domain/image_tag.hpp
+Generated projects/ores.assets/api/include/ores.assets.api/domain/image_tag_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/domain/image_tag_json_io.hpp
+Generated projects/ores.assets/api/src/domain/image_tag_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/src/domain/image_tag_json_io.cpp
+Generated projects/ores.assets/api/include/ores.assets.api/domain/image_tag_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/domain/image_tag_table.hpp
+Generated projects/ores.assets/api/src/domain/image_tag_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/src/domain/image_tag_table.cpp
+Generated projects/ores.assets/api/include/ores.assets.api/domain/image_tag_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/domain/image_tag_table_io.hpp
+Generated projects/ores.assets/api/src/domain/image_tag_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/src/domain/image_tag_table_io.cpp
+Generated projects/ores.assets/api/include/ores.assets.api/generators/image_tag_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/generators/image_tag_generator.hpp
+Generated projects/ores.assets/api/src/generators/image_tag_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/src/generators/image_tag_generator.cpp
+Generated projects/ores.assets/api/include/ores.assets.api/messaging/image_tag_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/messaging/image_tag_protocol.hpp
+Generated projects/ores.assets/core/include/ores.assets.core/repository/image_tag_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/repository/image_tag_entity.hpp
+Generated projects/ores.assets/core/src/repository/image_tag_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/repository/image_tag_entity.cpp
+Generated projects/ores.assets/core/include/ores.assets.core/repository/image_tag_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/repository/image_tag_mapper.hpp
+Generated projects/ores.assets/core/src/repository/image_tag_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/repository/image_tag_mapper.cpp
+Generated projects/ores.assets/core/include/ores.assets.core/repository/image_tag_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/repository/image_tag_repository.hpp
+Generated projects/ores.assets/core/src/repository/image_tag_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/repository/image_tag_repository.cpp
+Generated projects/ores.shell/assets/include/ores.shell/app/commands/assets/image_tag_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.shell/assets/include/ores.shell/app/commands/assets/image_tag_commands.hpp
+Generated projects/ores.shell/assets/src/app/commands/assets/image_tag_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.shell/assets/src/app/commands/assets/image_tag_commands.cpp
+Generated projects/ores.shell/assets/tests/image_tag_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.shell/assets/tests/image_tag_commands_tests.cpp
+INFO clang-formatted 19 generated C++ file(s) (two passes)
+Generated projects/ores.assets/api/include/ores.assets.api/domain/tag.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/domain/tag.hpp
+Generated projects/ores.assets/api/include/ores.assets.api/domain/tag_json_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/domain/tag_json_io.hpp
+Generated projects/ores.assets/api/src/domain/tag_json_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/src/domain/tag_json_io.cpp
+Generated projects/ores.assets/api/include/ores.assets.api/domain/tag_table.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/domain/tag_table.hpp
+Generated projects/ores.assets/api/src/domain/tag_table.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/src/domain/tag_table.cpp
+Generated projects/ores.assets/api/include/ores.assets.api/domain/tag_table_io.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/domain/tag_table_io.hpp
+Generated projects/ores.assets/api/src/domain/tag_table_io.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/src/domain/tag_table_io.cpp
+Generated projects/ores.assets/core/tests/tag_eventing_integration_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/tests/tag_eventing_integration_tests.cpp
+Generated projects/ores.assets/api/include/ores.assets.api/generators/tag_generator.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/generators/tag_generator.hpp
+Generated projects/ores.assets/api/src/generators/tag_generator.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/src/generators/tag_generator.cpp
+Generated projects/ores.assets/core/include/ores.assets.core/messaging/tag_history_provider_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/messaging/tag_history_provider_registrar.hpp
+Generated projects/ores.assets/core/src/messaging/tag_history_provider_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/messaging/tag_history_provider_registrar.cpp
+Generated projects/ores.assets/service/include/ores.assets.service/messaging/tag_event_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/service/include/ores.assets.service/messaging/tag_event_registrar.hpp
+Generated projects/ores.assets/service/src/messaging/tag_event_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/service/src/messaging/tag_event_registrar.cpp
+Generated projects/ores.assets/api/include/ores.assets.api/eventing/tag_event.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/eventing/tag_event.hpp
+Generated projects/ores.assets/core/include/ores.assets.core/messaging/tag_handler.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/messaging/tag_handler.hpp
+Generated projects/ores.assets/core/include/ores.assets.core/messaging/tag_registrar.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/messaging/tag_registrar.hpp
+Generated projects/ores.assets/core/src/messaging/tag_registrar.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/messaging/tag_registrar.cpp
+Generated projects/ores.assets/core/include/ores.assets.core/presentation/tag_history_field_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/presentation/tag_history_field_mapper.hpp
+Generated projects/ores.assets/core/src/presentation/tag_history_field_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/presentation/tag_history_field_mapper.cpp
+Generated projects/ores.assets/api/include/ores.assets.api/messaging/tag_protocol.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/api/include/ores.assets.api/messaging/tag_protocol.hpp
+Generated projects/ores.assets/core/include/ores.assets.core/repository/tag_entity.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/repository/tag_entity.hpp
+Generated projects/ores.assets/core/src/repository/tag_entity.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/repository/tag_entity.cpp
+Generated projects/ores.assets/core/include/ores.assets.core/repository/tag_mapper.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/repository/tag_mapper.hpp
+Generated projects/ores.assets/core/src/repository/tag_mapper.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/repository/tag_mapper.cpp
+Generated projects/ores.assets/core/include/ores.assets.core/repository/tag_repository.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/repository/tag_repository.hpp
+Generated projects/ores.assets/core/src/repository/tag_repository.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/repository/tag_repository.cpp
+Generated projects/ores.assets/core/include/ores.assets.core/service/tag_service.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/include/ores.assets.core/service/tag_service.hpp
+Generated projects/ores.assets/core/src/service/tag_service.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.assets/core/src/service/tag_service.cpp
+Generated projects/ores.shell/assets/include/ores.shell/app/commands/assets/tag_commands.hpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.shell/assets/include/ores.shell/app/commands/assets/tag_commands.hpp
+Generated projects/ores.shell/assets/src/app/commands/assets/tag_commands.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.shell/assets/src/app/commands/assets/tag_commands.cpp
+Generated projects/ores.shell/assets/tests/tag_commands_tests.cpp
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.shell/assets/tests/tag_commands_tests.cpp
+INFO clang-formatted 32 generated C++ file(s) (two passes)
+INFO Regeneration complete.
+Regenerating component 'assets-cpp' at address 'ores.doc'...
+INFO Regenerating 4 models for component 'assets-cpp' (address: ores.doc)...
+WARNING component_overview.org: nothing to generate for 'ores.doc' (model type 'component')
+Generated doc/recipes/shell/images/image.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/doc/recipes/shell/images/image.org
+Generated doc/recipes/shell/image_tags/image_tag.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/doc/recipes/shell/image_tags/image_tag.org
+Generated doc/recipes/shell/tags/tag.org
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/doc/recipes/shell/tags/tag.org
+INFO Regeneration complete.
+Regenerating component 'assets-cpp' at address 'ores.plantuml'...
+INFO Regenerating 4 models for component 'assets-cpp' (address: ores.plantuml)...
+INFO Regeneration complete.
+Regenerating component 'assets-cpp' at address 'ores.shell'...
+INFO Regenerating 4 models for component 'assets-cpp' (address: ores.shell)...
+INFO Regeneration complete.
+Regenerating component 'assets-cpp' at address 'ores.sql'...
+INFO Regenerating 4 models for component 'assets-cpp' (address: ores.sql)...
+Generated projects/ores.sql/create/assets/assets_images_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.sql/create/assets/assets_images_create.sql
+Generated projects/ores.sql/drop/assets/assets_images_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.sql/drop/assets/assets_images_drop.sql
+Generated projects/ores.sql/create/assets/assets_images_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.sql/create/assets/assets_images_notify_trigger_create.sql
+Generated projects/ores.sql/drop/assets/assets_images_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.sql/drop/assets/assets_images_notify_trigger_drop.sql
+Generated projects/ores.sql/create/assets/assets_image_tag_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.sql/create/assets/assets_image_tag_create.sql
+Generated projects/ores.sql/create/assets/assets_tags_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.sql/create/assets/assets_tags_create.sql
+Generated projects/ores.sql/drop/assets/assets_tags_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.sql/drop/assets/assets_tags_drop.sql
+Generated projects/ores.sql/create/assets/assets_tags_notify_trigger_create.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.sql/create/assets/assets_tags_notify_trigger_create.sql
+Generated projects/ores.sql/drop/assets/assets_tags_notify_trigger_drop.sql
+INFO Wrote /home/marco/Development/OreStudio/ores_dev_jolly_knuth/projects/ores.sql/drop/assets/assets_tags_notify_trigger_drop.sql
+INFO Regeneration complete.
+
+--- drifted file(s) ---
+ doc/recipes/shell/images/image.org                 | 30 ++++++++++----------
+ .../api/include/ores.assets.api/domain/image.hpp   |  9 ++++--
+ .../ores.assets.api/messaging/image_protocol.hpp   |  4 +--
+ .../api/src/generators/image_generator.cpp         |  2 +-
+ .../ores.assets.core/repository/image_entity.hpp   |  2 +-
+ .../presentation/image_history_field_mapper.cpp    |  2 +-
+ .../core/src/repository/image_mapper.cpp           |  4 +--
+ .../ores.assets/core/src/service/image_service.cpp |  2 +-
+ .../tests/image_eventing_integration_tests.cpp     |  2 +-
+ .../ores.assets/modeling/ores.assets.image.org     | 10 +++++--
+ .../app/commands/assets/image_commands.hpp         | 19 +++++++------
+ .../src/app/commands/assets/image_commands.cpp     | 32 ++++++++++------------
+ .../create/assets/assets_images_create.sql         |  8 +++---
+ .../assets/assets_images_notify_trigger_create.sql |  8 +++---
+ 14 files changed, 69 insertions(+), 65 deletions(-)
+
+--- unified diff ---
+diff --git a/doc/recipes/shell/images/image.org b/doc/recipes/shell/images/image.org
+index 608c15cf09..b021db117d 100644
+--- a/doc/recipes/shell/images/image.org
++++ b/doc/recipes/shell/images/image.org
+@@ -43,14 +43,14 @@ Reads the one row its key addresses. A key states every identifying column, so a
+ The command is shaped like this:
+ 
+ #+begin_example
+-images get <key>
++images get <id>
+ #+end_example
+ 
+ It is addressed at =assets.v1.images.get=.
+ 
+ #+name: images-get
+ #+begin_src ores-shell :tangle images-get.ores :exports none
+-images get __none__
++images get 00000000-0000-0000-0000-000000000000
+ #+end_src
+ 
+ ** =get-many=
+@@ -64,14 +64,14 @@ Reads several rows in one request, one key group per row.
+ The command is shaped like this:
+ 
+ #+begin_example
+-images get-many <key>
++images get-many <id>
+ #+end_example
+ 
+ It is addressed at =assets.v1.images.get_many=.
+ 
+ #+name: images-get-many
+ #+begin_src ores-shell :tangle images-get-many.ores :exports none
+-images get-many __none__
++images get-many 00000000-0000-0000-0000-000000000000
+ #+end_src
+ 
+ ** =add=
+@@ -85,7 +85,7 @@ Writes a row. The change states that the row must not exist, so a create that co
+ The command is shaped like this:
+ 
+ #+begin_example
+-images add <id> <key> <description> <mime_type> <data> <reason> <commentary>
++images add <id> <code> <description> <mime_type> <data> <reason> <commentary>
+ #+end_example
+ 
+ It is addressed at =assets.v1.images.put=.
+@@ -106,7 +106,7 @@ Writes a row. The change states no precondition, so it replaces whatever row the
+ The command is shaped like this:
+ 
+ #+begin_example
+-images set <id> <key> <description> <mime_type> <data> <reason> <commentary> [--version <n>]
++images set <id> <code> <description> <mime_type> <data> <reason> <commentary> [--version <n>]
+ #+end_example
+ 
+ It is addressed at =assets.v1.images.put=.
+@@ -127,7 +127,7 @@ Writes several rows in one request. The count states how many field groups follo
+ The command is shaped like this:
+ 
+ #+begin_example
+-images put-many --count <n> <id> <key> <description> <mime_type> <data> <reason> <commentary>
++images put-many --count <n> <id> <code> <description> <mime_type> <data> <reason> <commentary>
+ #+end_example
+ 
+ It is addressed at =assets.v1.images.put_many=.
+@@ -148,14 +148,14 @@ Removes a row. The change carries a reason and a commentary, which the server re
+ The command is shaped like this:
+ 
+ #+begin_example
+-images delete <key> <reason> <commentary> [--version <n>]
++images delete <id> <reason> <commentary> [--version <n>]
+ #+end_example
+ 
+ It is addressed at =assets.v1.images.delete=.
+ 
+ #+name: images-delete
+ #+begin_src ores-shell :tangle images-delete.ores :exports none
+-images delete __none__ system.new_record generated_script
++images delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+ #+end_src
+ 
+ ** =delete-many=
+@@ -169,14 +169,14 @@ Removes several rows in one request. The change carries a reason and a commentar
+ The command is shaped like this:
+ 
+ #+begin_example
+-images delete-many <key> <reason> <commentary>
++images delete-many <id> <reason> <commentary>
+ #+end_example
+ 
+ It is addressed at =assets.v1.images.delete_many=.
+ 
+ #+name: images-delete-many
+ #+begin_src ores-shell :tangle images-delete-many.ores :exports none
+-images delete-many __none__ system.new_record generated_script
++images delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+ #+end_src
+ 
+ ** =versions=
+@@ -190,14 +190,14 @@ Reads the row's recorded history, newest first.
+ The command is shaped like this:
+ 
+ #+begin_example
+-images versions <key> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
++images versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+ #+end_example
+ 
+ It is addressed at =assets.v1.images_versions.list=.
+ 
+ #+name: images-versions
+ #+begin_src ores-shell :tangle images-versions.ores :exports none
+-images versions __none__ --limit 1
++images versions 00000000-0000-0000-0000-000000000000 --limit 1
+ #+end_src
+ 
+ ** =version=
+@@ -211,13 +211,13 @@ Reads one recorded version of the row.
+ The command is shaped like this:
+ 
+ #+begin_example
+-images version <key> --version <n>
++images version <id> --version <n>
+ #+end_example
+ 
+ It is addressed at =assets.v1.images_versions.get=.
+ 
+ #+name: images-version
+ #+begin_src ores-shell :tangle images-version.ores :exports none
+-images version __none__ --version 1
++images version 00000000-0000-0000-0000-000000000000 --version 1
+ #+end_src
+ 
+diff --git a/projects/ores.assets/api/include/ores.assets.api/domain/image.hpp b/projects/ores.assets/api/include/ores.assets.api/domain/image.hpp
+index ec7c6938b4..550b05ad06 100644
+--- a/projects/ores.assets/api/include/ores.assets.api/domain/image.hpp
++++ b/projects/ores.assets/api/include/ores.assets.api/domain/image.hpp
+@@ -57,10 +57,13 @@ struct image final {
+     boost::uuids::uuid id;
+ 
+     /**
+-     * @brief Human-meaningful image key, unique within the tenant. Callers ask for an image by this
+-     * key, for example GBP or gold.
++     * @brief Human-meaningful image code, unique within the tenant. Callers ask for an image by
++     * this code, for example GBP or gold. The column is named code rather than key because the
++     * notify-trigger template derives a changed_<natural key> variable from the column name and
++     * already holds a changed_key of its own, so a natural key called key declares the name twice
++     * and the trigger fails to create.
+      */
+-    std::string key;
++    std::string code;
+ 
+     /**
+      * @brief What the image depicts.
+diff --git a/projects/ores.assets/api/include/ores.assets.api/messaging/image_protocol.hpp b/projects/ores.assets/api/include/ores.assets.api/messaging/image_protocol.hpp
+index a60b2927ae..2c7f240917 100644
+--- a/projects/ores.assets/api/include/ores.assets.api/messaging/image_protocol.hpp
++++ b/projects/ores.assets/api/include/ores.assets.api/messaging/image_protocol.hpp
+@@ -36,12 +36,12 @@
+ namespace ores::assets::messaging {
+ 
+ struct image_key {
+-    std::string key;
++    boost::uuids::uuid id;
+ };
+ 
+ struct image_write {
+     boost::uuids::uuid id;
+-    std::string key;
++    std::string code;
+     std::string description;
+     std::string mime_type;
+     std::string data;
+diff --git a/projects/ores.assets/api/src/generators/image_generator.cpp b/projects/ores.assets/api/src/generators/image_generator.cpp
+index 974b53cf2d..6e2ffe27ec 100644
+--- a/projects/ores.assets/api/src/generators/image_generator.cpp
++++ b/projects/ores.assets/api/src/generators/image_generator.cpp
+@@ -46,7 +46,7 @@ domain::image generate_synthetic_image(utility::generation::generation_context&
+         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+     r.id = ctx.generate_uuid();
+     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+-    r.key = std::string(faker::word::noun()) + "-" + std::to_string(idx);
++    r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+     r.description = std::string(faker::word::noun()) + " image";
+     r.mime_type = std::string(faker::word::noun());
+     r.data = std::string(faker::word::noun());
+diff --git a/projects/ores.assets/core/include/ores.assets.core/repository/image_entity.hpp b/projects/ores.assets/core/include/ores.assets.core/repository/image_entity.hpp
+index 6e2f7b7634..86f7c0dc97 100644
+--- a/projects/ores.assets/core/include/ores.assets.core/repository/image_entity.hpp
++++ b/projects/ores.assets/core/include/ores.assets.core/repository/image_entity.hpp
+@@ -46,7 +46,7 @@ struct image_entity {
+     std::string tenant_id;
+     int version = 0;
+ 
+-    std::string key;
++    std::string code;
+ 
+     std::string description;
+     std::string mime_type = "image/svg+xml";
+diff --git a/projects/ores.assets/core/src/presentation/image_history_field_mapper.cpp b/projects/ores.assets/core/src/presentation/image_history_field_mapper.cpp
+index f11317d6be..53f80d673f 100644
+--- a/projects/ores.assets/core/src/presentation/image_history_field_mapper.cpp
++++ b/projects/ores.assets/core/src/presentation/image_history_field_mapper.cpp
+@@ -34,7 +34,7 @@ std::vector<ores::diff::domain::field_value> render_image_fields(const domain::i
+     std::vector<field_value> fields;
+ 
+     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+-    fields.push_back({.name = "Key", .value = v.key});
++    fields.push_back({.name = "Code", .value = v.code});
+     fields.push_back({.name = "Description", .value = v.description});
+     fields.push_back({.name = "Mime Type", .value = v.mime_type});
+     fields.push_back({.name = "Data", .value = v.data});
+diff --git a/projects/ores.assets/core/src/repository/image_mapper.cpp b/projects/ores.assets/core/src/repository/image_mapper.cpp
+index 60bc88daf7..8737f836f8 100644
+--- a/projects/ores.assets/core/src/repository/image_mapper.cpp
++++ b/projects/ores.assets/core/src/repository/image_mapper.cpp
+@@ -41,7 +41,7 @@ domain::image image_mapper::map(const image_entity& v) {
+     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+ 
+-    r.key = v.key;
++    r.code = v.code;
+ 
+     r.description = v.description;
+     r.mime_type = v.mime_type;
+@@ -64,7 +64,7 @@ image_entity image_mapper::map(const domain::image& v) {
+     r.tenant_id = v.tenant_id.to_string();
+     r.version = v.version;
+ 
+-    r.key = v.key;
++    r.code = v.code;
+ 
+     r.description = v.description;
+     r.mime_type = v.mime_type;
+diff --git a/projects/ores.assets/core/src/service/image_service.cpp b/projects/ores.assets/core/src/service/image_service.cpp
+index a67e88ee5b..b5c16cab30 100644
+--- a/projects/ores.assets/core/src/service/image_service.cpp
++++ b/projects/ores.assets/core/src/service/image_service.cpp
+@@ -83,7 +83,7 @@ messaging::image_key key_from(const domain::image& v) {
+ domain::image to_domain(const messaging::image_write& write) {
+     domain::image v;
+     v.id = write.id;
+-    v.key = write.key;
++    v.code = write.code;
+     v.description = write.description;
+     v.mime_type = write.mime_type;
+     v.data = write.data;
+diff --git a/projects/ores.assets/core/tests/image_eventing_integration_tests.cpp b/projects/ores.assets/core/tests/image_eventing_integration_tests.cpp
+index b3c096790c..93fd70441e 100644
+--- a/projects/ores.assets/core/tests/image_eventing_integration_tests.cpp
++++ b/projects/ores.assets/core/tests/image_eventing_integration_tests.cpp
+@@ -142,7 +142,7 @@ TEST_CASE("write_image_publishes_an_event", tags) {
+                 auto decoded = ores::nats::default_wire_codec().decode<event_type>(msg.data);
+                 // The event carries the row's own key record, so the row under
+                 // test is recognised by comparing it with the row written.
+-                if (decoded && decoded->key.key == v.key)
++                if (decoded && decoded->key.id == v.id)
+                     received.push_back(msg);
+             }
+         }
+diff --git a/projects/ores.assets/modeling/ores.assets.image.org b/projects/ores.assets/modeling/ores.assets.image.org
+index a40502680f..6365b3ee18 100644
+--- a/projects/ores.assets/modeling/ores.assets.image.org
++++ b/projects/ores.assets/modeling/ores.assets.image.org
+@@ -38,15 +38,19 @@ image arrives either by upload or from the data-quality publish path.
+ 
+ Surrogate identifier for the image.
+ 
+-** key
++** code
+ :PROPERTIES:
+ :type:        text
+ :cpp_type:    std::string
+ :natural_key: true
+ :END:
+ 
+-Human-meaningful image key, unique within the tenant. Callers ask for an
+-image by this key, for example =GBP= or =gold=.
++Human-meaningful image code, unique within the tenant. Callers ask for an
++image by this code, for example =GBP= or =gold=. The column is named
++=code= rather than =key= because the notify-trigger template derives a
++=changed_<natural key>= variable from the column name and already holds a
++=changed_key= of its own, so a natural key called =key= declares the name
++twice and the trigger fails to create.
+ 
+ #+begin_src cpp :name generator
+ std::string(faker::word::noun())
+diff --git a/projects/ores.shell/assets/include/ores.shell/app/commands/assets/image_commands.hpp b/projects/ores.shell/assets/include/ores.shell/app/commands/assets/image_commands.hpp
+index 95bd2f2f49..6e274b2c45 100644
+--- a/projects/ores.shell/assets/include/ores.shell/app/commands/assets/image_commands.hpp
++++ b/projects/ores.shell/assets/include/ores.shell/app/commands/assets/image_commands.hpp
+@@ -72,63 +72,64 @@ public:
+                              const std::vector<std::string>& args);
+ 
+     /**
+-     * @brief get <key>
++     * @brief get <id>
+      */
+     static void process_get(std::ostream& out,
+                             ores::nats::service::nats_client& session,
+                             const std::vector<std::string>& args);
+ 
+     /**
+-     * @brief get-many <key>
++     * @brief get-many <id>
+      */
+     static void process_get_many(std::ostream& out,
+                                  ores::nats::service::nats_client& session,
+                                  const std::vector<std::string>& args);
+ 
+     /**
+-     * @brief add <id> <key> <description> <mime_type> <data> <reason> <commentary>
++     * @brief add <id> <code> <description> <mime_type> <data> <reason> <commentary>
+      */
+     static void process_add(std::ostream& out,
+                             ores::nats::service::nats_client& session,
+                             const std::vector<std::string>& args);
+ 
+     /**
+-     * @brief set <id> <key> <description> <mime_type> <data> <reason> <commentary> [--version <n>]
++     * @brief set <id> <code> <description> <mime_type> <data> <reason> <commentary> [--version <n>]
+      */
+     static void process_set(std::ostream& out,
+                             ores::nats::service::nats_client& session,
+                             const std::vector<std::string>& args);
+ 
+     /**
+-     * @brief put-many --count <n> <id> <key> <description> <mime_type> <data> <reason> <commentary>
++     * @brief put-many --count <n> <id> <code> <description> <mime_type> <data> <reason>
++     * <commentary>
+      */
+     static void process_put_many(std::ostream& out,
+                                  ores::nats::service::nats_client& session,
+                                  const std::vector<std::string>& args);
+ 
+     /**
+-     * @brief delete <key> <reason> <commentary> [--version <n>]
++     * @brief delete <id> <reason> <commentary> [--version <n>]
+      */
+     static void process_delete(std::ostream& out,
+                                ores::nats::service::nats_client& session,
+                                const std::vector<std::string>& args);
+ 
+     /**
+-     * @brief delete-many <key> <reason> <commentary>
++     * @brief delete-many <id> <reason> <commentary>
+      */
+     static void process_delete_many(std::ostream& out,
+                                     ores::nats::service::nats_client& session,
+                                     const std::vector<std::string>& args);
+ 
+     /**
+-     * @brief versions <key> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
++     * @brief versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+      */
+     static void process_versions(std::ostream& out,
+                                  ores::nats::service::nats_client& session,
+                                  const std::vector<std::string>& args);
+ 
+     /**
+-     * @brief version <key> --version <n>
++     * @brief version <id> --version <n>
+      */
+     static void process_version(std::ostream& out,
+                                 ores::nats::service::nats_client& session,
+diff --git a/projects/ores.shell/assets/src/app/commands/assets/image_commands.cpp b/projects/ores.shell/assets/src/app/commands/assets/image_commands.cpp
+index ac13918265..8565c8eb2a 100644
+--- a/projects/ores.shell/assets/src/app/commands/assets/image_commands.cpp
++++ b/projects/ores.shell/assets/src/app/commands/assets/image_commands.cpp
+@@ -126,63 +126,63 @@ void image_commands::register_commands(cli::Menu& root_menu, nats_client& sessio
+         [&session](std::ostream& out, std::vector<std::string> args) {
+             process_get(std::ref(out), std::ref(session), std::move(args));
+         },
+-        "get <key>");
++        "get <id>");
+ 
+     menu->Insert(
+         "get-many",
+         [&session](std::ostream& out, std::vector<std::string> args) {
+             process_get_many(std::ref(out), std::ref(session), std::move(args));
+         },
+-        "get-many <key>");
++        "get-many <id>");
+ 
+     menu->Insert(
+         "add",
+         [&session](std::ostream& out, std::vector<std::string> args) {
+             process_add(std::ref(out), std::ref(session), std::move(args));
+         },
+-        "add <id> <key> <description> <mime_type> <data> <reason> <commentary>");
++        "add <id> <code> <description> <mime_type> <data> <reason> <commentary>");
+ 
+     menu->Insert(
+         "set",
+         [&session](std::ostream& out, std::vector<std::string> args) {
+             process_set(std::ref(out), std::ref(session), std::move(args));
+         },
+-        "set <id> <key> <description> <mime_type> <data> <reason> <commentary> [--version <n>]");
++        "set <id> <code> <description> <mime_type> <data> <reason> <commentary> [--version <n>]");
+ 
+     menu->Insert(
+         "put-many",
+         [&session](std::ostream& out, std::vector<std::string> args) {
+             process_put_many(std::ref(out), std::ref(session), std::move(args));
+         },
+-        "put-many --count <n> <id> <key> <description> <mime_type> <data> <reason> <commentary>");
++        "put-many --count <n> <id> <code> <description> <mime_type> <data> <reason> <commentary>");
+ 
+     menu->Insert(
+         "delete",
+         [&session](std::ostream& out, std::vector<std::string> args) {
+             process_delete(std::ref(out), std::ref(session), std::move(args));
+         },
+-        "delete <key> <reason> <commentary> [--version <n>]");
++        "delete <id> <reason> <commentary> [--version <n>]");
+ 
+     menu->Insert(
+         "delete-many",
+         [&session](std::ostream& out, std::vector<std::string> args) {
+             process_delete_many(std::ref(out), std::ref(session), std::move(args));
+         },
+-        "delete-many <key> <reason> <commentary>");
++        "delete-many <id> <reason> <commentary>");
+ 
+     menu->Insert(
+         "versions",
+         [&session](std::ostream& out, std::vector<std::string> args) {
+             process_versions(std::ref(out), std::ref(session), std::move(args));
+         },
+-        "versions <key> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
++        "versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+ 
+     menu->Insert(
+         "version",
+         [&session](std::ostream& out, std::vector<std::string> args) {
+             process_version(std::ref(out), std::ref(session), std::move(args));
+         },
+-        "version <key> --version <n>");
++        "version <id> --version <n>");
+ 
+     root_menu.Insert(std::move(menu));
+ }
+@@ -264,7 +264,6 @@ void image_commands::process_get(std::ostream& out,
+                       << std::endl;
+             return;
+         }
+-        read_token(req.key.key, parsed->positionals[next++], "key");
+     } catch (const std::exception& e) {
+         fail(out) << e.what() << std::endl;
+         return;
+@@ -309,7 +308,7 @@ void image_commands::process_get_many(std::ostream& out,
+         }
+         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
+             messaging::image_key key;
+-            read_token(key.key, parsed->positionals[i + 0], "key");
++            read_token(key.id, parsed->positionals[i + 0], "id");
+             req.keys.push_back(std::move(key));
+         }
+     } catch (const std::exception& e) {
+@@ -355,7 +354,7 @@ void image_commands::process_add(std::ostream& out,
+             return;
+         }
+         req.change.write.id = boost::uuids::random_generator()();
+-        read_token(req.change.write.key, parsed->positionals[next++], "key");
++        read_token(req.change.write.code, parsed->positionals[next++], "code");
+         read_token(req.change.write.description, parsed->positionals[next++], "description");
+         read_token(req.change.write.mime_type, parsed->positionals[next++], "mime_type");
+         read_token(req.change.write.data, parsed->positionals[next++], "data");
+@@ -407,7 +406,7 @@ void image_commands::process_set(std::ostream& out,
+             return;
+         }
+         req.change.write.id = boost::uuids::random_generator()();
+-        read_token(req.change.write.key, parsed->positionals[next++], "key");
++        read_token(req.change.write.code, parsed->positionals[next++], "code");
+         read_token(req.change.write.description, parsed->positionals[next++], "description");
+         read_token(req.change.write.mime_type, parsed->positionals[next++], "mime_type");
+         read_token(req.change.write.data, parsed->positionals[next++], "data");
+@@ -473,7 +472,7 @@ void image_commands::process_put_many(std::ostream& out,
+         for (std::uint32_t i = 0; i < change_count; ++i) {
+             messaging::image_change change;
+             read_token(change.write.id, parsed->positionals[next++], "id");
+-            read_token(change.write.key, parsed->positionals[next++], "key");
++            read_token(change.write.code, parsed->positionals[next++], "code");
+             read_token(change.write.description, parsed->positionals[next++], "description");
+             read_token(change.write.mime_type, parsed->positionals[next++], "mime_type");
+             read_token(change.write.data, parsed->positionals[next++], "data");
+@@ -526,7 +525,6 @@ void image_commands::process_delete(std::ostream& out,
+                       << "." << std::endl;
+             return;
+         }
+-        read_token(req.removal.key.key, parsed->positionals[next++], "key");
+         req.intent.reason_code = parsed->positionals[next++];
+         req.intent.commentary = parsed->positionals[next++];
+         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
+@@ -580,7 +578,7 @@ void image_commands::process_delete_many(std::ostream& out,
+         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
+         for (std::size_t i = 0; i < key_groups; ++i) {
+             messaging::image_key key;
+-            read_token(key.key, parsed->positionals[i * 1 + 0], "key");
++            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
+             req.removals.push_back(messaging::image_removal{.key = std::move(key)});
+         }
+         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
+@@ -632,7 +630,6 @@ void image_commands::process_versions(std::ostream& out,
+                       << std::endl;
+             return;
+         }
+-        read_token(req.key.key, parsed->positionals[next++], "key");
+         apply_page(req, *parsed);
+     } catch (const std::exception& e) {
+         fail(out) << e.what() << std::endl;
+@@ -678,7 +675,6 @@ void image_commands::process_version(std::ostream& out,
+                       << std::endl;
+             return;
+         }
+-        read_token(req.key.image.key, parsed->positionals[next++], "key");
+         req.key.version =
+             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
+     } catch (const std::exception& e) {
+diff --git a/projects/ores.sql/create/assets/assets_images_create.sql b/projects/ores.sql/create/assets/assets_images_create.sql
+index 94e0a1a0cd..1acc585e3b 100644
+--- a/projects/ores.sql/create/assets/assets_images_create.sql
++++ b/projects/ores.sql/create/assets/assets_images_create.sql
+@@ -35,7 +35,7 @@ create table if not exists "ores_assets_images_tbl" (
+     "id" uuid not null,
+     "tenant_id" uuid not null,
+     "version" integer not null,
+-    "key" text not null,
++    "code" text not null,
+     "description" text not null,
+     "mime_type" text not null default 'image/svg+xml',
+     "data" text not null,
+@@ -55,9 +55,9 @@ create table if not exists "ores_assets_images_tbl" (
+     check ("id" <> ores_utility_nil_uuid_fn())
+ );
+ 
+--- Unique key for active records
+-create unique index if not exists images_key_uniq_idx
+-on "ores_assets_images_tbl" (tenant_id, key)
++-- Unique code for active records
++create unique index if not exists images_code_uniq_idx
++on "ores_assets_images_tbl" (tenant_id, code)
+ where valid_to = ores_utility_infinity_timestamp_fn();
+ 
+ -- Version uniqueness for optimistic concurrency
+diff --git a/projects/ores.sql/create/assets/assets_images_notify_trigger_create.sql b/projects/ores.sql/create/assets/assets_images_notify_trigger_create.sql
+index 0e0da7daba..50a06e0bf3 100644
+--- a/projects/ores.sql/create/assets/assets_images_notify_trigger_create.sql
++++ b/projects/ores.sql/create/assets/assets_images_notify_trigger_create.sql
+@@ -29,13 +29,13 @@ declare
+     notification_payload jsonb;
+     change_action text;
+     changed_version integer := 0;
+-    changed_key text;
++    changed_id uuid;
+     changed_key jsonb;
+     changed_tenant_id text;
+ begin
+     if TG_OP = 'DELETE' then
+         change_action := 'deleted';
+-        changed_key := OLD.key;
++        changed_id := OLD.id;
+         changed_version := OLD.version;
+         changed_tenant_id := OLD.tenant_id::text;
+     elsif TG_OP = 'UPDATE' then
+@@ -53,11 +53,11 @@ begin
+             change_action := 'updated';
+         end if;
+         changed_version := NEW.version;
+-        changed_key := NEW.key;
++        changed_id := NEW.id;
+         changed_tenant_id := NEW.tenant_id::text;
+     end if;
+ 
+-    changed_key := jsonb_build_object('key', changed_key);
++    changed_key := jsonb_build_object('id', changed_id);
+ 
+     notification_payload := jsonb_build_object(
+         'event_id', gen_random_uuid()::text,
+
+Generated output does not match what's checked in -- a generated file was hand-edited, or its .org model changed without running `compass codegen regenerate` afterwards. Run the regenerate command locally and commit the result.

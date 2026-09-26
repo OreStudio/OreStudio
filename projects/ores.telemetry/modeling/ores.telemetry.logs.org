@@ -70,6 +70,7 @@ stored as it arrives, so neither is a row a caller reaches by primary key.
 *** source
 :PROPERTIES:
 :cpp_type: ores::telemetry::domain::telemetry_source
+:default: ores::telemetry::domain::telemetry_source::client
 :END:
 
 #+begin_src cpp :name comment
@@ -114,6 +115,7 @@ stored as it arrives, so neither is a row a caller reaches by primary key.
 *** level
 :PROPERTIES:
 :cpp_type: std::string
+:default: "info"
 :END:
 
 #+begin_src cpp :name comment
@@ -394,6 +396,7 @@ stored as it arrives, so neither is a row a caller reaches by primary key.
 *** total_count
 :PROPERTIES:
 :cpp_type: std::uint64_t
+:default: 0
 :END:
 
 #+begin_src cpp :name comment

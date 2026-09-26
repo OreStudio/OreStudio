@@ -18,7 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
-#include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
+#include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -33,10 +33,10 @@ const std::string tags("[repository]");
 /**
  * @brief Creates a test telemetry log entry.
  */
-ores::telemetry::domain::telemetry_log_entry make_test_entry() {
+ores::telemetry::messaging::telemetry_log_entry make_test_entry() {
     boost::uuids::random_generator gen;
 
-    ores::telemetry::domain::telemetry_log_entry entry;
+    ores::telemetry::messaging::telemetry_log_entry entry;
     entry.id = gen();
     entry.timestamp = std::chrono::system_clock::now();
     entry.source = ores::telemetry::domain::telemetry_source::client;
@@ -55,6 +55,7 @@ ores::telemetry::domain::telemetry_log_entry make_test_entry() {
 }
 
 using namespace ores::telemetry::domain;
+using namespace ores::telemetry::messaging;
 using namespace ores::telemetry::database::repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;

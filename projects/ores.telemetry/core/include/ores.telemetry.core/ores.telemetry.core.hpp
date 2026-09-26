@@ -20,21 +20,21 @@
 #define ORES_TELEMETRY_CORE_HPP
 
 /**
- * @brief Telemetry and observability infrastructure for ORE Studio.
+ * @brief Telemetry and observability infrastructure: the logging, tracing and
+ * record types the other parts and every other component build on.
  *
- * This module provides comprehensive logging and tracing capabilities following
- * OpenTelemetry conventions. Key features include:
+ * The core module owns the component's outermost namespace, @c ores::telemetry,
+ * because the types the other parts exchange live directly in it rather than in
+ * a namespace of their own.
  *
- * - Structured logging: Boost.Log integration with severity levels
- * - Distributed tracing: spans, traces, and context propagation
- * - Log export: file-based and hybrid exporters for log records
- * - Semantic conventions: OpenTelemetry-compatible attribute naming
- * - Resource tracking: system resource identification and metadata
- *
- * The module is organized into namespaces: domain (core telemetry types like
- * span, trace_id, log_record), log (Boost.Log integration and configuration),
- * export (log exporters), generators (ID generation), and messaging (log
- * record protocol).
+ * Its sub-namespaces:
+ * - @b domain: the log record, its resource and attributes, the trace and span
+ *   identifiers, and the OpenTelemetry semantic conventions.
+ * - @b log: the Boost.Log integration, the lifecycle manager and the sinks that
+ *   convert a log record for storage or for forwarding.
+ * - @b exporting: the exporter configuration and options.
+ * - @b generators: the trace and span identifier generators.
+ * - @b messaging: the log, NATS sample and service sample protocol messages.
  */
 namespace ores::telemetry {}
 

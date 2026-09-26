@@ -51,7 +51,8 @@ struct telemetry_log_entry {
     /**
      * @brief Source type, client or server.
      */
-    ores::telemetry::domain::telemetry_source source;
+    ores::telemetry::domain::telemetry_source source =
+        ores::telemetry::domain::telemetry_source::client;
     /**
      * @brief Name of the source application, for example @c ores.qt.
      */
@@ -67,7 +68,7 @@ struct telemetry_log_entry {
     /**
      * @brief Log severity level.
      */
-    std::string level;
+    std::string level = "info";
     /**
      * @brief Logger or component that emitted this log.
      */
@@ -185,7 +186,7 @@ struct get_telemetry_logs_response {
     /**
      * @brief How many entries the filter matches in total.
      */
-    std::uint64_t total_count;
+    std::uint64_t total_count = 0;
 };
 
 /**

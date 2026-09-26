@@ -87,10 +87,9 @@ public:
      * Example:
      * @code
      * auto resource = domain::resource::from_environment("my-service", "1.0");
-     * auto exporter = std::make_shared<file_log_exporter>("logs/telemetry.jsonl");
      * lifecycle_manager lm(logging_options);
-     * lm.add_telemetry_sink(resource, [exporter](auto rec) {
-     *     exporter->export_record(std::move(rec));
+     * lm.add_telemetry_sink(resource, [](domain::log_record rec) {
+     *     handle_record(std::move(rec));
      * });
      * @endcode
      */

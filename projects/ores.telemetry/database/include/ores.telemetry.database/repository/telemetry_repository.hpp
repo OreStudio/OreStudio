@@ -22,14 +22,11 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.telemetry.core/domain/nats_samples_query.hpp"
-#include "ores.telemetry.core/domain/nats_server_sample.hpp"
-#include "ores.telemetry.core/domain/nats_stream_sample.hpp"
-#include "ores.telemetry.core/domain/service_sample.hpp"
 #include "ores.telemetry.core/domain/telemetry_batch.hpp"
-#include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
-#include "ores.telemetry.core/domain/telemetry_query.hpp"
 #include "ores.telemetry.core/domain/telemetry_stats.hpp"
+#include "ores.telemetry.core/messaging/logs_protocol.hpp"
+#include "ores.telemetry.core/messaging/nats_samples_protocol.hpp"
+#include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
 #include "ores.telemetry.database/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -66,7 +63,7 @@ public:
     /**
      * @brief Creates a single log entry.
      */
-    void create(context ctx, const domain::telemetry_log_entry& entry);
+    void create(context ctx, const messaging::telemetry_log_entry& entry);
 
     /**
      * @brief Creates multiple log entries in a batch.
@@ -80,14 +77,14 @@ public:
     /**
      * @brief Queries log entries with filters.
      */
-    std::vector<domain::telemetry_log_entry> query(context ctx, const domain::telemetry_query& q);
+    std::vector<messaging::telemetry_log_entry> query(context ctx, const messaging::telemetry_query& q);
 
     /**
      * @brief Counts log entries matching a query.
      *
      * Useful for pagination.
      */
-    std::uint64_t count(context ctx, const domain::telemetry_query& q);
+    std::uint64_t count(context ctx, const messaging::telemetry_query& q);
 
     /**
      * @brief Reads logs for a specific session.
@@ -97,7 +94,7 @@ public:
      * @param limit Maximum number of logs to return
      * @return Logs ordered by timestamp descending (newest first)
      */
-    std::vector<domain::telemetry_log_entry>
+    std::vector<messaging::telemetry_log_entry>
     read_by_session(context ctx, const boost::uuids::uuid& session_id, std::uint32_t limit = 1000);
 
     /**
@@ -109,7 +106,7 @@ public:
      * @param end End of time range
      * @param limit Maximum number of logs to return
      */
-    std::vector<domain::telemetry_log_entry>
+    std::vector<messaging::telemetry_log_entry>
     read_by_account(context ctx,
                     const boost::uuids::uuid& account_id,
                     const std::chrono::system_clock::time_point& start,
@@ -163,24 +160,24 @@ public:
     /**
      * @brief Inserts a single NATS server-level metrics sample.
      */
-    void insert_server_sample(context ctx, const domain::nats_server_sample& sample);
+    void insert_server_sample(context ctx, const messaging::nats_server_sample& sample);
 
     /**
      * @brief Inserts a batch of NATS per-stream metrics samples.
      */
-    void insert_stream_samples(context ctx, const std::vector<domain::nats_stream_sample>& samples);
+    void insert_stream_samples(context ctx, const std::vector<messaging::nats_stream_sample>& samples);
 
     /**
      * @brief Queries NATS server samples within a time range.
      */
-    std::vector<domain::nats_server_sample>
-    query_server_samples(context ctx, const domain::nats_server_samples_query& q);
+    std::vector<messaging::nats_server_sample>
+    query_server_samples(context ctx, const messaging::nats_server_samples_query& q);
 
     /**
      * @brief Queries NATS stream samples within a time range.
      */
-    std::vector<domain::nats_stream_sample>
-    query_stream_samples(context ctx, const domain::nats_stream_samples_query& q);
+    std::vector<messaging::nats_stream_sample>
+    query_stream_samples(context ctx, const messaging::nats_stream_samples_query& q);
 
     /**
      * @brief Inserts a single service heartbeat sample.
@@ -188,7 +185,7 @@ public:
      * Called by the telemetry service each time it receives a heartbeat
      * publish from a domain service.
      */
-    void insert_service_sample(context ctx, const domain::service_sample& sample);
+    void insert_service_sample(context ctx, const messaging::service_sample& sample);
 
     /**
      * @brief Returns the latest heartbeat per (service_name, instance_id).
@@ -196,7 +193,7 @@ public:
      * Used by the service dashboard to determine which services are
      * currently running and when they were last seen.
      */
-    std::vector<domain::service_sample> list_service_samples(context ctx);
+    std::vector<messaging::service_sample> list_service_samples(context ctx);
 };
 
 }

@@ -24,6 +24,7 @@
 #include "ores.platform/environment/environment.hpp"
 #include "ores.telemetry.core/domain/resource.hpp"
 #include "ores.telemetry.core/log/lifecycle_manager.hpp"
+#include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include <catch2/catch_test_case_info.hpp>
@@ -180,7 +181,7 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
                 // The handler must not log, to avoid recursion.
                 current_test_context.lifecycle_mgr->add_database_sink(
                     resource,
-                    [repo, ctx](const ores::telemetry::domain::telemetry_log_entry& entry) {
+                    [repo, ctx](const ores::telemetry::messaging::telemetry_log_entry& entry) {
                         try {
                             repo->create(*ctx, entry);
                         } catch (const std::exception& ex) {

@@ -45,7 +45,7 @@ int main() {
 
     // 4. Create a mock handler that simulates database storage
     // In a real scenario, this would connect to the actual telemetry repository
-    auto mock_db_handler = [](const ores::telemetry::domain::telemetry_log_entry& entry) {
+    auto mock_db_handler = [](const ores::telemetry::messaging::telemetry_log_entry& entry) {
         std::cout << "Mock DB Storage - Log Entry:" << std::endl;
         std::cout << "  Timestamp: " << entry.timestamp.time_since_epoch().count() << std::endl;
         std::cout << "  Level: " << entry.level << std::endl;

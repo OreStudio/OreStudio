@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,17 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TELEMETRY_REPOSITORY_HPP
-#define ORES_TELEMETRY_REPOSITORY_HPP
+#ifndef ORES_TELEMETRY_DATABASE_HPP
+#define ORES_TELEMETRY_DATABASE_HPP
 
 /**
- * @brief The repository namespace of the database part.
+ * @brief PostgreSQL persistence for the telemetry records.
  *
- * It holds the entity types that map to the component's four tables, the
- * mappers that convert between an entity and its domain type, and the
- * telemetry_repository that reads and writes them. The repository supports
- * batch inserts and the time-range queries the log list is built on.
+ * Stores the log entries, the service heartbeats and the NATS server and
+ * stream samples in the component's own tables, and reads them back for the
+ * query handlers.
+ *
+ * Its sub-namespaces:
+ * - @b repository: the entities, mappers and the repository that read and
+ *   write the four tables.
+ * - @b log: the sink that writes a log record straight to the database,
+ *   beside the Boost.Log front end the core part owns.
  */
-namespace ores::telemetry::database::repository {}
+namespace ores::telemetry::database {}
 
 #endif

@@ -19,9 +19,9 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.telemetry.core/domain/resource.hpp"
-#include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
 #include "ores.telemetry.core/log/database_sink_backend.hpp"
 #include "ores.telemetry.core/log/database_sink_utils.hpp"
+#include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <vector>
@@ -35,6 +35,7 @@ const std::string tags("[database_sink_backend]");
 
 using namespace ores::telemetry::log;
 using namespace ores::telemetry::domain;
+using namespace ores::telemetry::messaging;
 using namespace ores::logging;
 
 TEST_CASE("database_sink_backend_constructs_with_defaults", tags) {

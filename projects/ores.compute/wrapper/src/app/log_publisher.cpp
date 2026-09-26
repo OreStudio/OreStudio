@@ -21,7 +21,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.ore.core/log/ore_log_parser.hpp"
-#include "ores.telemetry.core/messaging/telemetry_protocol.hpp"
+#include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include <fstream>
 #include <string>
 #include <vector>

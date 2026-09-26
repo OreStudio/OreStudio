@@ -42,7 +42,7 @@ std::string telemetry_repository::sql() {
     return generate_create_table_sql<telemetry_entity>(lg());
 }
 
-void telemetry_repository::create(context ctx, const domain::telemetry_log_entry& entry) {
+void telemetry_repository::create(context ctx, const messaging::telemetry_log_entry& entry) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), trace) << "Creating telemetry log entry: "
                                << boost::uuids::to_string(entry.id);
@@ -111,7 +111,7 @@ std::string escape_sql_string(const std::string& s) {
  * All filters are applied at the database level for correct results
  * with LIMIT/OFFSET pagination.
  */
-std::string build_where_clause(const domain::telemetry_query& q,
+std::string build_where_clause(const messaging::telemetry_query& q,
                                const std::string& start_ts,
                                const std::string& end_ts) {
 
@@ -173,8 +173,8 @@ std::string build_where_clause(const domain::telemetry_query& q,
 
 }
 
-std::vector<domain::telemetry_log_entry>
-telemetry_repository::query(context ctx, const domain::telemetry_query& q) {
+std::vector<messaging::telemetry_log_entry>
+telemetry_repository::query(context ctx, const messaging::telemetry_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Querying telemetry logs";
 
@@ -202,7 +202,7 @@ telemetry_repository::query(context ctx, const domain::telemetry_query& q) {
     // Use raw SQL execution via bitemporal_operations helper
     auto rows = execute_raw_multi_column_query(ctx, sql, lg(), "Querying telemetry logs");
 
-    std::vector<domain::telemetry_log_entry> entries;
+    std::vector<messaging::telemetry_log_entry> entries;
     entries.reserve(rows.size());
 
     // Column indices: 0=id, 1=timestamp, 2=source, 3=source_name, 4=session_id,
@@ -235,7 +235,7 @@ telemetry_repository::query(context ctx, const domain::telemetry_query& q) {
     return entries;
 }
 
-std::uint64_t telemetry_repository::count(context ctx, const domain::telemetry_query& q) {
+std::uint64_t telemetry_repository::count(context ctx, const messaging::telemetry_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Counting telemetry logs";
 
@@ -262,7 +262,7 @@ std::uint64_t telemetry_repository::count(context ctx, const domain::telemetry_q
     return count;
 }
 
-std::vector<domain::telemetry_log_entry> telemetry_repository::read_by_session(
+std::vector<messaging::telemetry_log_entry> telemetry_repository::read_by_session(
     context ctx, const boost::uuids::uuid& session_id, std::uint32_t limit_count) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
@@ -277,7 +277,7 @@ std::vector<domain::telemetry_log_entry> telemetry_repository::read_by_session(
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
-    std::vector<domain::telemetry_log_entry> result;
+    std::vector<messaging::telemetry_log_entry> result;
     result.reserve(r->size());
     for (const auto& entity : *r) {
         result.push_back(telemetry_mapper::to_domain(entity));
@@ -287,7 +287,7 @@ std::vector<domain::telemetry_log_entry> telemetry_repository::read_by_session(
     return result;
 }
 
-std::vector<domain::telemetry_log_entry>
+std::vector<messaging::telemetry_log_entry>
 telemetry_repository::read_by_account(context ctx,
                                       const boost::uuids::uuid& account_id,
                                       const std::chrono::system_clock::time_point& start,
@@ -311,7 +311,7 @@ telemetry_repository::read_by_account(context ctx,
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
-    std::vector<domain::telemetry_log_entry> result;
+    std::vector<messaging::telemetry_log_entry> result;
     result.reserve(r->size());
     for (const auto& entity : *r) {
         result.push_back(telemetry_mapper::to_domain(entity));
@@ -499,7 +499,7 @@ telemetry_repository::delete_old_logs(context ctx,
 }
 
 void telemetry_repository::insert_server_sample(context ctx,
-                                                const domain::nats_server_sample& sample) {
+                                                const messaging::nats_server_sample& sample) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), trace) << "Inserting NATS server sample";
 
@@ -512,7 +512,7 @@ void telemetry_repository::insert_server_sample(context ctx,
 }
 
 void telemetry_repository::insert_stream_samples(
-    context ctx, const std::vector<domain::nats_stream_sample>& samples) {
+    context ctx, const std::vector<messaging::nats_stream_sample>& samples) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
     if (samples.empty()) {
@@ -535,9 +535,9 @@ void telemetry_repository::insert_stream_samples(
     ensure_success(r, lg());
 }
 
-std::vector<domain::nats_server_sample>
+std::vector<messaging::nats_server_sample>
 telemetry_repository::query_server_samples(context ctx,
-                                           const domain::nats_server_samples_query& q) {
+                                           const messaging::nats_server_samples_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Querying NATS server samples";
 
@@ -552,7 +552,7 @@ telemetry_repository::query_server_samples(context ctx,
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(qry);
     ensure_success(r, lg());
 
-    std::vector<domain::nats_server_sample> result;
+    std::vector<messaging::nats_server_sample> result;
     result.reserve(r->size());
     for (const auto& entity : *r) {
         result.push_back(telemetry_mapper::to_domain(entity));
@@ -562,9 +562,9 @@ telemetry_repository::query_server_samples(context ctx,
     return result;
 }
 
-std::vector<domain::nats_stream_sample>
+std::vector<messaging::nats_stream_sample>
 telemetry_repository::query_stream_samples(context ctx,
-                                           const domain::nats_stream_samples_query& q) {
+                                           const messaging::nats_stream_samples_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Querying NATS stream samples for: " << q.stream_name;
 
@@ -580,7 +580,7 @@ telemetry_repository::query_stream_samples(context ctx,
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(qry);
     ensure_success(r, lg());
 
-    std::vector<domain::nats_stream_sample> result;
+    std::vector<messaging::nats_stream_sample> result;
     result.reserve(r->size());
     for (const auto& entity : *r) {
         result.push_back(telemetry_mapper::to_domain(entity));
@@ -591,7 +591,7 @@ telemetry_repository::query_stream_samples(context ctx,
 }
 
 void telemetry_repository::insert_service_sample(context ctx,
-                                                 const domain::service_sample& sample) {
+                                                 const messaging::service_sample& sample) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), trace) << "Inserting service heartbeat: " << sample.service_name
                                << " instance=" << sample.instance_id;
@@ -603,7 +603,7 @@ void telemetry_repository::insert_service_sample(context ctx,
     ensure_success(r, lg());
 }
 
-std::vector<domain::service_sample> telemetry_repository::list_service_samples(context ctx) {
+std::vector<messaging::service_sample> telemetry_repository::list_service_samples(context ctx) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Listing latest service heartbeat samples";
 
@@ -621,13 +621,13 @@ std::vector<domain::service_sample> telemetry_repository::list_service_samples(c
 
     // Keep only the most recent row per (service_name, instance_id).
     // Rows are ordered by sampled_at desc so try_emplace keeps the first seen.
-    std::map<std::pair<std::string, std::string>, domain::service_sample> latest;
+    std::map<std::pair<std::string, std::string>, messaging::service_sample> latest;
     for (const auto& entity : *r) {
         latest.try_emplace({entity.service_name.value(), entity.instance_id.value()},
                            telemetry_mapper::to_domain(entity));
     }
 
-    std::vector<domain::service_sample> result;
+    std::vector<messaging::service_sample> result;
     result.reserve(latest.size());
     for (auto& [_, sample] : latest)
         result.push_back(std::move(sample));

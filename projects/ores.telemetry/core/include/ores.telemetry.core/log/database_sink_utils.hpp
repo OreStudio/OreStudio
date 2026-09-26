@@ -38,8 +38,8 @@ namespace ores::telemetry::log {
  * @return A handler function that can be used with the database sink backend.
  */
 inline database_log_handler
-make_forwarding_handler(std::function<void(const domain::telemetry_log_entry&)> handler) {
-    return [handler](const domain::telemetry_log_entry& entry) {
+make_forwarding_handler(std::function<void(const messaging::telemetry_log_entry&)> handler) {
+    return [handler](const messaging::telemetry_log_entry& entry) {
         try {
             handler(entry);
         } catch (const std::exception& ex) {

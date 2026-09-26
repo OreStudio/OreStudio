@@ -69,7 +69,7 @@ non-composite component re-emitted them on every regeneration.
 | 3 | Done. `--address ores.cpp` reaches the scaffold; a facet-scoped address does not, which the test pins. |
 | 4 | Done. `doc_component.org.mustache` writes the line. |
 | 5 | Done. |
-| 6 | Done: 563 codegen tests pass, no drift, 40 components pass the doc checks, and zero stub files remain. |
+| 6 | Done: 565 codegen tests pass, no drift, 40 components pass the doc checks, and zero stub files remain. |
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -140,7 +140,7 @@ overview scaffold opts a new component in with one line, and
 it -- including for a facet-scoped address -- and that no `stub.hpp`,
 `stub.cpp` or `stub_tests.cpp` exists anywhere under `projects/`.
 
-Verified: codegen suite 563 passed, physical-space inventories 42/42 up to
+Verified: codegen suite 565 passed, physical-space inventories 42/42 up to
 date, `check_component_drift.py --all` reports no drift, `validate_docs.sh`
 passes all 40 components, and a dry run of `--address ores.cpp` against a
 mature part (`ores.iam/core`) emits only `export.hpp` and `tests/main.cpp`.

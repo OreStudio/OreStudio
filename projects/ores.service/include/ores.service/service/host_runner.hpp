@@ -32,10 +32,10 @@
 namespace ores::service::service {
 
 /**
- * @brief Optional hooks/overrides for run_host_async, defaulted to match the
- * plain domain-service shape. Lets tools like ores.http.server customise the
- * startup/shutdown log lines and failure message without forking the whole
- * envelope.
+ * @brief Optional hooks/overrides for the host runners, defaulted to match the
+ * plain host shape. Lets tools like ores.http.server and ores.shell customise
+ * the startup/shutdown log lines and the failure message without forking the
+ * whole envelope.
  */
 struct host_runner_options final {
     std::function<void()> on_before_log;
@@ -79,6 +79,37 @@ boost::asio::awaitable<int> run_host_async(const std::vector<std::string>& args,
                                            boost::asio::io_context& io_ctx,
                                            ores::logging::logger_t& lg,
                                            host_runner_options opts = {});
+
+/**
+ * @brief Runs the standard sync host lifecycle for a tool that cannot use the
+ * io_context: parse args -> (if configuration present) init logging -> log
+ * args/configuration -> optional early exit (for DB-free commands that must
+ * not go through the generic failure log) -> construct and run the
+ * application -> on exception, log diagnostic information and rethrow.
+ *
+ * Deliberately does *not* attempt to unify application construction: the
+ * shell's constructor takes NATS/login/script options, so callers supply a
+ * run_application callable that owns construction.
+ *
+ * @tparam Parser Default-constructible; parse(args, std_output, error_output)
+ * returns an optional configuration object with a streamable `logging` field
+ * usable to construct ores::telemetry::log::lifecycle_manager.
+ * @tparam EarlyExit Callable(const cfg&) -> std::optional<int>; returning a
+ * value short-circuits before the try/catch below with that exit code;
+ * returning std::nullopt proceeds to run_application.
+ * @tparam Runner Callable(const cfg&) -> void; constructs and runs the
+ * application.
+ * @param lg The calling tool's own logger (kept per-tool so log lines carry
+ * the right logger_name).
+ */
+template <typename Parser, typename EarlyExit, typename Runner>
+int run_host_sync(const std::vector<std::string>& args,
+                  std::ostream& std_output,
+                  std::ostream& error_output,
+                  ores::logging::logger_t& lg,
+                  EarlyExit early_exit,
+                  Runner run_application,
+                  host_runner_options opts = {});
 
 }
 

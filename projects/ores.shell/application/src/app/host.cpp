@@ -18,7 +18,7 @@
  *
  */
 #include "ores.shell/app/host.hpp"
-#include "ores.service/service/host_runner_sync.hpp"
+#include "ores.service/service/host_runner.hpp"
 #include "ores.shell/app/application.hpp"
 #include "ores.shell/config/parser.hpp"
 #include <optional>

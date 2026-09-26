@@ -241,9 +241,20 @@ def find_bases(entity: str, products: dict, product: str, artefact_table: str) -
 
 
 def classify(artefact: dict, bases: list, product: str) -> tuple:
-    """Return (bucket, detail) for one artefact table."""
+    """Return (bucket, detail) for one artefact table.
+
+    A generated table is bucketed as generated whatever its columns say,
+    but its detail still names the base. The liveness question does not
+    stop at the marker: 13 generated tables have no model, and whether
+    the base table exists decides what may be done with them.
+    """
     if artefact["generated"]:
-        return "generated", ""
+        if not bases:
+            return "generated", "no table of the matching entity name in any product"
+        base_product, base_table, _ = bases[0]
+        if base_product == product:
+            return "generated", f"base {base_table}"
+        return "generated", f"base {base_table} in {base_product}"
 
     if not bases:
         return "orphan", "no table of the matching entity name in any product"
@@ -337,7 +348,10 @@ def main() -> int:
         rows = buckets[bucket]
         if not rows:
             continue
-        if bucket in ("derivable", "generated") and not args.verbose:
+        if bucket == "derivable" and not args.verbose:
+            continue
+        unattached = [r for r in rows if bucket == "generated" and "no table of the matching" in r[2]]
+        if bucket == "generated" and not args.verbose and not unattached:
             continue
         print(f"## {bucket} ({len(rows)})")
         print()

@@ -337,20 +337,19 @@ stay as written. Six of the mis-modelled shapes are fixed:
 | SWAPTION | 99,977 | two optional qualifiers the model did not carry: the index the surface is quoted against, and the =Smile= convention marker whose shift takes the value slot, which together make the family six, seven or eight segments | the index, and =delta_type= for the marker |
 | INDEX_CDS_OPTION | 3,026 | a volatility surface in an asset class that had no vol path at all: =quote_key_credit= refused =type=vol= outright, and there was no inverse | a quote-type row marked =surface=, a vol branch in the credit forward, and =from_credit_index_option= |
 | COMMODITY_OPTION | 2,346 | the same gap in the commodity class, whose forward also refused =type=vol= | the same three changes, plus the equity option's three shapes |
+| BASIS_SWAP | 426 | a seventh segment names the basis itself between the currency and the maturity (=SOFR_FedFunds=, =LIBOR_PRIME=); those tokens are not index families, so the model had nowhere to put them | the token carried in =index_spelling=, the field that already holds a producer's spelling |
 
 That is 13,806 corpus lines brought in by the first six, 939 by the two
 futures, 9,075 by the discount re-modelling, 1,851 by the credit restructuring
 clause, 2,365 by the swap's named-index form and the index spelling, 99,977 by
-the swaption's two qualifiers, 3,026 by the credit vol path and 2,346 by the
-commodity one. The shape record is down to CPR alone, and 99.8% of the corpus is
-named.
+the swaption's two qualifiers, 3,026 by the credit vol path, 2,346 by the
+commodity one and 426 by the basis swap's named form. The shape record is down
+to CPR alone, and 99.9% of the corpus is named.
 
-What is left, 978 keys, is three things and no shape defect among them:
+What is left, 552 keys, is two groups and no shape defect among them:
 
-- =BASIS_SWAP= (426) and =SHAPE_PROFILE= (171), the first a named-index form of
-  the same kind already added for the swap, the second keyed by a shape profile.
-- =BOND= (157) and =RATING= (128), which need asset classes keyed by a security
-  and a rating provider.
+- =SHAPE_PROFILE= (171) is keyed by a shape profile, and =BOND= (157) and
+  =RATING= (128) need asset classes keyed by a security and a rating provider.
 - The residuals already named: =RECOVERY_RATE= (48) on placeholders, =IR_SWAP=
   (42) and =MM= (4) on F-TIIE, and =CPR= (2).
 

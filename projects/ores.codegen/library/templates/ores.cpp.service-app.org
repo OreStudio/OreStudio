@@ -19,11 +19,12 @@ table to them.
 
 * Summary
 
-Twelve templates scaffolding a service component: application, host,
-config options/parser with their exceptions, =main.cpp= and the stub
-test. All =component-service= profile, generated once per service
-component. (The per-entity NATS service pair lives in the messaging
-facets, not here.)
+Eleven templates scaffolding a service component: application, host,
+config options/parser with their exceptions and =main.cpp=. All
+=component-service= profile, generated once per service component. (The
+per-entity NATS service pair lives in the messaging facets, not here, and
+the placeholder test that used to sit here is part of the opt-in
+[[id:4D5A5C43-B0AE-49E0-920F-2513335E0570][ores.cpp.scaffold]] facet.)
 
 * The ores.cpp.service-app facet
 
@@ -52,7 +53,6 @@ Standard constructs otherwise.
 | [[id:D55BE3BA-7F71-49A8-9C10-1A5F344D841C][ores.cpp.service-app.host_header]] | Host class declarations. =component-service= profile. |
 | [[id:56A7D57C-9349-4E54-9679-88C0ABD05BD8][ores.cpp.service-app.host_impl]] | Process lifecycle: signals, shutdown, telemetry. =component-service= profile. |
 | [[id:ECB59C0A-0162-473F-A278-37F2359E7BCF][ores.cpp.service-app.main]] | Entry point: construct host, run, map exceptions to exit codes. =component-service= profile. |
-| [[id:FD8A5EA4-4525-42F8-B1DE-422144D694B6][ores.cpp.service-app.stub_test]] | Placeholder Catch2 test keeping the tests target linking. =component-service= profile. |
 
 * See also
 

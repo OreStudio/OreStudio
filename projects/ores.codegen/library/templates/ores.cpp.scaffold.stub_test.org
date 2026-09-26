@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: C435328C-74BF-46A4-B649-44F99D413D46
 :END:
-#+title: ores.cpp.component.stub_test
+#+title: ores.cpp.scaffold.stub_test
 #+description: Placeholder Catch2 test so the tests target runs.
 #+type: archetype
 #+output: projects/{component_dir}/tests/stub_tests.cpp
-#+facet: ores.cpp.component
+#+facet: ores.cpp.scaffold
 #+component_kind: flat api core
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
@@ -47,5 +47,5 @@ TEST_CASE("create_stub", tags) {
 
 * See also
 
-- Parent facet: [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]]
+- Parent facet: [[id:4D5A5C43-B0AE-49E0-920F-2513335E0570][ores.cpp.scaffold]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

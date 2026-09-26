@@ -1,9 +1,10 @@
 :PROPERTIES:
+:ores.cpp.scaffold.enabled: true
 :ID: 44444444-4444-4444-9444-444444444444
 :END:
 #+title: ores.sample_composite.core
 #+description: Sample composite-core subcomponent fixture for the new-component scaffold flow.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :test:fixture:component:core:
 #+created: 2026-06-02
@@ -15,6 +16,8 @@
 * Summary
 
 The =.core= layer of the =sample_composite= group — equivalent in shape to
-=ores.iam.core=, =ores.dq.core=, etc. Codegen running =--address ores.cpp.component=
-against this overview should produce the core implementation scaffold
-(CMakeLists, export.hpp, public header, stub header/impl, stub tests).
+=ores.iam.core=, =ores.dq.core=, etc. Codegen running =--address ores.cpp=
+against this overview should produce the core implementation presence
+(export.hpp and the test main), and — while the overview opts into
+=ores.cpp.scaffold= — the public header, the stub header/impl and the stub
+test.

@@ -57,14 +57,35 @@ truth for both humans and codegen — the standalone
 3. /Run codegen against each overview/ to scaffold the C++ + CMake
    project. Each overview's =#+component_kind:= frontmatter (=api=,
    =core=, =service=, or the default =flat=) selects the scaffolding
-   variant; the address is the same =ores.cpp.component= for all of them:
+   variant. Two addresses are needed: =ores.cmake.component= writes the
+   =CMakeLists.txt= files, and =ores.cpp= writes the C++ presence. The
+   C++ address is the technical space rather than one facet, because the
+   opt-in scaffold below is a sibling of =ores.cpp.component=.
    #+begin_src sh
    ./projects/ores.codegen/codegen.sh generate \
      --model projects/ores.COMPONENT/api/modeling/component_overview.org \
-     --address ores.cpp.component
+     --address ores.cmake.component
+   ./projects/ores.codegen/codegen.sh generate \
+     --model projects/ores.COMPONENT/api/modeling/component_overview.org \
+     --address ores.cpp
    #+end_src
    Repeat per part (=.api=, =.core=, =.service=), each against its own
    overview file.
+
+   The overview scaffold writes =:ores.cpp.scaffold.enabled: true= into
+   the =:PROPERTIES:= drawer, because a component with no models yet needs
+   the first-generation scaffold: an umbrella header, a placeholder domain
+   type with its implementation, and a placeholder Catch2 test, so that its
+   targets link and its test runner passes before any real code exists.
+   That scaffold lives in =ores.cpp.scaffold=, which is =#+default:
+   disabled=, so that one line is the whole opt-in and nothing else emits
+   the placeholders.
+
+   Remove the line, and the four files, when the component's first real
+   model lands. While the line is present, every regeneration re-emits the
+   placeholders, which is what the line asks for;
+   =grep -rn 'ores.cpp.scaffold.enabled: true' projects/*/modeling/= lists
+   the components still carrying scaffolding.
 
 4. /(Optional) Add a group-level overview/ at
    =projects/ores.COMPONENT/modeling/component_overview.org=.
@@ -79,7 +100,7 @@ truth for both humans and codegen — the standalone
    part — codegen does not yet produce this.  See
    [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][component-model-creator]] for the diagram conventions.
 
-7. /Build and verify/ the stub tests with [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]], via
+7. /Build and verify/ the scaffold tests with [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]], via
    =compass build= (not raw =cmake --build=, so it takes the
    host-wide build lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]):
    =./compass.sh build ores.COMPONENT.api.tests=
@@ -90,16 +111,15 @@ truth for both humans and codegen — the standalone
 
 * Templates
 
-All scaffolding runs via the single address =--address ores.cpp.component=;
-the overview's =#+component_kind:= frontmatter picks the variant (each
-generates 9 files for =.api=/=.core=; 18 for =.service=):
+The C++ scaffold runs via =--address ores.cpp=; the overview's
+=#+component_kind:= frontmatter picks the variant. The CMake files run via
+=--address ores.cmake.component=.
 
-| =#+component_kind:= | Key templates |
+| =#+component_kind:= | What =ores.cpp= writes |
 |---|---|
-| =flat= (default) | Flat component (no =.api=/=.core=/=.service= split) — produces all 10 files including =stub.hpp= / =stub.cpp= |
-| =api= | =cmake_component_root.mustache= + =cmake_component_api_src.mustache= + 7 others |
-| =core= | =cmake_component_root.mustache= + =cmake_component_core_src.mustache= + 7 others |
-| =service= | =cmake_component_root.mustache= + =cmake_component_service_src.mustache= + 16 others |
+| =flat= (default) | Export macros and the Catch2 test main; with the opt-in, the umbrella header, =domain/stub.hpp=, =src/domain/stub.cpp= and =tests/stub_tests.cpp= |
+| =api=, =core= | The same as =flat= |
+| =service= | Export macros, the test main and the service application; with the opt-in, the umbrella header and =tests/stub_tests.cpp= |
 
 All four kinds consume the same model type =component=, read
 from a =component_overview.org= via =load_org_component_overview_model=.

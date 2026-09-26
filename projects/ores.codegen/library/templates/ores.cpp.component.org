@@ -2,7 +2,7 @@
 :ID: FFA58DE9-F839-4CC0-928F-A1BD9695AC41
 :END:
 #+title: ores.cpp.component
-#+description: Per-component C++ scaffolding: export, main header, stub domain type, test main.
+#+description: Per-component C++ presence: export macros and the Catch2 test main.
 #+type: facet
 #+model_types: component
 #+level: cross
@@ -19,28 +19,27 @@ table to them.
 
 * Summary
 
-Six templates forming a new component's C++ skeleton: the component
-header and export macros (all four component profiles), the stub
-header/impl/test trio that gives an empty component something to
-compile and test (=component=, =component-api=, =component-core=),
-and the Catch2 =test_main= (all four profiles).
+The two files every component keeps for its whole life: the shared-library
+export macros (all four component profiles) and the Catch2 =test_main=
+(all four profiles). The first-generation scaffolding that used to sit
+beside them -- the umbrella header and the stub function, its
+implementation and its test -- moved to
+[[id:4D5A5C43-B0AE-49E0-920F-2513335E0570][ores.cpp.scaffold]], which is
+opt-in.
 
 * The ores.cpp.component facet
 
-The minimal C++ presence of a /component/: enough generated source
-that CMake targets build and the test runner passes before any real
-code exists. Stubs are deleted as real entities arrive; the component
-header and test main remain.
+The minimal C++ presence of a /component/: enough generated source that
+CMake targets build and the test runner passes, with or without real code.
+A component that has no models yet adds the opt-in scaffold facet for a
+placeholder to compile and test; once it has one, these two files are what
+remain.
 
 * Archetypes
 
 | Archetype | Description |
 |-----------+-------------|
 | [[id:D92591EC-9F4C-4194-BFE3-B4E1B0806A4E][ores.cpp.component.export]] | Per-component shared-library export/import macros. All component profiles. |
-| [[id:1CA9A1E1-6E02-47BB-BE1F-40F5888DAAE0][ores.cpp.component.header]] | Umbrella header with the component's namespace docs. |
-| [[id:1DA3FBDB-498A-47FF-9387-6F8A823CEDA3][ores.cpp.component.stub_header]] | Placeholder declaration so the library target has a header. |
-| [[id:20E9E482-1401-4AE8-85CC-55813D153148][ores.cpp.component.stub_impl]] | Placeholder implementation so the library target has a TU. |
-| [[id:C435328C-74BF-46A4-B649-44F99D413D46][ores.cpp.component.stub_test]] | Placeholder Catch2 test so the tests target runs. |
 | [[id:06465495-818E-418D-9A1F-A617865C0ABA][ores.cpp.component.test_main]] | Catch2 main with the project's logging/test-env setup. |
 
 * See also

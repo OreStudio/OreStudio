@@ -285,6 +285,45 @@ The fix is an arm in both =to_domain= functions for a write field whose
 column states =:is_enum: true=, with a regression test, because every
 enum column in every component needs the same arm.
 
+** Where the build stands after the enum arm
+
+The enum arm is in, and the whole ores.trading component compiles: the
+API library, the core library, the service library and the executables.
+Two further blockers were cleared on the way.
+
+- The generated shell command units take a product type as an argument
+  and the shell's token reader had no conversion for it, so the build
+  stopped on its own static assert. =product_type= now states its own
+  =parse_token=, which the reader finds by argument-dependent lookup, as
+  ores.synthetic's =binding_mode= and =scope= do.
+- The six =component_files.cmake= lists were stale, so the nine
+  generated registrar sources were never compiled and the service
+  library linked with undefined handler registrars. Item G06.
+
+** The consumer migration the tree build now reaches
+
+The tree build stops at 67 per cent in ores.ore's hand-written
+=ore_import_execute_handler.cpp=. It speaks the old consolidated
+protocol: 26 =using= declarations name old request types and 192 lines
+reach through =req.data.=.
+
+This is a rename and a reshape, not a rename alone. The generated write
+request carries the domain object under the entity's own member rather
+than under =data=, and it carries a change intent:
+
+    save_bond_leg_amount_request req;      becomes
+    req.data.amount_role = ...;            put_bond_leg_amount_request req;
+                                           req.bond_leg_amount.amount_role = ...;
+
+The read side is a rename with the paged fields to check: an old
+=get_bond_issues_request= with =offset= and =limit= becomes
+=list_bond_issues_request=, whose fields are the model's, not the
+consolidated header's.
+
+Every call site is read against the generated struct rather than
+renamed mechanically, and the nine shell units under
+=ores.shell/application/= need the same pass.
+
 
 ** 3. Regenerate
 

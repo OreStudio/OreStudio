@@ -25,6 +25,7 @@
 #include "ores.scheduler.core/messaging/registrar.hpp"
 #include "ores.scheduler.core/service/mq_action_handler.hpp"
 #include "ores.scheduler.core/service/nats_publish_action_handler.hpp"
+#include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
 #include "ores.scheduler.core/service/scheduler_loop.hpp"
 #include "ores.scheduler.core/service/sql_action_handler.hpp"
 #include "ores.scheduler.service/app/application_exception.hpp"
@@ -92,6 +93,14 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     auto loop = std::make_shared<ores::scheduler::service::scheduler_loop>(
         nats, db_ctx, std::move(handlers));
+
+    // The loop reads the job table once at startup, so a definition written
+    // while the service runs is invisible to it until a restart. The change
+    // pipeline above already reports every write, so its events are what
+    // tells the loop to read the table again on its next tick.
+    [[maybe_unused]] auto reload_on_definition_change =
+        event_bus.subscribe<ores::scheduler::messaging::job_definition_event>(
+            [loop](const ores::scheduler::messaging::job_definition_event&) { loop->reload(); });
 
     co_await ores::service::service::run(
         io_ctx,

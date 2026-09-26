@@ -46,6 +46,7 @@ target_link_libraries(${lib_target_name}
         ores.compute.api.lib
         ores.compute.client.lib
         ores.dq.api.lib
+        ores.eventing.api.lib
         ores.marketdata.api.lib
         ores.marketdata.client.lib
         ores.ore.api.lib
@@ -53,6 +54,7 @@ target_link_libraries(${lib_target_name}
         ores.variability.api.lib
         ores.refdata.api.lib
         ores.reporting.api.lib
+        ores.scheduler.api.lib
         ores.storage.lib
         ores.synthetic.api.lib
         ores.shell.trading.lib

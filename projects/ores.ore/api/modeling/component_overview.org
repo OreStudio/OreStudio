@@ -2,15 +2,15 @@
 :ID: 0F93B352-F234-4D9D-82E6-05218BE645E8
 :END:
 #+title: ores.ore.api
-#+description: Domain types and NATS protocol schemas for the ORE integration component.
+#+description: The shared contract for the ORE integration component — the series key shape entity and its protocol, events and generator, plus the ORE import and storage protocols.
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :ore:api:component:
 #+created: 2026-05-19
-#+updated: 2026-05-19
+#+updated: 2026-09-26
 #+name: ore.api
 #+full_name: ores.ore.api
-#+brief: ORE import API types and protocol
+#+brief: ORE integration contract
 
 * Diagram
 
@@ -20,29 +20,49 @@
 
 * Summary
 
-=ores.ore.api= is a header-only library defining the shared contract for the
-ORE integration domain. It provides domain types for ORE XML structures and
-mappings, and the NATS protocol schemas consumed by =ores.ore.core= and UI
-clients that invoke ORE risk runs.
+=ores.ore.api= is the shared contract of the component. It carries the
+series key shape entity with its JSON and table I/O, its generated NATS
+protocol and change events, and its sample generator; the protocols for
+importing an ORE directory and for locating the import tarball in object
+storage; and the workflow registration the ORE import runs under.
+
+It is a shared library, not a header-only one: the sources under =src/=
+build =ores.ore.api.lib= and install it with a version.
 
 * Inputs
 
-- Domain entity type definitions across =domain/= headers.
+- Entity rows and protocol requests, at the boundary of the generated
+  entity stack.
+- Workflow definitions registered by the engine at startup.
 
 * Outputs
 
-- C++ headers for ORE domain types with JSON I/O.
-- NATS protocol headers for ORE invocation and result operations.
+- The generated entity protocol, its events, and the serializer and
+  table renderers the shell and the wire protocol use.
+- The import and storage protocol schemas consumed by =ores.ore.service=.
 
 * Entry points
 
-- =include/ores.ore.api/domain/= — all domain entity headers.
-- =include/ores.ore.api/messaging/= — NATS protocol message headers.
+- =include/ores.ore.api/domain/= — the series key shape entity and its I/O.
+- =include/ores.ore.api/messaging/= — the entity protocol and the import protocols.
+- =include/ores.ore.api/eventing/= — the entity change events.
+- =include/ores.ore.api/generators/= — the sample entity generator.
+- =include/ores.ore.api/net/= — the import tarball bucket and key helpers.
+- =include/ores.ore.api/workflow/= — the ORE import workflow registration.
 
 * Dependencies
 
-- =rfl= — JSON serialisation via reflection.
+- =ores.platform=, =ores.storage=, =ores.logging=, =ores.workflow.api= and
+  =ores.eventing.api= — linked publicly, so consumers inherit them.
+- =ores.utility=, =faker-cxx= and =libfort= — linked privately.
+
+=ores.storage= is public because the import target helpers name a bucket,
+so every consumer of this part inherits the object-storage client.
 
 * See also
 
-- [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]] — ORE import/export logic and NATS handlers.
+- [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]] — the document engine behind this contract.
+- [[id:EF8FD20D-0B9C-4379-8BBD-B4FCF2F5F0C7][ores.ore.service]] — the runnable host.
+- [[id:5F280C8C-8C50-40A2-8C84-C85B8821D33E][ores.ore]] — the composite this part belongs to.
+- [[id:8316E5A7-9BDA-4C88-856C-C933290F7396][ores.ore.series_key_shape]] — the entity this part carries.
+- [[id:7302A9A4-8B64-4C92-8582-49FB5A2219A2][How do I round trip an ORE document through the database?]] — the import workflow this part declares.

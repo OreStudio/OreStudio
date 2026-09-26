@@ -36,3 +36,30 @@ the include list, none of them judgment calls.
 
 Errors 3 and 4 are what the last build reported; 1 and 2 it also
 reported, at lines 1330 and 1331.
+
+Update, same day, after fixing 1, 2 and 4 above and the container save
+--------------------------------------------------------------------
+The trial then reached 11 errors in three groups.
+
+a. is_generated misses the plural. The list verb is
+   list_<stem>s_request where the stem already ends in s for a plural
+   entity, so "bond_issues" is tested as list_bond_issuess_request and
+   the check fails, leaving resp->success on a generated response that
+   has no success. The check must accept both spellings.
+
+b. An optional domain member into a non-optional write member. The
+   trade change expansion needs trade.lifecycle.execution_timestamp,
+   effective_date and termination_date, which are
+   std::optional<std::string> in the domain and std::string on the wire,
+   so each needs value_or(""). The codemod can know this: the group
+   header states the optional, so the expansion should read it the same
+   way it reads the path.
+
+c. The unmodelled families' branch may take the generated arm.
+   Inside the if-constexpr chain the same response variable name is
+   reused, so a later branch inherits the earlier branch's response
+   entity and the four families with no model get a result member they
+   do not have. The arm must be decided per branch, or those four sites
+   restored by hand after the run.
+
+All three are in the codemod, not in the consumer.

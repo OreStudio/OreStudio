@@ -148,7 +148,8 @@ def write_members(entity: str) -> list[str]:
 DECL = re.compile(r"\b(\w+)_request(?:&|\s+)+(\w+)\s*[;{=,)]")
 DATA_FIELD = re.compile(r"\b(\w+)\.data\.")
 DATA_OBJECT = re.compile(r"\b(\w+)\.data\s*=\s*([^;]+);")
-SUCCESS = re.compile(r"\b(\w+)->success\b")
+SUCCESS = re.compile(r"(!?)(\w+)->success\b")
+MESSAGE = re.compile(r"\b(\w+)->message\b")
 
 
 def migrate(text: str, path: Path, report: list[str]) -> str:
@@ -213,14 +214,24 @@ def migrate(text: str, path: Path, report: list[str]) -> str:
 
         def success_sub(m: re.Match) -> str:
             nonlocal successes
-            var = m.group(1)
+            negated, var = m.group(1) == "!", m.group(2)
             entity = resp_entity.get(var, "")
             if entity and is_generated(entity, generated):
                 successes += 1
-                return f"{var}->result.outcome == {OUTCOME_OK}"
+                op = "!=" if negated else "=="
+                return f"{var}->result.outcome {op} {OUTCOME_OK}"
             return m.group(0)
 
         line = SUCCESS.sub(success_sub, line)
+
+        def message_sub(m: re.Match) -> str:
+            var = m.group(1)
+            entity = resp_entity.get(var, "")
+            if entity and is_generated(entity, generated):
+                return f"{var}->result.message"
+            return m.group(0)
+
+        line = MESSAGE.sub(message_sub, line)
 
         def field_sub(m: re.Match) -> str:
             nonlocal fields

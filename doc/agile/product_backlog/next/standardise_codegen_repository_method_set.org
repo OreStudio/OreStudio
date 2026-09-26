@@ -39,7 +39,7 @@ the codegen had silently *dropped* several previously-standard methods —
 =read_at_timepoint(context, as_of)= (all entities at a timepoint), and
 the single-object =convert_to_table(const T&)= overload. Hand-written
 consumers broke one at a time: the
-=ores.refdata.api= domain tests, and an =ores.http= route. Currency and
+=ores.refdata.api= domain tests and an =ores.http= route. Currency and
 =currency_market_tier= were fixed by promoting these back to standard
 template output, but every other entity (country, party, book_status,
 party_status, party_type, …) still lacks them until regenerated, leaving

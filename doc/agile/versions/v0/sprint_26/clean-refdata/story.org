@@ -23,9 +23,9 @@ ores.refdata meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Task 1117D49B: regenerated clean and idempotent; two build defects fixed, rebuild running. |
-| Waiting on    | Nothing.                               |
-| Next          | Confirm the build, then run the tests. |
+| Now           | Task 1117D49B: regenerated clean; two build defects fixed; a third is a cross-cutting generator defect (G05). |
+| Waiting on    | The junction key-type generator fix, which re-signs every component's repository. |
+| Next          | Decide where the G05 fix lands, then finish V01 and run V02. |
 | Last touched  | 2026-09-26                               |
 
 * Acceptance

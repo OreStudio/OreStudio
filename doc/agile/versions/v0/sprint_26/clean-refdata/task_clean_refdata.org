@@ -28,9 +28,9 @@ ores.refdata passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:70CC87FB-BA24-4B22-827F-F4F42C1F5A1B][Clean ores.refdata to the component clean standard]] |
-| Now          | Regeneration is clean and idempotent. Two build defects found and fixed; the rebuild runs. |
-| Waiting on   | Nothing.                               |
-| Next         | Confirm the build, then run the tests (V02). |
+| Now          | Regeneration clean and idempotent. Two build defects fixed; a third is a cross-cutting generator defect. |
+| Waiting on   | The junction key-type generator fix (G05), which re-signs every component's repository. |
+| Next         | Decide where the G05 fix lands, then finish V01 and run V02. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance

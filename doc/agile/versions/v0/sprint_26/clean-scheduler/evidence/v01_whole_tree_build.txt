@@ -1,27 +1,79 @@
 V01 whole-tree build
 ====================
 
-Command:  ./compass.sh build          (no target: the whole tree)
-Revision: ecfc331c59, the head after rebasing onto main (tree clean)
-Result:   exit 0
+Command:  cmake --build build/output/linux-clang-debug-make -j 3
+Revision: 0088c1ff9e, the head after the rebase onto main (tree clean)
+Result:   exit 0. 173 targets built, no compiler error in the log.
 
-This is the third such run. The first two predate the rebase, which brought in
-140 commits from other environments, including changes to core.py and the
-templates under this component. This run is the one that matters: the whole
-tree builds with the rebased head, and the scheduler's three libraries, its
-three test binaries, its service entry point and ores.reporting are all in its
-log as built targets.
+Why the direct command, and not `compass build`
+------------------------------------------------
 
-What it built, from the log: every component library and service, every test
-binary, the shell executable, and the one consumer of this component,
-ores.reporting, whose report_scheduling_service.cpp carries the migration to
-the canonical put/delete verbs and the per-job reconciliation. The scheduler's
-three libraries, its service entry point and its three test binaries are all in
-the log as built targets.
+`./compass.sh build` was run first, and it failed before reaching the
+compiler:
 
-This closes V01: "the whole tree builds, with the component's tests and every
-consumer."
+    systemd-run --user --scope -q --collect ... cmake --build --preset ...
+    Failed to connect to user scope bus via local transport: No data available
 
-The same command was run once before, at 378a7c3594, and also exited 0. The
-second run is the one recorded here because it includes the reporting change
-that the first did not.
+The wrapper cannot run in this session. This session's commands execute inside a
+bubblewrap sandbox with an unshared PID namespace -- /proc/1/comm inside it is
+`bwrap`, and /proc/self/ns/pid is not the host namespace -- so systemd-run
+cannot reach the user manager. The manager itself is present on the machine:
+/run/user/1000/systemd exists and `busctl --user list` shows
+org.freedesktop.systemd1. The two commands are the same command: compass runs
+`cmake --build --preset linux-clang-debug-make -j 3`, and
+build/output/linux-clang-debug-make is that preset's binary directory. The
+direct run is recorded because it is the only form the environment allows, not
+because it is a different check.
+
+What it built
+-------------
+
+Every component library, every test binary, the shell executable and the HTTP
+server, from a fully configured tree. The component and its consumer, read from
+the log:
+
+    [  4%] Built target ores.scheduler.api.lib
+    [ 12%] Built target ores.scheduler.core.lib
+    [ 13%] Built target ores.scheduler.service.lib
+    [ 42%] Built target ores.scheduler.service.exe
+    [ 86%] Built target ores.scheduler.api.tests
+    [ 86%] Built target ores.scheduler.service.tests
+    [100%] Built target ores.scheduler.core.tests
+    [ 11%] Built target ores.reporting.api.lib
+    [ 57%] Built target ores.reporting.core.lib
+    [ 80%] Built target ores.reporting.service.lib
+    [ 92%] Built target ores.reporting.service.exe
+    [ 78%] Built target ores.reporting.api.tests
+    [ 78%] Built target ores.reporting.core.tests
+    [ 92%] Built target ores.reporting.service.tests
+    [100%] Built target ores.http.server.exe
+    [100%] Built target ores.shell.exe
+
+ores.reporting is the one consumer outside the component, and its
+report_scheduling_service.cpp carries the migration to the canonical put and
+delete verbs and the per-job reconciliation, so it is compiled by this run.
+
+The runs before this one
+------------------------
+
+Two whole-tree builds of earlier revisions of this branch also exited 0, and a
+third failed for a reason worth keeping. The revisions those runs were made at
+were rewritten by the second rebase, so they are named by subject rather than by
+SHA:
+
+- "[scheduler] Pass V01 on the whole-tree build" -- exit 0.
+- The run before it -- exit 0.
+- The first attempt at this head -- exit 2, twenty errors in
+  job_definition_eventing_integration_tests.cpp, the first of them "#include
+  nested too deeply". It does not reproduce: the same file compiles on its own
+  from the same tree, and the next whole-tree build compiled it. The one
+  difference was that an in-place drift check was regenerating the component's
+  files while the build read them. That is recorded in the task as a caution,
+  not as a proven cause, and it is why the checks that write are run on a still
+  tree.
+- The second attempt at this head -- exit 2, one error:
+  'ores.testing/run_coroutine_test.hpp' file not found. That one is real. The
+  rebase replayed a commit that deleted the header as unused, which was true of
+  main and false of this branch: the three action-handler tests this task added
+  are its consumers. The header was restored with them, and the run recorded
+  above is the one that matters.

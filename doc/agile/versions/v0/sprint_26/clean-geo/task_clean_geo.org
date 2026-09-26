@@ -8,7 +8,7 @@
 #+filetags: :clean-geo:sprint_26:v0:
 #+owner: marco
 #+branch: feature/clean-geo
-#+pr: 2160
+#+pr: 2165
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -83,7 +83,7 @@ one defect the survey missed was found by the rewritten test.
 | G02 | pass | No hand-written file the generation supersedes remains. |
 | G03 | fail, fixed | The two =component_files.cmake= files carried no generated marker; both now carry the marker and their template name. |
 | G04 | not applicable | No generated code. |
-| G05 | pass | The diagram capture is a no-op for this component, so it is not exposed to the generator defect. The one SQL defect found is not a template defect, and V02 records its fix and its regression test. |
+| G05 | pass | The one defect found is an SQL defect, not a template defect, and V02 records its fix and its regression test. The diagram is hand-massaged, so a capture run rewrites the section above the sentinel; the warning below the sentinel records that, and the second pass is in the Notes. |
 | G06 | fail, fixed | =regenerate_cmake_component_files.py --component ores.geo --check= now reports =All component_files.cmake up to date=. |
 | W01 | not applicable | No registrar family, so no composition point. |
 | W02 | not applicable | No handler checks a permission. |
@@ -135,6 +135,13 @@ the component. Every claim was re-verified on this branch.
   512k rows, and a backlog capture already exists for moving ip2country onto
   the org dataset pipeline. The overview and the service header now state
   that a fresh database answers =address_not_found= until a publish has run.
+- The diagram runs the two passes. The capture gives the class boxes, and the
+  hand pass adds the members and relationships they do not carry, such as the
+  constructor, the two =lookup= signatures and the service-to-result and
+  service-to-error arrows. PlantUML resolves a relationship only in the
+  namespace block that declares its classes, so the hand-authored lines sit
+  above the sentinel, and the warning below the sentinel says a capture run
+  rewrites them.
 
 Work items, and their outcome.
 
@@ -172,6 +179,7 @@ fix. The build, the component suite and the gates are the evidence.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2165][#2165]] | [geo] Massage the component diagram by hand |
 | [[https://github.com/OreStudio/OreStudio/pull/2160][#2160]] | [geo] Bring the component to the clean standard |
 
 * Review

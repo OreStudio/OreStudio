@@ -56,6 +56,21 @@ That two of this pass's ten defects were found and fixed upstream while it ran i
 its own evidence: they were real, they were not local, and the merge is the point
 at which the duplicate work is discarded rather than carried.
 
+* Handoff
+
+State at the end of this pass, verified: the working tree is clean, `check_component_drift.py --component reporting` exits 0, and all four reporting suites pass.
+
+**The objective's second question is answered, twice over.** A report triggered from the shell runs the seven-step workflow to `completed`, with the instance travelling `pending`, `running`, `completed` and the FSM guard admitting each transition. It was proven once on the database as it had drifted and once on a fresh `db recreate`, so the result does not depend on accumulated state. Ten defects stood in the way, nine of them outside the reporting component.
+
+**The checklist** has a recorded result for all 49 items. Passing: B01, B03, B04, B06, G01, G02, G05, G07, M01, M02, M03, M09, M10, H05, P03, P04, V01, V02, V03, V05, V06, V07, W01, W02, W03. Partial and measured: V04 (thirteen commands; three families and eight step commands remain, the latter recorded as unable to answer with the cause diagnosed) and V08 (four of six files have their logic under test). Waiting on ores.dq: M06 and P02's remainder.
+
+**What to do next, in order.**
+
+1. **Rebase.** The branch is well behind main and two conflicts already have a disposition: take upstream's version of `workflow_engine.cpp` (`73442db01d` sets `modified_by`, the same defect fixed here) and of `storage_routes.cpp` (`eb3331ca63` deletes the bucket allow-list outright). Re-apply the `reporting` entry to `component_registry.py` on top of whatever landed there.
+2. **V08's last two files.** `report_input_bundle_repository.cpp` needs a database test, following the pattern of the existing eventing integration tests.
+3. **V04's tail.** The three remaining families are template repetition of the one already exercised; the eight step commands cannot answer outside a workflow and need the handler contract changed to reply `bad_request` instead of returning in silence, which is an `ores.service` change and not this component's.
+4. **Captures worth filing**, each with its evidence on this task: the twin gate cannot see a wire type declared outside a `*_protocol.hpp`; nothing checks that a declared subject has a subscriber (twenty did not); the populate scripts cannot be replayed against a populated database because they pass `current_user`; the generated per-entity registrar family exists in twelve components with no caller; and the report instance's `output_message` is overwritten by compensation so it names a step that succeeded.
+
 * Plan
 
 Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order, one entity at a time, and

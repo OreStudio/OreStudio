@@ -26,7 +26,7 @@
 | bma_swap            | BMA_SWAP          | bma_swap               | RATIO           | tenor           | no_index                | 5-segment: BMA_SWAP/RATIO/CCY/TENOR/POINT | BMA_SWAP (Bond Market Association swap ratio). |
 | cc_basis_swap       | CC_BASIS_SWAP     | cc_basis_swap          | BASIS_SPREAD    | tenor           | cross_currency          | 7-segment: CC_BASIS_SWAP/BASIS_SPREAD/CCY1/TENOR1/CCY2/TENOR2/MATURITY | CC_BASIS_SWAP (cross-currency basis swap spread). |
 | cc_fix_float_swap   | CC_FIX_FLOAT_SWAP | cc_fix_float_swap      | RATE            | tenor           | cross_currency          | 7-segment: CC_FIX_FLOAT_SWAP/RATE/CCY1/TENOR1/CCY2/TENOR2/MATURITY | CC_FIX_FLOAT_SWAP (cross-currency fix-float swap rate). |
-| zero                | ZERO              | zero                   | RATE            | tenor           | includes_index          | 6-segment: ZERO/RATE/CCY/INDEX/TENOR/POINT | ZERO (zero-coupon rate). |
+| zero                | ZERO              | zero                   | RATE            | tenor           | curve_id_day_count      | 6-segment: ZERO/RATE/CCY/CURVE_ID/DAY_COUNT/POINT, where the curve id is a free-text name and the day count a token like A365 | ZERO (zero-coupon rate). |
 | mm_future           | MM_FUTURE         | mm_future              | PRICE           | tenor           | includes_index          | 6-segment: MM_FUTURE/PRICE/CCY/INDEX/TENOR/POINT | MM_FUTURE (money market future price). |
 | oi_future           | OI_FUTURE         | oi_future              | PRICE           | tenor           | includes_index          | 6-segment: OI_FUTURE/PRICE/CCY/INDEX/TENOR/POINT | OI_FUTURE (overnight index future price). |
 | capfloor            | CAPFLOOR          | capfloor               | RATE            | surface         | capfloor_vol            | 8-segment: CAPFLOOR/RATE_NVOL/CCY/MATURITY/FLOAT_TENOR/SHIFT/STRIP/STRIKE, and the same shape under RATE_LNVOL; the metric segment comes from the vol model, not from this table's ore_metric | CAPFLOOR (cap/floor volatility on a strike grid). |
@@ -92,6 +92,8 @@ A logical, possibly-partial oresmd requirement for an interest-rate instrument.
 | second_ccy | std::optional<std::string>      | no        | second_ccy |                       |
 | shift      | std::optional<std::string>      | no        | shift     |                        |
 | strip      | std::optional<std::string>      | no        | strip     |                        |
+| curve_id   | std::optional<std::string>      | no        | curve_id  |                        |
+| day_count  | std::optional<std::string>      | no        | day_count |                        |
 | role       | std::optional<curve_role>       | no        | role      |                        |
 | metric     | std::optional<domain::metric>   | no        | metric    |                        |
 | quote_type | std::optional<domain::ir_quote_type> | no    | quote     |                        |
@@ -133,6 +135,8 @@ branch), which no field-table ordering can express.
 | second_factor |
 | shift |
 | strip |
+| curve_id |
+| day_count |
 | role |
 | type |
 | metric |
@@ -144,7 +148,11 @@ branch), which no field-table ordering can express.
 IR has the most complex qualifier shape variants:
 - =includes_index_2d=: qualifier is CCY/2D/TENOR (ir_swap only — the 2D is settlement lag)
 - =curve_id=: qualifier is CCY/CURVE_ID where CURVE_ID = CCY+TENOR stripped (discount only)
-- =includes_index=: qualifier is CCY/INDEX/TENOR (mm, zero, mm_future, oi_future)
+- =curve_id_day_count=: qualifier is CCY/CURVE_ID/DAY_COUNT (zero only -- the
+  curve id is a free-text spread or curve name the corpus writes as
+  BANK_EUR_BORROW or EONIA_ESTER_SPREAD, not an index family, and the day count
+  is the token beside it)
+- =includes_index=: qualifier is CCY/INDEX/TENOR (mm, mm_future, oi_future)
 - =two_tenors=: qualifier is FIRST_TENOR/SECOND_TENOR/CCY (basis_swap only --
   a single-currency basis swap quotes two index tenors against one currency,
   so the key carries both tenors and no index and no role. The registry's own
@@ -184,8 +192,8 @@ IR has the most complex qualifier shape variants:
 | oresmd://ir/usd?tenor=3m&second_tenor=3m&second_ccy=eur&type=quote&quote=cc_basis_swap&metric=basis_spread&point=10y | CC_BASIS_SWAP/BASIS_SPREAD/USD/3M/EUR/3M/10Y | ir_cc_basis_swap_spread_quote_key_matches_the_corpus |
 | oresmd://ir/usd?tenor=3m&second_tenor=1y&second_ccy=try&type=quote&quote=cc_fix_float_swap&metric=rate&point=1y | CC_FIX_FLOAT_SWAP/RATE/USD/3M/TRY/1Y/1Y | ir_cc_fix_float_swap_rate_quote_key_matches_the_corpus |
 | oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y | BMA_SWAP/RATIO/USD/3M/5Y | ir_bma_swap_ratio_quote_key |
-| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=rate&point=5y | ZERO/RATE/EUR/EURIBOR/3M/5Y | ir_zero_rate_quote_key |
-| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y | ZERO/YIELD_SPREAD/EUR/EURIBOR/3M/5Y | ir_zero_yield_spread_quote_key |
+| oresmd://ir/eur?type=quote&quote=zero&metric=rate&curve_id=BANK_EUR_BORROW&day_count=A365&point=2y | ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y | ir_zero_rate_quote_key_matches_the_corpus |
+| oresmd://ir/eur?type=quote&quote=zero&metric=yield_spread&curve_id=EONIA_ESTER_SPREAD&day_count=A365&point=1d | ZERO/YIELD_SPREAD/EUR/EONIA_ESTER_SPREAD/A365/1D | ir_zero_yield_spread_quote_key_matches_the_corpus |
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme | MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME | ir_mm_future_price_quote_key |
 | oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme | OI_FUTURE/PRICE/USD/SOFR/3M/CME | ir_oi_future_price_quote_key |
 | oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03 | CAPFLOOR/RATE_NVOL/CHF/5Y/6M/0/0/0.03 | ir_capfloor_normal_vol_quote_key_matches_the_corpus |
@@ -227,7 +235,7 @@ IR has the most complex qualifier shape variants:
 | oresmd://ir/eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&point=10y | round_trip_ir_basis_swap_spread |
 | oresmd://ir/usd?tenor=3m&second_tenor=3m&second_ccy=eur&type=quote&quote=cc_basis_swap&metric=basis_spread&point=10y | round_trip_ir_cc_basis_swap |
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme | round_trip_ir_mm_future_price |
-| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y | round_trip_ir_zero_yield_spread |
+| oresmd://ir/eur?type=quote&quote=zero&metric=yield_spread&curve_id=EONIA_ESTER_SPREAD&day_count=A365&point=1d | round_trip_ir_zero_yield_spread |
 | oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme | round_trip_ir_oi_future_price |
 | oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=discount&metric=rate&point=6m | round_trip_ir_discount |
 | oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y | round_trip_ir_bma_swap_ratio |

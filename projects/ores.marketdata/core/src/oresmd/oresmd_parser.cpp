@@ -55,6 +55,8 @@ struct query_params final {
     std::optional<std::string> second_tenor;
     std::optional<std::string> second_ccy;
     std::optional<std::string> second_factor;
+    std::optional<std::string> curve_id;
+    std::optional<std::string> day_count;
     std::optional<std::string> shift;
     std::optional<std::string> strip;
     std::optional<std::string> role;
@@ -79,6 +81,10 @@ struct query_params final {
                 qp.second_ccy = p.value;
             else if (p.key == "second_factor")
                 qp.second_factor = p.value;
+            else if (p.key == "curve_id")
+                qp.curve_id = p.value;
+            else if (p.key == "day_count")
+                qp.day_count = p.value;
             else if (p.key == "shift")
                 qp.shift = p.value;
             else if (p.key == "strip")
@@ -140,6 +146,8 @@ void validate_fx(const query_params& qp) {
     reject_if_present("fx", "second_tenor", qp.second_tenor);
     reject_if_present("fx", "second_ccy", qp.second_ccy);
     reject_if_present("fx", "second_factor", qp.second_factor);
+    reject_if_present("fx", "curve_id", qp.curve_id);
+    reject_if_present("fx", "day_count", qp.day_count);
     reject_if_present("fx", "shift", qp.shift);
     reject_if_present("fx", "strip", qp.strip);
     reject_if_present("fx", "role", qp.role);
@@ -226,6 +234,10 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
         id.second_tenor = to_lower(*qp.second_tenor);
     if (qp.second_ccy)
         id.second_ccy = to_upper(*qp.second_ccy);
+    if (qp.curve_id)
+        id.curve_id = *qp.curve_id;
+    if (qp.day_count)
+        id.day_count = *qp.day_count;
     if (qp.role)
         id.role = parse_enum<curve_role>("role", *qp.role);
     if (qp.metric)
@@ -365,6 +377,8 @@ market_data_identifier parse_correlation(const boost::urls::url_view& u, const q
     reject_if_present("correlation", "tenor", qp.tenor);
     reject_if_present("correlation", "second_tenor", qp.second_tenor);
     reject_if_present("correlation", "second_ccy", qp.second_ccy);
+    reject_if_present("correlation", "curve_id", qp.curve_id);
+    reject_if_present("correlation", "day_count", qp.day_count);
     reject_if_present("correlation", "shift", qp.shift);
     reject_if_present("correlation", "strip", qp.strip);
     reject_if_present("correlation", "role", qp.role);
@@ -398,6 +412,8 @@ market_data_identifier parse_inflation(const boost::urls::url_view& u, const que
     reject_if_present("inflation", "second_tenor", qp.second_tenor);
     reject_if_present("inflation", "second_ccy", qp.second_ccy);
     reject_if_present("inflation", "second_factor", qp.second_factor);
+    reject_if_present("inflation", "curve_id", qp.curve_id);
+    reject_if_present("inflation", "day_count", qp.day_count);
     reject_if_present("inflation", "shift", qp.shift);
     reject_if_present("inflation", "strip", qp.strip);
     reject_if_present("inflation", "role", qp.role);
@@ -577,6 +593,8 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 append_if(u, "second_ccy", id.second_ccy);
                 append_if(u, "shift", id.shift);
                 append_if(u, "strip", id.strip);
+                append_if(u, "curve_id", id.curve_id);
+                append_if(u, "day_count", id.day_count);
                 append_enum_if(u, "role", id.role);
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "metric", id.metric);

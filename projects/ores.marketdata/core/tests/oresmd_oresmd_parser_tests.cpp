@@ -405,9 +405,10 @@ TEST_CASE("round_trip_ir_mm_future_price", tags) {
 }
 
 TEST_CASE("round_trip_ir_zero_yield_spread", tags) {
-    const auto original = oresmd_parser::parse(
-        uri("oresmd://ir/"
-            "eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y"));
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://ir/"
+                                 "eur?type=quote&quote=zero&metric=yield_spread&curve_id=EONIA_"
+                                 "ESTER_SPREAD&day_count=A365&point=1d"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }

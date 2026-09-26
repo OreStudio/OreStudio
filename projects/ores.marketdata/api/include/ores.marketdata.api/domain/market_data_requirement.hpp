@@ -58,6 +58,8 @@ struct ir_market_data_requirement final {
     std::optional<std::string> second_ccy;
     std::optional<std::string> shift;
     std::optional<std::string> strip;
+    std::optional<std::string> curve_id;
+    std::optional<std::string> day_count;
     std::optional<curve_role> role;
     std::optional<domain::metric> metric;
     std::optional<domain::ir_quote_type> quote_type;

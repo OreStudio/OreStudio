@@ -266,6 +266,23 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
         const auto t = id.tenor ? to_upper(*id.tenor) : parts[1];
         return std::format("SWAPTION/RATE_LNVOL/{}/{}/{}/{}", id.ccy, parts[0], t, parts[2]);
     }
+    // ZERO is keyed by a free-text curve id and a day count, and its coordinate
+    // is the point rather than the tenor field, so it does not pass the guard
+    // below. It is handled first, with the curve id emitted verbatim: the corpus
+    // carries both EONIA_ESTER_SPREAD and Ester_Eonia_Spread, so the spelling is
+    // data and normalising it would stop the key reading back.
+    if (id.type == instrument_type::quote && id.quote_type == ir_quote_type::zero) {
+        if (!id.point || !id.curve_id || !id.day_count)
+            return std::nullopt;
+        const auto m = id.metric ? *id.metric : default_metric(ir_quote_type::zero);
+        return std::format("{}/{}/{}/{}/{}/{}",
+                           ore_type(ir_quote_type::zero),
+                           ore_metric(m),
+                           id.ccy,
+                           *id.curve_id,
+                           *id.day_count,
+                           to_upper(*id.point));
+    }
     if (id.type != instrument_type::quote || !id.quote_type || !id.point || !id.tenor)
         return std::nullopt;
 
@@ -810,6 +827,25 @@ std::optional<market_data_identifier> from_ir_discount(const std::vector<std::st
     return id;
 }
 
+std::optional<market_data_identifier> from_ir_zero(const std::vector<std::string>& parts) {
+    // ZERO/METRIC/CCY/CURVE_ID/DAY_COUNT/TENOR -- the curve id is whatever name
+    // the producer gave the zero curve, and the day count the token beside it.
+    if (parts.size() != 6)
+        return std::nullopt;
+    const auto m = parse_metric(parts[1]);
+    if (!m)
+        return std::nullopt;
+    ir_market_data_identifier id;
+    id.ccy = to_upper(parts[2]);
+    id.type = instrument_type::quote;
+    id.quote_type = ir_quote_type::zero;
+    id.metric = *m;
+    id.curve_id = parts[3];
+    id.day_count = parts[4];
+    id.point = to_lower(parts[5]);
+    return id;
+}
+
 std::optional<market_data_identifier>
 from_ir_indexed(ir_quote_type qt, const std::vector<std::string>& parts) {
     // TYPE/METRIC/CCY/INDEX/TENOR/POINT — the families whose qualifier includes
@@ -1243,8 +1279,9 @@ inverse_projection(const std::vector<std::string>& parts,
         const auto qt = parse_enum_lower<ir_quote_type>(type);
         return qt ? from_ir_cross_currency(*qt, parts) : std::nullopt;
     }
-    if (type == ore_type_spec::zero ||
-        type == ore_type_spec::mm_future || type == ore_type_spec::oi_future) {
+    if (type == ore_type_spec::zero)
+        return from_ir_zero(parts);
+    if (type == ore_type_spec::mm_future || type == ore_type_spec::oi_future) {
         const auto qt = parse_enum_lower<ir_quote_type>(type);
         return qt ? from_ir_indexed(*qt, parts) : std::nullopt;
     }

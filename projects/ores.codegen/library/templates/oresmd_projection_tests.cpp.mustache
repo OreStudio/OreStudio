@@ -397,8 +397,9 @@ TEST_CASE("from_ore_key_ir_indexed_families", tags) {
     REQUIRE(oresmd_projections::from_ore_key("BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y") ==
             parse("oresmd://ir/"
                   "eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&point=10y"));
-    REQUIRE(oresmd_projections::from_ore_key("ZERO/RATE/EUR/EURIBOR/3M/5Y") ==
-            parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=rate&point=5y"));
+    REQUIRE(oresmd_projections::from_ore_key("ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y") ==
+            parse("oresmd://ir/"
+                  "eur?type=quote&quote=zero&metric=rate&curve_id=BANK_EUR_BORROW&day_count=A365&point=2y"));
     REQUIRE(oresmd_projections::from_ore_key("MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME") ==
             parse("oresmd://ir/"
                   "eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme"));

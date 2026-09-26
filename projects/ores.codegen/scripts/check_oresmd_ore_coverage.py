@@ -104,7 +104,6 @@ SHAPE_MISMATCH: dict[str, str] = {
     "MM": "the 5-segment form ccy/settle/tenor now projects; the 6-segment form still fails where the producer spells the index ESTER, which index_family calls estr",
     "MM_FUTURE": "real key is ccy/contract-month/exchange:code/tenor",
     "OI_FUTURE": "real key is ccy/contract-month/exchange:code/tenor",
-    "ZERO": "real key is ccy/index/day-count/point",
 }
 
 # ORE types oresmd represents through a volatility surface point rather than

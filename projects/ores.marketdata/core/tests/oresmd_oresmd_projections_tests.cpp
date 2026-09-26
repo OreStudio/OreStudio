@@ -202,17 +202,19 @@ TEST_CASE("ir_bma_swap_ratio_quote_key", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "BMA_SWAP/RATIO/USD/3M/5Y");
 }
 
-TEST_CASE("ir_zero_rate_quote_key", tags) {
-    const auto id =
-        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=rate&point=5y");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "ZERO/RATE/EUR/EURIBOR/3M/5Y");
+TEST_CASE("ir_zero_rate_quote_key_matches_the_corpus", tags) {
+    const auto id = parse(
+        "oresmd://ir/"
+        "eur?type=quote&quote=zero&metric=rate&curve_id=BANK_EUR_BORROW&day_count=A365&point=2y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y");
 }
 
-TEST_CASE("ir_zero_yield_spread_quote_key", tags) {
-    const auto id =
-        parse("oresmd://ir/"
-              "eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "ZERO/YIELD_SPREAD/EUR/EURIBOR/3M/5Y");
+TEST_CASE("ir_zero_yield_spread_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://ir/"
+                          "eur?type=quote&quote=zero&metric=yield_spread&curve_id=EONIA_ESTER_"
+                          "SPREAD&day_count=A365&point=1d");
+    REQUIRE(oresmd_projections::to_quote_key(id) ==
+            "ZERO/YIELD_SPREAD/EUR/EONIA_ESTER_SPREAD/A365/1D");
 }
 
 TEST_CASE("ir_mm_future_price_quote_key", tags) {
@@ -551,9 +553,10 @@ TEST_CASE("from_ore_key_ir_indexed_families", tags) {
             parse("oresmd://ir/"
                   "eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&"
                   "point=10y"));
-    REQUIRE(
-        oresmd_projections::from_ore_key("ZERO/RATE/EUR/EURIBOR/3M/5Y") ==
-        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=rate&point=5y"));
+    REQUIRE(oresmd_projections::from_ore_key("ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y") ==
+            parse("oresmd://ir/"
+                  "eur?type=quote&quote=zero&metric=rate&curve_id=BANK_EUR_BORROW&day_count=A365&"
+                  "point=2y"));
     REQUIRE(oresmd_projections::from_ore_key("MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME") ==
             parse("oresmd://ir/"
                   "eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme"));

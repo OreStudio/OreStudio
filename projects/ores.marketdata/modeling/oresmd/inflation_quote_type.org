@@ -57,6 +57,8 @@ A logical, possibly-partial oresmd requirement for an inflation instrument.
 | second_tenor |
 | second_ccy |
 | second_factor |
+| curve_id |
+| day_count |
 | shift |
 | strip |
 | role |

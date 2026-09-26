@@ -66,6 +66,8 @@ A logical, possibly-partial oresmd requirement for a credit instrument.
 | second_tenor |
 | second_ccy |
 | second_factor |
+| curve_id |
+| day_count |
 | shift |
 | strip |
 | role |

@@ -806,12 +806,16 @@ begin
     perform ores_seed_validate_not_empty_fn(p_name, 'System setting name');
     perform ores_seed_validate_not_empty_fn(p_data_type, 'System setting data_type');
 
+    -- The table keys a row by a surrogate id, so a seed mints one. The
+    -- database does not mint it: the generated insert trigger manages the
+    -- version of the row an id names, and an id the store invented would be
+    -- one no client could ever address.
     insert into ores_variability_system_settings_tbl (
-        tenant_id, party_id, name, value, data_type, description,
+        id, tenant_id, party_id, name, value, data_type, description,
         modified_by, performed_by, change_reason_code, change_commentary,
         valid_from, valid_to)
     values (
-        p_tenant_id, p_party_id, p_name, p_value, p_data_type, p_description,
+        gen_random_uuid(), p_tenant_id, p_party_id, p_name, p_value, p_data_type, p_description,
         current_user, current_user, 'system.new_record', 'System seed data',
         current_timestamp, ores_utility_infinity_timestamp_fn())
     on conflict (tenant_id, party_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -856,11 +860,11 @@ begin
 
     -- Insert new value
     insert into ores_variability_system_settings_tbl (
-        tenant_id, party_id, name, value, data_type, description,
+        id, tenant_id, party_id, name, value, data_type, description,
         modified_by, performed_by, change_reason_code, change_commentary,
         valid_from, valid_to)
     values (
-        p_tenant_id, v_party_id, p_name, p_value, p_data_type, p_description,
+        gen_random_uuid(), p_tenant_id, v_party_id, p_name, p_value, p_data_type, p_description,
         p_modified_by, p_modified_by, p_change_reason_code, p_commentary,
         current_timestamp, ores_utility_infinity_timestamp_fn());
 

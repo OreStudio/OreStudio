@@ -63,17 +63,26 @@ Data Sourcing and Generation Steps:
    Regenerate C++ domain types from the (freshly synced) XSD schemas
    using xsdcpp:
      ./projects/ores.codegen/scripts/xsdcpp_generate_ore.sh
-   Requires xsdcpp on PATH. If built locally, prepend to PATH:
-     PATH="/path/to/xsdcpp/build/src:$PATH" ./projects/ores.codegen/scripts/xsdcpp_generate_ore.sh
+   xsdcpp is a sibling checkout, not a build dependency. The pin is
+   recorded in doc/knowledge/external/xsd-cpp-generator.org. Prepend it
+   to PATH, for example:
+     PATH="/home/marco/Vault/Development/xsdcpp/build/src:$PATH" ./projects/ores.codegen/scripts/xsdcpp_generate_ore.sh
+   The wrapper re-applies the ORES_ORE_CORE_EXPORT annotations, which
+   xsdcpp cannot emit. It does not restore them for you if you call
+   xsdcpp directly.
    This regenerates:
-     - projects/ores.ore/include/ores.ore/domain/domain.hpp
-     - projects/ores.ore/src/domain/domain.cpp
+     - projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp
+     - projects/ores.ore/core/src/domain/domain.cpp
+     - projects/ores.ore/core/include/ores.ore.core/domain/domain_xsd.hpp
    Run this whenever step 2 changes external/ore/xsd/ content, even if
    examples/ alone changed and packages/ didn't move -- the generated
    domain types are schema-derived, not example-derived.
+   The output is a code-shape artefact and the diff is large. Verify it
+   with the ORE round-trip suites, which compare against the committed
+   goldens byte for byte, not by reading the diff.
 
 5. COMMIT TO REPOSITORY
-   git add external/ore/* projects/ores.ore/include/ores.ore/domain/domain.hpp projects/ores.ore/src/domain/domain.cpp
+   git add external/ore/* projects/ores.ore/core/include/ores.ore.core/domain projects/ores.ore/core/src/domain
    git commit -m "[data] Update ORE Sample Data"
    Commit examples/, xsd/, packages/, and the regenerated domain.hpp/
    domain.cpp together -- they're all derived from the same engine

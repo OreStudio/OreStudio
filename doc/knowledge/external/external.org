@@ -41,6 +41,13 @@ though it references [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]].
   inter-service communication (subjects, queue groups, JetStream,
   NKey/JWT security).
 
+* Code generation tools
+
+- [[id:2DB7C1A3-3191-4D6E-8355-B8BE30BB7809][xsdcpp]] — compiles an XSD schema into C++ types and a validating
+  XML parser with no runtime library. It produces the ORE document
+  bindings under =projects/ores.ore/core/=, which are not in the build
+  dependency graph at all.
+
 * Platform features
 
 - [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] — RLS at the database level. Our

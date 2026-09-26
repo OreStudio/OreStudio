@@ -228,14 +228,16 @@ census is name-based explains why:
   included by the component's own service/src/app/application.cpp, so it is
   infrastructure. Every service part in the tree keeps a file of this name,
   which is what made the name-based count wrong.
-- database/include/ores.telemetry.database/log/database_sink_utils.hpp is
-  included by database/tests/database_sink_backend_tests.cpp, so it is
-  test-only, not unreached.
+- database/include/ores.telemetry.database/log/database_sink_utils.hpp looked
+  test-only to the first check, because the name matched the header the test
+  and the example include. The V08 survey read the include lines rather than
+  the names: both include the CORE header of that name, and nothing includes
+  the database one. It is a dead duplicate and is deleted.
 - core/examples/database_sink_example.cpp is built by
   core/examples/CMakeLists.txt. An example program is unreferenced by
   definition; it is documentation by example, not dead code.
 
-The remaining eight are dead as stated: the file-JSONL exporter sub-tree
+The remaining nine are dead as stated: the file-JSONL exporter sub-tree
 (log_exporter.hpp, file_log_exporter.hpp and .cpp, hybrid_log_exporter.hpp
 and .cpp, upload_position_tracker.hpp and .cpp), whose only surviving
 mention is a doxygen example block in log/lifecycle_manager.hpp, and

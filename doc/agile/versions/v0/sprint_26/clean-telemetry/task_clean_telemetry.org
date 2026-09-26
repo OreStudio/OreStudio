@@ -81,6 +81,51 @@ from them.
 
 * Notes
 
+** The wire payloads are messages, not entities
+
+The generator decides a message field's TypeScript type from its C++ type. A
+primitive, a message declared in the same model, and a type bound in the
+custom-type registry all project. A `domain::` entity type projects to an
+import from a module the domain facet writes, and this component has no
+entity model, so that import would name a file nothing writes.
+
+That is why the payload a message carries is declared as a message beside it,
+and why the repository, the mapper and the sink backend read
+`messaging::telemetry_log_entry` rather than `domain::telemetry_log_entry`.
+The alternative reading of M06, entity models for the four stored shapes,
+would put this story in the Entity items it was not scoped for.
+
+** What the generation supersedes, and what it does not
+
+Deleted because the generation supersedes them: the three hand-written
+protocol headers, and the six payload domain headers whose types the models
+now declare.
+
+Deleted because nothing reaches them: the file-JSONL exporter sub-tree
+(`log_exporter`, `file_log_exporter`, `hybrid_log_exporter`,
+`upload_position_tracker`) and `log/macros.hpp`. Their last mention was a
+doxygen example in `log/lifecycle_manager.hpp`, which is rewritten.
+
+Kept, with the reason recorded: `application_exception.hpp`,
+`database_sink_utils.hpp` and the database sink example, which the census
+called dead and which are used by the component's own service, its own test
+and its own example CMakeLists. The distributed-tracing API, test-only, whose
+intended consumer the `instrument_components_with_telemetry_context` capture
+names. The four stats reads, test-only, whose intended consumer the
+`expose_the_telemetry_stats_surface` capture names.
+
+Kept because the story's Protocol scope leaves them hand-written: the five
+tables, their RLS policies and the stats SQL functions.
+
+** The NATS sample handlers answered with nothing
+
+Both `nats_server_samples_list` and `nats_stream_samples_list` decoded their
+request, discarded the filter and replied `{success = true}` with an empty
+sample list, while `query_server_samples` and `query_stream_samples` sat
+unreached in the repository. A subject that answers nothing is worse than a
+missing subject, so the handlers call the repository and the two reads are
+reached again.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

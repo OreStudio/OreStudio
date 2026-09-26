@@ -1,0 +1,165 @@
+# V08: source-file test coverage
+# 2026-09-26, branch feature/clean-telemetry, working tree (no build, no test run).
+#
+# Item: "Every source file has a test that exercises it, or is recorded with
+# the reason it does not. The list of source files no test touches is the
+# coverage work item."
+#
+# Scope: every .cpp under projects/ores.telemetry/{core,database,service}/src/.
+#
+# Method. Header includes were read from every test .cpp. Symbol use was read
+# from the test bodies. Row evidence names the test file and the symbol the
+# test calls or asserts on. Generated-file check: grep -rl
+# "AUTO-GENERATED FILE - DO NOT EDIT MANUALLY" over the three src trees and the
+# three include trees. No .cpp anywhere under the three src trees carries the
+# marker. The marker appears in the six component_files.cmake files (build
+# lists, not sources) and in the three generated messaging protocol headers.
+#
+# Columns: part, path, covering test, evidence. covering test is "none" when no
+# test names the file. Rows where a test reaches the file only through another
+# type carry "partial" in the evidence and the symbol names in the evidence.
+
+part	path	covering test	evidence
+core	src/domain/resource.cpp	tests/telemetry_context_tests.cpp	"resource_from_environment_populates_attributes" calls resource::from_environment("my.service","2.0.0") and asserts service_name(), host_name(), host_id(). Constructed again in database/tests/database_sink_backend_tests.cpp lines 45, 62, 79.
+core	src/domain/span.cpp	tests/telemetry_context_tests.cpp	"span_is_root_works_correctly" calls span::is_root(); "span_duration_calculation" calls span::duration() before and after end_time; "span_is_session_checks_attribute" calls span::is_session(). Child spans come from telemetry_context::start_span in "telemetry_context_start_span_creates_child".
+core	src/domain/span_context.cpp	tests/telemetry_context_tests.cpp	partial: create_test_context() builds a span_context and start_span assigns ctx.span; "telemetry_context_is_valid_when_properly_constructed" asserts context().is_valid(). No test calls span_context::is_sampled() (rg: only span_context.cpp and span_context.hpp mention it).
+core	src/domain/span_id.cpp	tests/span_id_tests.cpp	Eight cases: "default_span_id_is_invalid" (is_valid), "span_id_to_hex_produces_16_chars" (to_hex), "span_id_from_hex_roundtrips" (from_hex), "span_id_from_hex_with_invalid_input_returns_invalid", "span_ids_are_time_sortable" (operator<=), plus operator<< via BOOST_LOG_SEV.
+core	src/domain/telemetry_context.cpp	tests/telemetry_context_tests.cpp	Seven cases drive the class: create_root, start_span, start_linked_trace, context(), get_trace_id(), get_span_id(), is_valid(), resource_ptr(). partial: get_resource() is never called (rg: only the .hpp and .cpp).
+core	src/domain/trace_id.cpp	tests/trace_id_tests.cpp	Nine cases: is_valid, to_hex, from_hex roundtrip and three invalid inputs, operator<=, machine_id(); operator<< via BOOST_LOG_SEV.
+core	src/exporting/telemetry_configuration.cpp	none	No test names telemetry_configuration. Its only call site is projects/ores.shell/application/src/config/parser.cpp:72 (make_options_description) and :200 (read_options); ores.shell/application has no tests directory, so nothing drives it through the shell either.
+core	src/exporting/telemetry_options.cpp	none	No test asserts on telemetry_options or its operator<<. The type is only carried: ores.shell/config/options.hpp stores it and telemetry_configuration::read_options produces it; the shell's parser calls both and the shell has no test of its own.
+core	src/generators/span_id_generator.cpp	tests/span_id_tests.cpp	"generated_span_id_is_valid", "span_id_generator_is_thread_safe" (2 threads x N ids), "generated_span_ids_are_unique", "span_ids_are_time_sortable" all call span_id_generator::operator().
+core	src/generators/trace_id_generator.cpp	tests/trace_id_tests.cpp	"generated_trace_id_is_valid", "trace_id_generator_uses_machine_id" (ctor arg 0x1234 and machine_id()), "trace_id_generator_is_thread_safe", "generated_trace_ids_are_unique", "trace_ids_are_time_sortable".
+core	src/log/database_sink_backend.cpp	tests/database_sink_backend_tests.cpp (database part)	"database_sink_backend_constructs_with_defaults", "..._with_custom_source", "..._accepts_session_and_account_ids" construct the backend and call set_session_id/set_account_id. partial: consume() is never called directly; it runs indirectly on every BOOST_LOG_SEV in the test harness because ores.testing/logging_listener.cpp:182 registers the sink via lifecycle_manager::add_database_sink, and that harness runs in all three telemetry test binaries.
+core	src/log/lifecycle_manager.cpp	harness (no named test)	No test file names lifecycle_manager. partial: ores.testing/src/logging_listener.cpp:125 and :140 construct one for every test case (ctor/dtor) and :182 calls add_database_sink, so those run under test. add_telemetry_sink has no caller anywhere (rg over projects: only the .hpp, the .cpp definition, and a doc comment), so its body never runs.
+core	src/log/telemetry_sink_backend.cpp	none	Nothing constructs telemetry_sink_backend. Its only would-be consumer is lifecycle_manager::add_telemetry_sink, which no code and no test calls. consume() is therefore never entered.
+database	src/repository/telemetry_entity.cpp	repository (no named test)	telemetry_entity_tests does not exist. database/tests/telemetry_repository_tests.cpp includes only telemetry_repository.hpp; the three operator<< functions in this file have no call site in any test. partial: the entity data members are written and read inside repository.cpp and mapper.cpp, so create/query round-trips exercise them, but no test names the entity or its operators.
+database	src/repository/telemetry_mapper.cpp	tests/telemetry_repository_tests.cpp	telemetry_mapper is a static-only class with to_entity and to_domain, so the test drives it through telemetry_repository::create, create_batch, query, read_by_session and get_summary (repository.cpp lines 53, 73, 214) and asserts on the round-tripped fields (message, tag, source, source_name, session_id, level).
+database	src/repository/telemetry_repository.cpp	tests/telemetry_repository_tests.cpp	Six cases call telemetry_repository directly: "create_single_telemetry_entry" (create), "create_and_query_telemetry_entry" (query), "create_batch_telemetry_entries" (create_batch), "read_by_session", "count_telemetry_entries" (count), "get_telemetry_summary" (get_summary).
+service	src/app/application.cpp	none	No test names application. It is only constructed by host::execute in service/src/app/host.cpp.
+service	src/app/host.cpp	none	No test includes app/host.hpp or calls host::execute. service/tests/config_parser_tests.cpp exercises parser only.
+service	src/app/nats_poller.cpp	none	No test names nats_poller. application.cpp is its only consumer; the class needs a live NATS endpoint.
+service	src/config/options.cpp	none	No test uses config::options or its operator<<. config_parser_tests.cpp asserts on the individual fields of the parser result (nats.url, database.host, ...), never streams the options struct.
+service	src/config/parser.cpp	tests/config_parser_tests.cpp	Ten cases call parser{}.parse(args, info, err): "parse_defaults_returns_expected_values" and the "--nats-url", "--nats-subject-prefix", "--db-host/--db-port", "--db-name", "--log-level", "--log-filename", "--help", "--version" cases; "parse_unknown_option_throws" asserts parser_exception.
+service	src/main.cpp	none	The process entry point. Test binaries have their own main.cpp (service/tests/main.cpp); nothing calls or links this one.
+service	src/messaging/registrar.cpp	none	No test names registrar. It uses telemetry_handler (service/src/messaging/telemetry_handler.hpp); registrar::register_mappings needs a live NATS client, and neither the handler nor the registrar has a caller outside the service files themselves.
+
+## Counts
+
+Total source files (.cpp under the three src trees): 23
+  core     13
+  database  3
+  service   7
+
+Nine files are fully covered: a test names the file and every symbol the
+evidence mentions has a test. Seven are partial: a test names the file but at
+least one symbol does not, or no test names the file though the harness runs
+it. Seven have no test at all.
+
+Fully covered (9):
+  core/src/domain/resource.cpp
+  core/src/domain/span.cpp
+  core/src/domain/span_id.cpp
+  core/src/domain/trace_id.cpp
+  core/src/generators/span_id_generator.cpp
+  core/src/generators/trace_id_generator.cpp
+  database/src/repository/telemetry_mapper.cpp
+  database/src/repository/telemetry_repository.cpp
+  service/src/config/parser.cpp
+
+Partial (7):
+  core/src/domain/span_context.cpp              is_sampled() untested
+  core/src/domain/telemetry_context.cpp         get_resource() untested
+  core/src/exporting/telemetry_options.cpp      the struct and operator<< untested
+  core/src/log/database_sink_backend.cpp        consume() not called directly
+  core/src/log/lifecycle_manager.cpp            add_telemetry_sink(); no test names the file
+  database/src/repository/telemetry_entity.cpp  the three operator<<; no test names the file
+  service/src/config/options.cpp                operator<< untested
+
+No test names the file, and nothing executes it (7):
+  core/src/exporting/telemetry_configuration.cpp
+  core/src/log/telemetry_sink_backend.cpp
+  service/src/app/application.cpp
+  service/src/app/host.cpp
+  service/src/app/nats_poller.cpp
+  service/src/main.cpp
+  service/src/messaging/registrar.cpp
+
+  9 + 7 + 7 = 23
+
+## The coverage work item: source files no test touches
+
+No test names the file and nothing executes it (7):
+  1. core/src/exporting/telemetry_configuration.cpp
+  2. core/src/log/telemetry_sink_backend.cpp
+  3. service/src/app/application.cpp
+  4. service/src/app/host.cpp
+  5. service/src/app/nats_poller.cpp
+  6. service/src/main.cpp
+  7. service/src/messaging/registrar.cpp
+
+No test names the file, but the shared harness or the repository executes it (2):
+  8. core/src/log/lifecycle_manager.cpp
+  9. database/src/repository/telemetry_entity.cpp
+
+The item is nine files by "no test names it" and seven by "no test touches it".
+Entries one and two are the exporting configuration and the telemetry sink;
+three to seven are the whole service part except parser.cpp; eight and nine are
+the lifecycle manager and the SQL entity, which run under the harness and the
+repository without a test naming them.
+
+Partially covered, and the missing part is the work item for those files:
+  - core/src/domain/span_context.cpp              is_sampled() untested
+  - core/src/domain/telemetry_context.cpp         get_resource() untested
+  - core/src/exporting/telemetry_options.cpp      struct and operator<< untested
+  - core/src/log/database_sink_backend.cpp        consume() not called directly
+  - core/src/log/lifecycle_manager.cpp            add_telemetry_sink() has no caller
+  - database/src/repository/telemetry_entity.cpp  the three operator<< untested
+  - service/src/config/options.cpp                operator<< untested
+
+## Public headers no source file and no test includes at all
+
+Searched with rg over projects for `#include "<path>"` in *.cpp, *.hpp and *.h,
+build output excluded. The three generated protocol headers are excluded here,
+because core/src/log/database_sink_backend.cpp, repository.cpp and the sinks do
+include them; they are listed in the counts for completeness only.
+
+Ten headers are never included by anything:
+  core/include/ores.telemetry.core/ores.telemetry.core.hpp            namespace banner
+  core/include/ores.telemetry.core/domain/ores.telemetry.domain.hpp   namespace banner
+  core/include/ores.telemetry.core/log/log.hpp                        namespace banner
+  core/include/ores.telemetry.core/log/ores.telemetry.log.hpp         namespace banner
+  core/include/ores.telemetry.core/exporting/ores.telemetry.exporting.hpp  namespace banner
+  core/include/ores.telemetry.core/generators/ores.telemetry.generators.hpp namespace banner
+  database/include/ores.telemetry.database/ores.telemetry.database.hpp      namespace banner
+  database/include/ores.telemetry.database/repository/ores.telemetry.repository.hpp namespace banner
+  service/include/ores.telemetry.service/ores.telemetry.service.hpp   namespace banner
+  database/include/ores.telemetry.database/log/database_sink_utils.hpp  NOT a banner: two inline handler factories
+
+Nine of the ten are the G08 namespace documentation headers. G08 already
+records that nothing includes a namespace header and nothing should, so their
+absence of a consumer is the documented state and not a finding. The tenth is
+different: database/log/database_sink_utils.hpp defines
+make_database_handler and make_database_handler_with_error_callback, and no
+source or test includes it. Its sibling
+core/include/ores.telemetry.core/log/database_sink_utils.hpp is included by
+database/tests/database_sink_backend_tests.cpp:23 and by
+core/examples/database_sink_example.cpp:21, so the two headers with the same
+basename do different jobs and only the core one is live. The database one is a
+dead code item for the coverage work list, tracked as dead in
+evidence/b03_handwritten_inventory.tsv.
+
+## Undecided
+
+  - core/src/log/lifecycle_manager.cpp. Its constructor, destructor and
+    add_database_sink run under every test case through the shared
+    ores.testing logging_listener, but that is test infrastructure, not a test
+    of this file. Marked partial rather than covered for that reason.
+  - database/src/repository/telemetry_entity.cpp. The entity struct is read and
+    written by the repository tests through telemetry_repository, so the
+    members are exercised, but the file's own symbols, the three operator<<,
+    are not. Marked partial.
+  - core/src/exporting/telemetry_options.cpp. The struct reaches the shell
+    parser's result and is stored in ores.shell/config/options.hpp, but no test
+    asserts on it and the shell part has no tests. Recorded as partial; a
+    shell parser test would move it to covered.

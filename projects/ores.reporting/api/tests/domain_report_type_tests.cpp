@@ -97,7 +97,9 @@ TEST_CASE("report_type_insertion_operator", tags) {
     os << sut;
     const std::string json_output = os.str();
 
-    CHECK(!json_output.empty());
+    // A serialiser that emitted nothing useful would satisfy a non-empty
+    // check; the field name is the literal the format promises.
+    CHECK(json_output.find("\"code\"") != std::string::npos);
     CHECK(json_output.find("grid") != std::string::npos);
 }
 
@@ -149,7 +151,8 @@ TEST_CASE("report_type_convert_single_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
-    CHECK(!table.empty());
+    // The row's own code is the literal the table must show.
+    CHECK(table.find(items.front().code) != std::string::npos);
     CHECK(table.find("risk") != std::string::npos);
 }
 
@@ -205,7 +208,8 @@ TEST_CASE("report_type_table_with_faker_data", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
-    CHECK(!table.empty());
+    // The row's own code is the literal the table must show.
+    CHECK(table.find(items.front().code) != std::string::npos);
     for (const auto& item : items)
         CHECK(table.find(item.code) != std::string::npos);
 }

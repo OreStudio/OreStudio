@@ -75,7 +75,7 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 9. Regenerate C++ | TODO | |
 | 10. Eventing headers | TODO | |
 | 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
-| 12. Divergent tables: declare the projection | IN PROGRESS | 4 of 11 landed; see Step 3 revisited and Step 12 results |
+| 12. Divergent tables: declare the projection | DONE | All 11 landed; divergent is 0; see Step 12 results |
 
 * Step 12 results (part two)
 

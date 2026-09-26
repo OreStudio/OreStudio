@@ -41,5 +41,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/generators/job_definition_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/messaging/job_definition_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/messaging/scheduling_operations_protocol.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/rfl/reflectors.hpp"
 )

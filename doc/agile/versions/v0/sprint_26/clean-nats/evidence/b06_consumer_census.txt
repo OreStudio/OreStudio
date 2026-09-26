@@ -1,0 +1,31 @@
+# B06 consumer census: ores.nats public headers
+# Each header is searched by its include path, which is unique, across
+# projects/. Consumers are split into production (outside ores.nats),
+# ores.nats production, and tests. A header with no production consumer
+# is dead public API.
+
+include path                                                 prod   nats   tests
+ores.nats/config/nats_configuration.hpp                      4      1      1
+ores.nats/config/nats_options.hpp                            26     3      3
+ores.nats/domain/compression.hpp                             0      3      1
+ores.nats/domain/consumer_info.hpp                           0      1      0
+ores.nats/domain/correlation.hpp                             5      1      0
+ores.nats/domain/headers.hpp                                 12     3      3
+ores.nats/domain/message.hpp                                 264    4      2
+ores.nats/domain/stream_info.hpp                             0      1      0
+ores.nats/domain/stream_message.hpp                          0      1      0
+ores.nats/domain/wire_codec.hpp                              39     4      117
+ores.nats/domain/wire_format.hpp                             0      4      2
+ores.nats/export.hpp                                         0      10     0
+ores.nats/ores.nats.hpp                                      0      0      0
+ores.nats/service/buffered_subscription.hpp                  0      2      0
+ores.nats/service/client.hpp                                 673    3      118
+ores.nats/service/jetstream_admin.hpp                        0      3      0
+ores.nats/service/jwks.hpp                                   1      1      0
+ores.nats/service/nats_client.hpp                            197    2      125
+ores.nats/service/nats_connect_error.hpp                     0      1      0
+ores.nats/service/request_helpers.hpp                        4      0      0
+ores.nats/service/retry.hpp                                  0      1      0
+ores.nats/service/session_expired_error.hpp                  0      1      0
+ores.nats/service/subscription.hpp                           203    2      0
+ores.nats/service/timeouts.hpp                               1      3      0

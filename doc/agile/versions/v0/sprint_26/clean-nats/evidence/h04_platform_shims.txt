@@ -1,0 +1,5 @@
+# H04 survey: hand-rolled per-platform shims under ores.nats
+# Searched for the platform and compiler macros the three supported
+# compilers define, and for the standard facilities a shim would replace.
+
+(no matches)

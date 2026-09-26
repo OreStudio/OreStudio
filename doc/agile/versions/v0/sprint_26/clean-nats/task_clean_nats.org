@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-nats:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-nats
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B214CE7D-52DB-4873-AB38-3D6A18B6DB5F][Clean ores.nats to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ ores.nats passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B214CE7D-52DB-4873-AB38-3D6A18B6DB5F][Clean ores.nats to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Baseline and inventory recorded, and the dead public surface the census found is deleted. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | M09, M10, then the generation and hygiene items. |
+| Last touched | 2026-09-26                               |
 
 * Acceptance
 
@@ -57,9 +57,83 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01  | Pass   | Baseline before any edit. =check_component_drift.py --component nats= reports a component the codegen cannot name, because the component has no catalogue row and no model. =check_model_drift.py= reports only the one known reporting exception. =modeling/= holds the overview, the =.puml= and the =.png=. =regenerate_cmake_component_files.py --component ores.nats --check= reports two stale source lists, =src/component_files.cmake= and =tests/component_files.cmake=, each missing the generated marker. Evidence in =evidence/b01_baseline.txt=. |
+| B02  | Pass   | 0 entity, junction, operation, message and field-group models. =modeling/= holds =component_overview.org=, =ores.nats.puml= and =ores.nats.png=, and no model file. |
+| B03  | Pass   | 33 hand-written production C++ files at the baseline: 24 headers and 9 sources, plus 5 files under =tests/=. None is generated and none is generatable, because the component has no model; every one is infrastructure that stays hand-written, the transport client, the wire codec, the configuration, the JetStream provisioning and the JWKS fetch. Deleting the dead public surface B06 found leaves 20 headers and 9 sources. |
+| B04  | Pass   | The component owns no subject and has no protocol header. It sends one subject on another component's behalf: =iam.v1.auth.public-key= in =src/service/jwks.cpp=, whose constant lives in =ores.iam.api=. Every other subject is supplied by the caller, and =client::make_subject= applies the prefix. |
+| B05  | Pass   | The only capture naming the component is the container-split story in the product backlog, and it does not change the component. No branch in flight on origin touches =projects/ores.nats= relative to =main=. |
+| B06  | Pass   | Consumer census over the 24 public headers, first by include path and then by symbol. Every header that declares a symbol has a production consumer, and none is reached only from a test. The census found the dead public surface, which is deleted: the JetStream read and message API and the three domain types behind it, =client::js_subscribe=, =message::as_string_view= and the banner header. Evidence in =evidence/b06_consumer_census.txt= and =evidence/b06_dead_symbols.txt=. |
+
+| M01 to M08 | N/A | No org model, so there is no format to migrate, no profile to bind, no feature namespace to check, no entity table or junction to describe, and no custom type to bind. |
+| M09  | N/A    | No model, so no legacy fragment can sit in one. |
+| M10  | Pass   | The overview is current: the summary no longer claims every payload is JSON, because the wire format is resolved at startup and defaults to msgpack; the entry points name `client.hpp`, `wire_codec.hpp` and `jwks.hpp`, which the old list omitted, and describe the JetStream admin as provisioning; the inputs, outputs and dependencies match the tree. |
+| P01 to P06 | N/A | No entity and no protocol header, so no canonical verb, no owned subject, no registrar and no event cache. The one subject the component sends belongs to `ores.iam` and is recorded under B04 and in Notes. |
+| G01  | N/A    | No model, so nothing regenerates. |
+| G02  | Pass   | The component has no generation to be superseded by, so the item reduces to dead headers and dead code. Four headers and the whole JetStream read and message surface are deleted; what remains is infrastructure. |
+| G03  | Pass   | The two `component_files.cmake` lists are regenerated and carry the generated marker; no hand-written file does. |
+| G04  | N/A    | No generated code to read against the component's best hand-written code. |
+| G05  | Pass   | One generator defect found and fixed at its source with a regression test: `generate_component_puml.py` dropped every class whose declaration carries an attribute before its export macro (`class [[nodiscard]] ORES_NATS_EXPORT subscription`), which lost `subscription` and `buffered_subscription` from this diagram. Five cases in `projects/ores.codegen/tests/test_plantuml_component_parse_class_attribute.py`. |
+| G06  | Pass   | `regenerate_cmake_component_files.py --component ores.nats --check` reports all source lists up to date, exit 0. |
+| G07  | Pass   | The generator's dry run was read before the refresh and is kept in `evidence/g07_puml_dry_run.txt`. The refresh ran after the defect above was fixed, the manual section below the sentinel survived, and the rendered image was read. |
+| W01 to W04 | N/A | No entity, registrar, handler, populate script or SQL script. |
+| S01, S02 | N/A | No entity and no shell unit. |
+| H01  | Pass   | `validate_docs.sh` passes for the component. The diagram was authored in two passes: the automated skeleton, then the manual pass below the sentinel, which adds the API of every class, the two classes the parser had dropped, the free-function facets that never arrive, and the relationships. The rendered image was read, not merely regenerated. Evidence in `evidence/h01_architecture_audit.txt`. |
+| H02  | Pass   | Dead code is gone: the JetStream read and message API with its three domain types, `client::js_subscribe`, `message::as_string_view`, `nats_client::get_client` and the banner header. No duplicate implementation and no commented-out code remain. |
+| H03  | Pass   | Two comment violations found and fixed: one edit-history narration in `client.cpp` and one end-of-line member comment in `jetstream_admin.hpp`. The `} // namespace` closers stay: they are the repo convention, carried by 1709 files including the cleaned components. |
+| H04  | Pass   | No hand-rolled per-platform shim. The survey searched the component for the macros the three supported compilers define and found none: no `_WIN32`, no `_MSC_VER`, no `__APPLE__`, no `__GNUC__`, no `unreachable()` stand-in and no attribute macro. Evidence in `evidence/h04_platform_shims.txt`. |
+| V03  | N/A    | The component owns no table and no service, so there is no database to recreate and no service of its own to start. Its consumers' fleet is exercised under their own tasks. |
+| V04  | N/A    | The component generates no shell command, so there is nothing to run against the fleet. |
+| V06  | N/A    | The component has no catalogue row and no models, so it cannot join `COMPONENTS_UNDER_TEST`; the gate resolves its members through the codegen catalogue. The same reason ores.database and the four infrastructure components record. |
+| V07  | Pass   | No vacuous test. Every case asserts a literal expected value, and each `REQUIRE_NOTHROW` is followed by an assertion on the value the call produced. Evidence in `evidence/v07_vacuous_tests.txt`. |
+| V08  | Pass   | `evidence/v08_source_files.txt` records all nine sources and the test that covers each; five have none and are the coverage work item. |
+
+Items not listed are not yet worked.
 
 * Notes
+
+** The P02 layering exception
+
+=src/service/jwks.cpp= sends to =iam.v1.auth.public-key= as a string literal,
+because the canonical constant, =public_key_request::nats_subject=, lives in
+=ores.iam.api= and this component is the transport layer that =ores.iam=
+depends on. A foundation library cannot reach up for a domain constant, so
+the literal stays and the exception is recorded here. The alternative is a
+neutral owner for the subject, which is a wider change than this task.
+
+** The JWKS exchange does not use the wire codec
+
+The same function parses its reply with =boost::json= over the raw bytes,
+while =ores.nats= is the component that owns =wire_codec=. The IAM side writes
+the reply with =rfl::json=, so the two ends agree on JSON text and the
+exchange works, but it bypasses the codec the rest of the tree uses. Recorded
+for the M10 review and for a later decision on whether the codec should carry
+it.
+
+** The JetStream read surface and the consumer it lost
+
+The deleted read and message API, =list_streams=, =get_stream=,
+=purge_stream=, =list_consumers=, =peek_message=, =peek_last_message=,
+=delete_message= and =publish=, had one consumer, and it was =ores.qt='s queue
+detail dialog. Qt is retired, so the surface has had no caller in the tree
+since, and a sprint-24 task (=fix-jetstream-admin-decompress=, PR #1736) was
+spent on a peek path nothing now reads. Deleting the surface is the
+consequence of that retirement, not a judgement on the fix: the decompression
+it added is what a subscription still does for every message a handler
+receives.
+
+What survives is what the four services call: =client::make_admin()= and
+=jetstream_admin::ensure_stream()=. An operator tool wanted later belongs
+behind a model, not behind a read API with no caller.
+
+** The session and workspace headers have no producer
+
+=nats_client::with_session_id()= and =with_workspace_id()= have no caller in
+the tree, yet =ores.service= reads =Nats-Session-Id= and =X-Workspace-Id= from
+inbound messages (=handler_helpers.hpp= and =request_context.cpp=). Deleting
+only the producers would leave those readers permanently dead, so the two
+builders are kept and their intended consumer is named here: the
+workspace-scoped request path that reads the header. The missing call site is
+a cross-component decision, not a cleanup.
 
 * Test Scenarios
 

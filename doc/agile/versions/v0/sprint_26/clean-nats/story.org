@@ -8,7 +8,7 @@
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ ores.nats meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | Not yet started. |
 | Waiting on    | Nothing.                               |
@@ -39,7 +39,7 @@ ores.nats meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:D39AC7F1-78A8-49B0-B896-ABAA219C75A4][Bring ores.nats to the clean standard]] | BACKLOG | | | Work ores.nats through the Component Clean Standard in order and record each item. |
+| [[id:D39AC7F1-78A8-49B0-B896-ABAA219C75A4][Bring ores.nats to the clean standard]] | STARTED | 2026-09-26 | | Work ores.nats through the Component Clean Standard in order and record each item. |
 
 * Notes
 
@@ -48,6 +48,29 @@ ores.nats meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 * Decisions
 
+- *A component with no models cannot join =COMPONENTS_UNDER_TEST=.* The
+  registry resolves its members through the codegen catalogue, and this
+  component has no catalogue row, so the gate answers "unknown component".
+  V06 is recorded as not applicable with that reason, the same way
+  ores.database and the four surveyed infrastructure components record it.
+  The registry's model-bearing-only admission is the standard's own
+  recorded finding.
+- *Delete code with no consumer.* B06's census found the whole JetStream
+  read and message surface, three domain types, two client verbs and the
+  banner header with no caller in the tree, and they are gone.
+- *Fix a generator before refreshing what it generates.* The diagram
+  generator dropped every class whose declaration carries an attribute
+  before its export macro, so this component's diagram was missing two
+  classes. Fixed at source with a regression test, and only then refreshed.
+- *An automated diagram pass is a skeleton.* The manual pass below the
+  sentinel is what makes the boxes carry their API and the relationships
+  appear, and the rendered image must be read before the diagram is called
+  done.
+- *The wire format is a startup decision.* The component's own overview
+  claimed every payload was JSON; the codec is fixed once from
+  =ORES_NATS_WIRE_FORMAT= and defaults to msgpack.
+
 * Out of scope
 
--
+- The subject namespace a caller chooses is the caller's model. This
+  component moves bytes and applies the prefix; it owns no subject.

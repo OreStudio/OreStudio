@@ -1,0 +1,30 @@
+# H01: the Component Architecture Audit for ores.nats
+# Run 2026-09-26 on feature/clean-nats.
+
+## validate_docs.sh
+OK: all 40 components pass documentation checks. (exit 0, run after the overview edit)
+
+## The diagram, authored in two passes
+
+1. The automated pass ran with the corrected generator:
+   python3 build/scripts/generate_component_puml.py --project ores.nats
+   It drew message, wire_codec, wire_format, nats_configuration, nats_options,
+   buffered_subscription, client, jetstream_admin, nats_client,
+   nats_error_kind, nats_connect_error, session_expired_error and subscription.
+
+2. The manual pass below the sentinel adds what the automated pass cannot see:
+   the API of every class, the relationships, and the free-function facets
+   (compression, correlation, retry, jwks) that never arrive as classes.
+
+3. The sentinel section survived both refreshes (checked by grep).
+
+4. The rendered image was read: 4608x909, every class box carries its members,
+   subscription and buffered_subscription are present after the generator fix,
+   and the external package holds nats.c and rfl.
+
+## What the audit found
+
+- The diagram was an automated skeleton with an empty manual section, so a
+  reader saw boxes with data members and no API, and two classes were missing
+  entirely because the generator could not parse their declarations.
+- No leftover artefact, no naming violation and no placement violation was found.

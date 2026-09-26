@@ -1082,3 +1082,43 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+First increment. PR #2173 lands the regeneration and the wiring that makes it
+build; the standard is not met in full, and the remainder is listed below rather
+than implied by the diff's size.
+
+What landed. Both entities bind =uuid-identified-lookup=, with =workflow_step='s
+=:has_tenant_id: false= corrected while the profile was being chosen; its parent
+foreign key is declared with =:list_by: true= so generation emits the scoped read;
+the timestamp spelling is canonical; the component regenerates byte-identically
+and idempotently, which it had never done; the six superseded hand-written core
+domain files are deleted and the engine is ported to the generated repository API,
+with eight custom repository methods re-expressed as three private helpers; the
+four expressible indexes are model-declared; the SQL aggregators are reconciled so
+create and drop agree and every script is reachable; a generator defect is fixed at
+source in =command_token.hpp=, which had no conversion for a timestamp and so made
+a shell command unit for any entity with one impossible to compile; the
+=ores.shell.workflow= module is scaffolded, having had no build files at all; and
+=workflow-cpp= is registered in COMPONENTS_UNDER_TEST.
+
+Verification. =check_component_drift.py --component workflow-cpp= reports no drift,
+run at the start, after every later change, and again on the rebased branch.
+=ores.workflow.core.lib=, =ores.workflow.service.lib= and
+=ores.shell.workflow.lib= each build. =check_component_drift.py --all= still fails
+on twenty-four components for reasons that predate this work.
+
+What did not land, and is the second PR's subject. S01: the generated shell units
+are not yet registered in the shell REPL, and =wait_for_instance= -- which
+=ore_commands= and =provision_commands= call at three sites -- still lives in the
+class being retired. W01: the event and history registrars are unwired because the
+service has no event bus, event source or history dispatch registry to wire them
+into. H01: the three diagrams still have empty manual passes, which the reviewer
+asked for explicitly and which is deliberately last. V: no full-tree build, no test
+run with the fleet up, no database recreation. G05: the new regression test
+compiles but has never executed.
+
+Two recorded exceptions stand rather than being forced: the partial
+=correlation_id= index and the cascading foreign key stay hand-written because the
+generator can express neither.

@@ -94,7 +94,7 @@ record each item's result in the table below.
 | H02  | Pass. The retired event headers are deleted and the registrar's duplicate history providers are removed; no dead or commented-out code remains. | commit a74ebddd1e |
 | H03  | Pass. The comment pass over the changed and added comments found no clutter, no narration and no end-of-line comment. | Comment note below |
 | V01  | Pass. The whole tree builds, the shell adapter part and =ores.shell.exe= included. | =compass build= (exit 0) |
-| V02  | Pass. The codegen suite passes, all five analytics suites pass against the running fleet, and the full suite is 69 of 70. | =pytest projects/ores.codegen/tests= (531 passed); =ctest -R analytics= (5/5); full =ctest= (69/70) |
+| V02  | Pass. The codegen suite passes, all five analytics suites pass against the running fleet, and the full suite is 66 of 71 with a recorded base-level eventing defect. | =pytest projects/ores.codegen/tests= (551 passed); =ctest -R analytics= (5/5); full =ctest= (66/71); V02 limitation below |
 | V03  | Pass. The database recreates from scratch, and the Acme Corporation tenant provisions end to end on top of it. | =compass db recreate -y -k= (exit 0); Acme provision script (exit 0, all workflow steps completed) |
 | V04  | Pass with two recorded exceptions. All 40 generated analytics scripts ran against the live fleet as the Acme tenant admin: 14 answered =ok=, 15 =missing=, 8 =failed= on a database validation of the sentinel they send, and 3 aborted in the client. One of the eight failures is a repository defect, recorded below. | =compass shell -l= over each script in =projects/ores.shell/scripts/library/=; V04 note below |
 | V05  | Pass. component drift, model drift, protocol twin coverage (24 headers, 2 components), handler permissions (2 components, 152 codes), populate references, recipe inventory and this component's CMake source lists are all clean. | each check script, exit 0 |
@@ -361,16 +361,17 @@ which is what these three are; the other 37 answered.
 
 ** V02 recorded limitation
 
-The full suite is 69 of 70, re-run on the rebased base. The one failure is
-=ores.synthetic.core.tests=, whose =organisation_publisher_integration_tests=
-tries to create a business centre the database populate already inserted, and
-the insert function refuses a create over an existing row. Nothing in this
-change touches ores.synthetic or the business-centre path, and the live run
-created no business centres, so this is a data-state dependency in that test
-rather than a regression. Every analytics and shell suite passes, the
-analytics ones included. The suite holds 70 targets rather than the 71 the
-branch was cut against, because the fpml pass deleted =ores.fpml= and its
-test target with it.
+The analytics suites all pass: =ctest -R analytics= is 5 of 5 and the codegen
+suite is 551 passed. The full suite is 66 of 71, and every failure is outside
+this component, so each is captured rather than chased here.
+
+=ores.synthetic.core.tests= fails a business-centre case on a data-state
+dependency that predates this branch. The other four —
+=ores.trading.core.tests=, =ores.ore.core.tests=, =ores.reporting.core.tests= and
+=ores.marketdata.core.tests= — fail on =!(received.empty())= in their eventing
+integration cases, and =ores.synthetic.core.tests= fails several of those too.
+That one is base-level and silent, so it is recorded with its evidence at
+[[id:80C846D1-4A13-4331-A88C-727D6C3D861C][Finish the eventing payload migration, or read the legacy shape]].
 
 ** Rebases and re-verification
 

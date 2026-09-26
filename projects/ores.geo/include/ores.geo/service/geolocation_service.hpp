@@ -25,7 +25,6 @@
 #include "ores.logging/make_logger.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <expected>
-#include <optional>
 #include <string>
 
 namespace ores::geo::service {
@@ -44,7 +43,6 @@ struct geolocation_result {
  * @brief Error codes for geolocation lookup failures.
  */
 enum class geolocation_error {
-    database_not_available,
     address_not_found,
     lookup_failed,
     invalid_address
@@ -53,8 +51,10 @@ enum class geolocation_error {
 /**
  * @brief Service for looking up geographic location from IP addresses.
  *
- * Uses PostgreSQL ip2country table for lookups. The table must be populated
- * with ip2country data from iptoasn.com using the geolocation_import.sql script.
+ * Uses the ores_geo_ip2country_tbl PostgreSQL table for lookups. The dq
+ * ip2country publish path is its only writer, and no recreate step runs that
+ * path, so a database built from scratch answers address_not_found until a
+ * publish has run.
  *
  * Thread-safety: All public methods are thread-safe.
  */

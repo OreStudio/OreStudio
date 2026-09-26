@@ -22,14 +22,11 @@
 /**
  * @brief Geolocation services module for ORE Studio.
  *
- * This module provides IP-based geolocation capabilities using MaxMind GeoIP2
- * databases. Key features include:
+ * Resolves an IP address to an ISO 3166-1 alpha-2 country code using the
+ * ip2country ranges in PostgreSQL. The answer is country-level only, because
+ * city and coordinate data are not part of that source.
  *
- * - IP to location: resolve IP addresses to geographic information
- * - Country detection: identify the country associated with an IP address
- * - ASN lookup: determine the autonomous system number for network analysis
- *
- * The module is organized into namespaces: service (geolocation service
+ * The module is organized into one namespace: service (geolocation service
  * implementation).
  */
 namespace ores::geo {}

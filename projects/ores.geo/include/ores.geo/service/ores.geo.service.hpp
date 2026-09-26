@@ -22,8 +22,8 @@
 /**
  * @brief Geolocation service implementation.
  *
- * Contains the geolocation_service for IP address to location resolution
- * using MaxMind GeoIP2 databases.
+ * Contains the geolocation_service, which resolves an IP address to a country
+ * code using the ip2country ranges in PostgreSQL.
  */
 namespace ores::geo::service {}
 

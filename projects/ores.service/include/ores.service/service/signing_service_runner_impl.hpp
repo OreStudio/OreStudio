@@ -20,14 +20,14 @@
 #ifndef ORES_SERVICE_SERVICE_SIGNING_SERVICE_RUNNER_IMPL_HPP
 #define ORES_SERVICE_SERVICE_SIGNING_SERVICE_RUNNER_IMPL_HPP
 
-#include "ores.logging/make_logger.hpp"
-#include "ores.platform/process/signals.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.service/service/systemd_notify.hpp"
+#include "ores.service/service/service_lifecycle.hpp"
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
-#include <boost/asio/use_awaitable.hpp>
-#include <boost/system/error_code.hpp>
 #include <functional>
+#include <string>
+#include <string_view>
+#include <utility>
 
 namespace ores::service::service {
 
@@ -42,38 +42,27 @@ boost::asio::awaitable<void> run_signing(boost::asio::io_context& io_ctx,
                                          std::function<void()> on_shutdown) {
 
     using namespace ores::logging;
-    static const std::string_view logger_name = "ores.service.service.signing_runner";
-    static auto& lg = []() -> auto& {
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }();
+    auto& lg = detail::signing_runner_logger();
 
     boost::asio::signal_set signals(io_ctx);
-    for (int s : ores::platform::process::shutdown_signals)
-        signals.add(s);
+    detail::add_shutdown_signals(signals);
 
     auto signer = ores::security::jwt::jwt_authenticator::create_rs256_signer(jwt_private_key);
     BOOST_LOG_SEV(lg, info) << "RS256 signer initialised.";
 
-    auto subs = register_fn(nats, std::move(ctx), std::move(signer));
-    BOOST_LOG_SEV(lg, info) << "Registered " << subs.size() << " subscription(s).";
-
-    if (on_started)
-        on_started(io_ctx);
-
-    BOOST_LOG_SEV(lg, info) << "Service ready.";
-    notify_systemd_ready();
-    BOOST_LOG_SEV(lg, info) << "Waiting for requests...";
-    co_await signals.async_wait(boost::asio::use_awaitable);
-
-    BOOST_LOG_SEV(lg, info) << "Shutdown signal received. Draining...";
-    if (on_shutdown)
-        on_shutdown();
-    nats.drain();
-    BOOST_LOG_SEV(lg, info) << "Shutdown complete: " << name;
-    co_return;
+    co_await detail::announce_ready_and_drain(
+        io_ctx,
+        nats,
+        name,
+        signals,
+        [&nats, ctx = std::move(ctx), signer = std::move(signer), &register_fn]() mutable {
+            return register_fn(nats, std::move(ctx), std::move(signer));
+        },
+        std::move(on_started),
+        std::move(on_shutdown),
+        lg);
 }
 
-} // namespace ores::service::service
+}
 
 #endif

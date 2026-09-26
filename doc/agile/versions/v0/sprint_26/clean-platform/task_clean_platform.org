@@ -107,7 +107,7 @@ Work items, in the order they land.
    `std::unreachable()` is the portable C++23 facility the repo already
    uses at `ores.nats/src/domain/wire_format.cpp:53`.
 2. Delete `include/ores.platform/attributes.hpp`. `ORES_NO_UNIQUE_ADDRESS`
-   is used only by its own three `#define`s, and `[[no_unique_address]]` is
+   is used only by its own three `#define`s, and =[[no_unique_address]]= is
    the standard attribute every supported compiler has. Update the audit
    page, which names the header.
 3. Delete `process::get_hostname()`. It duplicates the live

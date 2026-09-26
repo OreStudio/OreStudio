@@ -27,6 +27,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
@@ -185,7 +186,13 @@ private:
         inst.tenant_id = def->tenant_id;
         inst.party_id = def->party_id;
         inst.definition_id = def->id;
-        inst.name = def->name;
+        // An instance is one occurrence of the definition, and the natural key
+        // is unique per tenant, so two runs of one definition cannot share a
+        // name. The run's start is what distinguishes them.
+        inst.name = std::format(
+            "{} {}",
+            def->name,
+            ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now()));
         inst.description = def->description;
         inst.fsm_state_id = initial_state;
         inst.trigger_run_id = req.job_instance_id;

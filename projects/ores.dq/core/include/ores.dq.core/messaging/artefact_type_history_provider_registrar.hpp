@@ -19,26 +19,18 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table_io.cpp.mustache
+ * Template: cpp_history_provider_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.dq.api/domain/artefact_type_table_io.hpp"
-#include "ores.dq.api/domain/artefact_type_table.hpp"
-#include <ostream>
+#ifndef ORES_DQ_CORE_MESSAGING_ARTEFACT_TYPE_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_DQ_CORE_MESSAGING_ARTEFACT_TYPE_HISTORY_PROVIDER_REGISTRAR_HPP
 
-namespace ores::dq::domain {
+#include "ores.history.core/service/dispatch_registry.hpp"
 
-namespace {
+namespace ores::dq::messaging {
 
-void print_artefact_type_table(std::ostream& s, const std::vector<artefact_type>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
-}
+void register_artefact_type_history_provider(ores::history::service::dispatch_registry& registry);
 
-}
+} // namespace ores::dq::messaging
 
-std::ostream& operator<<(std::ostream& s, const std::vector<artefact_type>& v) {
-    print_artefact_type_table(s, v);
-    return s;
-}
-
-}
+#endif

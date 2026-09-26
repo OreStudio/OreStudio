@@ -19,26 +19,25 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table_io.cpp.mustache
+ * Template: cpp_history_provider_registrar.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.dq.api/domain/artefact_type_table_io.hpp"
-#include "ores.dq.api/domain/artefact_type_table.hpp"
-#include <ostream>
+#include "ores.dq.core/messaging/artefact_type_history_provider_registrar.hpp"
+#include "ores.dq.core/presentation/artefact_type_history_field_mapper.hpp"
+#include "ores.dq.core/service/artefact_type_service.hpp"
+#include "ores.history.api/service/version_builder.hpp"
 
-namespace ores::dq::domain {
+namespace ores::dq::messaging {
 
-namespace {
-
-void print_artefact_type_table(std::ostream& s, const std::vector<artefact_type>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
+void register_artefact_type_history_provider(ores::history::service::dispatch_registry& registry) {
+    registry.register_history_provider(
+        "ores.dq.artefact_type",
+        [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+            service::artefact_type_service svc(scoped_ctx);
+            auto versions = svc.get_type_history(entity_id);
+            return ores::history::service::build_entity_history_versions(
+                versions, presentation::render_artefact_type_fields);
+        });
 }
 
-}
-
-std::ostream& operator<<(std::ostream& s, const std::vector<artefact_type>& v) {
-    print_artefact_type_table(s, v);
-    return s;
-}
-
-}
+} // namespace ores::dq::messaging

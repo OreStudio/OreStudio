@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_DOMAIN_ARTEFACT_TYPE_HPP
 #define ORES_DQ_API_DOMAIN_ARTEFACT_TYPE_HPP
 
@@ -112,8 +117,26 @@ struct artefact_type final {
 
     /**
      * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const artefact_type&, const artefact_type&) = default;
 };
 
 /**

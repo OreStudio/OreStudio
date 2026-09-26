@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.api/domain/artefact_type_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -44,7 +49,7 @@ std::string convert_to_table(const std::vector<artefact_type>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Artefact Table" << "Target Table"
           << "Target Subject" << "Order" << "Modified By" << fort::endr;
 
-    for (const auto& at : v) {
+    for ([[maybe_unused]] const auto& at : v) {
         table << at.code << at.name << opt_str(at.description) << opt_str(at.artefact_table)
               << opt_str(at.target_table) << opt_str(at.target_subject) << at.display_order
               << at.modified_by << fort::endr;

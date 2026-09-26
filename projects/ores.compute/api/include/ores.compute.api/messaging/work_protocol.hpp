@@ -22,8 +22,8 @@
  * Template: cpp_protocol.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_COMPUTE_MESSAGING_WORK_PROTOCOL_HPP
-#define ORES_COMPUTE_MESSAGING_WORK_PROTOCOL_HPP
+#ifndef ORES_COMPUTE_API_MESSAGING_WORK_PROTOCOL_HPP
+#define ORES_COMPUTE_API_MESSAGING_WORK_PROTOCOL_HPP
 
 #include <string>
 #include <string_view>

@@ -26,11 +26,11 @@ ores.service passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C649F853-C3F9-47E1-AF47-EB84DD27EC2F][Clean ores.service to the component clean standard]] |
-| Now          | Complete; the whole tree builds and every gate is green on the branch. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review and merge.                      |
+| Next         | Nothing. |
 | Last touched | 2026-09-26                             |
 
 * Acceptance
@@ -261,3 +261,55 @@ whole-tree build and the codegen gates are the evidence.
 | 16 | The deferring host-run test still passes against a runner that does nothing, so "each now carries the contrasting assertion" was an over-claim | projects/ores.service/tests/host_runner_tests.cpp | fixed | Real. The case now runs the accepting parser beside the deferring one, so a do-nothing runner fails it; the permission pair stays proved by mutation. |
 
 * Result
+
+ores.service meets the 49-item Component Clean Standard short of the registry
+entry, which the standard's own exception rule covers.
+
+The component is hand-written infrastructure of kind Protocol. It owns no model,
+no subject and no wire type, so the model, generation, SQL and shell items are
+not applicable rather than unexamined, and the work is structural: three
+duplications collapsed, the public API nothing consumes deleted, one generator
+defect fixed at source, the missing test suite written, and the diagram and
+overview rebuilt.
+
+What changed. The service lifecycle existed three times and is now one
+registration-and-drain tail in =service_lifecycle.hpp=. The two host runners
+declared byte-identical options structs and repeated the same envelope, and now
+share one. The workflow step command headers were declared in ores.service and
+written as raw literals in the workflow engine; they live in =ores.workflow.api=
+now and both sides use them. =exit_code_name=, =to_exit_code=,
+=host_runner_sync_options= and the exported =make_context_from_jwt= declaration
+had no consumer and are gone. =notify_systemd_ready= moved into the namespace of
+its facet.
+
+What was found. The component-diagram parser dropped any enumerator carrying a
+Doxygen trailing comment, which is how =exit_code= is written, so a refresh would
+have deleted the seven values; the parser is fixed with a regression test. The
+whole-tree build found a defect no narrower target could compile, a
+=boost::asio::signal_set= returned by value. No item's evidence is a proxy, and
+three trunk advances forced the numbers to be measured again.
+
+Verification. Two independent verification rounds failed the branch and both were
+right: a generated refdata handler had been hand-edited while its model kept the
+deleted symbols, which the tree-wide drift gate cannot see because refdata is not
+in =COMPONENTS_UNDER_TEST=, and the three readiness tests compiled to nothing
+because their feature guard preceded the include that defines the macro it tests.
+Both are fixed at source, and the record's numbers were re-measured twice. The
+third round returned PASS+NOTES, reproduced every number in this record, and
+falsified the strengthened tests by mutation. Its two notes are applied.
+
+Evidence. The whole tree builds with exit code 0. The component's suite passes 42
+cases and 118 assertions, =ores.codegen= 709, and =ores.compass= 255 with 1
+skipped. Every codegen gate is green, including =validate_docs.sh= over all 40
+components. The component changed no SQL and the database was not touched.
+
+The one exception is V06. ores.service cannot join =COMPONENTS_UNDER_TEST=: the
+registry holds catalogue components, and a catalogue row is a modeling directory
+codegen can read. Listing the name would fail =--all= with "Unknown component"
+rather than exempt it from anything. That is the infrastructure-tier gap the
+standard records, and it stands in place of the acceptance criterion that names
+the registry entry.
+
+The fleet was not provisioned in this environment, so the suites ran with
+PostgreSQL up and NATS down, and =service_lifecycle.hpp='s entry points are
+exercised only by a running fleet; the reason is recorded under V08.

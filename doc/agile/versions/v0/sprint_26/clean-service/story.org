@@ -21,11 +21,11 @@ ores.service meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The task is complete and the whole tree builds; the PR is open. |
-| Waiting on    | Review and merge.                      |
-| Next          | Land the PR, then close the task.      |
+| Now           | Done. The task's record carries the item-by-item evidence. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing here; the registry gap is the standard's own recorded exception. |
 | Last touched  | 2026-09-26                             |
 
 * Acceptance
@@ -39,7 +39,7 @@ ores.service meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:10FE8F20-C7EC-4A3E-8D8E-CE21122FEC0E][Bring ores.service to the clean standard]] | STARTED | 2026-09-26 | | Work ores.service through the Component Clean Standard in order and record each item. |
+| [[id:10FE8F20-C7EC-4A3E-8D8E-CE21122FEC0E][Bring ores.service to the clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Work ores.service through the Component Clean Standard in order and record each item. |
 
 * Notes
 

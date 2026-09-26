@@ -106,6 +106,24 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part ten: the FSM pair's tables are reproducible, and all three vocabulary pieces work
+
+Run on 2026-09-26. Models for =fsm_state= and =fsm_transition= were written and **both tables verified positively**, not by absence of a complaint: columns identical, constraints and checks identical, and the index set identical including its =where= clauses.
+
+**The three vocabulary pieces part eight named are now confirmed on live entities.**
+
+- **A composite natural key** is several =:natural_key: true= flags. =fsm_state= flags =machine_id= and =name=; =fsm_transition= flags =machine_id=, =from_state_id= and =to_state_id=, the middle one nullable, and the generated table keys on all of them.
+- **An extra index** is a =** Indexes= row under =* SQL=, and it produced both =fsm_states_machine_idx= and =fsm_transitions_machine_idx= on =(tenant_id, machine_id)= with the right =where= clause.
+- **Extra check constraints** are a =** Checks= table with an =expression= column, and it produced =check ("is_initial" in (0, 1))= and =check ("is_terminal" in (0, 1))= exactly as the hand-written file had them.
+
+**The one difference is index names, and it is cosmetic.** The template derives a composite index name from its columns, so it emits =fsm_states_machine_id_name_uniq_idx= where the hand-written file chose =fsm_states_machine_name_uniq_idx=, and =fsm_transitions_machine_id_from_state_id_to_state_id_uniq_idx= where it chose =fsm_transitions_machine_states_uniq_idx=. Nothing references those names: neither drop script mentions an index, and dropping the table drops its indexes. So the rename has no effect, and it is worth saying so rather than treating it as a blocked difference.
+
+**What the migration still needs, and why it is not in this change.** Five deletions and their rewiring: =fsm_protocol.hpp=, which is the hand-written umbrella the per-entity generated protocols replace; =fsm_handler.hpp=; =fsm_service.{hpp,cpp}=; and the two hand-written repositories, which the generated stateless ones replace, so the two =repository_fsm_*_repository_tests.cpp= files move to that API as the other entities' tests did. The registrar composes =register_fsm_state_handlers= and =register_fsm_transition_handlers= in place of the twelve hand-written subscribes, and both shell units join the =dq_commands= aggregate and the part's file lists.
+
+**One thing stays out of scope.** =fsm_machine= has a table but no C++ layer at all -- no repository, service or handler. Modelling it would generate a messaging surface the platform never had, so it is a widening rather than a migration and stays where it is.
+
+**Evidence.** No source change: the two models and the regenerated SQL are in =git stash= ("wip: dq fsm pair models (both tables verified...)"), the working tree is clean and =check_component_drift.py --component dq= reports no drift on =main=. The comparisons above were made with =git show HEAD:<path>= against the working path, which is the same path the generator writes for these two tables -- checked before comparing, which is the mistake part nine records.
+
 * Step 8 part nine: dataset's table is reproducible, but its publish verb blocks the migration
 
 Run on 2026-09-26. A =dataset= model was written and its table verified. It reproduces the hand-written =dq_dataset_create.sql=: every column (the five nullable ones rendered as =text null= rather than =text=, which is the same thing), the bitemporal primary key, the exclusion constraint and the checks, and **both natural keys** -- =(tenant_id, code)= from the flagged key, and =(tenant_id, name, subject_area_name, domain_name)= from the extra-index row. The generated table adds one redundant index on =(tenant_id, id)=, which the profile emits for every uuid-surrogate entity. So part eight's syntax works, and =dataset= is the first entity whose second natural key is expressed by it.

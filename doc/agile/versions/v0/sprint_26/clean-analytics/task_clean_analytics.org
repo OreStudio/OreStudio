@@ -94,7 +94,7 @@ record each item's result in the table below.
 | H02  | Pass. The retired event headers are deleted and the registrar's duplicate history providers are removed; no dead or commented-out code remains. | commit a74ebddd1e |
 | H03  | Pass. The comment pass over the changed and added comments found no clutter, no narration and no end-of-line comment. | Comment note below |
 | V01  | Pass. The whole tree builds, the shell adapter part and =ores.shell.exe= included. | =compass build= (exit 0) |
-| V02  | Pass. The codegen suite passes, and all five analytics test suites pass against the running fleet. | =pytest projects/ores.codegen/tests= (523 passed); =ctest -R analytics= (5/5 passed) |
+| V02  | Pass. The codegen suite passes, all five analytics suites pass against the running fleet, and the full suite is 70 of 71. | =pytest projects/ores.codegen/tests= (523 passed); =ctest -R analytics= (5/5); full =ctest= (70/71) |
 | V03  | Pass. The database recreates from scratch and the analytics layer populates. | =compass db recreate -y -k= (exit 0, 44 pricing engine types) |
 | V04  | Pass with one recorded exception. All 40 generated analytics scripts ran against the live fleet; 39 answered, one aborted in the client. | live run log; V04 note below |
 | V05  | Pass. component drift, model drift, protocol twin coverage (24 headers, 2 components), handler permissions (2 components, 152 codes), populate references, recipe inventory and the CMake source lists are all clean. | each check script, exit 0 |
@@ -286,6 +286,17 @@ without editing a closed component's tree, so it is recorded as
 [[id:90BDBB0E-45D6-4B38-A2F2-5573306E0B1B][Fix the shell recipe sentinel for optional columns]].
 V04's own rule allows a command that cannot run to be recorded with its
 reason, which is what this is; the other 39 answered.
+
+** V02 recorded limitation
+
+The full suite is 70 of 71. The one failure is
+=ores.synthetic.core.tests=, whose =organisation_publisher_integration_tests=
+tries to create a business centre the database populate already inserted, and
+the insert function refuses a create over an existing row. Nothing in this
+change touches ores.synthetic or the business-centre path, and the live run
+created no business centres, so this is a data-state dependency in that test
+rather than a regression. Every analytics and shell suite passes, the
+analytics ones included.
 
 ** Rebases and re-verification
 

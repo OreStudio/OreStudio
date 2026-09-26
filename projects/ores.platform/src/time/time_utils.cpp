@@ -29,26 +29,22 @@ namespace ores::platform::time {
 
 std::tm* time_utils::gmtime_safe(const std::time_t* time, std::tm* result) {
 #ifdef _WIN32
-    // Windows: gmtime_s has reversed parameter order and returns errno_t
     if (gmtime_s(result, time) == 0) {
         return result;
     }
     return nullptr;
 #else
-    // POSIX: gmtime_r returns pointer to result
     return gmtime_r(time, result);
 #endif
 }
 
 std::tm* time_utils::localtime_safe(const std::time_t* time, std::tm* result) {
 #ifdef _WIN32
-    // Windows: localtime_s has reversed parameter order and returns errno_t
     if (localtime_s(result, time) == 0) {
         return result;
     }
     return nullptr;
 #else
-    // POSIX: localtime_r returns pointer to result
     return localtime_r(time, result);
 #endif
 }

@@ -26,6 +26,13 @@ namespace ores #F2F2F2 {
         namespace environment #F2F2F2 {
             class environment {
             }
+            class environment_provider {
+            }
+            class fake_environment_provider {
+                +values_ : unordered_map<string, string>
+            }
+            class real_environment_provider {
+            }
         }
         namespace filesystem #F2F2F2 {
             class file {
@@ -33,7 +40,6 @@ namespace ores #F2F2F2 {
         }
         namespace time #F2F2F2 {
             class datetime {
-                +format : const string&
             }
             enum numeric_style {
                 always
@@ -59,6 +65,47 @@ namespace ores #F2F2F2 {
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Free functions cannot be drawn by the automated pass, so the net and process
+' facets are hand-authored. They use fully-qualified class names rather than a
+' reopened namespace block: this PlantUML version crashes when a namespace that
+' already holds classes is declared a second time.
+
+class ores::platform::net::network_info {
+    {static} +get_hostname() : std::string
+    {static} +get_primary_mac_address() : std::optional<std::string>
+    {static} +get_primary_mac_address_bytes() : std::optional<std::string>
+    {static} +derive_machine_id() : std::string
+    {static} +derive_machine_id_hash() : std::uint16_t
+}
+note top of "ores::platform::net::network_info"
+Free functions: the hostname, the primary non-loopback hardware address, and the stable machine identity derived from both.
+end note
+
+class ores::platform::process::executable {
+    {static} +executable_path() : std::filesystem::path
+    {static} +executable_build_time() : std::string
+}
+note top of "ores::platform::process::executable"
+Free functions: the running binary's own path, and the linker-set modification time used as its build time.
+end note
+
+class ores::platform::process::pid {
+    {static} +current_pid() : std::int64_t
+}
+note top of "ores::platform::process::pid"
+Free function: the process id of the current process.
+end note
+
+class ores::platform::process::signals {
+    {static} +shutdown_signals : std::array<int, 3>
+}
+note top of "ores::platform::process::signals"
+The signals a service treats as a graceful shutdown request; the set is narrower on Windows, where SIGQUIT does not exist.
+end note
+
+ores::platform::net ..> ores::platform::time : machine identity uses time conversion
+ores::platform::process ..> ores::platform::time : build time uses file-time conversion
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.platform.puml"

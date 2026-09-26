@@ -94,7 +94,7 @@
 
 -- Methodologies
 \ir ./dq_methodologies_notify_trigger_drop.sql
-\ir ./dq_methodology_drop.sql
+\ir ./dq_methodologies_drop.sql
 
 -- Dimensions
 \ir ./dq_treatment_dimensions_notify_trigger_drop.sql

@@ -19,24 +19,25 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table.hpp.mustache
+ * Template: cpp_history_provider_registrar.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_DQ_API_DOMAIN_METHODOLOGY_TABLE_HPP
-#define ORES_DQ_API_DOMAIN_METHODOLOGY_TABLE_HPP
+#include "ores.dq.core/messaging/methodology_history_provider_registrar.hpp"
+#include "ores.dq.core/presentation/methodology_history_field_mapper.hpp"
+#include "ores.dq.core/service/methodology_service.hpp"
+#include "ores.history.api/service/version_builder.hpp"
 
-#include "ores.dq.api/domain/methodology.hpp"
-#include "ores.dq.api/export.hpp"
-#include <string>
-#include <vector>
+namespace ores::dq::messaging {
 
-namespace ores::dq::domain {
-
-/**
- * @brief Converts methodologies to the table format.
- */
-ORES_DQ_API_EXPORT std::string convert_to_table(const std::vector<methodology>& v);
-
+void register_methodology_history_provider(ores::history::service::dispatch_registry& registry) {
+    registry.register_history_provider(
+        "ores.dq.methodology",
+        [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+            service::methodology_service svc(scoped_ctx);
+            auto versions = svc.get_methodology_history(entity_id);
+            return ores::history::service::build_entity_history_versions(
+                versions, presentation::render_methodology_fields);
+        });
 }
 
-#endif
+} // namespace ores::dq::messaging

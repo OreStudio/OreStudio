@@ -19,24 +19,18 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table.hpp.mustache
+ * Template: cpp_history_provider_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_DQ_API_DOMAIN_METHODOLOGY_TABLE_HPP
-#define ORES_DQ_API_DOMAIN_METHODOLOGY_TABLE_HPP
+#ifndef ORES_DQ_CORE_MESSAGING_METHODOLOGY_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_DQ_CORE_MESSAGING_METHODOLOGY_HISTORY_PROVIDER_REGISTRAR_HPP
 
-#include "ores.dq.api/domain/methodology.hpp"
-#include "ores.dq.api/export.hpp"
-#include <string>
-#include <vector>
+#include "ores.history.core/service/dispatch_registry.hpp"
 
-namespace ores::dq::domain {
+namespace ores::dq::messaging {
 
-/**
- * @brief Converts methodologies to the table format.
- */
-ORES_DQ_API_EXPORT std::string convert_to_table(const std::vector<methodology>& v);
+void register_methodology_history_provider(ores::history::service::dispatch_registry& registry);
 
-}
+} // namespace ores::dq::messaging
 
 #endif

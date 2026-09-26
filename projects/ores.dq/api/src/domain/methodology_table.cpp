@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,22 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.api/domain/methodology_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
 namespace ores::dq::domain {
 
+
 std::string convert_to_table(const std::vector<methodology>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Name" << "Description" << "Modified By" << "Version"
-          << fort::endr;
+    table << fort::header << "Name" << "Description" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& m : v) {
-        table << boost::uuids::to_string(m.id) << m.name << m.description << m.modified_by
-              << m.version << fort::endr;
+    for ([[maybe_unused]] const auto& m : v) {
+        table << m.name << m.description << m.modified_by << m.version << fort::endr;
     }
     return table.to_string();
 }

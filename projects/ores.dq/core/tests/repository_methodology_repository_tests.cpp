@@ -50,13 +50,13 @@ TEST_CASE("write_single_methodology", tags) {
     database_helper h;
 
     generation_context ctx;
-    methodology_repository repo(h.context());
+    methodology_repository repo;
     auto methodology = generate_synthetic_methodology(ctx);
-    methodology.tenant_id = h.tenant_id().to_string();
+    methodology.tenant_id = h.tenant_id();
     methodology.name = methodology.name + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Methodology: " << methodology;
-    CHECK_NOTHROW(repo.write(methodology));
+    CHECK_NOTHROW(repo.write(h.context(), methodology));
 }
 
 TEST_CASE("write_multiple_methodologies", tags) {
@@ -64,16 +64,16 @@ TEST_CASE("write_multiple_methodologies", tags) {
 
     database_helper h;
 
-    methodology_repository repo(h.context());
+    methodology_repository repo;
     generation_context ctx;
     auto methodologies = generate_synthetic_methodologies(3, ctx);
     for (auto& m : methodologies) {
-        m.tenant_id = h.tenant_id().to_string();
+        m.tenant_id = h.tenant_id();
         m.name = m.name + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Methodologies: " << methodologies;
 
-    CHECK_NOTHROW(repo.write(methodologies));
+    CHECK_NOTHROW(repo.write(h.context(), methodologies));
 }
 
 TEST_CASE("read_latest_methodologies", tags) {
@@ -81,18 +81,18 @@ TEST_CASE("read_latest_methodologies", tags) {
 
     database_helper h;
 
-    methodology_repository repo(h.context());
+    methodology_repository repo;
     generation_context ctx;
     auto written_methodologies = generate_synthetic_methodologies(3, ctx);
     for (auto& m : written_methodologies) {
-        m.tenant_id = h.tenant_id().to_string();
+        m.tenant_id = h.tenant_id();
         m.name = m.name + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Written methodologies: " << written_methodologies;
 
-    repo.write(written_methodologies);
+    repo.write(h.context(), written_methodologies);
 
-    auto read_methodologies = repo.read_latest();
+    auto read_methodologies = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
 
     CHECK(!read_methodologies.empty());
@@ -104,21 +104,21 @@ TEST_CASE("read_latest_methodology_by_id", tags) {
 
     database_helper h;
 
-    methodology_repository repo(h.context());
+    methodology_repository repo;
     generation_context ctx;
     auto methodologies = generate_synthetic_methodologies(3, ctx);
     for (auto& m : methodologies) {
-        m.tenant_id = h.tenant_id().to_string();
+        m.tenant_id = h.tenant_id();
         m.name = m.name + "_" + std::string(faker::string::alphanumeric(8));
     }
 
     const auto target = methodologies.front();
     BOOST_LOG_SEV(lg, debug) << "Write methodologies: " << methodologies;
-    repo.write(methodologies);
+    repo.write(h.context(), methodologies);
 
     BOOST_LOG_SEV(lg, debug) << "Target methodology: " << target;
 
-    auto read_methodologies = repo.read_latest(target.id);
+    auto read_methodologies = repo.read_latest(h.context(), boost::uuids::to_string(target.id));
     BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
 
     REQUIRE(read_methodologies.size() == 1);
@@ -131,12 +131,12 @@ TEST_CASE("read_nonexistent_methodology_by_id", tags) {
 
     database_helper h;
 
-    methodology_repository repo(h.context());
+    methodology_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_methodologies = repo.read_latest(nonexistent_id);
+    auto read_methodologies = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
 
     CHECK(read_methodologies.size() == 0);

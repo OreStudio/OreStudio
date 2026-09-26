@@ -70,7 +70,7 @@
 \ir ./dq_treatment_dimensions_notify_trigger_create.sql
 
 -- Methodologies
-\ir ./dq_methodology_create.sql
+\ir ./dq_methodologies_create.sql
 \ir ./dq_methodologies_notify_trigger_create.sql
 
 -- Artefact Types (must precede datasets for FK validation)

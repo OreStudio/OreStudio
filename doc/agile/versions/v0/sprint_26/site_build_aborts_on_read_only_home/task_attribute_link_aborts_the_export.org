@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 466BBE39-8024-4905-B160-ECC7026F9D2E
+:END:
+#+title: Task: Stop the C++ attribute link aborting the site export
+#+description: Two clean-platform pages wrote the standard attribute in Markdown backticks; backticks are not org markup, so the exporter read it as an unresolved link and aborted the whole export.
+#+type: task
+#+level: s1
+#+filetags: :site_build_aborts_on_read_only_home:sprint_26:v0:
+#+owner: marco
+#+branch: fix/site-build-blockers
+#+pr: 2158
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC13D00B-F711-42C6-B4A8-449D7D57C15E][Hotfix: The site build aborts on a read-only HOME]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The two =clean-platform= pages that quote =[[no_unique_address]]= use markup the
+org exporter honours, so the site export no longer aborts on them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EC13D00B-F711-42C6-B4A8-449D7D57C15E][Hotfix: The site build aborts on a read-only HOME]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- Neither page writes the attribute in Markdown backticks.
+- The site export resolves every link and reaches =Build succeeded=.
+
+* Plan
+
+Write the attribute as org verbatim, which is the markup the surrounding prose
+already uses for C++ tokens. Backticks carry no meaning in org, so the exporter
+saw the double brackets inside them as a link target.
+
+* Notes
+
+=[[no_unique_address]]= inside Markdown backticks is not a link, but org does not
+read backticks, so the exporter treated the brackets as one and aborted:
+
+#+begin_src text
+Build failed: Org export aborted.  Unable to resolve link: "no_unique_address"
+#+end_src
+
+The failure is not sandbox-specific. It would break the site build anywhere, and
+it was the second abort in the same run, after the package install.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2158][#2158]] | [site] Unblock the site build on a cold, read-only HOME |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The reviewer searched the repository for other backtick-quoted occurrences of the attribute and found none, so the fix is complete. | =clean-platform/story.org=, =task_clean_platform.org= | no action | Confirms the two pages were the whole set. |
+
+* Result
+
+Both pages now use org verbatim, matching
+=component_clean_standard.org=, which already wrote it that way. The site export
+completes and =graphdata.json= is written.

@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: EC13D00B-F711-42C6-B4A8-449D7D57C15E
+:END:
+#+title: Story: Hotfix: The site build aborts on a read-only HOME
+#+description: compass build --direct site aborts before publishing: the batch Emacs bootstrap deletes the user's quickstart cache on a read-only HOME, and two pages write an org link in Markdown backticks.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:site:sprint_26:v0:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+compass build --direct site publishes again on a cold checkout whose HOME is read-only, and no batch Emacs script manages a cache that belongs to the user.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-26                               |
+
+* Acceptance
+
+- compass build --direct site reaches Build succeeded and writes graphdata.json on a cold, read-only HOME.
+- No batch Emacs script deletes the user's package quickstart cache.
+- compass lint passes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1178A64B-2162-4845-AEB2-CE58A4AB7F1C][Stop the batch Emacs install deleting the user's quickstart cache]] | DONE | 2026-09-26 | 2026-09-26 | One shared file overrides the quickstart refresh, and every batch script that installs a package loads it before its first package-install. |
+| [[id:466BBE39-8024-4905-B160-ECC7026F9D2E][Stop the C++ attribute link aborting the site export]] | DONE | 2026-09-26 | 2026-09-26 | Write the attribute as org verbatim on the two clean-platform pages that used Markdown backticks, which org does not read. |
+
+* Decisions
+
+- One file for the fix, not one edit per script. Five batch scripts share the same bootstrap, so the rule belongs in a single place; the alternative was five copies free to drift apart.
+- Guard the override with =fboundp=. =package--quickstart-maybe-refresh= is internal to Emacs, so the fix must go inert if a future release renames it, rather than break the load of every script that loads the file.
+- Suppress the cleanup rather than teach it about a read-only path. The cache describes the user's package directory, not the checkout's =./.packages=, so a batch install has no business refreshing it even on a writable HOME.
+- Fix the page rather than the exporter. Backticks are not org markup, so the two pages were wrong and the exporter was right to abort.
+- Track the work on the branch that already carried it. The story was created after the branch and the PR existed, so the branch is =fix/site-build-blockers= rather than the =hotfix/= name the runbook scaffolds.
+
+* Out of scope
+
+- Whether the batch scripts should share their whole package bootstrap. They duplicate =package-user-dir= and =package-archives= as well, which is a larger consolidation than a hotfix should carry.
+
+* Result
+
+=compass build --direct site= completes on a cold, read-only HOME and writes =graphdata.json=.
+
+The install aborted because =package--quickstart-maybe-refresh= deletes the user's quickstart cache under =~/.emacs.d= whenever =package-quickstart= is nil, and =delete-file= signals when HOME is read-only. One shared file now overrides that function, and the four scripts that install a package load it before their first =package-install=; =ores-build-site.el= reaches it through =ores-site-packages.el=, which it already loaded.
+
+The export then aborted on two =clean-platform= pages because =[[no_unique_address]]= sat inside Markdown backticks, which org does not read, so the exporter treated the brackets as an unresolved link. Both pages now use org verbatim, the markup the standard's own page already used.
+
+Evidence. With a quickstart cache under a read-only =.emacs.d=, the bare call signals =Removing old name=, and the same call with the shared file loaded reports no signal and leaves the cache in place. The site build reports =Build succeeded= and writes =graphdata.json= for 6570 nodes and 34141 links. =compass lint= passes.

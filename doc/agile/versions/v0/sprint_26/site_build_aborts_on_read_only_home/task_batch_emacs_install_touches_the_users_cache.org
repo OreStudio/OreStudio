@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 1178A64B-2162-4845-AEB2-CE58A4AB7F1C
+:END:
+#+title: Task: Stop the batch Emacs install deleting the user's quickstart cache
+#+description: Emacs 30 deletes the user's package quickstart cache during a batch install, and delete-file signals when HOME is read-only, so every batch script that installs a package aborts before it finishes.
+#+type: task
+#+level: s1
+#+filetags: :site_build_aborts_on_read_only_home:sprint_26:v0:
+#+owner: marco
+#+branch: fix/site-build-blockers
+#+pr: 2158
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC13D00B-F711-42C6-B4A8-449D7D57C15E][Hotfix: The site build aborts on a read-only HOME]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A batch Emacs script installs its packages without touching a cache that belongs to the user. One file holds the fix, and every script that performs an install loads it before its first =package-install=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EC13D00B-F711-42C6-B4A8-449D7D57C15E][Hotfix: The site build aborts on a read-only HOME]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- =ores-batch-packages.el= holds the fix once, and the four scripts that install a package load it before their first =package-install=; =ores-build-site.el= reaches it through =ores-site-packages.el=.
+- A batch call with =package-quickstart= nil leaves the user's quickstart cache in place.
+- The advice is inert rather than fatal on an Emacs that has no =package--quickstart-maybe-refresh=.
+
+* Plan
+
+1. Extract the advice out of =ores-site-packages.el= into =ores-batch-packages.el=.
+   Editing one file per script would leave five copies of the same rule to drift
+   apart, and the scripts already duplicate enough of the bootstrap.
+2. Load it from each script with the =load-file-name= idiom =ores-build-site.el=
+   already uses, so the resolution does not depend on the working directory.
+3. Guard the advice with =fboundp=, because the function it overrides is internal.
+
+* Notes
+
+Root cause. =package--quickstart-maybe-refresh= deletes =package-quickstart-file=
+whenever =package-quickstart= is nil, which is the case under =emacs -Q=. The
+batch scripts point =package-user-dir= at the checkout's =./.packages=, so the
+cache being deleted describes the user's own package directory and has nothing to
+do with the install in progress.
+
+Where it bit. =compass build --direct site= aborted with
+
+#+begin_src text
+Error: file-error ("Removing old name" "Read-only file system"
+                   "/home/marco/.emacs.d/package-quickstart.elc")
+#+end_src
+
+and =compass build --direct skills= failed the same way in a sandboxed session.
+The site script was fixed first and the other four were carried as a known gap
+until this task closed it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2158][#2158]] | [site] Unblock the site build on a cold, read-only HOME |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =package--quickstart-maybe-refresh= is internal to Emacs, so advising it directly turns a future rename into a load-time error in every script that loads the file. | =ores-site-packages.el= | fixed | The advice now lives in =ores-batch-packages.el= wrapped in =fboundp=. Proved both directions: with the function present the override installs, and with it =fmakunbound= first the file still loads. |
+
+* Result
+
+One file carries the rule. =ores-batch-packages.el= overrides
+=package--quickstart-maybe-refresh= to a no-op, guarded by =fboundp=, and
+=ores-site-packages.el=, =ores-build-skills.el=,
+=ores-build-release-notes.el= and =ores-sync-org-roam.el= each load it before
+their first =package-install=. =ores-build-site.el= reaches it through
+=ores-site-packages.el=, which it already loaded.
+
+Evidence, on the real mechanism. With a quickstart cache under a read-only
+=.emacs.d=, the bare call signals =Removing old name: Permission denied=, and the
+same call with =ores-batch-packages.el= loaded reports no signal and leaves the
+cache file in place. Each of the five scripts resolves the shared file from its
+own path. The site build then ran end to end through the rewritten
+=ores-site-packages.el= and reported =Build succeeded=.
+
+Limitation. The fix suppresses a cleanup rather than making it tolerate a
+read-only path, so Emacs will not refresh the user's quickstart cache from any of
+these batch runs. That is the intent: the cache belongs to the user's package
+directory, not to the checkout's.

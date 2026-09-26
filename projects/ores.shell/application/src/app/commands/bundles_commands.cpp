@@ -66,10 +66,10 @@ void bundles_commands::register_commands(cli::Menu& root_menu, nats_client& sess
 }
 
 void bundles_commands::process_list(std::ostream& out, nats_client& session) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get dataset bundles request.";
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list dataset bundles request.";
 
-    dq::messaging::get_dataset_bundles_request req;
-    auto result = do_auth_request<dq::messaging::get_dataset_bundles_response>(
+    dq::messaging::list_dataset_bundles_request req;
+    auto result = do_auth_request<dq::messaging::list_dataset_bundles_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;

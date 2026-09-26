@@ -592,3 +592,39 @@ def test_a_junction_without_a_cpp_drawer_keeps_its_wire_writes(tmp_path):
     names = [m["name"] for m in junction_protocol_messages(junction)]
     assert "put_widget_owner_request" in names
     assert "delete_widget_owner_request" in names
+
+
+# A junction whose repository shortens the name. ores.dq's
+# dataset_bundle_members declares :name_short: members, badge_mappings
+# declares :name_short: mappings, and refdata's currency_currency_groups
+# declares :name_short: currency_groups.
+SHORT_NAME_FIXTURE = FIXTURE.replace(
+    "* C++",
+    """* Repository
+:PROPERTIES:
+:name_singular_short: owner
+:name_short:          owners
+:name_singular_words: widget owner
+:name_words:          widget owners
+:END:
+
+* C++""",
+)
+
+
+def test_the_service_names_the_response_member_after_the_junction(tmp_path):
+    """The response's collection member is the junction's full name.
+
+    The protocol builds that member from ``entity_plural_short``, which the
+    loader sets to the junction's ``name``. A service reading
+    ``:name_short:`` instead emits a member the response does not declare
+    whenever the two differ, and the mismatch is a compile error rather than
+    a wrong value. The repository's own ``name_short`` parameter is a
+    different thing and keeps its meaning.
+    """
+    service = _render(
+        tmp_path, "cpp_service.cpp.mustache", "widget_owner_service.cpp",
+        body=SHORT_NAME_FIXTURE)
+
+    assert "response.widget_owners = repo_.read_latest(" in service
+    assert "response.owners " not in service

@@ -19,24 +19,18 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table_io.hpp.mustache
+ * Template: cpp_history_provider_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_DQ_API_DOMAIN_DATASET_BUNDLE_TABLE_IO_HPP
-#define ORES_DQ_API_DOMAIN_DATASET_BUNDLE_TABLE_IO_HPP
+#ifndef ORES_DQ_CORE_MESSAGING_DATASET_BUNDLE_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_DQ_CORE_MESSAGING_DATASET_BUNDLE_HISTORY_PROVIDER_REGISTRAR_HPP
 
-#include "ores.dq.api/domain/dataset_bundle.hpp"
-#include "ores.dq.api/export.hpp"
-#include <iosfwd>
-#include <vector>
+#include "ores.history.core/service/dispatch_registry.hpp"
 
-namespace ores::dq::domain {
+namespace ores::dq::messaging {
 
-/**
- * @brief Dumps the dataset_bundle objects to a stream in table format.
- */
-ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<dataset_bundle>& v);
+void register_dataset_bundle_history_provider(ores::history::service::dispatch_registry& registry);
 
-}
+} // namespace ores::dq::messaging
 
 #endif

@@ -242,6 +242,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/data_domain_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/data_domain_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/dataset_bundle_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/dataset_bundle_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/dataset_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/lei_entity_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/lei_entity_event.hpp"

@@ -19,24 +19,25 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table_io.hpp.mustache
+ * Template: cpp_history_provider_registrar.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_DQ_API_DOMAIN_DATASET_BUNDLE_TABLE_IO_HPP
-#define ORES_DQ_API_DOMAIN_DATASET_BUNDLE_TABLE_IO_HPP
+#include "ores.dq.core/messaging/dataset_bundle_history_provider_registrar.hpp"
+#include "ores.dq.core/presentation/dataset_bundle_history_field_mapper.hpp"
+#include "ores.dq.core/service/dataset_bundle_service.hpp"
+#include "ores.history.api/service/version_builder.hpp"
 
-#include "ores.dq.api/domain/dataset_bundle.hpp"
-#include "ores.dq.api/export.hpp"
-#include <iosfwd>
-#include <vector>
+namespace ores::dq::messaging {
 
-namespace ores::dq::domain {
-
-/**
- * @brief Dumps the dataset_bundle objects to a stream in table format.
- */
-ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<dataset_bundle>& v);
-
+void register_dataset_bundle_history_provider(ores::history::service::dispatch_registry& registry) {
+    registry.register_history_provider(
+        "ores.dq.dataset_bundle",
+        [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+            service::dataset_bundle_service svc(scoped_ctx);
+            auto versions = svc.get_bundle_history(entity_id);
+            return ores::history::service::build_entity_history_versions(
+                versions, presentation::render_dataset_bundle_fields);
+        });
 }
 
-#endif
+} // namespace ores::dq::messaging

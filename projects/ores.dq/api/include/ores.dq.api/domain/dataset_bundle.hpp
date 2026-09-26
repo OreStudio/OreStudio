@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_DOMAIN_DATASET_BUNDLE_HPP
 #define ORES_DQ_API_DOMAIN_DATASET_BUNDLE_HPP
 
@@ -36,9 +41,9 @@ namespace ores::dq::domain {
  * should be installed together.
  *
  * Examples:
- * - "slovaris": Synthetic reference data for development and testing
  * - "base": Industry-standard reference data (ISO + FpML) for production
  * - "crypto": Base system plus cryptocurrency reference data
+ * - "risk_management": Sample organisational and risk-reporting data
  */
 struct dataset_bundle final {
     /**
@@ -61,7 +66,7 @@ struct dataset_bundle final {
     /**
      * @brief Unique code for stable referencing.
      *
-     * Examples: "slovaris", "base", "crypto".
+     * Examples: "base", "crypto", "risk_management".
      */
     std::string code;
 
@@ -99,8 +104,26 @@ struct dataset_bundle final {
 
     /**
      * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const dataset_bundle&, const dataset_bundle&) = default;
 };
 
 /**

@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_registrar.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.core/messaging/dataset_bundle_member_registrar.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_member_handler.hpp"
@@ -35,10 +40,40 @@ std::vector<ores::nats::service::subscription> register_dataset_bundle_member_ha
     std::vector<ores::nats::service::subscription> subs;
     auto h =
         std::make_shared<dataset_bundle_member_handler>(nats, std::move(ctx), std::move(verifier));
+    subs.push_back(nats.queue_subscribe(
+        list_dataset_bundle_members_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_dataset_bundle_members(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_dataset_bundle_member_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_dataset_bundle_member(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_dataset_bundle_members_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_many_dataset_bundle_members(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_dataset_bundle_member_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_dataset_bundle_member(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_dataset_bundle_members_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_many_dataset_bundle_members(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_dataset_bundle_member_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_dataset_bundle_member(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_dataset_bundle_members_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_many_dataset_bundle_members(std::move(msg)); }));
     subs.push_back(
-        nats.queue_subscribe(get_dataset_bundle_members_by_bundle_request::nats_subject,
+        nats.queue_subscribe(list_by_bundle_code_dataset_bundle_members_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->list_by_bundle(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->list_by_bundle_code_dataset_bundle_members(std::move(msg));
+                             }));
     return subs;
 }
 

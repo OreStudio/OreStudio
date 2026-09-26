@@ -17,13 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_SERVICE_DATASET_BUNDLE_MEMBER_SERVICE_HPP
 #define ORES_DQ_SERVICE_DATASET_BUNDLE_MEMBER_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/dataset_bundle_member.hpp"
+#include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
 #include "ores.dq.core/repository/dataset_bundle_member_repository.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -32,8 +40,8 @@ namespace ores::dq::service {
 /**
  * @brief Service for managing dataset bundle members.
  *
- * This service provides functionality for:
- * - Managing dataset bundle members (CRUD operations)
+ * Provides a higher-level interface for dataset bundle member operations,
+ * wrapping the underlying repository.
  */
 class dataset_bundle_member_service {
 private:
@@ -49,53 +57,62 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a dataset_bundle_member_service with required repositories.
+     * @brief Constructs a dataset_bundle_member_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit dataset_bundle_member_service(context ctx);
 
     /**
-     * @brief Lists all dataset bundle members.
-     */
-    std::vector<domain::dataset_bundle_member> list_members();
-
-    /**
-     * @brief Lists dataset bundle members for a specific bundle.
+     * @brief The protocol operations, one method per subject.
      *
-     * @param bundle_code The bundle to filter by
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
      */
-    std::vector<domain::dataset_bundle_member>
-    list_members_by_bundle(const std::string& bundle_code);
-
-    /**
-     * @brief Lists dataset bundle members for a specific bundle, with pagination.
-     */
-    std::vector<domain::dataset_bundle_member> list_members_by_bundle(
-        const std::string& bundle_code, std::uint32_t offset, std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active dataset bundle members filtered by bundle_code.
-     */
-    std::uint32_t get_total_member_count_by_bundle(const std::string& bundle_code);
-
-    /**
-     * @brief Saves a dataset bundle member (creates or updates).
-     *
-     * @param member The dataset bundle member to save
-     */
-    void save_member(const domain::dataset_bundle_member& member);
-
-    /**
-     * @brief Removes a dataset bundle member.
-     *
-     * @param bundle_code The bundle
-     * @param dataset_code The dataset
-     */
-    void remove_member(const std::string& bundle_code, const std::string& dataset_code);
+    /**@{*/
+    messaging::list_dataset_bundle_members_response
+    list_dataset_bundle_members(const messaging::list_dataset_bundle_members_request& request);
+    messaging::get_dataset_bundle_member_response
+    get_dataset_bundle_member(const messaging::get_dataset_bundle_member_request& request);
+    messaging::get_many_dataset_bundle_members_response get_many_dataset_bundle_members(
+        const messaging::get_many_dataset_bundle_members_request& request);
+    messaging::put_dataset_bundle_member_response
+    put_dataset_bundle_member(const messaging::put_dataset_bundle_member_request& request);
+    messaging::put_many_dataset_bundle_members_response put_many_dataset_bundle_members(
+        const messaging::put_many_dataset_bundle_members_request& request);
+    messaging::delete_dataset_bundle_member_response
+    delete_dataset_bundle_member(const messaging::delete_dataset_bundle_member_request& request);
+    messaging::delete_many_dataset_bundle_members_response delete_many_dataset_bundle_members(
+        const messaging::delete_many_dataset_bundle_members_request& request);
+    messaging::list_by_bundle_code_dataset_bundle_members_response
+    list_by_bundle_code_dataset_bundle_members(
+        const messaging::list_by_bundle_code_dataset_bundle_members_request& request);
+    /**@}*/
 
 private:
+    context ctx_;
     repository::dataset_bundle_member_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const messaging::dataset_bundle_member_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::dataset_bundle_member& out);
 };
 
 }

@@ -66,6 +66,11 @@ record each item's result in the table below.
 | M01 | Pass. No legacy JSON model remains and no =lookup_entity= survives. | =find= for =*.json= under the modeling directories returns nothing; =grep= for =lookup_entity= returns nothing. =check_model_drift.py= reports no model drift for this component. |
 | M02 | Fixed. Both entities bind =uuid-identified-lookup=. =workflow_step= carried =:has_tenant_id: false=, the only model in the tree that did, against a feature whose default is true and whose own document says to omit it only for genuinely global entities such as currencies and countries. Its parent is tenant-scoped, so the flag was a defect with row-level-security consequences, not a deliberate no-match. | Feature values read from =variability_uuid_identified_lookup.org=; the feature's default and effect from =variability_feature_has_tenant_id.org=; the census is 19 models at =true=, 1 at =false= and 0 absent. |
 | M03 | Pass by construction so far: the binding replaced the stated properties instead of adding to them. =has_tenant_id= came out of both =Flags= blocks, so neither model states a property its profile already fixes to the same value. | The diff on both models. =check_model_drift.py= is re-run with the regeneration, under G01. |
+| M04 | Pass. The only feature assignment in either model is =:profile:=, and it sits at the entity root where the loader reads it. A misplaced assignment is inert without an error, so the proof is the generator's response rather than the syntax. | Adding the profile moved the planned output by ten files; a feature in a namespace the loader ignored would have changed nothing. |
+| M05 | Pass. Each entity describes exactly one table, and neither is a joined or denormalised shape. | Model review: the =jsonb= columns hold opaque payloads, which the PostgreSQL architecture page allows explicitly, and neither entity aggregates another's columns. |
+| M06 | Finding: the component exchanges wire types that no model declares. Five hand-written protocol headers survive under =api/include=, and neither entity has a =* Messages= section. Generation supersedes two of them with the per-entity protocols; the workflow's own operation messages need an operation model, which the tree already has a metatype and three precedents for. | =check_protocol_twin_coverage.py= covers only the three committed components, so it cannot see this one yet. The header inventory comes from B03. Detail below. |
+| M07 | Not applicable: the component has no junction or association model. Its two models are both =ores.codegen.entity=. | B02's metatype survey. |
+| M08 | Fixed. =timestamptz= gave way to the canonical =timestamp with time zone= on all five columns, and no integer flag remains. | The PostgreSQL architecture page names this exact divergence and asks for convergence; =grep= now finds no =timestamptz= anywhere in the tree; the generated file set is unchanged by the edit. Detail below. |
 | M09 | Pass. No retired fragment survives in any model. | =grep= over the modeling directories for =qt=, =wt=, =drawer= and =presentation= returns nothing. |
 | M10 | The component model declares its parts. =validate_docs.sh= still to run. | =modeling/component_overview.org= carries =* Summary=, =* Sub-components= and =* Entity modules=. Verification is deferred to H01, which owns the diagram and the docs gate. |
 
@@ -187,6 +192,29 @@ features that =book= sets in its C++ =Flags= (=:parent_entity_singular:
 portfolio= for =book=). The profile leaves them to the model. The regeneration
 under G01 will show the shape each choice produces, and the decision is recorded
 there rather than guessed here.
+
+** M06 wire types and M08 type spellings
+
+M06. The five hand-written protocol headers under =api/include= are
+=workflow_protocol.hpp=, =workflow_query_protocol.hpp=,
+=steps_query_protocol.hpp=, =workflow_events.hpp= and =step_log_types.hpp=.
+Neither entity declares a =* Messages= section, so nothing in a model accounts
+for them. Generation will write =workflow_instance_protocol.hpp= and
+=workflow_step_protocol.hpp=, which supersede the entity-shaped part; what
+remains is the workflow's own start, advance and query conversation, which no
+entity model can express because it is not an entity verb. P04 owns that: it
+belongs in an operation model. The metatype exists (=ores.codegen.operation=)
+and the tree has three precedents, =ores.compute.work=,
+=ores.iam.account_messages= and =ores.history.history_messages=, so this is
+modelling work rather than a generator gap.
+
+M08. The =timestamptz= spelling was not merely inconsistent; the PostgreSQL
+architecture page names it. Under "One spelling per type" it records
+"=timestamp with time zone= against =timestamptz=, 15 to 5", and all five of
+that remainder were this component's. The same page fixes the rule, "Instants.
+Never a bare =timestamp=". Generation normalises all three spellings, so the
+edit changes no output: the dry run's file set is identical before and after,
+which is what makes the change safe rather than merely tidy.
 
 * Test Scenarios
 

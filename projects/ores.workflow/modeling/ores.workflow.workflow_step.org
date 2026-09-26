@@ -123,7 +123,7 @@ Serialised JSON command payload published to the domain service.
 
 ** command_published_at
 :PROPERTIES:
-:type:     timestamptz
+:type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
 :END:
@@ -162,7 +162,7 @@ Serialised JSON compensation command payload, populated when compensation is tri
 
 ** started_at
 :PROPERTIES:
-:type:     timestamptz
+:type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
 :END:
@@ -171,7 +171,7 @@ Timestamp when the step began executing.
 
 ** completed_at
 :PROPERTIES:
-:type:     timestamptz
+:type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
 :END:

@@ -133,7 +133,7 @@ JSON snapshot of the step sequence built at instance start. Prevents a non-deter
 
 ** completed_at
 :PROPERTIES:
-:type:     timestamptz
+:type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
 :END:
@@ -142,7 +142,7 @@ Timestamp when the workflow reached a terminal state.
 
 ** last_event_at
 :PROPERTIES:
-:type:     timestamptz
+:type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
 :END:

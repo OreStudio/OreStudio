@@ -99,7 +99,7 @@ well as the All items.
 | H03 | Pass. Comments follow the project comment rules; the survey found no commented-out code. | Comment pass |
 | H04 | Not applicable. The component carries no platform conditional and no OS header; its one platform need, the ISO-8601 timestamp, goes through =ores.platform=. | =grep= for preprocessor conditionals |
 | V01 | Pass. The whole tree builds, with the component's tests and every consumer: =./compass.sh build= with no target exits 0, and its log carries every component library, every test binary, the shell executable and =ores.reporting=, whose migrated =report_scheduling_service.cpp= is compiled in the same run. | =evidence/v01_whole_tree_build.txt= |
-| V02 | Pass. With the fleet up: the codegen suite is 608 passed, 0 failed; the api suite is 33 assertions in 6 cases and the service suite 26 in 10. The core suite's single case is the generated eventing integration test and it passes against the live database and NATS -- 7 assertions -- after the live run found the jsonb defect recorded below. | =evidence/v02_v03_live_fleet.txt= |
+| V02 | Pass. With the fleet up: the codegen suite is 608 passed, 0 failed; the api suite is 33 assertions in 6 cases, the service suite 26 in 10, and the core suite 27 in 4 -- the generated eventing integration test plus three cases for the hand-written job-instance repository. | =evidence/v02_v03_live_fleet.txt= |
 | V03 | Pass, with one environmental failure. =compass db recreate -y -k= exits 0, creating the whole schema from scratch including the scheduler's generated SQL; =compass services start= brings NATS and 22 of 23 units ready. The unit that does not come up is =ores.web.service=, which cannot build because npm is absent -- the configure step says so -- and that is the environment, not this change. The generated objects were then checked in the live database, not in a diff: nullable =tenant_id=, and =job_definitions_job_name_uniq_idx= on =(tenant_id, job_name)=. | =evidence/v02_v03_live_fleet.txt= |
 | V04 | Not applicable. The component generates no shell command, because the model disables =ores.cpp.shell-command= with its reason in the =* Physical space= table, so there is no generated command to run against a fleet. | The model's =* Physical space= table |
 | V05 | Partly. Every gate this component is in scope for passes: its own drift check, model drift, handler permissions, populate references, protocol twin coverage, the recipe inventory, the CMake source lists and the shell-script inventory. The item's last clause, "with the component added", is the registry entry, which is held under V06. | Each check script |
@@ -177,11 +177,12 @@ them.
    stack, delete the hand-written job-instance entity, mapper and repository,
    and give the execution event the canonical subject its entity traits
    generate. =ores.scheduler= joins =COMPONENTS_UNDER_TEST= in that unit.
-4. *The untested hand-written sources* (V08). The job-instance repository (raw
-   multi-column queries), the scheduler loop (cron firing across tenants, the
-   last-run seeding) and the three action handlers have no test. They need the
-   database test fixtures the other components use, which is why they are a
-   unit rather than a paragraph of this one.
+4. *The remaining untested hand-written sources* (V08). The scheduler loop
+   (cron firing across tenants, the last-run seeding) and the three action
+   handlers have no test. The job-instance repository now has one, three cases
+   against the live database. What is left needs a clock the loop will accept
+   and a NATS server to publish to, which is a unit of its own rather than a
+   paragraph of this one.
 5. *The model-property reference.* Neither =is_enum= nor the =is_value_type=
    added here is documented in a meta-model page; the backlog already records
    the gap as "Update the codegen key and columns meta-model doc", and the
@@ -222,7 +223,7 @@ to be exercised at all, and they are the V08 work item.
 | =core/src/repository/job_definition_mapper.cpp= | Generated |
 | =core/src/repository/job_definition_repository.cpp= | Generated; the generated eventing test writes and reads through it against a live database |
 | =core/src/repository/job_instance_mapper.cpp= | No test. Needs the database fixture, and the entity has no model yet, so it moves with the =job_instance= unit |
-| =core/src/repository/job_instance_repository.cpp= | No test. Raw multi-column queries and an =INSERT … RETURNING id=; needs the database fixture. =job_instance= unit |
+| =core/src/repository/job_instance_repository.cpp= | =repository_job_instance_repository_tests.cpp=, three cases against the live database: a run recorded from start to finish, the newest-run read scoped to one definition and ordered newest first, and the cross-definition list. |
 | =core/src/service/job_definition_service.cpp= | Generated |
 | =core/src/service/mq_action_handler.cpp= | No test. Dispatches to a message queue and needs the fleet |
 | =core/src/service/nats_publish_action_handler.cpp= | No test. Publishes to NATS and needs the fleet |

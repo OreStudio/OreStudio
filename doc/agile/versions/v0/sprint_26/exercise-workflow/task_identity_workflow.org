@@ -28,9 +28,9 @@ The workflow engine's every path runs against the live fleet from ores.shell, dr
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] |
-| Now          | History is readable. The identity fixture and the rest of the command surface are not started. |
+| Now          | The fixture runs. Every engine path has executed against the live fleet and settled at the state it should. |
 | Waiting on   | Nothing.                               |
-| Next         | =workflow definitions= and =workflow start=, then the fixture. |
+| Next         | Name the configurations and check each one from a script that asserts its terminal state. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -279,3 +279,88 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The fixture is in and every engine path has now run against the live fleet. It
+found four defects on the way, one of which made every workflow in the product
+unstartable.
+
+** The four defects
+
+| Defect | What it did | Fix |
+|--------+-------------+-----|
+| The engine never stamped =modified_by= | No workflow could start, of any type. The shared insert trigger resolves the field as an account username and raises once the tenant holds one, so instance creation failed for dq's publish, ORE's import, refdata's provisioning and reporting's execution alike. | The instance, step 0, the next step and a compensation step each set it to the service account, the value =created_by= already used. =performed_by= needs no help: the trigger overwrites it. |
+| A step's members were required, not defaulted | ={"steps":[{"name":"one"}]}= parsed to an empty list, and the engine reported "Workflow definition has no steps". A member initialiser is a default for C++ callers only; the JSON reader requires every member unless it is an =std::optional=. | The three optional members became =std::optional=, with =outcome()=, =compensates()= and =delay()= so a call site reads a value rather than an optional. |
+| The step handler read the payload through the wire codec | =Failed to parse the identity step command: Could not cast to a map.= The engine publishes a step command as JSON whatever the process wire format is, and this environment runs =msgpack=, so the codec was the wrong reader. | It reads the payload with =rfl::json::read=, as every other step handler does. |
+| An unknown behaviour passed for a completion | ={"behaviour":"cmplete"}= completed the step, so a typo in a configuration would have looked like success. | The handler fails the step, naming the behaviour it did not recognise. |
+
+The first is the one that mattered. It is a regression from this component's own
+clean-up: porting the engine onto the generated repository dropped the audit
+stamping the hand-written repository had done for the caller. Nothing noticed
+because nothing exercised the start path -- which is the argument for the fixture.
+
+=feature/clean-iam= ([[https://github.com/OreStudio/OreStudio/pull/2180][#2180]])
+carries the same =modified_by= hunk, found independently. That PR is conflicting
+against main, so this branch carries the fix rather than wait; whoever lands
+second drops the duplicate.
+
+** Verified end to end
+
+From =ores.shell= against the live fleet, as =super_admin=.
+
+=workflow definitions= lists all five registered types. =workflow start= dispatches
+and prints the instance id it generated.
+
+The happy path, two steps, the second reporting warnings:
+
+#+begin_example
+workflow wait 1a529bd2-3345-41f8-b8ff-ab9334509c1e --timeout 60 --expect-steps 2
+  [1/2] one: completed
+  [2/2] two: completed_with_warnings
+      warn: identity step 'two' deliberately warned [two]
+✓ All 2 step(s) completed.
+#+end_example
+
+The failure and compensation path, a compensatable step followed by a failing one,
+settled in the database as:
+
+#+begin_example
+ workflow_id          | step_index |      name       | step_state
+ 8c44ed99-c261-...    |         -1 | ok_compensation | completed
+ 8c44ed99-c261-...    |          0 | ok              | completed
+ 8c44ed99-c261-...    |          1 | boom            | failed
+ instance_state: compensated
+#+end_example
+
+The engine's log for the same run reports =beginning compensation= and then
+=Workflow COMPENSATED (all rollback steps complete)=, so the unwind is the engine's
+own, not a state written by hand.
+
+An unrecognised behaviour fails the step rather than completing it, and an
+unregistered type is refused:
+
+#+begin_example
+identity step 'typo' asked for unknown behaviour 'cmplete'
+No workflow definition for type: no_such_workflow
+#+end_example
+
+History is readable for the run: three versions, the diff from v1 to v2 showing
+=Current Step Index= move 0 to 1, and =Modified By= and =Performed By= both reading
+=ores_brave_hopper_workflow_service=.
+
+** Unit tests
+
+=ores.workflow.api.tests= gained five cases over the definition's contract: that an
+omitted member takes its default, that a declared behaviour and delay survive into
+the command payload, that one step is built per declared entry, that compensation
+completes, and that a request which is not a step list builds nothing. The first of
+those fails without the =std::optional= change, which is what it is for.
+
+** What is left
+
+The configurations are designed but not yet named or scripted; each still needs a
+script that asserts its terminal state rather than printing it. The shell cannot
+follow a run it started inside one script, because the instance id is generated
+inside =workflow start= and a script cannot read it back -- either =workflow start=
+should accept a caller-supplied =--instance-id=, or the wait must take the most
+recent instance of a type. Until then a run takes two script invocations.
+

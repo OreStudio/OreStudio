@@ -103,10 +103,11 @@ In execution order:
      join ores_compute_apps_tbl a on a.id = av.app_id
     where a.name = 'ORE' and av.valid_to > now() and avp.valid_to > now();
    #+end_example
-   A version whose platform row is missing or whose SHA256 disagrees stores
-   workunits and publishes no assignment, so the jobs sit =Unsent= forever
-   with nothing in the log to say why. Note the =id= of the =1.8.17.0= row:
-   the dispatch needs it.
+   A version whose platform row is missing stores the workunits and
+   publishes no assignment, so the jobs sit =Unsent=. The dispatcher logs a
+   warning that names the app version and the workunit, which is where to
+   look when a batch never leaves =Unsent=. Note the =id= of the =1.8.17.0=
+   row: the dispatch needs it.
 
 4. /Confirm the grid is online./ The wrappers register themselves on their
    first heartbeat:

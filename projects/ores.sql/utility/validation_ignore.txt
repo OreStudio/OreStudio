@@ -304,9 +304,6 @@ RLS_001 ores_mq_queue_stats_tbl
 RLS_001 ores_telemetry_nats_server_samples_tbl
 RLS_001 ores_telemetry_nats_stream_samples_tbl
 
-# Compute sample tables — time-series metrics from the BOINC compute grid.
-# Not accessed by application users; no RLS needed.
-
 # Trading type/enum tables — lookup codes seeded at startup; system-wide.
 # floating_index_types/leg_types moved to ores.refdata and now have real
 # tenant-isolation RLS policies (refdata_rls_policies_create.sql), so no

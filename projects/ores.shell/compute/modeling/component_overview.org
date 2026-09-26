@@ -31,11 +31,12 @@ rendered from the entity's derived protocol. A junction unit owns the
 junction's own verbs. The part declares =#+component_kind: adapter=, so
 its command units are static and link into =ores.shell.exe=.
 
-Before this part existed the shell reached compute through a hand-written
-command family in =ores.shell.application=, which named the protocol types
-directly and drifted from the canonical protocol. The units here are
-generated from the same models the service serves, so a verb the model
-gains appears as a command without an edit.
+The generated units cover the entity verbs, from the same models the
+service serves, so a verb the model gains appears as a command without an
+edit. The grid verbs no single entity owns — publish a package, dispatch a
+batch, watch the grid, and download a job's input or a result's output —
+stay in the hand-written =compute= menu in =ores.shell.application=,
+because each orchestrates several entities rather than one.
 
 * Inputs
 

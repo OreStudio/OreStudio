@@ -41,6 +41,9 @@ namespace ores #F2F2F2 {
                     class host_commands {
                         {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
                     }
+                    class platform_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
+                    }
                     class result_commands {
                         {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
                     }
@@ -60,6 +63,7 @@ app_version_commands ..> ores.compute.api : app version protocol
 app_version_platform_commands ..> ores.compute.api : junction protocol
 batch_commands ..> ores.compute.api : batch protocol
 host_commands ..> ores.compute.api : host protocol
+platform_commands ..> ores.compute.api : platform protocol
 result_commands ..> ores.compute.api : result protocol
 workunit_commands ..> ores.compute.api : workunit protocol
 

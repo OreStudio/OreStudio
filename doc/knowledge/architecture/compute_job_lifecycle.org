@@ -191,7 +191,7 @@ runs yet:
 #+begin_example
 connect $ORES_NATS_URL
 login super_admin@localhost Secure-Password-123
-batches add ir-swap open system.new_record "first run"
+batches add ir-swap-2026-09-06 open system.new_record "first run"
 logout
 exit
 #+end_example

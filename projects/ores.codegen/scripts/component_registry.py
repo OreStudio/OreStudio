@@ -19,19 +19,18 @@ Usage: imported by the check scripts, never run.
 
 # The components under test. Every other catalogue component is to-do.
 #
-# iam only, on this branch. The branch changes shared codegen -- the service
-# key signatures, the generated-file marker, the domain equality -- so every
-# component's checked-in output is affected at once, and listing a component
-# here claims responsibility for regenerating it. refdata is deliberately not
-# listed: its adoption is in flight on its own branch, and listing it here
-# pulled 254 of its files plus its shell, sql and web derivatives into this
-# branch's diff. main had it listed; that belongs to the refdata work, not
-# here.
+# Listing a component claims responsibility for regenerating it. The branch
+# changes shared codegen -- the service key signatures, the generated-file
+# marker, the domain equality -- so every component's checked-in output is
+# affected at once. refdata is deliberately not listed: its adoption is in
+# flight on its own branch, and listing it here pulled 254 of its files plus
+# its shell, sql and web derivatives into this branch's diff. main had it
+# listed; that belongs to the refdata work, not here.
 #
 # compute-cpp joins it for the clean-compute task. Its regeneration leaves the
 # tree clean at every address, every protocol header has its TypeScript twin,
-# and its seeds are complete. The one clean-standard item it does not close,
-# G02, is about hand-written files the generation does not supersede rather
-# than about a gate this list feeds; it is recorded on
+# and its seeds are complete. The hand-written files that remain are the
+# component's infrastructure, and the task records why generation does not
+# supersede each:
 # doc/agile/versions/v0/sprint_26/clean-compute/task_clean_compute.org.
 COMPONENTS_UNDER_TEST = ("iam", "compute-cpp")

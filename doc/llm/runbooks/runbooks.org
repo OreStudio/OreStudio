@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :runbook:index:llm:
 #+created: 2026-05-26
-#+updated: 2026-05-26
+#+updated: 2026-09-26
 
 This page catalogues every [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — named, repeatable compositions
 of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] into complete multi-step
@@ -35,6 +35,7 @@ all runbooks with =compass list --type runbook=.
 | [[id:F91B7D13-8A16-4466-B444-36D7B8AC3EBE][Add a new knowledge document]]                               | Scaffold → fill Summary/Detail → tag → wire knowledge index → PR            |
 | [[id:30FE3C0F-ECCB-46AD-AC1F-75C6CE05F0E7][Run a sprint health review]]                                  | Branch → charts → task scaffold → System 2 analysis → findings → shape fixes → PR |
 | [[id:0CED1212-6763-4238-B861-9740C62AE499][Handle a hotfix]]                                             | Extract error → branch hotfix/ → scaffold → diagnose/fix → commit → PR    |
+| [[id:CC0A311E-7245-4694-86A1-3170023C385A][Run a compute job end to end]]                               | Recreate the DB → start the fleet → provision the ORE package → dispatch TA002_IR_Swap → compare the output |
 
 * See also
 

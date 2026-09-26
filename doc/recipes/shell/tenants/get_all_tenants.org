@@ -13,7 +13,7 @@ Retrieve all tenants from the server.
 
 #+name: tenants-get-all
 #+begin_src ores-shell :exports none
-tenants get-all
+tenants get-many
 exit
 #+end_src
 

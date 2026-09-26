@@ -35,13 +35,25 @@ source of truth for codegen — it must come *before* the C++ scaffold:
    optional (used for navigation + group-level scalars).
 
 2. /Scaffold the C++ + CMake./ Use [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][Component Creator]] to run codegen
-   against each overview: =codegen.sh generate --model <overview> --address ores.cpp.component= (the overview's =#+component_kind:= frontmatter picks the flat/api/core/service variant).
+   against each overview, once per address: =--address ores.cmake.component=
+   writes the =CMakeLists.txt= files and =--address ores.cpp= writes the C++
+   presence (the overview's =#+component_kind:= frontmatter picks the
+   flat/api/core/service variant). The overview scaffold writes
+   =:ores.cpp.scaffold.enabled: true= into the drawer, because a component
+   that has no models yet needs the first-generation scaffold: an umbrella
+   header, a placeholder domain type with its implementation and a
+   placeholder test. The line and the four files go together, once the
+   first real model lands. The scaffold facet is =#+default: disabled=, so
+   a component that does not carry the line never has them recreated,
+   however often it is regenerated.
 
 3. /Wire CMake./ Add the component to the top-level [[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]]
    and configure dependencies per [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
 
-4. /Add stub tests./ Follow [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] to add a Catch2
-   test skeleton (codegen already produces the test-main stub).
+4. /Add tests./ Follow [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] to add a Catch2
+   test as the first real model lands. The =test_main= comes from codegen;
+   a placeholder test comes from the opt-in scaffold in step 2 and goes
+   with it.
 
 5. /Build and verify./ Run =cmake --build --preset <preset>= and =ctest=
    to confirm the scaffold compiles and passes stub tests. Verify the

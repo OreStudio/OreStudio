@@ -1988,6 +1988,9 @@ def _resolve_domain_group_fields(model: dict[str, Any], path: Path) -> None:
             resolved.append({
                 "name": f"{group['member']}.{field['name']}",
                 "cpp_type": field.get("cpp_type", ""),
+                # The group's own default, which is what an unrecognised
+                # wire value falls back to when the member is an enumeration.
+                "default_value": field.get("default_value", ""),
             })
     de["domain_group_fields"] = resolved
     covered = {f["name"].split(".", 1)[1] for f in resolved}
@@ -2785,6 +2788,11 @@ def write_record_fields(
         # and the domain's access path are not the same string; the service
         # that builds a domain object from a record reads this.
         field["domain_member"] = (column.get("group_prefix") or "") + name
+        # The column is text on the wire and may be an enumeration in the
+        # domain member the group declares. The service states the
+        # conversion, so the record has to carry the fact.
+        field["render_is_enum"] = bool(
+            column.get("render_is_enum") or column.get("is_enum"))
         fields.append(field)
     return fields
 

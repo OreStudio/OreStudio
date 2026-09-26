@@ -114,7 +114,15 @@ messaging::{{entity_singular}}_key key_from(const domain::{{entity_singular}}& v
 domain::{{entity_singular}} to_domain(const messaging::{{entity_singular}}_write& write) {
     domain::{{entity_singular}} v;
 {{#write_fields}}
+{{#enum_from_string}}
+    {
+        const auto parsed = {{{enum_from_string}}}(write.{{name}});
+        v.{{domain_member}} = parsed.value_or({{{enum_default}}});
+    }
+{{/enum_from_string}}
+{{^enum_from_string}}
     v.{{domain_member}} = write.{{name}};
+{{/enum_from_string}}
 {{/write_fields}}
     return v;
 }

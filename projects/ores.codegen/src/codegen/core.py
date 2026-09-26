@@ -1685,6 +1685,38 @@ def _key_as_text(expression: str, column: dict[str, Any]) -> str:
     return expression
 
 
+def _prepare_enum_write_fields(domain_entity: dict[str, Any]) -> None:
+    """State the conversion a write field needs when its member is an enum.
+
+    The wire carries the value as text and the domain member is an
+    enumeration, so the service cannot assign one to the other. The field
+    group states the member's type and its default, and the domain type
+    names its own parser by convention, as product_type_from_string does.
+    A parse that fails falls back to that default rather than to a
+    dereferenced empty optional.
+    """
+    by_member = {
+        field["name"]: field
+        for field in domain_entity.get("domain_group_fields") or []
+    }
+    for field in domain_entity.get("write_fields") or []:
+        if not field.get("render_is_enum"):
+            continue
+        wire_type = (field.get("cpp_type") or "").strip()
+        member = by_member.get(field.get("domain_member") or "")
+        # A column whose own type is the enumeration puts it on the wire
+        # unchanged; only a text column whose group member is an
+        # enumeration needs the conversion.
+        enum_type = ((member or {}).get("cpp_type") or wire_type).strip()
+        if not enum_type or enum_type == wire_type:
+            continue
+        field["enum_from_string"] = f"{enum_type}_from_string"
+        field["enum_default"] = (
+            (member or {}).get("default_value")
+            or field.get("default_value")
+            or f"{enum_type}{{}}")
+
+
 def _protocol_owned_by_operation(model_path, entity) -> bool:
     """Whether an operation model beside this one owns the entity's protocol.
 
@@ -4371,6 +4403,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The write record's fields, which the service builds a domain object
         # from: one derivation, so the record and the service agree.
         domain_entity['write_fields'] = write_record_for(domain_entity)
+        _prepare_enum_write_fields(domain_entity)
         # The same list as operations, which is what the service and handler
         # state their methods from: one name per operation, so the subject,
         # the service method and the handler method cannot drift apart.

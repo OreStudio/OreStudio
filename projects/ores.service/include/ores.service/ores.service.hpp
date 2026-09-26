@@ -25,8 +25,9 @@
  *
  * Provides the standard domain service lifecycle: early signal handling (SIGINT/SIGTERM), JWKS
  * public-key fetch with exponential backoff, JWT verifier creation, subscription registration,
- * graceful NATS drain, and shutdown logging. Eliminates boilerplate duplicated across the nine
- * domain service binaries.
+ * graceful NATS drain, and shutdown logging. Eliminates boilerplate duplicated across the
+ * service binaries, and adds the host envelope, the per-request JWT context and the handler
+ * helpers they all share.
  */
 namespace ores::service {}
 

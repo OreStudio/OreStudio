@@ -201,11 +201,9 @@ inline bool has_permission(const ores::database::context& ctx,
     // Empty list: token predates RBAC — allow to preserve backward compat.
     if (perms.empty())
         return true;
-    // Exact match or component-level wildcard
     for (const auto& p : perms) {
         if (p == "*" || p == required_permission)
             return true;
-        // Component-level wildcard: "iam::*" satisfies "iam::accounts:create"
         if (p.size() >= 2 && p.ends_with("::*")) {
             const auto prefix = std::string_view(p).substr(0, p.size() - 1);
             if (required_permission.starts_with(prefix))
@@ -215,8 +213,11 @@ inline bool has_permission(const ores::database::context& ctx,
     return false;
 }
 
-// Publish an error reply with an X-Error header.
-// The reply subject is used if present; no-op otherwise.
+/**
+ * @brief Publishes an error reply carrying the X-Error header.
+ *
+ * The reply subject is used if present, and the call is a no-op otherwise.
+ */
 inline void error_reply(ores::nats::service::client& nats,
                         const ores::nats::message& msg,
                         ores::service::error_code code) {

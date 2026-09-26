@@ -32,6 +32,12 @@ namespace ores #F2F2F2 {
             }
             class composite_instrument_mapper {
             }
+            class mapped_fx <<struct>> {
+                +pair : refdata::domain::currency_pair
+                +convention : refdata::domain::currency_pair_convention
+                +spot_days : int
+                +advance_calendars : vector<string>
+            }
             class mapped_conventions <<struct>> {
                 +zero : vector<refdata::domain::zero_convention>
                 +deposit : vector<refdata::domain::deposit_convention>
@@ -40,7 +46,7 @@ namespace ores #F2F2F2 {
                 +fra : vector<refdata::domain::fra_convention>
                 +ibor_index : vector<refdata::domain::ibor_index_convention>
                 +overnight_index : vector<refdata::domain::overnight_index_convention>
-                +fx : vector<refdata::domain::fx_convention>
+                +fx : vector<mapped_fx>
                 +cds : vector<refdata::domain::cds_convention>
             }
             class conventions_mapper {
@@ -87,6 +93,31 @@ namespace ores #F2F2F2 {
                 +value : string
                 +qualifier : string
             }
+            enum fx_quote_status {
+                unknown_pair
+                unchanged
+                key_swapped
+            }
+            class fx_quote_check_result <<struct>> {
+                +base_currency : string
+                +quote_currency : string
+                +status : fx_quote_status
+            }
+            class fx_quote_convention_checker {
+                -known_pairs_ : set<currency_pair>
+            }
+            enum duplicate_policy {
+                warn
+                error
+            }
+            class parse_issue <<struct>> {
+                +line_no : int
+                +message : string
+            }
+            class parse_report <<struct>> {
+                +warnings : vector<parse_issue>
+                +errors : vector<parse_issue>
+            }
             class market_datum <<struct>> {
                 +date : chrono::year_month_day
                 +key : string
@@ -101,6 +132,16 @@ namespace ores #F2F2F2 {
                 +metric : string
                 +qualifier : string
                 +point_id : optional<string>
+            }
+            class series_key_registry {
+                -by_type_ : unordered_map<string, domain::series_key_shape>
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class series_key_shape_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
         }
         namespace planner #F2F2F2 {
@@ -157,6 +198,29 @@ namespace ores #F2F2F2 {
                 +message : string
             }
         }
+        namespace repository #F2F2F2 {
+            class series_key_shape_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +series_type : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +qualifier_depth : int
+                +has_point_dimension : bool
+                +default_point : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class series_key_shape_mapper {
+            }
+            class series_key_shape_repository {
+            }
+        }
         namespace scanner #F2F2F2 {
             class ore_directory_scanner {
                 -root_ : filesystem::path
@@ -169,29 +233,42 @@ namespace ores #F2F2F2 {
                 +ignored_files : vector<filesystem::path>
             }
         }
+        namespace service #F2F2F2 {
+            class series_key_shape_service {
+                -ctx_ : context
+                -repo_ : repository::series_key_shape_repository
+            }
+        }
         namespace xml #F2F2F2 {
+            enum document_kind {
+                portfolio
+                currency_config
+                calendar_adjustments
+                conventions
+            }
+            class exporter {
+            }
+            class trade_import_item <<struct>> {
+                +trade : trading::domain::trade
+                +source_file : filesystem::path
+                +instrument : trading::domain::trade_instrument
+            }
+            class importer {
+            }
             class roundtrip_summary <<struct>> {
                 +total_xml_files : int
-                +skipped : int
+                +unsupported : int
+                +failed : int
                 +output_files_written : int
                 +trades_mapped : int
                 +trades_passthrough : int
                 +currency_files : int
                 +calendar_files : int
                 +convention_files : int
+                +failures : vector<string>
                 +import_ms : long long
                 +export_ms : long long
                 +total_ms : long long
-            }
-            class exporter {
-            }
-            class trade_import_item <<struct>> {
-                +trade : trading::domain::trade
-                +ore_counterparty_name : string
-                +source_file : filesystem::path
-                +instrument : trading::domain::trade_instrument
-            }
-            class importer {
             }
         }
     }

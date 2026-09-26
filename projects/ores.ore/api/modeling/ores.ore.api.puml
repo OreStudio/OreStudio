@@ -23,6 +23,28 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace ore #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class series_key_shape <<struct>> {
+                +version : int
+                +series_type : string
+                +qualifier_depth : int
+                +has_point_dimension : bool
+                +default_point : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+        }
+        namespace eventing #F2F2F2 {
+            class series_key_shape_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +series_types : vector<string>
+                +tenant_id : string
+            }
+        }
         namespace messaging #F2F2F2 {
             class ore_import_execute_request <<struct>> {
                 +request_id : string
@@ -64,6 +86,118 @@ namespace ores #F2F2F2 {
                 +item_errors : vector<ore_import_item_error>
                 +correlation_id : string
                 +workflow_instance_id : string
+            }
+            class series_key_shape_key <<struct>> {
+                +series_type : string
+            }
+            class series_key_shape_write <<struct>> {
+                +series_type : string
+                +qualifier_depth : int
+                +has_point_dimension : bool
+                +default_point : string
+                +description : string
+            }
+            class series_key_shape_change <<struct>> {
+                +write : series_key_shape_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class series_key_shape_removal <<struct>> {
+                +key : series_key_shape_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class series_key_shape_lookup <<struct>> {
+                +key : series_key_shape_key
+                +series_key_shape : optional<ores::ore::domain::series_key_shape>
+            }
+            class series_key_shape_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : series_key_shape_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class series_key_shape_version_key <<struct>> {
+                +series_key_shape : series_key_shape_key
+                +version : uint32_t
+            }
+            class series_key_shape_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_series_key_shapes_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_series_key_shapes_response <<struct>> {
+                +result : ores::utility::domain::result
+                +shapes : vector<ores::ore::domain::series_key_shape>
+                +total : uint64_t
+            }
+            class get_series_key_shape_request <<struct>> {
+                +key : series_key_shape_key
+            }
+            class get_series_key_shape_response <<struct>> {
+                +result : ores::utility::domain::result
+                +series_key_shape : optional<ores::ore::domain::series_key_shape>
+            }
+            class get_many_series_key_shapes_request <<struct>> {
+                +keys : vector<series_key_shape_key>
+            }
+            class get_many_series_key_shapes_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<series_key_shape_lookup>
+            }
+            class put_series_key_shape_request <<struct>> {
+                +change : series_key_shape_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_series_key_shape_response <<struct>> {
+                +result : ores::utility::domain::result
+                +series_key_shape : ores::ore::domain::series_key_shape
+            }
+            class put_many_series_key_shapes_request <<struct>> {
+                +changes : vector<series_key_shape_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_series_key_shapes_response <<struct>> {
+                +result : ores::utility::domain::result
+                +shapes : vector<ores::ore::domain::series_key_shape>
+            }
+            class delete_series_key_shape_request <<struct>> {
+                +removal : series_key_shape_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_series_key_shape_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_series_key_shapes_request <<struct>> {
+                +removals : vector<series_key_shape_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_series_key_shapes_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_series_key_shape_versions_request <<struct>> {
+                +key : series_key_shape_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<series_key_shape_versions_filter>
+            }
+            class list_series_key_shape_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::ore::domain::series_key_shape>
+                +total : uint64_t
+            }
+            class get_series_key_shape_version_request <<struct>> {
+                +key : series_key_shape_version_key
+            }
+            class get_series_key_shape_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::ore::domain::series_key_shape
             }
         }
         namespace net #F2F2F2 {

@@ -8,7 +8,7 @@
 #+filetags: :sprint_26:v0:codegen:read-only-entity-profile-and-database-composite:
 #+owner: marco
 #+branch: feature/read-only-entity-profile
-#+pr:
+#+pr: 2156
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -138,7 +138,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2156][#2156]] | [codegen] Add the read-only current-state profile |
 
 * Review
 

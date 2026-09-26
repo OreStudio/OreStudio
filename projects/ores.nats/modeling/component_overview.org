@@ -2,12 +2,12 @@
 :ID: C9C24C99-F16C-45BE-A262-1C0F4502765E
 :END:
 #+title: ores.nats
-#+description: NATS messaging transport library providing request/reply, pub/sub, and domain-event patterns using JSON via rfl.
+#+description: NATS messaging transport library providing request/reply, pub/sub, and domain-event patterns over a wire format fixed at startup.
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :nats:messaging:component:
 #+created: 2026-05-20
-#+updated: 2026-05-20
+#+updated: 2026-09-26
 #+name: nats
 #+full_name: ores.nats
 #+brief: NATS messaging foundation library
@@ -23,35 +23,43 @@
 =ores.nats= is the NATS messaging transport library for ORE Studio. It provides
 the three messaging patterns used across all services: synchronous request/reply,
 queue-group subscribe for load-balanced handlers, and JetStream for durable event
-streams. All payloads are JSON serialised with =rfl::json=. Subject names follow
-the convention ={domain}.v1.{entity}.{operation}=, with an optional prefix for
-multi-instance deployments. This library replaced the former binary protocol
-stack (=ores.comms=) and is a direct dependency of every domain service.
+streams. Every message body is serialised by =wire_codec= in the format the
+process resolved at startup, =msgpack= unless =ORES_NATS_WIRE_FORMAT= says
+otherwise, so the format is decided once and never renegotiated per message.
+Subject names follow the convention ={domain}.v1.{entity}.{operation}=, with an
+optional prefix for multi-instance deployments. The library is a direct
+dependency of every domain service.
 
 * Inputs
 
 - NATS server URL and optional subject prefix from configuration.
-- JSON-encoded request messages from clients or other services.
-- JetStream stream/consumer configuration for durable event subscriptions.
+- Encoded request messages from clients or other services, with a bearer token
+  where the caller authenticated.
+- JetStream stream configuration for durable event streams.
 
 * Outputs
 
-- JSON-encoded reply messages sent to the caller's reply subject.
+- Encoded reply messages sent to the caller's reply subject.
 - Queue-group subscriptions delivering messages to exactly one handler instance.
 - JetStream published messages and consumer acknowledgements.
 
 * Entry points
 
-- =include/ores.nats/service/nats_client.hpp= — connection and request/reply.
-- =include/ores.nats/service/jetstream_admin.hpp= — stream and consumer management.
+- =include/ores.nats/service/client.hpp= — connection, publish, subscribe and
+  JetStream publish, the surface every caller uses.
+- =include/ores.nats/service/jetstream_admin.hpp= — stream provisioning.
 - =include/ores.nats/service/subscription.hpp= — queue-group subscribe.
+- =include/ores.nats/service/jwks.hpp= — the IAM public-key fetch the service
+  runner uses to verify tokens.
 - =include/ores.nats/domain/message.hpp= — NATS message and correlation types.
+- =include/ores.nats/domain/wire_codec.hpp= — the encoder every caller writes
+  through.
 - =include/ores.nats/config/= — =nats_options= and CLI argument parsing.
 
 * Dependencies
 
 - =nats.c= — C NATS client library.
-- =rfl= — JSON serialisation for message payloads.
+- =rfl= — JSON and msgpack serialisation for message payloads.
 - =ores.logging= — structured logging.
 
 * See also

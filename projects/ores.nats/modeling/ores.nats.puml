@@ -29,6 +29,13 @@ namespace ores #F2F2F2 {
             +data : vector<byte>
             +headers : unordered_map<string, string>
         }
+        class wire_codec {
+            -format_ : wire_format
+        }
+        enum wire_format {
+            json
+            msgpack
+        }
         namespace config #F2F2F2 {
             class nats_configuration {
             }
@@ -40,42 +47,28 @@ namespace ores #F2F2F2 {
                 +tls_client_key : string
             }
         }
-        namespace domain #F2F2F2 {
-            class consumer_info <<struct>> {
-                +stream_name : string
-                +name : string
-                +num_pending : uint64_t
-                +num_ack_pending : uint64_t
-                +num_redelivered : uint64_t
-                +delivered_count : uint64_t
-                +created_at : chrono::system_clock::time_point
-            }
-            class stream_info <<struct>> {
-                +name : string
-                +subjects : vector<string>
-                +message_count : uint64_t
-                +byte_count : uint64_t
-                +consumer_count : uint64_t
-                +created_at : chrono::system_clock::time_point
-                +first_message_at : chrono::system_clock::time_point
-                +last_message_at : chrono::system_clock::time_point
-            }
-            class stream_message <<struct>> {
-                +subject : string
-                +sequence : uint64_t
-                +timestamp : chrono::system_clock::time_point
-                +data : vector<byte>
-                +headers : unordered_map<string, string>
-            }
-        }
         namespace service #F2F2F2 {
+            class buffered_subscription {
+                +impl : struct
+                -impl_ : unique_ptr<impl>
+            }
             class client {
                 -impl : struct
                 -impl_ : unique_ptr<impl>
             }
             class jetstream_admin {
-                +max_age_days : int
                 -js_ctx_ : void*
+            }
+            class nats_client {
+                -owned_client_ : shared_ptr<client>
+                -auth_ : optional<login_info>
+                -external_client_ : client*
+                -token_provider_ : token_provider
+                -delegation_token_ : string
+                -correlation_id_ : string
+                -session_id_ : string
+                -workspace_id_ : string
+                -workspace_resolution_ : vector<string>
             }
             enum nats_error_kind {
                 server_unreachable
@@ -89,26 +82,140 @@ namespace ores #F2F2F2 {
             }
             class session_expired_error {
             }
-            namespace ores #F2F2F2 {
-                namespace nats #F2F2F2 {
-                    namespace service #F2F2F2 {
-                        class nats_client {
-                            -owned_client_ : shared_ptr<client>
-                            -auth_ : optional<login_info>
-                            -external_client_ : client*
-                            -token_provider_ : token_provider
-                            -delegation_token_ : string
-                            -correlation_id_ : string
-                            -session_id_ : string
-                        }
-                    }
-                }
+            class subscription {
+                +impl : struct
+                -impl_ : unique_ptr<impl>
             }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass reads data members and nothing else, so a class whose
+' content is methods arrives as an empty box, and a facet of free functions
+' does not arrive at all. The blocks below fill those boxes and draw the
+' relationships the automated pass cannot see.
+'
+' They use fully-qualified class names rather than a reopened namespace block,
+' because this PlantUML version crashes when a namespace that already holds
+' classes is declared a second time. Redeclaring a class merges its members
+' into the box the automated pass already drew, so a refresh keeps both.
+
+class ores::nats::service::client {
+    +connect() : void
+    +disconnect() : void
+    +is_connected() : bool
+    +publish(subject : string_view, data : span<byte>, headers) : void
+    +request_sync(subject : string_view, data, headers, timeout) : message
+    +request(subject : string_view, data, headers, timeout) : awaitable<message>
+    +subscribe(subject : string_view, handler) : subscription
+    +subscribe_buffered(subject : string_view, capacity) : buffered_subscription
+    +queue_subscribe(subject : string_view, queue_group : string_view, handler) : subscription
+    +js_publish(subject : string_view, data : span<byte>, headers) : void
+    +js_queue_subscribe(subject, durable_name, queue_group, handler) : subscription
+    +make_admin() : jetstream_admin
+    +drain() : void
+    +make_subject(relative : string_view) : string
+    +make_stream_name(logical_suffix : string_view) : string
+}
+note right of "ores.nats::service::client"
+The surface every caller uses. It owns the cnats connection
+and the JetStream context, and it hands out subscriptions.
+Callers encode their own bodies with wire_codec, so the client
+moves bytes and never looks inside them.
+end note
+
+class ores::nats::service::nats_client {
+    +connect(opts : nats_options) : void
+    +disconnect() : void
+    +is_connected() : bool
+    +set_auth(info : login_info) : void
+    +clear_auth() : void
+    +auth() : login_info
+    +is_logged_in() : bool
+    +request(subject : string_view, json_body : string_view) : message
+    +authenticated_request(subject : string_view, body, timeout) : message
+    +with_delegation(token : string) : nats_client
+    +with_correlation_id(cid : string) : nats_client
+    +with_workspace_resolution(chain : vector<string>) : nats_client
+}
+note right of "ores.nats::service::nats_client"
+The authenticated wrapper a service handler is given. It either
+owns a client or borrows one, carries the caller's token and
+forwarding headers, and re-mints the token when the server says
+the session expired.
+end note
+
+class ores::nats::service::subscription {
+    +subject() : string
+    +drain() : void
+}
+note right of "ores.nats::service::subscription"
+Move-only. Inbound messages are decompressed before the
+handler sees them, so a handler never sees gzip'd bytes.
+end note
+
+class ores::nats::service::buffered_subscription {
+    +snapshot() : vector<message>
+    +size() : size_t
+}
+note right of "ores.nats::service::buffered_subscription"
+Hands the last N messages to a poller instead of a callback,
+which is what the wrappers and the grid poller subscribe with.
+end note
+
+class ores::nats::service::jetstream_admin {
+    +ensure_stream(name : string_view, subjects : vector<string>, max_age_days : int) : void
+}
+note right of "ores.nats::service::jetstream_admin"
+Provisioning only: every caller uses it to make its stream at
+startup, idempotently. The public read and message API went
+with the consumers that never arrived.
+end note
+
+class ores::nats::wire_codec <<facet>> {
+    {static} +encode(obj) : vector<byte>
+    {static} +decode(data) : rfl::Result<T>
+    +format() : wire_format
+}
+note right of "ores.nats::wire_codec"
+The format is fixed when the codec is built, from
+ORES_NATS_WIRE_FORMAT, and never renegotiated per message.
+end note
+
+class ores::nats::compression <<facet>> {
+    {static} +compress_if_worthwhile(data, headers) : vector<byte>
+    {static} +decompress_if_flagged(data, headers) : vector<byte>
+}
+class ores::nats::correlation <<facet>> {
+    {static} +extract_or_generate_correlation_id(msg : message) : string
+}
+class ores::nats::service::retry <<facet>> {
+    {static} +retry_with_backoff(fn, operation_name, initial_delay, max_delay, max_retries) : awaitable<void>
+}
+class ores::nats::service::jwks <<facet>> {
+    {static} +fetch_jwks_public_key(nats : client, per_request_timeout) : awaitable<string>
+}
+
+ores.nats::service::nats_client --> ores.nats::service::client : owns, or borrows
+ores.nats::service::nats_client ..> ores.nats::message : request and reply
+ores.nats::service::client --> ores.nats::service::subscription : returns
+ores.nats::service::client --> ores.nats::service::buffered_subscription : returns
+ores.nats::service::client --> ores.nats::service::jetstream_admin : make_admin()
+ores.nats::service::client ..> ores.nats::compression : compresses publish bodies
+ores.nats::wire_codec ..> ores.nats::wire_format : fixed at construction
+ores.nats::service::jwks ..> ores.nats::service::client : requests the IAM key
+ores.nats::service::jwks ..> ores.nats::service::retry : retries until IAM answers
+
+package "external" <<Rectangle>> {
+    class nats.c as "nats.c" <<library>>
+    class rfl as "rfl" <<library>>
+}
+ores.nats::service::client ..> nats.c : connection, request, JetStream
+ores.nats::service::jetstream_admin ..> nats.c : js_AddStream
+ores.nats::wire_codec ..> rfl : json and msgpack
+
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.nats.puml"

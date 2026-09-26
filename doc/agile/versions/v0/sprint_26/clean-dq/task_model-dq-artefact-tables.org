@@ -708,6 +708,7 @@ via its "Verifies task" field.
 | https://github.com/OreStudio/OreStudio/pull/2196 | [dq] Model nature_dimension and delete its hand-written protocol |
 | https://github.com/OreStudio/OreStudio/pull/2198 | [dq] Model the origin and treatment dimensions, retiring the dimension layer |
 | https://github.com/OreStudio/OreStudio/pull/2200 | [dq] Model methodology, retiring the data organization layer |
+| https://github.com/OreStudio/OreStudio/pull/2203 | [dq] Model the coding scheme pair, retiring its hand-written protocol |
 
 * Review
 
@@ -723,4 +724,4 @@ The design question is answered affirmatively and the answer is enforced by temp
 
 The remaining work is named: six entities whose canonical output the generator already emits and whose hand-written duplicates must be deleted, the shell unit that must be wired before the change-reason pair can move, one decision about `subject_area`'s composite history identity, and the line that adds dq to =COMPONENTS_UNDER_TEST=. Each is recorded above with the evidence that it is a deletion problem rather than a modelling problem.
 
-Landed as https://github.com/OreStudio/OreStudio/pull/2189, https://github.com/OreStudio/OreStudio/pull/2190, https://github.com/OreStudio/OreStudio/pull/2193 https://github.com/OreStudio/OreStudio/pull/2196 and https://github.com/OreStudio/OreStudio/pull/2198 and https://github.com/OreStudio/OreStudio/pull/2200.
+Landed as https://github.com/OreStudio/OreStudio/pull/2189, https://github.com/OreStudio/OreStudio/pull/2190, https://github.com/OreStudio/OreStudio/pull/2193 https://github.com/OreStudio/OreStudio/pull/2196 and https://github.com/OreStudio/OreStudio/pull/2198 and https://github.com/OreStudio/OreStudio/pull/2200 and https://github.com/OreStudio/OreStudio/pull/2203.

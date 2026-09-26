@@ -8,7 +8,7 @@
 #+filetags: :workflow:testing:shell:exercise-workflow:sprint_26:v0:
 #+owner: marco
 #+branch: feature/workflow-identity
-#+pr:
+#+pr: 2184
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -198,7 +198,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2184][#2184]] | [workflow] Add the identity workflow and the commands that drive it |
 
 * Review
 

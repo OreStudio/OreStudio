@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 8FA7076B-62EE-43A5-9A40-177663F15F00
+:END:
+#+title: marketdata never composes the series_classification_rule event registrar
+#+description: ores.marketdata generates register_series_classification_rule_event_mapping and calls it from nowhere, so the service never LISTENs on the table's channel and series_classification_rule_eventing_integration_tests fails with 'expected a notification, received none'. Every other marketdata entity's mapping is composed; the startup log shows feed_binding, market_series, market_observation, observation_lineage and market_fixing registering and series_classification_rule absent. Pre-existing on main and independent of the clean-ore branch, which changes no file under ores.marketdata, ores.eventing or ores.database. Same shape as the ores.ore finding: a generated registrar family with no composition point.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:eventing:registrar:test_failure:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

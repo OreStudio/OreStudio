@@ -32,9 +32,9 @@ The design question is already answered: an artefact table *can* generate from t
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
-| Now          | All fifteen entities are canonical and =ores.shell.dq= is wired, so no hand-written duplicate of a generated dq unit is left. Step 9 waits only on the drift claim. |
+| Now          | All fifteen entities are canonical and =ores.shell.dq= is wired. =check_component_drift.py --component dq= reports no drift twice in a row, so dq regenerates cleanly. |
 | Waiting on   | Nothing.                              |
-| Next         | Confirm =check_component_drift.py --component dq= reports no drift, then add dq to =COMPONENTS_UNDER_TEST= so the property is enforced. |
+| Next         | Model the twelve entities whose protocol headers are still hand-written, which is what keeps dq out of =COMPONENTS_UNDER_TEST=; see Step 9 part six. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -72,7 +72,7 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
 | 7. Publication template | DONE | The template generated a retired design; deleted with 21 dead files; see Step 7 results |
 | 8. Remaining models | TODO | The FPML family is blocked; the rest is unblocked |
-| 9. Regenerate C++ | IN PROGRESS | Four facets byte-identical; all 15 entities canonical and =ores.shell.dq= wired; the drift claim is pending; see Step 9 parts one to six |
+| 9. Regenerate C++ | DONE | Four facets byte-identical; all 15 entities canonical and =ores.shell.dq= wired; =--component dq= reports no drift twice in a row; see Step 9 parts one to six |
 | 10. Eventing headers | TODO | |
 | 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
 | 12. Divergent tables: declare the projection | DONE | All 11 landed; divergent is 0; see Step 12 results |
@@ -124,7 +124,9 @@ Run on 2026-09-26, on a branch off the merged =main=. =change_reason=, =change_r
 
 **What follows the unit it documented.** The =badge_mappings= shell recipe and its eight tangled library scripts are views of a unit that no longer exists, so they are deleted with it and the recipe inventory drops the category. The recipe is in the gate rather than left to a model opt-out because a recipe is where its command unit is: the dependency is resolved, not restated per model.
 
-**Evidence.** Codegen suite 706 passing; =check_component_drift.py --all= green; model drift, protocol twin coverage, handler permissions, populate references, registry exceptions, cmake file lists, physical-space inventories and the recipe inventory all pass; =ores.dq.core.tests=, =ores.dq.api.tests=, =ores.dq.service.tests=, =ores.shell.dq.tests= and =ores.shell.application.lib= build and link; =compass lint= and =validate_docs.sh= clean.
+**The drift claim, and the gate dq still cannot join.** =check_component_drift.py --component dq= reports no drift twice in a row, which is the property the whole task was aimed at. That makes dq look ready for =COMPONENTS_UNDER_TEST=, and it is not: =check_protocol_twin_coverage.py= demands a TypeScript twin for every protocol header of a listed component, and twelve dq headers are hand-written for entities that have no model — datasets, coding schemes, publications, the FSM family, dimensions, methodologies, report-definition templates, and the badge mapping projection. None of those twelve can have a twin generated, so listing dq would fail that gate on all twelve. The reason is recorded in =component_registry.py= beside the list, so the next reader meets the blocker rather than rediscovering it. Modelling those entities is step 8's remaining work, and it is what admits dq to the list.
+
+**Evidence.** Codegen suite 706 passing; =check_component_drift.py --all= green; =check_component_drift.py --component dq= green twice in a row; model drift, protocol twin coverage, handler permissions, populate references, registry exceptions, cmake file lists, physical-space inventories and the recipe inventory all pass; =ores.dq.core.tests=, =ores.dq.api.tests=, =ores.dq.service.tests=, =ores.shell.dq.tests= and =ores.shell.application.lib= build and link, and =ores.shell.exe= links with the dq part in it; =compass lint= and =validate_docs.sh= clean.
 
 * Step 9 part five: the badge family, and the history providers nobody called
 

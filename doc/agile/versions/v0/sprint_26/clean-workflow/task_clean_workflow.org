@@ -71,6 +71,12 @@ record each item's result in the table below.
 | M06 | Finding: the component exchanges wire types that no model declares. Five hand-written protocol headers survive under =api/include=, and neither entity has a =* Messages= section. Generation supersedes two of them with the per-entity protocols; the workflow's own operation messages need an operation model, which the tree already has a metatype and three precedents for. | =check_protocol_twin_coverage.py= covers only the three committed components, so it cannot see this one yet. The header inventory comes from B03. Detail below. |
 | M07 | Not applicable: the component has no junction or association model. Its two models are both =ores.codegen.entity=. | B02's metatype survey. |
 | M08 | Fixed. =timestamptz= gave way to the canonical =timestamp with time zone= on all five columns, and no integer flag remains. | The PostgreSQL architecture page names this exact divergence and asks for convergence; =grep= now finds no =timestamptz= anywhere in the tree; the generated file set is unchanged by the edit. Detail below. |
+| P01 | Pending the operation model. Two of the canonical verbs, listing and fetching the two entities, arrive with their generated protocols; nothing is generated yet, so the set cannot be checked. | Re-run after G01 regenerates. |
+| P02 | Partly satisfied. Every subject the component owns is already declared once, as a =static constexpr nats_subject= in its protocol header, and no subject is spelled as a bare literal anywhere in the code. What is missing is the location the item names: no subject is declared in a model. | Seven =nats_subject= constants; =grep= for =:subject:= across the modeling directory returns nothing; the registrar references the constants rather than strings. |
+| P03 | Pending. The duplicate and orphaned-message inventory cannot be taken until the subjects are modelled and the registrar is generated from them. | — |
+| P04 | Finding, and the section's centre of gravity. The workflow's own conversation is an operation, not an entity verb, and no model expresses it. Five hand-written protocol headers carry it today. The metatype and three precedents exist, so the work is modelling rather than generator invention. | Header inventory from B03; =ores.codegen.operation= precedents =ores.compute.work=, =ores.iam.account_messages= and =ores.history.history_messages=. Detail below. |
+| P05 | Not applicable yet. There is no protocol change to follow until the operation model replaces the hand-written headers; the consumers are then updated in the same piece of work. | — |
+| P06 | Not applicable: the component has no event cache, and B03 found none among its 53 files. | B03 survey. |
 | M09 | Pass. No retired fragment survives in any model. | =grep= over the modeling directories for =qt=, =wt=, =drawer= and =presentation= returns nothing. |
 | M10 | The component model declares its parts. =validate_docs.sh= still to run. | =modeling/component_overview.org= carries =* Summary=, =* Sub-components= and =* Entity modules=. Verification is deferred to H01, which owns the diagram and the docs gate. |
 
@@ -215,6 +221,45 @@ that remainder were this component's. The same page fixes the rule, "Instants.
 Never a bare =timestamp=". Generation normalises all three spellings, so the
 edit changes no output: the dry run's file set is identical before and after,
 which is what makes the change safe rather than merely tidy.
+
+** P04 the operation model
+
+The component is a workflow engine: other components commission it to run their
+workflows. That is why its protocol is not an entity protocol, and why P04
+exists as an item in its own right.
+
+The surface the four hand-written headers carry, and its consumer census:
+
+| Wire type | Consumer |
+|-----------+----------|
+| =provision_parties_request=, =provision_party_workflow_request= | =registrar.cpp=, =workflow_handler.cpp=, and =ores.refdata='s =provision_parties_workflow.hpp= |
+| =workflow_instance_summary=, =workflow_step_summary=, =workflow_definition_summary= | =workflow_query_handler.cpp= |
+| =list_workflow_instances_request=, =get_workflow_steps_request=, =list_workflow_definitions_request= | =registrar.cpp=, =workflow_query_handler.cpp= |
+| =get_step_result_request= | =registrar.cpp=, =workflow_query_handler.cpp=, =ores.service/messaging/workflow_helpers.hpp= |
+| =step_completed_event=, =start_workflow_message= | the registrar, the handler, and 12 to 14 files across the tree |
+
+Nothing there is dead. The list and get verbs for the two entities are entity
+verbs and are superseded by the generated per-entity protocols. What remains --
+start a workflow, record a completed step, ask for a step result, and read the
+three summary projections -- is the operation conversation, and it is what the
+operation model has to express.
+
+One layering observation to settle while modelling: =workflow_protocol.hpp=
+declares =provision_parties_request= and =provision_party_workflow_request=,
+which are refdata's business, and =ores.refdata= already has its own
+=provision_parties_workflow.hpp=. Whether the engine should declare the
+messages of the workflows it runs, or whether each commissioning component
+declares its own and the engine handles an opaque envelope, decides the shape
+of the operation model. It is the one genuine design question this component
+raises.
+
+The subjects follow the same story. Seven =nats_subject= constants exist --
+=workflow.v1.parties.provision=, =workflow.v1.instances.list=,
+=workflow.v1.instances.steps=, =workflow.v1.definitions.list=,
+=workflow.v1.start=, and the two on the event and step-result types -- all
+declared once, none spelled as a literal in code. Modelling them moves them
+into the models, which is what P02 asks for and what makes P03's inventory
+checkable.
 
 * Test Scenarios
 

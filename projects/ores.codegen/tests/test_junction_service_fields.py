@@ -122,3 +122,36 @@ def test_a_target_party_stamp_keeps_the_caller_reason(tmp_path):
     rendered = _render_party_service(tmp_path)
     assert "out.change_reason_code = intent.reason_code;" in rendered
 
+
+# A scoped read whose relation the wire may leave unstated has no scope when
+# it does. The template used to pass the optional straight to a repository
+# method that takes a plain key, which does not convert.
+SCOPED_ENTITY = (
+    REPO_ROOT / "projects/ores.refdata/modeling/ores.refdata.tenor_schedule.org"
+)
+
+
+def _render_scoped_service(tmp_path):
+    model = tmp_path / SCOPED_ENTITY.name
+    model.write_text(SCOPED_ENTITY.read_text(encoding="utf-8"), encoding="utf-8")
+    output_dir = tmp_path / "scoped"
+    output_dir.mkdir()
+    output_name = "tenor_schedule_service.cpp"
+    generate_from_model(
+        str(model),
+        DATA_DIR,
+        TEMPLATES_DIR,
+        output_dir,
+        is_processing_batch=True,
+        target_template="cpp_service.cpp.mustache",
+        target_output=output_name,
+    )
+    return (output_dir / output_name).read_text(encoding="utf-8")
+
+
+def test_an_unstated_scoped_relation_is_refused(tmp_path):
+    rendered = _render_scoped_service(tmp_path)
+    assert 'response.result.code = "relation_required";' in rendered
+    assert "const auto relation = *request.calendar_code;" in rendered
+
+

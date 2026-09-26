@@ -77,11 +77,6 @@ UNREPRESENTED: dict[str, str] = {
         "delta and forward coordinates. Needs the volatility surface point "
         "the equity and FX option families also need."
     ),
-    "EQUITY_OPTION": (
-        "Equity option price and log-normal volatility, 6, 7 and 9 "
-        "segments, carrying RIC identifiers, expiry, strike or delta, and "
-        "call/put. Needs the volatility surface point."
-    ),
     "FIXING": (
         "Index fixings. The key is TYPE/METRIC/INDEX_NAME with no currency "
         "and no point, so it is a different key space from every quote type "
@@ -138,6 +133,7 @@ SHAPE_MISMATCH: dict[str, str] = {
 VOL_REPRESENTED: dict[str, str] = {
     "SWAPTION": "ir",
     "FX_OPTION": "fx",
+    "EQUITY_OPTION": "equity",
 }
 
 # An asset class whose model declares a ``vol`` field but whose projection
@@ -147,7 +143,6 @@ VOL_REPRESENTED: dict[str, str] = {
 VOL_DECLARED_UNWIRED: dict[str, str] = {
     "commodity": "COMMODITY_OPTION has no inverse projection",
     "credit": "INDEX_CDS_OPTION has no inverse projection",
-    "equity": "EQUITY_OPTION has no inverse projection",
 }
 
 # Modelled quote types with no projection test, because pinning the key the

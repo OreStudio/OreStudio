@@ -77,6 +77,7 @@ constexpr std::string_view swaption{"SWAPTION"};
 constexpr std::string_view equity{"EQUITY"};
 constexpr std::string_view equity_fwd{"EQUITY_FWD"};
 constexpr std::string_view equity_dividend{"EQUITY_DIVIDEND"};
+constexpr std::string_view equity_option{"EQUITY_OPTION"};
 constexpr std::string_view commodity{"COMMODITY"};
 constexpr std::string_view commodity_fwd{"COMMODITY_FWD"};
 constexpr std::string_view cpr{"CPR"};
@@ -401,6 +402,37 @@ std::string_view ore_{{asset_class}}_metric({{asset_class}}_quote_type qt) {
 }
 
 std::optional<std::string> quote_key_equity(const {{asset_class}}_market_data_identifier& id) {
+    // A vol surface point is the equity option family. Three shapes occur, and
+    // which one this is follows from what the surface point carries:
+    //   EQUITY_OPTION/MODEL/TICKER/CCY/EXPIRY/STRIKE
+    //   EQUITY_OPTION/MODEL/TICKER/CCY/EXPIRY/STRIKE/CALL_PUT
+    //   EQUITY_OPTION/MODEL/TICKER/CCY/EXPIRY/DELTA/PREMIUM/CALL_PUT/STRIKE
+    if (id.type == instrument_type::vol) {
+        if (!id.vol)
+            return std::nullopt;
+        const auto& v = *id.vol;
+        const auto head =
+            std::format("{}/{}/{}", ore_type_spec::equity_option, ore_vol_model(v.model_subtype),
+                        id.ticker);
+        if (v.delta_type && v.premium_type && v.call_put)
+            return std::format("{}/{}/{}/{}/{}/{}/{}",
+                               head,
+                               id.ccy,
+                               to_upper(v.expiry),
+                               to_upper(*v.delta_type),
+                               to_upper(*v.premium_type),
+                               to_upper(*v.call_put),
+                               to_upper(v.strike));
+        if (v.call_put)
+            return std::format("{}/{}/{}/{}/{}",
+                               head,
+                               id.ccy,
+                               to_upper(v.expiry),
+                               to_upper(v.strike),
+                               to_upper(*v.call_put));
+        return std::format(
+            "{}/{}/{}/{}", head, id.ccy, to_upper(v.expiry), to_upper(v.strike));
+    }
     if (id.type != instrument_type::quote)
         return std::nullopt;
     const auto qt = id.quote_type.value_or(equity_quote_type::spot);
@@ -672,10 +704,13 @@ std::optional<market_data_identifier> from_fx_option(const std::vector<std::stri
     fx_market_data_identifier id;
     id.pair = to_upper(parts[2]) + to_upper(parts[3]);
     id.type = instrument_type::vol;
+    // The parser keeps the point composite lowercased and the surface's own
+    // coordinates uppercased, so the inverse builds both the same way.
+    id.point = to_lower(parts[4]) + "," + to_lower(parts[5]);
     volatility_surface_point v;
     v.model_subtype = *model;
-    v.expiry = to_lower(parts[4]);
-    v.strike = to_lower(parts[5]);
+    v.expiry = to_upper(parts[4]);
+    v.strike = to_upper(parts[5]);
     id.vol = std::move(v);
     return id;
 }
@@ -834,6 +869,47 @@ std::optional<market_data_identifier> from_ir_swaption(const std::vector<std::st
     v.expiry = to_upper(parts[3]);
     v.strike = to_upper(parts[5]);
     v.model_subtype = *model;
+    id.vol = std::move(v);
+    return id;
+}
+
+std::optional<market_data_identifier> from_equity_option(const std::vector<std::string>& parts) {
+    // The three shapes the forward emits. Which one this is follows from the
+    // segment count alone, because the call/put moves: the seven-segment form
+    // puts it after the strike, the nine-segment delta form puts it before the
+    // strike, and the six-segment form has none.
+    if (parts.size() != 6 && parts.size() != 7 && parts.size() != 9)
+        return std::nullopt;
+    const auto model = parse_vol_model(parts[1]);
+    if (!model)
+        return std::nullopt;
+    equity_market_data_identifier id;
+    id.ticker = to_upper(parts[2]);
+    id.ccy = to_upper(parts[3]);
+    id.type = instrument_type::vol;
+    // The parser keeps the point composite lowercased and the surface's own
+    // coordinates uppercased, so the inverse builds both the same way.
+    std::string point;
+    for (auto i = std::size_t{4}; i < parts.size(); ++i) {
+        if (i > 4)
+            point += ",";
+        point += to_lower(parts[i]);
+    }
+    id.point = std::move(point);
+    volatility_surface_point v;
+    v.model_subtype = *model;
+    v.expiry = to_upper(parts[4]);
+    if (parts.size() == 6) {
+        v.strike = to_upper(parts[5]);
+    } else if (parts.size() == 7) {
+        v.strike = to_upper(parts[5]);
+        v.call_put = to_upper(parts[6]);
+    } else {
+        v.delta_type = to_upper(parts[5]);
+        v.premium_type = to_upper(parts[6]);
+        v.call_put = to_upper(parts[7]);
+        v.strike = to_upper(parts[8]);
+    }
     id.vol = std::move(v);
     return id;
 }
@@ -1020,6 +1096,8 @@ inverse_projection(const std::vector<std::string>& parts,
         const auto qt = parse_enum_lower<ir_quote_type>(type);
         return qt ? from_ir_no_index(*qt, parts) : std::nullopt;
     }
+    if (type == ore_type_spec::equity_option)
+        return from_equity_option(parts);
     if (type == ore_type_spec::equity)
         return from_equity_spot(parts);
     // The ORE spellings differ from the enum names for these types ("EQUITY_FWD" vs

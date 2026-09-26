@@ -249,6 +249,27 @@ TEST_CASE("round_trip_equity_fwd", tags) {
     REQUIRE(original == roundtripped);
 }
 
+TEST_CASE("round_trip_equity_option_vol", tags) {
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://equity/sp5?ccy=usd&type=vol&point=6m,atmf"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_equity_option_price", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://equity/ric:.stoxx50e?ccy=eur&type=vol&point=2021-07-16,1200,c&model=price"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_equity_option_delta", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://equity/ric:.spx?ccy=usd&type=vol&point=1080d,del,spot,call,0.1"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
 TEST_CASE("round_trip_credit", tags) {
     const auto original = oresmd_parser::parse(
         uri("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y"));

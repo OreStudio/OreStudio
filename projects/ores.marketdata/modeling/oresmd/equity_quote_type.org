@@ -69,6 +69,9 @@ A logical, possibly-partial oresmd requirement for an equity/index instrument.
 | oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y | EQUITY_DIVIDEND/RATE/AAPL/USD/1Y | equity_dividend_quote_key |
 | oresmd://equity/lufthansa?ccy=eur&type=quote&quote=fwd&point=6m | EQUITY_FWD/PRICE/LUFTHANSA/EUR/6M | equity_fwd_quote_key |
 | oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend | nullopt | equity_dividend_requires_point |
+| oresmd://equity/sp5?ccy=usd&type=vol&point=6m,atmf | EQUITY_OPTION/RATE_LNVOL/SP5/USD/6M/ATMF | equity_option_vol_quote_key_matches_the_corpus |
+| oresmd://equity/ric:.stoxx50e?ccy=eur&type=vol&point=2021-07-16,1200,c&model=price | EQUITY_OPTION/PRICE/RIC:.STOXX50E/EUR/2021-07-16/1200/C | equity_option_price_quote_key_matches_the_corpus |
+| oresmd://equity/ric:.spx?ccy=usd&type=vol&point=1080d,del,spot,call,0.1 | EQUITY_OPTION/RATE_LNVOL/RIC:.SPX/USD/1080D/DEL/SPOT/CALL/0.1 | equity_option_delta_quote_key_matches_the_corpus |
 
 ** Round-trip
 
@@ -77,6 +80,9 @@ A logical, possibly-partial oresmd requirement for an equity/index instrument.
 | oresmd://equity/aapl?ccy=usd&type=quote&quote=spot | round_trip_equity |
 | oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y | round_trip_equity_dividend |
 | oresmd://equity/lufthansa?ccy=eur&type=quote&quote=fwd&point=6m | round_trip_equity_fwd |
+| oresmd://equity/sp5?ccy=usd&type=vol&point=6m,atmf | round_trip_equity_option_vol |
+| oresmd://equity/ric:.stoxx50e?ccy=eur&type=vol&point=2021-07-16,1200,c&model=price | round_trip_equity_option_price |
+| oresmd://equity/ric:.spx?ccy=usd&type=vol&point=1080d,del,spot,call,0.1 | round_trip_equity_option_delta |
 
 ** Rejection
 

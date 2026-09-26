@@ -300,6 +300,25 @@ TEST_CASE("equity_dividend_requires_point", tags) {
     REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
 }
 
+TEST_CASE("equity_option_vol_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://equity/sp5?ccy=usd&type=vol&point=6m,atmf");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "EQUITY_OPTION/RATE_LNVOL/SP5/USD/6M/ATMF");
+}
+
+TEST_CASE("equity_option_price_quote_key_matches_the_corpus", tags) {
+    const auto id =
+        parse("oresmd://equity/ric:.stoxx50e?ccy=eur&type=vol&point=2021-07-16,1200,c&model=price");
+    REQUIRE(oresmd_projections::to_quote_key(id) ==
+            "EQUITY_OPTION/PRICE/RIC:.STOXX50E/EUR/2021-07-16/1200/C");
+}
+
+TEST_CASE("equity_option_delta_quote_key_matches_the_corpus", tags) {
+    const auto id =
+        parse("oresmd://equity/ric:.spx?ccy=usd&type=vol&point=1080d,del,spot,call,0.1");
+    REQUIRE(oresmd_projections::to_quote_key(id) ==
+            "EQUITY_OPTION/RATE_LNVOL/RIC:.SPX/USD/1080D/DEL/SPOT/CALL/0.1");
+}
+
 TEST_CASE("cds_quote_key_matches_worked_example", tags) {
     const auto id = parse("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y");
@@ -658,23 +677,35 @@ TEST_CASE("from_ore_key_convention_correction_only_touches_fx_spot", tags) {
 }
 
 /*
- * Rejection: series types without an oresmd mapping (the registry's option/capfloor
- * families, BOND), types the registry does not know, and malformed keys.
+ * Rejection: series types without an oresmd mapping (the capfloor and inflation
+ * capfloor families, BOND), types the registry does not know, and malformed keys.
  */
 
 TEST_CASE("from_ore_key_rejects_registry_types_without_an_oresmd_mapping", tags) {
     REQUIRE_FALSE(oresmd_projections::from_ore_key("BOND/PRICE/ISINXS/SNR/5Y").has_value());
-    REQUIRE_FALSE(oresmd_projections::from_ore_key("FX_OPTION/RATE/EUR/USD/1Y/25D").has_value());
     REQUIRE_FALSE(oresmd_projections::from_ore_key("CAPFLOOR/RATE/USD/5Y/3M").has_value());
     REQUIRE_FALSE(oresmd_projections::from_ore_key("INDEX_CDS_OPTION/RATE/CDX/5Y/1Y").has_value());
-    REQUIRE_FALSE(
-        oresmd_projections::from_ore_key("EQUITY_OPTION/PRICE/AAPL/USD/1Y/100").has_value());
     REQUIRE_FALSE(
         oresmd_projections::from_ore_key("COMMODITY_OPTION/PRICE/WTI/USD/1Y/100").has_value());
     REQUIRE_FALSE(
         oresmd_projections::from_ore_key("ZC_INFLATIONCAPFLOOR/RATE/UKRPI/5Y").has_value());
     REQUIRE_FALSE(
         oresmd_projections::from_ore_key("YY_INFLATIONCAPFLOOR/RATE/UKRPI/5Y").has_value());
+}
+
+TEST_CASE("from_ore_key_option_families", tags) {
+    REQUIRE(oresmd_projections::from_ore_key("FX_OPTION/RATE_LNVOL/EUR/USD/10Y/ATM") ==
+            parse("oresmd://fx/eurusd?type=vol&point=10y,atm"));
+    REQUIRE(oresmd_projections::from_ore_key("EQUITY_OPTION/RATE_LNVOL/SP5/USD/6M/ATMF") ==
+            parse("oresmd://equity/sp5?ccy=usd&type=vol&point=6m,atmf"));
+    REQUIRE(
+        oresmd_projections::from_ore_key(
+            "EQUITY_OPTION/PRICE/RIC:.STOXX50E/EUR/2021-07-16/1200/C") ==
+        parse(
+            "oresmd://equity/ric:.stoxx50e?ccy=eur&type=vol&point=2021-07-16,1200,c&model=price"));
+    REQUIRE(oresmd_projections::from_ore_key(
+                "EQUITY_OPTION/RATE_LNVOL/RIC:.SPX/USD/1080D/DEL/SPOT/CALL/0.1") ==
+            parse("oresmd://equity/ric:.spx?ccy=usd&type=vol&point=1080d,del,spot,call,0.1"));
 }
 
 TEST_CASE("from_ore_key_rejects_unknown_series_types", tags) {

@@ -275,7 +275,42 @@ market_data_identifier parse_{{asset_class}}(const boost::urls::url_view& u, con
         v.strike = parts[1];
         id.vol = std::move(v);
     }
+    if (qp.model && id.type == instrument_type::vol && id.vol)
+        id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
 {{/fx}}
+{{#equity}}
+    // An equity option's surface point carries up to five coordinates, and the
+    // count says which of the three shapes it is: expiry,strike;
+    // expiry,strike,call_put; or expiry,delta,premium,call_put,strike.
+    if (qp.point && id.type == instrument_type::vol) {
+        std::vector<std::string> parts;
+        std::stringstream ss(*id.point);
+        std::string part;
+        while (std::getline(ss, part, ','))
+            parts.push_back(to_upper(part));
+        if (parts.size() != 2 && parts.size() != 3 && parts.size() != 5)
+            BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+                "oresmd://equity/... a vol surface point is expiry,strike; "
+                "expiry,strike,call_put; or expiry,delta,premium,call_put,strike; got: '{}'.",
+                *id.point)));
+        volatility_surface_point v;
+        if (parts.size() == 5) {
+            v.expiry = parts[0];
+            v.delta_type = parts[1];
+            v.premium_type = parts[2];
+            v.call_put = parts[3];
+            v.strike = parts[4];
+        } else {
+            v.expiry = parts[0];
+            v.strike = parts[1];
+            if (parts.size() == 3)
+                v.call_put = parts[2];
+        }
+        id.vol = std::move(v);
+    }
+    if (qp.model && id.type == instrument_type::vol && id.vol)
+        id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
+{{/equity}}
     return id;
 }
 
@@ -381,6 +416,16 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 append_if(u, "{{key}}", id.{{name}});
 {{/is_string}}
 {{/uri_order}}
+{{#has_vol}}
+                // The surface's model is the ORE metric of the projected key, and no
+                // field carries it, so the uri_order loop above cannot emit it. A
+                // non-default model is emitted here or the round trip loses which
+                // surface this was -- the price one rather than a log-normal vol.
+                if (id.vol && id.vol->model_subtype != volatility_model_subtype::rate_lnvol)
+                    u.params().append(
+                        {"model",
+                         std::string(magic_enum::enum_name(id.vol->model_subtype))});
+{{/has_vol}}
 {{/oresmd_variant_specs}}
             }
         },

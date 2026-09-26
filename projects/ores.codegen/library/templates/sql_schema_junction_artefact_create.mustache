@@ -1,0 +1,35 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/sql_schema.org. Edit the org source. }}
+{{! Template to generate SQL schema for a junction's artefact/staging table }}
+{{{sql_license}}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_junction_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- {{junction.name_title}} - Artefact Table
+-- =============================================================================
+
+create table if not exists "ores_dq_{{junction.name}}_artefact_tbl" (
+    "dataset_id" uuid not null,
+    "tenant_id" uuid not null,
+    "{{junction.left.column}}" {{junction.left.type}} not null,
+    "{{junction.right.column}}" {{junction.right.type}} not null,
+{{#junction.columns}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}},
+{{/junction.columns}}
+    "version" integer not null
+);
+
+create index if not exists dq_{{junction.name}}_artefact_dataset_idx
+on ores_dq_{{junction.name}}_artefact_tbl (dataset_id);
+
+create index if not exists dq_{{junction.name}}_artefact_tenant_idx
+on ores_dq_{{junction.name}}_artefact_tbl (tenant_id);
+
+create index if not exists dq_{{junction.name}}_artefact_{{junction.left.column_short}}_idx
+on ores_dq_{{junction.name}}_artefact_tbl ({{junction.left.column}});
+
+create index if not exists dq_{{junction.name}}_artefact_{{junction.right.column_short}}_idx
+on ores_dq_{{junction.name}}_artefact_tbl ({{junction.right.column}});

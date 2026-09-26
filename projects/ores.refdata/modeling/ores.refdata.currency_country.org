@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: D1B2BDB5-D35B-4EF3-9A4D-030CF28BDF83
+:ores.sql.schema.junction_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.currency_country
 #+description: Codegen junction model for currency_countries.

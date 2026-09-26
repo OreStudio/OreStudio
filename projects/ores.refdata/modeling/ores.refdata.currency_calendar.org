@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: EC7B18A7-3865-424A-AD78-F6BE522F3B0B
+:ores.sql.schema.junction_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.currency_calendar
 #+description: Codegen junction model for currency_calendars.

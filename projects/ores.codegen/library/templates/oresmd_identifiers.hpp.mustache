@@ -29,7 +29,8 @@ struct volatility_surface_point final {
     std::optional<std::string> call_put;
     /**
      * @brief What the key quotes when the strike slot holds a delta: DEL, ATM or ATMF,
-     * and the risk-reversal and butterfly conventions.
+     * the risk-reversal and butterfly conventions, and the swaption family's Smile,
+     * whose shift then takes the value's place.
      */
     std::optional<std::string> delta_type;
     /**

@@ -276,11 +276,14 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
     if (qp.point) {
         id.point = to_lower(*qp.point);
         if (id.type == instrument_type::vol) {
+            // Split the point as it was written, not as it is stored: a swaption
+            // surface may carry the smile convention's marker, and that marker is
+            // a name whose case the key has to read back.
             std::vector<std::string> parts;
-            std::stringstream ss(*id.point);
+            std::stringstream ss(*qp.point);
             std::string part;
             while (std::getline(ss, part, ','))
-                parts.push_back(to_upper(part));
+                parts.push_back(part);
             if (id.quote_type == ir_quote_type::capfloor) {
                 // The cap/floor surface carries five coordinates, not three:
                 // maturity, float tenor, and the shift and strip flags the
@@ -291,18 +294,27 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
                                     "maturity,float_tenor,shift,strip,strike, got: '{}'.",
                                     *id.point)));
                 volatility_surface_point v;
-                v.expiry = parts[0];
+                v.expiry = to_upper(parts[0]);
                 id.tenor = to_lower(parts[1]);
                 id.shift = to_lower(parts[2]);
                 id.strip = to_lower(parts[3]);
-                v.strike = parts[4];
+                v.strike = to_upper(parts[4]);
                 id.vol = std::move(v);
-            } else if (parts.size() == 3) {
+            } else if (parts.size() == 3 || parts.size() == 4) {
                 volatility_surface_point v;
-                v.expiry = parts[0];
+                v.expiry = to_upper(parts[0]);
                 if (!id.tenor)
                     id.tenor = to_lower(parts[1]);
-                v.strike = parts[2];
+                if (parts.size() == 3) {
+                    v.strike = to_upper(parts[2]);
+                } else {
+                    // expiry,tenor,marker,value -- the smile convention. The
+                    // marker is carried and re-serialised as it arrived.
+                    v.delta_type = parts[2];
+                    v.strike = to_upper(parts[3]);
+                    id.point = to_lower(parts[0]) + "," + to_lower(parts[1]) + "," + *v.delta_type +
+                               "," + to_lower(parts[3]);
+                }
                 id.vol = std::move(v);
             }
         }

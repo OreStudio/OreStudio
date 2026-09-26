@@ -255,6 +255,16 @@ TEST_CASE("ir_mm_index_spelling_matches_the_corpus", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "MM/RATE/EUR/ESTER/0D/1D");
 }
 
+TEST_CASE("swaption_indexed_vol_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://ir/usd?index=sofr&type=vol&model=rate_nvol&point=10y,10y,ATM");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "SWAPTION/RATE_NVOL/USD/SOFR/10Y/10Y/ATM");
+}
+
+TEST_CASE("swaption_smile_vol_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://ir/eur?type=vol&model=rate_nvol&point=6m,2y,Smile,-0.02");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "SWAPTION/RATE_NVOL/EUR/6M/2Y/Smile/-0.02");
+}
+
 TEST_CASE("ir_capfloor_normal_vol_quote_key_matches_the_corpus", tags) {
     const auto id =
         parse("oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03");
@@ -666,6 +676,20 @@ TEST_CASE("from_ore_key_ir_no_index_families", tags) {
 TEST_CASE("from_ore_key_ir_swaption_builds_the_vol_struct", tags) {
     REQUIRE(oresmd_projections::from_ore_key("SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM") ==
             parse("oresmd://ir/eur?type=vol&point=5y,2y,atm"));
+}
+
+TEST_CASE("from_ore_key_ir_swaption_carries_the_index_and_the_smile", tags) {
+    // The index the surface is quoted against and the convention marker that
+    // carries the smile shift are each optional, so the family is six, seven or
+    // eight segments. A seven-segment key is read by asking whether its fourth
+    // segment names an index, which is also what keeps the two forms apart.
+    REQUIRE(oresmd_projections::from_ore_key("SWAPTION/RATE_NVOL/USD/SOFR/10Y/10Y/ATM") ==
+            parse("oresmd://ir/usd?index=sofr&type=vol&model=rate_nvol&point=10y,10y,ATM"));
+    REQUIRE(oresmd_projections::from_ore_key("SWAPTION/RATE_NVOL/EUR/6M/2Y/Smile/-0.02") ==
+            parse("oresmd://ir/eur?type=vol&model=rate_nvol&point=6m,2y,Smile,-0.02"));
+    REQUIRE(oresmd_projections::from_ore_key("SWAPTION/RATE_NVOL/USD/SOFR/10Y/10Y/Smile/-0.0025") ==
+            parse("oresmd://ir/"
+                  "usd?index=sofr&type=vol&model=rate_nvol&point=10y,10y,Smile,-0.0025"));
 }
 
 TEST_CASE("from_ore_key_equity", tags) {

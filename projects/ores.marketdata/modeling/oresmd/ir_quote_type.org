@@ -208,6 +208,8 @@ IR has the most complex qualifier shape variants:
 | oresmd://ir/usd?tenor=3m&contract_month=2024-01&contract_code=XCME:SRA&type=quote&quote=oi_future&metric=price | OI_FUTURE/PRICE/USD/2024-01/XCME:SRA/3M | ir_oi_future_price_quote_key_matches_the_corpus |
 | oresmd://ir/usd?index=sofr&settle=0D&tenor=1d&type=quote&quote=ir_swap&metric=rate&point=2y | IR_SWAP/RATE/USD/SOFR/0D/1D/2Y | ir_swap_indexed_quote_key_matches_the_corpus |
 | oresmd://ir/eur?index=estr&index_spelling=ESTER&tenor=0d&type=quote&quote=mm&metric=rate&point=1d | MM/RATE/EUR/ESTER/0D/1D | ir_mm_index_spelling_matches_the_corpus |
+| oresmd://ir/usd?index=sofr&type=vol&model=rate_nvol&point=10y,10y,ATM | SWAPTION/RATE_NVOL/USD/SOFR/10Y/10Y/ATM | swaption_indexed_vol_quote_key_matches_the_corpus |
+| oresmd://ir/eur?type=vol&model=rate_nvol&point=6m,2y,Smile,-0.02 | SWAPTION/RATE_NVOL/EUR/6M/2Y/Smile/-0.02 | swaption_smile_vol_quote_key_matches_the_corpus |
 | oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03 | CAPFLOOR/RATE_NVOL/CHF/5Y/6M/0/0/0.03 | ir_capfloor_normal_vol_quote_key_matches_the_corpus |
 | oresmd://ir/chf?type=vol&quote=capfloor&point=5y,6m,0,0,0.03 | CAPFLOOR/RATE_LNVOL/CHF/5Y/6M/0/0/0.03 | ir_capfloor_log_normal_vol_quote_key_matches_the_corpus |
 | oresmd://ir/eur?type=vol&quote=capfloor&model=shift&tenor=6m | CAPFLOOR/SHIFT/EUR/6M | ir_capfloor_shift_quote_key_matches_the_corpus |
@@ -253,6 +255,8 @@ IR has the most complex qualifier shape variants:
 | oresmd://ir/eur?curve_id=EUR&tenor=1d&type=quote&quote=discount&metric=rate | round_trip_ir_discount_currency_named_curve |
 | oresmd://ir/usd?index=sofr&settle=0D&tenor=1d&type=quote&quote=ir_swap&metric=rate&point=2y | round_trip_ir_swap_indexed |
 | oresmd://ir/eur?index=estr&index_spelling=ESTER&tenor=0d&type=quote&quote=mm&metric=rate&point=1d | round_trip_ir_mm_index_spelling |
+| oresmd://ir/usd?index=sofr&type=vol&model=rate_nvol&point=10y,10y,ATM | round_trip_ir_swaption_indexed |
+| oresmd://ir/eur?type=vol&model=rate_nvol&point=6m,2y,Smile,-0.02 | round_trip_ir_swaption_smile |
 | oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y | round_trip_ir_bma_swap_ratio |
 | oresmd://ir/usd?tenor=3m&second_tenor=1y&second_ccy=try&type=quote&quote=cc_fix_float_swap&metric=rate&point=1y | round_trip_ir_cc_fix_float_swap |
 

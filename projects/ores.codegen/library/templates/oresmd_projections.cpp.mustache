@@ -269,18 +269,50 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
         // Use typed vol struct if available, else fall back to point composite.
         if (id.vol && id.tenor) {
             const auto& v = *id.vol;
-            // BOND_OPTION is the swaption shape over a bond: the same six
-            // segments, with the underlying where a swaption has a currency.
+            // BOND_OPTION is the swaption shape over a bond: the same segments,
+            // with the underlying where a swaption has a currency.
             const auto family = (id.quote_type == ir_quote_type::bond_option)
                                     ? ore_type_spec::bond_option
                                     : ore_type_spec::swaption;
-            return std::format("{}/{}/{}/{}/{}/{}",
-                               family,
-                               ore_vol_model(v.model_subtype),
-                               id.ccy,
-                               to_upper(v.expiry),
-                               to_upper(*id.tenor),
-                               to_upper(v.strike));
+            const auto model = ore_vol_model(v.model_subtype);
+            const auto expiry = to_upper(v.expiry);
+            const auto tenor = to_upper(*id.tenor);
+            const auto strike = to_upper(v.strike);
+            // Two qualifiers are optional and both sit ahead of the value: the
+            // index the surface is quoted against, and the convention marker the
+            // corpus writes as Smile, whose shift then takes the value's place.
+            // So the family is six, seven or eight segments long, and the marker
+            // is emitted as written rather than uppercased.
+            if (id.index && v.delta_type)
+                return std::format("{}/{}/{}/{}/{}/{}/{}/{}",
+                                   family,
+                                   model,
+                                   id.ccy,
+                                   index_token(id),
+                                   expiry,
+                                   tenor,
+                                   *v.delta_type,
+                                   strike);
+            if (id.index)
+                return std::format("{}/{}/{}/{}/{}/{}/{}",
+                                   family,
+                                   model,
+                                   id.ccy,
+                                   index_token(id),
+                                   expiry,
+                                   tenor,
+                                   strike);
+            if (v.delta_type)
+                return std::format("{}/{}/{}/{}/{}/{}/{}",
+                                   family,
+                                   model,
+                                   id.ccy,
+                                   expiry,
+                                   tenor,
+                                   *v.delta_type,
+                                   strike);
+            return std::format(
+                "{}/{}/{}/{}/{}/{}", family, model, id.ccy, expiry, tenor, strike);
         }
         if (!id.point)
             return std::nullopt;
@@ -1129,11 +1161,16 @@ std::optional<market_data_identifier> from_ir_bond_option(const std::vector<std:
 }
 
 std::optional<market_data_identifier> from_ir_swaption(const std::vector<std::string>& parts) {
-    // SWAPTION/MODEL/CCY/EXPIRY/TENOR/STRIKE. The forward emits either branch (typed
-    // vol struct or point composite) in this same six-segment shape; both collapse
-    // into the vol struct plus the serialised point, matching what the parser builds
-    // for a type=vol URI.
-    if (parts.size() != 6)
+    // SWAPTION/MODEL/CCY/[INDEX/]EXPIRY/TENOR/[MARKER/]VALUE -- six, seven or
+    // eight segments, because the index and the convention marker that carries
+    // the smile shift are each optional. A seven-segment key is read by asking
+    // whether its fourth segment names an index: the corpus's other seven-segment
+    // form writes the marker there, and no marker is an index family.
+    //
+    // The forward emits either branch (typed vol struct or point composite) in
+    // the same shape; both collapse into the vol struct plus the serialised
+    // point, matching what the parser builds for a type=vol URI.
+    if (parts.size() < 6 || parts.size() > 8)
         return std::nullopt;
     const auto model = parse_vol_model(parts[1]);
     if (!model)
@@ -1141,11 +1178,32 @@ std::optional<market_data_identifier> from_ir_swaption(const std::vector<std::st
     ir_market_data_identifier id;
     id.ccy = to_upper(parts[2]);
     id.type = instrument_type::vol;
-    id.tenor = to_lower(parts[4]);
-    id.point = to_lower(parts[3]) + "," + to_lower(parts[4]) + "," + to_lower(parts[5]);
+    auto at = std::size_t{3};
+    if (parts.size() >= 7) {
+        if (const auto idx = parse_index(parts[3])) {
+            id.index = *idx;
+            record_index_spelling(id, parts[3]);
+            at = 4;
+        }
+    }
+    const auto remaining = parts.size() - at;
+    if (remaining != 3 && remaining != 4)
+        return std::nullopt;
     volatility_surface_point v;
-    v.expiry = to_upper(parts[3]);
-    v.strike = to_upper(parts[5]);
+    v.expiry = to_upper(parts[at]);
+    id.tenor = to_lower(parts[at + 1]);
+    const auto expiry = to_lower(parts[at]);
+    const auto tenor = to_lower(parts[at + 1]);
+    if (remaining == 4) {
+        // The marker keeps the case it arrives with: the corpus writes Smile,
+        // and the key has to read back as it came.
+        v.delta_type = parts[at + 2];
+        v.strike = to_upper(parts[at + 3]);
+        id.point = expiry + "," + tenor + "," + *v.delta_type + "," + to_lower(parts[at + 3]);
+    } else {
+        v.strike = to_upper(parts[at + 2]);
+        id.point = expiry + "," + tenor + "," + to_lower(parts[at + 2]);
+    }
     v.model_subtype = *model;
     id.vol = std::move(v);
     return id;

@@ -492,6 +492,20 @@ TEST_CASE("from_ore_key_ir_swaption_builds_the_vol_struct", tags) {
             parse("oresmd://ir/eur?type=vol&point=5y,2y,atm"));
 }
 
+TEST_CASE("from_ore_key_ir_swaption_carries_the_index_and_the_smile", tags) {
+    // The index the surface is quoted against and the convention marker that
+    // carries the smile shift are each optional, so the family is six, seven or
+    // eight segments. A seven-segment key is read by asking whether its fourth
+    // segment names an index, which is also what keeps the two forms apart.
+    REQUIRE(oresmd_projections::from_ore_key("SWAPTION/RATE_NVOL/USD/SOFR/10Y/10Y/ATM") ==
+            parse("oresmd://ir/usd?index=sofr&type=vol&model=rate_nvol&point=10y,10y,ATM"));
+    REQUIRE(oresmd_projections::from_ore_key("SWAPTION/RATE_NVOL/EUR/6M/2Y/Smile/-0.02") ==
+            parse("oresmd://ir/eur?type=vol&model=rate_nvol&point=6m,2y,Smile,-0.02"));
+    REQUIRE(oresmd_projections::from_ore_key("SWAPTION/RATE_NVOL/USD/SOFR/10Y/10Y/Smile/-0.0025") ==
+            parse("oresmd://ir/"
+                  "usd?index=sofr&type=vol&model=rate_nvol&point=10y,10y,Smile,-0.0025"));
+}
+
 TEST_CASE("from_ore_key_equity", tags) {
     REQUIRE(oresmd_projections::from_ore_key("EQUITY/PRICE/AAPL/USD") ==
             parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=spot"));

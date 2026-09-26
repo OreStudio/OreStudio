@@ -17,67 +17,276 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_MESSAGING_LEI_ENTITY_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_LEI_ENTITY_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/lei_entity.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::dq::messaging {
 
-struct get_lei_entities_request {
-    using response_type = struct get_lei_entities_response;
+struct lei_entity_key {
+    std::string lei;
+};
+
+struct lei_entity_write {
+    std::string lei;
+    std::string entity_legal_name;
+    std::string entity_entity_category;
+    std::optional<std::string> entity_entity_sub_category;
+    std::string entity_entity_status;
+    std::optional<std::string> entity_legal_form_entity_legal_form_code;
+    std::optional<std::string> entity_legal_form_other_legal_form;
+    std::optional<std::string> entity_legal_jurisdiction;
+    std::optional<std::string> entity_legal_address_first_address_line;
+    std::optional<std::string> entity_legal_address_city;
+    std::optional<std::string> entity_legal_address_region;
+    std::string entity_legal_address_country;
+    std::optional<std::string> entity_legal_address_postal_code;
+    std::optional<std::string> entity_headquarters_address_first_address_line;
+    std::optional<std::string> entity_headquarters_address_city;
+    std::optional<std::string> entity_headquarters_address_region;
+    std::optional<std::string> entity_headquarters_address_country;
+    std::optional<std::string> entity_headquarters_address_postal_code;
+    std::optional<std::chrono::system_clock::time_point> entity_entity_creation_date;
+    std::optional<std::chrono::system_clock::time_point> registration_initial_registration_date;
+    std::optional<std::chrono::system_clock::time_point> registration_last_update_date;
+    std::optional<std::chrono::system_clock::time_point> registration_next_renewal_date;
+    std::optional<std::string> registration_registration_status;
+    std::optional<std::string> entity_transliterated_name_1;
+    std::optional<std::string> entity_transliterated_name_1_type;
+};
+
+struct lei_entity_change {
+    lei_entity_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct lei_entity_removal {
+    lei_entity_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct lei_entity_lookup {
+    lei_entity_key key;
+    std::optional<ores::dq::domain::lei_entity> lei_entity;
+};
+
+struct lei_entity_event {
+    boost::uuids::uuid event_id;
+    lei_entity_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct lei_entity_version_key {
+    lei_entity_key lei_entity;
+    std::uint32_t version;
+};
+
+struct lei_entity_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_lei_entities_request {
+    using response_type = struct list_lei_entities_response;
     static constexpr std::string_view nats_subject = "dq.v1.lei_entities.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
 };
 
-struct get_lei_entities_response {
+struct list_lei_entities_response {
+    ores::utility::domain::result result;
     std::vector<ores::dq::domain::lei_entity> entities;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_lei_entity_request {
-    using response_type = struct save_lei_entity_response;
-    static constexpr std::string_view nats_subject = "dq.v1.lei_entities.save";
-    ores::dq::domain::lei_entity data;
-
-    static save_lei_entity_request from(ores::dq::domain::lei_entity v) {
-        return {.data = std::move(v)};
-    }
+struct get_lei_entity_request {
+    using response_type = struct get_lei_entity_response;
+    static constexpr std::string_view nats_subject = "dq.v1.lei_entities.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    lei_entity_key key;
 };
 
-struct save_lei_entity_response {
-    bool success = false;
-    std::string message;
+struct get_lei_entity_response {
+    ores::utility::domain::result result;
+    std::optional<ores::dq::domain::lei_entity> lei_entity;
+};
+
+struct get_many_lei_entities_request {
+    using response_type = struct get_many_lei_entities_response;
+    static constexpr std::string_view nats_subject = "dq.v1.lei_entities.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<lei_entity_key> keys;
+};
+
+struct get_many_lei_entities_response {
+    ores::utility::domain::result result;
+    std::vector<lei_entity_lookup> entries;
+};
+
+struct put_lei_entity_request {
+    using response_type = struct put_lei_entity_response;
+    static constexpr std::string_view nats_subject = "dq.v1.lei_entities.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    lei_entity_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_lei_entity_response {
+    ores::utility::domain::result result;
+    ores::dq::domain::lei_entity lei_entity;
+};
+
+struct put_many_lei_entities_request {
+    using response_type = struct put_many_lei_entities_response;
+    static constexpr std::string_view nats_subject = "dq.v1.lei_entities.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<lei_entity_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_lei_entities_response {
+    ores::utility::domain::result result;
+    std::vector<ores::dq::domain::lei_entity> entities;
 };
 
 struct delete_lei_entity_request {
     using response_type = struct delete_lei_entity_response;
     static constexpr std::string_view nats_subject = "dq.v1.lei_entities.delete";
-    std::vector<std::string> leis;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    lei_entity_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_lei_entity_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_lei_entity_history_request {
-    using response_type = struct get_lei_entity_history_response;
-    static constexpr std::string_view nats_subject = "dq.v1.lei_entities.history";
-    std::string lei;
+struct delete_many_lei_entities_request {
+    using response_type = struct delete_many_lei_entities_response;
+    static constexpr std::string_view nats_subject = "dq.v1.lei_entities.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<lei_entity_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_lei_entity_history_response {
-    std::vector<ores::dq::domain::lei_entity> history;
-    bool success = false;
-    std::string message;
+struct delete_many_lei_entities_response {
+    ores::utility::domain::result result;
 };
+
+struct list_lei_entity_versions_request {
+    using response_type = struct list_lei_entity_versions_response;
+    static constexpr std::string_view nats_subject = "dq.v1.lei_entities_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    lei_entity_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<lei_entity_versions_filter> filter;
+};
+
+struct list_lei_entity_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::dq::domain::lei_entity> versions;
+    std::uint64_t total;
+};
+
+struct get_lei_entity_version_request {
+    using response_type = struct get_lei_entity_version_response;
+    static constexpr std::string_view nats_subject = "dq.v1.lei_entities_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    lei_entity_version_key key;
+};
+
+struct get_lei_entity_version_response {
+    ores::utility::domain::result result;
+    ores::dq::domain::lei_entity version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace lei_entity_event_subjects {
+inline constexpr std::string_view created = "dq.v1.lei_entities_events.created";
+inline constexpr std::string_view updated = "dq.v1.lei_entities_events.updated";
+inline constexpr std::string_view deleted = "dq.v1.lei_entities_events.deleted";
+}
 
 }
 

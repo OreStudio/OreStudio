@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.api/domain/synthetic_fx_spot_config_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -31,7 +36,7 @@ std::string convert_to_table(const std::vector<synthetic_fx_spot_config>& v) {
     table << fort::header << "Name" << "Base Ccy" << "Quote Ccy" << "Enabled" << "Modified By"
           << fort::endr;
 
-    for (const auto& sfc : v) {
+    for ([[maybe_unused]] const auto& sfc : v) {
         table << sfc.name << sfc.base_currency_code << sfc.quote_currency_code
               << (sfc.enabled ? "true" : "false") << sfc.modified_by << fort::endr;
     }

@@ -21,7 +21,11 @@
 # To modify, update the template and regenerate.
 set(files
     "artefact_type_eventing_integration_tests.cpp"
+    "catalog_eventing_integration_tests.cpp"
+    "data_domain_eventing_integration_tests.cpp"
     "generators_tests.cpp"
+    "lei_entity_eventing_integration_tests.cpp"
+    "lei_relationship_eventing_integration_tests.cpp"
     "main.cpp"
     "repository_artefact_type_repository_tests.cpp"
     "repository_catalog_repository_tests.cpp"

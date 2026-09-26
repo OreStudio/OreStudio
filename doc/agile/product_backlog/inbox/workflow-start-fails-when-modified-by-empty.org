@@ -13,6 +13,17 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
+*Fixed on 2026-09-26.* The engine now sets =modified_by= at all four creation
+sites -- the instance and the three step kinds (step 0, the next step, and a
+compensation step) -- and the hand-written foreign key that stopped the
+database recreating at all is dropped, since the steps insert trigger already
+enforces the relationship as a soft foreign key. Verified against a recreated
+database: it completes with no workaround, 75 workflow instances and 183 steps
+are created, and iam's provisioning command returns =success:true= end to end
+instead of timing out. The attribution this leaves behind -- the service
+account rather than the caller -- is its own capture. Delete this page once
+the fix has merged.
+
 =ores.workflow='s engine builds its =workflow_instance= and its first
 =workflow_step= without setting =modified_by=, and the generated repository
 writes what it is given. Every table's insert trigger routes that field

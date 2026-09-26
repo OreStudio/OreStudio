@@ -44,11 +44,9 @@ std::string importer::validate_currency(const currency& c) {
     if (c.iso_code.empty())
         errors << "ISO code is required\n";
 
-    // if (c.symbol.empty())
-    //     errors << "Symbol is required\n";
-
-    // if (c.fraction_symbol.empty())
-    //     errors << "Fraction symbol is required\n";
+    // Symbol and FractionSymbol are required elements in the XSD but may be
+    // empty, and ORE's own example files ship them empty, so emptiness is
+    // not an error.
 
     if (c.fractions_per_unit <= 0)
         errors << "Fractions per unit must be positive\n";

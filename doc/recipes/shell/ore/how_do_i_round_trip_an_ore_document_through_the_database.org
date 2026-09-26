@@ -7,11 +7,11 @@
 #+level: cross
 #+filetags: :recipe:shell:ore:
 #+created: 2026-09-11
-#+updated: 2026-09-11
+#+updated: 2026-09-26
 
 The three steps of the XML to database to XML path each have one shell
 verb, all in the shell's =ore= menu
-(=projects/ores.shell/src/app/commands/trading/ore_commands.cpp=).
+(=projects/ores.shell/application/src/app/commands/trading/ore_commands.cpp=).
 They talk to ~ores.ore~ and ~ores.trading~ over NATS, and to the object
 storage service over HTTP. The classifier that reads the result lives
 in =scripts/ore_mapper_roundtrip_diff.py=, and it is the gate this
@@ -31,11 +31,15 @@ the database, so a database holding anything else cannot give a clean
 comparison.
 
 Stage the document under the name =portfolio_roundtrip.xml=. The
-directory scanner ~ores.ore~ uses for an import accepts only files
-named =currencyconfig.xml= or =portfolio*.xml=, and ignores every other
-name. Set =ORE_ROUNDTRIP_DIR= to a staging directory and
-=ORE_ROUNDTRIP_REQUEST_ID= to a fresh UUID. The script reads the source
-from =$ORE_ROUNDTRIP_DIR/source= and writes the result to
+directory scanner ~ores.ore~ uses for an import classifies a file by its
+XML root element, so any =.xml= whose root is =<Portfolio>= is a
+portfolio whatever the file is called, and any whose root is
+=<CurrencyConfig>= is the currency configuration. It reads only the
+first bytes of the file to decide, and it ignores every other =.xml=,
+including the calendar adjustment and conventions documents, which the
+import does not carry. Set =ORE_ROUNDTRIP_DIR= to a staging directory
+and =ORE_ROUNDTRIP_REQUEST_ID= to a fresh UUID. The script reads the
+source from =$ORE_ROUNDTRIP_DIR/source= and writes the result to
 =$ORE_ROUNDTRIP_DIR/output/portfolio_roundtrip.xml=.
 
 #+name: round-trip-ore-document

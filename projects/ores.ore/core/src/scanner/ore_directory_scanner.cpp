@@ -66,9 +66,9 @@ scan_result ore_directory_scanner::scan() {
         }
 
         // The round trip asks the same question of the same files, so the
-        // rule lives in one place. A substring match here used to miss a
-        // root element carrying attributes and match a keyword inside a
-        // comment.
+        // rule lives in one place. A substring match over the first bytes
+        // misses a root element that carries attributes and matches a
+        // keyword inside a comment, so the root element is parsed.
         const auto kind = xml::detect_document_kind(entry.path());
         if (kind == xml::document_kind::portfolio) {
             BOOST_LOG_SEV(lg(), debug) << "Portfolio file: " << entry.path();

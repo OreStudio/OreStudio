@@ -35,17 +35,19 @@ struct scan_result {
     std::filesystem::path root;
 
     /**
-     * @brief Currency configuration files (currencyconfig.xml).
+     * @brief Currency configuration files, by root element <CurrencyConfig>.
      */
     std::vector<std::filesystem::path> currency_files;
 
     /**
-     * @brief Portfolio XML files (portfolio*.xml).
+     * @brief Portfolio XML files, by root element <Portfolio>.
      */
     std::vector<std::filesystem::path> portfolio_files;
 
     /**
-     * @brief Files that did not match any known category or were in excluded dirs.
+     * @brief Files that did not match any known category or were in excluded
+     * directories. Calendar adjustment and conventions documents land here:
+     * the scanner detects them, but the import does not carry them.
      */
     std::vector<std::filesystem::path> ignored_files;
 };

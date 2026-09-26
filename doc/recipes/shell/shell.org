@@ -551,3 +551,7 @@ tangled into the runnable script library
 * Platforms
 
 - [[id:B07AA915-541C-55EB-BBC1-9DEA5AB1421F][How do I run the platforms commands from the shell?]]
+
+* Series Key Shapes
+
+- [[id:2C45B4AA-B148-57F4-8031-6F8941D86A0A][How do I run the series_key_shapes commands from the shell?]]

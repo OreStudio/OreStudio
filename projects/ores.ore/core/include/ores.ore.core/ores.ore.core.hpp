@@ -20,12 +20,16 @@
 #define ORES_ORE_CORE_HPP
 
 /**
- * @brief ORE (Open Source Risk Engine) component.
+ * @brief ORE document engine
  *
- * Provides integration with the ORE project through:
- * - Domain types for ORE XML configuration (generated from XSD via xsdcpp)
- * - XML import/export functionality for currency data
- * - Mappers to convert between ORE and internal domain types
+ * Moves ORE documents in and out of the ORES domain model through:
+ * - The ORE XML bindings for the whole vocabulary, generated from the
+ *   vendored schemas by xsdcpp
+ * - The instrument mappers between those bindings and the trading and
+ *   reference data domain types
+ * - The importer, the exporter and the directory round trip
+ * - Readers for ORE's market data text formats and its engine log
+ * - The import planner, the hierarchy builder and the directory scanner
  */
 namespace ores::ore {}
 

@@ -330,10 +330,10 @@ ores::ore::planner::ore_import_planner --> ores::ore::xml::importer : uses
 
 ' --- The classifier split ---
 '
-' Both classifiers ask one root-element reader. The scanner used to match the
-' literal strings "<Portfolio>" and "<CurrencyConfig>" in the first 512 bytes,
-' which silently rewrote a curve configuration as an empty conventions
-' document when the root element fell outside that window.
+' Both classifiers ask one root-element reader. Parsing the root element is
+' what keeps them honest: a substring match over the first bytes misses a
+' root element that carries attributes, matches a keyword inside a comment,
+' and can rewrite a curve configuration as an empty conventions document.
 ores::ore::scanner::ore_directory_scanner ..> ores::ore::xml::document_kind : classifies by
 
 ' --- The market facet ---

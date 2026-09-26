@@ -21,11 +21,13 @@
 #define ORES_ORE_API_HPP
 
 /**
- * @brief ORE import API types and protocol
+ * @brief ORE integration contract
  *
- * Protocol types and bucket helpers for server-side ORE import. Contains the
- * ore_import_request/response/item_error structs and the ore_storage bucket helper that mirrors
- * compute_storage.
+ * The shared contract of the ORE integration component: the series key shape
+ * entity with its JSON and table I/O, its generated NATS protocol, change
+ * events and sample generator; the protocols for importing an ORE directory
+ * and for locating the import tarball in object storage; and the workflow
+ * registration the ORE import runs under.
  */
 namespace ores::ore.api {}
 

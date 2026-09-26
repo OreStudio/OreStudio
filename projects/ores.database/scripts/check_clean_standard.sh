@@ -33,10 +33,12 @@ COMPONENT_DIR="${REPO_ROOT}/projects/ores.database"
 CODEGEN="${REPO_ROOT}/projects/ores.codegen"
 PYTHON="${REPO_ROOT}/projects/ores.compass/venv/bin/python"
 FAILURES=0
+CHECKS=0
 
 say() {
     local status="$1" item="$2" detail="$3"
     printf '%-4s %-4s %s\n' "$status" "$item" "$detail"
+    CHECKS=$((CHECKS + 1))
     if [[ "${status}" == "FAIL" ]]; then
         FAILURES=$((FAILURES + 1))
     fi
@@ -164,6 +166,13 @@ else
     say FAIL W04 "create.sql does not include the database aggregator"
 fi
 
+# The component owns no C++ model, so nothing outside it may name one. This
+# caught a shell script and a diagram left pointing at the deleted stack.
+expect_no_hits H02 'database_info_entity|database_info_mapper|database_info_repository|database_info_json_io|ores_database_info_fn' \
+    "no file outside the component names a deleted database_info symbol" \
+    grep -rn 'database_info_entity|database_info_mapper|database_info_repository|database_info_json_io|ores_database_info_fn' \
+    "${REPO_ROOT}/projects/ores.sql" "${REPO_ROOT}/projects/ores.compass/src" "${COMPONENT_DIR}/modeling"
+
 # --- 6. Shell ----------------------------------------------------------------
 
 if [[ -d "${REPO_ROOT}/projects/ores.shell/database" ]]; then
@@ -224,13 +233,23 @@ recipe_out="$(timeout 600 "${PYTHON}" "${CODEGEN}/scripts/regenerate_shell_recip
 if [[ $? -eq 0 ]]; then
     say PASS V05 "regenerate_shell_recipe_inventory.py --check is clean"
 else
-    say PASS V05 "regenerate_shell_recipe_inventory.py reports no database recipe entry to drift"
+    say FAIL V05 "regenerate_shell_recipe_inventory.py --check: $(echo "${recipe_out}" | tail -1)"
 fi
 
 if grep -q '"database' "${CODEGEN}/scripts/component_registry.py"; then
     say PASS V06 "the registry lists the component"
 else
     say N/A V06 "the component has no codegen model, so it has no regeneration for the gate and no catalogue entry to resolve; see the decision record on the task"
+fi
+
+# Every item of the standard except V01 to V04, which need a built tree and a
+# running fleet, plus one extra W04 check for the drop aggregator and one extra
+# H02 check for references to the deleted stack. The count is asserted so a
+# check that stops being emitted is a failure rather than a silent gap in the
+# record.
+expected_items=39
+if [[ ${CHECKS} -ne ${expected_items} ]]; then
+    say FAIL ALL "emitted ${CHECKS} checks, expected ${expected_items}"
 fi
 
 echo

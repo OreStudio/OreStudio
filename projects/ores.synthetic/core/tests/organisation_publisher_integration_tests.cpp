@@ -41,10 +41,16 @@ using namespace ores::logging;
  * @brief Runs one seed statement, treating an already-present row as success.
  *
  * The reference tables' insert triggers refuse a create when a live row for the
- * natural key already exists, and the guard each seed statement carries does not
- * always see that row: the trigger's lookup and the guard's read disagree on
- * macOS, so the create is refused. The seed's contract is that the row exists,
- * so a row that is already there is the outcome the seed wants.
+ * natural key already exists. On the macOS runner a create is refused this way
+ * even though the seed's own guard should have skipped it, and the platform
+ * difference is not understood. The seed's contract is that the row exists, so
+ * a refusal that means the row is already there is the outcome the seed wants.
+ *
+ * The refusal is recognised by its message, which couples this tolerance to the
+ * trigger's wording: the same SQLSTATE also covers a GIST exclusion violation
+ * with different text, and a reworded message here would make the seed fail
+ * loudly rather than silently, which is the safe direction. Check the business
+ * centre and country trigger messages before rewording them.
  */
 void seed_row(ores::database::context& ctx,
               const std::string& sql,
@@ -99,6 +105,7 @@ void seed_reference_data(ores::database::context& ctx,
         seed_bc("USBO", "Boston");
         seed_bc("USSF", "San Francisco");
     }
+
     const auto seed_country = [&](const std::string& alpha2,
                                   const std::string& alpha3,
                                   const std::string& numeric,

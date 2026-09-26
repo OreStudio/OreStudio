@@ -2506,6 +2506,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # because it is a string; a scalar one never is. Refuse rather
                 # than strip the quotes, so the model reads the way the C++
                 # does.
+                # A jsonb column's C++ type is a string, so the generator
+                # templates fall back to a faker word for it -- and a word is
+                # not JSON, so the insert the generated eventing test performs
+                # is refused by PostgreSQL with "invalid input syntax for type
+                # json". Fill an empty object unless the model states how to
+                # build a real payload.
+                if (not col.get('generator_expr')
+                        and str(col.get('type', '')).lower() in ('json', 'jsonb')):
+                    col['generator_expr'] = 'std::string("{}")'
                 dtype = str(col.get('cpp_type', ''))
                 dvalue = str(col.get('default_value', ''))
                 if (dtype in ('bool', 'int', 'double', 'float', 'std::int64_t',

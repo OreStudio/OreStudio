@@ -50,7 +50,7 @@ generate_synthetic_job_definition(utility::generation::generation_context& ctx) 
     r.description = std::string(faker::word::noun());
     r.command = std::string(faker::word::noun());
     r.action_type = std::string(faker::word::noun());
-    r.action_payload = std::string(faker::word::noun());
+    r.action_payload = std::string("{}");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

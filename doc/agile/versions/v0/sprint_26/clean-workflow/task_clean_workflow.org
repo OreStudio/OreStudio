@@ -81,7 +81,7 @@ record each item's result in the table below.
 | G02 | Done. The superseded hand-written files are deleted and the component builds: =ores.workflow.core.lib= and =ores.workflow.service.lib= both reach "Built target", and the api module is header-only so it has no target of its own. The wave also removed eight custom repository methods, re-expressed as three private engine helpers over the generated API, and added the two link dependencies generation needed. | =cmake --build ... --target ores.workflow.{core,service}.lib=. Detail below. |
 | G03 | Pass in part. The component holds 97 C++ files outside tests where the baseline held 53: 56 carry the generated marker and 41 remain hand-written, against a baseline of 0 and 53. Twelve of the original files are now generated, which is the 12 the baseline predicted would change. | File census over =projects/ores.workflow=, marker =AUTO-GENERATED FILE=. |
 | G06 | Pass for this component. All three modules report "All component_files.cmake up to date", each regenerated through the =ores.cmake.component.files= archetype rather than edited by hand. | =regenerate_cmake_component_files.py --component ores.workflow.{api,core,service}=. =--all= still fails on 24 components, verified pre-existing because =ores.reporting.core= is stale on a component this work never touched. |
-| W01 | Finding: the registrar families exist but are not composed. Generation materialised =workflow_instance_registrar.cpp=, =workflow_step_registrar.cpp=, their two history-provider registrars and the service's two event registrars, and the hand-written aggregate =core/src/messaging/registrar.cpp= references none of them. | The aggregate registrar's include list and =register_handlers= body, against the files generation wrote. Detail below. |
+| W01 | Half done. The two generated messaging registrars are composed in the core aggregate registrar and the component builds. The event and history families are still unwired, and the gap is not a missing call: the service's composition root has no event source, no event bus and no history dispatch registry at all. | The aggregate registrar's fold calls; the generated =*_event_registrar.hpp= and =*_history_provider_registrar.hpp= signatures; the service's =application.cpp= against =ores.compute='s. Detail below. |
 | W02 | Fixed, and less severe than first recorded. The catalogue carried three =workflow::instances:*= rows that no handler checks, and none of the five codes the handlers do check. Access was never broken, because =has_permission= expands a component wildcard and =workflow::*= satisfies all five; what was stale was the catalogue an operator grants from. The three dead rows are replaced by the five checked codes. | The handlers; =iam_permissions_populate.sql=; =has_permission= in =ores.service/messaging/handler_helpers.hpp=, lines 204 to 213. Detail below. |
 | W03 | Pass. The populate references resolve. | =check_populate_references.py=, which reports "populate references resolve". |
 | W04 | Finding, and create and drop disagree. The create aggregator wires the hand-written *singular* table scripts; the drop aggregator wires the generated *plural* ones; and the generated create scripts and both notify triggers are reachable from neither. The row-level security script is NOT affected: it is wired, but into the global =rls_create.sql= and =rls_drop.sql= aggregators rather than the component's. | =workflow_create.sql= and =drop_workflow.sql= against the generated set; =rls/rls_create.sql= line 38 and =rls/rls_drop.sql= line 28. Detail below. |
@@ -766,6 +766,33 @@ create aggregator points at the generated set, the hand-written table scripts go
 and the row-level-security question is settled by working out whether the
 generated schema is supposed to carry its own policies or whether that script
 stays and gets wired.
+
+** W01 what the second half actually needs
+
+The event and history families are unwired, and the reason is larger than a
+missing call. The generated registrars take collaborators the service never
+builds:
+
+- =register_workflow_instance_event_mapping(postgres_event_source&, event_bus&,
+  nats_client&)= and the step equivalent return
+  =ores::eventing::service::subscription=.
+- =register_workflow_instance_history_provider(ores::history::service::dispatch_registry&)=
+  and the step equivalent.
+
+The service's =application.cpp= has neither an event source, nor an event bus, nor
+a history dispatch registry. Its only composition is a heartbeat and the messaging
+registrar.
+
+=ores.compute='s composition root shows the shape the wiring needs: it constructs
+=ev::service::event_bus event_bus=, then
+=ev::service::postgres_event_source event_source(make_context(cfg.database),
+event_bus)=, calls =register_*_event_mapping= for each entity and keeps the
+returned subscriptions alive, subscribes its dispatch seams on the bus before
+=event_source.start()= so no change is missed, and only then starts the source.
+
+So the second half is service scaffolding rather than a registrar call, and the
+ordering constraint on =start()= is the part that is easy to get wrong: a
+subscription made after the source starts can miss the event it exists to catch.
 
 * Test Scenarios
 

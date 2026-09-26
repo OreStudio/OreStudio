@@ -28,9 +28,9 @@ ores.refdata passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:70CC87FB-BA24-4B22-827F-F4F42C1F5A1B][Clean ores.refdata to the component clean standard]] |
-| Now          | Build reached 85%; eight defects found and all fixed, the build re-verifying. |
-| Waiting on   | Nothing; the rebuild is the check. |
-| Next         | Confirm the build, then run the tests (V02). |
+| Now          | V01 passes: the whole tree builds. Tests (V02) are next. |
+| Waiting on   | Nothing. |
+| Next         | Start the fleet, then run the tests (V02). |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -116,6 +116,7 @@ record each item's result in the table below.
 | G05 | Fifth generator defect, fixed at source. The eventing test's ancestor planner named a seeded ancestor after the row and the entity, so two mandatory FKs of one parent reaching the same table (currency_pair's base and quote legs, both onto currency) declared the same variable twice. The name now carries the FK column, and each leg seeds its own ancestor. | Committed as =d70b8a725b=; =core.py= line 1609. |
 | G05 | Four regression tests now cover these fixes in =projects/ores.codegen/tests/test_junction_service_fields.py=: the response field, the target-party reason, the unstated relation, and the per-leg ancestor seed. Each was proved to fail with its fix reversed. | Committed as =11970ae09c=, =8eb2bff1b1=, =5d715df54b=, =d70b8a725b=. |
 | P05 | Three country repository tests addressed history by a timepoint read the regenerated repository no longer offers. They now read the versions by key, which is what the canonical protocol serves, as the book status test already did. | Committed as =f2900e0bd2=. |
+| V01 | PASS — the whole tree builds, refdata's tests and every consumer included. Eight generator and consumer defects were found by the build and fixed at source; each one was invisible until the one before it was fixed. | =compass build= exit 0 at 100%; commits =24968691f6=, =efc41e6434=, =4635b2b928=, =8f58cc8565=, =5d715df54b=, =d70b8a725b=, =f2900e0bd2=, =b6bb6e0326=. |
 | G06 | FAIL — 79 =component_files.cmake= files are stale tree-wide, 8 of them under ores.refdata plus 2 under ores.shell/refdata. | =regenerate_cmake_component_files.py --all --check=. |
 | V05 | Baseline gates: protocol twin coverage green (5 registered components, refdata not among them); handler permissions green (4 components); populate references green; shell recipes blocked on V04 credentials. | =build/audit/refdata-clean/V05-*.txt=. |
 

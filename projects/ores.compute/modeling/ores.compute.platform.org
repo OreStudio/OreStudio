@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: 256097D3-ED41-40C3-99DC-C61C6B13E80A
+:END:
+#+title: ores.compute.platform
+#+description: Codegen entity model for the compute =platforms= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: compute
+#+filetags: :model:entity:compute:
+#+brief: A compute target triplet an engine package is built for.
+#+entity_singular: platform
+#+entity_plural: platforms
+#+entity_title: Platform
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+A target a wrapper and engine can be built for, named by its triplet code
+(for example =x64-linux=). A package belongs to an app version and a
+platform, so the orchestrator matches incoming workunits against the host's
+triplet through this row.
+
+The platform registry is a global one: the platform rows ship under the
+system tenant and every tenant reads them, which
+=:system_tenant_visible: true= states on the repository.
+
+=is_active= retires a triplet without deleting it, so a package that names
+it still resolves. It is a plain column and not a declared filter, because
+the generated read refuses a filter today and a filter the service rejects
+is worse than no filter at all.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: compute
+:profile:   uuid-identified-lookup
+:key_field: code
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID primary key for the platform.
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+Triplet code, e.g. 'x64-linux'. This is the key callers address the row by.
+
+** display_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name, e.g. 'Linux x86-64'.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+What the triplet targets.
+
+** os_family
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Operating system family: linux, macos or windows.
+
+** cpu_arch
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+CPU architecture: x86_64 or aarch64.
+
+** abi
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Application binary interface, where the triplet distinguishes one. Empty
+for a triplet that does not.
+
+** is_active
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:default:  true
+:END:
+
+Whether the triplet is offered to hosts. A retired triplet keeps its row so
+packages that name it still resolve.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_compute_platforms_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: platform
+:entity_plural_short:   platforms
+:entity_singular_words: compute platform
+:entity_plural_words:   compute platforms
+:system_tenant_visible: true
+:END:
+
+The platform registry is shared: the platform's rows ship under the system
+tenant and every tenant must see them, which =:system_tenant_visible: true=
+states on the repository.
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| id           | ID           |
+| code         | Code         |
+| display_name | Display Name |
+| os_family    | OS Family    |
+| cpu_arch     | CPU Arch     |
+| is_active    | Active       |
+| modified_by  | Modified By  |
+| recorded_at  | Recorded At  |
+
+* See also
+
+- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.

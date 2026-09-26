@@ -19,20 +19,40 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_entity.cpp.mustache
+ * Template: cpp_domain_type_mapper.hpp.mustache
  * To modify, update the template and regenerate.
  */
+#ifndef ORES_COMPUTE_CORE_REPOSITORY_PLATFORM_MAPPER_HPP
+#define ORES_COMPUTE_CORE_REPOSITORY_PLATFORM_MAPPER_HPP
+
+#include "ores.compute.api/domain/platform.hpp"
+#include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/platform_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::compute::repository {
 
-std::ostream& operator<<(std::ostream& s, const platform_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
+/**
+ * @brief Maps platform domain entities to data storage layer and vice-versa.
+ */
+class ORES_COMPUTE_CORE_EXPORT platform_mapper {
+private:
+    inline static std::string_view logger_name = "ores.compute.repository.platform_mapper";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    static domain::platform map(const platform_entity& v);
+    static platform_entity map(const domain::platform& v);
+
+    static std::vector<domain::platform> map(const std::vector<platform_entity>& v);
+    static std::vector<platform_entity> map(const std::vector<domain::platform>& v);
+};
 
 }
+
+#endif

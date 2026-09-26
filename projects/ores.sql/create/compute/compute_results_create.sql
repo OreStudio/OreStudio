@@ -28,10 +28,10 @@
  * Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),
  * and the location of output data. The BOINC equivalent of 'result'.
  *
- * Change-reason exception (recorded in the codegen drift loop): result is a
- * machine-written, list-only entity — the grid machinery writes results and
- * there is no human edit flow — so has_change_reason_cache is explicitly
- * false, overriding the profile default.
+ * The grid machinery writes results and there is no human edit flow, so the
+ * entity carries no change-reason cache. The profile it binds to sets that
+ * feature for the controller's detail dialogs, which the Qt retirement
+ * deleted with the controller.
  *
  * Generator-signature exception (recorded in the codegen drift loop): the
  * pre-drift handcrafted generator took a workunit_id parameter

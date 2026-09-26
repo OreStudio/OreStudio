@@ -19,20 +19,31 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_entity.cpp.mustache
+ * Template: cpp_domain_type_generator.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.compute.core/repository/platform_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_COMPUTE_API_GENERATORS_PLATFORM_GENERATOR_HPP
+#define ORES_COMPUTE_API_GENERATORS_PLATFORM_GENERATOR_HPP
 
-namespace ores::compute::repository {
+#include "ores.compute.api/domain/platform.hpp"
+#include "ores.compute.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
-std::ostream& operator<<(std::ostream& s, const platform_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+namespace ores::compute::generators {
+
+/**
+ * @brief Generates a synthetic platform.
+ */
+ORES_COMPUTE_API_EXPORT domain::platform
+generate_synthetic_platform(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic platforms.
+ */
+ORES_COMPUTE_API_EXPORT std::vector<domain::platform>
+generate_synthetic_platforms(std::size_t n, utility::generation::generation_context& ctx);
+
 }
 
-}
+#endif

@@ -19,20 +19,26 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_entity.cpp.mustache
+ * Template: cpp_nats_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.compute.core/repository/platform_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_COMPUTE_CORE_MESSAGING_PLATFORM_REGISTRAR_HPP
+#define ORES_COMPUTE_CORE_MESSAGING_PLATFORM_REGISTRAR_HPP
 
-namespace ores::compute::repository {
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
 
-std::ostream& operator<<(std::ostream& s, const platform_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
+namespace ores::compute::messaging {
 
-}
+std::vector<ores::nats::service::subscription>
+register_platform_handlers(ores::nats::service::client& nats,
+                           ores::database::context ctx,
+                           std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+} // namespace ores::compute::messaging
+
+#endif

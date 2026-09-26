@@ -22,43 +22,33 @@
  * Template: cpp_domain_type_class.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_COMPUTE_API_DOMAIN_RESULT_HPP
-#define ORES_COMPUTE_API_DOMAIN_RESULT_HPP
+#ifndef ORES_COMPUTE_API_DOMAIN_PLATFORM_HPP
+#define ORES_COMPUTE_API_DOMAIN_PLATFORM_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/uuid.hpp>
-#include <chrono>
-#include <cstdint>
 #include <string>
 #include <string_view>
 
 namespace ores::compute::domain {
 
 /**
- * @brief A specific execution instance of a workunit assigned to a host.
+ * @brief A compute target triplet an engine package is built for.
  *
- * Bridges the workunit definition and the actual execution on a grid node.
- * Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),
- * and the location of output data. The BOINC equivalent of 'result'.
+ * A target a wrapper and engine can be built for, named by its triplet code
+ * (for example x64-linux). A package belongs to an app version and a
+ * platform, so the orchestrator matches incoming workunits against the host's
+ * triplet through this row.
  *
- * The grid machinery writes results and there is no human edit flow, so the
- * entity carries no change-reason cache. The profile it binds to sets that
- * feature for the controller's detail dialogs, which the Qt retirement
- * deleted with the controller.
+ * The platform registry is a global one: the platform rows ship under the
+ * system tenant and every tenant reads them, which
+ * :system_tenant_visible: true states on the repository.
  *
- * Generator-signature exception (recorded in the codegen drift loop): the
- * pre-drift handcrafted generator took a workunit_id parameter
- * (generate_synthetic_result(workunit_id, ctx)). The template signature
- * takes only the generation context, and the sole consumer (the result
- * eventing integration test) now links the FK by member assignment after
- * generation. No model knob or paste block is needed for the parameterized
- * overload; the template shape is the sanctioned surface.
- *
- * Key exception: result declares no key field, so callers address it by its
- * storage key. The retired Qt list window keyed on the audit column
- * modified_by, which is not an identity and is not a column of this model.
+ * is_active retires a triplet without deleting it, so a package that names
+ * it still resolves. It is a plain column and not a declared filter, because
+ * the generated read refuses a filter today and a filter the service rejects
+ * is worse than no filter at all.
  */
-struct result final {
+struct platform final {
     /**
      * @brief Version number for optimistic locking and change tracking.
      */
@@ -70,52 +60,49 @@ struct result final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID primary key for the result.
+     * @brief UUID primary key for the platform.
      */
     boost::uuids::uuid id;
 
     /**
-     * @brief FK reference to ores_compute_workunits_tbl.
+     * @brief Triplet code, e.g. 'x64-linux'. This is the key callers address the row by.
      */
-    boost::uuids::uuid workunit_id;
+    std::string code;
 
     /**
-     * @brief FK reference to ores_compute_hosts_tbl; NULL until the result is dispatched.
+     * @brief Human-readable name, e.g. 'Linux x86-64'.
      */
-    boost::uuids::uuid host_id;
+    std::string display_name;
 
     /**
-     * @brief PGMQ lease pointer; NULL when not actively queued.
+     * @brief What the triplet targets.
      */
-    std::int64_t pgmq_msg_id;
+    std::string description;
 
     /**
-     * @brief State machine: 1=Inactive, 2=Unsent, 4=InProgress, 5=Done.
+     * @brief Operating system family: linux, macos or windows.
      */
-    int server_state = 0;
+    std::string os_family;
 
     /**
-     * @brief Result outcome code: 1=Success, 3=ClientError, 4=NoReply.
+     * @brief CPU architecture: x86_64 or aarch64.
      */
-    int outcome;
+    std::string cpu_arch;
 
     /**
-     * @brief URI where the wrapper uploaded the zipped output; NULL until completed.
+     * @brief Application binary interface, where the triplet distinguishes one. Empty for a triplet
+     * that does not.
      */
-    std::string output_uri;
+    std::string abi;
 
     /**
-     * @brief Human-readable error description from the wrapper; empty on success.
+     * @brief Whether the triplet is offered to hosts. A retired triplet keeps its row so packages
+     * that name it still resolve.
      */
-    std::string error_message;
+    bool is_active = false;
 
     /**
-     * @brief Timestamp when the output was received by the server pool.
-     */
-    std::chrono::system_clock::time_point received_at;
-
-    /**
-     * @brief Username of the person who last modified this compute result.
+     * @brief Username of the person who last modified this compute platform.
      */
     std::string modified_by;
 
@@ -157,17 +144,17 @@ struct result final {
      * be round-trip tested at all, which is why the omission went unnoticed
      * until the diff payloads were the first generated types to have a test.
      */
-    friend bool operator==(const result&, const result&) = default;
+    friend bool operator==(const platform&, const platform&) = default;
 };
 
 /**
- * @brief Dispatch-key identifier for result, e.g. for the
+ * @brief Dispatch-key identifier for platform, e.g. for the
  * generic history-diff request and action registries. Single source
  * of truth: every call site spells entity_type_of(value) regardless
  * of which entity it holds.
  */
-[[nodiscard]] constexpr std::string_view entity_type_of(const result&) {
-    return "ores.compute.result";
+[[nodiscard]] constexpr std::string_view entity_type_of(const platform&) {
+    return "ores.compute.platform";
 }
 
 }

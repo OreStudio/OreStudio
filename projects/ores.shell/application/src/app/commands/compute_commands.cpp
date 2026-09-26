@@ -25,6 +25,7 @@
 #include "ores.compute.api/domain/app_version_table_io.hpp"
 #include "ores.compute.api/domain/batch_table_io.hpp"
 #include "ores.compute.api/domain/host_table_io.hpp"
+#include "ores.compute.api/domain/platform_table_io.hpp"
 #include "ores.compute.api/domain/result_table_io.hpp"
 #include "ores.compute.api/domain/workunit_table_io.hpp"
 #include "ores.compute.api/messaging/app_protocol.hpp"
@@ -107,7 +108,7 @@ std::optional<boost::uuids::uuid>
 resolve_platform_id(std::ostream& out, nats_client& session, const std::string& platform_code) {
     compute::messaging::list_platforms_request req;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
-    if (!resp || !resp->success)
+    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
         return std::nullopt;
     for (const auto& p : resp->platforms) {
         if (p.code == platform_code)
@@ -405,10 +406,9 @@ void compute_commands::process_list_platforms(std::ostream& out, nats_client& se
 
     compute::messaging::list_platforms_request req;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
-    if (!resp)
-        return;
-    if (!resp->success) {
-        const auto& msg = resp->message.empty() ? "Failed to list platforms." : resp->message;
+    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
+        const auto& msg =
+            resp && !resp->result.message.empty() ? resp->result.message : "Failed to list platforms.";
         BOOST_LOG_SEV(lg(), warn) << msg;
         fail(out) << msg << std::endl;
         return;
@@ -417,14 +417,7 @@ void compute_commands::process_list_platforms(std::ostream& out, nats_client& se
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << resp->platforms.size()
                               << " platforms.";
 
-    // Provisional output: raw rows until the drift task generates the
-    // platform table_io. The reconciliation task replaces this loop
-    // with `out << resp->platforms`.
-    for (const auto& p : resp->platforms) {
-        out << boost::uuids::to_string(p.id) << ' ' << p.code << ' ' << p.display_name << ' '
-            << p.os_family << ' ' << p.cpu_arch << std::endl;
-    }
-    out << std::endl;
+    out << resp->platforms << std::endl;
 }
 
 void compute_commands::process_dispatch_batch(std::ostream& out,

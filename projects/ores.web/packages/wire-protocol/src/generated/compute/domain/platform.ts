@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,20 +19,31 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_entity.cpp.mustache
+ * Template: domain_types.ts.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.compute.core/repository/platform_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-
-namespace ores::compute::repository {
-
-std::ostream& operator<<(std::ostream& s, const platform_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
+/**
+ * The compute platform wire shape.
+ *
+ * Field names are the C++ member names, because they are the keys rfl::json
+ * writes. Renaming them breaks the wire silently, so they are not renamed.
+ *
+ * See the sibling protocol module for the messages that carry this type.
+ */
+export interface Platform {
+    version: number;
+    tenant_id: string;
+    id: string;
+    code: string;
+    display_name: string;
+    description: string;
+    os_family: string;
+    cpu_arch: string;
+    abi: string;
+    is_active: boolean;
+    modified_by: string;
+    performed_by: string;
+    change_reason_code: string;
+    change_commentary: string;
+    recorded_at: string;
 }

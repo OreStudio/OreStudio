@@ -26,6 +26,7 @@ set(files
     "batch_commands_tests.cpp"
     "host_commands_tests.cpp"
     "main.cpp"
+    "platform_commands_tests.cpp"
     "result_commands_tests.cpp"
     "workunit_commands_tests.cpp"
 )

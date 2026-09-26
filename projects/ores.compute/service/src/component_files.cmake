@@ -32,6 +32,7 @@ set(files
     "messaging/app_version_event_registrar.cpp"
     "messaging/batch_event_registrar.cpp"
     "messaging/host_event_registrar.cpp"
+    "messaging/platform_event_registrar.cpp"
     "messaging/result_event_registrar.cpp"
     "messaging/workunit_event_registrar.cpp"
 )
@@ -52,6 +53,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/messaging/app_version_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/messaging/batch_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/messaging/host_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/messaging/platform_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/messaging/result_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/messaging/workunit_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/ores.compute.service.hpp"

@@ -19,20 +19,23 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_entity.cpp.mustache
+ * Template: cpp_nats_event_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.compute.core/repository/platform_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_COMPUTE_SERVICE_MESSAGING_PLATFORM_EVENT_REGISTRAR_HPP
+#define ORES_COMPUTE_SERVICE_MESSAGING_PLATFORM_EVENT_REGISTRAR_HPP
 
-namespace ores::compute::repository {
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-std::ostream& operator<<(std::ostream& s, const platform_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
+namespace ores::compute::service::messaging {
 
-}
+[[nodiscard]] ores::eventing::service::subscription
+register_platform_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                ores::eventing::service::event_bus& event_bus,
+                                ores::nats::service::client& nats);
+
+} // namespace ores::compute::service::messaging
+
+#endif

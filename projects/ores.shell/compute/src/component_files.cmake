@@ -25,6 +25,7 @@ set(files
     "app/commands/compute/app_version_platform_commands.cpp"
     "app/commands/compute/batch_commands.cpp"
     "app/commands/compute/host_commands.cpp"
+    "app/commands/compute/platform_commands.cpp"
     "app/commands/compute/result_commands.cpp"
     "app/commands/compute/workunit_commands.cpp"
 )
@@ -36,6 +37,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/compute/app_version_platform_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/compute/batch_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/compute/host_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/compute/platform_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/compute/result_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/compute/workunit_commands.hpp"
 )

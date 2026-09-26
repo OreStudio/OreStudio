@@ -25,6 +25,7 @@ set(files
     "batch_eventing_integration_tests.cpp"
     "host_eventing_integration_tests.cpp"
     "main.cpp"
+    "platform_eventing_integration_tests.cpp"
     "repository_app_version_platform_repository_tests.cpp"
     "result_eventing_integration_tests.cpp"
     "workunit_eventing_integration_tests.cpp"

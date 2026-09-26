@@ -19,20 +19,27 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_entity.cpp.mustache
+ * Template: cpp_history_field_mapper.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.compute.core/repository/platform_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_COMPUTE_CORE_PRESENTATION_PLATFORM_HISTORY_FIELD_MAPPER_HPP
+#define ORES_COMPUTE_CORE_PRESENTATION_PLATFORM_HISTORY_FIELD_MAPPER_HPP
 
-namespace ores::compute::repository {
+#include "ores.compute.api/domain/platform.hpp"
+#include "ores.compute.core/export.hpp"
+#include "ores.diff/domain/field_value.hpp"
+#include <vector>
 
-std::ostream& operator<<(std::ostream& s, const platform_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+namespace ores::compute::presentation {
+
+/**
+ * @brief Renders a platform to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_COMPUTE_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_platform_fields(const domain::platform& v);
+
 }
 
-}
+#endif

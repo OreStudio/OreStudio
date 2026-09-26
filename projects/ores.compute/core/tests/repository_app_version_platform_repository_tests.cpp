@@ -39,23 +39,22 @@ const std::string tags("[repository][app_version_platform]");
 
 using ores::testing::database_helper;
 using ores::compute::domain::app_version_platform;
-using ores::compute::domain::compute_platform;
 using ores::compute::repository::app_version_platform_repository;
 using ores::compute::repository::platform_repository;
 using namespace ores::logging;
 
 /// Look up the seeded compute platforms; most tests need at least two
 /// distinct rows to exercise the junction.
-std::vector<compute_platform> seeded_platforms(database_helper& h) {
+std::vector<ores::compute::domain::platform> seeded_platforms(database_helper& h) {
     platform_repository repo;
-    auto platforms = repo.read_active(h.context());
+    auto platforms = repo.read_latest(h.context());
     REQUIRE(platforms.size() >= 2);
     return platforms;
 }
 
 app_version_platform make_row(database_helper& h,
                               const boost::uuids::uuid& av_id,
-                              const compute_platform& p,
+                              const ores::compute::domain::platform& p,
                               const std::string& uri_suffix) {
     app_version_platform r;
     r.tenant_id = h.tenant_id().to_string();

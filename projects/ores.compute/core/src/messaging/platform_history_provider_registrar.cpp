@@ -19,20 +19,25 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_entity.cpp.mustache
+ * Template: cpp_history_provider_registrar.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.compute.core/repository/platform_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include "ores.compute.core/messaging/platform_history_provider_registrar.hpp"
+#include "ores.compute.core/presentation/platform_history_field_mapper.hpp"
+#include "ores.compute.core/service/platform_service.hpp"
+#include "ores.history.api/service/version_builder.hpp"
 
-namespace ores::compute::repository {
+namespace ores::compute::messaging {
 
-std::ostream& operator<<(std::ostream& s, const platform_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+void register_platform_history_provider(ores::history::service::dispatch_registry& registry) {
+    registry.register_history_provider(
+        "ores.compute.platform",
+        [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+            service::platform_service svc(scoped_ctx);
+            auto versions = svc.get_platform_history(entity_id);
+            return ores::history::service::build_entity_history_versions(
+                versions, presentation::render_platform_fields);
+        });
 }
 
-}
+} // namespace ores::compute::messaging

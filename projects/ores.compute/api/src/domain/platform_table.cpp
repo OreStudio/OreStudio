@@ -19,20 +19,28 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_entity.cpp.mustache
+ * Template: cpp_domain_type_table.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.compute.core/repository/platform_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include "ores.compute.api/domain/platform_table.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
 
-namespace ores::compute::repository {
+namespace ores::compute::domain {
 
-std::ostream& operator<<(std::ostream& s, const platform_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+
+std::string convert_to_table(const std::vector<platform>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header << "ID" << "Code" << "Display Name" << "OS Family" << "CPU Arch"
+          << "Active" << "Modified By" << "Recorded At" << fort::endr;
+
+    for ([[maybe_unused]] const auto& p : v) {
+        table << p.id << p.code << p.display_name << p.os_family << p.cpu_arch
+              << (p.is_active ? "true" : "false") << p.modified_by << p.recorded_at << fort::endr;
+    }
+    return table.to_string();
 }
 
 }

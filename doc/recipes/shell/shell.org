@@ -547,3 +547,7 @@ tangled into the runnable script library
 * Workunits
 
 - [[id:B3737869-5FB8-5AE4-8670-EE3896DB5C70][How do I run the workunits commands from the shell?]]
+
+* Platforms
+
+- [[id:B07AA915-541C-55EB-BBC1-9DEA5AB1421F][How do I run the platforms commands from the shell?]]

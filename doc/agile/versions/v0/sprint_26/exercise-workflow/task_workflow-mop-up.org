@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :exercise-workflow:sprint_26:v0:
 #+owner: marco
-#+branch: feature/workflow-mop-up
+#+branch: feature/workflow-configurations
 #+pr: 2207
 #+blocked_on:
 #+blocked_since:

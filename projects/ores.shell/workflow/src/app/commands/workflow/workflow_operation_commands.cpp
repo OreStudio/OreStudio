@@ -145,14 +145,20 @@ void workflow_operation_commands::register_commands(cli::Menu& root_menu, nats_c
                 {{.name = "timeout",
                   .requires_value = true,
                   .default_value = std::to_string(default_timeout.count())},
-                 {.name = "expect-steps", .requires_value = true, .default_value = "0"}});
+                 {.name = "expect-steps", .requires_value = true, .default_value = "0"},
+                 {.name = "expect-state", .requires_value = true, .default_value = ""}});
             if (!parsed) {
                 fail(out) << parsed.error() << std::endl;
                 return;
             }
             if (parsed->positionals.size() != 1) {
                 fail(out) << "Usage: workflow wait <instance_id> [--timeout <seconds>] "
-                             "[--expect-steps <n>]"
+                             "[--expect-steps <n>] [--expect-state <state>]"
+                          << std::endl;
+                fail(out) << "Without --expect-state the wait asserts that every step completed. "
+                             "With it, it asserts the instance's own terminal state, which is "
+                             "what a run that is meant to fail has to assert: completed, failed "
+                             "or compensated."
                           << std::endl;
                 return;
             }
@@ -171,11 +177,23 @@ void workflow_operation_commands::register_commands(cli::Menu& root_menu, nats_c
                 return;
             }
 
-            wait_for_instance(
-                std::ref(out), std::ref(session), parsed->positionals.front(), *timeout, *expected);
+            const auto& expected_state = parsed->flag("expect-state");
+            if (!expected_state.empty() && expected_state != "completed" &&
+                expected_state != "failed" && expected_state != "compensated") {
+                fail(out) << "--expect-state must be completed, failed or compensated: "
+                          << expected_state << std::endl;
+                return;
+            }
+
+            wait_for_instance(std::ref(out),
+                              std::ref(session),
+                              parsed->positionals.front(),
+                              *timeout,
+                              *expected,
+                              expected_state);
         },
         "Wait for a workflow instance to reach a terminal state",
-        {"instance_id [--timeout <seconds>] [--expect-steps <n>]"});
+        {"instance_id [--timeout <seconds>] [--expect-steps <n>] [--expect-state <state>]"});
 
     workflow_menu->Insert(
         "definitions",
@@ -200,7 +218,8 @@ bool workflow_operation_commands::wait_for_instance(std::ostream& out,
                                                nats_client& session,
                                                const std::string& instance_id,
                                                std::chrono::seconds timeout,
-                                               std::size_t expected_steps) {
+                                               std::size_t expected_steps,
+                                               const std::string& expected_state) {
     BOOST_LOG_SEV(lg(), info) << "Waiting for workflow instance: " << instance_id
                               << " (timeout: " << timeout.count() << "s)";
 
@@ -234,6 +253,26 @@ bool workflow_operation_commands::wait_for_instance(std::ostream& out,
         } else {
             consecutive_failures = 0;
 
+            // An expected state asserts something about the instance rather
+            // than about its steps. A run that is meant to fail never completes
+            // its steps, so "all steps completed" cannot be what a script for
+            // that path waits for, and without this the only possible outcome
+            // was an abort that could not be told from a broken script.
+            if (!expected_state.empty()) {
+                if (result->status == expected_state) {
+                    out << "✓ Workflow instance " << instance_id << " reached " << expected_state
+                        << "." << std::endl;
+                    return true;
+                }
+                if (result->status == "completed" || result->status == "failed" ||
+                    result->status == "compensated") {
+                    fail(out) << "Workflow instance " << instance_id << " reached "
+                              << result->status << ", not " << expected_state << "." << std::endl;
+                    return false;
+                }
+                // Anything else is still running: keep polling.
+            }
+
             // Print transitions since the previous poll.
             for (const auto& step : result->steps) {
                 auto& last = last_status[step.step_index];
@@ -244,30 +283,36 @@ bool workflow_operation_commands::wait_for_instance(std::ostream& out,
             }
 
             // Any failed step is a terminal failure; all steps completed,
-            // with or without warnings, is terminal success.
-            const auto total = result->steps.size();
-            std::size_t completed = 0;
-            for (const auto& step : result->steps) {
-                if (step.status == "failed") {
-                    fail(out) << "Workflow failed at step " << (step.step_index + 1) << " of "
-                              << total << ": " << step.error << std::endl;
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Workflow instance " << instance_id << " failed at step "
-                        << step.step_index << ": " << step.error;
-                    return false;
+            // with or without warnings, is terminal success. Neither holds when
+            // the caller named the state it expects: a run on its way to
+            // compensated has a failed step by definition, and treating that as
+            // the verdict would abort before the state it is headed for.
+            if (expected_state.empty()) {
+                const auto total = result->steps.size();
+                std::size_t completed = 0;
+                for (const auto& step : result->steps) {
+                    if (step.status == "failed") {
+                        fail(out) << "Workflow failed at step " << (step.step_index + 1) << " of "
+                                  << total << ": " << step.error << std::endl;
+                        BOOST_LOG_SEV(lg(), error)
+                            << "Workflow instance " << instance_id << " failed at step "
+                            << step.step_index << ": " << step.error;
+                        return false;
+                    }
+                    if (step.status == "completed" || step.status == "completed_with_warnings")
+                        ++completed;
                 }
-                if (step.status == "completed" || step.status == "completed_with_warnings")
-                    ++completed;
-            }
-            if (total > 0 && completed == total && total < expected_steps) {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "All visible steps complete but more expected: " << total << "/"
-                    << expected_steps;
-            }
-            if (total > 0 && completed == total && total >= expected_steps) {
-                out << "✓ All " << total << " step(s) completed." << std::endl;
-                BOOST_LOG_SEV(lg(), info) << "Workflow instance " << instance_id << " completed.";
-                return true;
+                if (total > 0 && completed == total && total < expected_steps) {
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "All visible steps complete but more expected: " << total << "/"
+                        << expected_steps;
+                }
+                if (total > 0 && completed == total && total >= expected_steps) {
+                    out << "✓ All " << total << " step(s) completed." << std::endl;
+                    BOOST_LOG_SEV(lg(), info)
+                        << "Workflow instance " << instance_id << " completed.";
+                    return true;
+                }
             }
         }
 

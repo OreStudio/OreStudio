@@ -86,13 +86,21 @@ public:
      * Transport and parse errors are tolerated for a few consecutive
      * polls, because a long wait routinely survives a network blip.
      *
-     * @return true when the instance completed successfully.
+     * @param expected_state When non-empty, the wait asserts the instance's own
+     * terminal state instead of step completion. A run that is meant to fail
+     * never completes its steps, so this is the only way a script can assert
+     * one: "completed", "failed" or "compensated". Reaching a different
+     * terminal state fails.
+     *
+     * @return true when the instance reached the asserted state, or completed
+     * successfully when no state was named.
      */
     static bool wait_for_instance(std::ostream& out,
                                   ores::nats::service::nats_client& session,
                                   const std::string& instance_id,
                                   std::chrono::seconds timeout,
-                                  std::size_t expected_steps = 0);
+                                  std::size_t expected_steps = 0,
+                                  const std::string& expected_state = {});
 
     /**
      * @brief List the workflow types the service has registered.

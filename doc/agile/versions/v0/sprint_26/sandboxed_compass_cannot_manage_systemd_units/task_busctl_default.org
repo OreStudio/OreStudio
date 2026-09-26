@@ -2,7 +2,7 @@
 :ID: 3252AE89-8071-4E22-819B-8FDF4B4A6A3A
 :END:
 #+title: Task: Default the environment to the busctl transport
-#+description: Write ORES_USE_BUSCTL into the .env that provision and configure generate, default it on, add a --use-busctl / --no-use-busctl pair to both, and give the systemd pillar the flag it lacks.
+#+description: Write ORES_USE_BUSCTL into the .env that provision and configure generate, default it on, and give both a --use-busctl / --no-use-busctl pair that decides the value written.
 #+type: task
 #+level: s1
 #+filetags: :sandboxed_compass_cannot_manage_systemd_units:sprint_26:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-compass env provision and compass env configure write ORES_USE_BUSCTL=1 into the generated .env, so a sandboxed session reaches the user manager through busctl without anyone exporting a variable. Both commands accept --use-busctl and --no-use-busctl, so a host where plain systemctl --user works can switch the transport off, and the choice survives a re-configure. The compass systemd pillar accepts --use-busctl too, which it currently rejects.
+compass env provision and compass env configure write ORES_USE_BUSCTL=1 into the generated .env, so a sandboxed session reaches the user manager through busctl without anyone exporting a variable. Both commands accept --use-busctl and --no-use-busctl, so a host where plain systemctl --user works can switch the transport off, and the choice survives a re-configure.
 
 * Status
 
@@ -37,7 +37,7 @@ compass env provision and compass env configure write ORES_USE_BUSCTL=1 into the
 
 - ORES_USE_BUSCTL=1 appears in the .env skeleton that compass env provision writes, and in the .env that compass env configure generates.
 - compass env provision --no-use-busctl writes ORES_USE_BUSCTL=0, and compass env configure --no-use-busctl keeps it off across a re-run.
-- compass systemd generate and deploy accept --use-busctl and route their systemctl calls through the bus.
+- Every compass command that drives systemd resolves the transport from ORES_USE_BUSCTL in the process environment first and the checkout's .env second, so one command can switch the bus on or off without editing the file.
 - An existing .env that lacks the key still configures, and defaults to on.
 
 * Plan
@@ -52,8 +52,9 @@ the commands to it.
 3. =_busctl_setting()= in =env_init.py= resolves the value for =compass env
    configure=. An explicit flag wins, an existing =.env= value stands, and a
    fresh checkout defaults to on.
-4. =compass systemd= gains =--use-busctl= on every subcommand and threads it
-   to =systemctl_bus.set_use_busctl=.
+4. Every module that drives systemd hands its env dict to
+   =systemctl_bus.adopt_transport_setting=, and =compass.py= adopts once
+   before dispatch so the commands with no pillar of their own are covered.
 
 * Notes
 
@@ -72,13 +73,16 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2150][#2150]] | [compass] Default the environment to the busctl transport |
+| [[https://github.com/OreStudio/OreStudio/pull/2153][#2153]] | [compass] Carry the .env transport choice to systemctl_bus |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The independent verification of #2150 found that =ORES_USE_BUSCTL= in =.env= never reached the transport: compass reads =.env= into a dict and never writes =os.environ=, so =use_busctl()= could not see it. The default therefore did nothing, and a sandboxed seat still needed the flag on every call. | =systemd_generate.py=, =compass_services.py= | fixed | Follow-up PR #2153 adds =adopt_transport_setting= and calls it from both pillars after =load_env=. Proved on this worktree: with =ORES_USE_BUSCTL=1= in the real =.env= and no flag, =compass services status= reports =stopped=24 missing=0= where it reported =missing=24= before. |
+| 2 | The same report called the defect a regression, because the unconditional =set_use_busctl(False)= supposedly short-circuits before reading =os.environ=. | =systemctl_bus.py= | dismissed, disproved | =set_use_busctl(False)= does not mask the environment: with =ORES_USE_BUSCTL=1= exported and the override false, =use_busctl()= returns True. The base behaved identically for the =.env= path, so nothing regressed there. The finding's outcome was right and its mechanism was wrong. |
+| 3 | The report noted that 6 of the 15 new cases pass when their subject returns a constant. | tests | accepted | The round-trip =run()= and reload cases are genuine. #2153 replaces the flag-only class with cases that drive =run()= against a real env file, which is the shape that catches this defect. |
 
 * Result
 
@@ -89,14 +93,14 @@ and =compass env configure= writes the key into the =.env= it generates. Both
 take =--use-busctl= / =--no-use-busctl=. An explicit flag wins, an existing
 =.env= value stands, and a fresh checkout defaults to on.
 
-=compass systemd= accepts =--use-busctl= and routes through the bus. Before
-this change the same call answered =unrecognized arguments=.
+=compass systemd= routes through the bus like every other pillar. The
+transport resolves from the process environment, then the checkout's =.env=,
+so no command needs a flag of its own to select it.
 
-Evidence. 11 new cases across =test_env_create.py=, =test_env_init.py= and
-=test_systemd_generate.py=, and the =ores.compass= suite passes at 226, up
-from 215. =compass systemd deploy --use-busctl= parses and runs, and
-=compass systemd deploy --no-use-busctl= is still rejected, which matches the
-=services= pillar whose flag shape this mirrors.
+Evidence. New cases across =test_env_create.py=, =test_env_init.py=,
+=test_systemd_generate.py=, =test_compass_services.py= and
+=test_compass_transport.py=: #2150 brought the suite to 226, and #2153 to 251
+passing with 1 skipped.
 
 The new variable changes the =.env= shape, so the
 [[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][Environment format version log]]
@@ -104,3 +108,21 @@ gains version 24. Without it the existing checkouts stay at versions 21 to 23,
 the version check passes, and none of them is told to reconfigure, so the
 default would never reach them and the fix would be inert outside a new
 worktree. Recorded with =compass env version new=.
+
+Correction, 2026-09-26. The independent verification of #2150 found that the
+second and third sentences above described the intent rather than the
+behaviour: =ORES_USE_BUSCTL= in =.env= never reached the transport. compass
+reads =.env= into a dict and never writes =os.environ=, so =use_busctl()= had
+nothing to read. #2153 adds the missing handover, and re-derived on this
+worktree it now holds: with the key in a real =.env= and no flag,
+=compass services status= reports =stopped=24 missing=0=.
+
+Correction, 2026-09-26 (second). The flag this task added to the runtime
+commands was withdrawn. With =ORES_USE_BUSCTL= in =.env= it could only repeat
+the value the centre had already adopted before dispatch, and because that
+adoption set a hard override the environment could not undo a checkout saying
+=1=: a sandbox could switch the bus on, but nobody could switch it off for one
+call. =systemctl_bus= now resolves the process environment first and the
+=.env= second, in both directions. =--use-busctl= survives only on =compass
+env provision= and =compass env configure=, where it decides what the
+generated file says, and nowhere else.

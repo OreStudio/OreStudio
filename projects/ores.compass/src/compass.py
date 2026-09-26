@@ -6531,6 +6531,7 @@ def cmd_site(argv):
         return 1
 
     env = _read_env_map()
+    systemctl_bus.adopt_transport_setting(env)
     port = args.port or _site_port(env)
     build_dir = PROJECT_ROOT / "build" / "output" / "site"
 
@@ -6628,6 +6629,7 @@ def _cmd_site_start():
     would make the common "just re-serve what's already built" case slow.
     Run `compass build --direct site` first when the content changed."""
     env = _read_env_map()
+    systemctl_bus.adopt_transport_setting(env)
     env_name = env.get("ORES_ENV_NAME", "")
     if not env_name:
         print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
@@ -6649,7 +6651,9 @@ def _cmd_site_start():
 
 
 def _cmd_site_stop():
-    env_name = _read_env_map().get("ORES_ENV_NAME", "")
+    env = _read_env_map()
+    systemctl_bus.adopt_transport_setting(env)
+    env_name = env.get("ORES_ENV_NAME", "")
     if not env_name:
         print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
         return 1
@@ -6659,7 +6663,9 @@ def _cmd_site_stop():
 
 
 def _cmd_site_status():
-    env_name = _read_env_map().get("ORES_ENV_NAME", "")
+    env = _read_env_map()
+    systemctl_bus.adopt_transport_setting(env)
+    env_name = env.get("ORES_ENV_NAME", "")
     if not env_name:
         print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
         return 1
@@ -7341,6 +7347,22 @@ def cmd_codegen(argv):
     return cmd_regenerate(args, base_dir)
 
 
+def _adopt_transport_from_env_file(env_file: Path) -> None:
+    """Adopt the checkout's .env transport choice, before any dispatch.
+
+    compass reads .env into a dict and never writes os.environ, so a value
+    that lives only in the file is invisible to systemctl_bus unless it is
+    handed over. Doing it once here covers every command, including the ones
+    with no pillar of their own. A missing file is not an error at this
+    point: only the commands that need .env report it.
+    """
+    if not env_file.is_file():
+        return
+    import compass_db
+    systemctl_bus.adopt_transport_setting(
+        compass_db.load_env(PROJECT_ROOT, env_file))
+
+
 def main():
     # Parse --env / --env-file before command dispatch so sub-commands
     # that read .env see the alternate file.  Pop so the individual
@@ -7355,6 +7377,8 @@ def main():
         _ACTIVE_ENV_FILE = _resolved
     else:
         _resolved = PROJECT_ROOT / ".env"
+
+    _adopt_transport_from_env_file(_resolved)
 
     # `list` and `show` pass every remaining argument straight through to the
     # bundled doc tools (full flag compatibility, including their own --help).

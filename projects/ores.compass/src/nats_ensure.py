@@ -111,6 +111,7 @@ def run(argv, project_root: Path) -> int:
     args = ap.parse_args(argv)
 
     env = _load_env(project_root)
+    systemctl_bus.adopt_transport_setting(env)
     label = env.get("ORES_CHECKOUT_LABEL", project_root.name)
     try:
         nats_port = int(env.get("ORES_NATS_PORT", "4222"))

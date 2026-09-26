@@ -695,11 +695,6 @@ def cmd_clear_logs(ctx, args):
 def _common(parser):
     parser.add_argument("--preset", default=None,
                         help="CMake preset (default: ORES_PRESET from .env)")
-    parser.add_argument(
-        "--use-busctl", action="store_true",
-        help="Reach the systemd user manager through busctl instead of "
-             "systemctl. Use this inside a sandbox, where the manager "
-             "refuses systemctl's connection.")
 
 
 def _service_argument(parser):
@@ -762,8 +757,8 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     _common(cl)
 
     args = ap.parse_args(argv)
-    systemctl_bus.set_use_busctl(getattr(args, "use_busctl", False))
     env = load_env(project_root, env_file)
+    systemctl_bus.adopt_transport_setting(env)
     validate_env_version(project_root, env)
     ctx = Ctx(project_root, env, args.preset)
 

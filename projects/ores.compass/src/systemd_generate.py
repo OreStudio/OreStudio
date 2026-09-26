@@ -1047,28 +1047,14 @@ def cmd_quadlet_deploy(project_root: Path, env: dict, args) -> int:
     return 0
 
 
-def _busctl_argument(parser):
-    """The transport flag every `compass systemd` subcommand accepts.
-
-    Mirrors compass_services' flag of the same name. ORES_USE_BUSCTL in .env
-    supplies the default, so this only forces the transport on for one call.
-    """
-    parser.add_argument(
-        "--use-busctl", action="store_true",
-        help="Reach the systemd user manager through busctl instead of "
-             "systemctl. Use this inside a sandbox, where the manager "
-             "refuses systemctl's connection. ORES_USE_BUSCTL in .env sets "
-             "the default for every compass command.")
-
-
 def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     parser = argparse.ArgumentParser(prog="compass systemd")
     sub = parser.add_subparsers(dest="cmd", required=True)
-    generate_p = sub.add_parser("generate", help="Render concrete systemd units for "
+    sub.add_parser("generate", help="Render concrete systemd units for "
                    "this environment from service_definition/service_dependency")
-    deploy_p = sub.add_parser("deploy", help="Install generated units into "
+    sub.add_parser("deploy", help="Install generated units into "
                    "~/.config/systemd/user/ and reload if changed")
-    quadlet_p = sub.add_parser("quadlet", help="Render Quadlet .container units for "
+    sub.add_parser("quadlet", help="Render Quadlet .container units for "
                    "podman/remote hosts from the same dependency graph")
     quadlet_deploy_p = sub.add_parser(
         "quadlet-deploy", help="Install generated Quadlet units into "
@@ -1077,13 +1063,10 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     quadlet_deploy_p.add_argument(
         "--host", help="SSH host (e.g. from ~/.ssh/config) to deploy to "
         "instead of this machine")
-    for sub_parser in (generate_p, deploy_p, quadlet_p, quadlet_deploy_p):
-        _busctl_argument(sub_parser)
     args = parser.parse_args(argv)
 
-    systemctl_bus.set_use_busctl(getattr(args, "use_busctl", False))
-
     env = load_env(project_root, env_file)
+    systemctl_bus.adopt_transport_setting(env)
 
     if args.cmd == "generate":
         return cmd_generate(project_root, env, args)

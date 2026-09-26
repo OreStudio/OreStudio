@@ -80,39 +80,81 @@ class TestFetchServiceDefinitions:
         assert defs[0]["entry_point"] == "packages/bff/dist/main.js"
 
 
-class TestBusctlFlag:
-    """`compass systemd` accepts the transport flag the services pillar has.
+class TestTransportSelection:
+    """Where the busctl choice comes from.
 
-    The flag has to reach systemctl_bus, or a sandboxed caller keeps the
-    unreachable-manager failure it passed the flag to avoid. Unlike the rest
-    of this module these cases drive run(), so the transport global is reset
-    around each one."""
+    compass reads .env into a dict and never writes os.environ, so a value
+    that lives only in the file is invisible to use_busctl() unless it is
+    handed over. These cases drive run() against a real env file, which is
+    the only way to catch that; the transport global is reset around each."""
 
-    @staticmethod
-    def _bare_checkout(tmp_path):
-        # load_env exits when the file is absent, and the deploy only needs
-        # to get past it to prove the flag landed.
-        (tmp_path / ".env").write_text("")
-
-    def test_the_flag_selects_the_bus(self, tmp_path, monkeypatch):
+    def _selection(self, tmp_path, env_text, argv, monkeypatch):
         monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
-        self._bare_checkout(tmp_path)
-        systemctl_bus.set_use_busctl(False)
+        (tmp_path / ".env").write_text(env_text)
+        systemctl_bus.set_use_busctl(None)
         try:
-            systemd_generate.run(["deploy", "--use-busctl"], tmp_path)
-            assert systemctl_bus.use_busctl() is True
+            systemd_generate.run(list(argv), tmp_path)
+            return systemctl_bus.use_busctl()
         finally:
-            systemctl_bus.set_use_busctl(False)
+            systemctl_bus.set_use_busctl(None)
 
-    def test_without_the_flag_plain_systemctl_is_kept(self, tmp_path, monkeypatch):
+    def test_the_checkout_file_selects_the_bus(self, tmp_path, monkeypatch):
+        assert self._selection(
+            tmp_path, "ORES_USE_BUSCTL=1\n", ["deploy"], monkeypatch) is True
+
+    def test_a_word_form_in_the_file_is_accepted(self, tmp_path, monkeypatch):
+        assert self._selection(
+            tmp_path, "ORES_USE_BUSCTL=yes\n", ["deploy"], monkeypatch) is True
+
+    def test_the_file_saying_off_keeps_plain_systemctl(
+            self, tmp_path, monkeypatch):
+        assert self._selection(
+            tmp_path, "ORES_USE_BUSCTL=0\n", ["deploy"], monkeypatch) is False
+
+    def test_no_file_value_keeps_plain_systemctl(
+            self, tmp_path, monkeypatch):
+        assert self._selection(tmp_path, "", ["deploy"], monkeypatch) is False
+
+
+class TestAdoptTransportSetting:
+    """The handover itself, independent of any command's argument parsing."""
+
+    def setup_method(self):
+        systemctl_bus.set_use_busctl(None)
+
+    def teardown_method(self):
+        systemctl_bus.set_use_busctl(None)
+
+    def test_a_true_file_value_turns_the_bus_on(self, monkeypatch):
         monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
-        self._bare_checkout(tmp_path)
-        systemctl_bus.set_use_busctl(False)
-        try:
-            systemd_generate.run(["deploy"], tmp_path)
-            assert systemctl_bus.use_busctl() is False
-        finally:
-            systemctl_bus.set_use_busctl(False)
+        systemctl_bus.adopt_transport_setting({"ORES_USE_BUSCTL": "1"})
+        assert systemctl_bus.use_busctl() is True
+
+    def test_a_false_file_value_leaves_it_off(self, monkeypatch):
+        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
+        systemctl_bus.adopt_transport_setting({"ORES_USE_BUSCTL": "0"})
+        assert systemctl_bus.use_busctl() is False
+
+    def test_a_missing_key_leaves_it_off(self, monkeypatch):
+        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
+        systemctl_bus.adopt_transport_setting({})
+        assert systemctl_bus.use_busctl() is False
+
+    def test_the_environment_turns_it_on_with_no_file_value(self, monkeypatch):
+        monkeypatch.setenv("ORES_USE_BUSCTL", "1")
+        systemctl_bus.adopt_transport_setting({})
+        assert systemctl_bus.use_busctl() is True
+
+    def test_the_environment_turns_it_off_over_a_true_file_value(
+            self, monkeypatch):
+        monkeypatch.setenv("ORES_USE_BUSCTL", "0")
+        systemctl_bus.adopt_transport_setting({"ORES_USE_BUSCTL": "1"})
+        assert systemctl_bus.use_busctl() is False
+
+    def test_an_empty_environment_value_is_no_opinion(self, monkeypatch):
+        monkeypatch.setenv("ORES_USE_BUSCTL", "")
+        systemctl_bus.adopt_transport_setting({"ORES_USE_BUSCTL": "1"})
+        assert systemctl_bus.use_busctl() is True
 
 
 class TestReloadSystemd:
@@ -150,9 +192,9 @@ class TestReloadSystemd:
         monkeypatch.setattr(systemd_generate.systemctl_bus, "use_busctl",
                             lambda: False)
         monkeypatch.setattr(systemd_generate.systemctl_bus, "sandbox_hint",
-                            lambda: "  retry with --use-busctl")
+                            lambda: "  set ORES_USE_BUSCTL=1")
         assert systemd_generate._reload_systemd() == 1
-        assert "retry with --use-busctl" in capsys.readouterr().err
+        assert "set ORES_USE_BUSCTL=1" in capsys.readouterr().err
 
     def test_a_failed_reload_through_the_bus_omits_the_sandbox_hint(
             self, monkeypatch, capsys):
@@ -161,4 +203,4 @@ class TestReloadSystemd:
         monkeypatch.setattr(systemd_generate.systemctl_bus, "use_busctl",
                             lambda: True)
         assert systemd_generate._reload_systemd() == 1
-        assert "retry with --use-busctl" not in capsys.readouterr().err
+        assert "set ORES_USE_BUSCTL=1" not in capsys.readouterr().err

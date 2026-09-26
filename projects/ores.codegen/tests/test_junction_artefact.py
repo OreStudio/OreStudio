@@ -144,3 +144,59 @@ def test_the_domain_entity_archetype_is_not_used_for_a_junction(tmp_path):
     sql = generate(tmp_path)
 
     assert '    "code" text not null' not in sql
+
+
+# --- a declared staging body ------------------------------------------------
+#
+# The projection carries version, and the junction's own extra columns. A
+# junction whose upsert supplies neither declares the body instead, the way
+# ores.assets.image_tag does.
+
+ARTEFACT_COLUMNS = """\
+
+* Artefact columns
+
+** image_id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** tag_id
+:PROPERTIES:
+:type: uuid
+:END:
+"""
+
+
+def test_a_declared_section_replaces_the_body(tmp_path):
+    sql = generate(tmp_path, ARTEFACT_COLUMNS)
+
+    assert (
+        'create table if not exists "ores_dq_test_junctions_artefact_tbl" (\n'
+        '    "dataset_id" uuid not null,\n'
+        '    "tenant_id" uuid not null,\n'
+        '    "image_id" uuid not null,\n'
+        '    "tag_id" uuid not null\n'
+        ");"
+    ) in sql
+
+
+def test_a_declared_section_drops_the_projected_version(tmp_path):
+    sql = generate(tmp_path, ARTEFACT_COLUMNS)
+
+    assert '"version" integer not null' not in sql
+
+
+def test_the_key_indexes_still_follow_left_and_right(tmp_path):
+    """The section replaces the body, not the indexes: a junction's identity
+    is still the two key columns its model declares."""
+    sql = generate(tmp_path, ARTEFACT_COLUMNS)
+
+    assert (
+        "create index if not exists dq_test_junctions_artefact_left_idx\n"
+        "on ores_dq_test_junctions_artefact_tbl (left_code);"
+    ) in sql
+    assert (
+        "create index if not exists dq_test_junctions_artefact_right_idx\n"
+        "on ores_dq_test_junctions_artefact_tbl (right_code);"
+    ) in sql

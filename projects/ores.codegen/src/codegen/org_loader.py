@@ -2244,6 +2244,13 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
     j["wire_write_enabled"] = not (
         j.get("read_only") or j.get("client_read_only"))
 
+    # Artefact columns: the staging table's body when it is not a plain
+    # projection of this junction's table. See _artefact_columns.
+    columns_section, key_column = _artefact_columns(doc.root)
+    if columns_section:
+        j["artefact_columns"] = columns_section
+        j["artefact_key_column"] = key_column
+
     return {"junction": j}
 
 

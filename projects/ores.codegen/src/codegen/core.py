@@ -4426,6 +4426,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Special processing for junction models
     if is_junction and isinstance(model, dict) and 'junction' in model:
         junction = model['junction']
+        # The junction artefact template renders a declared staging body the
+        # way the domain_entity one does, so its commas need the same mark.
+        if 'artefact_columns' in junction:
+            _mark_last_item(junction['artefact_columns'])
         # Get iterator_var from cpp section for column processing
         iter_var = junction.get('cpp', {}).get('iterator_var', 'm')
         if 'columns' in junction:

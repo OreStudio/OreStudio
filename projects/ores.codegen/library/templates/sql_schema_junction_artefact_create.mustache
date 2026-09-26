@@ -14,12 +14,17 @@
 create table if not exists "ores_dq_{{junction.name}}_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
+{{^junction.artefact_columns}}
     "{{junction.left.column}}" {{junction.left.type}} not null,
     "{{junction.right.column}}" {{junction.right.type}} not null,
 {{#junction.columns}}
     "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}},
 {{/junction.columns}}
     "version" integer not null
+{{/junction.artefact_columns}}
+{{#junction.artefact_columns}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
+{{/junction.artefact_columns}}
 );
 
 create index if not exists dq_{{junction.name}}_artefact_dataset_idx

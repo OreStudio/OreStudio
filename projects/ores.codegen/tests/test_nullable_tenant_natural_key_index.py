@@ -11,6 +11,13 @@ is false for every nullable-tenant entity, so the index came out on the key
 column by itself and made the key globally unique. The composite-natural-key
 branch already scoped by ``has_tenant_id``; this test pins the branches
 together.
+
+Scoping alone is not enough. PostgreSQL treats NULL as distinct from every
+other NULL in a unique index, so a tenant-scoped index on a nullable column
+still lets two system rows share a natural key. The nullable-tenant branch
+therefore states ``nulls not distinct``: SQL NULL is the system scope, and it
+is one tenant. The other branches must not state it, because their tenant
+column cannot be NULL.
 """
 import sys
 from pathlib import Path
@@ -99,9 +106,20 @@ def _generate_sql(tmp_path, sql_flags=""):
 def test_nullable_tenant_scopes_the_natural_key_index(tmp_path):
     sql = _generate_sql(tmp_path, sql_flags=":nullable_tenant_id: true\n")
     assert (
-        'on "ores_testcomp_natural_key_entities_tbl" (tenant_id, name)\n'
+        'on "ores_testcomp_natural_key_entities_tbl" (tenant_id, name) nulls not distinct\n'
         "where valid_to = ores_utility_infinity_timestamp_fn();"
     ) in sql
+
+
+def test_nullable_tenant_index_treats_every_null_as_the_same_tenant(tmp_path):
+    sql = _generate_sql(tmp_path, sql_flags=":nullable_tenant_id: true\n")
+    assert "nulls not distinct" in sql
+
+
+def test_a_tenant_that_cannot_be_null_states_no_null_clause(tmp_path):
+    sql = _generate_sql(tmp_path)
+    assert "(tenant_id, name) nulls not distinct" not in sql
+    assert "nulls not distinct" not in sql
 
 
 def test_tenant_in_the_primary_key_scopes_the_natural_key_index(tmp_path):

@@ -18,9 +18,11 @@
  *
  */
 #include "ores.scheduler.api/domain/cron_expression.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <ctime>
+#include <rfl/json.hpp>
 #include <string>
 #include <vector>
 
@@ -109,4 +111,21 @@ TEST_CASE("cron_expression equality operator", "[domain][cron_expression]") {
 
     CHECK(*a == *b);
     CHECK_FALSE(*a == *c);
+}
+
+TEST_CASE("cron_expression round-trips through rfl as its string", "[domain][cron_expression]") {
+    const auto parsed = cron_expression::from_string("*/5 * * * *");
+    REQUIRE(parsed.has_value());
+
+    const auto written = rfl::json::write(*parsed);
+    CHECK(written == R"("*/5 * * * *")");
+
+    const auto read = rfl::json::read<cron_expression>(written);
+    REQUIRE(read.has_value());
+    CHECK(*read == *parsed);
+}
+
+TEST_CASE("rfl read refuses a string that is not a cron expression", "[domain][cron_expression]") {
+    const auto read = rfl::json::read<cron_expression>(R"("not a cron")");
+    CHECK_FALSE(read.has_value());
 }

@@ -87,6 +87,10 @@ record each item's result in the table below.
 | W04 | Pending: the SQL reachability and the service grants need =compass db recreate=, which the same environment gap blocks as V01. | To be recorded with V03. |
 | S01 | Finding, in two parts. Generation wrote a command unit and a test for both entities, covering the canonical verbs, but nothing registers them; and the hand-written =workflow_commands.{hpp,cpp}= they supersede is still present, still compiled, and still wired into the shell's REPL. | The generated units and their tests; =git grep= showing the generated pair referenced nowhere outside its own module while the hand-written pair is named by =repl.cpp=, =bundles_commands=, =provision_commands= and =ore_commands=. Detail below. |
 | S02 | Pass. Both generated recipes exist and the inventory lists them. | =regenerate_shell_recipe_inventory.py --check= was stale on =doc/recipes/shell/shell.org=; regenerated, the diff is the two new categories and nothing else, and the re-check is silent. |
+| H01 | Finding: the two-pass contract is honoured in form and not in substance. All three diagrams carry the sentinel, and the manual pass below it is empty in every one: five lines of compile-command and =@enduml=, and no hand-authored content. | The three =.puml= files. The core diagram renders =workflow_handler= and =workflow_query_handler= as boxes holding only methods, which is the empty-box case the item names. |
+| H02 | Finding, in three parts. Two comments still name Qt as a consumer although the Qt client was retired; the hand-written shell unit and the aggregate registrar that generation supersedes both survive, as S01 and W01 record; and one file is dead outright. | The Qt references in =workflow_instance_changed_event.hpp= and =workflow_engine.hpp=; S01 and W01 for the duplicates; B06 for the dead event. |
+| H03 | Finding: three end-of-line comments, which the project comment rules forbid. | =application.cpp:78=, =workflow_engine.cpp:283= and =workflow_handler.cpp:99=. Namespace closers and =IWYU pragma:= are idiomatic and not counted. |
+| H04 | Not applicable, and checked rather than assumed: no per-platform shim survives. | =grep= for =#ifdef _WIN32=, =__APPLE__= and =_MSC_VER= over the component returns nothing. |
 | M09 | Pass. No retired fragment survives in any model. | =grep= over the modeling directories for =qt=, =wt=, =drawer= and =presentation= returns nothing. |
 | M10 | The component model declares its parts. =validate_docs.sh= still to run. | =modeling/component_overview.org= carries =* Summary=, =* Sub-components= and =* Entity modules=. Verification is deferred to H01, which owns the diagram and the docs gate. |
 
@@ -475,6 +479,41 @@ replaces are deleted", and it is the same shape as W01: generation materialised
 a family and nothing composes it. The deletion is not a one-line matter, because
 three other command units reference the hand-written pair and their call sites
 have to move to the generated units in the same piece of work.
+
+** H01 the diagrams are skeletons
+
+The item asks for two passes and says why: the automated pass reads data members
+and little else, so a class whose content is methods arrives as an empty box, and
+a facet of free functions does not arrive at all. The manual pass below the
+sentinel fills those boxes with the API and draws what the automated pass cannot
+see, and "a diagram of empty boxes is a skeleton, not a diagram."
+
+All three diagrams keep the sentinel and none has used it. Below it there are
+five lines in each: the compile-command and =@enduml=. So the second pass has
+never happened, and the core diagram does show =workflow_handler= and
+=workflow_query_handler= as boxes with nothing in them, which is precisely the
+case the item describes.
+
+A caution for the fix. G07 requires that a diagram refresh honours the two-pass
+contract and that the sentinel section survives, and the boxes cannot be filled
+from the generator: the content comes from reading the code. So H01 is authoring
+work, not a regeneration.
+
+** H02 what "no legacy remains" covers here
+
+Three separate things, only one of which is new to this section.
+
+Two comments still name a Qt client as a consumer. =workflow_instance_changed_event.hpp=
+says "Qt clients subscribe via" and =workflow_engine.hpp= says the hook exists
+"so Qt clients can call". The Qt client was retired this sprint, so both are
+stale claims about consumers that no longer exist. The first sits in a file B06
+already classifies as dead and due for deletion; the second sits in the engine,
+which survives.
+
+The other two parts are recorded elsewhere and are not re-derived here: S01 for
+the hand-written shell unit that duplicates the generated one, and W01 for the
+hand-written aggregate registrar that composes none of the generated families.
+B06 carries the dead event.
 
 * Test Scenarios
 

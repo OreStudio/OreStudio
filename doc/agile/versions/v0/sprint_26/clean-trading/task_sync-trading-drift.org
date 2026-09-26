@@ -357,6 +357,16 @@ handler:
 The handler was reverted after the trial, so the codemod is committed
 and the migration is one run away once those two are fixed.
 
+Both defects are fixed: a nested group member is resolved by its type
+rather than by its name, and an expression that is not a plain member
+path is parenthesised before the member is appended. The trial then
+reported four further consequences, all of them in the codemod or the
+include list rather than judgment calls:
+=evidence/pr2_migration_remaining_work.txt=. The one place a person
+decides is the container save, which must choose between the single-row
+request and the batch one. The handler was reverted again, so the tree
+stays coherent until all four are fixed.
+
 
 ** 3. Regenerate
 

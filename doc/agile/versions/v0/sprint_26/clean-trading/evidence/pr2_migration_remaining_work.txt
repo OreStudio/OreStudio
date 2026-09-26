@@ -1,0 +1,38 @@
+PR 2, what the migrated handler still needs
+
+Measured 2026-09-26 by running the codemod with both defects fixed and
+building ores.ore.service.lib. Four things remain, all in the codemod or
+the include list, none of them judgment calls.
+
+1. A negated response check keeps the negation
+   The rewrite of `!resp->success` emitted `resp->result.outcome == ok`,
+   and the `!` in front then negates the enum:
+       if (!resp || !resp->result.outcome == ores::utility::domain::outcome::ok)
+   The pattern must carry the optional `!` and choose the operator:
+   `!X->success` becomes `X->result.outcome != ok`, and a bare
+   `X->success` becomes `X->result.outcome == ok`.
+
+2. A failure message moved into the result
+       resp ? resp->message : trade_error
+   The generated response carries no `message`; it is
+   `resp->result.message`.
+
+3. A container save is not a row save
+       put_trade_request save_req;
+       save_req.trades = {std::move(item.trade)};
+   The generated single-row request takes a `trade_change`, and the
+   batch form is `put_many_trades_request` with
+   `std::vector<trade_change> changes`. The element is a change record,
+   so the site needs the same write expansion the codemod does for
+   `.data =`, applied to each element of the brace list. This is the one
+   site where a human decides between the single and the batch request.
+
+4. The consumer's include list is the consolidated header
+   The handler includes `ores.trading.api/messaging/instrument_protocol.hpp`,
+   which after D1 declares only the four families with no model. The
+   nine rates families' request types live in their own generated
+   headers now, so the include list needs them added and the consolidated
+   header kept for the four.
+
+Errors 3 and 4 are what the last build reported; 1 and 2 it also
+reported, at lines 1330 and 1331.

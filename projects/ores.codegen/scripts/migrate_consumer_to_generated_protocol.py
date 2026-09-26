@@ -46,6 +46,25 @@ def new_request_name(old: str) -> str | None:
     return None
 
 
+def struct_member_pairs(text: str, name: str) -> list[tuple[str, str]]:
+    """(type, member) for each data member of a struct, in order."""
+    m = re.search(r"struct " + re.escape(name) + r"\b[^{]*\{(.*?)\n\};", text, re.S)
+    if not m:
+        return []
+    body = re.sub(r"/\*.*?\*/", "", m.group(1), flags=re.S)
+    body = re.sub(r"//[^\n]*", "", body)
+    pairs: list[tuple[str, str]] = []
+    for line in body.splitlines():
+        line = line.strip()
+        if (not line or line.startswith(("using", "static", "template", "friend"))
+                or line.endswith(("{", "}"))):
+            continue
+        mm = re.match(r"([A-Za-z_:<>,\s*&]+?)\s+([a-z_][a-z0-9_]*)\s*(=[^;]*)?;", line)
+        if mm:
+            pairs.append((mm.group(1).strip(), mm.group(2)))
+    return pairs
+
+
 def struct_members(text: str, name: str) -> list[str]:
     m = re.search(r"struct " + re.escape(name) + r"\b[^{]*\{(.*?)\n\};", text, re.S)
     if not m:
@@ -82,29 +101,25 @@ def group_fields(type_name: str) -> list[str]:
 
 
 def domain_paths(entity: str) -> dict[str, str]:
-    """Field name -> the path it is read at on the domain object."""
+    """Field name -> the path it is read at on the domain object.
+
+    A member whose type is a field group carries that group's fields, at
+    the member's own name; every other member is flat and reads as
+    itself. The type is what identifies a group, which is why the members
+    are read as pairs rather than as names.
+    """
     header = API / "domain" / f"{entity}.hpp"
     if not header.exists():
         return {}
-    text = header.read_text(encoding="utf-8")
-    members = struct_members(text, entity)
     paths: dict[str, str] = {}
-    grouped: set[str] = set()
-    for member in members:
-        fields = group_fields(member)
+    for type_name, member in struct_member_pairs(
+            header.read_text(encoding="utf-8"), entity):
+        fields = group_fields(type_name)
         if fields:
-            grouped.add(member)
             for field in fields:
                 paths[field] = f"{member}.{field}"
-    # A name the groups do not carry is flat; struct_members cannot tell a
-    # nested group member from a plain one, so ask the group headers.
-    for member in members:
-        if member not in grouped:
+        else:
             paths.setdefault(member, member)
-    for field, path in list(paths.items()):
-        if path == field and any(f == field for m in grouped
-                                 for f in group_fields(m)):
-            del paths[field]
     return paths
 
 
@@ -184,7 +199,9 @@ def migrate(text: str, path: Path, report: list[str]) -> str:
             if members and is_generated(entity, generated):
                 paths = domain_paths(entity)
                 indent = line[:len(line) - len(line.lstrip())]
-                lines = [f"{indent}{var}.change.write.{m} = {expr}.{paths.get(m, m)};\n"
+                ref = expr if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.]*", expr) \
+                    else f"({expr})"
+                lines = [f"{indent}{var}.change.write.{m} = {ref}.{paths.get(m, m)};\n"
                          for m in members]
                 out.extend(lines)
                 expanded += 1

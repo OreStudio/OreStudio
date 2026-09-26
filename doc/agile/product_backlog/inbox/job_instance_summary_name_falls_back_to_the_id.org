@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 136F3960-9890-41B2-98BE-65EDE13AA433
+:END:
+#+title: job_instance_summary.job_name carries the definition id when the definition is gone
+#+description: The scheduler's instance-list operation joins each execution to its job definition to fold in the job's name and action type. When the definition row has been deleted the join finds nothing, and the summary's job_name carries the definition's identifier instead, so a field documented as a name is sometimes a key. Seen from the shell: after scheduler remove, scheduler instances prints the identifier for every execution of the removed job.
+#+type: capture
+#+level: cross
+#+filetags: :scheduler:operations:shell:bug:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Decide what an execution summary states when the definition it names no longer
+exists, then make the handler and the shell agree on it. The handler is
+=projects/ores.scheduler/core/include/ores.scheduler.core/messaging/job_instance_handler.hpp=,
+line 103:
+
+#+begin_src c++
+s.job_name = (it != id_to_name.end()) ? it->second : s.job_definition_id;
+#+end_src
+
+The two shapes worth choosing between are: leave =job_name= empty and let a
+reader show the identifier from the =job_definition_id= field it already has,
+or keep the identifier in =job_name= and say so in the field's documentation.
+The first keeps the field's meaning; the second is honest but leaves a reader
+to know which of two things a name field holds.
+
+* Why
+
+An execution is history and outlives the definition it names, so the read has
+to answer for a deleted job. A field documented as the job's name that
+sometimes carries a key is a small lie that a log line, a monitor or a person
+scanning output cannot see. The shell's =scheduler instances= prints the
+field, so the wrong shape reaches an operator the first time a job is removed.
+
+* References
+
+- Found while adding the scheduler shell commands, PR #2181.
+- The observation and the run that shows it:
+  =doc/agile/versions/v0/sprint_26/clean-scheduler/evidence/scheduler_shell_library.txt=.
+- The operation's message, whose doc says the name is read from the definition:
+  =projects/ores.scheduler/api/include/ores.scheduler.api/messaging/scheduling_operations_protocol.hpp=.
+
+* See also
+
+- The companion capture on the same read,
+  =scheduler_instances_filters_one_page_not_the_collection=.

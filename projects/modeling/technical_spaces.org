@@ -55,7 +55,7 @@ them the same way if this table ever needs re-verifying.
 | [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Emacs Lisp]]      | —       | —      | —          | =ores.lisp=, =ores.compass= — manually authored |
 | [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Python]]          | —       | —      | —          | =ores.codegen= — the generator itself |
 | [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][JavaScript]]      | —       | —      | —          | =ores.org-js= — agile dashboard |
-| [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][XML / FPML]]      | —       | —      | —          | =ores.fpml= — FPML financial product data |
+| [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][XML / FPML]]      | —       | —      | —          | =external/fpml= — FPML financial product data |
 
 *=ores.cpp.presentation= (2 archetypes) is functionally real — confirmed
 generating =<entity>_history_field_mapper.hpp/cpp= — but is not listed in

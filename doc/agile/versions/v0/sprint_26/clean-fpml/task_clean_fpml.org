@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-fpml:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/clean-fpml
+#+pr: 2143
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3A24286-B923-4DAB-9F18-6555217004BB][Clean ores.fpml to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ ores.fpml passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E3A24286-B923-4DAB-9F18-6555217004BB][Clean ores.fpml to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-26                               |
 
 * Acceptance
 
@@ -39,6 +39,13 @@ ores.fpml passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean 
 - Every item that does not apply is recorded as not applicable, with the reason.
 - Every generator defect found is fixed at its source, with a regression test.
 - ores.fpml is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
+
+The original acceptance asked that ores.fpml join
+=COMPONENTS_UNDER_TEST=. That cannot be met and is superseded, for the
+reason V06 records. The component declares no codegen model, so it has no
+row in =component_catalogue.org=, and the registry holds catalogue names.
+Listing it would make =check_component_drift.py --all= raise
+=Unknown component=.
 
 * Plan
 
@@ -57,16 +64,94 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | pass | Baseline taken before any edit. =check_component_drift.py --component fpml --dry-run= answers =Unknown component: 'fpml'=, because the component has no codegen model and so has no row in =component_catalogue.org=. =regenerate_cmake_component_files.py --component ores.fpml --check= reports 2 stale files, =src/component_files.cmake= and =tests/component_files.cmake=, differing only by the generated-file marker. |
+| B02 | pass | Every model file classified by metatype. =projects/ores.fpml/modeling/= held =component_overview.org= (=#+type: ores.codegen.component=), =ores.fpml.puml= and =ores.fpml.png=. 0 entities, 0 junctions, 0 operations, 0 messages. |
+| B03 | pass | Both non-test C++ files classified: =include/ores.fpml/export.hpp= and =include/ores.fpml/ores.fpml.hpp=, the umbrella. Both are hand-written infrastructure and neither is generatable. =tests/main.cpp= is the Catch2 entry point and declares no test case. The component holds no =.cpp= file in =src/= and no source at all. |
+| B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. No raw subject literal exists in the component. |
+| B05 | pass | Captures and in-flight branches read. One live capture names the component, =doc/agile/product_backlog/next/fix_component_doc_drift.org=, a snapshot list whose own text says "at time of writing" and which also names =ores.connections=, =ores.controller= and =ores.wt.service=, none of which =projects/= holds any more. =feature/clean-analytics= and =feature/clean-assets= each carry one commit touching =projects/ores.fpml=, both the repo-wide marker regeneration. Neither changes what the component is. |
+| M01 | not applicable | No org model. The component held only its overview. |
+| M02 | not applicable | No entity model, so no variability profile to bind. |
+| M03 | not applicable | No model states a property, so none can repeat its profile. |
+| M04 | not applicable | No model feature to place in a namespace. |
+| M05 | not applicable | No entity, so no table to describe. |
+| M06 | not applicable | The component exchanges no wire type. 0 messaging headers, 0 of them hand-written. |
+| M07 | not applicable | No junction. |
+| M08 | not applicable | No org model custom type binding. |
+| M09 | not applicable | No model, so no legacy fragment to find in one. |
+| M10 | not applicable | The overview is removed with the component. |
+| P01 | not applicable | No entity and no protocol. |
+| P02 | not applicable | No subject is owned, and no raw subject literal exists in the component. |
+| P03 | not applicable | No registrar and no declared message. |
+| P04 | not applicable | No operation model and no hand-written protocol header. |
+| P05 | not applicable | No protocol change reaches a consumer. |
+| P06 | not applicable | No event cache. |
+| G01 | not applicable | No model, so nothing regenerates. The drift gate cannot name the component: =Unknown component=, as B01 records. |
+| G02 | pass | The 2 hand-written headers, the 3 CMake files and the 2 empty source lists are deleted with the component. No generatable file was left hand-written. |
+| G03 | pass | Neither hand-written header carried the generated marker, correctly. The 2 CMake source lists that lacked it are deleted with the component. |
+| G04 | not applicable | No generated code to review against the component's best hand-written code. |
+| G05 | exception | No generator defect belongs to this component and none is fixed here. Two are inherited from the shared codegen and are recorded under *Notes*: the generated marker that 145 CMake source lists lack, and the AUTOMOC comment. Both are repo-wide, both need a sweep across every component, and three in-flight branches already race on that sweep. |
+| G06 | pass | The 2 stale source lists are gone with the component. =regenerate_cmake_component_files.py --all --check= reported 147 stale lists before the removal and 145 after, exactly the 2 this component owned, and none of the remainder names it. The 145 are inherited and belong to each of those components' stories. |
+| W01 | not applicable | No registrar family, so no composition point. |
+| W02 | not applicable | No handler checks a permission. |
+| W03 | not applicable | No populate script names the component. |
+| W04 | not applicable | The component owns no SQL script and no service schema. |
+| S01 | not applicable | No entity or junction, so no shell command unit. |
+| S02 | not applicable | No command, so no recipe and no destructive flag. |
+| H01 | not applicable | The component is deleted, so it cannot be audited, and its record is this task. The audit's automated half, =validate_docs.sh=, covers the tree and reports one finding, =ores.shell.iam= has no =.puml= in =modeling/=, which is pre-existing and belongs to that component. |
+| H02 | pass | No legacy code remains. The component and every reference to it outside sprint history are gone. The AUTOMOC remnant is inherited, not introduced here, and G05 records it. |
+| H03 | pass | The change deletes code and prose and corrects one sentence. No comment was added. The removed headers carried the standard licence banner only, and the deleted =component_files.cmake= carried one Qt-era comment that left with it. |
+| V01 | pass | =compass build= over the whole tree reached 100% with exit code 0, with =projects/CMakeLists.txt= no longer adding the component. CMake configured clean, and no target linked what was removed. |
+| V02 | pass | The =ores.codegen= suite passes at 522 passed, and the =ores.compass= suite at 215 passed and 1 skipped, both matching the counts the =ores.connections= task recorded on this same trunk. =ctest= with NATS up passes 68 of 69 suites. The one failure is =ores.synthetic.core.tests=, 2 cases of 66, and it is pre-existing: the shared database already holds business centres, so a create collides with an existing row in =ores_refdata_business_centres_insert_fn()=. The rows date from before this work, and the component removed here has no part in that path. No test covered the component. |
+| V03 | not applicable | No entity and no service, so the database has nothing of this component to recreate. |
+| V04 | not applicable | No generated shell command, so nothing to run against the fleet. |
+| V05 | pass | Every gate run and green apart from the inherited repo-wide finding that G06 records: component drift (=iam=, no drift), model drift (2 known exceptions), protocol twin coverage (20 headers, all twinned), handler permissions (144 codes seeded), populate references, shell recipe inventory, =validate_docs.sh= (apart from the pre-existing =ores.shell.iam= finding) and =compass lint=. |
+| V06 | not applicable | The component does not join =COMPONENTS_UNDER_TEST=, because it has no codegen model and no catalogue row. This is the exception that supersedes the original acceptance. |
 
 * Notes
 
+- Inventory, 2026-09-23. 0 entity, junction or operation models. 2 C++
+  files outside tests, 0 of them generated (0%). 0 messaging headers, 0
+  of them hand-written.
+- The component was not a codegen component. It had no row in
+  =projects/ores.codegen/library/component_catalogue.org=, so
+  =check_component_drift.py= could not name it. Nothing in the tree
+  included =<ores.fpml/...>=, and =projects/CMakeLists.txt= line 125 held
+  the only reference in the build.
+- The component was a stub from sprint 10. Its own overview said the
+  namespace is established and the component stub is in place, and its
+  =src/CMakeLists.txt= built an =INTERFACE= library with no source. The
+  FPML export and import work it was scaffolded for was deferred and never
+  resumed, so it earned nothing the clean standard asks for.
+- The clean standard is met by subtraction, as it was for
+  =ores.connections= earlier in this sprint. H02 forbids dead code, and
+  the component was dead by every measure: no consumer, no model, no
+  protocol, no test, and no service.
+- Two repo-wide findings are inherited and belong to other stories. They
+  are recorded rather than fixed, because each needs a regeneration that
+  sweeps every component, and three in-flight branches already race on
+  that sweep.
+  1. The generated marker. Commit =d5ce0800a3= "[codegen] Mark generated
+     C++ files as generated" added the marker to
+     =generate_license_with_header= in =codegen/core.py=. It reaches every
+     CMake output through =cmake_license=, but the checked-in
+     =component_files.cmake= files predate it, so 145 of them are stale.
+     This task owned 2 of the 147 and removes them.
+  2. The AUTOMOC comment. =ores.cmake.component.files_src.org= line 54
+     emits "Headers must be listed for AUTOMOC to find Q_OBJECT
+     declarations", which commit =86306c9494= introduced with the
+     archetype. AUTOMOC is never enabled in this build and Qt is gone, so
+     the comment is a Qt remnant in a shared template. It belongs to the
+     *Remove the legacy Qt remnants* story.
+- Left in place on purpose, recorded under *Out of scope* on the story:
+  the sprint 10, 19 and 20 pages that name the component as history, the
+  live capture =fix_component_doc_drift.org= whose list is a dated
+  snapshot, and the completed plan
+  =doc/plans/2026-05-13-symbol-visibility-migration.org=.
+
 * Test Scenarios
 
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
+No scenario applies. No user reaches the component, and a deletion has no
+behaviour to walk through. The build and the gates are the evidence.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -76,12 +161,50 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2143][#2143]] | [fpml] Remove the dead ores.fpml component |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The misspell check is not clean repo-wide. 10 hits of =EXPLICT=, all in =doc/agile/versions/v0/sprint_25/= pages. | sprint 25 history | no change | Pre-existing and outside this delta. Every file this branch touches is misspell-clean, checked file by file. The hits belong to a separate documentation cleanup. |
+| 2 | The System Model diagram shrank by 19%, from 710 KB to 576 KB, which is more than one removed node suggests. | projects/modeling/ores.png | no change, verified | Rendering the source to SVG shows exactly one component alias and exactly two edges fewer than =origin/main=, with all 31 remaining components intact. The size drop is PNG re-encoding after the relayout, not lost content. |
+| 3 | Removing the two related-document links from the deleted section could orphan the FpML and Coding Schemes knowledge pages. | projects/modeling/system_model_domain.org | no change, verified | Both pages keep six and nine incoming links respectively from other knowledge pages, so neither is orphaned. |
+| 4 | The acceptance item that ores.fpml join =COMPONENTS_UNDER_TEST= reads as unmet. | doc/agile/versions/v0/sprint_26/clean-fpml/task_clean_fpml.org | accepted as an exception | The item cannot be met: the component has no catalogue row, and listing it breaks =check_component_drift.py --all=. The superseding paragraph is in * Acceptance, and V06 records the reason. |
+| 5 | The runbook's step 5a, the local code review, was skipped before the PR was raised. | this task | recorded | This table is that pass, run after the raise instead of before. The build and test evidence did precede the raise. |
+| 6 | Bot review round 1. The =@claude= review found no bugs, no dangling references and no build breaks, and calls the PR ready as-is. | PR #2143 | no change | It re-derived the result independently: the CMake removal, the absence of an =ores.ore= dependency on the component, the retired org-id, the =external/fpml/= redirect, and both regenerated diagrams. |
+| 7 | The review judged the new capture's empty What and Why sections to be the repo pattern and dismissed them. | remove_the_automoc_comment_from_the_cmake_archetype.org | fixed | Half right, so not dismissed. 21 of the 63 inbox captures still carry the stub text, but the well-formed ones fill the body. Filled in commit =25cfbce8eb=, which also corrects the affected file count from ~85 to 78. |
+
+The review request =@claude review PR= is on the PR as comment 5841685082, and the bot's reply is comment 5841688038. Round 1 produced no line comments and no unresolved threads.
 
 * Result
+
+ores.fpml is removed, together with every reference it left behind outside
+sprint history.
+
+The clean standard is met by subtraction. H02 forbids dead code, and the
+component was dead by every measure: no C++ consumer, no codegen model, no
+protocol, no test and no service. Its twin ores.connections met the same
+standard the same way earlier in this sprint.
+
+The removal is two commits. The first deletes the component and its
+projects/CMakeLists.txt line. The second sweeps the references: the System
+Model diagram, the layer diagram, the component inventory, the domain layer
+inventory, the technical space tables, the trading FSM page, and one
+sentence in the data-oriented design page. Both diagrams were regenerated,
+and their rendered text confirms ores.fpml is gone while ores.ore and
+ores.trading remain.
+
+Verification. =compass build= reaches 100% with exit code 0, and no target
+linked what was removed. The =ores.codegen= suite passes at 522 and the
+=ores.compass= suite at 215 with 1 skipped. =ctest= with the fleet's NATS
+server up passes 68 of 69 suites. The one failure is pre-existing and
+belongs to ores.synthetic: the shared database already holds business
+centres, so two publisher cases collide with an existing row. Every codegen
+gate is green apart from the inherited repo-wide CMake source-list drift
+that G06 records. That count falls from 147 to 145, exactly the two lists
+this component owned. =validate_docs.sh= reports only the pre-existing
+=ores.shell.iam= finding, and =compass lint= passes.
+
+No test covered the component, so that part of the change rests on the
+build and the gates.

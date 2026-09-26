@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 35E3F6F9-C31C-46C1-91A6-1CFD21F634D7
+:END:
+#+title: The CMake archetype emits a Qt-era AUTOMOC comment
+#+description: The component-files archetype writes a Qt-era AUTOMOC comment into 78 checked-in component_files.cmake files, and AUTOMOC is never enabled anywhere in this build.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:cmake:qt:tech_debt:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The archetype
+=projects/ores.codegen/library/templates/ores.cmake.component.files_src.org=
+line 54 emits this comment above =set(HEADERS ...)=:
+
+#+begin_src text
+# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+#+end_src
+
+The comment reaches the output only when a component has an =include/=
+directory, so 78 of the 147 checked-in =component_files.cmake= files carry
+it today.
+
+* Why
+
+AUTOMOC is never enabled anywhere in ORE Studio's own build. Zero of the
+project's =CMakeLists.txt= files set it, and the only hits in the tree are
+third-party ports under =vcpkg/=. The Qt client is gone as well, since
+commit =af67db3062= removed the =ores.qt= and =ores.wt= trees. The comment
+therefore explains a mechanism this project does not use, and it names a
+Qt macro in a shared template.
+
+Commit =86306c9494= introduced it with the archetype.
+
+The fix is one line in the org template, then a re-tangle with
+=compass build --direct tangle_codegen_templates=. It cannot ship alone.
+Removing the line makes every regenerated =component_files.cmake= stale by
+one line, and 145 of those files are already stale from the generated
+marker that commit =d5ce0800a3= added to =codegen/core.py=. The two fixes
+belong in one sweep.
+
+Sequencing matters. =feature/clean-analytics= and =feature/clean-assets=
+have already regenerated their copies from the current template, so landing
+the template fix before that sweep would invalidate their output.
+
+* References
+
+- =projects/ores.codegen/library/templates/ores.cmake.component.files_src.org= — the template source, line 54.
+- =projects/ores.codegen/library/templates/cmake_component_files_src.mustache= — the tangled copy that codegen renders.
+- =projects/ores.codegen/src/codegen/core.py= line 261 — the generated marker that leaves 145 source lists stale.
+
+* See also
+
+- [[id:16E56982-F716-4214-AA09-E438C1E46DC2][Story: Remove the legacy Qt remnants]] — the story this defect belongs to.
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] — G03 and G06, the items the regeneration sweep satisfies.

@@ -8,7 +8,7 @@
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,12 +21,12 @@ ores.fpml meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-26                               |
 
 * Acceptance
 
@@ -35,18 +35,65 @@ ores.fpml meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 - Every generator defect found is fixed at its source, with a regression test.
 - ores.fpml is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
 
+The =COMPONENTS_UNDER_TEST= item is superseded. ores.fpml declares no
+codegen model, so it has no row in =component_catalogue.org=, and the
+registry holds catalogue names. The component is removed, so the item is
+met by no longer applying.
+
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:06E68FC3-941F-4705-B093-559E3188EF69][Bring ores.fpml to the clean standard]] | BACKLOG | | | Work ores.fpml through the Component Clean Standard in order and record each item. |
+| [[id:06E68FC3-941F-4705-B093-559E3188EF69][Bring ores.fpml to the clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Work ores.fpml through the Component Clean Standard in order and record each item. |
 
 * Notes
 
 - Survey on 2026-09-23: 0 entity, junction or operation models; 2 C++ files outside tests, 0 of them generated (0%); 0 messaging headers, 0 of them hand-written.
+- The survey decided the story. A component with no model, no protocol, no
+  test and no consumer earns nothing the clean standard asks for, so the
+  work was subtraction. ores.fpml was scaffolded in sprint 10 for FPML
+  export and import work that was deferred and never resumed.
+- =ores.connections= met the same standard the same way earlier in this
+  sprint, which set the precedent.
+- Two repo-wide codegen findings surfaced and are recorded on the task
+  rather than fixed here: the generated marker that 145 CMake source lists
+  lack, and the AUTOMOC comment in the shared CMake archetype. Both need a
+  sweep across every component, and three in-flight branches already race
+  on that sweep.
 
 * Decisions
 
+- Meet the standard by removing the component, as ores.connections did. The
+  component is dead by every measure, and the standard forbids dead code
+  under H02.
+- The XML / FPML technical space stays. The FPML Genericode XML that feeds
+  =fpml_parser.py= lives under =external/fpml/=, not in the component, so
+  two pages were corrected to name the real path rather than dropped.
+
 * Out of scope
 
--
+- The sprint 10, 19 and 20 pages that name the component. They are history,
+  and ores.connections made the same choice.
+- =doc/agile/product_backlog/next/fix_component_doc_drift.org=. Its list
+  is a dated snapshot that also names components =projects/= no longer
+  holds.
+- =doc/plans/2026-05-13-symbol-visibility-migration.org=. The plan is
+  =COMPLETE=, so its unchecked ores.fpml line is a historical record.
+- The two inherited codegen findings the task records. Each needs its own
+  repo-wide sweep.
+
+* Result
+
+ores.fpml is removed and the story closes. The Component Clean Standard is
+met by subtraction, as it was for ores.connections earlier in this sprint.
+
+The whole tree builds, the codegen suite passes at 522 and the compass
+suite at 215, and every codegen gate is green apart from the inherited
+repo-wide CMake source-list drift the task records. The task carries all
+42 checklist items and the two code commits.
+
+One pre-existing test failure remains and is not this story's. The
+ores.synthetic.core suite fails two cases because the shared database
+already holds business centres, so a create collides with an existing row.
+The rows date from before this work began, and the component removed here
+has no part in that path.

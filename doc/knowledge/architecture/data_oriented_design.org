@@ -97,10 +97,9 @@ the review target.
 For a document-shaped type, mark the table-shaped-children and
 flat-value-message checks as not applicable and say why. In-tree
 today the category exists only as hand-written core types in
-=ores.orgmode= (the heading/document structure) and in the FpML
-parsing path of =ores.fpml=; no entity model instantiates it yet.
-Revisit this paragraph if an entity model ever persists document
-trees.
+=ores.orgmode= (the heading/document structure); no entity model
+instantiates it yet. Revisit this paragraph if an entity model ever
+persists document trees.
 
 ** The data model of a component
 

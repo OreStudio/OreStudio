@@ -334,18 +334,28 @@ stay as written. Six of the mis-modelled shapes are fixed:
 | RECOVERY_RATE | 134 | the same clause, on the keys that name one | same |
 | IR_SWAP | 2,323 | two causes: the seven-segment form naming the index the swap is written against (ccy/index/settle/tenor/maturity) was rejected outright, and the index token =ESTER= has no family, because =index_family= spells it =estr= | the named-index form, and the producer's spelling carried in =index_spelling= |
 | MM | 42 | the same =ESTER= spelling | same |
+| SWAPTION | 99,977 | two optional qualifiers the model did not carry: the index the surface is quoted against, and the =Smile= convention marker whose shift takes the value slot, which together make the family six, seven or eight segments | the index, and =delta_type= for the marker |
 
 That is 13,806 corpus lines brought in by the first six, 939 by the two
 futures, 9,075 by the discount re-modelling, 1,851 by the credit restructuring
-clause, and 2,365 by the swap's named-index form and the index spelling. What
-remains of the shape record is CPR. The last 46 keys of =IR_SWAP= and =MM= are
-=FTIIE=, which is not a shape defect at all: =index_family= holds =tiie= and
-not =ftiie=, and F-TIIE is a second Mexican benchmark rather than a spelling.
-That gap is recorded as its own capture, because closing it means widening a
-CHECK constraint on an ores table, not extending a key grammar. Of the unnamed
-keys, the ones CPR and BOND share are the =SECURITY_1= placeholders the corpus
-writes instead of real identifiers, so the shape is readable even where the
-data is not.
+clause, 2,365 by the swap's named-index form and the index spelling, and 99,977
+by the swaption's two qualifiers. The shape record is down to CPR alone, and
+98.7% of the corpus is named.
+
+What is left, 6,350 keys, is four things and no shape defect among them:
+
+- =COMMODITY_OPTION= (2,346) and =INDEX_CDS_OPTION= (3,026), both volatility
+  surfaces for asset classes whose projection functions reject =type=vol= --
+  =quote_key_credit= refuses it outright -- so these are unbuilt families rather
+  than mis-modelled ones.
+- =BASIS_SWAP= (426) and =SHAPE_PROFILE= (171), the first a named-index form of
+  the same kind just added for the swap, the second keyed by a shape profile.
+- =BOND= (157) and =RATING= (128), which need asset classes keyed by a security
+  and a rating provider. The =BOND= and =CPR= keys the corpus carries are
+  =SECURITY_1= placeholders rather than real identifiers, so the shape is
+  readable even where the data is not.
+- The residuals already named: =RECOVERY_RATE= (48) on placeholders, =IR_SWAP=
+  (42) and =MM= (4) on F-TIIE, and =CPR= (2).
 
 Each of the remaining shapes needs the identifier grammar extended, and the
 oresmd parser is hand-written per asset class rather than table-driven -- its

@@ -183,6 +183,17 @@ per-facet figures were taken before any edit and against the pre-deletion
 header set. Where they differ from the Plan table, the Plan table is the
 figure that describes the tree now.
 
+Rebased onto `origin/main` at `2e01f15e5e` on 2026-09-26, because PR #2155
+reported a conflict. The only conflicting file was the generated
+`doc/agile/product_backlog/inbox.org` table, which main had also added
+captures to; it was resolved by regenerating the index from the capture
+files rather than by merging rows by hand. Eight of the nine commit
+patch-ids are unchanged by the rebase. The ninth is `[agile] Record the
+ores.utility clean-up`, whose patch-id moved from `93857360ae` to
+`f479f24f16`, because the regenerated table it commits now carries the
+captures main added. The branch was force-pushed with `--force-with-lease`
+as the conflict was the only remedy.
+
 The six sub-trees, with their external callers.
 
 | Sub-tree | Files | Callers outside its own test |

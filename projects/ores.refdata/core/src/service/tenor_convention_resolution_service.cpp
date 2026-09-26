@@ -76,7 +76,7 @@ tenor_convention_resolution_service::list_tenor_convention_resolutions(
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.resolutions = repo_.read_latest(request.offset, request.limit);
+    response.tenor_convention_resolutions = repo_.read_latest(request.offset, request.limit);
     response.total = repo_.get_total_resolution_count();
     return response;
 }
@@ -104,7 +104,7 @@ tenor_convention_resolution_service::list_by_convention_code_tenor_convention_re
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-    response.resolutions =
+    response.tenor_convention_resolutions =
         repo_.read_latest_by_convention(request.convention_code, request.offset, request.limit);
     response.total = repo_.get_total_resolution_count_by_convention(request.convention_code);
     return response;

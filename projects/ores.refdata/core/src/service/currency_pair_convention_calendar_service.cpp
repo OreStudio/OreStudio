@@ -106,7 +106,7 @@ currency_pair_convention_calendar_service::list_currency_pair_convention_calenda
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.pair_convention_calendars = repo_.read_latest(request.offset, request.limit);
+    response.currency_pair_convention_calendars = repo_.read_latest(request.offset, request.limit);
     response.total = repo_.get_total_pair_convention_calendar_count();
     return response;
 }
@@ -134,7 +134,7 @@ currency_pair_convention_calendar_service::list_by_pair_code_currency_pair_conve
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-    response.pair_convention_calendars =
+    response.currency_pair_convention_calendars =
         repo_.read_latest_by_pair(request.pair_code, request.offset, request.limit);
     response.total = repo_.get_total_pair_convention_calendar_count_by_pair(request.pair_code);
     return response;
@@ -213,11 +213,11 @@ currency_pair_convention_calendar_service::put_many_currency_pair_convention_cal
     for (const auto& change : request.changes)
         claims.push_back(change.precondition);
     repo_.write(batch, claims);
-    response.pair_convention_calendars.reserve(batch.size());
+    response.currency_pair_convention_calendars.reserve(batch.size());
     for (const auto& value : batch) {
         auto written = read_one(repo_, key_from(value));
-        response.pair_convention_calendars.push_back(written.empty() ? value :
-                                                                       std::move(written.front()));
+        response.currency_pair_convention_calendars.push_back(
+            written.empty() ? value : std::move(written.front()));
     }
     return response;
 }

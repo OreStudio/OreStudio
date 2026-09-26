@@ -104,7 +104,7 @@ currency_currency_group_service::list_currency_currency_groups(
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.currency_groups = repo_.read_latest(request.offset, request.limit);
+    response.currency_currency_groups = repo_.read_latest(request.offset, request.limit);
     response.total = repo_.get_total_currency_group_count();
     return response;
 }
@@ -132,7 +132,7 @@ currency_currency_group_service::list_by_currency_iso_code_currency_currency_gro
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-    response.currency_groups =
+    response.currency_currency_groups =
         repo_.read_latest_by_currency(request.currency_iso_code, request.offset, request.limit);
     response.total = repo_.get_total_currency_group_count_by_currency(request.currency_iso_code);
     return response;
@@ -211,10 +211,11 @@ currency_currency_group_service::put_many_currency_currency_groups(
     for (const auto& change : request.changes)
         claims.push_back(change.precondition);
     repo_.write(batch, claims);
-    response.currency_groups.reserve(batch.size());
+    response.currency_currency_groups.reserve(batch.size());
     for (const auto& value : batch) {
         auto written = read_one(repo_, key_from(value));
-        response.currency_groups.push_back(written.empty() ? value : std::move(written.front()));
+        response.currency_currency_groups.push_back(written.empty() ? value :
+                                                                      std::move(written.front()));
     }
     return response;
 }

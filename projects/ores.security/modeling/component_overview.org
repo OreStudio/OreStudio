@@ -72,6 +72,8 @@ by convention.
 
 * Entry points
 
+- =include/ores.security/ores.security.hpp= — the namespace documentation
+  header, whose =@brief= is this component's doxygen description.
 - =include/ores.security/crypto/password_hasher.hpp= — =hash=, =verify=.
 - =include/ores.security/jwt/jwt_authenticator.hpp= — =create_hs256=,
   =create_rs256_signer=, =create_rs256_verifier=, =create_token=,
@@ -116,6 +118,11 @@ by convention.
   AES-256-GCM and PBKDF2 surface, and no file in the tree included it: its
   own test was the only consumer. It was deleted with that test rather than
   kept as an unused capability.
+- *The namespace header stays.* =ores.security.hpp= documents the
+  =ores::security= namespace for doxygen, and the diagram conventions read
+  its =@brief= when they label the component, so a consumer census does not
+  apply to it. G08 of the Component Clean Standard states that for every
+  component.
 
 * See also
 

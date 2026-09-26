@@ -34,6 +34,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/jwt/jwt_authenticator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/jwt/jwt_claims.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/jwt/jwt_error.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/ores.security.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/validation/email_validator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/validation/password_validator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/validation/validation_result.hpp"

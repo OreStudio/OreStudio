@@ -67,14 +67,37 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 1. Baseline | DONE | Census and drift captured; see Notes |
 | 2. Liveness census | DONE | 49 tables, 0 deletion candidates; see Step 2 results |
 | 3. Divergent tables | DONE | 12 tables, 6 difference classes, 0 defects; see Step 3 results |
-| 4. Foreign models | TODO | Unblocked |
+| 4. Foreign models | TODO | Blocked for the FPML family; see below |
 | 5. Derivable tables | TODO | Unblocked |
 | 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
 | 7. Publication template | TODO | Needs the Artefact columns section from step 3 |
-| 8. Remaining models | TODO | Includes the drop-template marker defect found in step 6 |
+| 8. Remaining models | TODO | The FPML family is blocked; the rest is unblocked |
 | 9. Regenerate C++ | TODO | |
 | 10. Eventing headers | TODO | |
 | 11. Artefact projection in the model | TODO | The =* Artefact columns= section step 3 specifies |
+
+* The FPML family: why 13 tables have no model, and what blocks them
+
+Found on 2026-09-26 while scoping steps 4, 5 and 8. It refines Finding 1 of the investigation and re-scopes three plan steps.
+
+*The 13 generated artefact tables with no model are exactly the FPML codelist entities.* The evidence is an exact match, not a resemblance:
+
+- =scripts/fpml_parser.py= declares 15 entities in =ENTITY_FILE_PATTERNS=: account-types, asset-classes, asset-measures, benchmark-rates, business-centres, business-processes, cashflow-types, entity-classifications, local-jurisdictions, party-relationships, party-roles, person-roles, regulatory-corporate-sectors, reporting-regimes, supervisory-bodies.
+- 2 of the 15 have an org model today: =account_types= in =ores.iam.account_type= and =business_centres= in =ores.refdata.business_centre=.
+- The other 13 are precisely the 13 tables that carry the generated marker with no entity in the 295-entity registry.
+
+*The pathway that produced them is retired.* =fpml_parser.py= does not render SQL directly. =generate_entity_model= writes =<plural>_entity.json=, a JSON entity model, and the schema templates render from that. Codegen no longer discovers JSON models: =manifest.py= records that "JSON model support was decommissioned (all models migrated to org)". Nothing in the repository regenerates these files.
+
+*The output is stale, and the staleness is visible.* =refdata_asset_classes_create.sql= carries the =AUTO-GENERATED= marker, but its insert trigger still uses the pre-codegen shape: =new.= in lower case, =current_timestamp= instead of =clock_timestamp()=, and the old =if new.version != 0 and new.version != current_version= guard with no version-replace check. Every genuinely generated table has the new guard. A second signal says the same thing: the Feb 2026 commit =157f0b6c3c= ("Regenerate SQL files with generation headers") added the marker to 113 files by prepending a header, and its diff shows the marker landing on a file whose body it did not rewrite.
+
+*Consequence for the plan.* The FPML family is not pass 1 work. Authoring its org models needs the dataset archetypes that do not exist yet, and that work is already claimed:
+
+- [[id:44B275EC-DC37-4961-80EF-9D79D4C186FB][Migrate FPML, crypto, flags and ip2country onto the org dataset pipeline]] (backlog, next bucket) owns the migration, and its step 4 deletes the old generators once the new output is byte-identical.
+- Its step 3 depends on [[id:9B900D8C-8F98-4733-96AF-2C838370ED9C][Add the dataset archetypes the four-dataset migration needs]], which includes "FPML per-entity refdata".
+
+So steps 4, 5 and 8 proceed without the FPML family, and the 13 entities are recorded here as a dependency rather than duplicated as work. =account_types= and =business_centres= are already generated from org models and stay in scope.
+
+This also corrects the language of Finding 1. Those tables are not unmodelled; they are modelled by a retired generator. The distinction matters, because it changes the fix from "delete an orphan" to "port a model", and it names the port rather than inventing it.
 
 * Step 6 results
 

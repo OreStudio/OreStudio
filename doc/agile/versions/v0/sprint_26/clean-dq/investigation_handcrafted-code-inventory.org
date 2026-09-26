@@ -116,6 +116,8 @@ Yet no model declares the plural =asset_classes=. The modelled entity is =asset_
 
 So a generated-format file with no generator is not dead code by default. =asset_classes= is proof that this class of finding must be resolved one table at a time, against the live database, and never deleted in bulk.
 
+*Refined on 2026-09-26.* The 13 tables do have a generator, and it is retired. They are exactly the FpML codelist entities: =fpml_parser.py= declares 15 in =ENTITY_FILE_PATTERNS=, two of them (=account_types=, =business_centres=) were migrated to org models in iam and refdata, and the remaining 13 are the 13 tables above. The generator does not render SQL itself; =generate_entity_model= writes =<plural>_entity.json=, and codegen no longer discovers JSON models. So these tables are stale output of a pathway that was decommissioned, and =refdata_asset_classes_create.sql= shows the staleness in its body: the pre-codegen =new.= casing, =current_timestamp=, and no version-replace guard. The fix is to port the 13 to org models, and that port is already owned by capture [[id:44B275EC-DC37-4961-80EF-9D79D4C186FB][Migrate FPML, crypto, flags and ip2country onto the org dataset pipeline]]. See the task's FPML section.
+
 ** Finding 2: the publication functions are manual, and their template is dead
 
 =create/dq= holds 21 handcrafted =*_population_functions_create.sql= files: 20 entity files plus one aggregate. They carry the DQ-side preview and publish functions, which are the data half of the artefact pipeline.

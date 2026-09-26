@@ -93,17 +93,30 @@ TEST_CASE("parse_leaves_the_name_empty_when_the_key_names_no_file", tags) {
     CHECK(parsed->name.empty());
 }
 
+TEST_CASE("an_id_may_carry_its_own_extension", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto key = "compute/input/" + run_id + ".tar.gz";
+    const auto parsed = object_keys::parse(key);
+
+    REQUIRE(parsed.has_value());
+    BOOST_LOG_SEV(lg, info) << "Id: " << parsed->id;
+    CHECK(parsed->id == run_id + ".tar.gz");
+    CHECK(parsed->name.empty());
+    CHECK(object_keys::make("compute", "input", run_id + ".tar.gz") == key);
+}
+
 TEST_CASE("parse_refuses_a_key_that_leaves_the_protocol", tags) {
     auto lg(make_logger(test_suite));
 
     // Too few segments, too many, an empty segment, a segment that walks up
-    // the tree, and one that is not lower snake case.
+    // the tree, and one that carries a space.
     CHECK_FALSE(object_keys::parse("compute/packages").has_value());
     CHECK_FALSE(object_keys::parse("compute/packages/" + run_id + "/a/b")
                     .has_value());
     CHECK_FALSE(object_keys::parse("compute//" + run_id).has_value());
     CHECK_FALSE(object_keys::parse("compute/packages/../etc").has_value());
-    CHECK_FALSE(object_keys::parse("Compute/packages/" + run_id).has_value());
+    CHECK_FALSE(object_keys::parse("compute/pack ages/" + run_id).has_value());
 
     BOOST_LOG_SEV(lg, info) << "Malformed keys refused";
 }
@@ -111,7 +124,7 @@ TEST_CASE("parse_refuses_a_key_that_leaves_the_protocol", tags) {
 TEST_CASE("make_refuses_a_part_that_is_not_a_valid_segment", tags) {
     auto lg(make_logger(test_suite));
 
-    CHECK_THROWS_AS(object_keys::make("Compute", "packages", run_id),
+    CHECK_THROWS_AS(object_keys::make("compute service", "packages", run_id),
                     std::invalid_argument);
     CHECK_THROWS_AS(object_keys::make("compute", "pack ages", run_id),
                     std::invalid_argument);

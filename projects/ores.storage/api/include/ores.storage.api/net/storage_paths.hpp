@@ -49,7 +49,7 @@ struct storage_paths {
      *
      * @param bucket  Bucket name (use @c buckets constants).
      * @param key     Object key; may contain slashes for hierarchical keys.
-     * @return        Path string, e.g. "/api/v1/storage/compute-packages/abc123".
+     * @return        Path string, e.g. "/api/v1/storage/ores/compute/packages/abc123".
      */
     static std::string make_object_path(std::string_view bucket, std::string_view key) {
         std::string path;

@@ -20,6 +20,7 @@
 #include "ores.ore.service/messaging/report_package_handler.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
+#include "ores.storage.api/net/object_keys.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -36,10 +37,12 @@ using namespace ores::reporting::messaging;
 
 namespace {
 
-constexpr std::string_view report_data_bucket = "report-data";
+constexpr std::string_view platform_bucket =
+    ores::storage::api::object_keys::ores_bucket;
 
 std::string tarball_storage_key(const std::string& instance_id) {
-    return instance_id + "/ore_package.tar.gz";
+    return ores::storage::api::object_keys::make(
+        "ore", "packages", instance_id, "ore_package.tar.gz");
 }
 
 } // namespace
@@ -87,7 +90,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         // ── Download trades blob ──────────────────────────────────────
         BOOST_LOG_SEV(lg(), debug) << "Downloading trades blob: " << req.trades_storage_key;
         const auto trades_blob =
-            transfer.download_blob(std::string(report_data_bucket), req.trades_storage_key);
+            transfer.download_blob(std::string(platform_bucket), req.trades_storage_key);
         {
             std::ofstream f(stage_dir / "trades.msgpack", std::ios::binary | std::ios::trunc);
             f.write(trades_blob.data(), static_cast<std::streamsize>(trades_blob.size()));
@@ -97,7 +100,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         BOOST_LOG_SEV(lg(), debug)
             << "Downloading market data blob: " << req.market_data_storage_key;
         const auto md_blob =
-            transfer.download_blob(std::string(report_data_bucket), req.market_data_storage_key);
+            transfer.download_blob(std::string(platform_bucket), req.market_data_storage_key);
         {
             std::ofstream f(stage_dir / "market_data.msgpack", std::ios::binary | std::ios::trunc);
             f.write(md_blob.data(), static_cast<std::streamsize>(md_blob.size()));
@@ -105,12 +108,12 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
 
         // ── Pack into a tar.gz and upload ─────────────────────────────
         const auto tarball_key = tarball_storage_key(req.report_instance_id);
-        transfer.pack_and_upload(stage_dir, std::string(report_data_bucket), tarball_key);
+        transfer.pack_and_upload(stage_dir, std::string(platform_bucket), tarball_key);
 
         // ── Clean up staging directory ────────────────────────────────
         std::filesystem::remove_all(stage_dir);
 
-        const auto tarball_uri = std::string(report_data_bucket) + "/" + tarball_key;
+        const auto tarball_uri = std::string(platform_bucket) + "/" + tarball_key;
 
         prepare_ore_package_result result;
         result.success = true;

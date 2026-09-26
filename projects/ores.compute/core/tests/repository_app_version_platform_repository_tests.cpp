@@ -61,7 +61,7 @@ app_version_platform make_row(database_helper& h,
     r.app_version_id = av_id;
     r.platform_id = p.id;
     r.platform_code = p.code;
-    r.package_uri = "/api/v1/storage/compute/packages/test/" + p.code + "/" + uri_suffix;
+    r.package_uri = "/api/v1/storage/ores/compute/packages/test-" + p.code + "/" + uri_suffix;
     return r;
 }
 

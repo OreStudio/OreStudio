@@ -69,7 +69,7 @@ public:
 
     /**
      * @brief Uploads @p local_file to
-     * packages/{app_name}/{version}/{app_name}-{version}-{platform_code}[.ext]
+     * compute/packages/{app_name}-{version}/{app_name}-{version}-{platform_code}[.ext]
      * -- the only key shape apps/versions/platforms are published under.
      *
      * Computes the local SHA256 before uploading, compares it against the

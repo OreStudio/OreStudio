@@ -44,10 +44,18 @@ namespace ores::storage::api {
  * - _purpose_ says what the object is for within that service, in the plural
  *   where it is a collection: =packages=, =imports=, =runs=.
  * - _id_ is the domain identifier the object belongs to, as the domain stores
- *   it (a UUID today). It is what makes the key unique.
- * - _name_, when present, is the file's own name, so an object that is one of
- *   several under the same id -- =trades.msgpack= and =market_data.msgpack= in
- *   one run -- is distinguishable.
+ *   it. It is what makes the key unique. An id may carry its own extension,
+ *   where the object is the id's file and has no name of its own:
+ *   =compute/input/<uuid>.tar.gz=.
+ * - _name_, when present, is the file's own name, so two objects under one id
+ *   -- =trades.msgpack= and =market_data.msgpack= in one run -- are
+ *   distinguishable.
+ *
+ * A segment holds letters, digits, dots, hyphens and underscores, and never a
+ * slash. Dot and dot dot are refused: they are a directory walk, not a
+ * segment, and a slash is the only separator, so no key can leave the bucket
+ * that owns it. Lower snake case is the convention for the service and purpose
+ * segments, not a rule the protocol enforces.
  *
  * A key is still opaque to storage: the store never parses a segment, never
  * treats a slash as a directory it must create, and never learns what a
@@ -84,36 +92,16 @@ struct object_keys final {
     /**
      * @brief Whether a segment may appear in a key.
      *
-     * Lower snake case, digits and hyphens; no separators, no parent
-     * references and nothing empty, so a segment can never move a key out of
-     * the bucket it belongs to.
+     * Letters, digits, dots, hyphens and underscores; nothing empty, and
+     * neither dot nor dot dot. A dot is allowed because an id may carry its
+     * own extension and a version reads as one, while a slash never is,
+     * so a segment can never move a key out of the bucket it belongs to.
      */
     [[nodiscard]] static bool is_valid_segment(std::string_view segment) {
-        if (segment.empty())
+        if (segment.empty() || segment == "." || segment == "..")
             return false;
 
         for (const char c : segment) {
-            const bool allowed = (c >= 'a' && c <= 'z') ||
-                (c >= '0' && c <= '9') || c == '_' || c == '-';
-            if (!allowed)
-                return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * @brief Whether a file name may appear as the last segment of a key.
-     *
-     * Names carry a file's own extension, so they may also hold upper case
-     * letters and dots. Dot and dot dot are refused: they are a directory
-     * walk, not a name.
-     */
-    [[nodiscard]] static bool is_valid_name(std::string_view name) {
-        if (name.empty() || name == "." || name == "..")
-            return false;
-
-        for (const char c : name) {
             const bool allowed = (c >= 'a' && c <= 'z') ||
                 (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
                 c == '_' || c == '-' || c == '.';
@@ -145,18 +133,18 @@ struct object_keys final {
         if (!is_valid_segment(id))
             throw std::invalid_argument("object key has an invalid id segment");
 
+        if (!name.empty() && !is_valid_segment(name))
+            throw std::invalid_argument("object key has an invalid name segment");
+
         std::string key;
         key.reserve(service.size() + purpose.size() + id.size() +
-            name.size() + 3);
+            name.size() + 4);
         key.append(service).append(1, '/');
         key.append(purpose).append(1, '/');
         key.append(id);
 
         if (name.empty())
             return key;
-
-        if (!is_valid_name(name))
-            throw std::invalid_argument("object key has an invalid name segment");
 
         key.append(1, '/');
         key.append(name);
@@ -177,6 +165,8 @@ struct object_keys final {
             const auto end = key.find('/', start);
             const auto segment = (end == std::string_view::npos) ?
                 key.substr(start) : key.substr(start, end - start);
+            if (!is_valid_segment(segment))
+                return std::nullopt;
             segments.push_back(segment);
             if (end == std::string_view::npos)
                 break;
@@ -186,20 +176,13 @@ struct object_keys final {
         if (segments.size() < 3 || segments.size() > 4)
             return std::nullopt;
 
-        if (!is_valid_segment(segments[0]) || !is_valid_segment(segments[1]) ||
-            !is_valid_segment(segments[2]))
-            return std::nullopt;
-
         parts result;
         result.service = std::string(segments[0]);
         result.purpose = std::string(segments[1]);
         result.id = std::string(segments[2]);
 
-        if (segments.size() == 4) {
-            if (!is_valid_name(segments[3]))
-                return std::nullopt;
+        if (segments.size() == 4)
             result.name = std::string(segments[3]);
-        }
 
         return result;
     }

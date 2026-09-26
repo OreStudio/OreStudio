@@ -43,13 +43,13 @@ TEST_CASE("a local store keeps the bytes it is given", tags) {
     local_store store(root.path());
 
     const std::string payload("the exact bytes, byte for byte");
-    store.put("ore-imports", "instance/trades.msgpack", payload);
+    store.put("ores", "ore/imports/instance/trades.msgpack", payload);
 
     BOOST_LOG_SEV(lg, debug) << "Stored " << payload.size() << " bytes";
 
-    CHECK(store.get("ore-imports", "instance/trades.msgpack") == payload);
-    CHECK(store.exists("ore-imports", "instance/trades.msgpack"));
-    CHECK(store.size("ore-imports", "instance/trades.msgpack") == payload.size());
+    CHECK(store.get("ores", "ore/imports/instance/trades.msgpack") == payload);
+    CHECK(store.exists("ores", "ore/imports/instance/trades.msgpack"));
+    CHECK(store.size("ores", "ore/imports/instance/trades.msgpack") == payload.size());
 }
 
 TEST_CASE("a local store reports an absent object distinctly", tags) {
@@ -58,10 +58,10 @@ TEST_CASE("a local store reports an absent object distinctly", tags) {
     scoped_temp_directory root;
     local_store store(root.path());
 
-    CHECK_THROWS_AS(store.get("ore-imports", "nothing/here"), object_not_found);
-    CHECK_FALSE(store.exists("ore-imports", "nothing/here"));
-    CHECK_FALSE(store.size("ore-imports", "nothing/here").has_value());
-    CHECK_FALSE(store.remove("ore-imports", "nothing/here"));
+    CHECK_THROWS_AS(store.get("ores", "ore/imports/nothing/here"), object_not_found);
+    CHECK_FALSE(store.exists("ores", "ore/imports/nothing/here"));
+    CHECK_FALSE(store.size("ores", "ore/imports/nothing/here").has_value());
+    CHECK_FALSE(store.remove("ores", "ore/imports/nothing/here"));
 
     BOOST_LOG_SEV(lg, debug) << "Absent object reported as absent";
 }
@@ -71,16 +71,16 @@ TEST_CASE("a local store refuses a key that would leave its bucket", tags) {
 
     scoped_temp_directory root;
     local_store store(root.path());
-    store.put("compute", "packages/app.tar.gz", "payload");
+    store.put("ores", "compute/packages/app.tar.gz", "payload");
 
-    CHECK_FALSE(store.is_valid_key("compute", "../ore-imports/secret"));
-    CHECK_FALSE(store.exists("compute", "../ore-imports/secret"));
-    CHECK_THROWS_AS(store.get("compute", "../ore-imports/secret"), object_not_found);
+    CHECK_FALSE(store.is_valid_key("ores", "../ore/imports/secret"));
+    CHECK_FALSE(store.exists("ores", "../ore/imports/secret"));
+    CHECK_THROWS_AS(store.get("ores", "../ore/imports/secret"), object_not_found);
 
-    CHECK_FALSE(local_store::is_valid_bucket("compute/../ore-imports"));
+    CHECK_FALSE(local_store::is_valid_bucket("ores/../ore"));
     CHECK_FALSE(local_store::is_valid_bucket(".."));
     CHECK_FALSE(local_store::is_valid_bucket(""));
-    CHECK(local_store::is_valid_bucket("report-data"));
+    CHECK(local_store::is_valid_bucket("ores"));
 
     BOOST_LOG_SEV(lg, debug) << "Traversal refused";
 }
@@ -91,24 +91,24 @@ TEST_CASE("a local store lists a bucket by prefix", tags) {
     scoped_temp_directory root;
     local_store store(root.path());
 
-    store.put("compute", "packages/a.tar.gz", "aa");
-    store.put("compute", "packages/b.tar.gz", "bbb");
-    store.put("compute", "input/a.tar.gz", "a");
-    store.put("compute", "output/a.tar.gz", "aaaa");
+    store.put("ores", "compute/packages/a.tar.gz", "aa");
+    store.put("ores", "compute/packages/b.tar.gz", "bbb");
+    store.put("ores", "compute/input/a.tar.gz", "a");
+    store.put("ores", "compute/output/a.tar.gz", "aaaa");
 
-    const auto all = store.list("compute", "");
+    const auto all = store.list("ores", "");
     REQUIRE(all.size() == 4);
-    CHECK(all[0].key == "input/a.tar.gz");
-    CHECK(all[1].key == "output/a.tar.gz");
-    CHECK(all[2].key == "packages/a.tar.gz");
-    CHECK(all[3].key == "packages/b.tar.gz");
+    CHECK(all[0].key == "compute/input/a.tar.gz");
+    CHECK(all[1].key == "compute/output/a.tar.gz");
+    CHECK(all[2].key == "compute/packages/a.tar.gz");
+    CHECK(all[3].key == "compute/packages/b.tar.gz");
     CHECK(all[2].size_bytes == 2);
     CHECK(all[3].size_bytes == 3);
 
-    const auto filtered = store.list("compute", "packages/");
+    const auto filtered = store.list("ores", "compute/packages/");
     REQUIRE(filtered.size() == 2);
-    CHECK(filtered[0].key == "packages/a.tar.gz");
-    CHECK(filtered[1].key == "packages/b.tar.gz");
+    CHECK(filtered[0].key == "compute/packages/a.tar.gz");
+    CHECK(filtered[1].key == "compute/packages/b.tar.gz");
 
     CHECK(store.list("never-written", "").empty());
 

@@ -214,6 +214,13 @@ key     <service>/<purpose>/<id>[/<name>]
 - =name=, when present, is the file's own name, so two objects under one id --
   =trades.msgpack= and =market_data.msgpack= in one run -- stay apart.
 
+A segment holds letters, digits, dots, hyphens and underscores, and never a
+slash. An id may carry its own extension where the object is the id's file and
+has no name of its own, as in =compute/input/<uuid>.tar.gz=. Dot and dot dot
+are refused, and a slash is the only separator, so no key leaves the bucket
+that owns it. Lower snake case is the convention for the service and purpose
+segments, not a rule the protocol enforces.
+
 One bucket, because a bucket is an allocation and services come and go inside an
 allocation. A bucket per service would change the deployment's storage layout
 every time a service is added, and =report-data= shows what that costs: it named

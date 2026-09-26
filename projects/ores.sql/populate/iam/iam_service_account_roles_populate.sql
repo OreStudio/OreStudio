@@ -60,6 +60,9 @@ select ores_iam_account_role_assign_fn(
     ores_utility_system_tenant_id_fn(), :'telemetry_service_user', 'TelemetryService');
 
 select ores_iam_account_role_assign_fn(
+    ores_utility_system_tenant_id_fn(), :'storage_service_user', 'StorageService');
+
+select ores_iam_account_role_assign_fn(
     ores_utility_system_tenant_id_fn(), :'trading_service_user', 'TradingService');
 
 select ores_iam_account_role_assign_fn(

@@ -365,7 +365,11 @@
 
 * ores.storage.service
 :PROPERTIES:
-:description: Object storage over the bus. Answers put, get, delete and list on the storage.v1.objects.* subjects, over the same storage root the HTTP routes are given, so a caller reaches one set of objects either way. It needs no database of its own: a bucket is a directory and a key is a path.
+:psql_var:    storage_service
+:env_key:     STORAGE_SERVICE
+:iam_role:    StorageService
+:description: Object storage over the bus. Answers put, get, delete and list on the storage.v1.objects.* subjects, over the same storage root the HTTP routes are given, so a caller reaches one set of objects either way. It holds no tables: the database gives it the request context the shared runner hands to a handler, and nothing else.
+:email:       storage_service@system.ores
 :replicas:    1
 :enabled:     true
 :depends_on:  ores.iam.service

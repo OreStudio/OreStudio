@@ -28,9 +28,9 @@ A schedule fires, the reporting service creates a report instance in the correct
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] |
-| Now          | Analysis complete and proven live; the trigger path is dead and the fix awaits a decision on how the scheduler authenticates. |
-| Waiting on   | A decision: how does a scheduled trigger carry an identity? |
-| Next         | Agree the trigger identity, then fix and prove it. |
+| Now          | Analysis complete and proven live. The decisions are recorded below; the test report is the next unit of work. |
+| Waiting on   | Nothing. |
+| Next         | Seed the test report, then make the trigger an authenticated operation. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -191,31 +191,132 @@ run, the report hangs in =in_progress= forever and nothing notices.
 5. Wait for a minute boundary. Read the scheduler log, the reporting log,
    and =ores_reporting_report_instances_tbl=.
 
+* Progress
+
+| Unit | State | Evidence |
+|------+-------+----------|
+| Test report fixture | Landed. Five definitions covering the happy path, the three concurrency policies and a config with no scope. Idempotent; a second run creates nothing. | =reporting_test_report_populate.sql= |
+| Component regenerated | Landed. 54 files brought up to date and 20 materialised. | =check_component_drift.py --component reporting= |
+| Trigger as an operation | Landed. The generated protocol retires the hand-written message, and the shell gains =report_operations trigger-report-instance <report_definition_id> <tenant_id> [--job_instance_id <v>]=. | =report_operations_protocol.hpp= |
+| FSM transitions enforced | Landed and proven against the live database. Six checks, including two refusals. | =reporting_report_instances_fsm_guard_create.sql= |
+| In-flight query | Landed. An instance is in flight while its state is not terminal, read from the machine rather than from a list of names. | =reporting_in_flight_instance_fn_create.sql= |
+| Scheduler identity | Landed. The scheduler builds a service token and sends a report trigger as an authenticated request, so a refusal fails the job. | =nats_publish_action_handler.cpp= |
+| Handler rewrite | Landed. The tenant comes from the request, the concurrency check reads the in-flight query, an unknown policy is refused, =started_at= is set only when the instance will run, and every path answers. | =report_instance_trigger_handler.hpp= |
+
+Still open on this task:
+
+- =queued= to =pending= promotion. The transition exists and the guard enforces it, but nothing performs it, so a queued instance waits forever. It belongs where an instance reaches a terminal state.
+- =cancelled= is written by no code.
+- The trigger's concurrency check and the instance insert are not one transaction, so two simultaneous triggers can both see nothing in flight.
+- The generated CRUD path can still write =fsm_state_id=, though the guard now refuses what the machine forbids.
+
+* Live verification
+
+Run through the shell against the fleet on 2026-09-26, with the fixture
+definition =FSM Happy Path=:
+
+#+begin_example
+report_operations trigger-report-instance 7ddbb72b-... ffffffff-...
+  -> {"result":{"outcome":"ok","code":"triggered",
+       "message":"Report instance c7779c02-... created."}}
+#+end_example
+
+The instance row exists in state =pending=, and the reporting log records both
+the save and "dispatched its workflow". The workflow service records
+=Start-workflow request received: type=report_execution_workflow=.
+
+The run also exposed three defects that only a live run could find, each fixed
+in the same commit: the handler scoped its context from the base context and so
+lost the workspace, which made every definition look missing; the in-flight
+query was revoked from PUBLIC and granted to nobody, so the trigger failed with
+"permission denied"; and the change-reason code was an unseeded literal, so the
+insert was rejected by the validator.
+
+What remains is the step the run stopped at: the instance does not leave
+=pending=. The engine accepts the start and the reporting service never logs
+=gather_trades=, so the next diagnostic is whether the engine published the
+step-0 command and to which subject.
+
 * Plan
 
-Analysis first, then the fix, in this order:
-
-1. Agree how a scheduled trigger carries an identity. This is the
-   blocking decision; see the open question below.
-2. Fix the trigger path: carry the identity, answer failures, filter the
-   concurrency check by definition and by active state, promote =queued=
-   instances, and stamp =started_at= only when work starts.
-3. Prove it with the live experiment above, and keep the experiment as a
-   test so the path cannot break silently again.
-4. Decide the remaining FSM gaps explicitly: =cancelled=, the unenforced
-   transitions table, and the definition FSM's unused initial state.
+1. Seed a test report in the component, so the FSM is testable in any
+   environment. A definition, its =risk_report_config= and its book scope.
+2. Make the trigger an operation and give it an identity, per the
+   decisions below.
+3. Enforce the seeded transitions, so an illegal state change fails.
+4. Walk the FSM from ores.shell and keep that walk as the test.
 5. Correct the two plan documents, whose status tables no longer describe
    the code.
 
-* Open question
+* Decisions
 
-Who is the actor when a schedule fires? The answer picks the fix.
+** The trigger is a service-to-service operation, not an entity verb
 
-| Option | How it works | Cost |
-|--------+--------------+------|
-| A. The scheduler holds a service token | The scheduler authenticates to IAM as a service account and publishes the trigger with that bearer, as other services do for delegated calls. | The report service keeps one auth rule. The scheduler needs a token lifecycle and a re-fetch on expiry. |
-| B. A separate internal operation subject | The trigger moves from the entity subject to an operation subject that the reporting service serves without a user context, taking the tenant from the payload. | Simplest to build, but it opens a second, unauthenticated way into report creation unless the subject is bound to a service identity. |
-| C. The job carries the owner's identity | Scheduling stores the bearer or the account of whoever scheduled the definition, and the scheduler replays it. | No new auth mechanism. A long-lived credential sits in =.env= or in the job payload, which is the reason to avoid it. |
+Authentication here has two layers, and the defect lives on the second.
+
+- *Transport* is mTLS. =build/config/nats-<label>.conf= sets =verify: true=
+  with the environment CA, so every client presents a certificate, one per
+  service. There are no subject ACLs. Being able to publish to a subject
+  means being a process in this environment.
+- *Message identity* is the JWT bearer. It carries the tenant, the party
+  scope and the roles, and those are what row-level security and
+  =has_permission= read.
+
+So the scheduler is not refused entry to the bus. Its message arrives and
+names no principal, and the handler demands one.
+
+Three kinds of subject already exist:
+
+| Kind | Shape | Context |
+|------+-------+---------|
+| Entity verbs | ={component}.v1.{resource}.{verb}= | Built from the bearer |
+| Operations | ={component}.v1.ops.{operation}= | Built from the bearer; the tenant comes from the token, and an acted-on *party* is carried in the message |
+| Control plane | =workflow.v1.start=, =workflow.v1.events.step-completed= | No context; the engine trusts the bus |
+
+=trigger= is not a canonical entity verb, so P01 and P04 place it in the
+second row. It is also a scheduler-to-reporting call, and every other
+service-to-service call in the tree authenticates with the caller's own
+service token: =make_service_token_provider= logs in at
+=iam.v1.auth.service-login=, caches the bearer, refreshes it, and
+=authenticated_request= attaches it. Reporting already calls trading,
+marketdata and the scheduler that way.
+
+The fix therefore has four parts, and they are not alternatives:
+
+1. *Modelling.* The trigger becomes an operation model under
+   =reporting.v1.ops.=, and its message generates from the model. The
+   hand-written protocol header goes, as P04 requires. Variability's
+   =ores.variability.operations.org= is the worked example.
+2. *Identity.* The scheduler publishes with its own service account.
+   =ores_<env>_scheduler_service= already exists, so this follows the
+   existing service-call pattern and gives the audit trail a name.
+3. *Tenancy.* The message carries the acted-on =tenant_id=, because one
+   service account lives in one tenant while report definitions are
+   per-tenant. This is the precedent =complete_party_onboarding= set for
+   the party: the acting identity is the caller's, the acted-on identity
+   is carried.
+4. *Failure.* The scheduler sends the trigger as a request, so a reply
+   subject exists and =error_reply= stops being discarded. A rejected
+   trigger then marks the job failed instead of succeeded.
+
+** The seeded transitions are enforced
+
+An instance state change goes through a checked transition against
+=ores_dq_fsm_transitions_tbl=, so an illegal transition fails loudly. Today
+=inst->fsm_state_id= is assigned directly and no code reads the table.
+
+** A seeded test report makes the FSM testable
+
+The component carries a test report — a definition, its
+=risk_report_config= and its book scope — so that an environment, freshly
+created, can walk the FSM from ores.shell. The fixture is deterministic: a
+book with no trades exports an empty list and succeeds
+(=trade_handler.hpp:364-371=), so the happy path needs no trade data.
+
+The fixture covers the happy path =pending -> running -> completed=; a
+configuration with no book scope, which =gather_trades= rejects and which
+drives =-> failed=; and the three concurrency policies, exercised by
+triggering one definition twice.
 
 * Notes
 

@@ -2,7 +2,7 @@
 :ID: 0F93B352-F234-4D9D-82E6-05218BE645E8
 :END:
 #+title: ores.ore.api
-#+description: The shared contract for the ORE integration component — the series key shape entity and its protocol, events and generator, plus the ORE import and storage protocols.
+#+description: The shared contract for the ORE integration component — the series key shape entity, plus the ORE import, saga-step and storage protocols.
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :ore:api:component:
@@ -21,32 +21,37 @@
 * Summary
 
 =ores.ore.api= is the shared contract of the component. It carries the
-series key shape entity with its JSON and table I/O, its generated NATS
-protocol and change events, and its sample generator; the protocols for
-importing an ORE directory and for locating the import tarball in object
-storage; and the workflow registration the ORE import runs under.
+series key shape entity with its JSON I/O; the protocols for importing an
+ORE directory, for the saga steps the engine drives, and for locating the
+import tarball in object storage; and the workflow registration the ORE
+import runs under.
+
+The entity is the only part of the contract with no protocol of its own.
+It is a reference table that =ores.marketdata= reads through the core's
+repository, in process, so the model disables every facet that would build
+a NATS surface, a shell command or a user interface for it. What the api
+carries is the type the repository returns, not a surface.
 
 It is a shared library, not a header-only one: the sources under =src/=
 build =ores.ore.api.lib= and install it with a version.
 
 * Inputs
 
-- Entity rows and protocol requests, at the boundary of the generated
-  entity stack.
-- Workflow definitions registered by the engine at startup.
+- Entity rows, from the core's repository.
+- Protocol requests for the ORE import, and workflow definitions the
+  engine registers at startup.
 
 * Outputs
 
-- The generated entity protocol, its events, and the serializer and
-  table renderers the shell and the wire protocol use.
-- The import and storage protocol schemas consumed by =ores.ore.service=.
+- The entity type and its JSON serialisation, for the repository and the
+  market data readers.
+- The import, saga-step and storage protocol schemas consumed by
+  =ores.ore.service= and the shell.
 
 * Entry points
 
-- =include/ores.ore.api/domain/= — the series key shape entity and its I/O.
-- =include/ores.ore.api/messaging/= — the entity protocol and the import protocols.
-- =include/ores.ore.api/eventing/= — the entity change events.
-- =include/ores.ore.api/generators/= — the sample entity generator.
+- =include/ores.ore.api/domain/= — the series key shape entity and its JSON I/O.
+- =include/ores.ore.api/messaging/= — the import and saga-step protocols.
 - =include/ores.ore.api/net/= — the import tarball bucket and key helpers.
 - =include/ores.ore.api/workflow/= — the ORE import workflow registration.
 
@@ -54,7 +59,7 @@ build =ores.ore.api.lib= and install it with a version.
 
 - =ores.platform=, =ores.storage=, =ores.logging=, =ores.workflow.api= and
   =ores.eventing.api= — linked publicly, so consumers inherit them.
-- =ores.utility=, =faker-cxx= and =libfort= — linked privately.
+- =ores.utility= — linked privately.
 
 =ores.storage= is public because the import target helpers name a bucket,
 so every consumer of this part inherits the object-storage client.
@@ -64,5 +69,5 @@ so every consumer of this part inherits the object-storage client.
 - [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]] — the document engine behind this contract.
 - [[id:EF8FD20D-0B9C-4379-8BBD-B4FCF2F5F0C7][ores.ore.service]] — the runnable host.
 - [[id:5F280C8C-8C50-40A2-8C84-C85B8821D33E][ores.ore]] — the composite this part belongs to.
-- [[id:8316E5A7-9BDA-4C88-856C-C933290F7396][ores.ore.series_key_shape]] — the entity this part carries.
+- [[id:8316E5A7-9BDA-4C88-856C-C933290F7396][ores.ore.series_key_shape]] — the entity this part carries, with no surface of its own.
 - [[id:7302A9A4-8B64-4C92-8582-49FB5A2219A2][How do I round trip an ORE document through the database?]] — the import workflow this part declares.

@@ -34,6 +34,55 @@ that claims a point dimension and also carries a default point is
 contradictory and is rejected, both by the reader and by the check
 constraint below.
 
+The table carries an entity, a repository and its SQL, and nothing
+else. It is a reference table that reads like configuration: one seeded
+row per series type ORE defines. Nothing sends its subjects, serves its
+handlers or drives its commands, so every facet that would build a
+surface for them is disabled, and the repository the component keeps is
+the whole of its use of this entity. =ores.marketdata=, the one real
+consumer, reads it through that repository, in process.
+
+* Physical space
+
+The entity's surface is deliberately not generated. It is a reference
+table an operator does not edit: the rows are ORE's key grammar, seeded
+by a populate script, and the whole of the component's use of it is the
+key registry's read. A NATS protocol, a handler, a sub-registrar, a
+history provider registrar, an event registrar, a service, a sample
+generator, a shell command unit and its recipe, a table renderer and the
+TypeScript twins would all be generated for nobody: the nine subjects
+answer nothing, the registrars are called from nowhere, and the shell
+unit has never been in the build.
+
+The profile =simple-lookup= enables the shell command and the eventing
+integration test, so both are stated here rather than in the drawer: a
+physical-space table beats a profile default, and a drawer entry does
+not.
+
+The data layer — domain, entity, mapper, repository — and the SQL schema
+are generated.
+
+| Address                            | Enabled |
+|------------------------------------+---------|
+| ores.cpp.protocol                  | false   |
+| ores.cpp.nats-handler              | false   |
+| ores.cpp.nats-sub-registrar        | false   |
+| ores.cpp.nats-eventing             | false   |
+| ores.cpp.nats-event-registrar      | false   |
+| ores.cpp.history-provider-registrar | false  |
+| ores.cpp.presentation              | false   |
+| ores.cpp.service                   | false   |
+| ores.cpp.generator                 | false   |
+| ores.cpp.eventing-integration-test | false   |
+| ores.cpp.shell-command             | false   |
+| ores.cpp.domain.table_header       | false   |
+| ores.cpp.domain.table_impl         | false   |
+| ores.cpp.domain.table_io_header    | false   |
+| ores.cpp.domain.table_io_impl      | false   |
+| ores.ts.domain                     | false   |
+| ores.ts.protocol                   | false   |
+| ores.doc.shell-recipe              | false   |
+
 * Flags
 :PROPERTIES:
 :schema:    public

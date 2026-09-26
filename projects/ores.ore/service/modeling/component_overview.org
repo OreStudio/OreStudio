@@ -29,9 +29,11 @@ stages an uploaded directory, the execute handler that plans and saves the
 documents into the trading and reference data model, the rollback handler,
 and the report package handler that assembles an ORE run's inputs.
 
-The generated series key shape handlers are *not* composed here. Nothing
-serves that protocol today, and the clean standard requires either a
-composition point or a recorded reason; see the clean task.
+The series key shape entity has no handler here or anywhere else, by
+design. It is a reference table =ores.marketdata= reads through the core's
+repository, in process, so the entity's model disables its protocol,
+handler, registrars, service and shell command rather than leaving a
+surface nothing composes.
 
 * Inputs
 

@@ -26,7 +26,7 @@ XML vocabulary, twelve hand-written mappers between those bindings and the
 =ores.trading= and =ores.refdata= domain types, the importer, the exporter
 and the directory round trip, readers for ORE's market data text formats,
 the import planner and directory scanner, and the generated series key
-shape entity stack.
+shape entity with its repository.
 
 The XSD bindings are the largest part of the component by far and are
 produced by a generator outside the build. See
@@ -49,8 +49,7 @@ produced by a generator outside the build. See
 - Reference data objects: currencies, calendar adjustments, portfolios
   and books.
 - Regenerated ORE XML documents, mirrored by the round trip.
-- The series key shape entity, through the generated repository and
-  service facets.
+- The series key shape entity, through the generated repository.
 
 * Entry points
 
@@ -62,8 +61,8 @@ produced by a generator outside the build. See
   files by root element.
 - =include/ores.ore.core/planner/= — the import plan and its choices.
 - =include/ores.ore.core/hierarchy/= — the portfolio and book node builder.
-- =include/ores.ore.core/repository/=, =service/=, =messaging/= and
-  =presentation/= — the generated series key shape stack.
+- =include/ores.ore.core/repository/= — the generated series key shape
+  entity and its repository.
 - =include/ores.ore.core/log/= — the ORE engine log line parser.
 
 * Dependencies

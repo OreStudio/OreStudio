@@ -35,8 +35,8 @@ documentation survey linked below.
 
 | Sub-component | Brief |
 |---------------+-------|
-| [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]] | The shared contract: the series key shape entity, its protocol, its events and its generator, plus the ORE import and storage protocols. |
-| [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]] | The ORE document engine: the xsdcpp XML bindings, the instrument mappers, the importer and exporter, the round trip, the market data readers, the import planner and scanner, and the generated entity stack. |
+| [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]] | The shared contract: the series key shape entity, plus the ORE import, saga-step and storage protocols. |
+| [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]] | The ORE document engine: the xsdcpp XML bindings, the instrument mappers, the importer and exporter, the round trip, the market data readers, the import planner and scanner, and the generated entity repository. |
 | [[id:EF8FD20D-0B9C-4379-8BBD-B4FCF2F5F0C7][ores.ore.service]] | The runnable host: the import worklist handlers, the execute and rollback handlers, the report package handler, and the registrar that wires them. |
 
 * Entity modules

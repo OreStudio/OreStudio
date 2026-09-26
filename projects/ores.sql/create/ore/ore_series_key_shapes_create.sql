@@ -44,6 +44,14 @@
  * that claims a point dimension and also carries a default point is
  * contradictory and is rejected, both by the reader and by the check
  * constraint below.
+ *
+ * The table carries an entity, a repository and its SQL, and nothing
+ * else. It is a reference table that reads like configuration: one seeded
+ * row per series type ORE defines. Nothing sends its subjects, serves its
+ * handlers or drives its commands, so every facet that would build a
+ * surface for them is disabled, and the repository the component keeps is
+ * the whole of its use of this entity. ores.marketdata, the one real
+ * consumer, reads it through that repository, in process.
  */
 
 create table if not exists "ores_ore_series_key_shapes_tbl" (

@@ -31,7 +31,6 @@ set(files
     "market_series_key_registry_tests.cpp"
     "planner_import_planner_tests.cpp"
     "scanner_directory_scanner_tests.cpp"
-    "series_key_shape_eventing_integration_tests.cpp"
     "xml_bond_fact_mapper_roundtrip_tests.cpp"
     "xml_bond_golden_roundtrip_tests.cpp"
     "xml_bond_mapper_roundtrip_tests.cpp"

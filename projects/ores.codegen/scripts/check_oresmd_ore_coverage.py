@@ -67,11 +67,6 @@ UNREPRESENTED: dict[str, str] = {
         "two tenors. Needs the bond asset class above plus a volatility "
         "surface point."
     ),
-    "CAPFLOOR": (
-        "Cap/floor log-normal volatility on an 8-segment key "
-        "(ccy/tenor/index-strength/strike-dimensions/strike). Needs a "
-        "strike-and-shift surface point, which is not the swaption surface."
-    ),
     "COMMODITY_OPTION": (
         "Commodity option log-normal volatility, 6, 7 and 9 segments, with "
         "delta and forward coordinates. Needs the volatility surface point "
@@ -134,6 +129,7 @@ VOL_REPRESENTED: dict[str, str] = {
     "SWAPTION": "ir",
     "FX_OPTION": "fx",
     "EQUITY_OPTION": "equity",
+    "CAPFLOOR": "ir",
 }
 
 # An asset class whose model declares a ``vol`` field but whose projection

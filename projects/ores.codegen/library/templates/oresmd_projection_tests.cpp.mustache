@@ -568,13 +568,12 @@ TEST_CASE("from_ore_key_convention_correction_only_touches_fx_spot", tags) {
 }
 
 /*
- * Rejection: series types without an oresmd mapping (the capfloor and inflation
- * capfloor families, BOND), types the registry does not know, and malformed keys.
+ * Rejection: series types without an oresmd mapping (the inflation capfloor
+ * families and BOND), types the registry does not know, and malformed keys.
  */
 
 TEST_CASE("from_ore_key_rejects_registry_types_without_an_oresmd_mapping", tags) {
     REQUIRE_FALSE(oresmd_projections::from_ore_key("BOND/PRICE/ISINXS/SNR/5Y").has_value());
-    REQUIRE_FALSE(oresmd_projections::from_ore_key("CAPFLOOR/RATE/USD/5Y/3M").has_value());
     REQUIRE_FALSE(oresmd_projections::from_ore_key("INDEX_CDS_OPTION/RATE/CDX/5Y/1Y").has_value());
     REQUIRE_FALSE(oresmd_projections::from_ore_key("COMMODITY_OPTION/PRICE/WTI/USD/1Y/100").has_value());
     REQUIRE_FALSE(
@@ -584,6 +583,10 @@ TEST_CASE("from_ore_key_rejects_registry_types_without_an_oresmd_mapping", tags)
 }
 
 TEST_CASE("from_ore_key_option_families", tags) {
+    REQUIRE(oresmd_projections::from_ore_key("CAPFLOOR/RATE_NVOL/CHF/5Y/6M/0/0/0.03") ==
+            parse("oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03"));
+    REQUIRE(oresmd_projections::from_ore_key("CAPFLOOR/RATE_LNVOL/CHF/5Y/6M/0/0/0.03") ==
+            parse("oresmd://ir/chf?type=vol&quote=capfloor&point=5y,6m,0,0,0.03"));
     REQUIRE(oresmd_projections::from_ore_key("FX_OPTION/RATE_LNVOL/EUR/USD/10Y/ATM") ==
             parse("oresmd://fx/eurusd?type=vol&point=10y,atm"));
     REQUIRE(oresmd_projections::from_ore_key("EQUITY_OPTION/RATE_LNVOL/SP5/USD/6M/ATMF") ==

@@ -82,7 +82,8 @@ enum class ir_quote_type {
     cc_fix_float_swap, ///< CC_FIX_FLOAT_SWAP (cross-currency fix-float swap rate).
     zero,              ///< ZERO (zero-coupon rate).
     mm_future,         ///< MM_FUTURE (money market future price).
-    oi_future          ///< OI_FUTURE (overnight index future price).
+    oi_future,         ///< OI_FUTURE (overnight index future price).
+    capfloor           ///< CAPFLOOR (cap/floor volatility on a strike grid).
 };
 
 /**

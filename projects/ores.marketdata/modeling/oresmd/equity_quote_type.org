@@ -56,6 +56,8 @@ A logical, possibly-partial oresmd requirement for an equity/index instrument.
 | tenor |
 | second_tenor |
 | second_ccy |
+| shift |
+| strip |
 | role |
 | metric |
 

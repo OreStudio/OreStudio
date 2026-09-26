@@ -54,6 +54,8 @@ struct query_params final {
     std::optional<std::string> tenor;
     std::optional<std::string> second_tenor;
     std::optional<std::string> second_ccy;
+    std::optional<std::string> shift;
+    std::optional<std::string> strip;
     std::optional<std::string> role;
     std::optional<std::string> type;
     std::optional<std::string> metric;
@@ -74,6 +76,10 @@ struct query_params final {
                 qp.second_tenor = p.value;
             else if (p.key == "second_ccy")
                 qp.second_ccy = p.value;
+            else if (p.key == "shift")
+                qp.shift = p.value;
+            else if (p.key == "strip")
+                qp.strip = p.value;
             else if (p.key == "role")
                 qp.role = p.value;
             else if (p.key == "type")
@@ -130,6 +136,8 @@ void validate_fx(const query_params& qp) {
     reject_if_present("fx", "tenor", qp.tenor);
     reject_if_present("fx", "second_tenor", qp.second_tenor);
     reject_if_present("fx", "second_ccy", qp.second_ccy);
+    reject_if_present("fx", "shift", qp.shift);
+    reject_if_present("fx", "strip", qp.strip);
     reject_if_present("fx", "role", qp.role);
     reject_if_present("fx", "metric", qp.metric);
 }
@@ -139,9 +147,6 @@ void validate_ir(const query_params& qp) {
     if (qp.metric && parse_type(qp) != instrument_type::quote)
         BOOST_THROW_EXCEPTION(
             oresmd_exception("oresmd://ir/... 'metric' is only meaningful when type=quote."));
-    if (qp.quote && parse_type(qp) != instrument_type::quote)
-        BOOST_THROW_EXCEPTION(
-            oresmd_exception("oresmd://ir/... 'quote' is only meaningful when type=quote."));
 }
 
 void validate_no_ir_only_keys(std::string_view asset_class, const query_params& qp) {
@@ -173,7 +178,10 @@ market_data_identifier parse_fx(const boost::urls::url_view& u, const query_para
             "oresmd://fx/... entity must be a 6-letter currency pair, got: '{}'.", id.pair)));
     id.type = parse_type(qp);
     if (qp.quote) {
-        if (id.type != instrument_type::quote)
+        // A quote type names a volatility surface as well as a quote: CAPFLOOR
+        // arrives as type=vol with quote=capfloor. Anything else that carries a
+        // quote key is a genuine input error.
+        if (id.type != instrument_type::quote && id.type != instrument_type::vol)
             BOOST_THROW_EXCEPTION(
                 oresmd_exception("oresmd://fx/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<fx_quote_type>("quote", *qp.quote);
@@ -218,8 +226,16 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
         id.role = parse_enum<curve_role>("role", *qp.role);
     if (qp.metric)
         id.metric = parse_enum<metric>("metric", *qp.metric);
-    if (qp.quote)
+    if (qp.quote) {
+        // A quote type names a volatility surface as well as a quote: CAPFLOOR
+        // arrives as type=vol with quote=capfloor. Anything else that carries a
+        // quote key is a genuine input error, so the gate lives here rather than
+        // in the type-gated key table, which admits only type=quote.
+        if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+            BOOST_THROW_EXCEPTION(
+                oresmd_exception("oresmd://ir/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<ir_quote_type>("quote", *qp.quote);
+    }
     if (qp.point) {
         id.point = to_lower(*qp.point);
         if (id.type == instrument_type::vol) {
@@ -228,7 +244,23 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
             std::string part;
             while (std::getline(ss, part, ','))
                 parts.push_back(to_upper(part));
-            if (parts.size() == 3) {
+            if (id.quote_type == ir_quote_type::capfloor) {
+                // The cap/floor surface carries five coordinates, not three:
+                // maturity, float tenor, and the shift and strip flags the
+                // market data catalogue names, then the strike.
+                if (parts.size() != 5)
+                    BOOST_THROW_EXCEPTION(oresmd_exception(
+                        std::format("oresmd://ir/... a capfloor vol point is "
+                                    "maturity,float_tenor,shift,strip,strike, got: '{}'.",
+                                    *id.point)));
+                volatility_surface_point v;
+                v.expiry = parts[0];
+                id.tenor = to_lower(parts[1]);
+                id.shift = to_lower(parts[2]);
+                id.strip = to_lower(parts[3]);
+                v.strike = parts[4];
+                id.vol = std::move(v);
+            } else if (parts.size() == 3) {
                 volatility_surface_point v;
                 v.expiry = parts[0];
                 if (!id.tenor)
@@ -256,7 +288,10 @@ market_data_identifier parse_equity(const boost::urls::url_view& u, const query_
     id.ccy = to_upper(*qp.ccy);
     id.type = parse_type(qp);
     if (qp.quote) {
-        if (id.type != instrument_type::quote)
+        // A quote type names a volatility surface as well as a quote: CAPFLOOR
+        // arrives as type=vol with quote=capfloor. Anything else that carries a
+        // quote key is a genuine input error.
+        if (id.type != instrument_type::quote && id.type != instrument_type::vol)
             BOOST_THROW_EXCEPTION(oresmd_exception(
                 "oresmd://equity/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<equity_quote_type>("quote", *qp.quote);
@@ -318,6 +353,8 @@ market_data_identifier parse_correlation(const boost::urls::url_view& u, const q
     reject_if_present("correlation", "tenor", qp.tenor);
     reject_if_present("correlation", "second_tenor", qp.second_tenor);
     reject_if_present("correlation", "second_ccy", qp.second_ccy);
+    reject_if_present("correlation", "shift", qp.shift);
+    reject_if_present("correlation", "strip", qp.strip);
     reject_if_present("correlation", "role", qp.role);
     reject_if_present("correlation", "metric", qp.metric);
     reject_if_present("correlation", "point", qp.point);
@@ -325,7 +362,10 @@ market_data_identifier parse_correlation(const boost::urls::url_view& u, const q
     id.factor_pair = to_upper(first_segment(u));
     id.type = parse_type(qp);
     if (qp.quote) {
-        if (id.type != instrument_type::quote)
+        // A quote type names a volatility surface as well as a quote: CAPFLOOR
+        // arrives as type=vol with quote=capfloor. Anything else that carries a
+        // quote key is a genuine input error.
+        if (id.type != instrument_type::quote && id.type != instrument_type::vol)
             BOOST_THROW_EXCEPTION(oresmd_exception(
                 "oresmd://correlation/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<correlation_quote_type>("quote", *qp.quote);
@@ -340,13 +380,18 @@ market_data_identifier parse_inflation(const boost::urls::url_view& u, const que
     reject_if_present("inflation", "tenor", qp.tenor);
     reject_if_present("inflation", "second_tenor", qp.second_tenor);
     reject_if_present("inflation", "second_ccy", qp.second_ccy);
+    reject_if_present("inflation", "shift", qp.shift);
+    reject_if_present("inflation", "strip", qp.strip);
     reject_if_present("inflation", "role", qp.role);
     reject_if_present("inflation", "metric", qp.metric);
     inflation_market_data_identifier id;
     id.index_code = to_upper(first_segment(u));
     id.type = parse_type(qp);
     if (qp.quote) {
-        if (id.type != instrument_type::quote)
+        // A quote type names a volatility surface as well as a quote: CAPFLOOR
+        // arrives as type=vol with quote=capfloor. Anything else that carries a
+        // quote key is a genuine input error.
+        if (id.type != instrument_type::quote && id.type != instrument_type::vol)
             BOOST_THROW_EXCEPTION(oresmd_exception(
                 "oresmd://inflation/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<inflation_quote_type>("quote", *qp.quote);
@@ -365,7 +410,10 @@ market_data_identifier parse_commodity(const boost::urls::url_view& u, const que
     id.ccy = to_upper(*qp.ccy);
     id.type = parse_type(qp);
     if (qp.quote) {
-        if (id.type != instrument_type::quote)
+        // A quote type names a volatility surface as well as a quote: CAPFLOOR
+        // arrives as type=vol with quote=capfloor. Anything else that carries a
+        // quote key is a genuine input error.
+        if (id.type != instrument_type::quote && id.type != instrument_type::vol)
             BOOST_THROW_EXCEPTION(oresmd_exception(
                 "oresmd://commodity/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<commodity_quote_type>("quote", *qp.quote);
@@ -487,6 +535,8 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 append_if(u, "tenor", id.tenor);
                 append_if(u, "second_tenor", id.second_tenor);
                 append_if(u, "second_ccy", id.second_ccy);
+                append_if(u, "shift", id.shift);
+                append_if(u, "strip", id.strip);
                 append_enum_if(u, "role", id.role);
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "metric", id.metric);

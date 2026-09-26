@@ -29,6 +29,7 @@
 | zero                | ZERO              | zero                   | RATE            | tenor           | includes_index          | 6-segment: ZERO/RATE/CCY/INDEX/TENOR/POINT | ZERO (zero-coupon rate). |
 | mm_future           | MM_FUTURE         | mm_future              | PRICE           | tenor           | includes_index          | 6-segment: MM_FUTURE/PRICE/CCY/INDEX/TENOR/POINT | MM_FUTURE (money market future price). |
 | oi_future           | OI_FUTURE         | oi_future              | PRICE           | tenor           | includes_index          | 6-segment: OI_FUTURE/PRICE/CCY/INDEX/TENOR/POINT | OI_FUTURE (overnight index future price). |
+| capfloor            | CAPFLOOR          | capfloor               | RATE            | surface         | capfloor_vol            | 8-segment: CAPFLOOR/RATE_NVOL/CCY/MATURITY/FLOAT_TENOR/SHIFT/STRIP/STRIKE, and the same shape under RATE_LNVOL; the metric segment comes from the vol model, not from this table's ore_metric | CAPFLOOR (cap/floor volatility on a strike grid). |
 
 * Enum brief
 
@@ -88,6 +89,8 @@ A logical, possibly-partial oresmd requirement for an interest-rate instrument.
 | tenor      | std::optional<std::string>      | no        | tenor     |                        |
 | second_tenor | std::optional<std::string>    | no        | second_tenor |                     |
 | second_ccy | std::optional<std::string>      | no        | second_ccy |                       |
+| shift      | std::optional<std::string>      | no        | shift     |                        |
+| strip      | std::optional<std::string>      | no        | strip     |                        |
 | role       | std::optional<curve_role>       | no        | role      |                        |
 | metric     | std::optional<domain::metric>   | no        | metric    |                        |
 | quote_type | std::optional<domain::ir_quote_type> | no    | quote     |                        |
@@ -105,10 +108,14 @@ A logical, possibly-partial oresmd requirement for an interest-rate instrument.
 Query keys that are only meaningful when =type=quote=; the parser rejects them
 otherwise ("'<key>' is only meaningful when type=quote").
 
+=quote= is not here. A quote type names a volatility surface as well as a quote
+-- CAPFLOOR arrives as =type=vol= with =quote=capfloor= -- so the check that
+guards it lives in the parser, which accepts it for =quote= and =vol= alike and
+refuses it for everything else.
+
 | key |
 |-----|
 | metric |
-| quote |
 
 * URI order
 
@@ -122,6 +129,8 @@ branch), which no field-table ordering can express.
 | tenor |
 | second_tenor |
 | second_ccy |
+| shift |
+| strip |
 | role |
 | type |
 | metric |
@@ -143,6 +152,12 @@ IR has the most complex qualifier shape variants:
 - =cross_currency=: qualifier is CCY1/TENOR1/CCY2/TENOR2 (cc_basis_swap and
   cc_fix_float_swap -- two currencies and two index tenors, with the maturity
   after them; the entity path segment carries the first currency)
+- =capfloor_vol=: the key after the metric is CCY/MATURITY/FLOAT_TENOR/SHIFT/
+  STRIP/STRIKE, so the currency is the entity and the surface coordinate is
+  everything after it. The two flag slots are what the market data catalogue
+  calls the shift and strip flags; they are =0= on almost every corpus line and
+  =1/1= on the rest. The same shape serves RATE_NVOL and RATE_LNVOL, which
+  differ only in the metric -- normal vol against log-normal.
 - =no_index=: qualifier is CCY/START (BMA, and the fra families -- no index
   dimension; FRA's second segment is its start tenor and IMM_FRA's is its IMM date)
 
@@ -171,6 +186,8 @@ IR has the most complex qualifier shape variants:
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y | ZERO/YIELD_SPREAD/EUR/EURIBOR/3M/5Y | ir_zero_yield_spread_quote_key |
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme | MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME | ir_mm_future_price_quote_key |
 | oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme | OI_FUTURE/PRICE/USD/SOFR/3M/CME | ir_oi_future_price_quote_key |
+| oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03 | CAPFLOOR/RATE_NVOL/CHF/5Y/6M/0/0/0.03 | ir_capfloor_normal_vol_quote_key_matches_the_corpus |
+| oresmd://ir/chf?type=vol&quote=capfloor&point=5y,6m,0,0,0.03 | CAPFLOOR/RATE_LNVOL/CHF/5Y/6M/0/0/0.03 | ir_capfloor_log_normal_vol_quote_key_matches_the_corpus |
 
 ** Projections (defaulted metric)
 
@@ -191,6 +208,7 @@ IR has the most complex qualifier shape variants:
 | uri | description |
 |-----+-------------|
 | oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y | round_trip_ir_quote |
+| oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03 | round_trip_ir_capfloor_normal_vol |
 
 ** Round-trip (extended)
 

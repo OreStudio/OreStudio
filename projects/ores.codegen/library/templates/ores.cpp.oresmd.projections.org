@@ -74,6 +74,7 @@ constexpr std::string_view zero{"ZERO"};
 constexpr std::string_view mm_future{"MM_FUTURE"};
 constexpr std::string_view oi_future{"OI_FUTURE"};
 constexpr std::string_view swaption{"SWAPTION"};
+constexpr std::string_view capfloor{"CAPFLOOR"};
 constexpr std::string_view equity{"EQUITY"};
 constexpr std::string_view equity_fwd{"EQUITY_FWD"};
 constexpr std::string_view equity_dividend{"EQUITY_DIVIDEND"};
@@ -165,6 +166,12 @@ metric default_metric(ir_quote_type qt) {
         case ir_quote_type::mm_future:
         case ir_quote_type::oi_future:
             return metric::price;
+        // A capfloor's ORE metric segment is its vol model, RATE_NVOL or
+        // RATE_LNVOL, which the metric enum has no member for; quote_key_ir
+        // reads ore_vol_model() for it and never this. The case exists so the
+        // switch stays exhaustive.
+        case ir_quote_type::capfloor:
+            return metric::rate;
     }
     return metric::rate;
 }
@@ -237,6 +244,22 @@ std::string_view ore_vol_model(volatility_model_subtype m) {
 
 std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
     if (id.type == instrument_type::vol) {
+        // A cap/floor surface is its own family: the metric segment is the vol
+        // model, and the coordinate carries the shift and strip flags the
+        // market data catalogue names, not a swaption's expiry-and-tenor pair.
+        if (id.quote_type == ir_quote_type::capfloor) {
+            if (!id.vol || !id.tenor || !id.shift || !id.strip)
+                return std::nullopt;
+            return std::format("{}/{}/{}/{}/{}/{}/{}/{}",
+                               ore_type(ir_quote_type::capfloor),
+                               ore_vol_model(id.vol->model_subtype),
+                               id.ccy,
+                               to_upper(id.vol->expiry),
+                               to_upper(*id.tenor),
+                               *id.shift,
+                               *id.strip,
+                               to_upper(id.vol->strike));
+        }
         // Use typed vol struct if available, else fall back to point composite.
         if (id.vol && id.tenor) {
             const auto& v = *id.vol;
@@ -850,6 +873,32 @@ from_ir_no_index(ir_quote_type qt, const std::vector<std::string>& parts) {
     return id;
 }
 
+std::optional<market_data_identifier> from_ir_capfloor(const std::vector<std::string>& parts) {
+    // CAPFLOOR/MODEL/CCY/MATURITY/FLOAT_TENOR/SHIFT/STRIP/STRIKE. The metric
+    // segment is the vol model, so RATE_NVOL and RATE_LNVOL are the same
+    // family and differ only in which surface they quote.
+    if (parts.size() != 8)
+        return std::nullopt;
+    const auto model = parse_vol_model(parts[1]);
+    if (!model)
+        return std::nullopt;
+    ir_market_data_identifier id;
+    id.ccy = to_upper(parts[2]);
+    id.type = instrument_type::vol;
+    id.quote_type = ir_quote_type::capfloor;
+    id.tenor = to_lower(parts[4]);
+    id.shift = to_lower(parts[5]);
+    id.strip = to_lower(parts[6]);
+    id.point = to_lower(parts[3]) + "," + to_lower(parts[4]) + "," + to_lower(parts[5]) + "," +
+               to_lower(parts[6]) + "," + to_lower(parts[7]);
+    volatility_surface_point v;
+    v.model_subtype = *model;
+    v.expiry = to_upper(parts[3]);
+    v.strike = to_upper(parts[7]);
+    id.vol = std::move(v);
+    return id;
+}
+
 std::optional<market_data_identifier> from_ir_swaption(const std::vector<std::string>& parts) {
     // SWAPTION/MODEL/CCY/EXPIRY/TENOR/STRIKE. The forward emits either branch (typed
     // vol struct or point composite) in this same six-segment shape; both collapse
@@ -1068,6 +1117,8 @@ inverse_projection(const std::vector<std::string>& parts,
         return from_ir_discount(parts);
     if (type == ore_type_spec::swaption)
         return from_ir_swaption(parts);
+    if (type == ore_type_spec::capfloor)
+        return from_ir_capfloor(parts);
     if (type == ore_type_spec::mm) {
         // MM is written both ways in the corpus, so the segment count decides
         // which shape this key is: ccy/index/settle/tenor or ccy/settle/tenor.

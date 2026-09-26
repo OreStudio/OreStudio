@@ -153,19 +153,21 @@ class TestTransportSelection:
     `compass services status` otherwise reports the units as missing rather
     than stopped, which is the symptom this guards."""
 
-    def _selection(self, tmp_path, env_text, argv, monkeypatch):
+    def _selection(self, tmp_path, env_text, argv, monkeypatch, environ=None):
         monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
+        if environ is not None:
+            monkeypatch.setenv("ORES_USE_BUSCTL", environ)
         (tmp_path / ".env").write_text("ORES_PRESET=preset\n" + env_text)
         monkeypatch.setattr(compass_services, "validate_env_version",
                             lambda *a, **k: None)
         monkeypatch.setattr(compass_services, "cmd_status",
                             lambda ctx, args: 0)
-        systemctl_bus.set_use_busctl(False)
+        systemctl_bus.set_use_busctl(None)
         try:
             compass_services.run(list(argv), tmp_path)
             return systemctl_bus.use_busctl()
         finally:
-            systemctl_bus.set_use_busctl(False)
+            systemctl_bus.set_use_busctl(None)
 
     def test_the_checkout_file_selects_the_bus(self, tmp_path, monkeypatch):
         assert self._selection(
@@ -176,6 +178,11 @@ class TestTransportSelection:
         assert self._selection(
             tmp_path, "", ["status"], monkeypatch) is False
 
-    def test_the_flag_selects_the_bus(self, tmp_path, monkeypatch):
+    def test_the_environment_selects_the_bus(self, tmp_path, monkeypatch):
         assert self._selection(
-            tmp_path, "", ["status", "--use-busctl"], monkeypatch) is True
+            tmp_path, "", ["status"], monkeypatch, environ="1") is True
+
+    def test_the_environment_turns_the_bus_off(self, tmp_path, monkeypatch):
+        assert self._selection(
+            tmp_path, "ORES_USE_BUSCTL=1\n", ["status"], monkeypatch,
+            environ="0") is False

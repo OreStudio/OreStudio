@@ -91,12 +91,12 @@ class TestTransportSelection:
     def _selection(self, tmp_path, env_text, argv, monkeypatch):
         monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
         (tmp_path / ".env").write_text(env_text)
-        systemctl_bus.set_use_busctl(False)
+        systemctl_bus.set_use_busctl(None)
         try:
             systemd_generate.run(list(argv), tmp_path)
             return systemctl_bus.use_busctl()
         finally:
-            systemctl_bus.set_use_busctl(False)
+            systemctl_bus.set_use_busctl(None)
 
     def test_the_checkout_file_selects_the_bus(self, tmp_path, monkeypatch):
         assert self._selection(
@@ -111,30 +111,19 @@ class TestTransportSelection:
         assert self._selection(
             tmp_path, "ORES_USE_BUSCTL=0\n", ["deploy"], monkeypatch) is False
 
-    def test_no_file_value_and_no_flag_keeps_plain_systemctl(
+    def test_no_file_value_keeps_plain_systemctl(
             self, tmp_path, monkeypatch):
         assert self._selection(tmp_path, "", ["deploy"], monkeypatch) is False
-
-    def test_the_flag_selects_the_bus_without_a_file_value(
-            self, tmp_path, monkeypatch):
-        assert self._selection(
-            tmp_path, "", ["deploy", "--use-busctl"], monkeypatch) is True
-
-    def test_the_flag_wins_over_a_file_that_says_off(
-            self, tmp_path, monkeypatch):
-        assert self._selection(
-            tmp_path, "ORES_USE_BUSCTL=0\n",
-            ["deploy", "--use-busctl"], monkeypatch) is True
 
 
 class TestAdoptTransportSetting:
     """The handover itself, independent of any command's argument parsing."""
 
     def setup_method(self):
-        systemctl_bus.set_use_busctl(False)
+        systemctl_bus.set_use_busctl(None)
 
     def teardown_method(self):
-        systemctl_bus.set_use_busctl(False)
+        systemctl_bus.set_use_busctl(None)
 
     def test_a_true_file_value_turns_the_bus_on(self, monkeypatch):
         monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
@@ -151,9 +140,20 @@ class TestAdoptTransportSetting:
         systemctl_bus.adopt_transport_setting({})
         assert systemctl_bus.use_busctl() is False
 
-    def test_the_flag_turns_it_on_with_no_file_value(self, monkeypatch):
-        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
-        systemctl_bus.adopt_transport_setting({}, flag=True)
+    def test_the_environment_turns_it_on_with_no_file_value(self, monkeypatch):
+        monkeypatch.setenv("ORES_USE_BUSCTL", "1")
+        systemctl_bus.adopt_transport_setting({})
+        assert systemctl_bus.use_busctl() is True
+
+    def test_the_environment_turns_it_off_over_a_true_file_value(
+            self, monkeypatch):
+        monkeypatch.setenv("ORES_USE_BUSCTL", "0")
+        systemctl_bus.adopt_transport_setting({"ORES_USE_BUSCTL": "1"})
+        assert systemctl_bus.use_busctl() is False
+
+    def test_an_empty_environment_value_is_no_opinion(self, monkeypatch):
+        monkeypatch.setenv("ORES_USE_BUSCTL", "")
+        systemctl_bus.adopt_transport_setting({"ORES_USE_BUSCTL": "1"})
         assert systemctl_bus.use_busctl() is True
 
 
@@ -192,9 +192,9 @@ class TestReloadSystemd:
         monkeypatch.setattr(systemd_generate.systemctl_bus, "use_busctl",
                             lambda: False)
         monkeypatch.setattr(systemd_generate.systemctl_bus, "sandbox_hint",
-                            lambda: "  retry with --use-busctl")
+                            lambda: "  set ORES_USE_BUSCTL=1")
         assert systemd_generate._reload_systemd() == 1
-        assert "retry with --use-busctl" in capsys.readouterr().err
+        assert "set ORES_USE_BUSCTL=1" in capsys.readouterr().err
 
     def test_a_failed_reload_through_the_bus_omits_the_sandbox_hint(
             self, monkeypatch, capsys):
@@ -203,4 +203,4 @@ class TestReloadSystemd:
         monkeypatch.setattr(systemd_generate.systemctl_bus, "use_busctl",
                             lambda: True)
         assert systemd_generate._reload_systemd() == 1
-        assert "retry with --use-busctl" not in capsys.readouterr().err
+        assert "set ORES_USE_BUSCTL=1" not in capsys.readouterr().err

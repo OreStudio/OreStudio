@@ -695,7 +695,6 @@ def cmd_clear_logs(ctx, args):
 def _common(parser):
     parser.add_argument("--preset", default=None,
                         help="CMake preset (default: ORES_PRESET from .env)")
-    systemctl_bus.add_busctl_argument(parser)
 
 
 def _service_argument(parser):
@@ -759,7 +758,7 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
 
     args = ap.parse_args(argv)
     env = load_env(project_root, env_file)
-    systemctl_bus.adopt_transport_setting(env, getattr(args, "use_busctl", False))
+    systemctl_bus.adopt_transport_setting(env)
     validate_env_version(project_root, env)
     ctx = Ctx(project_root, env, args.preset)
 

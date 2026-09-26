@@ -21,10 +21,10 @@ class TestAdoptFromEnvFile:
     before dispatch. Without that handover the value does nothing at all."""
 
     def setup_method(self):
-        systemctl_bus.set_use_busctl(False)
+        systemctl_bus.set_use_busctl(None)
 
     def teardown_method(self):
-        systemctl_bus.set_use_busctl(False)
+        systemctl_bus.set_use_busctl(None)
 
     def test_the_file_value_turns_the_bus_on(self, tmp_path, monkeypatch):
         monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
@@ -49,13 +49,33 @@ class TestAdoptFromEnvFile:
         compass._adopt_transport_from_env_file(tmp_path / ".env")
         assert systemctl_bus.use_busctl() is False
 
+    def test_the_environment_turns_it_on_over_a_file_that_says_off(
+            self, tmp_path, monkeypatch):
+        monkeypatch.setenv("ORES_USE_BUSCTL", "1")
+        (tmp_path / ".env").write_text("ORES_USE_BUSCTL=0\n")
+        compass._adopt_transport_from_env_file(tmp_path / ".env")
+        assert systemctl_bus.use_busctl() is True
+
+    def test_the_environment_turns_it_off_over_a_file_that_says_on(
+            self, tmp_path, monkeypatch):
+        monkeypatch.setenv("ORES_USE_BUSCTL", "0")
+        (tmp_path / ".env").write_text("ORES_USE_BUSCTL=1\n")
+        compass._adopt_transport_from_env_file(tmp_path / ".env")
+        assert systemctl_bus.use_busctl() is False
+
+    def test_an_empty_environment_value_is_no_opinion(
+            self, tmp_path, monkeypatch):
+        monkeypatch.setenv("ORES_USE_BUSCTL", "")
+        (tmp_path / ".env").write_text("ORES_USE_BUSCTL=1\n")
+        compass._adopt_transport_from_env_file(tmp_path / ".env")
+        assert systemctl_bus.use_busctl() is True
+
 
 class TestMainAdoptsBeforeDispatch:
     """The centre runs for every command, not only the two pillars.
 
-    Three of the five systemctl consumers have no flag of their own, so the
-    only thing that makes them correct is this call landing before the
-    dispatch branches."""
+    No systemctl consumer parses a flag of its own, so the only thing that
+    makes them correct is this call landing before the dispatch branches."""
 
     def test_main_adopts_before_dispatching(self, monkeypatch):
         seen = []

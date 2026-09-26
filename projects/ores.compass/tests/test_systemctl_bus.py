@@ -21,11 +21,11 @@ import systemctl_bus
 
 @pytest.fixture(autouse=True)
 def _systemctl_transport(monkeypatch):
-    """Every test starts on the systemctl transport, chosen explicitly."""
+    """Every test starts with no transport opinion, chosen explicitly."""
     monkeypatch.setenv("ORES_USE_BUSCTL", "")
-    systemctl_bus.set_use_busctl(False)
+    systemctl_bus.set_use_busctl(None)
     yield
-    systemctl_bus.set_use_busctl(False)
+    systemctl_bus.set_use_busctl(None)
 
 
 def _list_units_text(units):
@@ -174,6 +174,7 @@ class TestTransportSelection:
         monkeypatch.setenv("ORES_USE_BUSCTL", "1")
         assert systemctl_bus.use_busctl() is True
 
-    def test_the_flag_selects_busctl(self):
-        systemctl_bus.set_use_busctl(True)
-        assert systemctl_bus.use_busctl() is True
+    def test_an_explicit_choice_wins_over_the_environment(self, monkeypatch):
+        monkeypatch.setenv("ORES_USE_BUSCTL", "1")
+        systemctl_bus.set_use_busctl(False)
+        assert systemctl_bus.use_busctl() is False

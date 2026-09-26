@@ -11,8 +11,9 @@ result, so a caller does not change, and adds what busctl needs instead:
 method calls, a wait for the verbs systemctl blocks on, unit-name escaping
 for object paths, and the text the listing verbs print.
 
-Select it with `--use-busctl` on a compass command, or ORES_USE_BUSCTL=1
-for the whole process.
+Select it with ORES_USE_BUSCTL=1: the checkout's .env sets the default for
+every compass command, and the same variable in the process environment
+overrides the file for one command, either way.
 
 Two deliberate departures from systemctl are documented where they happen:
 a unit the manager does not know prints nothing rather than "inactive",
@@ -47,11 +48,11 @@ JOB_POLL_INTERVAL = 0.2
 # ListUnits returns one struct of ten fields per unit.
 _LIST_UNITS_FIELDS = 10
 
-_use_busctl = False
+_use_busctl = None
 _hint_printed = False
 
-# The spellings compass accepts for a true flag in .env. Kept in one place so
-# the file's value and the process environment cannot drift apart.
+# The spellings compass accepts for a true value. Kept in one place so the
+# .env value and the process environment cannot drift apart.
 _TRUTHY = ("1", "true", "yes", "on")
 
 
@@ -59,49 +60,36 @@ def _truthy(value: object) -> bool:
     return str(value if value is not None else "").strip().lower() in _TRUTHY
 
 
-def set_use_busctl(enabled: bool) -> None:
-    """Set the transport override.
-
-    True forces busctl. False clears a previous force and means no opinion:
-    it does not force plain systemctl, because use_busctl() still consults
-    the environment afterwards.
-    """
+def set_use_busctl(enabled) -> None:
+    """Set the transport choice. None means no opinion."""
     global _use_busctl
-    _use_busctl = bool(enabled)
+    _use_busctl = None if enabled is None else bool(enabled)
 
 
-def adopt_transport_setting(env: dict, flag: bool = False) -> None:
-    """Take the transport choice from a checkout's .env, and the flag if given.
+def adopt_transport_setting(env: dict) -> None:
+    """Resolve the transport choice from the environment, then the .env.
 
     compass reads .env into a dict and never writes os.environ, so a value
     that lives only in the file is invisible to use_busctl(). Every caller
     that has the dict must hand it over, or the file's choice does nothing.
-    The flag being absent means "no opinion", never "off": it cannot undo a
-    checkout that asked for the bus.
+
+    The process environment wins in both directions, so an operator can
+    switch the bus off for one command as well as on. An empty value at
+    either level means no opinion, not "off", so a stray empty variable in
+    a shell cannot silently mask the checkout's choice.
     """
-    if flag or _truthy(env.get("ORES_USE_BUSCTL")):
-        set_use_busctl(True)
-
-
-def add_busctl_argument(parser) -> None:
-    """Declare the transport override on a command's parser.
-
-    One definition for every command that drives systemd, so the flag's
-    spelling and help text cannot drift between pillars. The CLI adopts the
-    .env choice once before dispatch; this only overrides it for one call.
-    """
-    parser.add_argument(
-        "--use-busctl", action="store_true",
-        help="Reach the systemd user manager through busctl instead of "
-             "systemctl. Use this inside a sandbox, where the manager "
-             "refuses systemctl's connection. ORES_USE_BUSCTL in .env sets "
-             "the default for every compass command.")
+    raw = os.environ.get("ORES_USE_BUSCTL", "").strip()
+    if not raw:
+        raw = str(env.get("ORES_USE_BUSCTL", "")).strip()
+    if not raw:
+        return
+    set_use_busctl(_truthy(raw))
 
 
 def use_busctl() -> bool:
     """Whether systemctl calls go through busctl."""
-    if _use_busctl:
-        return True
+    if _use_busctl is not None:
+        return _use_busctl
     return _truthy(os.environ.get("ORES_USE_BUSCTL", ""))
 
 
@@ -425,7 +413,7 @@ def _dispatch(args, timeout):
         return _show_environment()
     return _completed(
         ["systemctl", "--user", *args], 2, "",
-        f"--use-busctl does not implement '{verb}' yet; "
+        f"the busctl transport does not implement '{verb}' yet; "
         f"run it with systemctl directly.\n")
 
 
@@ -448,5 +436,5 @@ def run(args, **kwargs):
 
 def sandbox_hint() -> str:
     """The suggestion to print when a systemctl call could not connect."""
-    return ("  If you are running inside a sandbox, retry with --use-busctl "
-            "or set ORES_USE_BUSCTL=1.")
+    return ("  If you are running inside a sandbox, set ORES_USE_BUSCTL=1 in "
+            ".env, or prefix the command with ORES_USE_BUSCTL=1.")

@@ -93,7 +93,7 @@ item's result in the table below.
 | H02 | pass | No legacy code remains: no dead code, no commented-out code, and no hand-written duplicate of a generated artefact. The component's own sources and models carry no Qt or Wt fragment; the diagram's stale prose was the only surviving scaffold artefact, and H01 removes it. One inherited artefact is out of scope: the regenerated =src/component_files.cmake= carries the shared template's =# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.= comment, present in 79 =component_files.cmake= files repo-wide and sourced from =cmake_component_files_src.mustache=. Removing it is a codegen template change with a regression test, not a component fix, and the story records it as out of scope. |
 | H03 | pass | Comments reviewed against the project comment rules. The Doxygen blocks and the non-obvious why-notes (the elisp quoting, the case-sensitivity choice, the best-effort type lookup) are kept; there is no commented-out code and no edit narration. |
 | V01 | pass | =compass build= over the whole tree reached 100% with exit code 0. |
-| V02 | pass | =compass build test_ores.orgmode.tests= passes: 52 assertions in 17 test cases. The =ores.codegen= suite passes at 522, and the =ores.compass= suite at 215 passed and 1 skipped. No test covers the diagram, the two generated list files or the two doc edits; the renderer's exit code, the check script and =validate_docs.sh= are their evidence. |
+| V02 | pass | =compass build test_ores.orgmode.tests= passes: 62 assertions in 20 test cases, three resolver error-path cases having been added after the first coverage measurement. The =ores.codegen= suite passes at 522, and the =ores.compass= suite at 215 passed and 1 skipped. Coverage of the component's own sources, measured with an instrumented =clang= build (=WITH_PROFILING=On=) and =llvm-cov gcov=: =heading.cpp= 100% of 19 lines, =parser.cpp= 95.9% of 195, =resolver.cpp= 96.5% of 57, so 261 of 271 lines overall. The uncovered lines are the two defaulted move operations, seven =gcov= artifacts on the static regex accessors' closing braces, and the defensive empty guard in =normalise_table=, which the caller's =!pending_table.empty()= check makes unreachable. No test covers the diagram, the two generated list files or the two doc edits; the renderer's exit code, the check script and =validate_docs.sh= are their evidence. |
 | V03 | not applicable | No entity and no service, so the database holds nothing of this component. |
 | V04 | not applicable | No generated shell command, so nothing to run against the fleet. |
 | V05 | pass | Every gate run and green: component drift (=iam=), model drift (2 known exceptions), protocol twin coverage, handler permissions, populate references, shell recipe inventory, =regenerate_cmake_component_files.py --component ores.orgmode=, =validate_docs.sh= (apart from the pre-existing =ores.shell.iam= finding), =compass lint=, and the six checks of =.github/workflows/doc-lint.yml=. The one inherited repo-wide finding is the CMake source-list drift that G06 records. |
@@ -117,6 +117,14 @@ item's result in the table below.
   No component tree holds a generated stub file; the only occurrences of the
   stub template's text are the two =*.mustache= templates and their two
   archetype =.org= sources.
+- Coverage, measured on 2026-09-26: 261 of the component's 271 executable
+  lines in =include/= and =src/= are hit by its tests. The three uncovered
+  groups are the defaulted move operations (not worth pinning), seven =gcov=
+  artifacts on the static regex accessors, and =normalise_table='s empty
+  guard, which its only caller makes unreachable. The measurement is an
+  instrumented =clang= build with =llvm-cov gcov=; the repo's own coverage
+  runs nightly through =CTest.cmake= and submits to CDash. The first
+  measurement exposed three untested resolver error paths, now covered.
 - The refreshed diagram is captured with
   =build/scripts/generate_component_puml.py --project ores.orgmode= and then
   cleaned up by hand. PlantUML resolves a relationship only when it sits in
@@ -154,6 +162,8 @@ the component suite and the gates are the evidence.
 | 2 | V06's "adding a catalogue row makes the codegen scaffold a flat component" is contingent, not structural: =flat= is the default for an undeclared kind at =org_loader.py=, and =composite= would not match the stub archetypes | task_clean_orgmode.org | fixed | Real, and the fix is a second experiment. A row plus =#+component_kind: composite= reports 1 file would change: the root =CMakeLists.txt= regenerated from =cmake_composite_root.mustache=, which adds parts a simple component does not have, and the file lists stop generating. V06 now records both dry runs. |
 | 3 | H02's "no Qt or Wt fragment" overlooks the inherited =AUTOMOC= / =Q_OBJECT= comment in the regenerated =src/component_files.cmake= | task_clean_orgmode.org, story.org | fixed, scoped | Real. The comment is in 79 =component_files.cmake= files and comes from =cmake_component_files_src.mustache=, so removing it is a codegen template change with a regression test. H02 now scopes the claim to the component's own sources and models, and the story records the template comment as out of scope. |
 | 4 | The diagram omits =join_paragraph_lines=, an exported function the headers declare | ores.orgmode.puml | fixed | Real. The diagram already lists the other two free functions, so the omission was inconsistent. The function is added and the image re-rendered. |
+| 5 | The hand-authored relationship arrows and resolver note sit above the sentinel, so the next capture run drops them, and the warning lives only in the historical record | ores.orgmode.puml | fixed | Real footgun. =generate_component_puml.py= replaces everything above the sentinel with class boxes only, so the warning now sits below the sentinel, where a capture run preserves it: it names what is lost and tells the next reader to re-add it. The image is byte-identical, since the added lines are comments. |
+| 6 | Table cells in the two status tables are not re-aligned to the original column widths | story.org, task_clean_orgmode.org | dismissed | Cosmetic. Org reflows table alignment on the next edit, =compass lint= passes, and the existing tables in this sprint are unaligned. The churn would not change what a reader sees. |
 
 * Result
 
@@ -169,10 +179,11 @@ Foundation layer page gained the component, and the component overview
 gained its filetags.
 
 Verification. The whole tree builds with =compass build=, exit 0. The
-=ores.orgmode= suite passes 52 assertions in 17 test cases, the
+=ores.orgmode= suite passes 62 assertions in 20 test cases, the
 =ores.codegen= suite 522, and the =ores.compass= suite 215 with 1 skipped.
-Every codegen gate passes, apart from the inherited repo-wide CMake
-source-list drift that G06 records.
+Coverage of the component's own sources, measured with an instrumented
+build, is 261 of 271 lines. Every codegen gate passes, apart from the
+inherited repo-wide CMake source-list drift that G06 records.
 
 The one exception is V06. ores.orgmode does not join
 =COMPONENTS_UNDER_TEST= because it is not a codegen component. Neither
@@ -188,3 +199,10 @@ image matches its source byte for byte. It then failed four statements in
 this record: the refuted Notes sentence, the contingent V06 framing, the
 unscoped H02 Qt claim and the missing =join_paragraph_lines= in the diagram.
 Each is corrected above after I reproduced it.
+
+A Claude review of PR #2142 re-checked the build lists against the files on
+disk, the V06 catalogue state, the diagram fields and the Foundation layer
+entry, and found no blocking issue. It raised one real footgun, that a
+capture run drops the hand-authored arrows and note above the sentinel, so
+the warning now sits below the sentinel where a capture run preserves it. It
+raised one cosmetic table-alignment nit, dismissed above with its reason.

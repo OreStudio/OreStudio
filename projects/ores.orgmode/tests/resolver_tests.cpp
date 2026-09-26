@@ -81,6 +81,58 @@ TEST_CASE("resolver throws on a missing database file", "[ores.orgmode][resolver
     REQUIRE_THROWS_AS(resolver("/no/such/org-roam.db"), std::filesystem::filesystem_error);
 }
 
+TEST_CASE("resolver unquotes elisp-literal columns and passes raw ones through",
+          "[ores.orgmode][resolver]") {
+    const auto path = std::filesystem::temp_directory_path() /
+                      "ores_orgmode_resolver_unquote.db";
+    if (std::filesystem::exists(path))
+        std::filesystem::remove(path);
+    sqlite3* db = nullptr;
+    REQUIRE(sqlite3_open(path.string().c_str(), &db) == SQLITE_OK);
+    // Each title exercises one shape unquote has to handle: an escaped inner
+    // quote, a value with no surrounding quotes, a lone quote, and a single
+    // character shorter than the pair unquote looks for.
+    const char* ddl = "create table nodes (id, file, level, pos, title);"
+                      "insert into nodes values "
+                      "('\"1\"', '\"/tmp/a.org\"', 0, 0, '\"a\\\"b\"'),"
+                      "('\"2\"', '\"/tmp/a.org\"', 0, 0, 'raw'),"
+                      "('\"3\"', '\"/tmp/a.org\"', 0, 0, '\"'),"
+                      "('\"4\"', '\"/tmp/a.org\"', 0, 0, 'x');";
+    char* err = nullptr;
+    REQUIRE(sqlite3_exec(db, ddl, nullptr, nullptr, &err) == SQLITE_OK);
+    sqlite3_close(db);
+
+    const resolver r(path);
+    REQUIRE(r.resolve("1")->title == "a\"b");
+    REQUIRE(r.resolve("2")->title == "raw");
+    REQUIRE(r.resolve("3")->title == "\"");
+    REQUIRE(r.resolve("4")->title == "x");
+}
+
+TEST_CASE("resolver throws when the path is not an openable database",
+          "[ores.orgmode][resolver]") {
+    // A directory exists, so the constructor's existence check passes, and
+    // sqlite3_open_v2 is the call that refuses it.
+    const auto path = std::filesystem::temp_directory_path();
+
+    REQUIRE_THROWS_AS(resolver(path), std::runtime_error);
+}
+
+TEST_CASE("resolver throws when the database has no nodes table", "[ores.orgmode][resolver]") {
+    const auto path = std::filesystem::temp_directory_path() /
+                      "ores_orgmode_resolver_notable.db";
+    if (std::filesystem::exists(path))
+        std::filesystem::remove(path);
+    sqlite3* db = nullptr;
+    REQUIRE(sqlite3_open(path.string().c_str(), &db) == SQLITE_OK);
+    char* err = nullptr;
+    REQUIRE(sqlite3_exec(db, "create table files (file);", nullptr, nullptr, &err) == SQLITE_OK);
+    sqlite3_close(db);
+
+    const resolver r(path);
+    REQUIRE_THROWS_AS(r.resolve("anything"), std::runtime_error);
+}
+
 TEST_CASE("resolver resolves against the real repo org-roam index (integration)",
           "[ores.orgmode][resolver][integration]") {
     // Skips cleanly when the checkout has no .org-roam.db yet (e.g. a

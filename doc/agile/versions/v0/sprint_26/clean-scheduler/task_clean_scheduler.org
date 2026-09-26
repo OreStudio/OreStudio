@@ -99,7 +99,7 @@ well as the All items.
 | H03 | Pass. Comments follow the project comment rules; the survey found no commented-out code. | Comment pass |
 | H04 | Not applicable. The component carries no platform conditional and no OS header; its one platform need, the ISO-8601 timestamp, goes through =ores.platform=. | =grep= for preprocessor conditionals |
 | V07 | Pass. The audit found one vacuous case and it is fixed: =next_occurrence= asserted only that the result was in the future, which any implementation returning a future time satisfies. It now asserts a literal interval (an every-minute expression, from a fixed minute boundary, advances by exactly 60 seconds) and literal local calendar fields (a midnight expression lands on hour 0, minute 0); the assertion is time-zone stable because the subject evaluates in local time, and the alternative — computing the expectation by calling the subject twice — is the "one production run against another" anti-pattern the item names. The case was proved load-bearing by stubbing =next_occurrence= to return its input and re-running: all four new assertions fail and the other four cases still pass. The remaining cases assert literal round-trips and rejections, the config parser asserts literals, and the generated eventing test is a real end-to-end chain. | =domain_cron_expression_tests.cpp=, 33 assertions in 6 cases; the stub run |
-| V08 | Partly. =cron_expression=, the service config parser and the generated eventing integration test exercise their subject. The hand-written job-instance repository, the scheduler loop and the action handlers have no test; each is recorded below with its reason. | Per-file survey under =src/= |
+| V08 | Recorded. Every one of the 26 source files under =src/= is surveyed in the per-file table below: two are tested directly, twelve carry the generated marker and are therefore the output of a template the codegen suite covers, and the remaining twelve are recorded with their reason — the hand-written files that need a live database, a live NATS server or both, and the process entry points the live-fleet run covers. The uncovered set is the V08 work item. | The per-file survey under =* V08 per-file survey= |
 | V06 | Held. =ores.scheduler= does not join =COMPONENTS_UNDER_TEST= yet, because =job_instance= is still unmodelled. The registry entry is the closing act of that unit, and the reason is recorded below. | Registry |
 | S01 | Held, with the reason recorded in the model. The profile enables =ores.cpp.shell-command=, and the model disables it in its =* Physical space= table because the =ores.shell= composite carries no scheduler part yet and its command registry is hand-written. Enabling the facet before the part exists would generate command units and a recipe for a module no build reaches. Adding the part, registering its commands and then enabling the facet is the third unit of this task. | Model =* Physical space= |
 | S02 | Held with S01. No recipe is generated while the facet is off, and the recipe inventory is unchanged. | =regenerate_shell_recipe_inventory.py= |
@@ -191,6 +191,44 @@ them.
    component's business. The scheduler note is one instance of it. No workflow
    runs the script, so nothing reports the drift; the fix belongs to the sweep,
    or to a new gate over =plantuml_er_generate.sh=.
+
+* V08 per-file survey
+
+Every source file under =src/= in the three modules, against the component's
+three test binaries. "Generated" is a reason in its own right: the file is the
+output of a template, so a test of it tests the template, and the template is
+covered by the codegen suite that every component shares. The hand-written
+files with no test are the ones that need a live database or a live NATS server
+to be exercised at all, and they are the V08 work item.
+
+| File | Test or reason |
+|------+----------------|
+| =api/src/domain/cron_expression.cpp= | =domain_cron_expression_tests.cpp= |
+| =api/src/domain/job_definition_json_io.cpp= | Generated |
+| =api/src/domain/job_definition_table.cpp= | Generated |
+| =api/src/domain/job_definition_table_io.cpp= | Generated |
+| =api/src/generators/job_definition_generator.cpp= | Generated |
+| =core/src/messaging/job_definition_registrar.cpp= | Generated |
+| =core/src/messaging/job_definition_history_provider_registrar.cpp= | Generated |
+| =core/src/messaging/registrar.cpp= | No test. It composes subscriptions and decides nothing; the live-fleet run is what exercises it, and it is recorded as a V02 dependency rather than a unit test. |
+| =core/src/presentation/job_definition_history_field_mapper.cpp= | Generated |
+| =core/src/repository/job_definition_entity.cpp= | Generated |
+| =core/src/repository/job_definition_mapper.cpp= | Generated |
+| =core/src/repository/job_definition_repository.cpp= | Generated; the generated eventing test writes and reads through it against a live database |
+| =core/src/repository/job_instance_mapper.cpp= | No test. Needs the database fixture, and the entity has no model yet, so it moves with the =job_instance= unit |
+| =core/src/repository/job_instance_repository.cpp= | No test. Raw multi-column queries and an =INSERT … RETURNING id=; needs the database fixture. =job_instance= unit |
+| =core/src/service/cron_scheduler.cpp= | No test. Writes to the live scheduler table. =job_instance= unit, with the tests-for-untested-sources unit |
+| =core/src/service/job_definition_service.cpp= | Generated |
+| =core/src/service/mq_action_handler.cpp= | No test. Dispatches to a message queue and needs the fleet |
+| =core/src/service/nats_publish_action_handler.cpp= | No test. Publishes to NATS and needs the fleet |
+| =core/src/service/scheduler_loop.cpp= | No test. Fires jobs on a timer across tenants; needs the database and NATS together |
+| =core/src/service/sql_action_handler.cpp= | No test. Executes SQL against the live database |
+| =service/src/app/application.cpp= | No test. Process entry point; the live-fleet run is its test |
+| =service/src/app/host.cpp= | No test. Process entry point; the live-fleet run is its test |
+| =service/src/config/options.cpp= | Exercised through =config_parser_tests.cpp=, which is the only thing that produces one |
+| =service/src/config/parser.cpp= | =config_parser_tests.cpp= |
+| =service/src/main.cpp= | No test. Process entry point |
+| =service/src/messaging/job_definition_event_registrar.cpp= | Generated; the eventing integration test assembles the same chain directly |
 
 * Generator defects found
 

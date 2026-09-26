@@ -334,6 +334,29 @@ list the protocol header states; and every response check reads
 helper needs no change, because it is templated on
 =typename Req::response_type=.
 
+** The codemod, and the two defects left in it
+
+=projects/ores.codegen/scripts/migrate_consumer_to_generated_protocol.py=
+applies the mapping in one linear pass. Its dry run on the handler
+reports 81 declarations renamed, 211 field accesses, 34 whole-object
+sites and 59 response checks, and it leaves the four families with no
+model on the consolidated request they have today.
+
+Two defects are known and unfixed, both found by building the migrated
+handler:
+
+- The domain path for an identity-group member is not always resolved,
+  so an expansion reads =obj.instrument_id= where the domain type has
+  =obj.identity.instrument_id=. The group-header parse in
+  =domain_paths= is what needs the fix.
+- An expression that dereferences a smart pointer is appended to
+  without parentheses, so =*data.option= becomes
+  =*data.option.instrument_id=. The expansion must parenthesise the
+  expression before appending the member.
+
+The handler was reverted after the trial, so the codemod is committed
+and the migration is one run away once those two are fixed.
+
 
 ** 3. Regenerate
 

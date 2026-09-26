@@ -19,6 +19,10 @@
  */
 #include "ores.scheduler.api/domain/cron_expression.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <ctime>
+#include <string>
+#include <vector>
 
 using namespace ores::scheduler::domain;
 
@@ -65,14 +69,33 @@ TEST_CASE("cron_expression::to_string round-trips the input", "[domain][cron_exp
     CHECK(sut->to_string() == expr);
 }
 
-TEST_CASE("cron_expression::next_occurrence returns a future time point",
+TEST_CASE("cron_expression::next_occurrence advances by the expression's interval",
           "[domain][cron_expression]") {
+    // A fixed instant on a minute boundary, so the expectation below is a
+    // literal rather than a measurement of the clock. Asserting only that the
+    // result is in the future passes for any implementation that returns
+    // anything at all, which is what this case used to do.
+    const auto after = std::chrono::system_clock::from_time_t(1700000040);
+
+    auto sut = cron_expression::from_string("* * * * *");
+    REQUIRE(sut.has_value());
+    CHECK(sut->next_occurrence(after) - after == std::chrono::seconds(60));
+}
+
+TEST_CASE("cron_expression::next_occurrence lands on a local midnight",
+          "[domain][cron_expression]") {
+    const auto after = std::chrono::system_clock::from_time_t(1700000040);
+
     auto sut = cron_expression::from_string("0 0 * * *");
     REQUIRE(sut.has_value());
 
-    const auto now = std::chrono::system_clock::now();
-    const auto next = sut->next_occurrence(now);
-    CHECK(next > now);
+    const auto next = sut->next_occurrence(after);
+    CHECK(next > after);
+    const auto as_time_t = std::chrono::system_clock::to_time_t(next);
+    std::tm local{};
+    localtime_r(&as_time_t, &local);
+    CHECK(local.tm_hour == 0);
+    CHECK(local.tm_min == 0);
 }
 
 TEST_CASE("cron_expression equality operator", "[domain][cron_expression]") {

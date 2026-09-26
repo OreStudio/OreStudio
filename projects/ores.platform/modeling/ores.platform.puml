@@ -157,7 +157,7 @@ class ores::platform::filesystem::scoped_temp_file {
     +scoped_temp_file(other : scoped_temp_file&&)
     +operator=(other : scoped_temp_file&&) : scoped_temp_file&
     +~scoped_temp_file()
-    +path() : path&
+    +path() : const path&
     +release() : path
 }
 note right of "ores::platform::filesystem::scoped_temp_file"
@@ -173,7 +173,7 @@ class ores::platform::filesystem::scoped_temp_directory {
     +scoped_temp_directory(other : scoped_temp_directory&&)
     +operator=(other : scoped_temp_directory&&) : scoped_temp_directory&
     +~scoped_temp_directory()
-    +path() : path&
+    +path() : const path&
     +release() : path
 }
 note right of "ores::platform::filesystem::scoped_temp_directory"

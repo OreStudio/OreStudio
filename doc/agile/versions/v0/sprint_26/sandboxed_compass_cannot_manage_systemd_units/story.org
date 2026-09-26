@@ -1,0 +1,170 @@
+:PROPERTIES:
+:ID: 83339FFC-6314-443F-893D-BA053EEC9379
+:END:
+#+title: Story: Reach systemd from a sandboxed compass session
+#+description: Inside bubblewrap, systemctl --user cannot reach the user manager. compass systemd deploy has no --use-busctl flag, swallows the daemon-reload failure, and returns 0, so an undeployed fleet looks deployed and services status reports missing instead of unreachable.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Four defects compound so that a compass session inside the sandbox reports a
+fleet state it cannot actually see or change.
+
+1. *The bus is unreachable without busctl.* Plain =systemctl --user=
+   cannot reach the user manager from inside bubblewrap. The sandbox's user
+   namespace leaves the peer credentials unrepresentable, so the manager
+   drops the connection. =projects/ores.compass/src/systemctl_bus.py=
+   documents this and provides a busctl transport, selected by
+   =--use-busctl= or =ORES_USE_BUSCTL=1=.
+2. *=compass systemd= has no =--use-busctl= flag.* Only the =services=
+   pillar defines it. =compass systemd deploy --use-busctl= answers
+   =unrecognized arguments=. From a sandbox the only route is the
+   environment variable.
+3. *Nothing sets that variable.* =ORES_USE_BUSCTL= is absent from every
+   worktree's =.env=, so a sandboxed session never gets the busctl path by
+   default.
+4. *The deploy swallows the failure.* =systemd_generate.cmd_deploy= calls
+   =systemctl_bus.run(["--user", "daemon-reload"], check=False)= and returns
+   0 whatever happens. The connection error goes to stderr and the command
+   still exits 0.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-26                               |
+
+* Acceptance
+
+- =ORES_USE_BUSCTL= is written into the =.env= that =compass env provision= and =compass env configure= generate, and defaults to on.
+- Both commands take a =--use-busctl= / =--no-use-busctl= pair, so a host where plain =systemctl --user= reaches the manager can switch the transport off, and the choice survives a re-configure.
+- =compass systemd= accepts =--use-busctl=, as =compass services= already does.
+- A failed =daemon-reload= is reported and makes the command fail, instead of returning 0 while systemd never reloads.
+- On a host where =systemctl --user= cannot connect, =compass services status= reports the units as stopped rather than missing.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3252AE89-8071-4E22-819B-8FDF4B4A6A3A][Default the environment to the busctl transport]] | DONE | 2026-09-26 | 2026-09-26 | Write ORES_USE_BUSCTL into the .env that provision and configure generate, default it on, add a --use-busctl / --no-use-busctl pair to both, and give the systemd pillar the flag it lacks. |
+| [[id:FB024ABF-41F1-41F4-860F-E53D8F577F8A][Stop a failed daemon-reload passing as a successful deploy]] | DONE | | 2026-09-26 | Make cmd_deploy print why the daemon-reload failed and return non-zero, instead of reporting success while systemd never reloads. |
+
+* Decisions
+
+- Default the transport on, and let the environment switch it off. The sandbox needs busctl, so the generated =.env= carries =ORES_USE_BUSCTL=1=; a plain host can pass =--no-use-busctl=.
+- Use =argparse.BooleanOptionalAction=, which declares =--use-busctl= and =--no-use-busctl= from one line and defaults to on. The name matches the variable it writes, so a reader needs no new vocabulary to guess what it does.
+- Fix the transport before the wording. The status command reporting =missing= instead of =unreachable= is a symptom of the unreachable manager, so it needs no separate change once the default lands.
+
+* Out of scope
+
+- Whether =compass env provision= should also deploy the units. It may be deliberate laziness, and the transport fix removes the confusion that made it look like a defect.
+- Auto-detecting bubblewrap instead of reading a variable. A default plus an explicit switch is enough, and detection would hide the choice.
+
+* Promoted from capture
+
+Captured 2026-09-26 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Four defects compound so that a compass session inside the sandbox reports a
+fleet state it cannot actually see or change.
+
+1. *The bus is unreachable without busctl.* Plain =systemctl --user=
+   cannot reach the user manager from inside bubblewrap. The sandbox's user
+   namespace leaves the peer credentials unrepresentable, so the manager
+   drops the connection. =projects/ores.compass/src/systemctl_bus.py=
+   documents this and provides a busctl transport, selected by
+   =--use-busctl= or =ORES_USE_BUSCTL=1=.
+2. *=compass systemd= has no =--use-busctl= flag.* Only the =services=
+   pillar defines it. =compass systemd deploy --use-busctl= answers
+   =unrecognized arguments=. From a sandbox the only route is the
+   environment variable.
+3. *Nothing sets that variable.* =ORES_USE_BUSCTL= is absent from every
+   worktree's =.env=, so a sandboxed session never gets the busctl path by
+   default.
+4. *The deploy swallows the failure.* =systemd_generate.cmd_deploy= calls
+   =systemctl_bus.run(["--user", "daemon-reload"], check=False)= and returns
+   0 whatever happens. The connection error goes to stderr and the command
+   still exits 0.
+
+** Why
+
+The observable effect is a lie about state. =compass services status= prints
+=running=0 starting=0 stopped=0 missing=24= when the manager is simply
+unreachable, and the bearings surface that as an instruction to run
+=compass services start=. That reads as "the units were never created",
+and it sent this session down that path before the real cause surfaced.
+
+With =ORES_USE_BUSCTL=1= the same tree reports =stopped=24 missing=0=. The
+units are known; they are not missing.
+
+Evidence, gathered 2026-09-26 in the =brave_hopper= worktree:
+
+1. =systemctl --user is-system-running= answers =Failed to connect to user
+   scope bus via local transport: No data available=.
+2. =compass services status= reports =missing=24=. The same command with
+   =ORES_USE_BUSCTL=1= reports =missing=0 stopped=24=.
+3. =compass services status --use-busctl= parses. =compass systemd deploy
+   --use-busctl= does not.
+4. =compass systemd deploy= copied 25 units and exited 0 while printing
+   =Failed to connect to user scope bus via local transport= on stderr.
+
+A separate, milder gap sits underneath. =compass env provision= creates the
+worktree and its =.env= and does nothing else, so a fresh worktree has no
+deployed units until someone runs =compass services start= or =compass
+systemd deploy=. That may be deliberate laziness. It is indistinguishable
+from the defects above, though, because the status command cannot tell
+"never deployed" from "cannot see the manager".
+
+The smallest fix is to give the =systemd= pillar the =--use-busctl= flag the
+=services= pillar already has, and to stop swallowing the daemon-reload
+result. Deciding whether compass should also detect the sandbox itself, and
+whether =env provision= should deploy units, is the larger question.
+
+** References
+
+- =projects/ores.compass/src/systemctl_bus.py= — the busctl transport and its docstring, lines 1 to 65.
+- =projects/ores.compass/src/systemd_generate.py= — =cmd_generate= writes =systemd/units/=, =cmd_deploy= installs and calls daemon-reload with =check=False=.
+- =projects/ores.compass/src/compass_services.py= — line 765 sets the flag from =args.use_busctl=; only the services pillar defines it.
+
+** See also
+
+- [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] — the design this defect undermines.
+
+* Result
+
+The transport defaults on, and a failed reload fails the command.
+
+A provisioned environment now carries =ORES_USE_BUSCTL=1= in its =.env=, so a
+sandboxed session reaches the user manager through busctl without anyone
+exporting a variable. =compass env provision= and =compass env configure= both
+take =--use-busctl= / =--no-use-busctl=, an explicit flag wins, an existing
+=.env= value stands, and a fresh checkout defaults to on. =compass systemd=
+accepts the flag the =services= pillar already had.
+
+=compass systemd deploy= now exits 1 and prints why when systemd does not
+reload, instead of exiting 0 with the connection failure on stderr.
+
+Verification. The =ores.compass= suite passes at 230, up from 215, with 15 new
+cases across =test_env_create.py=, =test_env_init.py= and
+=test_systemd_generate.py=. The failure path was proved on the real one: with
+one deployed unit removed and the bus switched off, the deploy exits 1 with
+the reason and the hint. Through the bus it re-installs the unit, exits 0, and
+=compass services status= reports =stopped=24 missing=0=.
+
+The status command reporting =missing= instead of =unreachable= needed no
+separate change. It was a symptom of the unreachable manager, and the default
+removes it.

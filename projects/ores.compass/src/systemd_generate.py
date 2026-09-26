@@ -521,6 +521,26 @@ def cmd_generate(project_root: Path, env: dict, args) -> int:
     return 0
 
 
+def _reload_systemd() -> int:
+    """Reload the user manager after installing units.
+
+    Returns 0 when the manager reloaded, 1 when it did not. A failed reload
+    used to pass silently: the units landed on disk, systemd never read them,
+    and the command still exited 0, so an undeployed fleet looked deployed.
+    """
+    result = systemctl_bus.run(["--user", "daemon-reload"], check=False)
+    if result.returncode == 0:
+        return 0
+    print("error: systemd did not reload, so the units just installed are "
+          "not loaded.", file=sys.stderr)
+    for stream in (result.stderr, result.stdout):
+        if stream:
+            print(stream.rstrip(), file=sys.stderr)
+    if not systemctl_bus.use_busctl():
+        print(systemctl_bus.sandbox_hint(), file=sys.stderr)
+    return 1
+
+
 def cmd_deploy(project_root: Path, env: dict, args) -> int:
     """Sync generated units into ~/.config/systemd/user/, reloading only if
     something actually changed (same pattern as compass_claude.py's
@@ -581,7 +601,8 @@ def cmd_deploy(project_root: Path, env: dict, args) -> int:
             added.append(name)
 
     if added or updated or removed:
-        systemctl_bus.run(["--user", "daemon-reload"], check=False)
+        if _reload_systemd() != 0:
+            return 1
 
     print(f"Added: {len(added)}, updated: {len(updated)}, "
           f"removed: {len(removed)}")
@@ -1010,7 +1031,8 @@ def cmd_quadlet_deploy(project_root: Path, env: dict, args) -> int:
             removed.append(dest.name)
 
     if added or updated or removed:
-        systemctl_bus.run(["--user", "daemon-reload"], check=False)
+        if _reload_systemd() != 0:
+            return 1
 
     print(f"Added: {len(added)}, updated: {len(updated)}, "
           f"removed: {len(removed)}")
@@ -1025,14 +1047,28 @@ def cmd_quadlet_deploy(project_root: Path, env: dict, args) -> int:
     return 0
 
 
+def _busctl_argument(parser):
+    """The transport flag every `compass systemd` subcommand accepts.
+
+    Mirrors compass_services' flag of the same name. ORES_USE_BUSCTL in .env
+    supplies the default, so this only forces the transport on for one call.
+    """
+    parser.add_argument(
+        "--use-busctl", action="store_true",
+        help="Reach the systemd user manager through busctl instead of "
+             "systemctl. Use this inside a sandbox, where the manager "
+             "refuses systemctl's connection. ORES_USE_BUSCTL in .env sets "
+             "the default for every compass command.")
+
+
 def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     parser = argparse.ArgumentParser(prog="compass systemd")
     sub = parser.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("generate", help="Render concrete systemd units for "
+    generate_p = sub.add_parser("generate", help="Render concrete systemd units for "
                    "this environment from service_definition/service_dependency")
-    sub.add_parser("deploy", help="Install generated units into "
+    deploy_p = sub.add_parser("deploy", help="Install generated units into "
                    "~/.config/systemd/user/ and reload if changed")
-    sub.add_parser("quadlet", help="Render Quadlet .container units for "
+    quadlet_p = sub.add_parser("quadlet", help="Render Quadlet .container units for "
                    "podman/remote hosts from the same dependency graph")
     quadlet_deploy_p = sub.add_parser(
         "quadlet-deploy", help="Install generated Quadlet units into "
@@ -1041,7 +1077,11 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     quadlet_deploy_p.add_argument(
         "--host", help="SSH host (e.g. from ~/.ssh/config) to deploy to "
         "instead of this machine")
+    for sub_parser in (generate_p, deploy_p, quadlet_p, quadlet_deploy_p):
+        _busctl_argument(sub_parser)
     args = parser.parse_args(argv)
+
+    systemctl_bus.set_use_busctl(getattr(args, "use_busctl", False))
 
     env = load_env(project_root, env_file)
 

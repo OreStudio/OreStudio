@@ -199,6 +199,19 @@ def _get_or_gen_uuid(existing: dict, key: str) -> str:
     return val if val else _gen_uuid()
 
 
+def _busctl_setting(existing: dict, flag: bool | None) -> str:
+    """Value for ORES_USE_BUSCTL.
+
+    An explicit --use-busctl or --no-use-busctl wins, so an operator can flip
+    the transport on a checkout that already configured. Without a flag the
+    checkout's own value stands. A fresh checkout defaults to on, because
+    compass drives the fleet with systemctl --user and that cannot reach the
+    user manager from inside the DSH sandbox."""
+    if flag is None:
+        return _env_value(existing, "ORES_USE_BUSCTL", "1")
+    return "1" if flag else "0"
+
+
 def _underscored(label: str) -> str:
     """Underscored form of an environment label.
 
@@ -478,6 +491,13 @@ def run(argv, project_root: Path) -> int:
                         help="Compiler cache to use for local builds (default: ccache, "
                              "or whatever is already in .env). CI always uses sccache "
                              "regardless of this setting.")
+    parser.add_argument("--use-busctl", action=argparse.BooleanOptionalAction,
+                        default=None,
+                        help="Transport compass uses to drive the fleet: --use-busctl "
+                             "(default) goes through busctl, which reaches the user "
+                             "manager where plain systemctl --user cannot, as inside "
+                             "the DSH sandbox. --no-use-busctl selects plain systemctl. "
+                             "Without either flag an existing .env value is kept.")
     pkg_grp = parser.add_mutually_exclusive_group()
     pkg_grp.add_argument("--install-packages", action="store_true",
                          help="Run compass env install-packages without prompting (requires sudo)")
@@ -690,6 +710,7 @@ def run(argv, project_root: Path) -> int:
     web_bff_host = _env_value(existing, "ORES_WEB_BFF_HOST", "127.0.0.1")
     service_log_level = _env_value(existing, "ORES_SERVICE_LOG_LEVEL", "info")
     web_log_level = _env_value(existing, "ORES_WEB_LOG_LEVEL", "info")
+    use_busctl = _busctl_setting(existing, args.use_busctl)
     web_env = (existing.get(WEB_ENVIRONMENT_ID_VARIABLE)
                or _resolve_web_env_id(checkout_root, nats_port, nats_prefix,
                                       env_name))
@@ -787,6 +808,15 @@ CMAKE_BUILD_PARALLEL_LEVEL={cmake_build_parallel_level}
 # the SSD. See story 03831B51 (btrfs migration).
 # ---------------------------------------------------------------------------
 ORES_COMPILER_CACHE={compiler_cache}
+
+# ---------------------------------------------------------------------------
+# systemd transport. compass drives the fleet with systemctl --user, which
+# cannot reach the user manager from inside the DSH sandbox: the namespace
+# leaves the peer credentials unrepresentable, so the manager drops the
+# connection. busctl reaches the same manager over the session bus. Change:
+#   compass env configure --use-busctl | --no-use-busctl
+# ---------------------------------------------------------------------------
+ORES_USE_BUSCTL={use_busctl}
 
 # ---------------------------------------------------------------------------
 # NATS (per-environment: assigned by compass env create; preserved on re-run)

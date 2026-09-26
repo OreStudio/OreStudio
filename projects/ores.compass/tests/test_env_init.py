@@ -46,6 +46,37 @@ class TestEnvValue:
             "ORES_NATS_SUBJECT_PREFIX", "ores.dev.derived") == "ores.dev.from_env"
 
 
+class TestBusctlSetting:
+    """The transport defaults to on, and an explicit flag always wins.
+
+    compass drives the fleet with systemctl --user, which the user manager
+    refuses from inside the DSH sandbox, so busctl is the transport that
+    works there and the safe default. A host where plain systemctl reaches
+    the manager turns it off with --no-use-busctl."""
+
+    def test_a_fresh_checkout_defaults_to_on(self, monkeypatch):
+        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
+        assert env_init._busctl_setting({}, None) == "1"
+
+    def test_an_explicit_flag_turns_it_off_over_an_existing_on(
+            self, monkeypatch):
+        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
+        assert env_init._busctl_setting({"ORES_USE_BUSCTL": "1"}, False) == "0"
+
+    def test_an_explicit_flag_turns_it_on_over_an_existing_off(
+            self, monkeypatch):
+        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
+        assert env_init._busctl_setting({"ORES_USE_BUSCTL": "0"}, True) == "1"
+
+    def test_no_flag_keeps_the_checkout_choice(self, monkeypatch):
+        monkeypatch.setenv("ORES_USE_BUSCTL", "1")
+        assert env_init._busctl_setting({"ORES_USE_BUSCTL": "0"}, None) == "0"
+
+    def test_the_process_environment_seeds_a_fresh_checkout(self, monkeypatch):
+        monkeypatch.setenv("ORES_USE_BUSCTL", "0")
+        assert env_init._busctl_setting({}, None) == "0"
+
+
 class TestWebEnvironmentBinding:
     """The ores.web BFF resolves its site configuration by id.
 

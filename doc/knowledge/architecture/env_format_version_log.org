@@ -52,6 +52,7 @@ The table is machine-parsed: each data row is =| <integer> | <date> |
 | 21 | 2026-09-19 | Removed ORES_CONTROLLER_SERVICE_WT_PORT; ores.wt.service and the Qt client are gone, so nothing consumes the WT port any more |
 | 22 | 2026-09-19 | Removed ORES_DB_WT_USER, ORES_DB_WT_PASSWORD and the ORES_WT_DB_* block; ores.wt is gone, so nothing uses the Wt database role any more |
 | 23 | 2026-09-23 | Removed ORES_CONNECTIONS_MASTER_PASSWORD; ores.connections is gone, so the connections.db master-password auto-unlock has no store left to unlock |
+| 24 | 2026-09-26 | Added ORES_USE_BUSCTL, defaulting on, so compass reaches the systemd user manager through busctl where systemctl --user cannot (the DSH sandbox); compass env configure --no-use-busctl selects plain systemctl |
 
 * See also
 

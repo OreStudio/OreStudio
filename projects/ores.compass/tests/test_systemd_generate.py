@@ -7,11 +7,13 @@ No live database or systemd access required: the renderer is a pure function.
 
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 # Allow importing from the src directory without installing the package.
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import systemd_generate
+import systemctl_bus
 
 PRESET = "linux-clang-debug-make"
 TARGET = "ores-eager-maxwell.target"
@@ -76,3 +78,87 @@ class TestFetchServiceDefinitions:
               "runtime": "node", "entry_point": "packages/bff/dist/main.js"}])
         assert defs[0]["runtime"] == "node"
         assert defs[0]["entry_point"] == "packages/bff/dist/main.js"
+
+
+class TestBusctlFlag:
+    """`compass systemd` accepts the transport flag the services pillar has.
+
+    The flag has to reach systemctl_bus, or a sandboxed caller keeps the
+    unreachable-manager failure it passed the flag to avoid. Unlike the rest
+    of this module these cases drive run(), so the transport global is reset
+    around each one."""
+
+    @staticmethod
+    def _bare_checkout(tmp_path):
+        # load_env exits when the file is absent, and the deploy only needs
+        # to get past it to prove the flag landed.
+        (tmp_path / ".env").write_text("")
+
+    def test_the_flag_selects_the_bus(self, tmp_path, monkeypatch):
+        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
+        self._bare_checkout(tmp_path)
+        systemctl_bus.set_use_busctl(False)
+        try:
+            systemd_generate.run(["deploy", "--use-busctl"], tmp_path)
+            assert systemctl_bus.use_busctl() is True
+        finally:
+            systemctl_bus.set_use_busctl(False)
+
+    def test_without_the_flag_plain_systemctl_is_kept(self, tmp_path, monkeypatch):
+        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
+        self._bare_checkout(tmp_path)
+        systemctl_bus.set_use_busctl(False)
+        try:
+            systemd_generate.run(["deploy"], tmp_path)
+            assert systemctl_bus.use_busctl() is False
+        finally:
+            systemctl_bus.set_use_busctl(False)
+
+
+class TestReloadSystemd:
+    """A failed reload must not pass as a successful deploy.
+
+    systemd never reads units it has not reloaded, so swallowing the failure
+    left an undeployed fleet looking deployed."""
+
+    @staticmethod
+    def _result(returncode, stdout="", stderr=""):
+        return SimpleNamespace(returncode=returncode, stdout=stdout,
+                               stderr=stderr)
+
+    def test_a_successful_reload_says_nothing(self, monkeypatch, capsys):
+        monkeypatch.setattr(systemd_generate.systemctl_bus, "run",
+                            lambda *a, **k: self._result(0))
+        assert systemd_generate._reload_systemd() == 0
+        assert capsys.readouterr().err == ""
+
+    def test_a_failed_reload_reports_the_reason_and_fails(
+            self, monkeypatch, capsys):
+        monkeypatch.setattr(
+            systemd_generate.systemctl_bus, "run",
+            lambda *a, **k: self._result(
+                1, stderr="Failed to connect to user scope bus\n"))
+        assert systemd_generate._reload_systemd() == 1
+        err = capsys.readouterr().err
+        assert "did not reload" in err
+        assert "Failed to connect to user scope bus" in err
+
+    def test_a_failed_reload_without_busctl_points_at_the_sandbox(
+            self, monkeypatch, capsys):
+        monkeypatch.setattr(systemd_generate.systemctl_bus, "run",
+                            lambda *a, **k: self._result(1, stderr="boom\n"))
+        monkeypatch.setattr(systemd_generate.systemctl_bus, "use_busctl",
+                            lambda: False)
+        monkeypatch.setattr(systemd_generate.systemctl_bus, "sandbox_hint",
+                            lambda: "  retry with --use-busctl")
+        assert systemd_generate._reload_systemd() == 1
+        assert "retry with --use-busctl" in capsys.readouterr().err
+
+    def test_a_failed_reload_through_the_bus_omits_the_sandbox_hint(
+            self, monkeypatch, capsys):
+        monkeypatch.setattr(systemd_generate.systemctl_bus, "run",
+                            lambda *a, **k: self._result(1, stderr="boom\n"))
+        monkeypatch.setattr(systemd_generate.systemctl_bus, "use_busctl",
+                            lambda: True)
+        assert systemd_generate._reload_systemd() == 1
+        assert "retry with --use-busctl" not in capsys.readouterr().err

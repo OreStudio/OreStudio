@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: FB024ABF-41F1-41F4-860F-E53D8F577F8A
+:END:
+#+title: Task: Stop a failed daemon-reload passing as a successful deploy
+#+description: Make cmd_deploy print why the daemon-reload failed and return non-zero, instead of reporting success while systemd never reloads.
+#+type: task
+#+level: s1
+#+filetags: :sandboxed_compass_cannot_manage_systemd_units:sprint_26:v0:
+#+owner: marco
+#+branch: feature/systemd-busctl-transport
+#+pr: 2150
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:83339FFC-6314-443F-893D-BA053EEC9379][Reach systemd from a sandboxed compass session]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+systemd_generate.cmd_deploy calls systemctl_bus.run with check=False and returns 0 whatever happens, so compass systemd deploy reports success while systemd never reloads the units it just installed. Make the failure visible and make the command fail, so a caller can tell a real deploy from a silent one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:83339FFC-6314-443F-893D-BA053EEC9379][Reach systemd from a sandboxed compass session]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- A failed daemon-reload prints the reason and returns a non-zero exit code.
+- A successful deploy still returns 0 and stays quiet.
+- A test covers the failure path.
+
+* Plan
+
+One helper, both call sites.
+
+1. =_reload_systemd()= runs the reload, returns 0 on success, and on failure
+   prints the reason, adds the sandbox hint when plain systemctl was in use,
+   and returns 1.
+2. =cmd_deploy= and =cmd_quadlet_deploy= both call it and propagate the
+   failure, because both carried the same swallowed call.
+3. Tests stub =systemctl_bus.run= to drive the success path, the failure path,
+   and the hint's presence and absence.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2150][#2150]] | [compass] Default the environment to the busctl transport |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A failed reload now fails the command.
+
+=compass systemd deploy= exits 1 and prints why when systemd does not reload,
+and adds the busctl hint when plain systemctl was in use. It used to exit 0
+with the connection failure on stderr.
+
+Evidence, on the real path. With one deployed unit removed and the bus
+switched off, =compass systemd deploy= exits 1 with:
+
+#+begin_src text
+Failed to connect to user scope bus via local transport: No data available
+error: systemd did not reload, so the units just installed are not loaded.
+  If you are running inside a sandbox, retry with --use-busctl or set ORES_USE_BUSCTL=1.
+#+end_src
+
+The same call through the bus re-installs the unit and exits 0, and
+=compass services status= then reports =stopped=24 missing=0=. Four cases in
+=test_systemd_generate.py= cover the success path, the failure path, and the
+hint's presence and absence.

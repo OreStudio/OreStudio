@@ -26,11 +26,11 @@ The workflow engine's every path runs against the live fleet from ores.shell, dr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] |
-| Now          | Not yet started.                       |
+| Now          | History is readable. The identity fixture and the rest of the command surface are not started. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | =workflow definitions= and =workflow start=, then the fixture. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -151,6 +151,60 @@ domain code.
    command and the transcripts are the evidence.
 
 * Notes
+
+** The generator emits no history message, and that is why history is unreachable
+
+The gap is not workflow's. The protocol generator builds an entity's messages in
+=entity_protocol_messages()= and emits no history message at all: no template
+contains one, no code path constructs one, and the string appears nowhere in the
+generator. So a per-entity =history= command exists only where a protocol still
+carries what an *older* generator emitted, or where the protocol is hand-written.
+
+The evidence is a regeneration. Applying the generator to =reporting= removes its
+history subscription:
+
+#+begin_src text
+-   get_report_type_history_request::nats_subject, queue_group,
+-       [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+#+end_src
+
+The same holds for marketdata and trading's =trade=. Every component already
+brought to the clean standard carries none: workflow, iam, refdata, analytics,
+assets and compute all have zero protocols with a history message, while dq's
+eighteen are hand-written files.
+
+The consequence worth stating plainly: the components that cannot be regenerated
+without losing history are exactly the ones whose protocols are stale, so that
+staleness is the only reason the feature still appears to exist there. Adding a
+history message back to the generator changes generated output for every versioned
+entity in the tree, which is a tree-wide wave rather than a workflow fix, and it is
+why this task does not attempt it.
+
+** What was done instead, and why it is the right shape anyway
+
+=history get <entity_type> <entity_id>= reads =<component>.v1.history.get=, the
+generic subject a service serves for all of its entities through a dispatch
+registry. It needs no per-entity protocol, works for every component rather than
+workflow alone, and gives the history family wired during the clean-up its first
+client: until now that subject was subscribed everywhere and read by nobody. It
+reuses =render_history_diff=, which the per-entity commands already share, so the
+listing is the only thing it adds.
+
+Verified against the live fleet: =history get ores.iam.account <uuid>= reaches the
+iam provider and returns a well-formed response, and an unknown entity type fails
+with the subject it tried, because the entity type's component segment selects the
+subject. The addressing rule works.
+
+** Open: what an empty history result means
+
+Reading the bootstrapped =super_admin= account returns no versions although the row
+exists with =version = 1=. The provider ran -- a missing provider is a failure
+response and this was a success with an empty list -- so the read found nothing
+where a row exists. The likely cause is tenant scoping: the provider is handed the
+caller's resolved context, and the bootstrap account's tenant is the all-ones uuid
+rather than a tenant the read is scoped to. That is a hypothesis, not a finding,
+and it must be settled before any configuration can assert on history. It does not
+affect the command, whose contract is to report what the provider answers.
 
 ** Why the fixture has to live in the service, not the shell
 

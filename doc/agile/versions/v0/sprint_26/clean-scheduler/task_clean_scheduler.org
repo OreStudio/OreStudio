@@ -43,7 +43,10 @@ ores.scheduler passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 * Plan
 
 Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order, one entity at a time, and
-record each item's result in the table below. The standard holds 48 items;
+record each item's result in the table below. The standard held 48 items when
+this task was planned and holds 49 now: H05 arrived on =main= while the branch
+was open, and the verification pass found it missing from the table and worked
+it rather than letting a clean-looking 48 stand.
 scheduler is an Entity component, so the Entity and Protocol items apply as
 well as the All items.
 
@@ -54,7 +57,7 @@ well as the All items.
 4. Generation (G01 to G08).
 5. Wiring and data (W01 to W04).
 6. Shell (S01, S02).
-7. Structure and hygiene (H01 to H04).
+7. Structure and hygiene (H01 to H05).
 8. Verification (V01 to V08), ending with the registry entry.
 
 * Checklist result
@@ -108,6 +111,7 @@ well as the All items.
 | V06 | Held. =ores.scheduler= does not join =COMPONENTS_UNDER_TEST= yet, because =job_instance= is still unmodelled. The registry entry is the closing act of that unit, and the reason is recorded below. | Registry |
 | S01 | Held, with the reason recorded in the model. The profile enables =ores.cpp.shell-command=, and the model disables it in its =* Physical space= table because the =ores.shell= composite carries no scheduler part yet and its command registry is hand-written. Enabling the facet before the part exists would generate command units and a recipe for a module no build reaches. Adding the part, registering its commands and then enabling the facet is the third unit of this task. | Model =* Physical space= |
 | S02 | Held with S01. No recipe is generated while the facet is off, and the recipe inventory is unchanged. | =regenerate_shell_recipe_inventory.py= |
+| H05 | Pass, with one finding recorded against its ER clause. This item applies to All and reached the branch on =main= after the checklist was first written, so the first pass over the table did not carry it; this row and the work behind it are the verification pass's finding. =projects/ores.codegen/validate_docs.sh= reports all 40 components pass, and =ores.scheduler= is not in =docs_exceptions.txt=. The composite's root =modeling/= is a group index that the validator does not judge beyond what its parts carry, and the three parts -- api, core and service -- each carry a =component_overview.org= with the six required sections, a =Diagram= section that points at a rendered =png=, and the =.puml= source committed beside it. Those diagrams are the ones H01 corrected and the verification pass read. The finding is the ER clause: the component owns two tables, the ER diagram that draws them is the cross-component =projects/ores.sql/modeling/ores_schema.puml=, and it predates this change. Regenerating it here was tried and reverted -- the diff is 555 lines and almost all of it is other components' content -- so it is recorded below as the sweep item, with the fact that no gate runs the script that writes it. | =validate_docs.sh= (all 40 components pass); the three overviews with their =.puml=/=.png= pairs; =docs_exceptions.txt= |
 | H01 | Pass, after correction. All three diagrams are hand-authored above and below the sentinel: the api diagram carries the canonical protocol types and the two operation views, the core diagram carries the generated registrar, history provider, presentation mapper and handler, and the service diagram carries the event mapping the application now wires. The existing api, core and service images were read when the pass was made; the =png= is the rendering, so the =.puml= is the artefact a reviewer can check, and the verification pass read it and found three inaccuracies, all now fixed: the presentation mapper was drawn as =render(v)= when the function is =render_job_definition_fields(v)=, the repository's method list was abbreviated into names the code does not have, and =application_exception= was an empty box. The verification pass also caught the deleted =cron_scheduler= still drawn, and the diagrams no longer carry it. | The three =.puml= files and their rendered =.png= files; the verification pass |
 
 * Notes
@@ -211,7 +215,19 @@ them.
    added here is documented in a meta-model page; the backlog already records
    the gap as "Update the codegen key and columns meta-model doc", and the
    template variable reference now carries both rows.
-6. *The SQL ER diagram, which no gate covers.* =projects/ores.sql/modeling/ores_schema.puml=
+6. *The drift check's comparison, which is repository-wide.* The in-place
+   =check_component_drift.py= runs =git diff= with no path filter, so an
+   uncommitted edit anywhere in the repository fails it, whatever the edit is.
+   The message blames "a generated file was hand-edited, or its .org model
+   changed", which is not what happened. The check was run with one uncommitted
+   documentation edit in the tree and it failed on that file, naming it in its
+   =--verbose= diff; once the edit was committed, the same command reported no
+   drift. This is a tool defect rather than a scheduler one, and it is recorded
+   here rather than fixed here: scoping the comparison needs the component's
+   output paths, and the change belongs to the codegen tool with its own
+   verification, not to a component pass. Its =--dry-run= mode is unaffected,
+   and its message already points at the right command.
+7. *The SQL ER diagram, which no gate covers.* =projects/ores.sql/modeling/ores_schema.puml=
    is generated by =projects/ores.codegen/plantuml_er_generate.sh= and carries
    each entity's model prose as a note. The committed diagram is dated
    =2026-09-17= and predates several model changes: it still held this

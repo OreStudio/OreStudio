@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 398769F8-5458-4CDA-A4C0-E974685C43F4
+:END:
+#+title: ores.shell.workflow.tests links without a main, so the tree does not build
+#+description: projects/ores.shell/workflow/tests/ has no main.cpp, so the test binary fails to link with an undefined reference to main and the whole build stops on it.
+#+type: capture
+#+level: cross
+#+filetags: :build:testing:shell:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give `projects/ores.shell/workflow/tests/` a `main.cpp`, like every other test
+directory in the tree, so its test binary links.
+
+* Why
+
+`./compass.sh build` stops at 84 percent on current main:
+
+  /usr/bin/x86_64-linux-gnu-ld.bfd: /lib/x86_64-linux-gnu/Scrt1.o:
+  in function `_start': (.text+0x17): undefined reference to `main'
+  gmake[2]: *** [.../ores.shell.workflow.tests.dir/build.make:164:
+    publish/bin/ores.shell.workflow.tests] Error 1
+
+The directory holds two test sources and no `main.cpp`, and its
+`component_files.cmake` lists only those two, so the Catch2 entry point is
+never compiled in. Every other `ores.shell/*/tests/` directory has one.
+
+This is one of two defects the clean-workflow change (PR #2173, merged
+2026-09-26) left on main; the other is that `ores.shell.workflow` has no
+`modeling/component_overview.org` and no `.puml`, which fails
+`validate_docs.sh`. Its `tests/component_files.cmake` even carries the header
+comment "Hand-written: this module has no modeling/component_overview.org",
+so the two share a cause: the part was added without its model and without the
+test entry point.
+
+Measured while closing `ores.telemetry`, which does not touch that component:
+`git diff origin/main -- projects/ores.shell/workflow` is empty on the branch.
+
+A broken `main` blocks every other environment's full build, so it is worth
+fixing ahead of the clean-workflow story's remaining items.
+
+* References
+
+- =projects/ores.shell/workflow/tests/= — the directory with no `main.cpp`.
+- =projects/ores.shell/refdata/tests/main.cpp= — the shape every sibling uses.
+- =projects/ores.codegen/validate_docs.sh= — the check that fails on the same
+  part for its missing overview and diagram.
+
+* See also
+
+-

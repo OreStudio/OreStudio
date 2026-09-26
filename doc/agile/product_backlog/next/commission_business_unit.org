@@ -2,7 +2,7 @@
 :ID: 2BA9566F-4ACB-4736-AD3D-186FE1E33904
 :END:
 #+title: Story: Commission: business_unit
-#+description: Commission business_unit: verify Qt UI post-NATS, fix regressions, add manual chapter, capture shell/CLI/Wt/HTTP backlog.
+#+description: Commission business_unit: verify Qt UI post-NATS, fix regressions, add manual chapter, capture shell/HTTP backlog.
 #+type: story
 #+level: s2
 #+filetags: :product:refdata:commissioning:business_unit:sprint_22:v0:
@@ -16,9 +16,9 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 Commission =business_unit= across all access layers: verify the Qt UI end-to-end post-NATS
 migration, fix any regressions found, and add the entity chapter to the user manual
-(Qt windows only — shell and CLI commands are a horizontal layer handled by the
-top-level Shell entity commands and CLI commands commissioning stories, not per-entity).
-File backlog captures for Wt and HTTP support.
+(Qt windows only. Shell commands are a horizontal layer handled by the
+top-level Shell entity commands story, not per-entity. File backlog captures
+for HTTP support.)
 
 * Status
 
@@ -38,10 +38,9 @@ File backlog captures for Wt and HTTP support.
 - Qt history window: shows change history for the entity.
 - Qt delete command: removes the record; history is preserved.
 - Qt eventing: a change made in one connected session appears in a second session without manual refresh.
-- Manual: entity chapter documents all Qt windows (shell and CLI sections added
-  later, once the top-level Shell entity commands / CLI commands stories reach
-  this entity).
-- Backlog captures filed for shell, CLI, Wt, and HTTP support.
+- Manual: entity chapter documents all Qt windows (shell section added later,
+  once the top-level Shell entity commands story reaches this entity).
+- Backlog captures filed for shell and HTTP support.
 - All regressions found are fixed inline or filed as captures.
 - Site builds cleanly.
 

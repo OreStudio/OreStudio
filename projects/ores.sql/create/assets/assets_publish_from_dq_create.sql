@@ -53,7 +53,11 @@ declare
     v_existing_image_id uuid;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
     perform ores_utility_allow_version_replace_fn();
+
     -- Validate dataset exists
     select name into v_dataset_name
     from ores_dq_datasets_tbl
@@ -90,10 +94,10 @@ begin
         where dq.dataset_id = p_dataset_id
           and dq.tenant_id = ores_utility_system_tenant_id_fn()
     loop
-        -- Check if an image with this key already exists in the target tenant
-        select image_id into v_existing_image_id
+        -- Check if an image with this code already exists in the target tenant
+        select id into v_existing_image_id
         from ores_assets_images_tbl existing
-        where existing.key = r.key
+        where existing.code = r.key
           and existing.tenant_id = p_target_tenant_id
           and existing.valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -109,7 +113,7 @@ begin
         -- generalised (mime_type, data) shape of the live table.
         insert into ores_assets_images_tbl (
             tenant_id,
-            image_id, version, key, description, mime_type, data,
+            id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             p_target_tenant_id,

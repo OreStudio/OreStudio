@@ -11,6 +11,25 @@
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
+* Partly resolved: the grammar is settled, the depth is not
+
+The blocking claim below -- that this blocks oresmd -- is withdrawn. oresmd
+models the *key grammar*, and the corpus is unanimous about it: 939 keys, both
+types six segments, =ccy/contract-month/exchange:code/tenor=, with no
+five-segment form anywhere. The oresmd identifier now carries
+=contract_month= and =contract_code= and names every one of those keys, so
+nothing waits on the depth question.
+
+The depth question itself stays open, and it is a storage question rather than
+a grammar one: what a stored =market_series= row is, and therefore what the two
+rows in =ore_series_key_shapes_populate.sql= should say. The three readings
+below are still live, and the decision still belongs to whoever owns the
+series identity. What is no longer true is that the corpus is silent -- it is
+silent on the depth, but it is explicit about the shape.
+
+The catalogue half of the finding is fixed: =ore_market_data_catalogue.org= now
+documents both types with the exchange contract code the corpus writes.
+
 * What
 
 ORE writes the two listed-futures families in the same shape, and the shape

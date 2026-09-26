@@ -40,6 +40,9 @@ CATEGORY_RE = re.compile(r":recipe:shell:([^:]+):")
 LINK_RE = re.compile(r"^- \[\[id:([^]]+)\]\[(.+?)\]\]\s*(.*)$")
 HEADING_RE = re.compile(r"^\* (.+?)\s*$")
 KEYWORD_RE = re.compile(r"^#\+(\w[\w-]*):\s*(.*)$")
+# What git leaves in a file it could not merge. A bare separator counts too:
+# a botched resolution strands those outside their pair, as happened here.
+CONFLICT_MARKER_RE = re.compile(r"^(?:<{7}|>{7})(?: |$)|^={7}$")
 
 # Categories whose heading is not the title-cased key. Everything else reads
 # acceptably from the key alone, so this stays a list of the exceptions rather
@@ -139,19 +142,41 @@ def render_links(recipes: list[dict[str, str]],
     return "\n".join(lines)
 
 
+def reject_conflict_markers(text: str) -> None:
+    """Refuse an inventory git left a merge conflict in.
+
+    The prose under a heading is carried forward unchanged, because it is a
+    writer's. That makes an unresolved conflict invisible to the generator: it
+    keeps the markers, and --check then calls the result clean because the
+    output matches the input byte for byte. Markers reached the checked-in
+    inventory exactly that way, so the file is refused instead, and the lines
+    are named because the file runs to hundreds of sections.
+    """
+    lines = [number for number, line in enumerate(text.splitlines(), start=1)
+             if CONFLICT_MARKER_RE.match(line)]
+    if lines:
+        raise SystemExit(
+            f"unresolved merge conflict in {INDEX}\n"
+            f"  conflict markers at line {', '.join(map(str, lines))}\n"
+            "  resolve the conflict, then regenerate the inventory")
+
+
 def read_index() -> str:
     """The inventory as it stands.
 
     A missing index is a misconfiguration rather than a crash: the file is
     derived from the recipes beside it, so the useful thing to say is where
-    it was looked for.
+    it was looked for. An inventory holding an unresolved merge conflict is
+    refused for the same reason -- see reject_conflict_markers().
     """
     if not INDEX.exists():
         raise SystemExit(
             f"no inventory at {INDEX}\n"
             f"  the inventory is derived from the recipes under {RECIPES_ROOT}, "
             "so both have to exist")
-    return INDEX.read_text(encoding="utf-8")
+    text = INDEX.read_text(encoding="utf-8")
+    reject_conflict_markers(text)
+    return text
 
 
 def build_index(by_category: dict[str, list[dict[str, str]]] | None = None) -> str:

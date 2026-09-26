@@ -1,0 +1,196 @@
+:PROPERTIES:
+:ID: 13217FCC-66E9-4887-B950-8C73FFC8D067
+:END:
+#+title: Task: Model the unmodelled trading families and bind the unbound
+#+description: PR 3. Author the missing entity models, bind the 26 unbound entities to profiles or record the no-match, clear the legacy model fragments, and close the type defects the trade model investigation lists.
+#+type: task
+#+level: s1
+#+filetags: :clean-trading:sprint_26:v0:
+#+owner: marco
+#+branch: feature/model-missing-trading-families
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close the gap between what the component persists and what its models
+describe. This is item group M. Three things are missing: entities with
+a table and no model, entities with a model and no profile binding, and
+types the model declares in a shape the database should not hold.
+
+The last of these is the sixteen-defect investigation
+=doc/agile/versions/v0/sprint_25/ore_trade_generator_trade_populations/trade_model_defects.org=,
+whose model-shape defects belong here. Defect 11 and defect 12 belong
+to the reference-data work and are out of scope, per decision D5.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | PR 2 merged, so the model work starts from a drift-clean tree. |
+| Next         | Bind the 26 unbound entities, then author the seven missing models. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- Every entity model binds a profile, or records a no-match with its
+  feature values and the reason. Twenty-six of fifty-seven bind none
+  today: the fourteen bond family entities, the seven instrument child
+  entities and the five trade envelope and party entities.
+- The tables that have no model have one: =commodity_instruments=,
+  =composite_instruments=, =composite_legs=, =credit_instruments=,
+  =scripted_instruments=, =swap_legs= and =product_type=. Each
+  regenerates, and the drift dry run stays empty with it included.
+- Every hand-written domain type with no model is classified as a model
+  to author, a message that is not an entity, or infrastructure, and the
+  classification is recorded. Twenty-four are in that state today.
+- M04 is checked per model: each feature sits in the namespace the
+  loader reads, and regeneration shows the change it should.
+- M09 passes: no presentation drawer, no property naming a retired
+  message type, no dead history property, and the twenty-five singular
+  =generator_facet_name= values are corrected. The scheduler pass
+  recorded that all twenty-five remaining instances are in ores.trading.
+- The type defects close at the model level: defect 1 JSON-text
+  collections, defect 2 dates held as text, defect 3 amounts held as
+  double, defect 4 free-text enumerations, defect 5 code fields with no
+  reference table, defect 6 one concept under two names, defect 8
+  enumerations enforced in PL/pgSQL, and defects 14, 15 and 16, which
+  are shapes the model cannot express today.
+- Every generator defect found is fixed at its source with a regression
+  test in the codegen suite.
+- =check_component_drift.py --component trading-cpp --dry-run= reports
+  nothing after the work, and =check_model_drift.py --summary= reports
+  no drift.
+
+* Plan
+
+** 1. Bind the unbound entities
+
+Choose a profile or record a no-match for each of the 26. The bond
+family is the large group: =bond_issue= and its children are shared
+static data rather than per-trade records, so a profile built for a
+per-trade instrument is the wrong bind, and a forced nearest bind is not
+allowed. Where no profile fits, record the entity's actual feature
+values and the reason, as item M02 requires.
+
+** 2. Author the seven missing models
+
+Five families have a table, a repository, a service, a handler and SQL,
+and no model at all: commodity, composite with its legs child table,
+credit, scripted, and the shared swap legs table. =product_type= is the
+seventh, and its current shape is a database enum on the trades table
+rather than an entity, which is defect 10.
+
+Use the established entity org format. The bond family from the sprint
+25 pilot is the worked example. =swap_legs= needs a decision the sprint
+25 analysis left open: a shared table with one model, or one per
+family. Record the decision on the story before authoring it.
+
+** 3. Classify the unmodelled hand-written domain types
+
+Twenty-four hand-written domain types have no model:
+=activity_type=, =fpml_event_type=, =commodity_instrument=,
+=composite_instrument=, =composite_leg=, =credit_instrument=,
+=scripted_instrument=, =swap_leg=, =product_type=,
+=rates_instrument_variant=, =equity_instrument_variant=,
+=fx_instrument_variant=, =instrument=, =instrument_identity=,
+=instrument_payload=, =trade_instrument=, =trade_audit=,
+=trade_classification=, =trade_envelope_data=, =trade_identity=,
+=trade_lifecycle=, =trade_parties=, =bond_instrument_data= and
+=bond_schedule_data=.
+
+Some become models in step 2. Some are messages, and item M05 says a
+joined or denormalised shape is a message rather than an entity: the
+instrument variants, the payload and the container are the candidates.
+The rest are infrastructure with a recorded reason. No type is left
+unclassified, and none is deleted from this PR.
+
+** 4. Clear the legacy fragments
+
+#+begin_src sh
+grep -rn "Presentation" projects/ores.trading/modeling/
+grep -rn "generator_facet_name" projects/ores.trading/modeling/
+#+end_src
+
+Five models carry a presentation drawer: =trade=, =lifecycle_event=,
+=party_role_type=, =trade_id_type= and =trade_type=. Twenty-five models
+name the generator facet in the singular. Fix both in the models and
+regenerate; do not edit the generated output.
+
+** 5. Close the type defects
+
+Work them in the order the investigation gives, because each makes the
+next smaller. Defects 2, 3, 4 and 6 are item M08: SQL type spellings
+must be canonical, flags must be booleans, and one concept must have one
+name. Defect 5 is a =_code= suffix with no reference table behind it,
+so either the table is created or the suffix is dropped. Defect 1 is a
+collection held as JSON text; where the collection is a keyed child row
+under the relational rule, model it as one. Defect 8 moves twenty-seven
+enumeration checks out of trigger functions and into the schema.
+Defects 14, 15 and 16 need a shape the grammar may not express today:
+declared coverage, a qualified underlying rather than a free-text name,
+and an observation schedule rather than two scalar dates. If the
+grammar cannot express one, record it as a generator defect with a
+failing regression test rather than forcing the tree.
+
+** 6. Regenerate and prove
+
+Regenerate the component and re-run the dry run twice. Every new
+entity must leave the tree byte-identical. Then run the codegen suite.
+
+#+begin_src sh
+projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q
+projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --component trading-cpp --dry-run
+#+end_src
+
+** 7. Record
+
+Update the story's checklist rows for M02, M04, M05, M08 and M09.
+
+* Notes
+
+- The sprint 25 design analysis is a September 8 snapshot of 38 orgs.
+  This component has 65. Read the design for the shape of each family,
+  not for its counts.
+- The trade model investigation measured its defects by loading every
+  table, so its figures are reproducible. Its per-family detail for
+  equity shows how to do the same for bond.
+- Two models under =core/modeling/= are not entity models:
+  =ores.trading.protocol.org= names four trade subjects in prose, and
+  =trade_status_fsm_implementation.org= describes an FSM. Neither is a
+  codegen model and neither belongs in the B02 census.
+- =ores.trading.module.org= lists =leg_type= and =floating_index_type=
+  as trading entities after the move to ores.refdata. Correct it here.
+- Missing reference tables (defect 5) may need reference data from
+  another component. If so, record the dependency rather than inventing
+  rows here.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    | Model the unmodelled trading families and bind the unbound |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

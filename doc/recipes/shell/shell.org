@@ -110,14 +110,6 @@ tangled into the runnable script library
 - [[id:41576369-A684-4BC4-AF5E-32ECDAADAA7C][List accounts on Tenant]]
 - [[id:4406CC4D-23BF-4A8F-AB95-FFED42437ED7][Tenant History]]
 
-* Variability
-
-- [[id:E53146D5-0B0C-4760-BBCC-400AA9C445CA][Add Feature Flag]]
-- [[id:61B7F668-5B49-4470-9C52-4BC547E3AB4F][Delete Feature Flag]]
-- [[id:660DD54D-8319-4508-B398-C02AA956C979][Feature Flag History]]
-- [[id:1CA91A21-F6F3-4089-9C36-DED598DBB19E][Help Menu]]
-- [[id:0DA49716-852D-4814-AA83-13452DB3FAE4][List Feature Flags]]
-
 * Currencies
 
 - [[id:1C8E834C-6C3E-5655-9887-6CB58081498C][How do I run the currencies commands from the shell?]]
@@ -552,8 +544,6 @@ tangled into the runnable script library
 
 * Platforms
 
-<<<<<<< HEAD
-
 - [[id:B07AA915-541C-55EB-BBC1-9DEA5AB1421F][How do I run the platforms commands from the shell?]]
 
 * Folders
@@ -602,11 +592,6 @@ tangled into the runnable script library
 
 * Tags
 
-=======
-
-
-<<<<<<< HEAD
-
 - [[id:B08A234B-9FEF-5B71-B0FC-DC4A43CAA19A][How do I run the tags commands from the shell?]]
 
 * Pricing Engine Types
@@ -627,8 +612,6 @@ tangled into the runnable script library
 
 * Testing
 
-=======
-
 - [[id:01193D52-DD7C-4276-B6C2-E4B7F137B99E][How do I test the shell?]]
 
 * Workflow Instances
@@ -637,11 +620,15 @@ tangled into the runnable script library
 
 * Workflow Steps
 
->>>>>>> af11271b7e ([workflow] List the generated shell recipes in the inventory)
-
->>>>>>> ddab9ae787 ([workflow] List the generated shell recipes in the inventory)
-
 - [[id:14E95BD6-FFD8-575A-95D7-57F38A3CD303][How do I run the workflow_steps commands from the shell?]]
+
+* Scheduler
+
+- [[id:FFE1A375-412F-4557-883F-586460533BA4][How do I schedule a job from the shell, and watch it fire?]]
+
+* System Settings
+
+- [[id:1AE52616-1E2F-5164-9765-76457B907EF3][How do I run the system_settings commands from the shell?]]
 
 * Artefact Types
 

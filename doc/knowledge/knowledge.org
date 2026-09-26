@@ -40,6 +40,7 @@ one, start there rather than here.
 | [[id:338DCC6D-4913-4FDC-9078-1F0B0486A9E5][MASD]] | The methodology the code generator implements |
 | [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] | The order an entity's layers must be built in |
 | [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] | How a subject is addressed, what a message must look like, and where a service binds to the bus |
+| [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] | Where the durable data lives, which interface reaches each store, and how to choose one |
 
 Every structure note carries the =structure_note= tag, so listing that
 tag returns the complete set.
@@ -89,6 +90,7 @@ How the codebase is put together.
 | [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design]] | The three regimes, and how to review a component's data model against them |
 | [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] | The four composition classes for a journey, where the transaction boundary sits, and why a journey is not a saga |
 | [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] | Producers, the marketdata authority, feed configs, source-independent consumers |
+| [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] | The system of record, object storage, the durable stream and the caches, and what each one owns |
 | [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] | Schema layout, roles, session settings, bitemporal design |
 | [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol Specification]] | The subject grammar, verb set, envelopes, write model and security rules every common entity message follows |
 | [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][Component Architecture Audit]] | The recurring per-component cleanliness check, and the conventions it enforces |

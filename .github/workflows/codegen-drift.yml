@@ -140,6 +140,28 @@ jobs:
         run: |
           python3 projects/ores.codegen/scripts/regenerate_shell_recipe_inventory.py --check
 
+  # Accepted exceptions: a listed component may carry checklist items it does
+  # not pass, and each is recorded in the registry with its reason and the
+  # person who accepted it. Leaving the component unlisted until every item
+  # passes is the alternative, and it withholds every gate from the component
+  # in the meantime -- worse than running the gates and recording the gap. This
+  # job is what stops the gap being an omission: an exception that names an
+  # item the standard does not define, states no reason, names nobody or
+  # carries no date fails here. It reads the registry and the standard only, so
+  # it needs neither codegen nor a formatter.
+  registry:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Check every accepted exception is well formed
+        run: |
+          python3 projects/ores.codegen/scripts/check_registry_exceptions.py
+
   # The codegen unit suite. The gates above prove the tree matches the
   # models; none of them says whether the code that reads the models, and
   # the code that checks them, still behave. A check that stops finding

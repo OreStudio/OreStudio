@@ -32,7 +32,13 @@ target_link_libraries(${tests_target_name}
         ${lib_target_name}
         ores.telemetry.core.lib
         ores.utility.lib
+        ores.logging.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.refdata.core.lib
+        ores.diff.lib
         ores.testing.lib
+        ores.openssl_cleanup
         Catch2::Catch2
         faker-cxx::faker-cxx
         Threads::Threads)

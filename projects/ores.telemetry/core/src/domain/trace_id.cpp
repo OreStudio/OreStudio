@@ -41,7 +41,8 @@ std::string trace_id::to_hex() const {
 trace_id trace_id::from_hex(std::string_view hex) {
     trace_id result;
     if (hex.size() != 32) {
-        return result; // Invalid, returns all zeros
+        // A string of the wrong length reads as the all-zero, invalid id.
+        return result;
     }
 
     for (std::size_t i = 0; i < 16; ++i) {
@@ -50,7 +51,8 @@ trace_id trace_id::from_hex(std::string_view hex) {
         std::istringstream iss{std::string(byte_str)};
         iss >> std::hex >> value;
         if (iss.fail()) {
-            return trace_id{}; // Invalid hex
+            // A non-hex character reads as the all-zero, invalid id.
+            return trace_id{};
         }
         result.bytes[i] = static_cast<std::byte>(value);
     }

@@ -1,0 +1,309 @@
+================================================================================
+B04 SURVEY - ores.telemetry : subjects, protocol headers, raw literals, consumers
+================================================================================
+Component : ores.telemetry (composite: core + database + service)
+Branch    : feature/clean-telemetry
+Worktree  : /home/marco/Development/OreStudio/ores_dev_prime_origin
+Method    : read-only grep/read. No file under projects/ was modified.
+Searches  : nats_subject | subject | prefix | "telemetry. | telemetry.v1 |
+            '"v1\.' | "ores\. | publish( | subscribe( | $SYS
+            across projects/ and projects/ores.telemetry/
+
+Item B04 reads: "List every NATS subject the component serves or sends, every
+protocol header, and every raw subject string outside a protocol header."
+Related Protocol items: P02 (declare once in models; raw strings reference a
+generated constant; exception only where layering forbids) and P03 (no duplicate
+subject, no unregistered derived message, no declared message nothing serves).
+
+--------------------------------------------------------------------------------
+1. EVERY SUBJECT THE COMPONENT OWNS
+--------------------------------------------------------------------------------
+The component owns exactly 6 NATS subject literals. All 6 are declared exactly
+once, as `static constexpr std::string_view nats_subject`, in the three protocol
+headers of ores.telemetry.core (see section 2). All 6 are SERVED (a handler
+subscribes). None is duplicated.
+
+S1  telemetry.v1.logs.list
+    literal      : "telemetry.v1.logs.list"
+    declared     : projects/ores.telemetry/core/include/ores.telemetry.core/messaging/telemetry_protocol.hpp:34
+    declaring    : struct get_telemetry_logs_request
+    served       : YES - projects/ores.telemetry/service/src/messaging/registrar.cpp:35
+                   (queue_subscribe, queue "ores.telemetry.service", registrar.cpp:33)
+                   handler logs_list() -> telemetry_handler.hpp:63
+    sent         : NO in-repo sender (no C++/TS publisher found anywhere in projects/)
+    payload      : get_telemetry_logs_request (query) / get_telemetry_logs_response
+
+S2  telemetry.v1.logs.publish
+    literal      : "telemetry.v1.logs.publish"
+    declared     : projects/ores.telemetry/core/include/ores.telemetry.core/messaging/telemetry_protocol.hpp:65
+    declaring    : struct publish_log_entries_request
+    served       : YES - registrar.cpp:74; handler logs_publish() -> telemetry_handler.hpp:175
+    sent         : YES - projects/ores.compute/wrapper/src/app/log_publisher.cpp:47
+                   (fire-and-forget, batch_size 200 at log_publisher.cpp:40)
+    payload      : publish_log_entries_request / publish_log_entry_item (no response)
+
+S3  telemetry.v1.services.heartbeat
+    literal      : "telemetry.v1.services.heartbeat"
+    declared     : projects/ores.telemetry/core/include/ores.telemetry.core/messaging/service_samples_protocol.hpp:41
+    declaring    : struct service_heartbeat_message
+    served       : YES - registrar.cpp:59; handler service_heartbeat() -> telemetry_handler.hpp:117
+    sent         : YES - projects/ores.service/include/ores.service/service/heartbeat_publisher.hpp:114
+                   (every domain service embedding heartbeat_publisher, incl. the
+                    telemetry service itself at
+                    projects/ores.telemetry/service/src/app/application.cpp:87-89)
+    payload      : service_heartbeat_message (one-way publish, no response)
+
+S4  telemetry.v1.services.list
+    literal      : "telemetry.v1.services.list"
+    declared     : projects/ores.telemetry/core/include/ores.telemetry.core/messaging/service_samples_protocol.hpp:65
+    declaring    : struct get_service_samples_request
+    served       : YES - registrar.cpp:66; handler service_samples_list() -> telemetry_handler.hpp:143
+                   (calls repository.list_service_samples, repository.hpp:199)
+    sent         : NO in-repo sender
+    payload      : get_service_samples_request / get_service_samples_response
+
+S5  telemetry.v1.nats.server-samples.list
+    literal      : "telemetry.v1.nats.server-samples.list"
+    declared     : projects/ores.telemetry/core/include/ores.telemetry.core/messaging/nats_samples_protocol.hpp:34
+    declaring    : struct get_nats_server_samples_request
+    served       : YES (subscription only) - registrar.cpp:42
+                   handler nats_server_samples_list() -> telemetry_handler.hpp:96
+    sent         : NO in-repo sender
+    payload      : get_nats_server_samples_request / get_nats_server_samples_response
+
+S6  telemetry.v1.nats.stream-samples.list
+    literal      : "telemetry.v1.nats.stream-samples.list"
+    declared     : projects/ores.telemetry/core/include/ores.telemetry.core/messaging/nats_samples_protocol.hpp:46
+    declaring    : struct get_nats_stream_samples_request
+    served       : YES (subscription only) - registrar.cpp:49
+                   handler nats_stream_samples_list() -> telemetry_handler.hpp:209
+    sent         : NO in-repo sender
+    payload      : get_nats_stream_samples_request / get_nats_stream_samples_response
+
+Counts
+    subjects owned            : 6
+    declared once, in models  : 6 / 6 (P02 satisfied; no duplicate literal)
+    served (subscriber)       : 6 / 6
+    declared but unserved     : 0 (P03 "declared message nothing serves" CLEAN)
+    sent by the component     : 1 indirectly - S3 via ores.service heartbeat_publisher
+                                (application.cpp:87). No direct nats.publish() exists
+                                anywhere under projects/ores.telemetry/.
+    no in-repo sender         : S1, S4, S5, S6 (4 request subjects have no client
+                                in the monorepo; only the service side exists)
+
+P03 FINDINGS (no unserved subject, but two no-op servers)
+    S5 and S6 are subscribed but the handlers are stubs. Both decode the request
+    and reply success with an EMPTY payload; the decoded query is discarded:
+      - telemetry_handler.hpp:96-109  nats_server_samples_list
+          -> telemetry_handler.hpp:105  reply(nats_, msg, get_nats_server_samples_response{.success = true});
+          never calls repo.query_server_samples (declared at
+          projects/ores.telemetry/database/include/ores.telemetry.database/repository/telemetry_repository.hpp:177)
+      - telemetry_handler.hpp:209-222 nats_stream_samples_list
+          -> telemetry_handler.hpp:218  reply(nats_, msg, get_nats_stream_samples_response{.success = true});
+          never calls repo.query_stream_samples (repository.hpp:183)
+    The declared response fields `samples` (nats_samples_protocol.hpp:41,53) are
+    therefore never populated. The subjects are "served" only nominally. Flag in
+    clean-up: either wire the query methods or remove the two message pairs.
+    By contrast service_samples_list (telemetry_handler.hpp:151-163) does call
+    the repository.
+
+    No duplicate subject literal anywhere. No derived/entity-event message type
+    exists in this component, so "unregistered derived message" is not applicable.
+
+    Documentation drift (P02 support): the messaging reference lists only 1 of the
+    6 subjects:
+      - projects/ores.telemetry/core/modeling/ores.telemetry.protocol.org:10
+        states the namespace `telemetry.v1.>`
+      - projects/ores.telemetry/core/modeling/ores.telemetry.protocol.org:16
+        documents only `telemetry.v1.logs.list`
+    The generated component diagram carries no subject attributes at all
+    (projects/ores.telemetry/core/modeling/ores.telemetry.core.puml:245-295).
+
+--------------------------------------------------------------------------------
+2. EVERY PROTOCOL HEADER UNDER projects/ores.telemetry/*/include/
+--------------------------------------------------------------------------------
+Three headers exist; all are in ores.telemetry.core. No protocol header exists
+under ores.telemetry.database/include/ or ores.telemetry.service/include/.
+Confirming search: find projects/ores.telemetry -name '*protocol*.hpp' returns
+only the three below.
+
+H1  projects/ores.telemetry/core/include/ores.telemetry.core/messaging/telemetry_protocol.hpp
+    namespace ores::telemetry::messaging
+    types and subject each declares:
+      :32  struct get_telemetry_logs_request
+             :34  static constexpr std::string_view nats_subject = "telemetry.v1.logs.list";
+             :33  using response_type = get_telemetry_logs_response
+      :38  struct get_telemetry_logs_response   (no subject; response)
+      :51  struct publish_log_entry_item        (no subject; item type)
+      :64  struct publish_log_entries_request
+             :65  static constexpr std::string_view nats_subject = "telemetry.v1.logs.publish";
+    subjects declared: 2 (telemetry.v1.logs.list, telemetry.v1.logs.publish)
+
+H2  projects/ores.telemetry/core/include/ores.telemetry.core/messaging/service_samples_protocol.hpp
+    namespace ores::telemetry::messaging
+    types and subject each declares:
+      :40  struct service_heartbeat_message
+             :41  static constexpr std::string_view nats_subject = "telemetry.v1.services.heartbeat";
+      :63  struct get_service_samples_request
+             :65  static constexpr std::string_view nats_subject = "telemetry.v1.services.list";
+             :64  using response_type = get_service_samples_response
+      :68  struct get_service_samples_response  (no subject; response)
+    subjects declared: 2 (telemetry.v1.services.heartbeat, telemetry.v1.services.list)
+
+H3  projects/ores.telemetry/core/include/ores.telemetry.core/messaging/nats_samples_protocol.hpp
+    namespace ores::telemetry::messaging
+    types and subject each declares:
+      :32  struct get_nats_server_samples_request
+             :34  static constexpr std::string_view nats_subject = "telemetry.v1.nats.server-samples.list";
+             :33  using response_type = get_nats_server_samples_response
+      :38  struct get_nats_server_samples_response (no subject; response)
+      :44  struct get_nats_stream_samples_request
+             :46  static constexpr std::string_view nats_subject = "telemetry.v1.nats.stream-samples.list";
+             :45  using response_type = get_nats_stream_samples_response
+      :50  struct get_nats_stream_samples_response (no subject; response)
+    subjects declared: 2 (telemetry.v1.nats.server-samples.list,
+                         telemetry.v1.nats.stream-samples.list)
+
+Header totals: 3 headers, 6 nats_subject constants, 12 declared structs
+(6 requests/messages + 4 responses + 1 item + 1 response_type alias target).
+All 6 subjects appear in exactly one header each - no duplication.
+
+Note (name collision, not subject collision): a DIFFERENT header with the same
+basename exists in another component -
+  projects/ores.compute/api/include/ores.compute.api/messaging/telemetry_protocol.hpp
+Its subjects are compute.v1.telemetry.get_grid_stats (:43) and
+compute.v1.telemetry.node_samples (:172). It is not part of ores.telemetry.
+
+--------------------------------------------------------------------------------
+3. EVERY RAW SUBJECT STRING OUTSIDE A PROTOCOL HEADER
+--------------------------------------------------------------------------------
+Result: NONE inside projects/ores.telemetry/.
+No .cpp/.hpp in the component contains a hard-coded telemetry.v1.* subject, a
+subject built by concatenation, or a subject prefix literal. Every subscription
+in service/src/messaging/registrar.cpp passes the protocol constant
+(registrar.cpp:35, 42, 49, 59, 66, 74). The component publishes nothing directly.
+P02 "raw subject string references a generated constant" holds with no exception.
+
+Adjacent strings that are NOT NATS subjects (recorded so clean-up does not
+mistake them for subjects):
+  - "ores.telemetry.service"     registrar.cpp:33   queue-group name (not a subject)
+  - "ores.telemetry.service"     application.cpp:37 service_name for heartbeats
+  - "telemetry.jsonl"            core/src/exporting/telemetry_configuration.cpp:55
+                                 default log-file name (not a subject)
+  - "/varz"                      service/src/app/nats_poller.cpp:164 HTTP monitor path
+  - "/jsz?streams=true"          service/src/app/nats_poller.cpp:187 HTTP monitor path
+    (the NATS poller uses the NATS HTTP monitoring API, not NATS subjects; no
+     $SYS.* subject appears anywhere in the component)
+  - "ores.prod.main1"            service/tests/config_parser_tests.cpp:73
+                                 a --nats-subject-prefix VALUE in a test, not a subject
+  - "telemetry.v1.logs.list"     core/modeling/ores.telemetry.protocol.org:16
+                                 documentation table, not code
+
+Environment prefix (why the constants are relative, and the layering exception):
+  projects/ores.nats/src/service/client.cpp:504-510  make_subject() prepends
+  `subject_prefix + "."` to every relative subject; connect() at client.cpp:383-384
+  THROWS if subject_prefix is empty. So the on-wire subject is
+  "<nats.subject_prefix>.telemetry.v1.*". The concatenation lives in the ores.nats
+  transport layer, NOT in ores.telemetry - this is exactly the layering case P02
+  allows an exception for. ores.telemetry never sees or writes the prefix; it only
+  parses cfg.nats (options.hpp:25) and the value is unused in telemetry code
+  (only asserted in service/tests/config_parser_tests.cpp:53,78).
+
+--------------------------------------------------------------------------------
+4. EVERY CONSUMER OF THESE SUBJECTS IN OTHER COMPONENTS
+--------------------------------------------------------------------------------
+Search base: all of projects/ for `telemetry.v1`, for includes of the three
+telemetry protocol headers, and for the six request/message type names.
+
+C1  ores.service  (publisher of S3)
+    projects/ores.service/include/ores.service/service/heartbeat_publisher.hpp:26
+      #include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
+    projects/ores.service/include/ores.service/service/heartbeat_publisher.hpp:108
+      builds telemetry::messaging::service_heartbeat_message
+    projects/ores.service/include/ores.service/service/heartbeat_publisher.hpp:114
+      nats_.publish(telemetry::messaging::service_heartbeat_message::nats_subject, ...)
+    Effect: every domain service that embeds heartbeat_publisher publishes to
+    telemetry.v1.services.heartbeat (GENERATED CONSTANT, no raw string).
+
+C2  ores.compute (wrapper node)  (publisher of S2)
+    projects/ores.compute/wrapper/src/app/log_publisher.cpp:24
+      #include "ores.telemetry.core/messaging/telemetry_protocol.hpp"
+    projects/ores.compute/wrapper/src/app/log_publisher.cpp:43-49
+      publish_batch() -> nats.publish(publish_log_entries_request::nats_subject, ...)
+      (line 47 is the publish; batches capped at 200, log_publisher.cpp:40)
+    projects/ores.compute/wrapper/src/app/log_publisher.cpp:64,106
+      builds publish_log_entries_request
+    Doc-only mentions:
+      projects/ores.compute/wrapper/include/ores.compute.wrapper/app/log_publisher.hpp:34
+      projects/ores.compute/wrapper/src/app/application.cpp:713 (comment on the
+      services.heartbeat dashboard)
+
+C3  ores.telemetry itself (self-publisher of S3, via ores.service)
+    projects/ores.telemetry/service/src/app/application.cpp:24,87-89
+      creates and runs ores::service::service::heartbeat_publisher, so the
+      telemetry service also publishes to telemetry.v1.services.heartbeat.
+
+C4  NO other component sends or subscribes to any telemetry.v1.* subject.
+    Specifically, S1 (logs.list), S4 (services.list), S5 (server-samples.list)
+    and S6 (stream-samples.list) have NO in-repo caller at all: no C++ client and
+    no generated TypeScript client. The Web wire-protocol tree
+    (projects/ores.web/packages/wire-protocol/src/generated/) has NO telemetry
+    directory; its only telemetry matches are compute's and iam's own protocols.
+    The only reference to `telemetry.v1` outside the component's own code is the
+    namespace registry (below) and compute's comments.
+
+C5  Library-only integrators (consume telemetry libraries, NOT these subjects):
+      - projects/ores.shell/application/include/ores.shell/config/options.hpp:26
+        and .../src/config/parser.cpp:25  -> telemetry.core exporting config
+      - projects/ores.testing/src/logging_listener.cpp:25-27
+        -> telemetry.core lifecycle_manager + telemetry.database repository
+        (writes logs straight to the DB, not over NATS)
+      - projects/ores.service/include/ores.service/service/host_runner_impl.hpp:23
+        and host_runner_sync_impl.hpp:23 -> telemetry.core/log/lifecycle_manager
+
+Confirmed by: grep -rn 'telemetry.v1' projects/ (12 hits: 6 in-component code,
+3 in-component docs/modeling, 1 registry doc, 2 compute comments) and
+grep -rn 'messaging/(telemetry|service_samples|nats_samples)_protocol.hpp' projects/
+(only ores.service heartbeat_publisher and ores.compute wrapper log_publisher
+outside the component; compute.api's own same-named header is unrelated).
+
+--------------------------------------------------------------------------------
+5. THE SUBJECT NAMESPACE
+--------------------------------------------------------------------------------
+Exact prefix       : `telemetry.v1.`  (trailing dot; wildcard form `telemetry.v1.>`)
+Version segment    : `v1`
+Owner registry     : projects/modeling/messaging.org:28
+                     "| ores.telemetry | =telemetry.v1.>= | ... Messaging Reference |"
+                     messaging.org:23-25 states each domain service owns a subject
+                     namespace and there is no bare ownerless top-level namespace.
+Declared in code   : projects/ores.telemetry/core/modeling/ores.telemetry.protocol.org:10
+Effective wire name: "<nats.subject_prefix>.telemetry.v1.<rest>"; subject_prefix is
+                     mandatory (projects/ores.nats/src/service/client.cpp:383-384).
+                     tests default it to empty.
+
+Does any other component own a subject under `telemetry.v1.`?  NO.
+    Other owners use disjoint prefixes: ores.iam = iam.v1.>, ores.refdata =
+    refdata.v1.>, ores.variability = variability.v1.>, ores.assets = assets.v1.>,
+    ores.dq = dq.v1.>, ores.trading = trading.v1.>, ores.scheduler = scheduler.v1.>,
+    ores.synthetic = synthetic.v1.>, ores.reporting = reporting.v1.> (messaging.org:23-34);
+    ores.compute = compute.v1.> and ores.workflow = workflow.v1.>.
+    The only non-telemetry subjects containing the word "telemetry" are
+    compute.v1.telemetry.* in ores.compute (compute.api messaging/telemetry_protocol.hpp:43,172)
+    - a different namespace, but a basename collision on the header file name.
+
+--------------------------------------------------------------------------------
+SUMMARY
+--------------------------------------------------------------------------------
+- Subjects owned: 6 (S1-S6), each declared exactly once, in models (P02 clean).
+- Served: 6/6. Declared-but-unserved: 0 (P03 clean on that clause).
+- Raw subject literals outside protocol headers: 0 in ores.telemetry (P02 clean).
+- Senders in other components: 2 subjects used - logs.publish (ores.compute
+  wrapper) and services.heartbeat (ores.service heartbeat_publisher, plus the
+  telemetry service itself). 4 request subjects have no in-repo client.
+- Open findings for clean-up:
+  (a) S5/S6 handlers reply with empty `samples` and never call the repository's
+      query_server_samples / query_stream_samples (telemetry_handler.hpp:96-109,
+      209-222 vs telemetry_repository.hpp:177,183).
+  (b) The messaging reference documents 1 of 6 subjects (protocol.org:16).
+  (c) Header basename `telemetry_protocol.hpp` is shared with ores.compute.
+================================================================================

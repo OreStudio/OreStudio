@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: BBA0A093-C7BC-469A-8E90-7FF29C5542B0
+:END:
+#+title: The telemetry log query escapes SQL by hand
+#+description: build_where_clause() interpolates the component and message_contains filters into LIKE patterns with std::format and manual quote escaping, where every other repository binds its values.
+#+type: capture
+#+level: cross
+#+filetags: :telemetry:sql:security:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Move `build_where_clause()` in
+`projects/ores.telemetry/database/src/repository/telemetry_repository.cpp`
+from `std::format` string building with a hand-written `escape_sql_string()`
+to parameterized bind values.
+
+* Why
+
+The reviewer on PR #2178 found it: the log query's `WHERE` clause is
+assembled as text, and two of its filters — `component` and
+`message_contains` — interpolate caller-supplied substrings into `LIKE` and
+`ILIKE` patterns. A hand-written escaper is the kind of code that is right
+until it is not, and every other repository in the tree binds its values.
+
+The logic is pre-existing; the clean-up touched the file only to rename the
+payload types onto the generated ones, so it was recorded rather than fixed
+inside a component clean-up. The reviewer's point stands that the story
+already had the file open, and that the two filters deserve binding before
+anything else reaches them.
+
+* References
+
+- `projects/ores.telemetry/database/src/repository/telemetry_repository.cpp`
+  — `build_where_clause()` and `escape_sql_string()`.
+- PR #2178 review — the observation that raised it.
+
+* See also
+
+-
+

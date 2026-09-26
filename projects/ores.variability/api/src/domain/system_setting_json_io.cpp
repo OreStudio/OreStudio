@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_json_io.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.variability.api/domain/system_setting_json_io.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <ostream>
@@ -28,14 +33,6 @@ namespace ores::variability::domain {
 std::ostream& operator<<(std::ostream& s, const system_setting& v) {
     rfl::json::write(v, s);
     return s;
-}
-
-std::string convert_to_json(const system_setting& v) {
-    return rfl::json::write(v);
-}
-
-std::string convert_to_json(const std::vector<system_setting>& v) {
-    return rfl::json::write(v);
 }
 
 }

@@ -34,12 +34,9 @@ using namespace ores::telemetry::domain;
 using namespace ores::telemetry::generators;
 
 span_context create_test_context() {
-    trace_id_generator trace_gen;
-    span_id_generator span_gen;
-
     span_context ctx;
-    ctx.trace = trace_gen();
-    ctx.span = span_gen();
+    ctx.trace = trace_id::from_hex("000102030405060708090a0b0c0d0e0f");
+    ctx.span = span_id::from_hex("0102030405060708");
     ctx.trace_flags = 0x01;
     return ctx;
 }
@@ -61,6 +58,11 @@ TEST_CASE("telemetry_context_is_valid_when_properly_constructed", tags) {
 
     REQUIRE(tctx.is_valid());
     REQUIRE(tctx.context().is_valid());
+    REQUIRE(tctx.get_trace_id().to_hex() == "000102030405060708090a0b0c0d0e0f");
+    REQUIRE(tctx.get_span_id().to_hex() == "0102030405060708");
+    REQUIRE(tctx.context().trace_flags == 0x01);
+    REQUIRE(tctx.resource_ptr() == res);
+    REQUIRE(tctx.get_resource().service_name() == "test.service");
     BOOST_LOG_SEV(lg, debug) << "Created telemetry context with trace: "
                              << tctx.get_trace_id().to_hex();
 }
@@ -126,8 +128,12 @@ TEST_CASE("telemetry_context_shares_resource", tags) {
 
     auto [child_ctx, child_span] = parent_ctx.start_span("child_op");
 
-    // Both contexts should share the same resource
-    REQUIRE(parent_ctx.resource_ptr() == child_ctx.resource_ptr());
+    // Both contexts share the exact fixture resource, not merely each other.
+    REQUIRE(parent_ctx.resource_ptr() == res);
+    REQUIRE(child_ctx.resource_ptr() == res);
+    REQUIRE(child_ctx.get_resource().service_name() == "test.service");
+    REQUIRE(child_span.context.trace == parent_ctx.get_trace_id());
+    REQUIRE(child_span.name == "child_op");
 }
 
 TEST_CASE("span_is_root_works_correctly", tags) {
@@ -138,10 +144,13 @@ TEST_CASE("span_is_root_works_correctly", tags) {
     span root_span;
     root_span.context = parent_ctx.context();
     root_span.name = "root";
+    REQUIRE_FALSE(root_span.parent_span_id.has_value());
     REQUIRE(root_span.is_root());
 
     // Create a child span (has parent)
     auto [child_ctx, child_span] = parent_ctx.start_span("child");
+    REQUIRE(child_span.parent_span_id.has_value());
+    REQUIRE(child_span.parent_span_id.value() == parent_ctx.get_span_id());
     REQUIRE_FALSE(child_span.is_root());
 }
 
@@ -165,8 +174,13 @@ TEST_CASE("span_is_session_checks_attribute", tags) {
     span s;
     REQUIRE_FALSE(s.is_session());
 
+    // A different attribute key must not be mistaken for the session key.
+    s.attrs["session"] = std::string("test-session-123");
+    REQUIRE_FALSE(s.is_session());
+
     s.attrs["session.id"] = std::string("test-session-123");
     REQUIRE(s.is_session());
+    REQUIRE(std::get<std::string>(s.attrs.at("session.id")) == "test-session-123");
 }
 
 TEST_CASE("resource_from_environment_populates_attributes", tags) {

@@ -37,6 +37,7 @@
 #include "ores.shell/app/commands/compute/result_commands.hpp"
 #include "ores.shell/app/commands/compute/workunit_commands.hpp"
 #include "ores.shell/app/commands/connection_commands.hpp"
+#include "ores.shell/app/commands/history_commands.hpp"
 #include "ores.shell/app/commands/iam/iam_commands.hpp"
 #include "ores.shell/app/commands/lei_commands.hpp"
 #include "ores.shell/app/commands/marketdata_commands.hpp"
@@ -53,8 +54,10 @@
 #include "ores.shell/app/commands/synthetic_commands.hpp"
 #include "ores.shell/app/commands/tenants_commands.hpp"
 #include "ores.shell/app/commands/trading/trading_commands.hpp"
-#include "ores.shell/app/commands/variability_commands.hpp"
-#include "ores.shell/app/commands/workflow_commands.hpp"
+#include "ores.shell/app/commands/variability/system_setting_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_instance_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_step_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_wait_commands.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
@@ -103,15 +106,18 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     refdata_commands::register_commands(*root, session_);
     analytics_commands::register_commands(*root, session_);
     accounts_commands::register_commands(*root, session_, pagination_);
-    variability_commands::register_commands(*root, session_);
+    system_setting_commands::register_commands(*root, session_);
     subscription_commands::register_commands(*root, session_);
     rbac_commands::register_commands(*root, session_, pagination_);
     tenants_commands::register_commands(*root, session_, pagination_);
     navigation_commands::register_commands(*root, pagination_);
     orgmode_commands::register_commands(*root);
+    history_commands::register_commands(*root, session_);
     script_commands::register_commands(*root, active_session_);
     bundles_commands::register_commands(*root, session_);
-    workflow_commands::register_commands(*root, session_);
+    workflow_instance_commands::register_commands(*root, session_);
+    workflow_step_commands::register_commands(*root, session_);
+    workflow_wait_commands::register_commands(*root, session_);
     scheduler_commands::register_commands(*root, session_);
     lei_commands::register_commands(*root, session_);
     compute_commands::register_commands(*root, session_);

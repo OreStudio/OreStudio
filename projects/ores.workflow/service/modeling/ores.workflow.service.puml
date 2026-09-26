@@ -45,6 +45,71 @@ namespace ores #F2F2F2 {
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
 
+' The automated pass reads data members, so a class whose content is methods arrives
+' as an empty box, and the messaging namespace -- two generated registrars and
+' nothing else -- does not arrive at all.
+'
+' Fully-qualified class names rather than a reopened namespace block, matching the
+' other diagrams in this tree. Redeclaring a class merges its members into the box
+' the automated pass already drew.
+
+class ores::workflow::service::app::application <<hand-written>> {
+    +application()
+    +{static} make_context(db_opts : database_options) : database::context
+    +run(io_ctx, cfg : options) : awaitable<void>
+}
+
+class ores::workflow::service::app::host <<hand-written>> {
+    +{static} execute(args : vector<string>) : awaitable<int>
+}
+
+class ores::workflow::service::config::parser <<hand-written>> {
+    +parse(arguments : vector<string>, info, error) : options
+}
+
+' The whole messaging namespace, which the automated pass does not draw because it
+' holds two free functions and no class. Each generated registrar owns one entity's
+' event mapping: it reads the entity's NOTIFY channel and publishes the canonical
+' event on the subject the action names.
+'
+' It is drawn as a package of its own rather than nested inside ores.workflow.service,
+' because a namespace the automated pass never opened cannot be reopened here: doing
+' so creates a second package rather than merging into the first. The label carries
+' the full path, so the nesting is unambiguous either way.
+
+class ores::workflow::service::messaging::register_workflow_instance_event_mapping <<generated free function>> {
+    +{static} register_workflow_instance_event_mapping(event_source, event_bus, nats) : subscription
+}
+
+class ores::workflow::service::messaging::register_workflow_step_event_mapping <<generated free function>> {
+    +{static} register_workflow_step_event_mapping(event_source, event_bus, nats) : subscription
+}
+
+' What application::run composes, in the order it has to happen.
+
+"ores::workflow::service::app::application" ..> "ores::workflow::service::messaging::register_workflow_instance_event_mapping" : composes
+"ores::workflow::service::app::application" ..> "ores::workflow::service::messaging::register_workflow_step_event_mapping" : composes
+"ores::workflow::service::app::host" ..> "ores::workflow::service::app::application" : runs
+"ores::workflow::service::app::host" ..> "ores::workflow::service::config::parser" : parses first
+
+note right of "ores::workflow::service::app::application"
+run() is the component's composition root, and its order
+matters more than its contents.
+
+The durable workflow JetStream stream is ensured before any
+subscription, because the engine's two subjects are addressed
+through it. The event bus and the postgres event source are
+built next, then the two generated event mappings are
+registered, and only then does the source start: a
+subscription made after start() can miss the very change it
+exists to catch. The subscriptions are held in locals rather
+than discarded, because the source delivers into them.
+
+The messaging registrar is handed to ores.service's runner
+last, and that call blocks for the process's lifetime -- so
+the event source is stopped after it returns, on the way out.
+end note
+
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.workflow.service.puml"
 ' End:

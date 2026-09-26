@@ -21,8 +21,8 @@
 #define ORES_TELEMETRY_CORE_DATABASE_LOG_DATABASE_SINK_HPP
 
 #include "ores.telemetry.core/domain/resource.hpp"
-#include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
 #include "ores.telemetry.core/export.hpp"
+#include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include <boost/log/sinks/basic_sink_backend.hpp>
 #include <boost/log/sinks/frontend_requirements.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -39,7 +39,7 @@ namespace ores::telemetry::log {
  * Implementations may store to database, cache for batch operations, or perform
  * any other processing needed for database persistence.
  */
-using database_log_handler = std::function<void(const domain::telemetry_log_entry&)>;
+using database_log_handler = std::function<void(const messaging::telemetry_log_entry&)>;
 
 /**
  * @brief Boost.Log sink backend that prepares logs for database storage.
@@ -58,7 +58,7 @@ using database_log_handler = std::function<void(const domain::telemetry_log_entr
  * @code
  * auto resource = std::make_shared<domain::resource>(
  *     domain::resource::from_environment("test-app", "1.0.0"));
- * auto handler = [](const domain::telemetry_log_entry& entry) {
+ * auto handler = [](const messaging::telemetry_log_entry& entry) {
  *     // Store to database
  * };
  * auto backend = boost::make_shared<database_sink_backend>(resource, handler);

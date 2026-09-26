@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: F083E58B-0486-48F2-AEA1-0EA3F492670D
+:END:
+#+title: Change DSH sandbox grants in the document, never in ~/.dsh
+#+description: The DSH sandbox rules are generated from doc/llm/dsh_settings.org and copied into ~/.dsh; a hand edit leaves the document and the host disagreeing with nothing to report it.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The DSH sandbox rules are generated. Change them in doc/llm/dsh_settings.org, run compass build settings --dsh, and never edit ~/.dsh or .dsh/ by hand.
+
+*Why:* The live rules in ~/.dsh are copies of the document's output. A hand edit leaves the document and the host disagreeing, and nothing reports it. The two agent surfaces already diverged once over the sccache directory, and a build found it.
+
+*How to apply:* Edit the path list or the runner in doc/llm/dsh_settings.org. Run compass build settings --dsh outside the sandbox, because it writes ~/.dsh. Commit the document with the change. Treat every grant as a security-relevant change: state the command that needs it and what fails without it.

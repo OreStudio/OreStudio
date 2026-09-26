@@ -33,10 +33,10 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"
 #include "ores.shell/app/commands/synthetic_commands.hpp"
-#include "ores.shell/app/commands/workflow_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_wait_commands.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.variability.api/messaging/system_settings_protocol.hpp"
+#include "ores.variability.api/messaging/operations_protocol.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -382,7 +382,7 @@ void provision_commands::process_tenant(std::ostream& out,
         }
         out << "  Dispatched " << published->datasets_dispatched
             << " dataset(s); workflow instance: " << published->instance_id << std::endl;
-        if (!workflow_commands::wait_for_instance(
+        if (!workflow_wait_commands::wait_for_instance(
                 out,
                 session,
                 published->instance_id,
@@ -568,7 +568,7 @@ void provision_commands::process_party(std::ostream& out,
         }
         out << "  Dispatched " << published->datasets_dispatched
             << " dataset(s); workflow instance: " << published->instance_id << std::endl;
-        if (!workflow_commands::wait_for_instance(
+        if (!workflow_wait_commands::wait_for_instance(
                 out,
                 session,
                 published->instance_id,
@@ -620,7 +620,7 @@ void provision_commands::process_party(std::ostream& out,
             return published;
         },
         [&](const std::string& instance_id, std::size_t expected) {
-            return workflow_commands::wait_for_instance(
+            return workflow_wait_commands::wait_for_instance(
                 out, session, instance_id, *wait_timeout, expected);
         },
         [&](const auto& step) {
@@ -675,10 +675,11 @@ void provision_commands::process_party(std::ostream& out,
     // wizard, not party.status. Warn-only: the wizard's own version of this
     // step is likewise non-fatal.
     variability::messaging::complete_party_onboarding_request onboarding_req;
-    onboarding_req.party_id = boost::uuids::to_string(party->id);
+    onboarding_req.party_id = party->id;
     auto onboarding_result =
         do_request(out, session, onboarding_req, std::chrono::seconds(30), true);
-    if (!onboarding_result || !onboarding_result->success) {
+    if (!onboarding_result
+        || onboarding_result->result.outcome != ores::utility::domain::outcome::ok) {
         out << "⚠ Could not record party onboarding completion; the party setup wizard may "
                "reappear on next login."
             << std::endl;

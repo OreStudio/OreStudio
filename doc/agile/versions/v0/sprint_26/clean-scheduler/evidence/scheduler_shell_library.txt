@@ -1,0 +1,113 @@
+The scheduler scripts in the shell's library
+==========================================
+
+Each command of the scheduler submenu has a recipe at
+doc/recipes/shell/scheduler/scheduler.org, and the recipe tangles into one
+runnable script under projects/ores.shell/scripts/library/scheduler/:
+
+    scheduler-instances.ores
+    scheduler-jobs.ores
+    scheduler-remove.ores
+    scheduler-schedule.ores
+    scheduler-status.ores
+    scheduler-watch.ores
+
+Every script below was run through ores.shell --load against the live fleet
+(NATS, the database, ores.iam.service for the session and
+ores.scheduler.service for the loop), in this order:
+
+    === scheduler-jobs.ores ===
+    --- script: scheduler jobs
+    ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_merry_newton/projects/ores.shell/scripts/library/scheduler/scheduler-jobs.ores
+    > scheduler jobs
+    No job definitions are visible to this session.
+    Script complete: 1 command executed.
+    ores-shell> Bye!
+    === scheduler-schedule.ores ===
+    --- script: scheduler schedule shell-example "*/5 * * * *" --action execute_sql --command "select 1" --description "created by the shell script library" --inactive
+    ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_merry_newton/projects/ores.shell/scripts/library/scheduler/scheduler-schedule.ores
+    > scheduler schedule shell-example "*/5 * * * *" --action execute_sql --command "select 1" --description "created by the shell script library" --inactive
+    Scheduled 'shell-example' as fc66db9e-c012-44bf-aba5-4fc7d2409665 on '*/5 * * * *', paused.
+    Run 'scheduler watch' to see it fire.
+    Script complete: 1 command executed.
+    ores-shell> Bye!
+    === scheduler-jobs.ores ===
+    --- script: scheduler jobs
+    ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_merry_newton/projects/ores.shell/scripts/library/scheduler/scheduler-jobs.ores
+    > scheduler jobs
+    1 job definition(s), showing 1:
+      shell-example [paused]
+        id:      fc66db9e-c012-44bf-aba5-4fc7d2409665
+        cron:    */5 * * * *
+        action:  execute_sql
+        about:   created by the shell script library
+        command: select 1
+    Script complete: 1 command executed.
+    ores-shell> Bye!
+    === scheduler-status.ores ===
+    --- script: scheduler status
+    ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_merry_newton/projects/ores.shell/scripts/library/scheduler/scheduler-status.ores
+    > scheduler status
+    0 active, 0 running:
+      shell-example [paused] on '*/5 * * * *'
+        next:   no next firing
+        last:   never run
+    Script complete: 1 command executed.
+    ores-shell> Bye!
+    === scheduler-instances.ores ===
+    --- script: scheduler instances --limit 5
+    ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_merry_newton/projects/ores.shell/scripts/library/scheduler/scheduler-instances.ores
+    > scheduler instances --limit 5
+      #160 b418688d-83f2-46a3-bfc5-e6a7231fe9cd succeeded 2026-09-26 19:10:00 (0 ms)
+      #159 b418688d-83f2-46a3-bfc5-e6a7231fe9cd succeeded 2026-09-26 19:09:00 (0 ms)
+      #158 b418688d-83f2-46a3-bfc5-e6a7231fe9cd succeeded 2026-09-26 19:08:00 (0 ms)
+      #157 b418688d-83f2-46a3-bfc5-e6a7231fe9cd succeeded 2026-09-26 19:07:00 (0 ms)
+      #155 0efe3918-83c2-4a6e-8557-a035dde3cf06 succeeded 2026-09-26 19:06:00 (0 ms)
+    5 execution(s) of 5 available.
+    Script complete: 1 command executed.
+    ores-shell> Bye!
+    === scheduler-remove.ores ===
+    --- script: scheduler remove shell-example
+    ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_merry_newton/projects/ores.shell/scripts/library/scheduler/scheduler-remove.ores
+    > scheduler remove shell-example
+    Removed 'shell-example'.
+    Script complete: 1 command executed.
+    ores-shell> Bye!
+    === scheduler-jobs.ores ===
+    --- script: scheduler jobs
+    ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_merry_newton/projects/ores.shell/scripts/library/scheduler/scheduler-jobs.ores
+    > scheduler jobs
+    No job definitions are visible to this session.
+    Script complete: 1 command executed.
+    ores-shell> Bye!
+
+    === scheduler-watch.ores ===
+    --- script: scheduler watch --seconds 60
+      2026-09-26 19:12:00 ores.scheduler.job_instance d75c50f8-796a-41a0-bd9e-743b1737236a 163
+      2026-09-26 19:12:00 ores.scheduler.job_instance b418688d-83f2-46a3-bfc5-e6a7231fe9cd 164
+    4 event(s) in 60 second(s).
+
+What the run shows:
+
+- schedule creates the definition the recipe documents, paused because the
+  example says --inactive, and jobs lists it back with its cron, action and
+  command.
+- status reads it back as paused with no next firing, which is what a paused
+  definition is.
+- instances reads the executions the loop has recorded.
+- remove deletes it by the name the script shows, and the next jobs run is
+  empty again.
+- watch subscribes and prints what arrives.
+
+Two defects in the committed tree that this unit found, both outside the
+scheduler component:
+
+1. The library was incomplete. The tangle writes 1202 scripts and git held
+   1085: 12 recipe groups' scripts had never been committed, so a person
+   reading the library on a clean checkout would not find them. This unit
+   commits its own six and records the rest; the inventory check gates
+   doc/recipes/shell/shell.org and nothing gates the library itself.
+2. doc/recipes/shell/shell.org carried six merge-conflict markers -- two
+   =======, two ======= and two >>>>>>> lines left by an unresolved merge
+   that was committed. This unit removed them and regenerated the file, so
+   it is consistent with the recipes again.

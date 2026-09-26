@@ -1,0 +1,25 @@
+@startuml
+
+title ores.shell.variability Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace shell #F2F2F2 {
+        namespace app #F2F2F2 {
+            namespace commands #F2F2F2 {
+                namespace variability #F2F2F2 {
+                    class system_setting_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+ores.shell.api ..> ores.shell.variability : request helpers
+ores.variability.api ..> ores.shell.variability : domain, messaging
+
+@enduml

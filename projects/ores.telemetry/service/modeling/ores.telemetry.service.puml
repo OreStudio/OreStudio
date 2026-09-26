@@ -26,14 +26,20 @@ namespace ores #F2F2F2 {
         namespace service #F2F2F2 {
             namespace app #F2F2F2 {
                 class application {
+                    +operator : application&
+                }
+                class application_exception {
+                    -message_ : string
                 }
                 class host {
                 }
                 class nats_poller {
                     -monitor_host_ : string
+                    -monitor_port_ : unsigned short
                     -interval_seconds_ : uint32_t
                     -ctx_ : ores::database::context
                     -repo_ : database::repository::telemetry_repository
+                    -consecutive_failures_ : unsigned int
                 }
             }
             namespace config #F2F2F2 {
@@ -41,13 +47,17 @@ namespace ores #F2F2F2 {
                     +logging : optional<ores::logging::logging_options>
                     +nats : ores::nats::config::nats_options
                     +database : ores::database::database_options
+                    +nats_monitor_url : string
+                    +nats_monitor_interval_seconds : uint32_t
                 }
                 class parser {
+                }
+                class parser_exception {
+                    -message_ : string
                 }
             }
             namespace messaging #F2F2F2 {
                 class registrar {
-                    +verifier : optional<ores::security::jwt::jwt_authenticator>
                 }
             }
         }
@@ -55,6 +65,122 @@ namespace ores #F2F2F2 {
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass reads data members and little else. It leaves host,
+' parser and registrar as empty boxes, it draws no relationship, and it
+' cannot see telemetry_handler at all, because that header lives under
+' src/messaging/ rather than include/. The blocks below fill those boxes,
+' add the handler, draw the service's own flow, and name the core and
+' database types it drives.
+
+skinparam classAttributeIconSize 0
+
+class ores::telemetry::service::app::application {
+    +application()
+    +run(io_ctx : io_context&, cfg : config::options) : awaitable<void>
+}
+note right of "ores::telemetry::service::app::application"
+The entry point. It connects NATS, builds one database context
+for the subscriptions and a second for the poller, then hands
+the registrar and the post-connect hook to the shared
+ores.service runner. The hook spawns the poller and this
+service's own heartbeat publisher.
+end note
+
+class ores::telemetry::service::app::host {
+    {static} +execute(args : vector<string>, std_output : ostream&, error_output : ostream&, io_ctx : io_context&) : awaitable<int>
+}
+note right of "ores::telemetry::service::app::host"
+The executable's entry point: it delegates to the shared
+run_host_async with this component's parser and application, so
+the parse, run and exit-code policy matches every other service.
+end note
+
+class ores::telemetry::service::app::application_exception {
+    +application_exception(message : string_view)
+    +what() : const char*
+}
+
+class ores::telemetry::service::app::nats_poller {
+    +nats_poller(monitor_url : string, interval_seconds : uint32_t, ctx : context)
+    +run() : awaitable<void>
+    -http_get(target : string) : string
+    -poll_server() : void
+    -poll_streams() : void
+    -poll_once() : void
+}
+note right of "ores::telemetry::service::app::nats_poller"
+Polls the NATS HTTP monitor on a timer: /varz for the
+server-level sample and /jsz?streams=true for one sample per
+JetStream stream, then inserts them through the repository. It
+counts consecutive failures and quiets its own logging while
+the monitor stays down.
+end note
+
+class ores::telemetry::service::config::parser {
+    +parse(arguments : vector<string>, info : ostream&, error : ostream&) : optional<options>
+}
+
+class ores::telemetry::service::config::parser_exception {
+    +parser_exception(message : string_view)
+    +what() : const char*
+}
+
+note right of "ores::telemetry::service::config::options"
+- logging: optional logging options
+- nats, database: transport and store
+- nats_monitor_url: empty disables polling
+- nats_monitor_interval_seconds: poll period
+end note
+
+class ores::telemetry::service::messaging::registrar {
+    {static} +register_handlers(nats : nats::service::client&, ctx : database::context, verifier : optional<jwt_authenticator>) : vector<subscription>
+}
+note right of "ores::telemetry::service::messaging::registrar"
+The service's only subscription point. It subscribes all six
+telemetry.v1.> subjects on the queue group ores.telemetry.service
+and builds one telemetry_handler per message.
+end note
+
+class ores::telemetry::messaging::telemetry_handler {
+    +telemetry_handler(nats : nats::service::client&, ctx : database::context, verifier : optional<jwt_authenticator>)
+    +logs_list(msg : nats::message) : void
+    +nats_server_samples_list(msg : nats::message) : void
+    +nats_stream_samples_list(msg : nats::message) : void
+    +service_heartbeat(msg : nats::message) : void
+    +service_samples_list(msg : nats::message) : void
+    +logs_publish(msg : nats::message) : void
+}
+note right of "ores::telemetry::messaging::telemetry_handler"
+The handler class the automated pass cannot see: it lives in
+src/messaging/telemetry_handler.hpp, not under include/. Every
+method but the heartbeat takes a request context and answers
+through the protocol reply helpers; the heartbeat and the
+wrapped-log publish are fire-and-forget. The two NATS sample
+handlers now read the repository, not an empty list.
+end note
+
+package "ores.telemetry.database" <<Rectangle>> {
+    class "repository::telemetry_repository" as db_repo <<library>>
+}
+package "ores.telemetry.core" <<Rectangle>> {
+    class "messaging:: protocol types" as core_msg <<library>>
+}
+package "external" <<Rectangle>> {
+    class "NATS server HTTP monitor" as nats_monitor <<library>>
+    class "ores.service heartbeat_publisher" as hb_pub <<library>>
+}
+
+ores::telemetry::service::app::host ..> ores::telemetry::service::config::parser : parses with
+ores::telemetry::service::app::host ..> ores::telemetry::service::app::application : runs
+ores::telemetry::service::app::application ..> ores::telemetry::service::messaging::registrar : registers
+ores::telemetry::service::app::application ..> ores::telemetry::service::app::nats_poller : spawns
+ores::telemetry::service::app::application ..> hb_pub : spawns
+ores::telemetry::service::messaging::registrar ..> ores::telemetry::messaging::telemetry_handler : one per message
+ores::telemetry::messaging::telemetry_handler ..> db_repo : reads and writes
+ores::telemetry::messaging::telemetry_handler ..> core_msg : decodes and replies
+ores::telemetry::service::app::nats_poller ..> db_repo : inserts samples
+ores::telemetry::service::app::nats_poller ..> nats_monitor : GET /varz and /jsz
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.telemetry.service.puml"

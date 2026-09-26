@@ -49,6 +49,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <atomic>
 #include <memory>
 #include <stdexcept>
 
@@ -144,12 +145,26 @@ public:
         reload_token_settings();
     }
 
+    /**
+     * @brief The token settings as of the last reload.
+     *
+     * A handler holds the snapshot it read for the whole of its work, so a
+     * reload landing mid-request cannot change the lifetimes the request is
+     * already answering with.
+     */
+    [[nodiscard]] std::shared_ptr<const domain::token_settings> token_settings() const {
+        return token_settings_.load(std::memory_order_acquire);
+    }
+
     void reload_token_settings() {
         try {
             variability::service::system_settings_service svc(
                 ctx_, database::service::tenant_context::system_tenant_id);
             svc.refresh();
-            token_settings_ = domain::token_settings::load(svc);
+            token_settings_.store(
+                std::make_shared<const domain::token_settings>(
+                    domain::token_settings::load(svc)),
+                std::memory_order_release);
         } catch (const std::exception& e) {
             using namespace ores::logging;
             BOOST_LOG_SEV(account_handler_lg(), warn)
@@ -805,7 +820,7 @@ public:
             new_claims.subject = claims_result->subject;
             new_claims.issued_at = std::chrono::system_clock::now();
             new_claims.expires_at =
-                new_claims.issued_at + std::chrono::seconds(token_settings_.access_lifetime_s);
+                new_claims.issued_at + std::chrono::seconds(token_settings()->access_lifetime_s);
             new_claims.username = claims_result->username;
             new_claims.email = claims_result->email;
             new_claims.tenant_id = tenant_id_str;
@@ -996,7 +1011,7 @@ public:
             new_claims.subject = claims_result->subject;
             new_claims.issued_at = std::chrono::system_clock::now();
             new_claims.expires_at =
-                new_claims.issued_at + std::chrono::seconds(token_settings_.access_lifetime_s);
+                new_claims.issued_at + std::chrono::seconds(token_settings()->access_lifetime_s);
             new_claims.username = claims_result->username;
             new_claims.email = claims_result->email;
             new_claims.tenant_id = tenant_id_str;
@@ -1066,7 +1081,14 @@ private:
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;
     std::shared_ptr<service::cache::party_cache> party_cache_;
-    domain::token_settings token_settings_;
+    // Written by reload_token_settings, which the settings-change event now
+    // calls from a NATS dispatch thread, and read by every request handler on
+    // its own thread. Handlers take a snapshot through token_settings(), so a
+    // reader sees one whole settings object rather than a half-written one.
+    // Initialised rather than left empty, because the reload can fail and a
+    // handler that reads it anyway must find the defaults, not a null pointer.
+    std::atomic<std::shared_ptr<const domain::token_settings>> token_settings_{
+        std::make_shared<const domain::token_settings>()};
 };
 
 } // namespace ores::iam::messaging

@@ -114,9 +114,15 @@ and progress IR curves work."
 | Progress IR curves | Weak after 2026-08-12 | 2 / 4 / 0 | AMBER |
 | No mapped goal | Large | See below | RED |
 
-Drift. The program story ([[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]]) is DONE. Five
-components are drift-free and closed: dq, iam, trading, synthetic and
-compute. The redundant-properties pass is also DONE. analytics and reporting
+Drift. The program story ([[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]]) is DONE. Four
+components are drift-free and closed: dq, iam, synthetic and
+compute. This review listed trading as a fifth; that is wrong. A
+measurement on 2026-09-26 finds 1751 files of drift in ores.trading, and
+the sprint 25 story said the component could not join the drift gate.
+The release notes count five drift-free components because they also
+count analytics, which is drift-free while its story stays STARTED, as
+the next sentence says. The redundant-properties pass is also DONE.
+analytics and reporting
 have all tasks DONE, but their stories are still STARTED. marketdata
 is in flight. database, scheduler, workflow and workspace are in
 BACKLOG. The codegen template fixes, the systemic gap fixes and the
@@ -309,7 +315,7 @@ That is a focus problem too.
 | PRs merged | 319 | — |
 
 Delivery is high. 39 product stories closed, and some are large: the
-removal of Qt, ores.web, six drift-free components, oresmd coverage,
+removal of Qt, ores.web, five drift-free components, oresmd coverage,
 and the FOMC short end. But 24 hotfixes is a warning. Most came from
 code that compiled on Linux clang and failed on MSVC, gcc or macOS.
 The local-checks story ([[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally]]) has every task

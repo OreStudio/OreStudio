@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 2BF221D9-7F09-480E-9DEF-09FB45C760CC
+:END:
+#+title: ores.shell.variability
+#+description: The shell's variability adapter part. Holds the generated command units that project the system settings domain onto the REPL menu.
+#+type: ores.codegen.component
+#+component_kind: adapter
+#+level: cross
+#+filetags: :shell:repl:variability:component:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+name: variability
+#+full_name: ores.shell.variability
+#+brief: Shell system settings command units
+
+* Summary
+
+=ores.shell.variability= is the adapter part that projects the variability
+domain onto the shell's REPL menu. It holds the generated command unit for the
+system settings model, which owns the =variability system-settings= submenu.
+
+The part declares =#+component_kind: adapter=. Its =CMakeLists.txt= files are
+hand-authored, because the link libraries belong to the shell surface rather
+than to the domain, and codegen writes only the two =component_files.cmake=
+lists. A regeneration therefore never writes over the build.
+
+The unit is output of the =ores.cpp.shell-command= facet, which is opt-in per
+model. The facet writes here because the part is named after the domain the
+unit projects, which is the fractal naming rule in
+[[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]].
+
+* Inputs
+
+- Free-form token vectors from the command layer, parsed by =parse_args=.
+- The logged-in NATS session, passed by reference into every helper.
+- =ores.variability.system_setting= under =projects/ores.variability/modeling/=,
+  whose profile opts in to the =ores.cpp.shell-command= facet.
+
+* Outputs
+
+- One command unit, at =src/app/commands/variability/system_setting_commands.cpp=
+  and =include/ores.shell/app/commands/variability/system_setting_commands.hpp=.
+- One literate recipe, under =doc/recipes/shell/system_settings/=, whose scripts
+  tangle into =projects/ores.shell/scripts/library/system_settings/=.
+- NATS request messages to the variability service, one per command.
+- Formatted text output of query results to stdout.
+
+* Entry points
+
+- =include/ores.shell/app/commands/variability/= -- the generated unit header.
+- =src/app/commands/variability/= -- the generated unit implementation.
+- =system_setting_commands= -- the unit-level entry the host calls to install
+  the submenu below the shell's root menu.
+
+* Dependencies
+
+- =ores.shell.api= -- the command layer: =parse_args=, =request_helpers= and the
+  feedback helpers every unit uses.
+- =ores.variability.api= -- the domain type and the protocol messages the unit
+  sends.
+- =ores.nats= -- the client and the connection the session carries.
+- =cli= -- the menu library the commands are registered with.
+
+* See also
+
+- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] -- the composite this
+  part belongs to.

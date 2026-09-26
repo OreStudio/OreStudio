@@ -265,6 +265,13 @@ add_custom_target(deploy_settings
     COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-settings.el 2>&1
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+set(ORES_DSH_SETTINGS_DIR ".dsh")
+add_custom_target(deploy_dsh_settings
+    COMMENT "Deploying ORE Studio DSH sandbox settings to ${ORES_DSH_SETTINGS_DIR} and ~/.dsh" VERBATIM
+    COMMAND echo "Removing DSH settings directory" && rm -rf ${ORES_DSH_SETTINGS_DIR}
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-dsh-settings.el 2>&1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 set(ORES_TASKS_DIRECTORY "build/output/plan")
 add_custom_target(deploy_plan
     COMMENT "Deploying ORE Studio Plan to ${ORES_TASKS_DIRECTORY}" VERBATIM
@@ -287,7 +294,7 @@ add_dependencies(mad make_all_diagrams)
 
 add_custom_target(deploy_org
     COMMENT "Deploying all ORE Studio org-mode artefacts" VERBATIM)
-add_dependencies(deploy_org deploy_site deploy_skills deploy_settings make_all_diagrams)
+add_dependencies(deploy_org deploy_site deploy_skills deploy_settings deploy_dsh_settings make_all_diagrams)
 add_custom_target(dorg)
 add_dependencies(dorg deploy_org)
 

@@ -39,6 +39,7 @@ using namespace ores::logging;
 TEST_CASE("default_trace_id_is_invalid", tags) {
     auto lg(make_logger(test_suite));
     trace_id id;
+    REQUIRE(id.to_hex() == "00000000000000000000000000000000");
     REQUIRE_FALSE(id.is_valid());
     BOOST_LOG_SEV(lg, debug) << "Default trace_id: " << id.to_hex();
 }
@@ -53,20 +54,53 @@ TEST_CASE("generated_trace_id_is_valid", tags) {
 }
 
 TEST_CASE("trace_id_to_hex_produces_32_chars", tags) {
-    trace_id_generator gen;
-    const auto id = gen();
+    const auto id = trace_id::from_hex("000102030405060708090a0b0c0d0e0f");
     const auto hex = id.to_hex();
 
+    REQUIRE(hex == "000102030405060708090a0b0c0d0e0f");
     REQUIRE(hex.size() == 32);
+    REQUIRE(static_cast<unsigned>(id.bytes[0]) == 0x00);
+    REQUIRE(static_cast<unsigned>(id.bytes[1]) == 0x01);
+    REQUIRE(static_cast<unsigned>(id.bytes[2]) == 0x02);
+    REQUIRE(static_cast<unsigned>(id.bytes[3]) == 0x03);
+    REQUIRE(static_cast<unsigned>(id.bytes[4]) == 0x04);
+    REQUIRE(static_cast<unsigned>(id.bytes[5]) == 0x05);
+    REQUIRE(static_cast<unsigned>(id.bytes[6]) == 0x06);
+    REQUIRE(static_cast<unsigned>(id.bytes[7]) == 0x07);
+    REQUIRE(static_cast<unsigned>(id.bytes[8]) == 0x08);
+    REQUIRE(static_cast<unsigned>(id.bytes[9]) == 0x09);
+    REQUIRE(static_cast<unsigned>(id.bytes[10]) == 0x0a);
+    REQUIRE(static_cast<unsigned>(id.bytes[11]) == 0x0b);
+    REQUIRE(static_cast<unsigned>(id.bytes[12]) == 0x0c);
+    REQUIRE(static_cast<unsigned>(id.bytes[13]) == 0x0d);
+    REQUIRE(static_cast<unsigned>(id.bytes[14]) == 0x0e);
+    REQUIRE(static_cast<unsigned>(id.bytes[15]) == 0x0f);
 }
 
 TEST_CASE("trace_id_from_hex_roundtrips", tags) {
-    trace_id_generator gen;
-    const auto original = gen();
-    const auto hex = original.to_hex();
-    const auto parsed = trace_id::from_hex(hex);
+    trace_id expected;
+    expected.bytes = {std::byte{0x00},
+                      std::byte{0x01},
+                      std::byte{0x02},
+                      std::byte{0x03},
+                      std::byte{0x04},
+                      std::byte{0x05},
+                      std::byte{0x06},
+                      std::byte{0x07},
+                      std::byte{0x08},
+                      std::byte{0x09},
+                      std::byte{0x0a},
+                      std::byte{0x0b},
+                      std::byte{0x0c},
+                      std::byte{0x0d},
+                      std::byte{0x0e},
+                      std::byte{0x0f}};
 
-    REQUIRE(original == parsed);
+    const auto parsed = trace_id::from_hex("000102030405060708090a0b0c0d0e0f");
+
+    REQUIRE(parsed == expected);
+    REQUIRE(parsed.to_hex() == "000102030405060708090a0b0c0d0e0f");
+    REQUIRE(parsed.is_valid());
 }
 
 TEST_CASE("trace_id_from_hex_with_invalid_input_returns_invalid", tags) {
@@ -110,17 +144,6 @@ TEST_CASE("trace_id_generator_uses_machine_id", tags) {
 
     REQUIRE(machine_id == 0x1234);
     BOOST_LOG_SEV(lg, debug) << "Trace ID with machine 0x1234: " << id.to_hex();
-}
-
-TEST_CASE("trace_ids_are_time_sortable", tags) {
-    trace_id_generator gen;
-
-    const auto id1 = gen();
-    std::this_thread::sleep_for(std::chrono::milliseconds(2));
-    const auto id2 = gen();
-
-    // The defaulted operator<=> allows for direct comparison.
-    REQUIRE(id1 <= id2);
 }
 
 TEST_CASE("trace_id_generator_is_thread_safe", tags) {

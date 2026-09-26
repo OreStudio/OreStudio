@@ -1,0 +1,160 @@
+B01 component drift baseline, ores.trading (trading-cpp)
+Measured 2026-09-26 on a still tree at b79609d808.
+
+$ projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --component trading-cpp --dry-run
+
+1636 file(s) would change, 115 file(s) would be created (1751 file(s) in total).
+exit code: 1
+
+Every changed block classified by the first lines of its diff:
+
+   1435  generated-marker
+         example: projects/ores.shell/trading/include/ores.shell/app/commands/trading/equity_accumulator_instrument_commands.hpp
+    123  substantive
+         example: projects/ores.sql/create/trading/trading_ascots_create.sql
+     56  generated-marker+eventing-traits-rename+changed-event-rename
+         example: projects/ores.trading/service/src/messaging/ascot_event_registrar.cpp
+     20  generated-marker+eventing-traits-rename
+         example: projects/ores.trading/core/tests/equity_accumulator_instrument_eventing_integration_tests.cpp
+      1  eventing-traits-rename
+         example: projects/ores.trading/core/tests/trade_eventing_integration_tests.cpp
+      1  eventing-traits-rename+changed-event-rename
+         example: projects/ores.trading/service/src/messaging/trade_event_registrar.cpp
+   1636  total blocks
+
+Changed files by area:
+    407  projects/ores.trading/core/include
+    360  projects/ores.trading/core/src
+    330  projects/ores.trading/api/include
+    224  projects/ores.trading/api/src
+    114  projects/ores.sql
+     66  projects/ores.shell
+     57  projects/ores.trading/service/src
+     56  projects/ores.trading/service/include
+     21  projects/ores.trading/core/tests
+      1  projects/ores.trading/CMakeLists.txt
+
+Created files (115), grouped:
+     57  api event header
+     22  shell recipe
+      9  api family protocol header
+      9  core handler header
+      9  core registrar header
+      9  core registrar source
+
+The created files:
+  doc/recipes/shell/equity_accumulator_instruments/equity_accumulator_instrument.org
+  doc/recipes/shell/equity_asian_option_instruments/equity_asian_option_instrument.org
+  doc/recipes/shell/equity_barrier_option_instruments/equity_barrier_option_instrument.org
+  doc/recipes/shell/equity_digital_option_instruments/equity_digital_option_instrument.org
+  doc/recipes/shell/equity_forward_instruments/equity_forward_instrument.org
+  doc/recipes/shell/equity_option_instruments/equity_option_instrument.org
+  doc/recipes/shell/equity_position_instruments/equity_position_instrument.org
+  doc/recipes/shell/equity_swap_instruments/equity_swap_instrument.org
+  doc/recipes/shell/equity_variance_swap_instruments/equity_variance_swap_instrument.org
+  doc/recipes/shell/fx_accumulator_instruments/fx_accumulator_instrument.org
+  doc/recipes/shell/fx_asian_forward_instruments/fx_asian_forward_instrument.org
+  doc/recipes/shell/fx_barrier_option_instruments/fx_barrier_option_instrument.org
+  doc/recipes/shell/fx_digital_option_instruments/fx_digital_option_instrument.org
+  doc/recipes/shell/fx_forward_instruments/fx_forward_instrument.org
+  doc/recipes/shell/fx_vanilla_option_instruments/fx_vanilla_option_instrument.org
+  doc/recipes/shell/fx_variance_swap_instruments/fx_variance_swap_instrument.org
+  doc/recipes/shell/lifecycle_events/lifecycle_event.org
+  doc/recipes/shell/party_role_types/party_role_type.org
+  doc/recipes/shell/trade_id_types/trade_id_type.org
+  doc/recipes/shell/trade_identifiers/trade_identifier.org
+  doc/recipes/shell/trade_party_roles/trade_party_role.org
+  doc/recipes/shell/trade_types/trade_type.org
+  projects/ores.trading/api/include/ores.trading.api/eventing/ascot_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/balance_guaranteed_swap_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/bond_forward_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/bond_future_delivery_basket_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/bond_future_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/bond_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/bond_issue_call_date_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/bond_issue_conversion_target_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/bond_issue_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/bond_leg_amortization_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/bond_leg_amount_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/bond_leg_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/bond_leg_rate_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/bond_option_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/bond_repo_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/bond_trs_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/callable_swap_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/cap_floor_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/equity_accumulator_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/equity_asian_option_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/equity_barrier_option_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/equity_digital_option_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/equity_forward_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/equity_option_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/equity_position_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/equity_swap_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/equity_variance_swap_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/fra_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/fx_accumulator_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/fx_asian_forward_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/fx_barrier_option_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/fx_digital_option_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/fx_forward_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/fx_vanilla_option_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/fx_variance_swap_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/inflation_swap_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/instrument_option_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/instrument_option_exercise_fee_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/instrument_option_payment_date_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/instrument_option_premium_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/instrument_schedule_date_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/instrument_schedule_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/instrument_strike_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/knock_out_swap_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/lifecycle_event_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/party_role_type_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/rpa_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/swaption_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/trade_envelope_additional_field_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/trade_envelope_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/trade_envelope_portfolio_id_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/trade_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/trade_id_type_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/trade_identifier_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/trade_party_role_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/trade_type_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/eventing/vanilla_swap_instrument_event.hpp
+  projects/ores.trading/api/include/ores.trading.api/messaging/balance_guaranteed_swap_instrument_protocol.hpp
+  projects/ores.trading/api/include/ores.trading.api/messaging/callable_swap_instrument_protocol.hpp
+  projects/ores.trading/api/include/ores.trading.api/messaging/cap_floor_instrument_protocol.hpp
+  projects/ores.trading/api/include/ores.trading.api/messaging/fra_instrument_protocol.hpp
+  projects/ores.trading/api/include/ores.trading.api/messaging/inflation_swap_instrument_protocol.hpp
+  projects/ores.trading/api/include/ores.trading.api/messaging/knock_out_swap_instrument_protocol.hpp
+  projects/ores.trading/api/include/ores.trading.api/messaging/rpa_instrument_protocol.hpp
+  projects/ores.trading/api/include/ores.trading.api/messaging/swaption_instrument_protocol.hpp
+  projects/ores.trading/api/include/ores.trading.api/messaging/vanilla_swap_instrument_protocol.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/balance_guaranteed_swap_instrument_handler.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/balance_guaranteed_swap_instrument_registrar.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/callable_swap_instrument_handler.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/callable_swap_instrument_registrar.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/cap_floor_instrument_handler.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/cap_floor_instrument_registrar.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/fra_instrument_handler.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/fra_instrument_registrar.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/inflation_swap_instrument_handler.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/inflation_swap_instrument_registrar.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/knock_out_swap_instrument_handler.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/knock_out_swap_instrument_registrar.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/rpa_instrument_handler.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/rpa_instrument_registrar.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/swaption_instrument_handler.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/swaption_instrument_registrar.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/vanilla_swap_instrument_handler.hpp
+  projects/ores.trading/core/include/ores.trading.core/messaging/vanilla_swap_instrument_registrar.hpp
+  projects/ores.trading/core/src/messaging/balance_guaranteed_swap_instrument_registrar.cpp
+  projects/ores.trading/core/src/messaging/callable_swap_instrument_registrar.cpp
+  projects/ores.trading/core/src/messaging/cap_floor_instrument_registrar.cpp
+  projects/ores.trading/core/src/messaging/fra_instrument_registrar.cpp
+  projects/ores.trading/core/src/messaging/inflation_swap_instrument_registrar.cpp
+  projects/ores.trading/core/src/messaging/knock_out_swap_instrument_registrar.cpp
+  projects/ores.trading/core/src/messaging/rpa_instrument_registrar.cpp
+  projects/ores.trading/core/src/messaging/swaption_instrument_registrar.cpp
+  projects/ores.trading/core/src/messaging/vanilla_swap_instrument_registrar.cpp

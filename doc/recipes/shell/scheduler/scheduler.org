@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: FFE1A375-412F-4557-883F-586460533BA4
+:END:
+#+title: How do I schedule a job from the shell, and watch it fire?
+#+description: Every command the scheduler submenu answers, from creating a job to watching it execute, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:scheduler:
+
+This file documents the scheduler resource at the shell, one section per
+command. Every command is a subcommand of =scheduler=. Three of them read the
+component's generated protocol; =watch= subscribes instead, because a job
+firing is an event and not a question. The commands are hand-written: the
+generated command units project one entity onto one submenu, and the operation
+reads and the subscription are not shapes a generated unit carries.
+
+* Commands
+
+** =jobs=
+:PROPERTIES:
+:ID: D6EBCC0C-5AF2-4A8F-980A-A9A56B2CCC9F
+:END:
+
+Reads the job definitions the session can see, with each one's cron expression,
+action type and command. The read states no scope of its own: the session
+decides what is visible.
+
+
+The command is shaped like this:
+
+#+begin_example
+scheduler jobs
+#+end_example
+
+It is addressed at =scheduler.v1.job_definitions.list=.
+
+#+name: scheduler-jobs
+#+begin_src ores-shell :tangle scheduler-jobs.ores :exports none
+scheduler jobs
+#+end_src
+
+** =schedule=
+:PROPERTIES:
+:ID: C54D4596-EAA2-4A77-8A58-C5F09D1766B9
+:END:
+
+Creates a job definition, which is what arms a job. The name and the cron
+expression are positional and everything else is a flag. The expression is
+validated before anything is sent, so a mistyped cron is refused without a
+round trip, and the create claims the row does not already exist, so a second
+run of the same name is refused rather than silently replacing the first.
+
+=--action= selects the handler: =execute_sql= runs =--command=, and
+=nats_publish= and =send_mq_message= read =--payload=. =--inactive= creates the
+definition without arming it, which is what makes the example below safe to
+run.
+
+
+The command is shaped like this:
+
+#+begin_example
+scheduler schedule <job_name> <cron> [--action <type>] [--command <sql>] [--payload <json>] [--description <text>] [--inactive] [--reason <code>]
+#+end_example
+
+It is addressed at =scheduler.v1.job_definitions.put=.
+
+#+name: scheduler-schedule
+#+begin_src ores-shell :tangle scheduler-schedule.ores :exports none
+scheduler schedule shell-example "*/5 * * * *" --action execute_sql --command "select 1" --description "created by the shell script library" --inactive
+#+end_src
+
+** =remove=
+:PROPERTIES:
+:ID: CB1249C0-44DB-4EAB-93CF-B5FCBA476289
+:END:
+
+Deletes a definition by the name a person types. The protocol addresses a
+removal by identifier, so the name is resolved through a list first and a name
+the session cannot see is refused before anything is deleted.
+
+
+The command is shaped like this:
+
+#+begin_example
+scheduler remove <job_name>
+#+end_example
+
+It is addressed at =scheduler.v1.job_definitions.delete=, after the list that
+resolves the name.
+
+#+name: scheduler-remove
+#+begin_src ores-shell :tangle scheduler-remove.ores :exports none
+scheduler remove shell-example
+#+end_src
+
+** =instances=
+:PROPERTIES:
+:ID: C0913E26-380C-459E-A3C3-293092D46FC1
+:END:
+
+Reads the executions the scheduler recorded, newest first, with each one's
+state, when it was triggered, how long it took and why it failed when it did.
+
+The page is ordered by time and =--job= filters the page the service returned,
+so a narrow =--limit= can hide an older execution of the job being asked
+about. Raise the limit to widen the page.
+
+
+The command is shaped like this:
+
+#+begin_example
+scheduler instances [--job <name>] [--limit <n>]
+#+end_example
+
+It is addressed at =scheduler.v1.job-instances.list=.
+
+#+name: scheduler-instances
+#+begin_src ores-shell :tangle scheduler-instances.ores :exports none
+scheduler instances --limit 5
+#+end_src
+
+** =status=
+:PROPERTIES:
+:ID: BF32CB8B-7911-4624-9544-A98EC0720AB3
+:END:
+
+Reads the live status of every job the session can see: its cron expression,
+whether it is active, when it last ran and how that went, when it fires next,
+and how many of its executions are still starting.
+
+
+The command is shaped like this:
+
+#+begin_example
+scheduler status
+#+end_example
+
+It is addressed at =scheduler.v1.status=.
+
+#+name: scheduler-status
+#+begin_src ores-shell :tangle scheduler-status.ores :exports none
+scheduler status
+#+end_src
+
+** =watch=
+:PROPERTIES:
+:ID: A6116FF5-1F8B-45F8-9D0C-45FA9C5C3A86
+:END:
+
+Prints the execution events as they arrive, for the number of seconds asked
+for. This is the one command that holds the connection open: the scheduler
+publishes when a job fires and nothing answers a question about that, so the
+shell subscribes instead of asking. The default is sixty seconds and the
+longest it will listen is an hour.
+
+To see the whole flow, create an armed job in one session -- the =schedule=
+example with =--inactive= left out -- and run this in another. The running
+service reloads its schedule from the definition change event, so a job created
+while it runs fires at the next boundary without a restart, which is what makes
+the two sessions meet.
+
+It subscribes to =scheduler.v1.job-instance-events=, which the scheduler loop
+publishes and which no model declares yet, because the entity it reports on has
+no model of its own.
+
+
+The command is shaped like this:
+
+#+example
+scheduler watch [--seconds <n>]
+#+end_example
+
+#+name: scheduler-watch
+#+begin_src ores-shell :tangle scheduler-watch.ores :exports none
+scheduler watch --seconds 60
+#+end_src

@@ -27,9 +27,14 @@ add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
 
+target_include_directories(${tests_target_name}
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/support)
+
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
+        ores.platform.lib
         ores.utility.lib
         ores.testing.lib
         ores.logging.lib

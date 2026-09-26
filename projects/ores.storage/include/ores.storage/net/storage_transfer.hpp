@@ -37,8 +37,8 @@ namespace ores::storage::net {
  * touching the archive layer — and composite helpers that combine pack+upload
  * or download+unpack for the common directory-tarball case.
  *
- * Composite helpers create a UUID-named temp file in
- * std::filesystem::temp_directory_path() and delete it after use.
+ * Composite helpers stage through a scoped temp file under the system
+ * temporary directory, which removes the file when it leaves scope.
  *
  * All operations log at DEBUG level including bucket, key, bytes transferred,
  * and wall-clock duration.
@@ -117,7 +117,7 @@ public:
      * @brief Pack @p src_dir into a temp archive, then upload to storage.
      *
      * Equivalent to: pack(src_dir, tmp) + upload(bucket, key, tmp).
-     * The temp file is removed after a successful upload.
+     * The temp file goes when the guard that owns it leaves scope.
      */
     void pack_and_upload(const std::filesystem::path& src_dir,
                          const std::string& bucket,
@@ -127,7 +127,7 @@ public:
      * @brief Download from storage into a temp archive, then extract.
      *
      * Equivalent to: download(bucket, key, tmp) + unpack(tmp, dest_dir).
-     * The temp file is removed after successful extraction.
+     * The temp file goes when the guard that owns it leaves scope.
      */
     void fetch_and_unpack(const std::string& bucket,
                           const std::string& key,
@@ -136,17 +136,16 @@ public:
     /**
      * @brief Upload an in-memory blob to storage.
      *
-     * Writes @p data to a UUID-named temp file, uploads it, then removes
-     * the temp file.  Useful for serialised binary payloads (e.g. MsgPack)
-     * that are too large for NATS messages.
+     * Writes the compressed bytes to a scoped temp file and uploads it.
+     * Useful for serialised binary payloads (e.g. MsgPack) that are too
+     * large for NATS messages.
      */
     void upload_blob(const std::string& bucket, const std::string& key, std::span<const char> data);
 
     /**
      * @brief Download a blob from storage into memory.
      *
-     * Downloads to a UUID-named temp file, reads it into a vector, then
-     * removes the temp file.
+     * Downloads to a scoped temp file and reads it into a vector.
      */
     std::vector<char> download_blob(const std::string& bucket, const std::string& key);
 

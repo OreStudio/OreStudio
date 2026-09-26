@@ -58,8 +58,8 @@ struct workflow_instance_summary {
  * Results are ordered by created_at descending (most recent first).
  * Requires a valid Bearer JWT in the Authorization NATS header.
  */
-struct list_workflow_instances_request {
-    using response_type = struct list_workflow_instances_response;
+struct list_workflow_instance_summaries_request {
+    using response_type = struct list_workflow_instance_summaries_response;
     static constexpr std::string_view nats_subject = "workflow.v1.instances.list";
 
     /**
@@ -76,7 +76,7 @@ struct list_workflow_instances_request {
     std::optional<std::string> status_filter;
 };
 
-struct list_workflow_instances_response {
+struct list_workflow_instance_summaries_response {
     bool success = false;
     std::string message;
     std::vector<workflow_instance_summary> instances;

@@ -89,9 +89,8 @@ struct jsz_account_detail {
 
 // nats-server tags account_details `omitempty` in its Go struct, so the
 // field is absent from the JSON entirely when there are no JetStream
-// accounts/streams to report (e.g. right after NATS starts).  It must be
-// optional (as the old `streams` field was) or parsing fails every poll
-// cycle in that state.
+// accounts/streams to report (e.g. right after NATS starts). It must be
+// optional or parsing fails every poll cycle in that state.
 struct jsz_response {
     std::optional<std::vector<jsz_account_detail>> account_details;
 };
@@ -119,7 +118,8 @@ nats_poller::nats_poller(const std::string& monitor_url,
         monitor_port_ = static_cast<unsigned short>(std::stoi(port_str));
     } else {
         monitor_host_ = authority;
-        monitor_port_ = 8222; // NATS default monitoring port
+        // NATS serves its monitoring endpoint on 8222 unless told otherwise.
+        monitor_port_ = 8222;
     }
 }
 
@@ -168,7 +168,7 @@ void nats_poller::poll_server() {
         return;
     }
 
-    domain::nats_server_sample sample;
+    messaging::nats_server_sample sample;
     sample.sampled_at = std::chrono::system_clock::now();
     sample.in_msgs = parsed->in_msgs;
     sample.out_msgs = parsed->out_msgs;
@@ -192,11 +192,11 @@ void nats_poller::poll_streams() {
     }
 
     const auto now = std::chrono::system_clock::now();
-    std::vector<domain::nats_stream_sample> samples;
+    std::vector<messaging::nats_stream_sample> samples;
     for (const auto& account :
          parsed->account_details.value_or(std::vector<jsz_account_detail>{})) {
         for (const auto& stream : account.stream_detail) {
-            domain::nats_stream_sample s;
+            messaging::nats_stream_sample s;
             s.sampled_at = now;
             s.stream_name = stream.name;
             s.messages = stream.state.messages;

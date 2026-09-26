@@ -21,7 +21,7 @@ per C++ component, profile binds, trading instruments ported to
 codegen, generated shell commands, a data-oriented trading model,
 protocol messages generated into C++ and TypeScript, the move from Qt
 to ores.web, and journey-first screens. Each approach taught something,
-and several shipped real results: six components are drift-free, the
+and several shipped real results: five components are drift-free, the
 drift checks run in CI, oresmd covers every ORE quote type, the USD
 SOFR curve has an FOMC-dated short end, and ores.web replaced the Qt
 and Wt clients. At close, the sprint settled on the last approach: for
@@ -40,9 +40,12 @@ hotfixes.
   problems ran side by side. The sprint settled on the last one, which
   is the method for sprint 26: codegen sync and drift for each module,
   then user journeys, then UX.
-- Six components are drift-free: ores.dq, ores.iam, ores.trading,
-  ores.synthetic, ores.compute, and ores.analytics. ores.reporting has
-  its bind merged. The codegen drift checks run in CI.
+- Five components are drift-free: ores.dq, ores.iam, ores.synthetic,
+  ores.compute, and ores.analytics. ores.reporting has its bind merged.
+  The codegen drift checks run in CI. ores.trading was listed here as a
+  sixth; that claim is retracted, because a measurement on 2026-09-26
+  finds 1751 files of drift in it and the sprint 25 story itself said the
+  component could not join the drift gate.
 - The Qt and Wt clients left the repository. ores.web, a TypeScript
   client, replaces them.
 - The NATS entity protocol has a canonical specification. IAM and
@@ -64,9 +67,11 @@ hotfixes.
 
 ** Codegen and drift
 
-- *Drift baseline, per component*: ores.dq, ores.iam, ores.trading,
+- *Drift baseline, per component*: ores.dq, ores.iam,
   ores.synthetic, ores.compute, ores.analytics and ores.reporting bound
-  to profiles, with zero-diff regeneration verified.
+  to profiles, with zero-diff regeneration verified. ores.trading was
+  listed here too; its regeneration was never drift-clean and the claim
+  is retracted.
 - *Template fixes*: history provenance fields, compound-key gating,
   pagination, junction templates, RLS policy emission and the
   history-provider registrar.
@@ -229,6 +234,7 @@ Steady upward slope is healthy; plateauing signals a stall.
 -----
 
 /Next sprint: sync codegen and clear drift for each module, starting
-with the modules that are not drift-free yet (ores.marketdata,
-ores.database, ores.scheduler, ores.workflow, ores.workspace). User
+with the modules that are not drift-free yet (ores.trading,
+ores.marketdata, ores.database, ores.scheduler, ores.workflow,
+ores.workspace). User
 journey analysis and UX follow the codegen pass./

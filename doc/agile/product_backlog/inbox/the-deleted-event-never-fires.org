@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: BDB2C758-9BD3-4A08-A5A2-09BAD46A62C2
+:END:
+#+title: The deleted event never fires, because the delete rule rewrites the delete
+#+description: Every generated entity rewrites DELETE into an UPDATE, and every generated notify trigger returns null on UPDATE, so the TG_OP=DELETE branch is unreachable and no component ever publishes a deleted event.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:sql:eventing:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Every generated entity's notify function returns null on UPDATE, on the
+assumption that a versioned table's UPDATE is always the internal close of a
+row and that the INSERT which follows it announces the change. Every generated
+entity also has a =DO INSTEAD= delete rule that rewrites =DELETE= into an
+=UPDATE ... SET valid_to= with no following insert. So a genuine delete
+announces nothing, and the =TG_OP = 'DELETE'= branch of the notify function is
+unreachable.
+
+The tree holds 99 generated notify triggers that return null on UPDATE and 232
+generated create files with a soft-delete rule.
+
+* Why
+
+The protocol's event contract has three actions, and the generated shells
+subscribe to all three. =deleted= is published nowhere, so a subscriber waiting
+for it waits forever, and the branch that appears to handle it is dead code -- 
+worse than a missing feature, because it reads as handled.
+
+A subscriber in the tree already relies on the event: iam reloads its token
+settings when a setting changes.
+
+* References
+
+- =projects/ores.codegen/library/templates/sql_schema_notify_trigger.mustache=
+  — the =return null= on UPDATE
+- =projects/ores.codegen/library/templates/sql_schema_domain_entity_create.mustache=
+  — the delete rule that rewrites DELETE into UPDATE
+- =projects/ores.sql/create/variability/variability_system_settings_notify_trigger_create.sql=
+  and =.../variability_system_settings_create.sql= — one instance of each
+- The review of PR #2176 found it
+
+* Proposed direction
+
+The delete rule and the notify function have to agree about which UPDATE is a
+delete. Either the rule announces the deletion itself rather than leaving it to
+a trigger that cannot see it, or the notify function is given something that
+distinguishes a soft delete from the close half of a version bump. The second
+needs a marker the rule sets and the trigger reads; the first needs the rule to
+reach a notify helper per row, which a rule cannot do directly.
+
+Whichever is chosen, it is a template change, so every component's trigger is
+regenerated in the same commit -- which is why it is filed rather than folded
+into the variability work.
+
+* See also
+
+- [[id:E48F9C2E-E0FB-4B60-A0D5-A43E732B5FC5][An entity's key on the wire cannot be composite]]

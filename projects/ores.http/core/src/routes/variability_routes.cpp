@@ -19,7 +19,7 @@
  */
 #include "ores.http.core/routes/variability_routes.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.variability.api/messaging/system_settings_protocol.hpp"
+#include "ores.variability.api/messaging/system_setting_protocol.hpp"
 #include <rfl/json.hpp>
 
 namespace ores::http_server::routes {
@@ -62,8 +62,11 @@ variability_routes::handle_list_system_settings(const http_request&) {
     BOOST_LOG_SEV(lg(), debug) << "Handling list system settings request";
 
     try {
-        variability::messaging::list_settings_response resp;
+        // The endpoint answers with the protocol's own list response, so the
+        // HTTP projection and the bus cannot describe the same read two ways.
+        variability::messaging::list_system_settings_response resp;
         resp.settings = system_settings_->get_all();
+        resp.total = resp.settings.size();
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {

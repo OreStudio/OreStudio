@@ -24,8 +24,12 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace variability #F2F2F2 {
         namespace messaging #F2F2F2 {
+            class operations_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
             class registrar {
-                +verifier : optional<ores::security::jwt::jwt_authenticator>
             }
             class system_setting_handler {
                 -nats_ : ores::nats::service::client&
@@ -37,9 +41,11 @@ namespace ores #F2F2F2 {
             class system_setting_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +name : sqlgen::PrimaryKey<string>
+                +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
                 +version : int
+                +name : string
+                +party_id : string
                 +value : string
                 +data_type : string
                 +description : string
@@ -52,15 +58,21 @@ namespace ores #F2F2F2 {
             }
             class system_setting_mapper {
             }
-            class system_settings_repository {
+            class system_setting_repository {
+                +remove_status : enum class
             }
         }
         namespace service #F2F2F2 {
+            class system_setting_service {
+                -ctx_ : context
+                -repo_ : repository::system_setting_repository
+            }
             class system_settings_service {
                 -cache_ : unordered_map<string, string>
                 -ctx_ : database::context
                 -tenant_id_ : string
-                -repo_ : repository::system_settings_repository
+                -party_id_ : string
+                -repo_ : repository::system_setting_repository
             }
         }
     }

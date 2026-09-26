@@ -38,9 +38,26 @@ the evidence that proves it. The kinds are:
 
 An item that does not apply to a component is recorded as "not
 applicable" with the reason, never skipped in silence. An item that
-cannot pass is recorded as an exception with its reason, and the
-component stays out of the registry until the exception is resolved or
-accepted.
+cannot pass is recorded as an accepted exception: the component joins
+the registry, every gate runs against it, and the item it does not pass
+is named in =ACCEPTED_EXCEPTIONS= in
+=projects/ores.codegen/scripts/component_registry.py= with its reason and
+the person who accepted it.
+
+Keeping the component out until every item passes is the alternative, and
+it withholds every gate from the component in the meantime. A component
+with one unverifiable item is then checked by nothing at all, which is
+worse than the gap it was excluded for. So the registry records the gap
+instead, and =check_registry_exceptions.py= refuses an exception that
+names an item the standard does not define, states no reason, names
+nobody or carries no date, against the standard's own item list. What it
+cannot do is decide whether a reason is good enough; that is the
+reviewer's, and the record is written so the reviewer can see it.
+
+Take an exception only when the item cannot be made to pass where the
+work is done -- a check that needs a live fleet, a tool that cannot draw
+what the item asks for. An item that is merely unfinished is not an
+exception; it is unfinished work, and the component waits.
 
 Work in the order of the sections. Fix every defect at its source: a
 template, =org_loader.py=, a profile or a model. Never edit generated
@@ -163,8 +180,10 @@ a typecheck all missed; only a build and a test run found them.
 
 A survey of four model-free infrastructure components, =ores.platform=,
 =ores.utility=, =ores.security= and =ores.geo=, run on 2026-09-25 by agents
-that did not write them, added items B06, H04, G07, V07 and V08. The
-standard now holds 49 items. The findings behind the new items:
+that did not write them, added items B06, H04, G07, V07 and V08; the
+=ores.security= pass added G08; and a later codegen pass made the documentation
+requirement explicit as H05. The standard now holds 49 items. The findings
+behind the new items:
 
 - A component can pass every gate and still be unclean. All four passed
   =validate_docs.py=, carried no leftover artefact and broke no naming
@@ -211,6 +230,14 @@ standard now holds 49 items. The findings behind the new items:
   enumerators looked test-only from outside, and each was in fact
   load-bearing through a different production caller, so deleting either
   half would have broken the telemetry trace identifier.
+- A rule that names no exemption deletes what it should keep. G02 said
+  dead headers go, and two passes read that as licence to delete twelve
+  namespace documentation headers: =ores.utility.hpp= with its ten facet
+  headers, and =ores.security.hpp=. Their content is an empty namespace
+  and the =@brief= doxygen renders, and the outermost one is the
+  description the diagram conventions read, so a consumer census reports
+  them as dead when they are the documentation. G08 states the
+  exemption, and the maintainer caught the second deletion.
 - Verify with an agent that did not write the code, and expect it to fail
   the record rather than the patch. The deletion this standard's first
   story performed was sound; what the verifier failed was the record's own

@@ -17,4 +17,10 @@
  *
  */
 
+drop trigger if exists ores_variability_system_settings_party_default_trg
+on "ores_variability_system_settings_tbl";
+
+drop function if exists ores_variability_system_settings_default_party_fn();
+drop function if exists ores_variability_get_system_settings_fn(uuid, uuid);
 drop function if exists ores_variability_get_system_settings_fn(uuid);
+drop function if exists ores_variability_resolve_system_party_fn(uuid);

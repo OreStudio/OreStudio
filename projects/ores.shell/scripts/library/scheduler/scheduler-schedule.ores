@@ -1,0 +1,6 @@
+# =schedule=
+#
+# GENERATED from doc/recipes/shell/scheduler/scheduler.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+scheduler schedule shell-example "*/5 * * * *" --action execute_sql --command "select 1" --description "created by the shell script library" --inactive

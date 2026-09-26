@@ -1,0 +1,90 @@
+part	path	kind	verdict	note
+core	core/examples/database_sink_example.cpp	example	dead	Not added to the build: core/CMakeLists.txt adds src, tests and modeling only. Nothing references main().
+core	core/include/ores.telemetry.core/domain/attribute_value.hpp	domain	generatable	Domain value types (attribute_value, attributes); cpp_domain_type_class will emit them from models.
+core	core/include/ores.telemetry.core/domain/log_record.hpp	domain	generatable	OTel log record; the domain-entity/class templates cover this shape.
+core	core/include/ores.telemetry.core/domain/nats_samples_query.hpp	domain	generatable	Query parameter structs; domain type kind.
+core	core/include/ores.telemetry.core/domain/nats_server_sample.hpp	domain	generatable	Sample entity; maps to ores_telemetry_nats_server_samples_tbl.
+core	core/include/ores.telemetry.core/domain/nats_stream_sample.hpp	domain	generatable	Sample entity; maps to ores_telemetry_nats_stream_samples_tbl.
+core	core/include/ores.telemetry.core/domain/ores.telemetry.domain.hpp	namespace-banner	infrastructure	Empty namespace documentation header (G08); no generated marker, kept by hand.
+core	core/include/ores.telemetry.core/domain/resource.hpp	domain	generatable	OTel resource; domain type with the export macro, a generated shape.
+core	core/include/ores.telemetry.core/domain/semantic_conventions.hpp	constants	infrastructure	constexpr attribute-name constants; the generator emits no constants facet. Only two of eleven are referenced.
+core	core/include/ores.telemetry.core/domain/service_sample.hpp	domain	generatable	Heartbeat sample entity; maps to ores_telemetry_service_samples_tbl.
+core	core/include/ores.telemetry.core/domain/span.hpp	domain	generatable	OTel span; domain type class.
+core	core/include/ores.telemetry.core/domain/span_context.hpp	domain	generatable	W3C trace-context value type; domain type class.
+core	core/include/ores.telemetry.core/domain/span_id.hpp	domain	generatable	64-bit identifier value type; domain type class.
+core	core/include/ores.telemetry.core/domain/span_kind.hpp	domain	generatable	Enum; cpp_enum template covers it.
+core	core/include/ores.telemetry.core/domain/span_link.hpp	domain	generatable	Link value type; domain type class.
+core	core/include/ores.telemetry.core/domain/span_status.hpp	domain	generatable	Enum; cpp_enum template covers it.
+core	core/include/ores.telemetry.core/domain/telemetry_batch.hpp	domain	generatable	Batch message shape; domain type class.
+core	core/include/ores.telemetry.core/domain/telemetry_context.hpp	domain	generatable	Trace context class; domain type class. Only tests consume it today (see B06).
+core	core/include/ores.telemetry.core/domain/telemetry_log_entry.hpp	domain	generatable	Persisted log entry entity; maps to ores_telemetry_logs_tbl.
+core	core/include/ores.telemetry.core/domain/telemetry_query.hpp	domain	generatable	Query parameter structs and granularity enum; domain type kind.
+core	core/include/ores.telemetry.core/domain/telemetry_source.hpp	domain	generatable	Source enum plus its to_string/from_string helpers; cpp_enum kind.
+core	core/include/ores.telemetry.core/domain/telemetry_stats.hpp	domain	generatable	Aggregate statistics structs; domain type class.
+core	core/include/ores.telemetry.core/domain/trace_id.hpp	domain	generatable	128-bit identifier value type; domain type class.
+core	core/include/ores.telemetry.core/export.hpp	export-macro	infrastructure	DLL export macro; hand-written in compute and iam too.
+core	core/include/ores.telemetry.core/exporting/file_log_exporter.hpp	exporter	dead	No consumer anywhere: lifecycle_manager.hpp mentions it in a doc comment only, its own .cpp defines it, no test or production call site.
+core	core/include/ores.telemetry.core/exporting/hybrid_log_exporter.hpp	exporter	dead	No consumer: only its own .cpp references it.
+core	core/include/ores.telemetry.core/exporting/log_exporter.hpp	exporter	dead	Interface referenced only by the two dead exporters (file_log_exporter, hybrid_log_exporter).
+core	core/include/ores.telemetry.core/exporting/ores.telemetry.exporting.hpp	namespace-banner	infrastructure	Empty namespace documentation header (G08).
+core	core/include/ores.telemetry.core/exporting/telemetry_configuration.hpp	config	infrastructure	Command-line option factory/reader; consumers are the shell parser. Config parsing is not generated.
+core	core/include/ores.telemetry.core/exporting/telemetry_options.hpp	config	infrastructure	Export option struct; component configuration, not a model.
+core	core/include/ores.telemetry.core/exporting/upload_position_tracker.hpp	exporter	dead	Only referenced as a member of the dead hybrid_log_exporter.
+core	core/include/ores.telemetry.core/generators/ores.telemetry.generators.hpp	namespace-banner	infrastructure	Empty namespace documentation header (G08).
+core	core/include/ores.telemetry.core/generators/span_id_generator.hpp	generator	generatable	cpp_domain_type_generator kind. Consumed only by tests and by telemetry_context (itself test-only).
+core	core/include/ores.telemetry.core/generators/trace_id_generator.hpp	generator	generatable	cpp_domain_type_generator kind.
+core	core/include/ores.telemetry.core/log/database_sink_backend.hpp	logging	infrastructure	Boost.Log sink backend; component plumbing, no template.
+core	core/include/ores.telemetry.core/log/database_sink_utils.hpp	logging	infrastructure	Inline forwarding-handler helper; referenced by the example and one test.
+core	core/include/ores.telemetry.core/log/lifecycle_manager.hpp	logging	infrastructure	Boost.Log lifecycle wiring; consumed by ores.service and ores.testing.
+core	core/include/ores.telemetry.core/log/log.hpp	namespace-banner	infrastructure	Empty namespace documentation header (G08).
+core	core/include/ores.telemetry.core/log/macros.hpp	logging	dead	Nothing includes it and nothing uses TLOG_SEV; the macro also names ::ores::logging::trace_context_injector while the struct is in ores::telemetry::log, so it cannot compile.
+core	core/include/ores.telemetry.core/log/ores.telemetry.log.hpp	namespace-banner	infrastructure	Empty namespace documentation header (G08).
+core	core/include/ores.telemetry.core/log/skip_telemetry_guard.hpp	logging	infrastructure	Recursion guard and attribute helper for the sinks; plumbing.
+core	core/include/ores.telemetry.core/log/telemetry_sink_backend.hpp	logging	infrastructure	Boost.Log sink backend that builds log_record; plumbing.
+core	core/include/ores.telemetry.core/messaging/nats_samples_protocol.hpp	protocol	generatable	cpp_protocol header; wire types and subject constants.
+core	core/include/ores.telemetry.core/messaging/service_samples_protocol.hpp	protocol	generatable	cpp_protocol header; heartbeat and list messages.
+core	core/include/ores.telemetry.core/messaging/telemetry_protocol.hpp	protocol	generatable	cpp_protocol header; log list and publish messages.
+core	core/include/ores.telemetry.core/ores.telemetry.hpp	namespace-banner	infrastructure	Empty namespace documentation header (G08); names the module.
+core	core/src/domain/resource.cpp	domain	generatable	Domain implementation emitted with the domain type.
+core	core/src/domain/span_context.cpp	domain	generatable	Domain implementation emitted with the domain type.
+core	core/src/domain/span.cpp	domain	generatable	Domain implementation emitted with the domain type.
+core	core/src/domain/span_id.cpp	domain	generatable	Domain implementation emitted with the domain type.
+core	core/src/domain/telemetry_context.cpp	domain	generatable	Domain implementation emitted with the domain type.
+core	core/src/domain/trace_id.cpp	domain	generatable	Domain implementation emitted with the domain type.
+core	core/src/exporting/file_log_exporter.cpp	exporter	dead	Defines a class nothing constructs.
+core	core/src/exporting/hybrid_log_exporter.cpp	exporter	dead	Defines a class nothing constructs.
+core	core/src/exporting/telemetry_configuration.cpp	config	infrastructure	Option description and reader; called by the shell parser.
+core	core/src/exporting/telemetry_options.cpp	config	infrastructure	rfl-json stream operator for the options struct; component config, not a model JSON twin.
+core	core/src/exporting/upload_position_tracker.cpp	exporter	dead	Defines a class only the dead hybrid exporter holds.
+core	core/src/generators/span_id_generator.cpp	generator	generatable	Generator implementation emitted with the generator.
+core	core/src/generators/trace_id_generator.cpp	generator	generatable	Generator implementation emitted with the generator.
+core	core/src/log/database_sink_backend.cpp	logging	infrastructure	Sink backend implementation.
+core	core/src/log/lifecycle_manager.cpp	logging	infrastructure	Sink wiring implementation.
+core	core/src/log/telemetry_sink_backend.cpp	logging	infrastructure	Sink backend implementation.
+database	database/include/ores.telemetry.database/export.hpp	export-macro	infrastructure	DLL export macro.
+database	database/include/ores.telemetry.database/log/database_sink_utils.hpp	logging	dead	Nothing includes it (no src, no test); its two handler factories have no consumer.
+database	database/include/ores.telemetry.database/repository/ores.telemetry.repository.hpp	namespace-banner	infrastructure	Empty namespace documentation header (G08).
+database	database/include/ores.telemetry.database/repository/telemetry_entity.hpp	repository	generatable	SQL entities (log, stats views, NATS and service samples); cpp_domain_type_entity kind.
+database	database/include/ores.telemetry.database/repository/telemetry_mapper.hpp	mapper	generatable	Domain<->entity mapper; cpp_domain_type_mapper kind.
+database	database/include/ores.telemetry.database/repository/telemetry_repository.hpp	repository	generatable	sqlgen repository; cpp_domain_type_repository kind.
+database	database/src/repository/telemetry_entity.cpp	repository	generatable	Stream operators emitted with the entity.
+database	database/src/repository/telemetry_mapper.cpp	mapper	generatable	Mapper implementation.
+database	database/src/repository/telemetry_repository.cpp	repository	generatable	Repository implementation.
+service	service/include/ores.telemetry.service/app/application_exception.hpp	service-app	dead	The class is never thrown, caught or named: application.cpp only #includes the header. No test uses it.
+service	service/include/ores.telemetry.service/app/application.hpp	service-app	infrastructure	Service entry point; application wiring, not generated (compute keeps these hand-written).
+service	service/include/ores.telemetry.service/app/host.hpp	service-app	infrastructure	Host runner glue; application wiring.
+service	service/include/ores.telemetry.service/app/nats_poller.hpp	service-app	infrastructure	Background NATS monitoring poller; component-specific client/wiring.
+service	service/include/ores.telemetry.service/config/options.hpp	service-config	infrastructure	Service option struct; config parsing is not generated.
+service	service/include/ores.telemetry.service/config/parser_exception.hpp	service-config	infrastructure	Parser exception used by parser.cpp and main.cpp.
+service	service/include/ores.telemetry.service/config/parser.hpp	service-config	infrastructure	Command-line parser; config parsing is not generated.
+service	service/include/ores.telemetry.service/export.hpp	export-macro	infrastructure	DLL export macro.
+service	service/include/ores.telemetry.service/messaging/registrar.hpp	registrar	generatable	Per-message subscription registrar; cpp_nats_registrar kind. Compute keeps only its aggregate registrar.cpp hand-written.
+service	service/include/ores.telemetry.service/ores.telemetry.service.hpp	namespace-banner	infrastructure	Empty namespace documentation header (G08).
+service	service/src/app/application.cpp	service-app	infrastructure	Creates contexts, starts poller and heartbeat; application wiring.
+service	service/src/app/host.cpp	service-app	infrastructure	Thin host_runner_async binding.
+service	service/src/app/nats_poller.cpp	service-app	infrastructure	Poller implementation.
+service	service/src/config/options.cpp	service-config	infrastructure	rfl-json stream operator for the option struct.
+service	service/src/config/parser.cpp	service-config	infrastructure	Parser implementation.
+service	service/src/main.cpp	service-main	infrastructure	Process main; the generator does not produce main for this component.
+service	service/src/messaging/registrar.cpp	registrar	generatable	Subscribes each protocol subject and dispatches to telemetry_handler; cpp_nats_registrar kind.
+service	service/src/messaging/telemetry_handler.hpp	handler	generatable	NATS message handler; cpp_nats_handler kind.

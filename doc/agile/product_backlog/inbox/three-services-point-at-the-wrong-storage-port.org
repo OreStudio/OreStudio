@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 3F9C2D47-5A18-4E6B-B0C4-8D2F6A1E9B73
+:END:
+#+title: Three services default their storage base URL to a port the server does not use
+#+description: ores.trading, ores.marketdata and ores.reporting default http-base-url to http://localhost:8080, while the http server listens on 21000, and their units pass no override. Every storage call from those services fails to connect.
+#+type: capture
+#+level: cross
+#+filetags: :storage:http:configuration:defect:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Three services take the storage endpoint as a flag and default it to a port the
+server does not listen on:
+
+#+begin_src sh
+projects/ores.trading/service/src/config/parser.cpp:45      default_value("http://localhost:8080")
+projects/ores.marketdata/service/src/config/parser.cpp:45   default_value("http://localhost:8080")
+projects/ores.reporting/service/src/config/parser.cpp:45    default_value("http://localhost:8080")
+#+end_src
+
+The http server listens on =ORES_HTTP_PORT=, which this environment sets to
+=21000= (.env), and their systemd units pass no =--http-base-url=, so the
+default is what they run with. The running processes confirm it: the
+=Command line arguments= line in
+=build/output/linux-clang-debug-make/publish/log/ores.trading.service.0.log= and
+its reporting and marketdata counterparts list no such flag.
+
+The base URL is consequently plumbed three different ways across the tree: the
+shell reads the environment (=compute_commands.cpp:63-65=), =ores.ore.service=
+is given the flag by its unit, and these three silently take a default. And
+=storage_paths.hpp:39= documents a fourth route — discovery over NATS on
+=http-server.v1.info.get= — which no C++ caller uses; only the web client does.
+
+* Why
+
+Every storage call from trading, marketdata and reporting fails to connect, and
+it fails the same way in any environment whose http port is not 8080. The
+report pipeline is the visible casualty: it decides a bucket and a key and
+sends them over NATS to the trading and marketdata handlers, which then cannot
+reach the store.
+
+That the endpoint is configuration at all is the deeper question, and
+[[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] records it as an
+open one: either a caller discovers the endpoint from the bus, as the
+component's own header already documents, or the flag is compulsory and one
+place supplies it. Three defaults and an unused discovery subject is the state
+that produces this defect.
+
+* References
+
+- =projects/ores.{trading,marketdata,reporting}/service/src/config/parser.cpp:34-45=
+- =build/output/linux-clang-debug-make/publish/log/ores.{trading,marketdata,reporting}.service.0.log= — the arguments actually used
+- =projects/ores.storage/include/ores.storage/net/storage_paths.hpp:39= — the documented discovery route
+- =projects/ores.shell/application/src/app/commands/compute_commands.cpp:63-65= — the environment route
+
+* See also
+
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the target state, and the discovery question this raises.

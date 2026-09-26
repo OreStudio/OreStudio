@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 63950E15-BDE9-4074-A7CB-C02B356CB03C
+:END:
+#+title: scheduler instances --job filters one page, not the collection
+#+description: The shell's scheduler instances command filters by job name after the page arrives, and the operation orders executions by time. A narrow --limit therefore selects the newest rows and the filter sees only those: --job e2e-ok --limit 5 printed one of that job's two executions because the other fell outside the five newest rows. The command's help says the filter is page-scoped, which is a workaround rather than a fix.
+#+type: capture
+#+level: cross
+#+filetags: :scheduler:operations:shell:bug:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Select the page from the question asked instead of filtering the page after it
+arrives. The operation's request carries an offset and a limit and nothing
+else, so the shell filters by name in the response:
+
+#+begin_src c++
+get_job_instances_request req;
+req.limit = *limit;
+// ... the response is filtered by i.job_name == job_filter
+#+end_src
+
+Either give =get_job_instances_request= a job field — an identifier or a name —
+so the database selects the rows the caller asked for, or keep the page walk in
+the shell and follow it until the filter is satisfied or the collection ends.
+
+* Why
+
+An execution page is ordered by time, so a narrow =--limit= returns the newest
+executions of every job and the filter sees only those. Ran against the live
+fleet: =scheduler instances --job e2e-ok --limit 5= printed one of that job's
+two executions, because the other fell outside the five newest rows. The
+command's help states the limitation, which tells a reader about the trap
+without removing it, and the trap is exactly the reading an operator makes
+after a failure — "did my job run?" — where a false empty answer is worst.
+
+* References
+
+- Found while adding the scheduler shell commands, PR #2181.
+- The run that shows it:
+  =doc/agile/versions/v0/sprint_26/clean-scheduler/evidence/scheduler_shell_library.txt=.
+- The command and its help text:
+  =projects/ores.shell/application/src/app/commands/scheduler_commands.cpp=.
+
+* See also
+
+- The companion capture on the same read,
+  =job_instance_summary_name_falls_back_to_the_id=.

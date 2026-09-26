@@ -28,9 +28,9 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.telemetry.core/domain/telemetry_batch.hpp"
+#include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include "ores.telemetry.core/messaging/nats_samples_protocol.hpp"
 #include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
-#include "ores.telemetry.core/messaging/telemetry_protocol.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <chrono>
@@ -100,12 +100,28 @@ public:
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
-        if (decode<get_nats_server_samples_request>(msg)) {
-            BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, get_nats_server_samples_response{.success = true});
+        const auto& ctx = *ctx_expected;
+        get_nats_server_samples_response resp;
+        if (auto req = decode<get_nats_server_samples_request>(msg)) {
+            try {
+                database::repository::telemetry_repository repo;
+                resp.samples = repo.query_server_samples(ctx, req->query);
+                resp.success = true;
+                BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+                    << "Returning " << resp.samples.size() << " NATS server samples";
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(telemetry_handler_lg(), error)
+                    << "Failed to query NATS server samples: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
         } else {
             BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            resp.success = false;
+            resp.message = "Failed to decode request";
         }
+        reply(nats_, msg, resp);
+        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     /**
@@ -121,7 +137,7 @@ public:
             BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        domain::service_sample sample;
+        service_sample sample;
         sample.sampled_at = std::chrono::system_clock::now();
         sample.service_name = hb->service_name;
         sample.instance_id = hb->instance_id;
@@ -182,7 +198,7 @@ public:
                 batch.source_name = req->source_name;
                 boost::uuids::random_generator rng;
                 for (const auto& item : req->entries) {
-                    domain::telemetry_log_entry entry;
+                    telemetry_log_entry entry;
                     entry.id = rng();
                     entry.timestamp = std::chrono::system_clock::time_point(
                         std::chrono::milliseconds(item.timestamp_ms));
@@ -213,12 +229,28 @@ public:
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
-        if (decode<get_nats_stream_samples_request>(msg)) {
-            BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, get_nats_stream_samples_response{.success = true});
+        const auto& ctx = *ctx_expected;
+        get_nats_stream_samples_response resp;
+        if (auto req = decode<get_nats_stream_samples_request>(msg)) {
+            try {
+                database::repository::telemetry_repository repo;
+                resp.samples = repo.query_stream_samples(ctx, req->query);
+                resp.success = true;
+                BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+                    << "Returning " << resp.samples.size() << " NATS stream samples";
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(telemetry_handler_lg(), error)
+                    << "Failed to query NATS stream samples: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
         } else {
             BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            resp.success = false;
+            resp.message = "Failed to decode request";
         }
+        reply(nats_, msg, resp);
+        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
 private:

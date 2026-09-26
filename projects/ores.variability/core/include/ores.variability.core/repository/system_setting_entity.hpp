@@ -17,13 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_VARIABILITY_REPOSITORY_SYSTEM_SETTING_ENTITY_HPP
-#define ORES_VARIABILITY_REPOSITORY_SYSTEM_SETTING_ENTITY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_VARIABILITY_CORE_REPOSITORY_SYSTEM_SETTING_ENTITY_HPP
+#define ORES_VARIABILITY_CORE_REPOSITORY_SYSTEM_SETTING_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
-#include <iosfwd>
 #include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::variability::repository {
@@ -31,16 +36,20 @@ namespace ores::variability::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a system setting row in the database.
+ * @brief Represents a system setting in the database.
  */
 struct system_setting_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_variability_system_settings_tbl";
 
-    sqlgen::PrimaryKey<std::string> name;
+    sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
-    std::optional<std::string> party_id;
     int version = 0;
+
+    std::string name;
+
+    std::string party_id;
+
     std::string value;
     std::string data_type;
     std::string description;

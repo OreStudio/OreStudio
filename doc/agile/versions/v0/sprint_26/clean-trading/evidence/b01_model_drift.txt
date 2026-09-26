@@ -1,0 +1,8 @@
+$ projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_model_drift.py --summary
+
+projects/ores.reporting/modeling/ores.reporting.report_definition.org: has_workspace_id contradicts its profile, allowed by KNOWN_MODEL_DRIFT
+
+164 of 309 models bind to a profile; 14 profiles defined.
+No model drift: every bound model agrees with its profile (1 known exception(s)).
+
+[exit code: 0]

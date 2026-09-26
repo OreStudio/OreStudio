@@ -20,6 +20,7 @@ from codegen.org_loader import (  # noqa: E402
     declared_key_field,
     key_is_primary,
     key_finders,
+    write_record_for,
 )
 
 REQUIRED_FLAGS = """\
@@ -462,3 +463,57 @@ def test_a_finder_the_model_states_itself_is_not_generated_twice():
         ],
     }
     assert key_finders(entity) == []
+
+
+def _setting_entity(**overrides) -> dict:
+    """A setting-shaped entity: surrogate id, `name` and `party_id` natural keys."""
+    entity = {
+        "entity_singular": "setting",
+        "primary_key": {"column": "id",
+                        "columns": [{"column": "id",
+                                     "cpp_type": "boost::uuids::uuid"}]},
+        "natural_keys": [{"column": "name", "cpp_type": "std::string"},
+                         {"column": "party_id",
+                          "cpp_type": "boost::uuids::uuid"}],
+        "columns": [{"name": "value", "cpp_type": "std::string"}],
+    }
+    entity.update(overrides)
+    return entity
+
+
+def test_a_natural_key_spelled_like_a_server_owned_field_survives_the_write_filter():
+    """`party_id` is server-owned on most entities and half the key on some.
+
+    The write record is where a caller states what it writes. A natural key
+    that happens to be spelled like a server-owned field is still half the
+    identity, so dropping it emits a write that cannot say which party's row
+    it creates.
+    """
+    names = [f["name"] for f in write_record_for(_setting_entity())]
+    assert names == ["id", "name", "party_id", "value"]
+
+
+def test_a_server_owned_field_that_is_not_a_key_is_still_stripped():
+    """The filter still holds for everything that is not part of the identity."""
+    entity = _setting_entity()
+    entity["columns"] = [
+        {"name": "tenant_id", "cpp_type": "std::string"},
+        {"name": "version", "cpp_type": "int"},
+        {"name": "modified_by", "cpp_type": "std::string"},
+        {"name": "recorded_at", "cpp_type": "std::chrono::system_clock::time_point"},
+        {"name": "value", "cpp_type": "std::string"},
+    ]
+    names = [f["name"] for f in write_record_for(entity)]
+    assert names == ["id", "name", "party_id", "value"]
+
+
+def test_change_intent_is_still_kept_out_of_the_record():
+    """Intent travels beside the write record, so it is not one of its fields."""
+    entity = _setting_entity()
+    entity["columns"] = [
+        {"name": "change_reason_code", "cpp_type": "std::string"},
+        {"name": "change_commentary", "cpp_type": "std::string"},
+        {"name": "value", "cpp_type": "std::string"},
+    ]
+    names = [f["name"] for f in write_record_for(entity)]
+    assert names == ["id", "name", "party_id", "value"]

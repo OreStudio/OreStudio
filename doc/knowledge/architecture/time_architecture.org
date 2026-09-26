@@ -345,6 +345,7 @@ The target state for the =unify-entity-timestamps= story is:
 
 * See also
 
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] — links to all architectural entry points.
 - [[id:CE4752C0-7A3C-46B4-AC97-922C5B940BB1][Optimistic Concurrency Versioning: the version=0 Overload and Why
   It's a Problem]] — how the =version= column (bitemporal SCD2's

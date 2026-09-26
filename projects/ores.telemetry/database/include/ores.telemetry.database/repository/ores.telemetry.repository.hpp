@@ -21,18 +21,13 @@
 #define ORES_TELEMETRY_REPOSITORY_HPP
 
 /**
- * @brief Database persistence layer for telemetry data.
+ * @brief The repository namespace of the database part.
  *
- * This namespace contains the repository classes and entity mappings for
- * persisting telemetry log entries to PostgreSQL/TimescaleDB. It provides:
- *
- * - Entity types that map to database tables
- * - Mapper classes for domain<->entity conversion
- * - Repository classes for CRUD operations
- *
- * The telemetry_repository supports efficient batch inserts and time-range
- * queries optimized for TimescaleDB hypertables.
+ * It holds the entity types that map to the component's four tables, the
+ * mappers that convert between an entity and its domain type, and the
+ * telemetry_repository that reads and writes them. The repository supports
+ * batch inserts and the time-range queries the log list is built on.
  */
-namespace ores::telemetry::repository {}
+namespace ores::telemetry::database::repository {}
 
 #endif

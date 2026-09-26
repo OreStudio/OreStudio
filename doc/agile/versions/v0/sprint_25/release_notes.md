@@ -2,7 +2,7 @@
 
 Release notes for [Sprint 25](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_25/sprint.html).
 
-Sprint 25 was an experimental sprint. It set out to resolve codegen drift on as many components as possible and to progress the IR curves work, and it tried many different approaches to get there: safe drift per C++ component, profile binds, trading instruments ported to codegen, generated shell commands, a data-oriented trading model, protocol messages generated into C++ and TypeScript, the move from Qt to ores.web, and journey-first screens. Each approach taught something, and several shipped real results: six components are drift-free, the drift checks run in CI, oresmd covers every ORE quote type, the USD SOFR curve has an FOMC-dated short end, and ores.web replaced the Qt and Wt clients. At close, the sprint settled on the last approach: for each module, sync codegen and clear its drift, then analyse the user journeys, then build the UX. The other approaches closed with their reasons recorded (23 stories abandoned), so sprint 26 starts from that one method. The experiment was expensive: the sprint ran 52 days against a 7-day plan, and 23 of its 80 finished stories were hotfixes.
+Sprint 25 was an experimental sprint. It set out to resolve codegen drift on as many components as possible and to progress the IR curves work, and it tried many different approaches to get there: safe drift per C++ component, profile binds, trading instruments ported to codegen, generated shell commands, a data-oriented trading model, protocol messages generated into C++ and TypeScript, the move from Qt to ores.web, and journey-first screens. Each approach taught something, and several shipped real results: five components are drift-free, the drift checks run in CI, oresmd covers every ORE quote type, the USD SOFR curve has an FOMC-dated short end, and ores.web replaced the Qt and Wt clients. At close, the sprint settled on the last approach: for each module, sync codegen and clear its drift, then analyse the user journeys, then build the UX. The other approaches closed with their reasons recorded (23 stories abandoned), so sprint 26 starts from that one method. The experiment was expensive: the sprint ran 52 days against a 7-day plan, and 23 of its 80 finished stories were hotfixes.
 
 ---
 
@@ -10,7 +10,7 @@ Sprint 25 was an experimental sprint. It set out to resolve codegen drift on as 
 # ✅ Highlights
 
 -   An experimental sprint: many approaches to the codegen and UI problems ran side by side. The sprint settled on the last one, which is the method for sprint 26: codegen sync and drift for each module, then user journeys, then UX.
--   Six components are drift-free: ores.dq, ores.iam, ores.trading, ores.synthetic, ores.compute, and ores.analytics. ores.reporting has its bind merged. The codegen drift checks run in CI.
+-   Five components are drift-free: ores.dq, ores.iam, ores.synthetic, ores.compute, and ores.analytics. ores.reporting has its bind merged. The codegen drift checks run in CI. ores.trading was listed here as a sixth; that claim is retracted, because a measurement on 2026-09-26 finds 1751 files of drift in it and the sprint 25 story itself said the component could not join the drift gate.
 -   The Qt and Wt clients left the repository. ores.web, a TypeScript client, replaces them.
 -   The NATS entity protocol has a canonical specification. IAM and refdata use it, and their C++ and TypeScript messages generate from one model.
 -   oresmd covers every ORE quote type, including the new inflation and correlation families and a volatility-surface sub-schema.
@@ -25,7 +25,7 @@ Sprint 25 was an experimental sprint. It set out to resolve codegen drift on as 
 
 ## Codegen and drift
 
--   **Drift baseline, per component**: ores.dq, ores.iam, ores.trading, ores.synthetic, ores.compute, ores.analytics and ores.reporting bound to profiles, with zero-diff regeneration verified.
+-   **Drift baseline, per component**: ores.dq, ores.iam, ores.synthetic, ores.compute, ores.analytics and ores.reporting bound to profiles, with zero-diff regeneration verified. ores.trading was listed here too; its regeneration was never drift-clean and the claim is retracted.
 -   **Template fixes**: history provenance fields, compound-key gating, pagination, junction templates, RLS policy emission and the history-provider registrar.
 -   **Model hygiene**: redundant explicit properties removed; the has\_parent\_id feature moved to the entity root so that profile bindings take effect.
 -   **Checks**: the populate reference drift check, the drift checks in CI, and the compiler warnings (-Wall, -Wextra) the code assumed.
@@ -143,4 +143,4 @@ Line chart tracking stories marked DONE during the sprint. Steady upward slope i
 
 ---
 
-*Next sprint: sync codegen and clear drift for each module, starting with the modules that are not drift-free yet (ores.marketdata, ores.database, ores.scheduler, ores.workflow, ores.workspace). User journey analysis and UX follow the codegen pass.*
+*Next sprint: sync codegen and clear drift for each module, starting with the modules that are not drift-free yet (ores.trading, ores.marketdata, ores.database, ores.scheduler, ores.workflow, ores.workspace). User journey analysis and UX follow the codegen pass.*

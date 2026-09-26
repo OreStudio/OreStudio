@@ -1,0 +1,315 @@
+V07 - Vacuous tests: ores.telemetry
+===================================
+
+Standard item
+-------------
+V07: "No vacuous test. Every test fails when its subject does nothing, so a
+test that asserts only a length, a non-throw, a truthiness, or one production
+run against another is a finding. Assert a literal expected value."
+
+Scope
+-----
+Branch:  feature/clean-telemetry
+Commit:  a6e7f53b9a (a6e7f53b9a40f82f825f1734442ebaabd0e040a1)
+Read:    every Catch2 TEST_CASE in
+         projects/ores.telemetry/core/tests/ (7 files with cases),
+         projects/ores.telemetry/database/tests/ (2 files with cases),
+         projects/ores.telemetry/service/tests/ (1 file with cases).
+         The three main.cpp files were read and contain no test cases.
+Method:  read-only survey. No build started, no test binary run, no file
+         under projects/ changed. Verdicts were decided against the
+         production source that each test exercises.
+
+Verdict rules used
+------------------
+passes   At least one assertion states a literal expected value (string,
+         number, enumerator, named struct field, or a computed expectation
+         that a degenerate subject fails). A no-op subject fails the case.
+finding  The assertions do not pin a literal expected value and a degenerate
+         implementation of the named behaviour satisfies them. Includes:
+         size/count without content, non-throw on a void or unobserved
+         happy path, bare truthiness, and one production value compared to
+         another.
+boundary Rejection of malformed, absent, or out-of-range input, or the
+         disabled/edge branch of a flag. The expectation is the rejection
+         itself and a literal exception type is stated. Not a finding.
+
+Table
+-----
+Part     | Test file                              | Test case                                                    | Verdict  | Reason
+---------|----------------------------------------|--------------------------------------------------------------|----------|--------------------------------------------------------------------------------------------------
+core     | boost_severity_tests.cpp               | to_boost_severity_from_string_converts_all_valid_levels      | passes   | Compares each parse to a literal enumerator, trace through error; a no-op converter fails.
+core     | boost_severity_tests.cpp               | to_boost_severity_from_string_throws_on_invalid_input        | boundary | Rejects empty, mixed-case, and unknown level strings; the literal exception type std::invalid_argument is asserted.
+core     | boost_severity_tests.cpp               | to_boost_severity_from_domain_converts_all_levels            | passes   | Literal enumerator asserted per severity_level.
+core     | boost_severity_tests.cpp               | to_boost_severity_maps_fatal_to_error                        | passes   | Literal: fatal maps to boost_severity::error.
+core     | boost_severity_tests.cpp               | to_domain_severity_converts_all_boost_levels                 | passes   | Literal enumerator asserted per boost level.
+core     | boost_severity_tests.cpp               | boost_severity_stream_insertion_produces_expected_strings   | passes   | Literal strings "TRACE" through "ERROR".
+core     | logging_configuration_tests.cpp        | logging_make_options_description_has_expected_options        | passes   | Pins six literal option names; an empty description fails all six. Presence only: defaults and short names are not checked.
+core     | logging_configuration_tests.cpp        | logging_read_options_returns_nullopt_when_disabled           | boundary | Disabled-flag boundary; absence of a value is the contract. A read_options that always returned nullopt passes this case alone, but the enabled cases in the file fail.
+core     | logging_configuration_tests.cpp        | logging_read_options_returns_value_when_enabled              | finding  | Asserts opts.has_value() only; a stub returning a default logging_options passes. Fix: delete as redundant, or assert the literal defaults filename "test.log" and severity "info".
+core     | logging_configuration_tests.cpp        | logging_read_options_uses_default_filename                   | passes   | Literal "my-app.log".
+core     | logging_configuration_tests.cpp        | logging_read_options_parses_custom_filename                  | passes   | Literal "custom.log".
+core     | logging_configuration_tests.cpp        | logging_read_options_uses_default_directory                  | passes   | Literal "log".
+core     | logging_configuration_tests.cpp        | logging_read_options_parses_custom_directory                 | passes   | Literal "/var/log/myapp".
+core     | logging_configuration_tests.cpp        | logging_read_options_uses_default_level                      | passes   | Literal "info".
+core     | logging_configuration_tests.cpp        | logging_read_options_parses_log_level                        | passes   | Literal "debug".
+core     | logging_configuration_tests.cpp        | logging_read_options_parses_short_log_level                  | passes   | Literal "warn" through the short options.
+core     | logging_configuration_tests.cpp        | logging_read_options_console_disabled_by_default             | passes   | Named field output_to_console, expected value false.
+core     | logging_configuration_tests.cpp        | logging_read_options_enables_console_output                  | passes   | Named field output_to_console, expected value true.
+core     | logging_configuration_tests.cpp        | logging_read_options_include_pid_disabled_by_default         | passes   | Named field include_pid, expected value false.
+core     | logging_configuration_tests.cpp        | logging_read_options_enables_include_pid                     | passes   | Named field include_pid, expected value true.
+core     | logging_configuration_tests.cpp        | logging_read_options_throws_on_invalid_level                 | boundary | Rejects the unknown level "invalid"; REQUIRE_THROWS, no type pinned.
+core     | logging_configuration_tests.cpp        | logging_read_options_parses_all_options                      | passes   | Five literal values asserted together: "trace", "/tmp/logs", "myapp.log", two booleans.
+core     | logging_options_tests.cpp              | logging_options_stream_insertion_produces_valid_json         | passes   | Literal substrings "debug", "test.log", "/tmp/logs" plus non-empty. Substring checks, not full JSON.
+core     | logging_options_tests.cpp              | logging_options_stream_insertion_includes_all_fields         | passes   | Literal field names plus the literal value "my_tag".
+core     | logging_options_validator_tests.cpp    | validate_accepts_console_only_logging                        | finding  | REQUIRE_NOTHROW only. validate returns void, so an empty body passes. Fix needs validate to return a result before a literal expectation is possible.
+core     | logging_options_validator_tests.cpp    | validate_accepts_file_only_logging                           | finding  | REQUIRE_NOTHROW only; void return, empty body passes. Fix needs a validation result.
+core     | logging_options_validator_tests.cpp    | validate_accepts_console_and_file_logging                    | finding  | REQUIRE_NOTHROW only; void return, empty body passes. Fix needs a validation result.
+core     | logging_options_validator_tests.cpp    | validate_throws_when_no_logging_destination                  | boundary | Rejects a config with no console and no filename; REQUIRE_THROWS_AS(logging_exception).
+core     | logging_options_validator_tests.cpp    | validate_throws_when_directory_without_filename              | boundary | Rejects a directory with an empty filename; literal exception type.
+core     | logging_options_validator_tests.cpp    | validate_throws_on_invalid_severity                          | boundary | Rejects "invalid_level". REQUIRE_THROWS does not pin the type; the call actually throws std::invalid_argument, so REQUIRE_THROWS_AS would be stronger.
+core     | logging_options_validator_tests.cpp    | validate_accepts_all_valid_severity_levels                   | finding  | A loop of REQUIRE_NOTHROW over five literal inputs; void return, empty body passes.
+core     | logging_options_validator_tests.cpp    | validate_accepts_file_without_directory                      | finding  | REQUIRE_NOTHROW only; void return, empty body passes.
+core     | span_id_tests.cpp                      | default_span_id_is_invalid                                   | finding  | Asserts the is_valid() predicate only; an is_valid() that returns false always passes. Fix: assert the literal zero hex "0000000000000000".
+core     | span_id_tests.cpp                      | generated_span_id_is_valid                                   | passes   | A no-op generator returns the all-zero default, so is_valid() is false and the case fails. A literal form would need an injectable clock.
+core     | span_id_tests.cpp                      | span_id_to_hex_produces_16_chars                             | finding  | Length only; any 16-character string, hex or not, passes. Fix: assert span_id::from_hex("0102030405060708").to_hex() == "0102030405060708" and byte 0 == 0x01.
+core     | span_id_tests.cpp                      | span_id_from_hex_roundtrips                                  | finding  | Compares two production paths, generator output against from_hex(to_hex()); a self-consistent but wrong codec passes. Fix: feed the literal "0102030405060708" and assert the literal hex and bytes back.
+core     | span_id_tests.cpp                      | span_id_from_hex_with_invalid_input_returns_invalid          | boundary | Rejects truncated ("abc") and over-long payloads; rejection is the decoder contract.
+core     | span_id_tests.cpp                      | generated_span_ids_are_unique                                | passes   | Computed expectation: every new hex must be absent from the set; a constant generator fails.
+core     | span_id_tests.cpp                      | span_ids_are_time_sortable                                   | finding  | Compares two production runs, id1 <= id2. A generator that ignores the clock, or returns a constant, passes. Fix needs an injectable clock so the 48-bit timestamp can be asserted against a literal millisecond value.
+core     | span_id_tests.cpp                      | span_id_generator_is_thread_safe                             | passes   | all_ids.size() == 4 * 100 is a computed expectation that encodes uniqueness; constant or colliding generators fail. It does not prove the absence of a data race. Judgement call, see note below.
+core     | trace_id_tests.cpp                     | default_trace_id_is_invalid                                  | finding  | Asserts the is_valid() predicate only; always-false passes. Fix: assert the literal 32-zero hex.
+core     | trace_id_tests.cpp                     | generated_trace_id_is_valid                                  | passes   | A no-op generator returns the all-zero default and fails the case.
+core     | trace_id_tests.cpp                     | trace_id_to_hex_produces_32_chars                            | finding  | Length only. Fix: fixed-input from_hex("000102...1f").to_hex() asserted against the same literal.
+core     | trace_id_tests.cpp                     | trace_id_from_hex_roundtrips                                 | finding  | Compares two production paths. Fix: fixed literal hex plus decoded byte assertions.
+core     | trace_id_tests.cpp                     | trace_id_from_hex_with_invalid_input_returns_invalid         | boundary | Rejects short, over-long, and non-hex payloads.
+core     | trace_id_tests.cpp                     | generated_trace_ids_are_unique                               | passes   | Computed uniqueness expectation over 1000 generated ids.
+core     | trace_id_tests.cpp                     | trace_id_generator_uses_machine_id                           | passes   | Literals: machine_id() == 0x1234 and bytes 6-7 decode to 0x1234.
+core     | trace_id_tests.cpp                     | trace_ids_are_time_sortable                                  | finding  | Compares two production runs. Fix needs an injectable clock.
+core     | trace_id_tests.cpp                     | trace_id_generator_is_thread_safe                            | passes   | Same computed uniqueness count as the span_id case. Judgement call, see note below.
+core     | telemetry_context_tests.cpp            | telemetry_context_is_valid_when_properly_constructed        | finding  | Asserts is_valid() and context().is_valid() predicates only; always-true passes. Fix: assert get_trace_id() == ctx.trace, get_span_id() == ctx.span, trace_flags == 0x01, resource_ptr() == res.
+core     | telemetry_context_tests.cpp            | telemetry_context_start_span_creates_child                  | passes   | Literal name "test_operation" plus child span identity and parent link assertions; a no-op start_span fails.
+core     | telemetry_context_tests.cpp            | telemetry_context_start_linked_trace_creates_new_trace      | passes   | Literal semconv::link::triggered_by plus link and parent-content assertions.
+core     | telemetry_context_tests.cpp            | telemetry_context_shares_resource                            | finding  | Compares two pointers both produced by the subject; two nulls pass. Fix: compare to the fixture res and assert get_resource().service_name() == "test.service".
+core     | telemetry_context_tests.cpp            | span_is_root_works_correctly                                 | finding  | Asserts the is_root() predicate rather than parent_span_id. Fix: REQUIRE_FALSE(root_span.parent_span_id.has_value()) and assert the child's parent equals the parent span id.
+core     | telemetry_context_tests.cpp            | span_duration_calculation                                    | passes   | Literal threshold of 10'000'000 ns after a 10 ms sleep; a nullopt or zero duration fails.
+core     | telemetry_context_tests.cpp            | span_is_session_checks_attribute                             | finding  | Asserts the is_session() predicate; a predicate that ignores the key, for example !attrs.empty(), passes. Fix: add a negative control with a different attribute key and assert the stored value.
+core     | telemetry_context_tests.cpp            | resource_from_environment_populates_attributes               | passes   | Literal service name "my.service"; a no-op fails. host_name and host_id are checked non-empty only.
+database | database_sink_backend_tests.cpp        | database_sink_backend_constructs_with_defaults               | finding  | REQUIRE_NOTHROW on the constructor; no state observed, captured_entries is never read. Fix: build a record_view, call consume(), assert the captured entry's literal fields.
+database | database_sink_backend_tests.cpp        | database_sink_backend_constructs_with_custom_source          | finding  | REQUIRE_NOTHROW only. The literal expectations "server" and "my-service" exist but only consume() can reveal them, and the test never calls consume().
+database | database_sink_backend_tests.cpp        | database_sink_backend_accepts_session_and_account_ids        | finding  | REQUIRE_NOTHROW on two void setters; the ids are never observed and there is no getter. Fix: assert via consume()'s captured entry, or add a getter.
+database | database_sink_backend_tests.cpp        | make_forwarding_handler_forwards_entries                     | passes   | Literal "Test forwarding" and "info" in the captured entry.
+database | database_sink_backend_tests.cpp        | make_forwarding_handler_handles_exceptions                   | finding  | REQUIRE_NOTHROW only; a handler that drops the entry passes. Fix: make the error stream injectable and assert it contains the literal "[Logging Sink Error]".
+database | database_sink_backend_tests.cpp        | telemetry_log_entry_has_correct_defaults                     | passes   | Literal enumerator telemetry_source::client, plus optional-field absence.
+database | telemetry_repository_tests.cpp         | create_single_telemetry_entry                                | finding  | CHECK_NOTHROW only; create() returns void and nothing is read back. Fix: query by the entry's tag and assert the literal message, component, and source_name.
+database | telemetry_repository_tests.cpp         | create_and_query_telemetry_entry                             | passes   | Finds the entry and asserts literal message, tag, source, and source_name.
+database | telemetry_repository_tests.cpp         | create_batch_telemetry_entries                                | finding  | CHECK(count == 5) is the function's own returned entities.size(), not persisted state; an insert that stores nothing but reports success passes. Fix: read back by tag "batch-test" and assert the five literal messages.
+database | telemetry_repository_tests.cpp         | read_by_session                                              | finding  | size() >= 3 is a threshold, and the session check sits inside if (session_id.has_value()), so entries with nullopt escape it; no message content is asserted. Fix: make the check unconditional and assert the three literal messages.
+database | telemetry_repository_tests.cpp         | count_telemetry_entries                                      | finding  | count >= 1 threshold only; a count that ignores the tag filter passes. Fix: count before and after the insert and assert the delta is the literal 1.
+database | telemetry_repository_tests.cpp         | get_telemetry_summary                                        | finding  | total_logs >= 2 threshold only; the error entry is created but error_count is never asserted. Fix: assert the deltas, total 2 and error 1, against a before/after baseline.
+service  | config_parser_tests.cpp                | parse_defaults_returns_expected_values                       | passes   | Literals: nats url, "localhost", 5432, and logging absent under an explicit environment guard.
+service  | config_parser_tests.cpp                | parse_custom_nats_url                                        | passes   | Literal "nats://myserver:5555".
+service  | config_parser_tests.cpp                | parse_nats_subject_prefix                                    | passes   | Literal "ores.prod.main1".
+service  | config_parser_tests.cpp                | parse_custom_database_host_and_port                          | passes   | Literals "dbserver.internal" and 5433.
+service  | config_parser_tests.cpp                | parse_custom_database_name                                   | passes   | Literal "ores_prod".
+service  | config_parser_tests.cpp                | parse_custom_log_level                                       | passes   | Literal "debug".
+service  | config_parser_tests.cpp                | parse_custom_log_filename                                    | passes   | Literal "custom.log".
+service  | config_parser_tests.cpp                | parse_help_returns_empty                                     | finding  | The absence of a result is a fine boundary, but the only positive expectation is !info.str().empty(). Fix: assert info contains the literal "Usage: ores.telemetry.service [options]". Judgement call, see note below.
+service  | config_parser_tests.cpp                | parse_version_returns_empty                                  | finding  | Same shape; fix: assert info contains the literal "GPLv3" and "ores.telemetry.service v".
+service  | config_parser_tests.cpp                | parse_unknown_option_throws                                 | boundary | Rejects an unknown option; literal exception type parser_exception asserted.
+
+Counts
+------
+Cases read:   79, in 10 test files.
+passes:       41
+findings:     29
+boundaries:    9
+
+Finding list (29)
+-----------------
+core/logging_configuration_tests.cpp
+  logging_read_options_returns_value_when_enabled
+
+core/logging_options_validator_tests.cpp
+  validate_accepts_console_only_logging
+  validate_accepts_file_only_logging
+  validate_accepts_console_and_file_logging
+  validate_accepts_all_valid_severity_levels
+  validate_accepts_file_without_directory
+
+core/span_id_tests.cpp
+  default_span_id_is_invalid
+  span_id_to_hex_produces_16_chars
+  span_id_from_hex_roundtrips
+  span_ids_are_time_sortable
+
+core/trace_id_tests.cpp
+  default_trace_id_is_invalid
+  trace_id_to_hex_produces_32_chars
+  trace_id_from_hex_roundtrips
+  trace_ids_are_time_sortable
+
+core/telemetry_context_tests.cpp
+  telemetry_context_is_valid_when_properly_constructed
+  telemetry_context_shares_resource
+  span_is_root_works_correctly
+  span_is_session_checks_attribute
+
+database/database_sink_backend_tests.cpp
+  database_sink_backend_constructs_with_defaults
+  database_sink_backend_constructs_with_custom_source
+  database_sink_backend_accepts_session_and_account_ids
+  make_forwarding_handler_handles_exceptions
+
+database/telemetry_repository_tests.cpp
+  create_single_telemetry_entry
+  create_batch_telemetry_entries
+  read_by_session
+  count_telemetry_entries
+  get_telemetry_summary
+
+service/config_parser_tests.cpp
+  parse_help_returns_empty
+  parse_version_returns_empty
+
+Boundary cases and why they are not findings (9)
+------------------------------------------------
+These assert the rejection of input the subject must refuse. The expected
+outcome is the rejection itself, and a literal exception type is stated in
+all but one case. A subject that accepted the bad input would fail them.
+
+  boost_severity_tests.cpp
+    to_boost_severity_from_string_throws_on_invalid_input
+  logging_configuration_tests.cpp
+    logging_read_options_returns_nullopt_when_disabled
+    logging_read_options_throws_on_invalid_level
+  logging_options_validator_tests.cpp
+    validate_throws_when_no_logging_destination
+    validate_throws_when_directory_without_filename
+    validate_throws_on_invalid_severity
+  span_id_tests.cpp
+    span_id_from_hex_with_invalid_input_returns_invalid
+  trace_id_tests.cpp
+    trace_id_from_hex_with_invalid_input_returns_invalid
+  config_parser_tests.cpp
+    parse_unknown_option_throws
+
+Two of these are worth a small strengthening, though neither makes the case
+vacuous. logging_read_options_throws_on_invalid_level uses REQUIRE_THROWS
+where the thrown type is logging_exception, and
+validate_throws_on_invalid_severity uses REQUIRE_THROWS where
+to_boost_severity throws std::invalid_argument. Pinning the type would state
+the literal expectation.
+
+Easy fixes: which literal to assert
+-----------------------------------
+Most findings need a literal the test author can choose today.
+
+  default_span_id_is_invalid
+    REQUIRE(id.to_hex() == "0000000000000000").
+  default_trace_id_is_invalid
+    REQUIRE(id.to_hex() == std::string(32, '0')).
+  span_id_to_hex_produces_16_chars, span_id_from_hex_roundtrips
+    Use a fixed input, span_id::from_hex("0102030405060708"), and assert the
+    literal hex back and byte 0 == 0x01. This removes the generator from the
+    case.
+  trace_id_to_hex_produces_32_chars, trace_id_from_hex_roundtrips
+    Same with a fixed 32-character hex literal and its decoded bytes.
+  logging_read_options_returns_value_when_enabled
+    Delete as redundant, or assert the literal defaults filename "test.log"
+    and severity "info". The neighbouring cases already do this.
+  telemetry_context_is_valid_when_properly_constructed
+    Assert get_trace_id() == ctx.trace, get_span_id() == ctx.span,
+    trace_flags == 0x01, and resource_ptr() == res.
+  telemetry_context_shares_resource
+    Assert child_ctx.resource_ptr() == res and
+    child_ctx.get_resource().service_name() == "test.service".
+  span_is_root_works_correctly
+    Assert parent_span_id directly, for example
+    REQUIRE_FALSE(root_span.parent_span_id.has_value()) and the child's
+    parent equals parent_ctx.get_span_id().
+  span_is_session_checks_attribute
+    Add a negative control: set a different attribute (for example
+    "session") and assert is_session() is false. Assert the stored value.
+  create_single_telemetry_entry
+    Read back by the entry's tag and assert the literal message
+    "Test log message from integration test", component "test.component",
+    and source_name "test-application".
+  create_batch_telemetry_entries
+    Read back by tag "batch-test" and assert the five literal messages
+    "Batch entry 0" through "Batch entry 4".
+  read_by_session
+    Require the session id on every row (no has_value guard) and assert the
+    three literal messages.
+  count_telemetry_entries
+    Count before and after the insert under tag "count-test" and assert the
+    delta is 1.
+  get_telemetry_summary
+    Take a baseline, insert, and assert the total delta is 2 and the error
+    delta is 1.
+  parse_help_returns_empty, parse_version_returns_empty
+    Assert info contains the literal "Usage: ores.telemetry.service
+    [options]" and the literal "GPLv3" respectively.
+
+Fixes that need the code under test to change first
+---------------------------------------------------
+These findings cannot state a literal expectation until the subject gains a
+seam.
+
+  logging_options_validator accept cases (5)
+    validate() returns void. No assertion can distinguish a real validation
+    from an empty body. It must return a result (a status or a list of
+    errors) before an accept case can assert a literal.
+  database_sink_backend constructor and setter cases (3)
+    The backend's only observable output is the telemetry_log_entry passed
+    to the handler inside consume(), and the handler is a test lambda that
+    the current cases never invoke. Either the cases must build a
+    boost::log::record_view and call consume(), or the class needs a getter
+    for the stored source, session id, and account id.
+  make_forwarding_handler_handles_exceptions
+    The swallow path writes to std::cerr. A literal check on the literal
+    "[Logging Sink Error]" text needs the error stream to be injectable.
+  span_ids_are_time_sortable, trace_ids_are_time_sortable
+    Both compare two generator runs. To assert a literal millisecond value
+    the generator needs an injectable clock (or a constructor that takes
+    one).
+
+The pattern the findings share
+------------------------------
+The findings are all self-referential: the assertion is derived from the
+subject's own output instead of from a value the test author picked. Three
+shapes appear.
+
+First, a happy-path call is asserted only to not throw. The subject returns
+void (logging_options_validator::validate) or writes through a callback the
+test never invokes (database_sink_backend), so an empty implementation
+passes. Second, an identifier or context object is asserted through its own
+predicate or against another object the same code produced: is_valid(),
+is_session(), is_root(), has_value(), a pointer compared to another pointer,
+or a round trip. The test proves internal consistency, not a specified
+encoding, so a self-consistent but wrong implementation survives. The id
+codecs are the clear case: nothing pins a byte to a literal. Third, the
+database integration cases use threshold counts (>= 1, >= 2, >= 3) against
+a shared database rather than a before/after delta or literal row content,
+so a query that returns the wrong rows still passes.
+
+No test in the component is empty or commented out, and the
+"produces valid json" and repository query cases do state literal values.
+The gap is concentrated in void APIs, in identifier predicates, and in the
+repository integration cases.
+
+Judgement calls
+---------------
+Three verdicts were the hardest.
+
+  span_id_generator_is_thread_safe, trace_id_generator_is_thread_safe
+    The only assertion is all_ids.size() == 400, which the standard lists as
+    a length-only finding. I marked both passes because the set is filled by
+    inserting 400 ids and the size therefore encodes the uniqueness property
+    the case claims; a constant generator fails. The case still cannot
+    detect a data race, so a reviewer may prefer to flag it.
+  parse_help_returns_empty, parse_version_returns_empty
+    The absence of a result is a clean boundary, but the printed-output
+    check is only non-emptiness. I marked both findings on the strength of
+    that check, since a printed newline would pass. A reviewer who treats
+    the help and version branches as boundaries may prefer boundary.

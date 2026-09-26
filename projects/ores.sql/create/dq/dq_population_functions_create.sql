@@ -22,13 +22,17 @@
  * Data Quality Population Functions
  *
  * These functions copy data from DQ staging tables (system tenant) to
- * production tables (target tenant). Each function uses SECURITY DEFINER
- * to bypass RLS and explicitly control tenant context.
+ * production tables (target tenant). Each publish function uses SECURITY
+ * DEFINER to bypass RLS and explicitly control tenant context.
  *
  * Usage pattern:
  *   1. List available datasets: SELECT * FROM ores_dq_datasets_list_publishable_fn();
- *   2. Preview what will be copied: SELECT * FROM ores_dq_*_preview_fn(dataset_id);
- *   3. Execute the copy: SELECT * FROM ores_dq_*_publish_fn(dataset_id, target_tenant_id, mode);
+ *   2. Execute the copy: SELECT * FROM ores_dq_*_publish_fn(dataset_id, target_tenant_id, mode);
+ *
+ * A preview function once sat between the two steps. It had no caller and
+ * the artefact-type registry stopped dispatching to functions when its
+ * populate_function column was replaced by target_subject, so the previews
+ * were removed rather than kept.
  *
  * Modes:
  *   - 'upsert': Insert new records, update existing (default)
@@ -155,155 +159,6 @@ begin
 end;
 $$ language plpgsql;
 
--- =============================================================================
--- Images Population Functions
--- =============================================================================
-
-/**
- * Preview what images would be copied from a DQ dataset.
- * Shows the action that would be taken for each record.
- */
-create or replace function ores_dq_image_preview_fn(p_dataset_id uuid)
-returns table (
-    action text,
-    image_key text,
-    description text,
-    reason text
-) as $$
-begin
-    return query
-    select
-        case
-            when existing.id is not null then 'update'
-            else 'insert'
-        end as action,
-        dq.key as image_key,
-        dq.description,
-        case
-            when existing.id is not null then 'Image with this key already exists'
-            else 'New image'
-        end as reason
-    from ores_dq_images_artefact_tbl dq
-    left join ores_assets_images_tbl existing
-        on existing.code = dq.key
-        and existing.valid_to = ores_utility_infinity_timestamp_fn()
-    where dq.dataset_id = p_dataset_id
-    order by dq.key;
-end;
-$$ language plpgsql;
-
--- =============================================================================
--- Countries Population Functions
--- =============================================================================
-
-/**
- * Preview what countries would be copied from a DQ dataset.
- */
-create or replace function ores_dq_country_preview_fn(p_dataset_id uuid)
-returns table (
-    action text,
-    alpha2_code text,
-    country_name text,
-    has_image boolean,
-    reason text
-) as $$
-begin
-    return query
-    select
-        case
-            when existing.alpha2_code is not null then 'update'
-            else 'insert'
-        end as action,
-        dq.alpha2_code,
-        dq.name as country_name,
-        dq.image_id is not null as has_image,
-        case
-            when existing.alpha2_code is not null then 'Country already exists'
-            else 'New country'
-        end as reason
-    from ores_dq_countries_artefact_tbl dq
-    left join ores_refdata_countries_tbl existing
-        on existing.alpha2_code = dq.alpha2_code
-        and existing.valid_to = ores_utility_infinity_timestamp_fn()
-    where dq.dataset_id = p_dataset_id
-    order by dq.alpha2_code;
-end;
-$$ language plpgsql;
-
--- =============================================================================
--- Currencies Population Functions
--- =============================================================================
-
-/**
- * Preview what currencies would be copied from a DQ dataset.
- */
-create or replace function ores_dq_currency_preview_fn(p_dataset_id uuid)
-returns table (
-    action text,
-    iso_code text,
-    currency_name text,
-    monetary_nature text,
-    market_tier text,
-    has_image boolean,
-    reason text
-) as $$
-begin
-    return query
-    select
-        case
-            when existing.iso_code is not null then 'update'
-            else 'insert'
-        end as action,
-        dq.iso_code,
-        dq.name as currency_name,
-        dq.monetary_nature,
-        dq.market_tier,
-        dq.image_id is not null as has_image,
-        case
-            when existing.iso_code is not null then 'Currency already exists'
-            else 'New currency'
-        end as reason
-    from ores_dq_currencies_artefact_tbl dq
-    left join ores_refdata_currencies_tbl existing
-        on existing.iso_code = dq.iso_code
-        and existing.valid_to = ores_utility_infinity_timestamp_fn()
-    where dq.dataset_id = p_dataset_id
-    order by dq.iso_code;
-end;
-$$ language plpgsql;
-
--- =============================================================================
--- IP to Country Population Functions
--- =============================================================================
-
-/**
- * Preview what IP ranges would be copied from a DQ dataset.
- * Shows summary statistics rather than individual ranges (too many rows).
- */
-create or replace function ores_dq_preview_ip2country_population_fn(p_dataset_id uuid)
-returns table (
-    metric text,
-    value bigint
-) as $$
-begin
-    return query
-    select 'total_ranges'::text, count(*)::bigint
-    from ores_dq_ip2country_artefact_tbl
-    where dataset_id = p_dataset_id
-    union all
-    select 'unique_countries'::text, count(distinct country_code)::bigint
-    from ores_dq_ip2country_artefact_tbl
-    where dataset_id = p_dataset_id
-    union all
-    select 'unrouted_ranges'::text, count(*)::bigint
-    from ores_dq_ip2country_artefact_tbl
-    where dataset_id = p_dataset_id and country_code = 'None'
-    union all
-    select 'existing_ranges'::text, count(*)::bigint
-    from ores_geo_ip2country_tbl;
-end;
-$$ language plpgsql;
-
 /**
  * Populate geo_ip2country_tbl from a DQ IP to Country dataset.
  *
@@ -372,68 +227,3 @@ begin
 end;
 $$ language plpgsql security definer;
 
-/**
- * Publishes coding schemes from DQ artefact table to production.
- * Writes to ores_dq_coding_schemes_tbl (DQ's own table — no SECURITY DEFINER needed).
- *
- * @param p_dataset_id       Dataset to publish from
- * @param p_target_tenant_id The tenant to publish data to
- * @param p_mode             'replace_all' truncates and reloads; 'upsert' merges
- * @param p_params           Unused; reserved for future filtering
- */
-create or replace function ores_dq_coding_schemes_publish_fn(
-    p_dataset_id uuid,
-    p_target_tenant_id uuid,
-    p_mode text default 'upsert',
-    p_params jsonb default '{}'::jsonb
-)
-returns table (
-    action text,
-    record_count bigint
-) as $$
-declare
-    v_inserted bigint := 0;
-    v_updated  bigint := 0;
-    v_deleted  bigint := 0;
-    v_now      timestamp with time zone := now();
-    v_inf      timestamp with time zone := ores_utility_infinity_timestamp_fn();
-    v_dataset_name text;
-begin
-    select name into v_dataset_name
-    from ores_dq_datasets_tbl
-    where id = p_dataset_id
-      and valid_to = v_inf;
-
-    if v_dataset_name is null then
-        raise exception 'Dataset not found: %', p_dataset_id;
-    end if;
-
-    -- Expire existing active records (both modes)
-    update ores_dq_coding_schemes_tbl
-    set valid_to = v_now
-    where tenant_id = p_target_tenant_id
-      and valid_to = v_inf;
-    get diagnostics v_deleted = row_count;
-
-    -- Insert new records from artefact table
-    insert into ores_dq_coding_schemes_tbl (
-        code, tenant_id, version, name, authority_type,
-        subject_area_name, domain_name, uri, description,
-        modified_by, performed_by, change_reason_code, change_commentary,
-        valid_from, valid_to
-    )
-    select
-        a.code, p_target_tenant_id, a.version, a.name, a.authority_type,
-        a.subject_area_name, a.domain_name, a.uri, a.description,
-        'system', 'system', 'INITIAL_LOAD', 'Published from DQ artefact',
-        v_now, v_inf
-    from ores_dq_coding_schemes_artefact_tbl a
-    where a.dataset_id = p_dataset_id;
-    get diagnostics v_inserted = row_count;
-
-    return query
-    select 'inserted'::text, v_inserted
-    union all select 'updated'::text, v_updated  where v_updated  > 0
-    union all select 'deleted'::text, v_deleted  where v_deleted  > 0;
-end;
-$$ language plpgsql;

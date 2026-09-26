@@ -92,7 +92,7 @@ It is addressed at =workflow.v1.workflow_steps.put=.
 
 #+name: workflow_steps-add
 #+begin_src ores-shell :tangle workflow_steps-add.ores :exports none
-workflow_steps add 00000000-0000-0000-0000-000000000000 0 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+workflow_steps add 00000000-0000-0000-0000-000000000000 0 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ - __none__ __none__ __none__ - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +113,7 @@ It is addressed at =workflow.v1.workflow_steps.put=.
 
 #+name: workflow_steps-set
 #+begin_src ores-shell :tangle workflow_steps-set.ores :exports none
-workflow_steps set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+workflow_steps set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ - __none__ __none__ __none__ - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +134,7 @@ It is addressed at =workflow.v1.workflow_steps.put_many=.
 
 #+name: workflow_steps-put-many
 #+begin_src ores-shell :tangle workflow_steps-put-many.ores :exports none
-workflow_steps put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+workflow_steps put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ - __none__ __none__ __none__ - - system.new_record generated_script
 #+end_src
 
 ** =delete=

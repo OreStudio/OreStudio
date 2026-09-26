@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.api/domain/dataset_bundle_member_table.hpp"
 #include <fort.hpp>
 
@@ -30,7 +35,7 @@ std::string convert_to_table(const std::vector<dataset_bundle_member>& v) {
     table << fort::header << "Bundle" << "Dataset" << "Order" << "Modified By" << "Version"
           << fort::endr;
 
-    for (const auto& m : v) {
+    for ([[maybe_unused]] const auto& m : v) {
         table << m.bundle_code << m.dataset_code << m.display_order << m.modified_by << m.version
               << fort::endr;
     }

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5A1C7E93-2B48-4D61-9F03-8C6E5A2D7149
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.assets.image
 #+description: Codegen entity model for the assets =image= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -101,6 +102,36 @@ Raw image bytes: SVG markup as UTF-8 bytes, or a binary format such as
 JPEG. The database column is =text= and holds the bytes base64-encoded;
 the domain member is the raw byte vector, and the mapper performs the
 base64 hop in both directions.
+
+
+* Artefact columns
+
+The import renames the store's =id= to =image_id= and =code= to =key=, and it carries the image as plain SVG text in =svg_data= rather than the store's base64 =data= beside a =mime_type=. =ores_assets_publish_images_from_dq_fn= reads all three and re-encodes.
+
+** image_id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** key
+:PROPERTIES:
+:type: text
+:END:
+
+** description
+:PROPERTIES:
+:type: text
+:END:
+
+** svg_data
+:PROPERTIES:
+:type: text
+:END:
 
 * SQL
 

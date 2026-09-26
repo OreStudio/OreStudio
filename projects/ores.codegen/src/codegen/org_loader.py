@@ -1281,6 +1281,39 @@ def _collect_implementations(root: OrgNode) -> dict[str, list[str]]:
     return out
 
 
+def _artefact_columns(root: OrgNode) -> tuple[list[dict[str, Any]], str]:
+    """Read the optional ``* Artefact columns`` section.
+
+    The section states a staging table's body when that body is not a
+    plain projection of the entity's own table. Five differences recur
+    and none of them can be derived from the entity: the staging table
+    renames its key, carries a natural key where the store holds a uuid,
+    redacts a secret, redacts a field the publisher supplies, or adds a
+    field only the import needs.
+
+    Absent, the artefact template projects the entity columns and adds
+    the bookkeeping columns itself. Present, the section replaces the
+    staging table's body after its =dataset_id=/=tenant_id= header, in
+    the order written. The first entry is the staging table's key, unless
+    the section's own =:key:= property names another; that key is what
+    the generated key index is built on.
+
+    Returns the columns and the key column name, both empty when the
+    section is absent.
+    """
+    section = _section(root, "Artefact columns")
+    if not section:
+        return [], ""
+    columns = [_column_node_to_dict(child) for child in section.children]
+    if not columns:
+        raise ValueError(
+            "The '* Artefact columns' section declares no column. Remove the "
+            "section to get the default projection, or list the staging "
+            "columns in order."
+        )
+    return columns, section.properties.get("key") or columns[0]["name"]
+
+
 def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     """Convert a parsed OrgDocument into the canonical model dict.
 
@@ -1445,6 +1478,21 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                 entry[k.lower()] = v  # keep columns string verbatim
             artefact_indexes.append(entry)
         de["artefact_indexes"] = artefact_indexes
+
+    # Artefact columns: the staging table's body when it is not a plain
+    # projection of this entity's table. See _artefact_columns.
+    columns_section, key_column = _artefact_columns(doc.root)
+    if columns_section:
+        if de.get("has_artefact_insert_fn"):
+            raise ValueError(
+                "This entity declares both '* Artefact columns' and "
+                ":has_artefact_insert_fn:. The generated insert helper is "
+                "built from the entity's own columns, so it would insert the "
+                "wrong shape into a staging table that declares its own. Drop "
+                "one of the two."
+            )
+        de["artefact_columns"] = columns_section
+        de["artefact_key_column"] = key_column
 
     # Used by the C++ repository facet to conditionally include the
     # datetime header only when at least one FK opts into the as-of
@@ -2195,6 +2243,13 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
     # that template reads read_only directly and sees the profile's value.
     j["wire_write_enabled"] = not (
         j.get("read_only") or j.get("client_read_only"))
+
+    # Artefact columns: the staging table's body when it is not a plain
+    # projection of this junction's table. See _artefact_columns.
+    columns_section, key_column = _artefact_columns(doc.root)
+    if columns_section:
+        j["artefact_columns"] = columns_section
+        j["artefact_key_column"] = key_column
 
     return {"junction": j}
 
@@ -4397,6 +4452,7 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
 # decoded -- which is what the script exists to check.
 _SENTINEL_VALUES = {
     "boost::uuids::uuid": "00000000-0000-0000-0000-000000000000",
+    "utility::uuid::tenant_id": "00000000-0000-0000-0000-000000000000",
     "std::string": "__none__",
     "bool": "false",
     "int": "0",
@@ -4405,11 +4461,19 @@ _SENTINEL_VALUES = {
     "std::uint16_t": "0",
     "std::uint32_t": "0",
     "std::uint64_t": "0",
+    "std::size_t": "0",
     "double": "0",
     "std::chrono::system_clock::time_point": "1970-01-01T00:00:00Z",
+    "std::chrono::year_month_day": "1970-01-01",
     "boost::asio::ip::address": "0.0.0.0",
     "std::vector<std::string>": "__none__",
 }
+
+# An optional field's own absent token. ``ores.shell.api``'s
+# ``command_token.hpp`` parses this to ``nullopt``, so it is what a script
+# sends when it has no value to state -- which is the common case, because a
+# generated script says only what a command requires.
+_ABSENT_TOKEN = "-"
 
 # A write states an intent, and the reason code is an enum value on the wire
 # rather than free text, so the script sends a code the schema seeds.
@@ -4418,8 +4482,25 @@ _SENTINEL_COMMENTARY = "generated_script"
 
 
 def _sentinel_value(cpp_type: str) -> str:
-    """A well-formed value of ``cpp_type`` that addresses no row."""
-    return _SENTINEL_VALUES.get((cpp_type or "").strip(), "__none__")
+    """A well-formed value of ``cpp_type`` that addresses no row.
+
+    An optional field carries no value rather than a wrong one, so it gets
+    the shell's own absent token. Before this, every ``std::optional<T>``
+    fell through to the unknown-type fallback and the script sent
+    ``__none__``, which the shell cannot parse as ``T``: the script aborted
+    at the client and checked nothing, which is the opposite of what it
+    exists for. ``pricing_model_product_parameters set`` sent ``__none__``
+    for its optional UUID member until this.
+
+    A type that is neither optional nor mapped still falls back rather than
+    raising, because the unfillable-field refusal upstream is what decides
+    whether a model may generate a shell command at all; this function only
+    supplies a value once that decision is made.
+    """
+    kind = (cpp_type or "").strip()
+    if kind.startswith("std::optional<"):
+        return _ABSENT_TOKEN
+    return _SENTINEL_VALUES.get(kind, "__none__")
 
 
 def _sentinel_for_field(name: str, cpp_type: str) -> str:
@@ -4807,6 +4888,21 @@ def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
                 entry[k.lower()] = v  # keep columns string verbatim
             artefact_indexes.append(entry)
         e["artefact_indexes"] = artefact_indexes
+
+    # Artefact columns: the staging table's body when it is not a plain
+    # projection of this entity's table. See _artefact_columns.
+    columns_section, key_column = _artefact_columns(doc.root)
+    if columns_section:
+        if e.get("has_artefact_insert_fn"):
+            raise ValueError(
+                "This entity declares both '* Artefact columns' and "
+                ":has_artefact_insert_fn:. The generated insert helper is "
+                "built from the entity's own columns, so it would insert the "
+                "wrong shape into a staging table that declares its own. Drop "
+                "one of the two."
+            )
+        e["artefact_columns"] = columns_section
+        e["artefact_key_column"] = key_column
 
     return {"entity": e}
 

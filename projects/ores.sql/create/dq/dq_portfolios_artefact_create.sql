@@ -17,6 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- Represents organizational, risk, or reporting groupings. Never holds trades directly. Supports hierarchical structure via self-referencing parent_portfolio_id. - Artefact Table
+-- =============================================================================
+
 create table if not exists "ores_dq_portfolios_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
@@ -30,14 +40,32 @@ create table if not exists "ores_dq_portfolios_artefact_tbl" (
     "is_virtual" integer not null
 );
 
-create index if not exists portfolios_artefact_dataset_idx
-on "ores_dq_portfolios_artefact_tbl" (dataset_id);
+create index if not exists dq_portfolios_artefact_dataset_idx
+on ores_dq_portfolios_artefact_tbl (dataset_id);
 
-create index if not exists portfolios_artefact_tenant_idx
-on "ores_dq_portfolios_artefact_tbl" (tenant_id);
+create index if not exists dq_portfolios_artefact_tenant_idx
+on ores_dq_portfolios_artefact_tbl (tenant_id);
 
-create index if not exists portfolios_artefact_id_idx
-on "ores_dq_portfolios_artefact_tbl" (id);
+create index if not exists dq_portfolios_artefact_id_idx
+on ores_dq_portfolios_artefact_tbl (id);
 
-create index if not exists portfolios_artefact_name_idx
-on "ores_dq_portfolios_artefact_tbl" (name);
+create index if not exists dq_portfolios_artefact_id_idx
+on ores_dq_portfolios_artefact_tbl (id);
+
+create index if not exists dq_portfolios_artefact_id_idx
+on ores_dq_portfolios_artefact_tbl (id);
+
+create index if not exists dq_portfolios_artefact_id_idx
+on ores_dq_portfolios_artefact_tbl (id);
+
+create index if not exists dq_portfolios_artefact_id_idx
+on ores_dq_portfolios_artefact_tbl (id);
+
+create index if not exists dq_portfolios_artefact_id_idx
+on ores_dq_portfolios_artefact_tbl (id);
+
+create index if not exists dq_portfolios_artefact_id_idx
+on ores_dq_portfolios_artefact_tbl (id);
+
+create index if not exists dq_portfolios_artefact_id_idx
+on ores_dq_portfolios_artefact_tbl (id);

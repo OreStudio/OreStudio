@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 282C87C1-11E1-42F0-BEE6-D6983A5F836B
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.portfolio
 #+description: Codegen entity model for the refdata =portfolio= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -197,6 +198,54 @@ always carries a value.
 #+begin_src cpp :name generator
 std::string("Active")
 #+end_src
+
+
+* Artefact columns
+
+The import carries =is_virtual= as =0= or =1=, which =ores_refdata_publish_portfolios_from_dq_fn= converts to the store's boolean with =(m.is_virtual != 0)=. The Acme populate writes those literals, so the staging column stays integer.
+
+** id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** name
+:PROPERTIES:
+:type: text
+:END:
+
+** parent_portfolio_id
+:PROPERTIES:
+:type: uuid
+:nullable: true
+:END:
+
+** owner_unit_id
+:PROPERTIES:
+:type: uuid
+:nullable: true
+:END:
+
+** purpose_type
+:PROPERTIES:
+:type: text
+:END:
+
+** aggregation_ccy
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** is_virtual
+:PROPERTIES:
+:type: integer
+:END:
 
 * SQL
 

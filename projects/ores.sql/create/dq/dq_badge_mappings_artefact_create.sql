@@ -17,13 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_junction_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
 -- =============================================================================
--- Badge Mappings Artefact Table
---
--- Staging table for badge mappings before publication into a tenant's own
--- copy of ores_dq_badge_mappings_tbl. Supports the DQ artefact pipeline
--- pattern (self-referential: DQ publishing into its own table, like
--- coding_schemes/badge_severities/badge_definitions/code_domains).
+-- Badge Mapping - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_badge_mappings_artefact_tbl" (
@@ -32,14 +33,17 @@ create table if not exists "ores_dq_badge_mappings_artefact_tbl" (
     "code_domain_code" text not null,
     "entity_code" text not null,
     "badge_code" text not null,
-    "version" integer not null default 0
+    "version" integer not null
 );
 
-create index if not exists badge_mappings_artefact_dataset_idx
-on "ores_dq_badge_mappings_artefact_tbl" (dataset_id);
+create index if not exists dq_badge_mappings_artefact_dataset_idx
+on ores_dq_badge_mappings_artefact_tbl (dataset_id);
 
-create index if not exists badge_mappings_artefact_tenant_idx
-on "ores_dq_badge_mappings_artefact_tbl" (tenant_id);
+create index if not exists dq_badge_mappings_artefact_tenant_idx
+on ores_dq_badge_mappings_artefact_tbl (tenant_id);
 
-create index if not exists badge_mappings_artefact_domain_idx
-on "ores_dq_badge_mappings_artefact_tbl" (code_domain_code);
+create index if not exists dq_badge_mappings_artefact_code_domain_idx
+on ores_dq_badge_mappings_artefact_tbl (code_domain_code);
+
+create index if not exists dq_badge_mappings_artefact_entity_idx
+on ores_dq_badge_mappings_artefact_tbl (entity_code);

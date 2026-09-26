@@ -17,11 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_SERVICE_ARTEFACT_TYPE_SERVICE_HPP
 #define ORES_DQ_CORE_SERVICE_ARTEFACT_TYPE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/artefact_type.hpp"
+#include "ores.dq.api/messaging/artefact_type_protocol.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/artefact_type_repository.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -60,6 +66,36 @@ public:
     explicit artefact_type_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_artefact_types_response
+    list_artefact_types(const messaging::list_artefact_types_request& request);
+    messaging::get_artefact_type_response
+    get_artefact_type(const messaging::get_artefact_type_request& request);
+    messaging::get_many_artefact_types_response
+    get_many_artefact_types(const messaging::get_many_artefact_types_request& request);
+    messaging::put_artefact_type_response
+    put_artefact_type(const messaging::put_artefact_type_request& request);
+    messaging::put_many_artefact_types_response
+    put_many_artefact_types(const messaging::put_many_artefact_types_request& request);
+    messaging::delete_artefact_type_response
+    delete_artefact_type(const messaging::delete_artefact_type_request& request);
+    messaging::delete_many_artefact_types_response
+    delete_many_artefact_types(const messaging::delete_many_artefact_types_request& request);
+    messaging::list_artefact_type_versions_response
+    list_artefact_type_versions(const messaging::list_artefact_type_versions_request& request);
+    messaging::get_artefact_type_version_response
+    get_artefact_type_version(const messaging::get_artefact_type_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists artefact types with pagination support.
      *
      * @param offset Number of records to skip.
@@ -94,6 +130,11 @@ public:
     std::optional<domain::artefact_type> get_type(const std::string& code);
 
     /**
+     * @brief Retrieves a batch of artefact types by primary key.
+     */
+    std::vector<domain::artefact_type> get_types(const std::vector<std::string>& codes);
+
+    /**
      * @brief Saves a artefact type (creates or updates).
      *
      * @param type The artefact type to save.
@@ -123,12 +164,31 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a artefact type.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::artefact_type> get_type_history(const std::string& code);
 
 private:
     context ctx_;
     repository::artefact_type_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::artefact_type_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::artefact_type& out);
 };
 
 }

@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "domain/artefact_type_json_io.cpp"
     "domain/artefact_type_table.cpp"
@@ -116,7 +119,7 @@ set(files
     "generators/treatment_dimension_generator.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/domain/artefact_type.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/domain/artefact_type_json_io.hpp"
@@ -226,25 +229,33 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/domain/treatment_dimension_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/domain/treatment_dimension_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/artefact_type_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/artefact_type_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/badge_definition_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/badge_severity_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/catalog_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/catalog_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/change_reason_category_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/change_reason_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/code_domain_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/coding_scheme_authority_type_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/coding_scheme_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/data_domain_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/data_domain_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/dataset_bundle_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/dataset_bundle_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/dataset_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/lei_entity_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/lei_entity_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/lei_relationship_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/lei_relationship_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/methodology_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/nature_dimension_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/origin_dimension_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/report_definition_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/report_definition_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/subject_area_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/synthetic_fx_spot_config_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/synthetic_fx_spot_config_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/treatment_dimension_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/generators/artefact_type_generator.hpp"

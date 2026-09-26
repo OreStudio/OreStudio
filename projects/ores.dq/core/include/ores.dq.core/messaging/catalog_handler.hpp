@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_handler.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_MESSAGING_CATALOG_HANDLER_HPP
 #define ORES_DQ_CORE_MESSAGING_CATALOG_HANDLER_HPP
 
@@ -58,7 +63,16 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.catalogs.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_catalogs(ores::nats::message msg) {
         BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -66,29 +80,122 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::catalog_service svc(req_ctx);
-        get_catalogs_response resp;
-        if (auto req = decode<get_catalogs_request>(msg)) {
-            try {
-                resp.catalogs = svc.list_catalogs(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_catalogs());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(catalog_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
+        auto req = decode<list_catalogs_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(catalog_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        service::catalog_service svc(req_ctx);
+        try {
+            auto response = svc.list_catalogs(*req);
+            BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(catalog_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            list_catalogs_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.catalogs.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_catalog(ores::nats::message msg) {
+        BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_catalog_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(catalog_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::catalog_service svc(req_ctx);
+        try {
+            auto response = svc.get_catalog(*req);
+            BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(catalog_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_catalog_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.catalogs.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_catalogs(ores::nats::message msg) {
+        BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_catalogs_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(catalog_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::catalog_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_catalogs(*req);
+            BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(catalog_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_many_catalogs_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.catalogs.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_catalog(ores::nats::message msg) {
         BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -100,24 +207,40 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::catalog_service svc(req_ctx);
-        if (auto req = decode<save_catalog_request>(msg)) {
-            try {
-                svc.save_catalog(req->data);
-                BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, save_catalog_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(catalog_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_catalog_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_catalog_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(catalog_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::catalog_service svc(req_ctx);
+        try {
+            auto response = svc.put_catalog(*req);
+            BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(catalog_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            put_catalog_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.catalogs.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_catalogs(ores::nats::message msg) {
         BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -125,28 +248,44 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::catalog_service svc(req_ctx);
-        if (auto req = decode<get_catalog_history_request>(msg)) {
-            try {
-                auto hist = svc.get_catalog_history(req->name);
-                BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_catalog_history_response{.history = std::move(hist), .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(catalog_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      get_catalog_history_response{.success = false, .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "dq::catalogs:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_catalogs_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(catalog_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::catalog_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_catalogs(*req);
+            BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(catalog_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            put_many_catalogs_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.catalogs.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_catalog(ores::nats::message msg) {
         BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -158,20 +297,154 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::catalog_service svc(req_ctx);
-        if (auto req = decode<delete_catalog_request>(msg)) {
-            try {
-                svc.delete_catalogs(req->names);
-                BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, delete_catalog_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(catalog_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_catalog_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_catalog_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(catalog_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::catalog_service svc(req_ctx);
+        try {
+            auto response = svc.delete_catalog(*req);
+            BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(catalog_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            delete_catalog_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.catalogs.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_catalogs(ores::nats::message msg) {
+        BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::catalogs:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_catalogs_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(catalog_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::catalog_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_catalogs(*req);
+            BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(catalog_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            delete_many_catalogs_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.catalogs_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_catalog_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_catalog_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(catalog_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::catalog_service svc(req_ctx);
+        try {
+            auto response = svc.list_catalog_versions(*req);
+            BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(catalog_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            list_catalog_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.catalogs_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_catalog_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_catalog_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(catalog_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::catalog_service svc(req_ctx);
+        try {
+            auto response = svc.get_catalog_version(*req);
+            BOOST_LOG_SEV(catalog_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(catalog_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_catalog_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

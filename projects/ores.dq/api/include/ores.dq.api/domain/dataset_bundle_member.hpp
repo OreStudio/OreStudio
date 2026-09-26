@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_DOMAIN_DATASET_BUNDLE_MEMBER_HPP
 #define ORES_DQ_DOMAIN_DATASET_BUNDLE_MEMBER_HPP
 
@@ -34,7 +39,7 @@ namespace ores::dq::domain {
  * yet exist in the system.
  *
  * Examples:
- * - Bundle "slovaris" contains "slovaris.countries", "slovaris.currencies", etc.
+ * - Bundle "crypto" contains "iso.currencies", "crypto.small", etc.
  * - Bundle "base" contains "iso.countries", "iso.currencies", all FpML datasets
  */
 struct dataset_bundle_member final {
@@ -102,6 +107,11 @@ struct dataset_bundle_member final {
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality, on the same terms as an entity's.
+     */
+    friend bool operator==(const dataset_bundle_member&, const dataset_bundle_member&) = default;
 };
 
 /**

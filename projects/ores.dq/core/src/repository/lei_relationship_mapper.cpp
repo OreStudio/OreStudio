@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.core/repository/lei_relationship_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/lei_relationship_json_io.hpp" // IWYU pragma: keep.
@@ -80,19 +85,23 @@ lei_relationship_entity lei_relationship_mapper::map(const domain::lei_relations
     r.relationship_relationship_status = v.relationship_relationship_status;
     r.relationship_period_1_start_date =
         v.relationship_period_1_start_date.has_value() ?
-            std::optional(timepoint_to_timestamp(*v.relationship_period_1_start_date, lg())) :
+            std::optional(
+                ores::platform::time::datetime::to_db_string(*v.relationship_period_1_start_date)) :
             std::nullopt;
     r.relationship_period_1_end_date =
         v.relationship_period_1_end_date.has_value() ?
-            std::optional(timepoint_to_timestamp(*v.relationship_period_1_end_date, lg())) :
+            std::optional(
+                ores::platform::time::datetime::to_db_string(*v.relationship_period_1_end_date)) :
             std::nullopt;
     r.registration_initial_registration_date =
         v.registration_initial_registration_date.has_value() ?
-            std::optional(timepoint_to_timestamp(*v.registration_initial_registration_date, lg())) :
+            std::optional(ores::platform::time::datetime::to_db_string(
+                *v.registration_initial_registration_date)) :
             std::nullopt;
     r.registration_last_update_date =
         v.registration_last_update_date.has_value() ?
-            std::optional(timepoint_to_timestamp(*v.registration_last_update_date, lg())) :
+            std::optional(
+                ores::platform::time::datetime::to_db_string(*v.registration_last_update_date)) :
             std::nullopt;
     r.registration_registration_status = v.registration_registration_status;
     r.registration_validation_sources = v.registration_validation_sources;

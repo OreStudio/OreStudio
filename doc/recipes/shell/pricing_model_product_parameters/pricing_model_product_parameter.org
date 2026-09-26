@@ -92,7 +92,7 @@ It is addressed at =analytics.v1.pricing_model_product_parameters.put=.
 
 #+name: pricing_model_product_parameters-add
 #+begin_src ores-shell :tangle pricing_model_product_parameters-add.ores :exports none
-pricing_model_product_parameters add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+pricing_model_product_parameters add 00000000-0000-0000-0000-000000000000 - __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +113,7 @@ It is addressed at =analytics.v1.pricing_model_product_parameters.put=.
 
 #+name: pricing_model_product_parameters-set
 #+begin_src ores-shell :tangle pricing_model_product_parameters-set.ores :exports none
-pricing_model_product_parameters set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+pricing_model_product_parameters set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +134,7 @@ It is addressed at =analytics.v1.pricing_model_product_parameters.put_many=.
 
 #+name: pricing_model_product_parameters-put-many
 #+begin_src ores-shell :tangle pricing_model_product_parameters-put-many.ores :exports none
-pricing_model_product_parameters put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+pricing_model_product_parameters put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

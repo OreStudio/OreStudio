@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 22798D61-7CF5-4FFC-8AC4-F3D469C47918
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.dq.badge_severity
 #+description: Codegen entity model for the dq =badge_severity= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

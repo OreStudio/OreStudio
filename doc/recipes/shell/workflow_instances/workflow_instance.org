@@ -92,7 +92,7 @@ It is addressed at =workflow.v1.workflow_instances.put=.
 
 #+name: workflow_instances-add
 #+begin_src ores-shell :tangle workflow_instances-add.ores :exports none
-workflow_instances add __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ __none__ __none__ system.new_record generated_script
+workflow_instances add __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +113,7 @@ It is addressed at =workflow.v1.workflow_instances.put=.
 
 #+name: workflow_instances-set
 #+begin_src ores-shell :tangle workflow_instances-set.ores :exports none
-workflow_instances set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ __none__ __none__ system.new_record generated_script
+workflow_instances set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +134,7 @@ It is addressed at =workflow.v1.workflow_instances.put_many=.
 
 #+name: workflow_instances-put-many
 #+begin_src ores-shell :tangle workflow_instances-put-many.ores :exports none
-workflow_instances put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ __none__ __none__ system.new_record generated_script
+workflow_instances put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ - - system.new_record generated_script
 #+end_src
 
 ** =delete=

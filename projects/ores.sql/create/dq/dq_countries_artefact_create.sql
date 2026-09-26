@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,6 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- ISO 3166-1 country definitions used for reference data. Countries use alpha-2, alpha-3, and numeric codes per the ISO standard. - Artefact Table
+-- =============================================================================
+
 create table if not exists "ores_dq_countries_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
@@ -26,42 +36,32 @@ create table if not exists "ores_dq_countries_artefact_tbl" (
     "numeric_code" text not null,
     "name" text not null,
     "official_name" text not null,
-    "image_id" uuid
+    "image_id" uuid null
 );
 
-create index if not exists countries_artefact_dataset_idx
-on "ores_dq_countries_artefact_tbl" (dataset_id);
+create index if not exists dq_countries_artefact_dataset_idx
+on ores_dq_countries_artefact_tbl (dataset_id);
 
-create index if not exists countries_artefact_tenant_idx
-on "ores_dq_countries_artefact_tbl" (tenant_id);
+create index if not exists dq_countries_artefact_tenant_idx
+on ores_dq_countries_artefact_tbl (tenant_id);
 
-create index if not exists countries_artefact_alpha2_idx
-on "ores_dq_countries_artefact_tbl" (alpha2_code);
+create index if not exists dq_countries_artefact_alpha2_code_idx
+on ores_dq_countries_artefact_tbl (alpha2_code);
 
-create index if not exists countries_artefact_alpha3_idx
-on "ores_dq_countries_artefact_tbl" (alpha3_code);
+create index if not exists dq_countries_artefact_alpha2_code_idx
+on ores_dq_countries_artefact_tbl (alpha2_code);
 
-create index if not exists countries_artefact_numeric_idx
-on "ores_dq_countries_artefact_tbl" (numeric_code);
+create index if not exists dq_countries_artefact_alpha2_code_idx
+on ores_dq_countries_artefact_tbl (alpha2_code);
 
--- Function to insert countries into the artifact table
-create or replace function ores_dq_countries_artefact_insert_fn(
-    p_dataset_id uuid,
-    p_tenant_id uuid,
-    p_alpha2_code text,
-    p_version integer,
-    p_alpha3_code text,
-    p_numeric_code text,
-    p_name text,
-    p_official_name text,
-    p_image_id uuid default null
-) returns void as $$
-begin
-    insert into ores_dq_countries_artefact_tbl (
-        dataset_id, tenant_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id
-    )
-    values (
-        p_dataset_id, p_tenant_id, p_alpha2_code, p_version, p_alpha3_code, p_numeric_code, p_name, p_official_name, p_image_id
-    );
-end;
-$$ language plpgsql;
+create index if not exists dq_countries_artefact_alpha2_code_idx
+on ores_dq_countries_artefact_tbl (alpha2_code);
+
+create index if not exists dq_countries_artefact_alpha2_code_idx
+on ores_dq_countries_artefact_tbl (alpha2_code);
+
+create index if not exists dq_countries_artefact_alpha2_code_idx
+on ores_dq_countries_artefact_tbl (alpha2_code);
+
+create index if not exists dq_countries_artefact_alpha2_code_idx
+on ores_dq_countries_artefact_tbl (alpha2_code);

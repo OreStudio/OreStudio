@@ -46,6 +46,8 @@
 #include "ores.dq.core/messaging/data_organization_handler.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_handler.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_member_handler.hpp"
+#include "ores.dq.core/messaging/dataset_bundle_member_registrar.hpp"
+#include "ores.dq.core/messaging/dataset_bundle_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_dependency_handler.hpp"
 #include "ores.dq.core/messaging/dataset_handler.hpp"
 #include "ores.dq.core/messaging/dimension_handler.hpp"
@@ -311,47 +313,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
             ds->publish(std::move(msg));
         }));
 
-    // =========================================================================
-    // Dataset Bundles
-    // =========================================================================
-
-    auto db = std::make_shared<dataset_bundle_handler>(nats, ctx, verifier);
-
-    subs.push_back(nats.queue_subscribe(
-        get_dataset_bundles_request::nats_subject, queue_group, [db](ores::nats::message msg) {
-            db->list(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_dataset_bundle_request::nats_subject, queue_group, [db](ores::nats::message msg) {
-            db->save(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_dataset_bundle_request::nats_subject, queue_group, [db](ores::nats::message msg) {
-            db->remove(std::move(msg));
-        }));
-
-    subs.push_back(
-        nats.queue_subscribe(get_dataset_bundle_history_request::nats_subject,
-                             queue_group,
-                             [db](ores::nats::message msg) { db->history(std::move(msg)); }));
-
-    // =========================================================================
-    // Dataset Bundle Members
-    // =========================================================================
-
-    auto dbm = std::make_shared<dataset_bundle_member_handler>(nats, ctx, verifier);
-
-    subs.push_back(
-        nats.queue_subscribe(get_dataset_bundle_members_request::nats_subject,
-                             queue_group,
-                             [dbm](ores::nats::message msg) { dbm->list(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_dataset_bundle_members_by_bundle_request::nats_subject,
-        queue_group,
-        [dbm](ores::nats::message msg) { dbm->list_by_bundle(std::move(msg)); }));
+    // Dataset bundles and their members moved to the standard generated
+    // stack; see register_dataset_bundle_handlers below alongside the other
+    // generated registrars.
 
     // =========================================================================
     // Dataset Dependencies
@@ -502,6 +466,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.insert(subs.end(),
                     std::make_move_iterator(code_domain_subs.begin()),
                     std::make_move_iterator(code_domain_subs.end()));
+
+        auto dataset_bundle_subs = register_dataset_bundle_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(dataset_bundle_subs.begin()),
+                    std::make_move_iterator(dataset_bundle_subs.end()));
+
+        auto dataset_bundle_member_subs =
+            register_dataset_bundle_member_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(dataset_bundle_member_subs.begin()),
+                    std::make_move_iterator(dataset_bundle_member_subs.end()));
     }
 
     // ----------------------------------------------------------------

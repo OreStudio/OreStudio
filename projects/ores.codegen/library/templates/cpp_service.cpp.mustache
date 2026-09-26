@@ -775,6 +775,13 @@ std::vector<ores::utility::domain::hierarchy_node>
 }
 {{/domain_entity}}
 {{#junction}}
+{{! The response's collection member is the junction's full name, not
+    :name_short:. A junction's protocol builds that member from
+    entity_plural_short, which org_loader sets to the name for a junction,
+    so reading name_short here emits a member the response does not have
+    whenever the two differ -- currency_currency_groups, members and
+    resolutions all do. The repository's own name_short parameter is a
+    different thing and keeps its meaning. }}
 #include "ores.{{component_core}}/service/{{name_singular}}_service.hpp"
 
 #include <cstddef>
@@ -900,7 +907,7 @@ messaging::{{response}}
         return response;
     }
 {{/has_filter}}
-    response.{{name_short}} = repo_.read_latest(request.offset, request.limit);
+    response.{{name}} = repo_.read_latest(request.offset, request.limit);
     response.total = repo_.get_total_{{name_singular_short}}_count();
     return response;
 }
@@ -931,7 +938,7 @@ messaging::list_by_{{left.column}}_{{name}}_response
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-    response.{{name_short}} = repo_.read_latest_by_{{left.column_short}}(
+    response.{{name}} = repo_.read_latest_by_{{left.column_short}}(
         request.{{left.column}}, request.offset, request.limit);
     response.total =
         repo_.get_total_{{name_singular_short}}_count_by_{{left.column_short}}(
@@ -964,7 +971,7 @@ messaging::list_by_{{right.column}}_{{name}}_response
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-    response.{{name_short}} = repo_.read_latest_by_{{right.column_short}}(
+    response.{{name}} = repo_.read_latest_by_{{right.column_short}}(
         request.{{right.column}}, request.offset, request.limit);
     response.total =
         repo_.get_total_{{name_singular_short}}_count_by_{{right.column_short}}(
@@ -1049,10 +1056,10 @@ messaging::{{response}}
     for (const auto& change : request.changes)
         claims.push_back(change.precondition);
     repo_.write(batch, claims);
-    response.{{name_short}}.reserve(batch.size());
+    response.{{name}}.reserve(batch.size());
     for (const auto& value : batch) {
         auto written = read_one(repo_, key_from(value));
-        response.{{name_short}}.push_back(
+        response.{{name}}.push_back(
             written.empty() ? value : std::move(written.front()));
     }
     return response;

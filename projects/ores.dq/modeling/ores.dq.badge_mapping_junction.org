@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: BBB49AAA-E476-435B-88CF-CC252B76655C
+:ores.sql.schema.junction_artefact_create.enabled: true
 :ores.cpp.nats-handler.enabled: false
 :ores.cpp.nats-sub-registrar.enabled: false
 :ores.cpp.protocol.enabled: false

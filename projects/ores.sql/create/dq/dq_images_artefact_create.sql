@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,6 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- An image is a named document the platform renders, such as a currency flag or a commodity icon. The bytes are format-agnostic: an SVG document, a JPEG, or any other media type mime_type names. The database stores them base64-encoded in a text column, and the domain type carries the raw bytes. Images carry tags through the image_tag junction, and an image arrives either by upload or from the data-quality publish path. - Artefact Table
+-- =============================================================================
+
 create table if not exists "ores_dq_images_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
@@ -27,34 +37,23 @@ create table if not exists "ores_dq_images_artefact_tbl" (
     "svg_data" text not null
 );
 
-create index if not exists images_artefact_dataset_idx
-on "ores_dq_images_artefact_tbl" (dataset_id);
+create index if not exists dq_images_artefact_dataset_idx
+on ores_dq_images_artefact_tbl (dataset_id);
 
-create index if not exists images_artefact_tenant_idx
-on "ores_dq_images_artefact_tbl" (tenant_id);
+create index if not exists dq_images_artefact_tenant_idx
+on ores_dq_images_artefact_tbl (tenant_id);
 
-create index if not exists images_artefact_image_idx
-on "ores_dq_images_artefact_tbl" (image_id);
+create index if not exists dq_images_artefact_image_id_idx
+on ores_dq_images_artefact_tbl (image_id);
 
-create index if not exists images_artefact_key_idx
-on "ores_dq_images_artefact_tbl" (key);
+create index if not exists dq_images_artefact_image_id_idx
+on ores_dq_images_artefact_tbl (image_id);
 
--- Function to insert images into the artifact table
-create or replace function ores_dq_images_artefact_insert_fn(
-    p_dataset_id uuid,
-    p_tenant_id uuid,
-    p_image_id uuid,
-    p_version integer,
-    p_key text,
-    p_description text,
-    p_svg_data text
-) returns void as $$
-begin
-    insert into ores_dq_images_artefact_tbl (
-        dataset_id, tenant_id, image_id, version, key, description, svg_data
-    )
-    values (
-        p_dataset_id, p_tenant_id, p_image_id, p_version, p_key, p_description, p_svg_data
-    );
-end;
-$$ language plpgsql;
+create index if not exists dq_images_artefact_image_id_idx
+on ores_dq_images_artefact_tbl (image_id);
+
+create index if not exists dq_images_artefact_image_id_idx
+on ores_dq_images_artefact_tbl (image_id);
+
+create index if not exists dq_images_artefact_image_id_idx
+on ores_dq_images_artefact_tbl (image_id);

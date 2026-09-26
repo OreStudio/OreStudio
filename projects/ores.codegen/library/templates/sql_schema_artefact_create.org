@@ -2,14 +2,16 @@
 :ID: 23A3DE1F-0C2F-46B4-9D52-36261F209C6C
 :END:
 #+title: Archetype: sql_schema_artefact_create.mustache
-#+description: Staging table for an entity's imported artefacts: entity columns plus artefact bookkeeping (={{#entity.has_coding_scheme}}=, ={{#entity.has_image_id}}=, artefact indexes, optional insert function via ={{#entity.has_artefact_insert_fn}}=). *No profile* — invoked directly by =generator.py= on the dataset path.
+#+description: Staging table for an entity's imported artefacts: entity columns plus artefact bookkeeping (={{#entity.has_coding_scheme}}=, ={{#entity.has_image_id}}=, artefact indexes, optional insert function via ={{#entity.has_artefact_insert_fn}}=), or an explicitly declared staging body via =* Artefact columns= when the staging shape is not a plain projection of the entity table. *No profile* — invoked directly by =generator.py= on the dataset path.
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-09-26
 
 Staging table for an entity's imported artefacts: entity columns plus artefact bookkeeping (={{#entity.has_coding_scheme}}=, ={{#entity.has_image_id}}=, artefact indexes, optional insert function via ={{#entity.has_artefact_insert_fn}}=). *No profile* — invoked directly by =generator.py= on the dataset path.
+
+An entity whose staging shape is not a plain projection of its table declares that shape in a =* Artefact columns= section, the same section =ores.sql.schema.domain_entity_artefact_create= reads. Absent, this archetype projects the entity columns as before. Present, the section replaces the staging body after its =dataset_id=/=tenant_id= header, in the order written, and the first entry is the staging key unless the section's own =:key:= property names another. The two FpML JSON models this archetype still serves do not use it today.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -37,8 +39,12 @@ The full template source. Edit here and re-tangle with
 create table if not exists "ores_dq_{{entity.entity_plural}}_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
+{{^entity.artefact_columns}}
     "{{entity.primary_key.column}}" {{entity.primary_key.type}} not null,
     "version" integer not null,
+{{#entity.natural_keys}}
+    "{{column}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
+{{/entity.natural_keys}}
 {{#entity.columns}}
     "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
 {{/entity.columns}}
@@ -48,6 +54,10 @@ create table if not exists "ores_dq_{{entity.entity_plural}}_artefact_tbl" (
 {{#entity.has_coding_scheme}}
     ,"coding_scheme_code" text not null
 {{/entity.has_coding_scheme}}
+{{/entity.artefact_columns}}
+{{#entity.artefact_columns}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
+{{/entity.artefact_columns}}
 );
 
 create index if not exists dq_{{entity.entity_plural}}_artefact_dataset_idx
@@ -55,9 +65,16 @@ on ores_dq_{{entity.entity_plural}}_artefact_tbl (dataset_id);
 
 create index if not exists dq_{{entity.entity_plural}}_artefact_tenant_idx
 on ores_dq_{{entity.entity_plural}}_artefact_tbl (tenant_id);
+{{^entity.artefact_columns}}
 
 create index if not exists dq_{{entity.entity_plural}}_artefact_{{entity.primary_key.column}}_idx
 on ores_dq_{{entity.entity_plural}}_artefact_tbl ({{entity.primary_key.column}});
+{{/entity.artefact_columns}}
+{{#entity.artefact_columns}}
+
+create index if not exists dq_{{entity.entity_plural}}_artefact_{{entity.artefact_key_column}}_idx
+on ores_dq_{{entity.entity_plural}}_artefact_tbl ({{entity.artefact_key_column}});
+{{/entity.artefact_columns}}
 {{#entity.artefact_indexes}}
 
 create index if not exists dq_{{entity.entity_plural}}_artefact_{{name}}_idx

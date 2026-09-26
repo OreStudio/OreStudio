@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 1B88215B-1FE0-4CAF-B6AB-53F471963CA6
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ores.cpp.nats-event-cache.enabled: true
 :END:
 #+title: ores.refdata.currency_pair_convention
@@ -129,6 +130,60 @@ Whether end-of-month convention applies.
 #+begin_src cpp :name generator
 false
 #+end_src
+
+
+* Artefact columns
+
+The import carries =advance_calendar=, a comma-joined list of calendar codes. =ores_refdata_publish_currency_pair_conventions_from_dq_fn= explodes it into the convention-calendar child rows, so it is never stored on the convention itself.
+
+** pair_code
+:PROPERTIES:
+:type: text
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** pip_factor
+:PROPERTIES:
+:type: double precision
+:END:
+
+** tick_size
+:PROPERTIES:
+:type: double precision
+:END:
+
+** decimal_places
+:PROPERTIES:
+:type: integer
+:END:
+
+** advance_calendar
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** business_day_convention
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** spot_relative
+:PROPERTIES:
+:type: boolean
+:nullable: true
+:END:
+
+** end_of_month
+:PROPERTIES:
+:type: boolean
+:nullable: true
+:END:
 
 * SQL
 

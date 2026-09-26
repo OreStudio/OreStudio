@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,6 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- A tag classifies an image. A tag belongs to one tenant, names a single category such as flag, currency or commodity, and its name is unique within that tenant. Images carry tags through the image_tag junction, so a tag has no lifecycle of its own beyond its own version history. - Artefact Table
+-- =============================================================================
+
 create table if not exists "ores_dq_tags_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
@@ -26,37 +36,20 @@ create table if not exists "ores_dq_tags_artefact_tbl" (
     "description" text not null
 );
 
-create index if not exists tags_artefact_dataset_idx
-on "ores_dq_tags_artefact_tbl" (dataset_id);
+create index if not exists dq_tags_artefact_dataset_idx
+on ores_dq_tags_artefact_tbl (dataset_id);
 
-create index if not exists tags_artefact_tenant_idx
-on "ores_dq_tags_artefact_tbl" (tenant_id);
+create index if not exists dq_tags_artefact_tenant_idx
+on ores_dq_tags_artefact_tbl (tenant_id);
 
-create index if not exists tags_artefact_tag_idx
-on "ores_dq_tags_artefact_tbl" (tag_id);
+create index if not exists dq_tags_artefact_tag_id_idx
+on ores_dq_tags_artefact_tbl (tag_id);
 
-create index if not exists tags_artefact_name_idx
-on "ores_dq_tags_artefact_tbl" (name);
+create index if not exists dq_tags_artefact_tag_id_idx
+on ores_dq_tags_artefact_tbl (tag_id);
 
--- Unique index to prevent duplicate tag names per dataset per tenant
-create unique index if not exists tags_artefact_dataset_name_uniq_idx
-on "ores_dq_tags_artefact_tbl" (tenant_id, dataset_id, name);
+create index if not exists dq_tags_artefact_tag_id_idx
+on ores_dq_tags_artefact_tbl (tag_id);
 
--- Function to insert tags into the artifact table
-create or replace function ores_dq_tags_artefact_insert_fn(
-    p_dataset_id uuid,
-    p_tenant_id uuid,
-    p_tag_id uuid,
-    p_version integer,
-    p_name text,
-    p_description text
-) returns void as $$
-begin
-    insert into ores_dq_tags_artefact_tbl (
-        dataset_id, tenant_id, tag_id, version, name, description
-    )
-    values (
-        p_dataset_id, p_tenant_id, p_tag_id, p_version, p_name, p_description
-    );
-end;
-$$ language plpgsql;
+create index if not exists dq_tags_artefact_tag_id_idx
+on ores_dq_tags_artefact_tbl (tag_id);

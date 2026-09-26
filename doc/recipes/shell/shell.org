@@ -155,6 +155,7 @@ tangled into the runnable script library
 - [[id:FB4F43FF-90FF-4E67-8BD0-C6DB47DD6E69][Get]]
 - [[id:3A94A1CC-9134-494C-A036-A1DDBF3E0D5F][Help]]
 - [[id:C82409F0-2DED-4134-B5E2-98E51AD9CFCF][History]]
+- [[id:D4465BCE-68AE-5C66-B36C-642843F1843E][How do I run the change_reasons commands from the shell?]]
 
 * Change Reason Categories
 
@@ -163,6 +164,7 @@ tangled into the runnable script library
 - [[id:D6C9B1A7-E6AB-4847-9DB8-65DDAEE9C5C2][Get]]
 - [[id:7459C714-AD65-4BE9-84C8-249A4D56231E][Help]]
 - [[id:4E1B0644-98DE-480C-A63B-92E0A5153957][History]]
+- [[id:EA683935-8199-50E5-A58B-B2E05B1C6266][How do I run the change_reason_categories commands from the shell?]]
 
 * Account Contact Informations
 
@@ -627,3 +629,51 @@ tangled into the runnable script library
 * System Settings
 
 - [[id:1AE52616-1E2F-5164-9765-76457B907EF3][How do I run the system_settings commands from the shell?]]
+
+* Artefact Types
+
+- [[id:91845E51-131E-5C5A-89A3-1261457C1A17][How do I run the artefact_types commands from the shell?]]
+
+* Badge Definitions
+
+- [[id:38F4CD93-7F57-5E27-A586-0EEBBB7A86ED][How do I run the badge_definitions commands from the shell?]]
+
+* Badge Mappings
+
+- [[id:6FA5889A-660A-5527-8D75-243F973DBBB2][How do I run the badge_mappings commands from the shell?]]
+
+* Catalogs
+
+- [[id:44815F8D-7A5E-5C03-AC60-5120CF939A1B][How do I run the catalogs commands from the shell?]]
+
+* Code Domains
+
+- [[id:3CA50A73-FC43-5732-AB09-F173214574E4][How do I run the code_domains commands from the shell?]]
+
+* Data Domains
+
+- [[id:B143485D-670C-5438-A9A2-DD5D89FA9F93][How do I run the data_domains commands from the shell?]]
+
+* Dataset Bundle Members
+
+- [[id:CC9EBC52-9E51-59B8-AFD5-526B2DD40E08][How do I run the dataset_bundle_members commands from the shell?]]
+
+* Dataset Bundles
+
+- [[id:30419F02-F572-5155-ACF9-B2781E00F441][How do I run the dataset_bundles commands from the shell?]]
+
+* Lei Entities
+
+- [[id:EBAD9DD1-95BB-527F-B0E0-B09E3A02A925][How do I run the lei_entities commands from the shell?]]
+
+* Lei Relationships
+
+- [[id:1874CC7F-A727-5FFD-A98E-5FE54754EB1E][How do I run the lei_relationships commands from the shell?]]
+
+* Report Definitions
+
+- [[id:2780B6E3-0EBE-5518-9134-B6EA0294A5C9][How do I run the report_definitions commands from the shell?]]
+
+* Synthetic Fx Spot Configs
+
+- [[id:433F316B-EEFE-5C37-B7C8-2C6DA4D0B817][How do I run the synthetic_fx_spot_configs commands from the shell?]]

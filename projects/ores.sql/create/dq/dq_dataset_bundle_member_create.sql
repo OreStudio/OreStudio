@@ -29,7 +29,7 @@
  * yet exist in the system.
  *
  * Examples:
- * - Bundle "slovaris" contains "slovaris.countries", "slovaris.currencies", etc.
+ * - Bundle "crypto" contains "iso.currencies", "crypto.small", etc.
  * - Bundle "base" contains "iso.countries", "iso.currencies", all FpML datasets
  */
 

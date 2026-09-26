@@ -257,7 +257,7 @@ hand.
 |---------+---------|
 | =bundles list= | The reference data catalogues available for publication. |
 | =bundles publish <code> [--wait]= | Publish a catalogue; =--wait= blocks until the backend finishes. |
-| =workflow steps <id>= / =workflow wait <id>= | Inspect or wait on a long-running backend operation. |
+| =workflow_steps by-workflow-id <id>= / =workflow wait <id>= | Inspect or wait on a long-running backend operation. |
 | =lei countries= / =lei entities <country>= | Browse the GLEIF registry for a =--root-lei= value. |
 | =synthetic generate= | Generate a synthetic organisation (all controls as options). |
 | =parties list= | List parties, with =--category= and =--status= filters. |

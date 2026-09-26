@@ -24,7 +24,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
-#include "ores.shell/app/commands/workflow_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_wait_commands.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <chrono>
@@ -167,7 +167,7 @@ void bundles_commands::process_publish(std::ostream& out,
         out << "Follow progress with: workflow wait " << result->instance_id << std::endl;
         return;
     }
-    workflow_commands::wait_for_instance(out,
+    workflow_wait_commands::wait_for_instance(out,
                                          session,
                                          result->instance_id,
                                          *wait_timeout,

@@ -138,11 +138,13 @@ via its "Verifies task" field.
 
 * Result
 
-The clean standard is complete for a model-free component: every item that
-applies passes, and every item that does not is recorded with its reason. One
-item does not pass. V06 is the accepted registry exception the standard records
-for the whole infrastructure tier, so the story's acceptance criterion that
-names =COMPONENTS_UNDER_TEST= cannot be met by a component with no entity model.
+The clean standard is complete for a model-free component: of its 48 items, 26
+do not apply to a component with no entity, no protocol and no shell unit, and
+each is recorded with its reason; 21 pass or are fixed, with their evidence; and
+one, V06, is the accepted registry exception the standard records for the whole
+infrastructure tier. That exception is why the story's acceptance criterion
+naming =COMPONENTS_UNDER_TEST= cannot be met by a component with no entity
+model.
 
 What the pass changed. The component gained its first test suite, 17 test cases
 and 40 assertions, in place of a binary that linked, ran and reported nothing.

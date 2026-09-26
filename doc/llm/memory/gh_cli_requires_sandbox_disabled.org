@@ -1,17 +1,17 @@
 :PROPERTIES:
 :ID: C3B499F6-2E41-4E1C-A724-7524EAC24B8E
 :END:
-#+title: gh CLI requires dangerouslyDisableSandbox
-#+description: All gh commands must run outside the sandbox; the auth token lives in a keyring the sandbox blocks
+#+title: gh CLI requires dangerouslyDisableSandbox under Claude Code
+#+description: Under Claude Code every gh command runs outside the sandbox; the auth token lives in a keyring that sandbox blocks. Under the DSH harness gh runs confined, and escalating it is wasted.
 #+type: memory
 #+memory_subtype: feedback
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-06-11
-#+updated: 2026-06-11
+#+updated: 2026-09-26
 
-All gh CLI invocations (pr, issue, api, auth, etc.) must use dangerouslyDisableSandbox: true.
+Under Claude Code, all gh CLI invocations (pr, issue, api, auth, etc.) must use dangerouslyDisableSandbox: true. Under the DSH harness they must not: gh runs confined there, and escalating it spends an approval for nothing.
 
-*Why:* gh stores its OAuth token in the OS keyring (libsecret on Linux). The sandbox blocks the keyring socket, so gh sees an invalid token and returns HTTP 401 even though the token is valid.
+*Why:* gh stores its OAuth token in the OS keyring (libsecret on Linux). Claude Code's sandbox blocks the keyring socket, so gh sees an invalid token and returns HTTP 401 even though the token is valid. The DSH sandbox confines file effects only and leaves the session bus reachable — `busctl --user` works inside it — so the same keyring lookup succeeds.
 
-*How to apply:* Any Bash tool call containing gh uses dangerouslyDisableSandbox: true. If gh auth fails, ask the user to run '! gh auth login' themselves — do not attempt it from inside Claude.
+*How to apply:* Under Claude Code, any Bash tool call containing gh uses dangerouslyDisableSandbox: true; if gh auth fails, ask the user to run '! gh auth login' themselves, and do not attempt it from inside Claude. Under DSH, call gh directly. `gh pr view`, `gh pr comment` and `compass pr checks` were all verified confined on 2026-09-26. The distinction matters in both directions: an unnecessary escalation is a prompt the user has to answer, and a missing one is a 401 that looks like a broken token.

@@ -27,6 +27,7 @@ set(files
     "logging_options_validator.cpp"
 )
 
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.logging/boost_severity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.logging/export.hpp"

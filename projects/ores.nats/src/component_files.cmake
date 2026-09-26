@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "config/nats_configuration.cpp"
     "domain/compression.cpp"
@@ -28,17 +31,14 @@ set(files
     "service/nats_client.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/config/nats_configuration.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/config/nats_options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/domain/compression.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/domain/consumer_info.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/domain/correlation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/domain/headers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/domain/message.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/domain/stream_info.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/domain/stream_message.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/domain/wire_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/domain/wire_format.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/export.hpp"

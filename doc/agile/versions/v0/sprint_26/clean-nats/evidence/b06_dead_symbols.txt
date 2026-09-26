@@ -1,0 +1,49 @@
+# B06 symbol census: public functions declared in ores.nats headers with no caller
+# For each declared name the census counts the files that mention it, excluding
+# the header that declares it. A name mentioned nowhere else is a candidate for
+# dead public API; a name mentioned only in tests has a test as its only consumer.
+
+compression.hpp: traffic (outside=0 tests=0 own=0)
+consumer_info.hpp: get_consumer (outside=0 tests=0 own=0)
+consumer_info.hpp: list_consumers (outside=0 tests=0 own=1)
+message.hpp: as_string_view (outside=0 tests=0 own=0)
+stream_info.hpp: get_stream (outside=0 tests=0 own=1)
+stream_info.hpp: list_streams (outside=0 tests=0 own=1)
+stream_message.hpp: peek_last_message (outside=0 tests=0 own=1)
+stream_message.hpp: peek_message (outside=0 tests=0 own=1)
+wire_codec.hpp: completing (outside=0 tests=0 own=0)
+wire_codec.hpp: format_ (outside=0 tests=0 own=0)
+wire_codec.hpp: to_bytes (outside=0 tests=0 own=0)
+buffered_subscription.hpp: buffered_subscription (outside=0 tests=0 own=2)
+client.hpp: js_subscribe (outside=0 tests=0 own=1)
+client.hpp: log_publish (outside=0 tests=0 own=1)
+jetstream_admin.hpp: delete_message (outside=0 tests=0 own=1)
+jetstream_admin.hpp: get_stream (outside=0 tests=0 own=1)
+jetstream_admin.hpp: jetstream_admin (outside=0 tests=0 own=3)
+jetstream_admin.hpp: list_consumers (outside=0 tests=0 own=1)
+jetstream_admin.hpp: list_streams (outside=0 tests=0 own=1)
+jetstream_admin.hpp: peek_last_message (outside=0 tests=0 own=1)
+jetstream_admin.hpp: peek_message (outside=0 tests=0 own=1)
+jetstream_admin.hpp: purge_stream (outside=0 tests=0 own=1)
+nats_client.hpp: active_client (outside=0 tests=0 own=1)
+nats_client.hpp: do_authenticated_request (outside=0 tests=0 own=1)
+nats_client.hpp: get_client (outside=0 tests=0 own=1)
+nats_client.hpp: nc (outside=0 tests=0 own=1)
+nats_client.hpp: with_session_id (outside=0 tests=0 own=1)
+nats_client.hpp: with_workspace_id (outside=0 tests=0 own=1)
+nats_connect_error.hpp: kind_ (outside=0 tests=0 own=0)
+nats_connect_error.hpp: nats_connect_error (outside=0 tests=0 own=2)
+retry.hpp: retry_with_backoff (outside=0 tests=0 own=1)
+
+# The list is a set of candidates. The task decides each name, and the review
+# round added these two readings of it.
+#
+# 1. message.hpp: as_string_view is a free function, ores::nats::as_string_view,
+#    not a member of `message`. No caller in the tree, so it is deleted.
+# 2. The census missed jetstream_admin::publish. The name collides with
+#    client::publish, which has consumers, so the mention count made the
+#    method look used. It is deleted with the rest of the read surface.
+# 3. Names of private data members and internal helpers (format_, nc,
+#    completing, to_bytes, kind_) are candidates the task keeps: the component
+#    reaches each one from inside. `traffic` is not a symbol at all; the
+#    census matched the word in a comment.

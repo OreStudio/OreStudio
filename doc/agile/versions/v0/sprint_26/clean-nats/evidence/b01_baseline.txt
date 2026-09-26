@@ -1,0 +1,19 @@
+# B01 baseline: regenerate with nothing changed, before any edit
+# Run 2026-09-26 on feature/clean-nats, based on origin/main bbf6d3f6e2.
+
+## check_component_drift.py --component nats
+Regenerating component 'nats' at address 'ores.cmake'...
+ERROR Unknown component: 'nats'. Known components: analytics-cpp, compute-cpp, controller-cpp, dq, dq-cpp, history, iam, iam-cpp, marketdata, ore, refdata, reporting, scheduler-cpp, shell, synthetic, trade, trading-cpp, workflow-cpp, workspace-cpp
+ERROR 1 error(s) during regeneration.
+codegen regenerate failed for component 'nats' at address 'ores.cmake'
+
+## check_model_drift.py
+projects/ores.codegen/scripts/check_model_drift.py
+projects/ores.reporting/modeling/ores.reporting.report_definition.org: has_workspace_id contradicts its profile, allowed by KNOWN_MODEL_DRIFT
+No model drift: every bound model agrees with its profile (1 known exception(s)).
+
+## The component's modeling directory
+CMakeLists.txt
+component_overview.org
+ores.nats.png
+ores.nats.puml

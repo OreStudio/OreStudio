@@ -188,18 +188,6 @@ public:
                     std::unordered_map<std::string, std::string> headers = {});
 
     /**
-     * @brief Push-subscribe to a JetStream subject with a durable consumer.
-     *
-     * Messages are delivered automatically to @c handler. The consumer
-     * state survives client restarts (durable).
-     *
-     * Each message is auto-acknowledged after @c handler returns without
-     * throwing.
-     */
-    [[nodiscard]] subscription
-    js_subscribe(std::string_view subject, std::string_view durable_name, message_handler handler);
-
-    /**
      * @brief Queue-group push-subscribe to a JetStream subject.
      *
      * Combines durable consumer semantics with competing-consumer load
@@ -211,8 +199,7 @@ public:
                                                   message_handler handler);
 
     /**
-     * @brief Create a JetStream admin handle for managing streams and
-     *        consumers.
+     * @brief Create a JetStream admin handle for provisioning streams.
      *
      * The returned @c jetstream_admin is lightweight and borrows this
      * client's JetStream context. The client must outlive the admin handle.

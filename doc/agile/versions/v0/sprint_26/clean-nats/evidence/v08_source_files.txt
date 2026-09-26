@@ -1,0 +1,21 @@
+# V08: source files under ores.nats/src and the test that exercises each
+# Run 2026-09-26. A source file is covered when a test file includes the
+# header that declares it.
+
+source                                               test
+src/service/jwks.cpp                                 none
+src/config/nats_configuration.cpp                    config_nats_configuration_tests.cpp
+src/service/nats_client.cpp                          none
+src/service/jetstream_admin.cpp                      none
+src/domain/correlation.cpp                           none
+src/service/client.cpp                               none
+src/domain/wire_codec.cpp                            domain_wire_codec_tests.cpp
+src/domain/wire_format.cpp                           domain_wire_format_tests.cpp
+src/domain/compression.cpp                           domain_compression_tests.cpp
+
+## The gap
+
+Five of the nine sources have no test: correlation.cpp, client.cpp,
+jetstream_admin.cpp, jwks.cpp and nats_client.cpp. They are the transport
+path itself, exercised end to end by every service that talks over NATS
+rather than by a unit test. Recorded as the coverage work item.

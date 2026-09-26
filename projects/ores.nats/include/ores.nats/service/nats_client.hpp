@@ -256,13 +256,6 @@ public:
      */
     [[nodiscard]] nats_client with_workspace_resolution(std::vector<std::string> chain) const;
 
-    /**
-     * @brief Return the underlying client (interactive path only).
-     *
-     * Returns nullptr if constructed via the service path.
-     */
-    [[nodiscard]] std::shared_ptr<client> get_client() const;
-
 private:
     [[nodiscard]] client& active_client() const;
 

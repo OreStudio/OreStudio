@@ -1,0 +1,58 @@
+# G08: the namespace documentation header is kept
+# Read on 2026-09-26, during the review round.
+
+The standard, doc/knowledge/architecture/component_clean_standard.org, G08:
+
+  "The namespace documentation headers are not dead headers. Every component
+   keeps one for its outermost namespace: include/<component>/<component>.hpp
+   for a single-module component ... A consumer census does not apply to them:
+   an empty namespace is their whole content, so nothing includes them and
+   nothing should. A claim in one is a document bug, corrected in place, never
+   a reason to delete the file."
+
+The first pass read B06's census as authority over this header and deleted
+projects/ores.nats/include/ores.nats/ores.nats.hpp. G08 is the item that
+decides, and it says the census does not apply.
+
+Census of the flat components, before the correction:
+
+  $ for d in projects/ores.*/include; do c=$(basename $(dirname $d)); \
+        [ -f "$d/$c/$c.hpp" ] || echo "missing: $c"; done
+  missing: ores.nats
+
+  checked: 12, with the header: 11, missing it: 1
+
+Census after the correction:
+
+  $ for d in projects/ores.*/include; do c=$(basename $(dirname $d)); \
+        [ -f "$d/$c/$c.hpp" ] || echo "missing: $c"; done
+  checked: 12, with the header: 12, missing it: 0
+
+Claims in the header that were stale, and the correction made in place:
+
+  - "@brief NATS transport layer -- ... domain services, the Qt client, and
+    JetStream consumers." Qt is retired from the tree.
+  - "Sub-namespaces (planned): @b client: Qt-side session; sends requests and
+    receives replies via unique per-request _INBOX subjects (fully concurrent,
+    no serialisation)." The sub-namespace no longer exists.
+  - "@b jetstream: ... durable subscriptions for chart history replay and
+    work-queue delivery to grid nodes." The JetStream read surface this task
+    deletes.
+  - "Contrast with ... ores.mq (durable PostgreSQL-backed queues, persistent
+    across restarts)." projects/ores.mq does not exist.
+
+  The header now names the three sub-namespaces that exist (config, domain,
+  service), the subject convention the code applies, the wire codec, and the
+  transport security the code supports.
+
+The restored header compiles:
+
+  $ clang++ -std=c++23 -fsyntax-only -Wall -Wextra \
+        -I projects/ores.nats/include build/tmp_probe/ns_header_check.cpp
+  SYNTAX OK
+
+The CMake source list is regenerated, so the header is listed again:
+
+  $ python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py \
+        --component ores.nats
+  wrote: projects/ores.nats/src/component_files.cmake

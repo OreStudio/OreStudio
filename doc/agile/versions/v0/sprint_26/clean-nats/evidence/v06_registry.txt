@@ -1,0 +1,43 @@
+# V06: why ores.nats cannot join COMPONENTS_UNDER_TEST
+# Run 2026-09-26. The experiment below was reverted immediately; nothing in
+# the tree changed.
+
+## What the registry is
+
+COMPONENTS_UNDER_TEST names catalogue slugs. The codegen resolves a slug
+through projects/ores.codegen/library/component_catalogue.org, whose
+* Components table lists only components that carry codegen models, and
+the drift gate errors on a slug that is not in it:
+
+  $ check_component_drift.py --component nats
+  ERROR Unknown component: 'nats'. Known components: analytics-cpp,
+  compute-cpp, controller-cpp, dq, dq-cpp, history, iam, iam-cpp,
+  marketdata, ore, refdata, reporting, scheduler-cpp, shell, synthetic,
+  trade, trading-cpp, workflow-cpp, workspace-cpp
+
+## The experiment: list it anyway
+
+Adding '| nats | projects/ores.nats/modeling | |' to the catalogue makes the
+slug known, and the dry run then says what the codegen believes the
+component is:
+
+  $ check_component_drift.py --component nats --dry-run
+  would create: projects/ores.nats/include/ores.nats/domain/stub.hpp
+  would create: projects/ores.nats/include/ores.nats/ores.nats.hpp
+  would create: projects/ores.nats/src/domain/stub.cpp
+  would create: projects/ores.nats/tests/stub_tests.cpp
+  8 file(s) would change, 4 file(s) would be created (12 in total).
+
+A component overview with no entities reads as a scaffold: the generator
+would re-create the banner header this task deleted and add a stub domain
+type and its test. Listing the component would therefore make the gate
+green by generating code the component does not have.
+
+## The finding
+
+The registry admits only model-bearing components, so a component with no
+models cannot join it. The standard records the same finding from the
+infrastructure survey, and ores.database and the four surveyed components
+record V06 the same way. Joining it would need the registry and the gate
+to treat a model-free component as having nothing to regenerate, which is
+a codegen change for the six components it affects, not a nats change.

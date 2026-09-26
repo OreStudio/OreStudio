@@ -1,0 +1,28 @@
+# V07: no vacuous test in ores.nats
+# Run 2026-09-26. A test is vacuous when it passes although its subject
+# does nothing: a bare length, a non-throw, a truthiness, or one production
+# run compared with another.
+
+## The suites and their assertion counts
+config_nats_configuration_tests.cpp            13 assertion lines
+domain_compression_tests.cpp                   16 assertion lines
+domain_wire_codec_tests.cpp                    18 assertion lines
+domain_wire_format_tests.cpp                   9 assertion lines
+main.cpp                                       0 assertion lines
+
+## The assertions that look weak, and the assertion beside each
+127:    REQUIRE_NOTHROW(store(parse_environment(od, mapper), vm));
+158:    REQUIRE_NOTHROW(store(parse_environment(od, mapper), vm));
+50:    CHECK(result.url == "nats://localhost:4222");
+59:    CHECK(result.url == "nats://myserver:5555");
+76:    CHECK(result.url == "nats://cluster:4222");
+131:    CHECK(result.url == "nats://regression-check:4222");
+162:    CHECK(result.tls_ca_cert.empty());
+
+## Finding
+
+No test is vacuous. Every case asserts a literal expected value or a
+specific parse outcome, and each REQUIRE_NOTHROW sits above an assertion on
+the value the call produced (the parsed url, the empty cert path an
+unrelated app's variable must leave alone). A subject that did nothing
+fails the paired assertion.

@@ -1,0 +1,87 @@
+# G07: the puml generator's dry run for ores.nats, read before any refresh
+# Run 2026-09-26.
+
+  ores.nats: would write /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.nats/modeling/ores.nats.puml
+--- /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.nats/modeling/ores.nats.puml
++++ /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.nats/modeling/ores.nats.puml (new)
+@@ -29,6 +29,13 @@
+             +data : vector<byte>
+             +headers : unordered_map<string, string>
+         }
++        class wire_codec {
++            -format_ : wire_format
++        }
++        enum wire_format {
++            json
++            msgpack
++        }
+         namespace config #F2F2F2 {
+             class nats_configuration {
+             }
+@@ -40,42 +47,24 @@
+                 +tls_client_key : string
+             }
+         }
+-        namespace domain #F2F2F2 {
+-            class consumer_info <<struct>> {
+-                +stream_name : string
+-                +name : string
+-                +num_pending : uint64_t
+-                +num_ack_pending : uint64_t
+-                +num_redelivered : uint64_t
+-                +delivered_count : uint64_t
+-                +created_at : chrono::system_clock::time_point
+-            }
+-            class stream_info <<struct>> {
+-                +name : string
+-                +subjects : vector<string>
+-                +message_count : uint64_t
+-                +byte_count : uint64_t
+-                +consumer_count : uint64_t
+-                +created_at : chrono::system_clock::time_point
+-                +first_message_at : chrono::system_clock::time_point
+-                +last_message_at : chrono::system_clock::time_point
+-            }
+-            class stream_message <<struct>> {
+-                +subject : string
+-                +sequence : uint64_t
+-                +timestamp : chrono::system_clock::time_point
+-                +data : vector<byte>
+-                +headers : unordered_map<string, string>
+-            }
+-        }
+         namespace service #F2F2F2 {
+             class client {
+                 -impl : struct
+                 -impl_ : unique_ptr<impl>
+             }
+             class jetstream_admin {
+-                +max_age_days : int
+                 -js_ctx_ : void*
++            }
++            class nats_client {
++                -owned_client_ : shared_ptr<client>
++                -auth_ : optional<login_info>
++                -external_client_ : client*
++                -token_provider_ : token_provider
++                -delegation_token_ : string
++                -correlation_id_ : string
++                -session_id_ : string
++                -workspace_id_ : string
++                -workspace_resolution_ : vector<string>
+             }
+             enum nats_error_kind {
+                 server_unreachable
+@@ -89,21 +78,6 @@
+             }
+             class session_expired_error {
+             }
+-            namespace ores #F2F2F2 {
+-                namespace nats #F2F2F2 {
+-                    namespace service #F2F2F2 {
+-                        class nats_client {
+-                            -owned_client_ : shared_ptr<client>
+-                            -auth_ : optional<login_info>
+
+
+1/1 projects would change.

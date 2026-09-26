@@ -8,7 +8,7 @@
 #+filetags: :clean-synthetic:sprint_26:v0:
 #+owner: marco
 #+branch: feature/clean-synthetic
-#+pr: 2159
+#+pr: 2170
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -197,6 +197,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2170][#2170]] | [synthetic] Make the organisation seed idempotent on macOS |
 | [[https://github.com/OreStudio/OreStudio/pull/2159][#2159]] | [synthetic,codegen,sql] Bring ores.synthetic to the clean standard |
 
 * Review

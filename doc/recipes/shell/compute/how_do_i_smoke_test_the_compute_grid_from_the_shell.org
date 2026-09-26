@@ -19,13 +19,13 @@ How do I smoke test the compute grid from the shell?
 
 * Answer
 
-Run the library script =ores.shell/scripts/library/compute/how_do_i_smoke_test_the_compute_grid_from_the_shell.ores= against a live serving environment. It adds a batch with 10 to 20 jobs, dispatches them to the target app version, watches =compute grid-stats --watch --smoke= until the batch drains, and asserts every online host was exercised and every result has outcome Success. The script fails if either assert does not hold.
+Run the library script =ores.shell/scripts/library/compute/how_do_i_smoke_test_the_compute_grid_from_the_shell.ores= against a live serving environment. It adds a batch with 10 to 20 jobs, dispatches them to the target app version, watches =compute grid-stats --watch <ref> --smoke= until the batch drains, and asserts every online host was exercised and every result has outcome Success. The script fails if either assert does not hold.
 
 #+name: smoke-test-compute-grid
 #+begin_src ores-shell :exports none
 connect $ORES_NATS_URL
 login super_admin@localhost Secure-Password-123
-compute add-batch smoke-$SMOKE_REF 15 --smoke
+batches add smoke-$SMOKE_REF open system.new_record "smoke test"
 compute dispatch-batch smoke-$SMOKE_REF 15 $APP_VERSION_ID $INPUT_TARBALL
 compute grid-stats --watch smoke-$SMOKE_REF --smoke
 logout
@@ -42,7 +42,7 @@ The batch external reference is =smoke-$SMOKE_REF=; set =SMOKE_REF= to
 anything unique. Set =INPUT_TARBALL= to the input =tar.gz= tarball;
 =dispatch-batch= uploads it verbatim. The job count is 15; the
 =--smoke= switch bounds it to the 10 to 20 range.
-=grid-stats --watch --smoke= polls every 10 seconds until the batch
+=grid-stats --watch <ref> --smoke= polls every 10 seconds until the batch
 drains, then asserts every host online at the drain transition was
 exercised and every result has outcome Success. The script fails if
 either check does not hold.

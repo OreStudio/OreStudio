@@ -1,0 +1,214 @@
+:PROPERTIES:
+:ID: CC0A311E-7245-4694-86A1-3170023C385A
+:END:
+#+title: Run a compute job end to end
+#+description: Bring up a compute grid, provision the ORE engine package, submit the TA002_IR_Swap sample job through the grid, and verify the job output against the Academy example's ExpectedOutput.
+#+type: runbook
+#+level: cross
+#+filetags: :llm:runbook:compute:grid:ore:end_to_end:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
+
+* Goal
+
+Prove the compute grid end to end on one machine: provision an environment
+that has the ORE engine binaries in it, submit the vendored TA002_IR_Swap
+sample job, and check that the numbers the engine produced match the Academy
+example's =ExpectedOutput=.
+
+This is the acceptance test for [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]].
+[[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] describes what each
+stage does; this runbook is the sequence that runs it.
+
+* Preconditions
+
+- The tree is built: =./compass.sh build= exits 0, so
+  =build/output/$(ORES_PRESET)/publish/bin= holds the shell, the compute
+  service, the wrapper and the HTTP server.
+- =./compass.sh env configure= has run for the current preset, so =.env= is
+  at the required format version. Every command below reads its ports and
+  credentials from it.
+- PostgreSQL and NATS are reachable. =compass services start= brings up NATS
+  and every unit.
+- The ORE engine package is vendored: =external/ore/packages/= holds
+  =ore-<version>-x64-linux.tar.gz=. The build's =vendor_compute_packages=
+  target copies it into =publish/vendor-packages/=, and that copy is what
+  =compute publish-package= uploads. See =external/ore/packages/README.md=
+  and =external/ore/packages/methodology.txt= for how a package is built and
+  self-tested.
+- The sample job input is vendored: =external/ore/packages/TA002_IR_Swap.tar.gz=,
+  with its reference output at
+  =external/ore/examples/Academy/TA002_IR_Swap/ExpectedOutput/=.
+- The machine's platform triplet is =x64-linux=, which is the triplet both
+  vendored packages are built for. The wrapper subscribes on its own triplet,
+  so a job published for another platform is never picked up.
+
+* Steps
+
+In execution order:
+
+1. /Recreate the database and start the fleet./ The grid's tables and the
+   notify triggers must come from the current models, so start from a
+   recreated database:
+   #+begin_example
+   ./compass.sh db recreate -y -k
+   ./compass.sh services start iam
+   ./compass.sh services start http.server
+   ./compass.sh services start compute
+   ./compass.sh services start compute.wrapper
+   #+end_example
+   The HTTP server is the storage end: the wrapper downloads the engine
+   package, the job input and uploads the output archive over it. Without it
+   every job fails at the first download.
+
+2. /Bootstrap an operator./ A recreated database is in bootstrap mode, so no
+   account can log in until the first admin and a tenant exist:
+   #+begin_example
+   connect $ORES_NATS_URL
+   bootstrap create-initial-admin super_admin@localhost <password> admin@ores.local
+   bootstrap provision-tenant evaluation acme_corporation Acme_Corporation \
+       acme_corporation "Acme Corporation development tenant" \
+       tenant_admin@acme_corporation <password> admin@acme.local
+   #+end_example
+   The wrappers run in the system tenant and the seed's app version is owned
+   by it, so the batch is submitted as =super_admin@localhost=, which resolves
+   to the system tenant.
+
+3. /Provision the engine package./ This is the step that puts the ORE
+   binaries in the system. Registration and bytes are separate: the seed
+   =compute_ore_app_seed.sql= registers the app, the app versions and the
+   =x64-linux= platform row, and =compute publish-package= uploads the
+   tarball to storage and verifies its SHA256 server-side.
+
+   #+begin_example
+   compute publish-package ORE 1.8.17.0 x64-linux \
+       --wrapper-version 1.0.0 \
+       --file external/ore/packages/ore-1.8.17.0-x64-linux.tar.gz \
+       --http-base-url http://localhost:$ORES_HTTP_PORT
+   #+end_example
+
+   /Check the provision before going further./ The upload prints the SHA256 it
+   computed, and that value must equal both the tarball's own and the one the
+   seed registered:
+   #+begin_example
+   sha256sum external/ore/packages/ore-1.8.17.0-x64-linux.tar.gz
+   ls -l build/output/$ORES_PRESET/publish/storage/compute/packages/ORE/1.8.17.0/
+   #+end_example
+   #+begin_example
+   select av.id, av.engine_version, avp.package_uri, avp.sha256
+     from ores_compute_app_versions_tbl av
+     join ores_compute_app_version_platforms_tbl avp on avp.app_version_id = av.id
+     join ores_compute_apps_tbl a on a.id = av.app_id
+    where a.name = 'ORE' and av.valid_to > now() and avp.valid_to > now();
+   #+end_example
+   A version whose platform row is missing or whose SHA256 disagrees stores
+   workunits and publishes no assignment, so the jobs sit =Unsent= forever
+   with nothing in the log to say why. Note the =id= of the =1.8.17.0= row:
+   the dispatch needs it.
+
+4. /Confirm the grid is online./ The wrappers register themselves on their
+   first heartbeat:
+   #+begin_example
+   select count(*) as hosts,
+          count(*) filter (where last_rpc_time > now() - interval '5 minutes') as online
+     from ores_compute_hosts_tbl where valid_to > now();
+   #+end_example
+   =hosts = online= is the arithmetic that matters: a host outside the
+   five-minute window is not in the grid, and =--smoke= asserts every online
+   host was exercised.
+
+5. /Create the batch and dispatch the sample job./ A batch is a container
+   with an operator-chosen reference; dispatch is what stores the workunits,
+   creates one result per job and publishes one assignment per result. The
+   generated entity command creates the batch:
+   #+begin_example
+   batches add e2e-ir-swap open system.new_record "end to end run"
+   compute dispatch-batch e2e-ir-swap 15 <app_version_id> \
+       external/ore/packages/TA002_IR_Swap.tar.gz
+   #+end_example
+   Every workunit of the batch shares the one input bundle, which is why the
+   workunit's key is its id and not its =input_uri=: a key on the input would
+   allow exactly one job per batch.
+
+6. /Watch the batch drain./ =grid-stats --watch --smoke= polls until every
+   workunit has a canonical result, then asserts every result has outcome
+   Success and every host that was online at the drain edge was exercised. It
+   exits non-zero if either assertion fails, so a broken grid shows up here
+   rather than in a downloaded archive nobody compared:
+   #+begin_example
+   compute grid-stats --watch e2e-ir-swap --smoke
+   #+end_example
+
+7. /Download one job's output./ Each finished result has an archive in
+   storage, holding the =Output/= directory the engine wrote:
+   #+begin_example
+   compute list-results
+   compute download-output <result_id> build/e2e/out
+   #+end_example
+
+8. /Compare the output against the Academy example./ The reference files are
+   in the vendored example, and =compare_csv.py= is the tolerant comparator the
+   package pipeline already uses: it matches shared columns within a relative
+   tolerance, and reports columns the build added or removed rather than
+   failing on them.
+   #+begin_example
+   for f in curves.csv flows.csv npv.csv; do
+       python3 external/ore/tools/compare_csv.py \
+           build/e2e/out/$f \
+           external/ore/examples/Academy/TA002_IR_Swap/ExpectedOutput/$f
+   done
+   #+end_example
+   Exit 0 on all three is the numerical pass. New columns are reported for
+   review and do not fail the comparison; a changed value or a different row
+   count does.
+
+* Postconditions
+
+- The ORE engine package is in storage under
+  =compute/packages/ORE/<version>/<version>-x64-linux.tar.gz=, with the
+  SHA256 the app version's platform row states.
+- The batch's external reference is =closed=, every workunit carries a
+  canonical result, and every result is =server_state= 5 with =outcome= 1.
+- The downloaded output's =curves.csv=, =flows.csv= and =npv.csv= match the
+  Academy example's =ExpectedOutput= within =rtol= 1e-6 on every shared
+  column.
+
+* Observed result
+
+The run on 2026-09-26 produced:
+
+| File        | Rows | Shared columns | Result                        |
+|-------------+------+----------------+-------------------------------|
+| =curves.csv= |  240 |              4 | every value matched           |
+| =flows.csv=  |   60 |             25 | matched, 4 new columns reported |
+| =npv.csv=    |    1 |             13 | every value matched           |
+
+Fifteen jobs, fifteen successes, one closed batch, five nodes exercised. The
+four new =flows.csv= columns (=EffectiveFloorVolatility=,
+=EffectiveCapVolatility=, =Amount(Base)=, =DiscountFactor(Base)=) are engine
+schema additions the reference predates; the package's own
+=.diff-report.txt= carries the same note, so it is a reviewed difference and
+not a regression.
+
+* What breaks the run, and what it looks like
+
+- *An unpublished package.* The upload is the only step that puts bytes in
+  storage. Registration alone leaves every job =Unsent= and the service log
+  silent.
+- *A host outside the online window.* =--smoke= fails its host assertion. A
+  wrapper that has not heartbeated for five minutes is not in the grid.
+- *A mistyped platform triplet.* The wrapper subscribes on its own triplet
+  and the dispatcher publishes on the platform row's; a mismatch means the
+  assignment is published and consumed by nobody.
+- *A stale database.* The notify triggers are generated, so a model change
+  needs a recreate. A trigger and the C++ that parses it disagreeing is
+  silent: the service logs a deserialize failure and no job is ever
+  dispatched.
+
+* See also
+
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — the stages this runbook runs.
+- [[id:64816867-0D2E-4A9D-A90C-ADD70F3C9B3B][How do I smoke test the compute grid from the shell?]] — the drain watch in one script.
+- [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] — all runbooks.

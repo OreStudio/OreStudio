@@ -83,7 +83,7 @@ The lifecycle has six stages:
 
 1. Register the engine — upload the ORE package and register the app.
 2. Prepare an input bundle — the job's working-directory snapshot.
-3. Create the batch — with =compute add-batch=.
+3. Create the batch — with the generated =batches add= command.
 4. Dispatch — with =compute dispatch-batch=; the service stores
    workunits and publishes one assignment per job.
 5. Execute on a node — the wrapper downloads, verifies, runs, and
@@ -97,14 +97,15 @@ The engine package is the self-contained tarball a wrapper downloads
 and runs. It holds the =ore= executable, every non-glibc shared
 library it needs (under =lib/=, RPATH-relative), and the minimal
 =manifest.json= the wrapper reads. ORE Studio vendors one package per
-engine build under =external/ore/packages/=; the ORE 1.8.16.0 build is
-=ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz=:
+engine build under =external/ore/packages/=; the seed registers the ORE
+1.8.17.0 build, =ore-1.8.17.0-x64-linux.tar.gz=, and the older
+=ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz= stays vendored beside it:
 
 #+begin_example
-ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz
-├── manifest.json          {"executable": "ore-1.8.16.0-4-g3b62ba248-x64-linux",
+ore-1.8.17.0-x64-linux.tar.gz
+├── manifest.json          {"executable": "ore-1.8.17.0-x64-linux",
 │                           "args": ["Input/ore.xml"]}
-├── ore-1.8.16.0-4-g3b62ba248-x64-linux
+├── ore-1.8.17.0-x64-linux
 └── lib/                   every shared library the engine needs
 #+end_example
 
@@ -126,9 +127,9 @@ the =app=, =app_version=, and =app_version_platform= rows:
 #+begin_example
 connect $ORES_NATS_URL
 login super_admin@localhost Secure-Password-123
-compute publish-package ORE 1.8.16.0-4-g3b62ba248 x64-linux \
+compute publish-package ORE 1.8.17.0 x64-linux \
     --wrapper-version 1.0.0 \
-    --file external/ore/packages/ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz
+    --file external/ore/packages/ore-1.8.17.0-x64-linux.tar.gz
 logout
 exit
 #+end_example
@@ -151,7 +152,7 @@ registered at:
 
 | Kind | Key |
 |------+-----|
-| Engine package | =packages/ORE/1.8.16.0-4-g3b62ba248/ORE-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz= |
+| Engine package | =packages/ORE/1.8.17.0/ORE-1.8.17.0-x64-linux.tar.gz= |
 | Batch input bundle | =input/{batch_id}.tar.gz= (one per dispatched batch) |
 | Job output archive | =output/{result_id}.tar.gz= (one per finished result) |
 
@@ -183,14 +184,14 @@ same way — the archive is uploaded verbatim, and the manifest argument
 
 ** Stage 3 — create the batch
 
-=compute add-batch= creates a batch row with status =open=. The batch
+The generated =batches add= creates a batch row with status =open=. The batch
 is only a container plus an operator-chosen =external_ref=; nothing
 runs yet:
 
 #+begin_example
 connect $ORES_NATS_URL
 login super_admin@localhost Secure-Password-123
-compute add-batch ir-swap-2026-09-06 15
+batches add ir-swap open system.new_record "first run"
 logout
 exit
 #+end_example
@@ -204,7 +205,7 @@ uses. See [[id:C4C10772-C8E0-4E0E-B976-C407A6135317][How do I add a compute batc
 app-version id, and the input tarball:
 
 #+begin_example
-compute list-app-versions          # note the id of the ORE 1.8.16.0-4-g3b62ba248 row
+app_versions list                  # note the id of the ORE 1.8.17.0 row
 compute dispatch-batch ir-swap-2026-09-06 15 \
     <app_version_id> external/ore/packages/TA002_IR_Swap.tar.gz
 #+end_example
@@ -336,8 +337,8 @@ The operator watches the drain and collects outputs from the shell:
 
 #+begin_example
 compute grid-stats --watch ir-swap-2026-09-06      # poll until the batch drains
-compute list-workunits                             # canonical_result_id per job
-compute list-results                               # result rows: state, outcome, host
+workunits list                                     # canonical_result_id per job
+results list                                       # result rows: state, outcome, host
 compute download-output <result_id> <dest_dir>     # fetch output/{result_id}.tar.gz
 #+end_example
 
@@ -366,3 +367,4 @@ every result has outcome Success. See
 - [[id:92E51A3E-935B-49AE-8429-B36181FB9AFA][How do I download a compute result output from the shell?]] — download-output.
 - [[id:A6E676BD-E907-4F29-8D55-07174C846AA9][How do I download a compute job input from the shell?]] — download-input.
 - [[id:64816867-0D2E-4A9D-A90C-ADD70F3C9B3B][How do I smoke test the compute grid from the shell?]] — the full loop in one script.
+- [[id:CC0A311E-7245-4694-86A1-3170023C385A][Run a compute job end to end]] — the provisioning check and the output comparison.

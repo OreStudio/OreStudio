@@ -90,7 +90,7 @@ record each item's result in the table below.
 | V06 | Not yet | The registry entry is PR 6. |
 | V07 | Fail | Vacuous tests found in the client CRM suite, which is the dead stack. Deferred with H02. |
 | V08 | Fail | 65 generated and 16 hand-written sources have no test that reaches them, including =market_data_client.cpp=, which =ores.synthetic= consumes from four files. |
-| Oresmd coverage | In progress | 43 ORE series types: 30 represented, 13 recorded with a reason. Of the 30, 21 match the corpus shapes and 9 do not yet. FRA, IMM_FRA and MM's short form are fixed in this pass; the remainder is enumerated with its reason in =check_oresmd_ore_coverage.py=. |
+| Oresmd coverage | In progress | 43 ORE series types: 30 represented, 13 recorded with a reason. Of the 30, 22 match the corpus shapes and 8 do not yet. FRA, IMM_FRA, MM's short form and BASIS_SWAP are fixed; the remainder is enumerated with its reason in =check_oresmd_ore_coverage.py=. |
 | Oresmd test coverage | Pass | All 29 modelled quote types carry both a projection test and a round-trip test. Six were missing the round trip and one the projection; =commodity.cpr= is the single recorded exemption, because the only key it could assert today is the wrong one. The gate enforces the requirement and fails a stale exemption. |
 
 * Notes

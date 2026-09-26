@@ -133,13 +133,8 @@ public:
         BOOST_LOG_SEV(telemetry_handler_lg(), trace)
             << "Ingesting node sample from: " << msg.subject;
 
-        const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
-                                    msg.data.size());
-
-        const auto parsed = rfl::json::read<node_sample_message>(data);
+        const auto parsed = decode<node_sample_message>(msg);
         if (!parsed) {
-            BOOST_LOG_SEV(telemetry_handler_lg(), warn)
-                << "Failed to decode node_sample_message: " << parsed.error().what();
             return;
         }
 

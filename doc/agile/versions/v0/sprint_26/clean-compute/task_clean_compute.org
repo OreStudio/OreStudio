@@ -269,6 +269,32 @@ stay hand-written and are classified as such rather than as infrastructure.
 The blocker stops the two telemetry *entities*. It does not stop the
 protocol, which is a separate model, as the next note records.
 
+** The live run found a wire-format defect
+
+The fleet was started for V03 and the compute service log showed the node
+samples arriving and failing:
+
+#+begin_src text
+[WARN] [ores.compute.messaging.telemetry_handler] Failed to decode
+node_sample_message: Could not parse document: unexpected character,
+expected a JSON value
+#+end_src
+
+The process wire format is =msgpack= (ORES_NATS_WIRE_FORMAT in =.env=),
+and every other handler decodes through
+=ores::service::messaging::decode=, which reads the process codec.
+=telemetry_handler::ingest_node_sample= was the one handler that called
+=rfl::json::read= on the raw bytes, so it could only ever read a JSON body.
+Every node sample the wrappers published was dropped, and nothing failed
+loudly, because a handler that cannot decode a fire-and-forget publish has
+nobody to tell.
+
+The handler now calls =decode<node_sample_message>(msg)= like its
+siblings, so it follows the codec the publisher used. No test covered this:
+the handler has no unit test, and the eventing integration tests register
+their own mappings and never exercise the telemetry ingest path. Only the
+running fleet showed it, which is the lesson sprint 25 recorded.
+
 ** The telemetry protocol is an operation model
 
 The blocker above stops the telemetry *entities*, not the telemetry

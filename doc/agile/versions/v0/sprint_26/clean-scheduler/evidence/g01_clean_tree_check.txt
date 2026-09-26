@@ -1,58 +1,94 @@
-Clean-tree drift checks, run after commit b217ab8c0f
-====================================================
+Clean-tree drift checks
+=======================
 
-1. The component's own gate.
+Revision: 0088c1ff9e, the head after the rebase onto main (tree clean)
+Every check below was run at that revision, and `git status` was empty after
+each one.
 
-    check_component_drift.py --component scheduler-cpp --dry-run
+1. The component's own gate, in its writing mode.
 
-    Checking component 'scheduler-cpp' at address 'ores.cpp' (dry run, no writes)...
-    Checking component 'scheduler-cpp' at address 'ores.doc' (dry run, no writes)...
-    Checking component 'scheduler-cpp' at address 'ores.plantuml' (dry run, no writes)...
-    Checking component 'scheduler-cpp' at address 'ores.shell' (dry run, no writes)...
-    Checking component 'scheduler-cpp' at address 'ores.sql' (dry run, no writes)...
-    No drift: generated output matches the checked-in tree.
+    check_component_drift.py --component scheduler-cpp
+
+    INFO Regeneration complete.
+    No drift: regenerated output matches the checked-in tree.
     exit 0
 
-2. The shared list, which this work changed the shared templates under.
+    This mode regenerates the component in place and then diffs the working
+    tree, so it is the authoritative form. It requires a clean tree: while one
+    documentation edit was uncommitted it failed on that file and reported
+    "generated output does not match what's checked in". The script runs
+    `git diff` with no path filter, so it sees every uncommitted file, not only
+    the component's. That is recorded in the task as a defect in the tool, and
+    it is why this check is recorded as run at a committed revision.
+
+2. The shared list, in the non-writing mode.
 
     check_component_drift.py --all --dry-run
 
     Checking component 'iam' at address 'ores.cmake' (dry run, no writes)...
-    Checking component 'iam' at address 'ores.cpp' (dry run, no writes)...
-    Checking component 'iam' at address 'ores.doc' (dry run, no writes)...
-    Checking component 'iam' at address 'ores.plantuml' (dry run, no writes)...
-    Checking component 'iam' at address 'ores.shell' (dry run, no writes)...
-    Checking component 'iam' at address 'ores.sql' (dry run, no writes)...
-    Checking component 'compute-cpp' at the same six addresses...
+    Checking component 'iam' at address 'ores.cpp' ...
+    Checking component 'iam' at address 'ores.doc' ...
+    Checking component 'iam' at address 'ores.plantuml' ...
+    Checking component 'iam' at address 'ores.shell' ...
+    Checking component 'iam' at address 'ores.sql' ...
+    Checking component 'assets-cpp' ... 'compute-cpp' ... 'ore' ...
     No drift: generated output matches the checked-in tree.
     exit 0
 
-The component's own gate lists the same six addresses:
-ores.cmake, ores.cpp, ores.doc, ores.plantuml, ores.shell, ores.sql. The
-baseline file (b01_component_drift_dry_run.txt) shows all six, so the two are
-comparable.
+    The list holds four components at this revision -- iam, assets-cpp,
+    compute-cpp and ore. Its substance for this task is unchanged from the
+    first pass: the three generator fixes are gated on model properties that
+    only the scheduler entity sets (=nullable_tenant_id=, a nullable tenant
+    with a natural key, and =:is_value_type: true=), so the registered
+    components regenerate byte for byte and their SQL, C++ and TypeScript
+    output is untouched.
 
-The second check is the one that matters for the template changes. The three
-generator fixes are gated on model properties that only the scheduler entity
-sets -- =nullable_tenant_id=, a nullable tenant with a natural key, and
-=:is_value_type: true= -- so =iam= and =compute-cpp=, the two registered
-components, regenerate byte for byte as before. Their SQL, C++ and TypeScript
-output is untouched.
+3. The rest of the V05 set.
 
-The codegen suite: 571 passed, 0 failed
-(=projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q=),
-against 563 before this work added 15 cases across the three regression tests
-named in g01_regeneration.txt (7 in test_nullable_tenant_optional.py,
-4 in test_nullable_tenant_natural_key_index.py, 4 in
-test_value_type_column.py).
+    check_model_drift.py                 No model drift: every bound model
+                                         agrees with its profile (1 known
+                                         exception: ores.reporting's
+                                         has_workspace_id).
+    check_handler_permissions.py         handler permissions are seeded
+                                         (3 component(s), 166 distinct codes).
+    check_populate_references.py         populate references resolve.
+    check_protocol_twin_coverage.py      all 34 generated protocol headers in
+                                         4 committed components have a
+                                         TypeScript twin; no model opts out.
+    regenerate_shell_recipe_inventory.py --check
+                                         (no output: the inventory is current)
+    regenerate_cmake_component_files.py --component ores.scheduler.core --check
+    regenerate_cmake_component_files.py --component ores.testing --check
+                                         All component_files.cmake up to date.
+    regenerate_physical_space_inventories.py --check
+                                         41 inventory table(s) up to date.
+                                         This check arrived red at this revision,
+                                         over one line of the ores.doc.knowledge
+                                         table: commit 822a433087 on main changed
+                                         the ores.doc.knowledge.investigation
+                                         archetype's description without
+                                         regenerating the group that lists it.
+                                         The generated line is refreshed in this
+                                         branch, and the record says why.
+    validate_docs.sh                     OK: all 40 components pass
+                                         documentation checks.
+    compass.sh --no-deps lint            filetags and generator markers are
+                                         valid.
 
-The component's own suites, from the committed tree:
+The codegen suite and the component's suites
+--------------------------------------------
 
-    ores.scheduler.api.tests       All tests passed (29 assertions in 5 test cases)
-    ores.scheduler.service.tests   All tests passed (26 assertions in 10 test cases)
-    ores.scheduler.core.tests      built and ran; its one case is the generated
-                                   eventing integration test, which fails with
-                                   "NATS connect failed: No server available"
-                                   because the fleet is down. It is a live-fleet
-                                   test, not a defect: V02 records it as waiting
-                                   on the fleet.
+At the same revision, with the fleet up:
+
+    codegen suite                          608 passed, 0 failed
+                                           (projects/ores.codegen/venv/bin/python
+                                           -m pytest projects/ores.codegen/tests -q)
+    ores.scheduler.api.tests               All tests passed (33 assertions in 6 test cases)
+    ores.scheduler.core.tests              All tests passed (84 assertions in 22 test cases)
+    ores.scheduler.service.tests           All tests passed (26 assertions in 10 test cases)
+
+An earlier revision of this file recorded the codegen suite at 571 and the api
+suite at 29 assertions in 5 cases, and recorded the core suite as failing on a
+NATS connect because the fleet was down. Those figures were true when they were
+written and were left behind as the branch grew; the four lines above are one
+measurement taken together at the revision named at the top.

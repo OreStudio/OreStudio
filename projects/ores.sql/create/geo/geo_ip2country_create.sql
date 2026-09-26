@@ -42,12 +42,9 @@ begin
         return null;
     end if;
 
-    return (
-        (get_byte(inet_send(ip_address), 0)::bigint << 24) +
-        (get_byte(inet_send(ip_address), 1)::bigint << 16) +
-        (get_byte(inet_send(ip_address), 2)::bigint << 8) +
-        (get_byte(inet_send(ip_address), 3)::bigint)
-    );
+    -- The inet difference operator yields the address as an integer, which is
+    -- the space the ip2country ranges are stored in.
+    return ip_address - '0.0.0.0'::inet;
 end;
 $$ language plpgsql immutable strict;
 

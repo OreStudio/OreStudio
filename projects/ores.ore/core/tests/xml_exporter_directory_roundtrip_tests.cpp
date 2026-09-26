@@ -130,9 +130,8 @@ TEST_CASE("roundtrip mirrors every portfolio in the ORE example corpus", tags) {
     scratch_dir out("ores_ore_directory_roundtrip");
     const auto summary = exporter::roundtrip(input, out.path);
 
-    INFO("total=" << summary.total_xml_files << " skipped=" << summary.skipped
-                  << " written=" << summary.output_files_written
-                  << " mapped=" << summary.trades_mapped
+    INFO("total=" << summary.total_xml_files << " skipped=" << summary.skipped << " written="
+                  << summary.output_files_written << " mapped=" << summary.trades_mapped
                   << " passthrough=" << summary.trades_passthrough);
 
     CHECK(summary.total_xml_files > 0);
@@ -190,9 +189,8 @@ TEST_CASE("roundtrip classifies a mixed ORE input directory", tags) {
     scratch_dir out("ores_ore_directory_roundtrip_mixed");
     const auto summary = exporter::roundtrip(input, out.path);
 
-    INFO("total=" << summary.total_xml_files << " skipped=" << summary.skipped
-                  << " currencies=" << summary.currency_files
-                  << " calendars=" << summary.calendar_files
+    INFO("total=" << summary.total_xml_files << " skipped=" << summary.skipped << " currencies="
+                  << summary.currency_files << " calendars=" << summary.calendar_files
                   << " conventions=" << summary.convention_files);
 
     CHECK(summary.output_files_written + summary.skipped == summary.total_xml_files);

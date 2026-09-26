@@ -23,24 +23,72 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace utility #F2F2F2 {
-        namespace concurrency #F2F2F2 {
-            class retry_strategy {
-                -count_ : int
+        namespace convert #F2F2F2 {
+            class base64_converter {
             }
         }
-        namespace converter #F2F2F2 {
-            class base32_converter {
+        namespace crypto #F2F2F2 {
+            class sha256 {
             }
-            class base64_converter {
+        }
+        namespace domain #F2F2F2 {
+            class hierarchy_flat_row <<struct>> {
+                +id : boost::uuids::uuid
+                +name : string
+                +parent_id : optional<boost::uuids::uuid>
+            }
+            class hierarchy_node <<struct>> {
+                +id : boost::uuids::uuid
+                +name : string
+                +parent_id : optional<boost::uuids::uuid>
+                +children : vector<hierarchy_node>
+            }
+            enum outcome {
+                ok
+                invalid
+                denied
+                missing
+                conflict
+                unavailable
+                failed
+            }
+            class field_failure <<struct>> {
+                +field : string
+                +code : string
+                +message : string
+            }
+            class result <<struct>> {
+                +outcome : ores::utility::domain::outcome
+                +code : string
+                +message : string
+                +fields : vector<field_failure>
+            }
+            enum precondition_kind {
+                any
+                must_not_exist
+                must_match_version
+            }
+            class precondition <<struct>> {
+                +kind : precondition_kind
+                +version : optional<uint32_t>
+            }
+            class change_intent <<struct>> {
+                +reason_code : string
+                +commentary : string
+            }
+            class order <<struct>> {
+                +field : string
+                +descending : bool
+            }
+            enum scope {
+                direct
+                subtree
             }
         }
         namespace faker #F2F2F2 {
             class datetime {
-                +hour : int year, int month, int day, int
             }
             class internet {
-            }
-            class totp {
             }
         }
         namespace generation #F2F2F2 {
@@ -71,6 +119,8 @@ namespace ores #F2F2F2 {
             class common_configuration {
             }
             class environment_mapper_factory {
+            }
+            class shared_domain_registry {
             }
         }
         namespace serialization #F2F2F2 {
@@ -104,15 +154,6 @@ namespace ores #F2F2F2 {
                 limit_exceeded
                 last_value
             }
-            class reader {
-                +max_count : uint32_t
-            }
-            class writer {
-            }
-        }
-        namespace string #F2F2F2 {
-            class converter {
-            }
         }
         namespace uuid #F2F2F2 {
             class tenant_id {
@@ -126,6 +167,227 @@ namespace ores #F2F2F2 {
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass reads data members and nothing else, so a class whose
+' content is methods arrives as an empty box, a facet of free functions does
+' not arrive at all, and static constants inside a struct are skipped. The
+' blocks below fill those boxes and draw the relationships the automated pass
+' cannot see.
+'
+' They use fully-qualified class names rather than a reopened namespace block,
+' because this PlantUML version crashes when a namespace that already holds
+' classes is declared a second time. Redeclaring a class merges its members
+' into the box the automated pass already drew, so a refresh keeps both.
+
+class ores::utility::compression::gzip {
+    {static} +compress(input : span<const char>) : vector<char>
+    {static} +decompress(input : span<const char>) : vector<char>
+}
+note top of "ores::utility::compression::gzip"
+Free functions: the one gzip implementation in the tree. ores.nats
+and ores.storage call it instead of linking zlib themselves.
+end note
+
+class ores::utility::convert::base64_converter {
+    {static} +convert(data : vector<uint8_t>) : string
+    {static} +convert(data : string) : vector<uint8_t>
+}
+
+class ores::utility::crypto::sha256 {
+    {static} +hex_digest(data : string_view) : string
+    {static} +hex_digest_of_file(path : filesystem::path) : string
+}
+
+class ores::utility::domain::hierarchy {
+    {static} +build_tree(rows : vector<hierarchy_flat_row>) : vector<hierarchy_node>
+}
+note top of "ores::utility::domain::hierarchy"
+Free function: assembles the flat rows into a forest. A row whose
+parent is absent from the input becomes an extra root rather than
+being dropped.
+end note
+
+note right of "ores::utility::domain::result"
+protocol.hpp is the component's hand-written wire envelope. It
+reaches 255 files outside the component and the codegen templates
+include it, so it is load-bearing and cannot become a per-entity
+model. This is the M06 exception, and the template dependency is
+the reason.
+end note
+
+class ores::utility::faker::datetime {
+    {static} +past_timepoint() : time_point
+    {static} +past_string() : string
+    {static} +make_timepoint(year : int, month : int, day : int, hour : int, min : int, sec : int) : time_point
+}
+
+class ores::utility::faker::internet {
+    {static} +endpoint() : string
+    {static} +ipv4() : ipv4::address
+}
+
+class ores::utility::generation::generation_engine {
+    +generation_engine(seed : uint64_t)
+    +generation_engine()
+    +seed() : uint64_t
+    +random_int(min : int, max : int) : int
+    +random_bool(probability : double) : bool
+    +pick(items : vector<T>) : const T&
+    +generate_uuid() : boost::uuids::uuid
+    +past_timepoint(years_back : int) : time_point
+    +alphanumeric(length : size_t) : string
+}
+note right of "ores::utility::generation::generation_engine"
+Every random value in the tree comes from this one mt19937_64,
+seeded at construction. generate_uuid builds the RFC 9562 version
+and variant bits itself; it does not use uuid_v7_generator.
+end note
+
+class ores::utility::generation::generation_context {
+    +generation_context(seed : uint64_t, initial : entries)
+    +generation_context(initial : entries)
+    +child(overrides : entries) : generation_context
+    +engine() : generation_engine&
+    +env() : const generation_environment&
+    +generate_uuid() : boost::uuids::uuid
+    +random_int(min : int, max : int) : int
+    +alphanumeric(length : size_t) : string
+}
+note right of "ores::utility::generation::generation_context"
+An engine plus a scoped environment. child() shares the engine,
+so a nested context continues the same random sequence.
+end note
+
+class ores::utility::generation::generation_environment {
+    +generation_environment(initial : entries)
+    +generation_environment(parent : shared_ptr<const generation_environment>, overrides : entries)
+    +get(key : string_view) : optional<string>
+    +get_or(key : string_view, default_value : string) : string
+    +has(key : string_view) : bool
+    +parent() : shared_ptr<const generation_environment>
+}
+
+class ores::utility::generation::generation_keys <<struct>> {
+    {static} +modified_by : string_view
+    {static} +tenant_id : string_view
+    {static} +party_id : string_view
+    {static} +counterparty_id : string_view
+    {static} +account_id : string_view
+    {static} +catalog_id : string_view
+}
+
+class ores::utility::generation::tree_builder {
+    {static} +generate_tree(total_count : size_t, max_depth : size_t, engine : generation_engine&) : vector<tree_node>
+}
+note top of "ores::utility::generation::tree_builder"
+Free function: a parent-first node list for a self-referencing
+table, so the rows can be inserted in that order.
+end note
+
+class ores::utility::program_options::common_configuration {
+    {static} +make_options_description() : options_description
+    {static} +read_options(vm : variables_map&) : common_options
+}
+
+class ores::utility::program_options::environment_mapper_factory {
+    {static} +make_mapper(app_name : string) : function<string(const string&)>
+}
+
+class ores::utility::program_options::shared_domain_registry {
+    {static} +register_domain(prefix : string, allowed_suffixes : set<string>) : void
+    {static} +domains() : const map<string, set<string>>&
+}
+
+class ores::utility::rfl::reflectors {
+    {static} +Reflector<boost::uuids::uuid>
+    {static} +Reflector<tenant_id>
+    {static} +Reflector<optional<boost::uuids::uuid>>
+    {static} +Reflector<year_month_day>
+    {static} +Reflector<ip::address>
+    {static} +Reflector<error_code>
+}
+note top of "ores::utility::rfl::reflectors"
+Template specialisations, one per type, giving each its JSON
+spelling. The error_code one also exists because GCC 15
+mis-deduces the enum range in rfl's own detection.
+end note
+
+class ores::utility::rfl::time_point_parser {
+    {static} +read(reader, var) : Result<time_point>
+    {static} +write(writer, tp, parent) : void
+}
+note top of "ores::utility::rfl::time_point_parser"
+The rfl parser for a system_clock time point. It reads and writes
+the ISO 8601 UTC form that ores.platform::time::datetime owns.
+end note
+
+note right of "ores::utility::serialization::error_code"
+Misplaced: it speaks the retired binary protocol and belongs with
+messaging. Its one remaining consumer is
+ores.iam.core/service/signup_service.hpp, so the move is recorded
+for separate work rather than done here.
+end note
+
+class ores::utility::streaming::std_vector {
+    {static} +operator<<(s : ostream&, v : vector<T>) : ostream&
+}
+note top of "ores::utility::streaming::std_vector"
+Writes a vector as JSON: an ostream operator in namespace std,
+which is the narrow form the standard allows for a template over
+a standard type.
+end note
+
+class ores::utility::streaming::parsers {
+    {static} +Parser<boost::uuids::uuid>
+    {static} +Parser<tenant_id>
+}
+note top of "ores::utility::streaming::parsers"
+The rfl parsers that give uuid and tenant_id their string form,
+which their private members would otherwise hide.
+end note
+
+class ores::utility::string::short_code_generator {
+    {static} +strip_corporate_suffixes(name : string) : string
+    {static} +generate_short_code(name : string) : string
+    {static} +generate_unique_short_code(name : string, used_codes : unordered_set<string>&) : string
+}
+note top of "ores::utility::string::short_code_generator"
+Free functions: a counterparty name reduced to a short code. The
+suffix list mirrors ores_utility_strip_corporate_suffix_fn in SQL,
+so the two must change together.
+end note
+
+class ores::utility::uuid::tenant_id {
+    {static} +system() : tenant_id
+    {static} +from_uuid(uuid : boost::uuids::uuid) : expected<tenant_id, string>
+    {static} +from_string(str : string_view) : expected<tenant_id, string>
+    +is_system() : bool
+    +is_nil() : bool
+    +to_uuid() : const boost::uuids::uuid&
+    +to_string() : string
+}
+
+class ores::utility::uuid::uuid_v7_generator {
+    +uuid_v7_generator()
+    +operator()() : boost::uuids::uuid
+}
+
+ores::utility::domain::hierarchy ..> ores::utility::domain::hierarchy_flat_row : consumes
+ores::utility::domain::hierarchy ..> ores::utility::domain::hierarchy_node : produces
+ores::utility::domain::hierarchy_node o-- ores::utility::domain::hierarchy_node : children
+ores::utility::domain::result o-- ores::utility::domain::field_failure : fields
+ores::utility::domain::result ..> ores::utility::domain::outcome : reports
+ores::utility::domain::precondition ..> ores::utility::domain::precondition_kind : has
+ores::utility::generation::generation_context o-- ores::utility::generation::generation_engine : holds
+ores::utility::generation::generation_context o-- ores::utility::generation::generation_environment : holds
+ores::utility::generation::generation_environment o-- ores::utility::generation::generation_environment : parent
+ores::utility::generation::tree_builder ..> ores::utility::generation::generation_engine : draws from
+ores::utility::generation::tree_builder ..> ores::utility::generation::tree_node : produces
+ores::utility::program_options::common_configuration ..> ores::utility::program_options::common_options : returns
+ores::utility::program_options::environment_mapper_factory ..> ores::utility::program_options::shared_domain_registry : falls back to
+ores::utility::rfl::reflectors ..> ores::utility::serialization::error_code : serialises
+ores::utility::rfl::reflectors ..> ores::utility::uuid::tenant_id : serialises
+ores::utility::streaming::parsers ..> ores::utility::uuid::tenant_id : reads and writes
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.utility.puml"

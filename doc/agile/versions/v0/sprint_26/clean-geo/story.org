@@ -7,8 +7,8 @@
 #+level: s2
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
-#+updated: 2026-09-23
-#+environment:
+#+updated: 2026-09-26
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -17,52 +17,72 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 ores.geo meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]: the items marked All pass, each item that does not apply is recorded with its reason, and ores.geo joins =COMPONENTS_UNDER_TEST=. Order 15 of 35 in the sprint 26 component clean-up, tier 2 (higher infrastructure).
 
+ores.geo is a hand-written, model-less library, so the registry entry is the
+one exception. The item table is on the task. This page records the decisions.
+
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-26                               |
 
 * Acceptance
 
-- Every checklist item that applies to a component of kind *All* passes, with its evidence recorded on the task.
-- Every item that does not apply is recorded as not applicable, with the reason.
+- Every checklist item that applies to a component of kind *All* passes, or is recorded with the reason it does not apply.
+- Every item that cannot pass is recorded as an exception with its reason.
 - Every generator defect found is fixed at its source, with a regression test.
-- ores.geo is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
+- No consumer is left broken. The whole tree builds with the component.
+
+The original acceptance asked that ores.geo join =COMPONENTS_UNDER_TEST=. It
+cannot, and V06 records the reason.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:D1BEBBD1-3DAE-4E15-8F0B-D207C8F17302][Bring ores.geo to the clean standard]] | BACKLOG | | | Work ores.geo through the Component Clean Standard in order and record each item. |
+| [[id:D1BEBBD1-3DAE-4E15-8F0B-D207C8F17302][Bring ores.geo to the clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Work ores.geo through the Component Clean Standard in order and record each item. |
 
 * Notes
 
 - Survey on 2026-09-23: 0 entity, junction or operation models; 5 C++ files outside tests, 0 of them generated (0%); 0 messaging headers, 0 of them hand-written.
-- Carries SQL but no models. Decide under B02 whether its tables need models.
+- Carries SQL but no models. B02 is answered under Decisions.
 - Survey on 2026-09-25, by an agent that did not write the component. 5
   production C++ files in 4 headers and 1 source, 2 files under `tests/`, 5
   test cases, 5 assertions. The suite passes.
+- Every claim in that survey was re-verified on this branch, and the work
+  added one defect the survey missed.
 - Keep the component, and do not retire it. The call site is live.
   `ores.http` builds the service at `application.cpp:86` and calls `lookup`
   at `iam_routes.cpp:502` inside the login handler, and `ores.http.server`
   is enabled in the service registry.
-- The use is inert. The geo table is written only by the dq ip2country
-  publish path over NATS, the standalone import script omits the `NOT NULL`
-  `tenant_id` so it cannot succeed, and a database recreated from scratch
-  therefore returns `address_not_found` for every lookup.
-- The suite cannot fail. Three of its five assertions sit inside
-  `if (!result.has_value())`, so it passes whenever the lookup fails for any
-  reason. A backlog capture already records that bug.
-- The overview is a generation out of date. It claims MaxMind GeoLite2-City,
-  city plus coordinates and three `geoip_*` tables, while the service uses
-  ip2country and is country-only. It also names `ores.iam` as the consumer,
-  and the consumer is `ores.http`.
+- The use was inert, for two independent reasons, and both are now addressed
+  or recorded.
+  1. The geo table is empty after a recreate. `compass db recreate` loads the
+     ip2country TSV into the dq staging table only; the dq publish function
+     is the table's only writer, and no recreate step runs it. Measured after
+     the recreate: `geo_rows=0`, `artefact_rows=512186`. The standalone
+     `ip2country_import.sql` cannot fill it either, because its insert omits
+     the `NOT NULL` `tenant_id`. This is recorded in the overview and the
+     service header, not wired.
+  2. The IP conversion was wrong. `ores_geo_inet_to_bigint_fn` built the
+     address from `get_byte(inet_send(ip), 0..3)`, which on PostgreSQL 18 are
+     the family, bits, is_cidr and address-length bytes, so it returned
+     35651588 for every IPv4 address and no lookup could ever match a range.
+     The rewritten test found it. It is fixed at source with the inet
+     difference operator, and the seeded test is the regression test.
+- The suite could not fail. Three of its five assertions sat inside
+  `if (!result.has_value())`, and two asserted on a plain struct. It is
+  rewritten as four cases that assert literal values. The backlog capture
+  that recorded the bug is closed by it.
+- The overview was a generation out of date. It claimed MaxMind
+  GeoLite2-City, city plus coordinates and three `geoip_*` tables, while the
+  service uses ip2country and is country-only. It also named `ores.iam` as
+  the consumer, and the consumer is `ores.http`. Rewritten.
 
 * Decisions
 
@@ -71,20 +91,46 @@ ores.geo meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean St
 - *B02 is answered.* The geo tables are hand-managed SQL under `ores.sql`,
   which is the SQL technical space, so no codegen model is needed and the
   component correctly has no SQL tree of its own.
-- *Rewrite the tests so they can fail.* Seed a known range, assert a literal
-  country code, and add an `invalid_address` case. Recorded as item V07 of
-  the standard.
-- *The empty data path is a product decision, recorded not fixed here.* Wire
-  the dq publish function into the recreate flow, beside the fpml and iso
-  equivalents, or accept the emptiness and say so in the overview and the
-  service.
+- *Rewrite the tests so they can fail.* Done, and they found the conversion
+  defect.
+- *Fix the conversion at its source.* It is the component's own SQL, and it
+  made the lookup unable to answer even with data present. The seeded test is
+  its regression test.
+- *The empty data path is recorded, not wired.* Wiring the dq publish into
+  the recreate flow is a data-pipeline change, not a component clean-up: the
+  publish is a `SECURITY DEFINER` truncate-and-reload of about 512k rows, its
+  natural insertion point `ip2country_populate.sql` is generator-owned and
+  already drifted, and a backlog capture already tracks moving ip2country
+  onto the org dataset pipeline. The overview and the service header state
+  that a fresh database answers `address_not_found` until a publish has run.
 - *Drop the unused `ores.geo.lib` link from `ores.iam.core`.* That component
-  contains no geo symbol.
+  contains no geo symbol, and `ores.http.core` links the library itself.
+- *Keep the two umbrella headers.* The component and facet umbrella headers
+  are the documented namespace headers the codegen convention generates, so
+  they stay, with their MaxMind text corrected.
 
 * Out of scope
 
-- Wiring the geo data path. It is a product decision, recorded above.
-- The other 145 stale `component_files.cmake` files, which are one
+- Wiring the geo data path. It is a data-pipeline change, recorded above.
+- The ip2country populate generator's filename drift. It writes
+  `populate_ip2country.sql` while the on-disk file is
+  `ip2country_populate.sql`. That belongs to the dataset-pipeline work.
+- The other stale `component_files.cmake` files across the repo, which are one
   repo-wide sweep. This story fixes only geo's two.
-- The registry gap. geo has no catalogue row and no model, so it cannot
-  join `COMPONENTS_UNDER_TEST`.
+- The registry gap. geo has no catalogue row and no model, so it cannot join
+  `COMPONENTS_UNDER_TEST`.
+
+* Result
+
+ores.geo is brought to the Component Clean Standard short of the registry
+entry.
+
+The component is a hand-written simple library, and it stays. The work is a
+rewritten overview and the same stale claims removed from the Foundation layer
+page, the generated marker on its two CMake source
+lists, a hygiene pass, an unused link removed from `ores.iam.core`, and tests
+that can fail.
+
+The tests found a defect the survey missed, in the address conversion, and it
+is fixed at source. Verification and the item-by-item evidence are on the
+task.

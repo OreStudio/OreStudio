@@ -917,6 +917,27 @@ So the second half is service scaffolding rather than a registrar call, and the
 ordering constraint on =start()= is the part that is easy to get wrong: a
 subscription made after the source starts can miss the event it exists to catch.
 
+** V06 the registry entry, and the half of it that cannot pass
+
+=workflow-cpp= is now in =COMPONENTS_UNDER_TEST=, so the drift gate covers it
+permanently rather than as a check somebody remembers to run. The component's own
+drift check passes with it registered, and the protocol-twin gate still reports
+three committed components and stays intact.
+
+The second half of the acceptance -- that =check_component_drift.py --all= passes
+-- cannot be met from this task. That run fails on twenty-four components, and it
+already did before this work started: =ores.reporting.core='s source list was the
+control, stale on a component nothing here touched. Fixing twenty-three other
+components is not this component's clean-up, so the honest state is that the
+component is registered and green on its own gate while the tree-wide run stays
+red for reasons that predate it.
+
+One practical note on running the gate: it requires a clean working tree. Editing
+any file and running it reports "generated output does not match what's checked
+in" with no detail, which is the check refusing to diff against a dirty tree
+rather than a real drift. It cost a confusing failure here before the pattern was
+clear.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

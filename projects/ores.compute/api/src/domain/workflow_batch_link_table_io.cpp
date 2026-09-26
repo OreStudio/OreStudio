@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,9 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table_io.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.compute.api/domain/workflow_batch_link_table_io.hpp"
+#include "ores.compute.api/domain/workflow_batch_link_table.hpp"
+#include <ostream>
 
-drop policy if exists workflow_batch_links_tbl_tenant_isolation_policy on "ores_compute_workflow_batch_links_tbl";
-drop rule if exists ores_compute_workflow_batch_links_delete_rule on "ores_compute_workflow_batch_links_tbl";
-drop trigger if exists ores_compute_workflow_batch_links_insert_trg on "ores_compute_workflow_batch_links_tbl";
-drop function if exists ores_compute_workflow_batch_links_insert_fn;
-drop table if exists "ores_compute_workflow_batch_links_tbl";
+namespace ores::compute::domain {
+
+namespace {
+
+void print_workflow_batch_link_table(std::ostream& s, const std::vector<workflow_batch_link>& v) {
+    s << std::endl << convert_to_table(v) << std::endl;
+}
+
+}
+
+std::ostream& operator<<(std::ostream& s, const std::vector<workflow_batch_link>& v) {
+    print_workflow_batch_link_table(s, v);
+    return s;
+}
+
+}

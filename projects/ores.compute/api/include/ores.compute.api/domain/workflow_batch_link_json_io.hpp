@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,9 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_json_io.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_COMPUTE_API_DOMAIN_WORKFLOW_BATCH_LINK_JSON_IO_HPP
+#define ORES_COMPUTE_API_DOMAIN_WORKFLOW_BATCH_LINK_JSON_IO_HPP
 
-drop policy if exists workflow_batch_links_tbl_tenant_isolation_policy on "ores_compute_workflow_batch_links_tbl";
-drop rule if exists ores_compute_workflow_batch_links_delete_rule on "ores_compute_workflow_batch_links_tbl";
-drop trigger if exists ores_compute_workflow_batch_links_insert_trg on "ores_compute_workflow_batch_links_tbl";
-drop function if exists ores_compute_workflow_batch_links_insert_fn;
-drop table if exists "ores_compute_workflow_batch_links_tbl";
+#include "ores.compute.api/domain/workflow_batch_link.hpp"
+#include "ores.compute.api/export.hpp"
+#include <iosfwd>
+
+namespace ores::compute::domain {
+
+/**
+ * @brief Dumps the workflow_batch_link to a stream in JSON format.
+ */
+ORES_COMPUTE_API_EXPORT std::ostream& operator<<(std::ostream& s, const workflow_batch_link& v);
+
+}
+
+#endif

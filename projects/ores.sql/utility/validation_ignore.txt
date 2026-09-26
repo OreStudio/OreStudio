@@ -127,6 +127,13 @@ TENANT_002 ores_compute_grid_samples_tbl
 TENANT_002 ores_compute_node_samples_tbl
 
 # =============================================================================
+# Workflow batch links - the batch id is a UUID and one workflow step waits for
+# one batch, so the key is already unique across tenants. tenant_id is a column
+# and the row-level security policy is what keeps a tenant to its own rows.
+# =============================================================================
+TENANT_002 ores_compute_workflow_batch_links_tbl
+
+# =============================================================================
 # Database info table - single-row system metadata, not tenant-specific.
 # Records schema version, git commit and build environment at creation time.
 # There is exactly one row per database instance; tenant_id has no meaning here.

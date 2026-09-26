@@ -1,10 +1,10 @@
 === SQL Schema Validation ===
 
+WARNING [TENANT_002] create/compute/compute_workflow_batch_links_create.sql:46
+  Table 'ores_compute_workflow_batch_links_tbl' missing 'tenant_id' in primary key
 
 === Validation Summary ===
-Tables parsed: 303
+Tables parsed: 304
 Functions parsed: 0
 Views parsed: 0
-Warnings: 0
-
-=== Validation Passed ===
+Warnings: 1

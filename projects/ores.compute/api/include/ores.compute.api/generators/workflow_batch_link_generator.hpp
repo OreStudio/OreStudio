@@ -19,37 +19,31 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_entity.hpp.mustache
+ * Template: cpp_domain_type_generator.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_COMPUTE_CORE_REPOSITORY_WORKFLOW_BATCH_LINK_ENTITY_HPP
-#define ORES_COMPUTE_CORE_REPOSITORY_WORKFLOW_BATCH_LINK_ENTITY_HPP
+#ifndef ORES_COMPUTE_API_GENERATORS_WORKFLOW_BATCH_LINK_GENERATOR_HPP
+#define ORES_COMPUTE_API_GENERATORS_WORKFLOW_BATCH_LINK_GENERATOR_HPP
 
-#include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
-#include <optional>
-#include <ostream>
-#include <string>
+#include "ores.compute.api/domain/workflow_batch_link.hpp"
+#include "ores.compute.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
-namespace ores::compute::repository {
-
-using db_timestamp = ores::database::repository::db_timestamp;
+namespace ores::compute::generators {
 
 /**
- * @brief Represents a workflow batch link in the database.
+ * @brief Generates a synthetic workflow_batch_link.
  */
-struct workflow_batch_link_entity {
-    constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_compute_workflow_batch_links_tbl";
+ORES_COMPUTE_API_EXPORT domain::workflow_batch_link
+generate_synthetic_workflow_batch_link(utility::generation::generation_context& ctx);
 
-    sqlgen::PrimaryKey<std::string> batch_id;
-    std::string tenant_id;
-    std::string workflow_step_id;
-    std::string workflow_instance_id;
-    std::string created_at;
-};
-
-std::ostream& operator<<(std::ostream& s, const workflow_batch_link_entity& v);
+/**
+ * @brief Generates N synthetic workflow_batch_links.
+ */
+ORES_COMPUTE_API_EXPORT std::vector<domain::workflow_batch_link>
+generate_synthetic_workflow_batch_links(std::size_t n,
+                                        utility::generation::generation_context& ctx);
 
 }
 

@@ -41,6 +41,7 @@
 \ir ./compute_results_create.sql
 \ir ./compute_results_notify_trigger_create.sql
 \ir ./compute_workflow_batch_links_create.sql
+\ir ./compute_workflow_batch_links_notify_trigger_create.sql
 \ir ./compute_grid_samples_create.sql
 \ir ./compute_grid_samples_notify_trigger_create.sql
 \ir ./compute_node_samples_create.sql

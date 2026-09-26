@@ -132,16 +132,15 @@ void report_submit_handler::submit(ores::nats::message msg) {
 
         // Record the async bridge row: batch_workflow_bridge will publish
         // step_completed_event once the batch reaches "closed" status.
-        repository::workflow_batch_link_entity link;
-        link.batch_id = batch_id;
-        link.tenant_id = req.tenant_id;
+        domain::workflow_batch_link link;
+        link.batch_id = batch_uuid;
+        link.tenant_id = utility::uuid::tenant_id::from_string(req.tenant_id).value();
         link.workflow_step_id = wf->step_id;
         link.workflow_instance_id = wf->instance_id;
-        link.created_at =
-            ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now());
+        link.created_at = std::chrono::system_clock::now();
 
         repository::workflow_batch_link_repository link_repo;
-        link_repo.create(tenant_ctx, link);
+        link_repo.write(tenant_ctx, link);
 
         BOOST_LOG_SEV(lg(), info) << "submit_compute deferred | instance=" << req.report_instance_id
                                   << " batch=" << batch_id << " workunits=" << workunit_ids.size()

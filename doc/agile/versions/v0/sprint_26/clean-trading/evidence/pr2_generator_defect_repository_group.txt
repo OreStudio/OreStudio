@@ -1,0 +1,55 @@
+PR 2, the second generator defect the build found
+
+Measured 2026-09-26 on feature/sync-trading-drift after the equality fix.
+
+$ cmake --build build/output/linux-clang-debug-make --target ores.trading.core.lib -j 3
+
+projects/ores.trading/core/src/repository/balance_guaranteed_swap_instrument_repository.cpp:47:69:
+error: no member named 'instrument_id' in
+'ores::trading::domain::balance_guaranteed_swap_instrument'
+projects/ores.trading/core/src/repository/balance_guaranteed_swap_instrument_repository.cpp:65:15:
+error: no member named 'version' in
+'ores::trading::domain::balance_guaranteed_swap_instrument'
+
+The regenerated repository addresses the identity columns flat:
+    v.instrument_id
+    v.version
+The domain type nests them, and the committed hand-written repository
+already says so:
+    git show HEAD:projects/ores.trading/core/src/repository/balance_guaranteed_swap_instrument_repository.cpp
+    ... << "instrument_id: " << v.identity.instrument_id;
+
+Why
+---
+The 26 instrument entities declare the older group pair:
+
+    ** Flags
+    :PROPERTIES:
+    :domain_identity_group: ores.trading.instrument_identity
+    :domain_audit_group:    ores.dq.audit_record
+    :END:
+
+cpp_domain_type_class.hpp.mustache and cpp_domain_type_mapper.cpp.mustache
+honour the pair through has_identity_group/has_audit_group.
+cpp_domain_type_repository.cpp.mustache does not, so it emits flat
+accessors for columns the domain class nests.
+
+The modern form, the ** Domain groups table, is what trade uses, and the
+repository template does honour it. The two forms differ in more than
+syntax: the table replaces the struct body, so an entity using it must
+group every column, while the pair leaves the entity's own columns flat.
+
+The experiment that confirmed this
+----------------------------------
+All 26 models were migrated to the table form, their Domain includes
+blocks were removed as the loader requires, and the loader was extended
+to resolve a group from another component. The loader then refused every
+one of them:
+
+    column(s) description, lockout_days, maturity_date, start_date
+    belong to no domain group. A grouped struct is its member list, so a
+    column no group carries is absent from it.
+
+So the table form needs a third field group per instrument, and it
+changes the wire shape of 26 types. Both edits were reverted, and the
+cross-component resolution is not in the tree.

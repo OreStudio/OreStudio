@@ -1,0 +1,18 @@
+PR 2 drift baseline, re-measured at the start of the task
+
+Measured 2026-09-26 at 39f99acef3, the head PR 1 merged into, on a
+still tree.
+
+$ projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --component trading-cpp --dry-run
+
+1636 file(s) would change, 115 file(s) would be created (1751 file(s) in total).
+exit code: 1
+
+The figure and the cause classification are unchanged from
+b01_component_drift_dry_run.txt, which PR 1 recorded at b79609d808.
+The PR 1 change touched documentation only. The classification is not
+re-derived here because the totals match block for block.
+
+The 115 creates are the 57 event headers, the 9 per-family instrument
+protocols, the 9 handler headers, the 9 registrar headers, the 9
+registrar sources and the 22 shell recipes.

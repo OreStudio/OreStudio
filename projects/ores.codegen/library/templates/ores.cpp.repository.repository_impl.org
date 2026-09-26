@@ -78,7 +78,7 @@ ores::utility::domain::precondition
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
 {{#has_audit_columns}}
     return {ores::utility::domain::precondition_kind::must_match_version,
-            static_cast<std::uint32_t>(current.front().version)};
+            static_cast<std::uint32_t>(current.front().{{domain_entity.scaffold_prefix}}version)};
 {{/has_audit_columns}}
 {{^has_audit_columns}}
     // No version column to state, so a replace names no claim at all; the
@@ -99,10 +99,10 @@ domain::{{entity_singular}} {{entity_singular}}_repository::apply_claim(
     case precondition_kind::must_not_exist:
         // Zero states that no current row exists, which is the one meaning the
         // store gives a zero version.
-        t.version = 0;
+        t.{{domain_entity.scaffold_prefix}}version = 0;
         break;
     case precondition_kind::must_match_version:
-        t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+        t.{{domain_entity.scaffold_prefix}}version = claim.version ? static_cast<int>(*claim.version) : 0;
         break;
     case precondition_kind::any: {
         // A caller that claims nothing still has to say what it replaces, so
@@ -110,7 +110,7 @@ domain::{{entity_singular}} {{entity_singular}}_repository::apply_claim(
         // this read and the write is a conflict the trigger raises, never a
         // silent overwrite.
         const auto current = read_latest(ctx, {{{primary_key.v_args}}});
-        t.version = current.empty() ? 0 : current.front().version;
+        t.{{domain_entity.scaffold_prefix}}version = current.empty() ? 0 : current.front().{{domain_entity.scaffold_prefix}}version;
         break;
     }
     }
@@ -641,7 +641,7 @@ std::vector<domain::{{entity_singular}}>
 {{#has_audit_columns}}
     // The protocol states the version as a uint32 and the row carries it as an
     // int, so the comparison states the conversion rather than relying on one.
-    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+    if (version && static_cast<std::uint32_t>(current.front().{{domain_entity.scaffold_prefix}}version) != *version)
         return remove_status::conflicting;
 {{/has_audit_columns}}
 {{^current_state}}
@@ -652,7 +652,7 @@ std::vector<domain::{{entity_singular}}>
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
     const auto expected =
-        version ? static_cast<int>(*version) : current.front().version;
+        version ? static_cast<int>(*version) : current.front().{{domain_entity.scaffold_prefix}}version;
 {{/has_audit_columns}}
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
@@ -1002,7 +1002,7 @@ ores::utility::domain::precondition
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
-            static_cast<std::uint32_t>(current.front().version)};
+            static_cast<std::uint32_t>(current.front().{{domain_entity.scaffold_prefix}}version)};
 }
 
 domain::{{name_singular}} {{name_singular}}_repository::apply_claim(
@@ -1014,10 +1014,10 @@ domain::{{name_singular}} {{name_singular}}_repository::apply_claim(
     case precondition_kind::must_not_exist:
         // Zero states that no current row exists, which is the one meaning the
         // store gives a zero version.
-        t.version = 0;
+        t.{{domain_entity.scaffold_prefix}}version = 0;
         break;
     case precondition_kind::must_match_version:
-        t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+        t.{{domain_entity.scaffold_prefix}}version = claim.version ? static_cast<int>(*claim.version) : 0;
         break;
     case precondition_kind::any: {
         // A caller that claims nothing still has to say what it replaces, so
@@ -1025,7 +1025,7 @@ domain::{{name_singular}} {{name_singular}}_repository::apply_claim(
         // this read and the write is a conflict the trigger raises, never a
         // silent overwrite.
         const auto current = read_latest(v.{{left.column}}, v.{{right.column}});
-        t.version = current.empty() ? 0 : current.front().version;
+        t.{{domain_entity.scaffold_prefix}}version = current.empty() ? 0 : current.front().{{domain_entity.scaffold_prefix}}version;
         break;
     }
     }
@@ -1634,14 +1634,14 @@ void {{name_singular}}_repository::remove(
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
     // int, so the comparison states the conversion rather than relying on one.
-    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+    if (version && static_cast<std::uint32_t>(current.front().{{domain_entity.scaffold_prefix}}version) != *version)
         return remove_status::conflicting;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
-    const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto expected = version ? static_cast<int>(*version) : current.front().{{domain_entity.scaffold_prefix}}version;
 {{#left.is_uuid}}
     const auto {{left.column}}_str = boost::uuids::to_string({{left.column}});
 {{/left.is_uuid}}

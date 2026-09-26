@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/cap_floor_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -31,7 +36,7 @@ std::string convert_to_table(const std::vector<cap_floor_instrument>& v) {
     table << fort::header << "ID" << "Type" << "Start Date" << "Maturity Date" << "Recorded At"
           << fort::endr;
 
-    for (const auto& cf : v) {
+    for ([[maybe_unused]] const auto& cf : v) {
         table << cf.identity.instrument_id << cf.identity.trade_type_code << cf.start_date
               << cf.maturity_date << cf.audit.recorded_at << fort::endr;
     }

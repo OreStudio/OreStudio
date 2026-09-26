@@ -17,12 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_TRADING_CORE_SERVICE_BOND_ISSUE_CONVERSION_TARGET_SERVICE_HPP
 #define ORES_TRADING_CORE_SERVICE_BOND_ISSUE_CONVERSION_TARGET_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
+#include "ores.trading.api/messaging/bond_issue_conversion_target_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/bond_issue_conversion_target_repository.hpp"
 #include <chrono>
@@ -61,6 +67,41 @@ public:
     explicit bond_issue_conversion_target_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_bond_issue_conversion_targets_response list_bond_issue_conversion_targets(
+        const messaging::list_bond_issue_conversion_targets_request& request);
+    messaging::get_bond_issue_conversion_target_response get_bond_issue_conversion_target(
+        const messaging::get_bond_issue_conversion_target_request& request);
+    messaging::get_many_bond_issue_conversion_targets_response
+    get_many_bond_issue_conversion_targets(
+        const messaging::get_many_bond_issue_conversion_targets_request& request);
+    messaging::put_bond_issue_conversion_target_response put_bond_issue_conversion_target(
+        const messaging::put_bond_issue_conversion_target_request& request);
+    messaging::put_many_bond_issue_conversion_targets_response
+    put_many_bond_issue_conversion_targets(
+        const messaging::put_many_bond_issue_conversion_targets_request& request);
+    messaging::delete_bond_issue_conversion_target_response delete_bond_issue_conversion_target(
+        const messaging::delete_bond_issue_conversion_target_request& request);
+    messaging::delete_many_bond_issue_conversion_targets_response
+    delete_many_bond_issue_conversion_targets(
+        const messaging::delete_many_bond_issue_conversion_targets_request& request);
+    messaging::list_bond_issue_conversion_target_versions_response
+    list_bond_issue_conversion_target_versions(
+        const messaging::list_bond_issue_conversion_target_versions_request& request);
+    messaging::get_bond_issue_conversion_target_version_response
+    get_bond_issue_conversion_target_version(
+        const messaging::get_bond_issue_conversion_target_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists bond issue conversion targets with pagination support.
      *
      * @param offset Number of records to skip.
@@ -97,6 +138,13 @@ public:
     get_conversion_target(const std::string& issue_id, const std::string& sequence_number);
 
     /**
+     * @brief Retrieves a batch of bond issue conversion targets by primary key.
+     */
+    std::vector<domain::bond_issue_conversion_target>
+    get_conversion_targets(const std::vector<std::string>& issue_ids,
+                           const std::vector<std::string>& sequence_numbers);
+
+    /**
      * @brief Saves a bond issue conversion target (creates or updates).
      *
      * @param conversion_target The bond issue conversion target to save.
@@ -128,6 +176,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a bond issue conversion target.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::bond_issue_conversion_target>
     get_conversion_target_history(const std::string& issue_id, const std::string& sequence_number);
@@ -135,6 +185,24 @@ public:
 private:
     context ctx_;
     repository::bond_issue_conversion_target_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const messaging::bond_issue_conversion_target_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::bond_issue_conversion_target& out);
 };
 
 }

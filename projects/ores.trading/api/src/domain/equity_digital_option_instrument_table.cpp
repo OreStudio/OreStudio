@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/equity_digital_option_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -31,7 +36,7 @@ std::string convert_to_table(const std::vector<equity_digital_option_instrument>
     table << fort::header << "ID" << "Type" << "Underlying" << "Ccy" << "Notional" << "Option Type"
           << "Barrier Type" << "Expiry Date" << "Long/Short" << "Recorded At" << fort::endr;
 
-    for (const auto& edoi : v) {
+    for ([[maybe_unused]] const auto& edoi : v) {
         table << edoi.identity.instrument_id << edoi.identity.trade_type_code
               << edoi.underlying_name << edoi.currency << edoi.notional << edoi.option_type
               << edoi.barrier_type << edoi.expiry_date << edoi.long_short << edoi.audit.recorded_at

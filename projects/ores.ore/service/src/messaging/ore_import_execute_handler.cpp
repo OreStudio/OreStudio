@@ -30,6 +30,7 @@
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/ascot_protocol.hpp"
+#include "ores.trading.api/messaging/balance_guaranteed_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/bond_forward_protocol.hpp"
 #include "ores.trading.api/messaging/bond_future_delivery_basket_protocol.hpp"
 #include "ores.trading.api/messaging/bond_future_protocol.hpp"
@@ -44,6 +45,8 @@
 #include "ores.trading.api/messaging/bond_option_protocol.hpp"
 #include "ores.trading.api/messaging/bond_repo_protocol.hpp"
 #include "ores.trading.api/messaging/bond_trs_protocol.hpp"
+#include "ores.trading.api/messaging/callable_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/cap_floor_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_asian_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_barrier_option_instrument_protocol.hpp"
@@ -53,6 +56,7 @@
 #include "ores.trading.api/messaging/equity_position_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_variance_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/fra_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_asian_forward_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_barrier_option_instrument_protocol.hpp"
@@ -60,6 +64,7 @@
 #include "ores.trading.api/messaging/fx_forward_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_vanilla_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_variance_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/inflation_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_option_exercise_fee_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_option_payment_date_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_option_premium_protocol.hpp"
@@ -68,10 +73,14 @@
 #include "ores.trading.api/messaging/instrument_schedule_date_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_schedule_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_strike_protocol.hpp"
+#include "ores.trading.api/messaging/knock_out_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/rpa_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/swaption_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/trade_envelope_additional_field_protocol.hpp"
 #include "ores.trading.api/messaging/trade_envelope_portfolio_id_protocol.hpp"
 #include "ores.trading.api/messaging/trade_envelope_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.trading.api/messaging/vanilla_swap_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -195,30 +204,30 @@ save_envelope(Nats& nats,
     if (!envelope)
         return {};
 
-    using ores::trading::messaging::save_trade_envelope_additional_field_request;
-    using ores::trading::messaging::save_trade_envelope_portfolio_id_request;
-    using ores::trading::messaging::save_trade_envelope_request;
+    using ores::trading::messaging::put_trade_envelope_additional_field_request;
+    using ores::trading::messaging::put_trade_envelope_portfolio_id_request;
+    using ores::trading::messaging::put_trade_envelope_request;
 
     std::string error;
-    save_trade_envelope_request envelope_req;
-    envelope_req.data.trade_id = trade_id;
-    envelope_req.data.counter_party = envelope->counter_party;
-    envelope_req.data.netting_set_id = envelope->netting_set_id;
-    envelope_req.data.has_portfolio_ids = envelope->portfolio_ids.has_value();
-    envelope_req.data.has_additional_fields = envelope->additional_fields.has_value();
+    put_trade_envelope_request envelope_req;
+    envelope_req.change.write.trade_id = trade_id;
+    envelope_req.change.write.counter_party = envelope->counter_party;
+    envelope_req.change.write.netting_set_id = envelope->netting_set_id;
+    envelope_req.change.write.has_portfolio_ids = envelope->portfolio_ids.has_value();
+    envelope_req.change.write.has_additional_fields = envelope->additional_fields.has_value();
     auto resp = nats_call(nats, envelope_req, error);
-    if (!resp || !resp->success)
+    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
         return error.empty() ? "save_trade_envelope failed" : error;
 
     if (envelope->portfolio_ids) {
         int sequence_number = 0;
         for (const auto& portfolio_id : *envelope->portfolio_ids) {
-            save_trade_envelope_portfolio_id_request child_req;
-            child_req.data.trade_id = trade_id;
-            child_req.data.sequence_number = ++sequence_number;
-            child_req.data.portfolio_id = portfolio_id;
+            put_trade_envelope_portfolio_id_request child_req;
+            child_req.change.write.trade_id = trade_id;
+            child_req.change.write.sequence_number = ++sequence_number;
+            child_req.change.write.portfolio_id = portfolio_id;
             auto child_resp = nats_call(nats, child_req, error);
-            if (!child_resp || !child_resp->success)
+            if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
                 return error.empty() ? "save_trade_envelope_portfolio_id failed" : error;
         }
     }
@@ -226,13 +235,13 @@ save_envelope(Nats& nats,
     if (envelope->additional_fields) {
         int sequence_number = 0;
         for (const auto& field : *envelope->additional_fields) {
-            save_trade_envelope_additional_field_request child_req;
-            child_req.data.trade_id = trade_id;
-            child_req.data.sequence_number = ++sequence_number;
-            child_req.data.name = field.name;
-            child_req.data.value = field.value;
+            put_trade_envelope_additional_field_request child_req;
+            child_req.change.write.trade_id = trade_id;
+            child_req.change.write.sequence_number = ++sequence_number;
+            child_req.change.write.name = field.name;
+            child_req.change.write.value = field.value;
             auto child_resp = nats_call(nats, child_req, error);
-            if (!child_resp || !child_resp->success)
+            if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
                 return error.empty() ? "save_trade_envelope_additional_field failed" : error;
         }
     }
@@ -253,7 +262,7 @@ save_envelope(Nats& nats,
 template <typename Nats>
 std::unordered_map<std::string, std::string>
 read_bond_issue_ids_by_security(Nats& nats, std::string& out_error) {
-    using ores::trading::messaging::get_bond_issues_request;
+    using ores::trading::messaging::list_bond_issues_request;
 
     constexpr std::uint32_t page_size = 200;
     constexpr int max_pages = 500;
@@ -261,11 +270,11 @@ read_bond_issue_ids_by_security(Nats& nats, std::string& out_error) {
     std::unordered_map<std::string, std::string> result;
     std::uint32_t offset = 0;
     for (int page = 0; page < max_pages; ++page) {
-        get_bond_issues_request req;
+        list_bond_issues_request req;
         req.offset = offset;
         req.limit = page_size;
         auto resp = nats_call(nats, req, out_error);
-        if (!resp || !resp->success)
+        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
             return {};
         for (const auto& issue : resp->issues)
             result[issue.security_id] = boost::uuids::to_string(issue.issue_id);
@@ -292,67 +301,68 @@ std::string save_schedule(Nats& nats,
                           int owner_number,
                           const std::string& schedule_role,
                           const ores::trading::domain::bond_schedule_data& schedule) {
-    using ores::trading::messaging::save_instrument_schedule_date_request;
-    using ores::trading::messaging::save_instrument_schedule_request;
+    using ores::trading::messaging::put_instrument_schedule_date_request;
+    using ores::trading::messaging::put_instrument_schedule_request;
 
     std::string error;
     int sequence_number = 0;
     for (const auto& rule : schedule.rules) {
-        save_instrument_schedule_request req;
-        req.data.instrument_id = instrument_id;
-        req.data.owner_role = owner_role;
-        req.data.owner_number = owner_number;
-        req.data.schedule_role = schedule_role;
-        req.data.sequence_number = ++sequence_number;
-        req.data.schedule_kind = "rules";
-        req.data.start_date = rule.start_date;
-        req.data.end_date = rule.end_date;
-        req.data.adjust_end_date_to_previous_month_end = rule.adjust_end_date_to_previous_month_end;
-        req.data.tenor = rule.tenor;
-        req.data.calendar = rule.calendar;
-        req.data.convention = rule.convention;
-        req.data.term_convention = rule.term_convention;
-        req.data.rule = rule.rule;
-        req.data.end_of_month = rule.end_of_month;
-        req.data.end_of_month_convention = rule.end_of_month_convention;
-        req.data.first_date = rule.first_date;
-        req.data.last_date = rule.last_date;
-        req.data.remove_first_date = rule.remove_first_date;
-        req.data.remove_last_date = rule.remove_last_date;
+        put_instrument_schedule_request req;
+        req.change.write.instrument_id = instrument_id;
+        req.change.write.owner_role = owner_role;
+        req.change.write.owner_number = owner_number;
+        req.change.write.schedule_role = schedule_role;
+        req.change.write.sequence_number = ++sequence_number;
+        req.change.write.schedule_kind = "rules";
+        req.change.write.start_date = rule.start_date;
+        req.change.write.end_date = rule.end_date;
+        req.change.write.adjust_end_date_to_previous_month_end =
+            rule.adjust_end_date_to_previous_month_end;
+        req.change.write.tenor = rule.tenor;
+        req.change.write.calendar = rule.calendar;
+        req.change.write.convention = rule.convention;
+        req.change.write.term_convention = rule.term_convention;
+        req.change.write.rule = rule.rule;
+        req.change.write.end_of_month = rule.end_of_month;
+        req.change.write.end_of_month_convention = rule.end_of_month_convention;
+        req.change.write.first_date = rule.first_date;
+        req.change.write.last_date = rule.last_date;
+        req.change.write.remove_first_date = rule.remove_first_date;
+        req.change.write.remove_last_date = rule.remove_last_date;
         auto resp = nats_call(nats, req, error);
-        if (!resp || !resp->success)
+        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_instrument_schedule failed" : error;
     }
 
     for (const auto& dates : schedule.dates) {
-        save_instrument_schedule_request req;
-        req.data.instrument_id = instrument_id;
-        req.data.owner_role = owner_role;
-        req.data.owner_number = owner_number;
-        req.data.schedule_role = schedule_role;
-        req.data.sequence_number = ++sequence_number;
-        req.data.schedule_kind = "dates";
-        req.data.calendar = dates.calendar;
-        req.data.convention = dates.convention;
-        req.data.tenor = dates.tenor;
-        req.data.end_of_month = dates.end_of_month;
-        req.data.include_duplicate_dates = dates.include_duplicate_dates;
+        put_instrument_schedule_request req;
+        req.change.write.instrument_id = instrument_id;
+        req.change.write.owner_role = owner_role;
+        req.change.write.owner_number = owner_number;
+        req.change.write.schedule_role = schedule_role;
+        req.change.write.sequence_number = ++sequence_number;
+        req.change.write.schedule_kind = "dates";
+        req.change.write.calendar = dates.calendar;
+        req.change.write.convention = dates.convention;
+        req.change.write.tenor = dates.tenor;
+        req.change.write.end_of_month = dates.end_of_month;
+        req.change.write.include_duplicate_dates = dates.include_duplicate_dates;
         auto resp = nats_call(nats, req, error);
-        if (!resp || !resp->success)
+        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_instrument_schedule failed" : error;
 
         int date_number = 0;
         for (const auto& date : dates.dates) {
-            save_instrument_schedule_date_request date_req;
-            date_req.data.instrument_id = instrument_id;
-            date_req.data.owner_role = owner_role;
-            date_req.data.owner_number = owner_number;
-            date_req.data.schedule_role = schedule_role;
-            date_req.data.schedule_sequence_number = req.data.sequence_number;
-            date_req.data.sequence_number = ++date_number;
-            date_req.data.schedule_date = date;
+            put_instrument_schedule_date_request date_req;
+            date_req.change.write.instrument_id = instrument_id;
+            date_req.change.write.owner_role = owner_role;
+            date_req.change.write.owner_number = owner_number;
+            date_req.change.write.schedule_role = schedule_role;
+            date_req.change.write.schedule_sequence_number = req.change.write.sequence_number;
+            date_req.change.write.sequence_number = ++date_number;
+            date_req.change.write.schedule_date = date;
             auto date_resp = nats_call(nats, date_req, error);
-            if (!date_resp || !date_resp->success)
+            if (!date_resp || date_resp->result.outcome != ores::utility::domain::outcome::ok)
                 return error.empty() ? "save_instrument_schedule_date failed" : error;
         }
     }
@@ -372,21 +382,21 @@ std::string save_leg_amounts(Nats& nats,
                              int leg_number,
                              const std::string& amount_role,
                              const std::vector<ores::trading::domain::bond_float_data>& amounts) {
-    using ores::trading::messaging::save_bond_leg_amount_request;
+    using ores::trading::messaging::put_bond_leg_amount_request;
 
     std::string error;
     int sequence_number = 0;
     for (const auto& amount : amounts) {
-        save_bond_leg_amount_request req;
-        req.data.instrument_id = instrument_id;
-        req.data.leg_role = leg_role;
-        req.data.leg_number = leg_number;
-        req.data.amount_role = amount_role;
-        req.data.sequence_number = ++sequence_number;
-        req.data.value = amount.value;
-        req.data.start_date = amount.start_date;
+        put_bond_leg_amount_request req;
+        req.change.write.instrument_id = instrument_id;
+        req.change.write.leg_role = leg_role;
+        req.change.write.leg_number = leg_number;
+        req.change.write.amount_role = amount_role;
+        req.change.write.sequence_number = ++sequence_number;
+        req.change.write.value = amount.value;
+        req.change.write.start_date = amount.start_date;
         auto resp = nats_call(nats, req, error);
-        if (!resp || !resp->success)
+        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_leg_amount failed" : error;
     }
     return {};
@@ -407,35 +417,35 @@ std::string save_leg(Nats& nats,
                      const std::string& leg_role,
                      int leg_number,
                      const ores::trading::domain::bond_leg_data& leg) {
-    using ores::trading::messaging::save_bond_leg_amortization_request;
-    using ores::trading::messaging::save_bond_leg_rate_request;
-    using ores::trading::messaging::save_bond_leg_request;
+    using ores::trading::messaging::put_bond_leg_amortization_request;
+    using ores::trading::messaging::put_bond_leg_rate_request;
+    using ores::trading::messaging::put_bond_leg_request;
 
     if (leg.is_empty())
         return {};
 
     std::string error;
-    save_bond_leg_request leg_req;
-    leg_req.data.instrument_id = instrument_id;
-    leg_req.data.leg_role = leg_role;
-    leg_req.data.leg_number = leg_number;
-    leg_req.data.payer = leg.payer;
-    leg_req.data.leg_type = leg.leg_type;
-    leg_req.data.currency = leg.currency;
-    leg_req.data.payment_convention = leg.payment_convention;
-    leg_req.data.payment_lag = leg.payment_lag;
-    leg_req.data.payment_calendar = leg.payment_calendar;
-    leg_req.data.day_counter = leg.day_counter;
-    leg_req.data.last_period_day_counter = leg.last_period_day_counter;
-    leg_req.data.notional_payment_lag = leg.notional_payment_lag;
-    leg_req.data.strict_notional_dates = leg.strict_notional_dates;
-    leg_req.data.indexings_from_asset_leg = leg.indexings_from_asset_leg;
+    put_bond_leg_request leg_req;
+    leg_req.change.write.instrument_id = instrument_id;
+    leg_req.change.write.leg_role = leg_role;
+    leg_req.change.write.leg_number = leg_number;
+    leg_req.change.write.payer = leg.payer;
+    leg_req.change.write.leg_type = leg.leg_type;
+    leg_req.change.write.currency = leg.currency;
+    leg_req.change.write.payment_convention = leg.payment_convention;
+    leg_req.change.write.payment_lag = leg.payment_lag;
+    leg_req.change.write.payment_calendar = leg.payment_calendar;
+    leg_req.change.write.day_counter = leg.day_counter;
+    leg_req.change.write.last_period_day_counter = leg.last_period_day_counter;
+    leg_req.change.write.notional_payment_lag = leg.notional_payment_lag;
+    leg_req.change.write.strict_notional_dates = leg.strict_notional_dates;
+    leg_req.change.write.indexings_from_asset_leg = leg.indexings_from_asset_leg;
     if (leg.settlement) {
-        leg_req.data.settlement_fx_index = leg.settlement->fx_index;
-        leg_req.data.settlement_fixing_date = leg.settlement->fixing_date;
+        leg_req.change.write.settlement_fx_index = leg.settlement->fx_index;
+        leg_req.change.write.settlement_fixing_date = leg.settlement->fixing_date;
     }
     auto leg_resp = nats_call(nats, leg_req, error);
-    if (!leg_resp || !leg_resp->success)
+    if (!leg_resp || leg_resp->result.outcome != ores::utility::domain::outcome::ok)
         return error.empty() ? "save_bond_leg failed" : error;
 
     if (auto failure =
@@ -464,43 +474,43 @@ std::string save_leg(Nats& nats,
                 return failure;
         }
 
-        save_bond_leg_rate_request rate_req;
-        rate_req.data.instrument_id = instrument_id;
-        rate_req.data.leg_role = leg_role;
-        rate_req.data.leg_number = leg_number;
-        rate_req.data.rate_kind = "floating";
-        rate_req.data.index = floating.index;
-        rate_req.data.is_in_arrears = floating.is_in_arrears;
-        rate_req.data.last_recent_period = floating.last_recent_period;
-        rate_req.data.last_recent_period_calendar = floating.last_recent_period_calendar;
+        put_bond_leg_rate_request rate_req;
+        rate_req.change.write.instrument_id = instrument_id;
+        rate_req.change.write.leg_role = leg_role;
+        rate_req.change.write.leg_number = leg_number;
+        rate_req.change.write.rate_kind = "floating";
+        rate_req.change.write.index = floating.index;
+        rate_req.change.write.is_in_arrears = floating.is_in_arrears;
+        rate_req.change.write.last_recent_period = floating.last_recent_period;
+        rate_req.change.write.last_recent_period_calendar = floating.last_recent_period_calendar;
         if (floating.fixing_days)
-            rate_req.data.fixing_days = static_cast<std::int64_t>(*floating.fixing_days);
-        rate_req.data.lookback = floating.lookback;
-        rate_req.data.rate_cutoff = floating.rate_cutoff;
-        rate_req.data.is_averaged = floating.is_averaged;
-        rate_req.data.has_sub_periods = floating.has_sub_periods;
-        rate_req.data.include_spread = floating.include_spread;
-        rate_req.data.is_not_resetting_xccy = floating.is_not_resetting_xccy;
-        rate_req.data.naked_option = floating.naked_option;
-        rate_req.data.local_cap_floor = floating.local_cap_floor;
-        rate_req.data.stub_use_original_curve = floating.stub_use_original_curve;
-        rate_req.data.observation_shift = floating.observation_shift;
+            rate_req.change.write.fixing_days = static_cast<std::int64_t>(*floating.fixing_days);
+        rate_req.change.write.lookback = floating.lookback;
+        rate_req.change.write.rate_cutoff = floating.rate_cutoff;
+        rate_req.change.write.is_averaged = floating.is_averaged;
+        rate_req.change.write.has_sub_periods = floating.has_sub_periods;
+        rate_req.change.write.include_spread = floating.include_spread;
+        rate_req.change.write.is_not_resetting_xccy = floating.is_not_resetting_xccy;
+        rate_req.change.write.naked_option = floating.naked_option;
+        rate_req.change.write.local_cap_floor = floating.local_cap_floor;
+        rate_req.change.write.stub_use_original_curve = floating.stub_use_original_curve;
+        rate_req.change.write.observation_shift = floating.observation_shift;
         if (floating.front_stub_interpolation) {
             const auto& stub = *floating.front_stub_interpolation;
-            rate_req.data.front_stub_short_index = stub.short_index;
-            rate_req.data.front_stub_long_index = stub.long_index;
-            rate_req.data.front_stub_rounding_type = stub.rounding_type;
-            rate_req.data.front_stub_rounding_precision = stub.rounding_precision;
+            rate_req.change.write.front_stub_short_index = stub.short_index;
+            rate_req.change.write.front_stub_long_index = stub.long_index;
+            rate_req.change.write.front_stub_rounding_type = stub.rounding_type;
+            rate_req.change.write.front_stub_rounding_precision = stub.rounding_precision;
         }
         if (floating.back_stub_interpolation) {
             const auto& stub = *floating.back_stub_interpolation;
-            rate_req.data.back_stub_short_index = stub.short_index;
-            rate_req.data.back_stub_long_index = stub.long_index;
-            rate_req.data.back_stub_rounding_type = stub.rounding_type;
-            rate_req.data.back_stub_rounding_precision = stub.rounding_precision;
+            rate_req.change.write.back_stub_short_index = stub.short_index;
+            rate_req.change.write.back_stub_long_index = stub.long_index;
+            rate_req.change.write.back_stub_rounding_type = stub.rounding_type;
+            rate_req.change.write.back_stub_rounding_precision = stub.rounding_precision;
         }
         auto rate_resp = nats_call(nats, rate_req, error);
-        if (!rate_resp || !rate_resp->success)
+        if (!rate_resp || rate_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_leg_rate failed" : error;
 
         if (auto failure = save_schedule(nats,
@@ -521,44 +531,44 @@ std::string save_leg(Nats& nats,
             return failure;
     } else if (leg.rate && leg.rate->formula_based) {
         const auto& formula = *leg.rate->formula_based;
-        save_bond_leg_rate_request rate_req;
-        rate_req.data.instrument_id = instrument_id;
-        rate_req.data.leg_role = leg_role;
-        rate_req.data.leg_number = leg_number;
-        rate_req.data.rate_kind = "formula_based";
-        rate_req.data.index = formula.index;
-        rate_req.data.is_in_arrears = formula.is_in_arrears;
-        rate_req.data.fixing_days = formula.fixing_days;
-        rate_req.data.fixing_calendar = formula.fixing_calendar;
+        put_bond_leg_rate_request rate_req;
+        rate_req.change.write.instrument_id = instrument_id;
+        rate_req.change.write.leg_role = leg_role;
+        rate_req.change.write.leg_number = leg_number;
+        rate_req.change.write.rate_kind = "formula_based";
+        rate_req.change.write.index = formula.index;
+        rate_req.change.write.is_in_arrears = formula.is_in_arrears;
+        rate_req.change.write.fixing_days = formula.fixing_days;
+        rate_req.change.write.fixing_calendar = formula.fixing_calendar;
         auto rate_resp = nats_call(nats, rate_req, error);
-        if (!rate_resp || !rate_resp->success)
+        if (!rate_resp || rate_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_leg_rate failed" : error;
     } else if (leg.rate && leg.rate->fixed) {
-        save_bond_leg_rate_request rate_req;
-        rate_req.data.instrument_id = instrument_id;
-        rate_req.data.leg_role = leg_role;
-        rate_req.data.leg_number = leg_number;
-        rate_req.data.rate_kind = "fixed";
+        put_bond_leg_rate_request rate_req;
+        rate_req.change.write.instrument_id = instrument_id;
+        rate_req.change.write.leg_role = leg_role;
+        rate_req.change.write.leg_number = leg_number;
+        rate_req.change.write.rate_kind = "fixed";
         auto rate_resp = nats_call(nats, rate_req, error);
-        if (!rate_resp || !rate_resp->success)
+        if (!rate_resp || rate_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_leg_rate failed" : error;
     }
 
     int sequence_number = 0;
     for (const auto& amortization : leg.amortizations) {
-        save_bond_leg_amortization_request req;
-        req.data.instrument_id = instrument_id;
-        req.data.leg_role = leg_role;
-        req.data.leg_number = leg_number;
-        req.data.sequence_number = ++sequence_number;
-        req.data.amortization_type = amortization.type;
-        req.data.value = amortization.value;
-        req.data.start_date = amortization.start_date;
-        req.data.end_date = amortization.end_date;
-        req.data.frequency = amortization.frequency;
-        req.data.underflow = amortization.underflow;
+        put_bond_leg_amortization_request req;
+        req.change.write.instrument_id = instrument_id;
+        req.change.write.leg_role = leg_role;
+        req.change.write.leg_number = leg_number;
+        req.change.write.sequence_number = ++sequence_number;
+        req.change.write.amortization_type = amortization.type;
+        req.change.write.value = amortization.value;
+        req.change.write.start_date = amortization.start_date;
+        req.change.write.end_date = amortization.end_date;
+        req.change.write.frequency = amortization.frequency;
+        req.change.write.underflow = amortization.underflow;
         auto resp = nats_call(nats, req, error);
-        if (!resp || !resp->success)
+        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_leg_amortization failed" : error;
     }
 
@@ -602,105 +612,106 @@ template <typename Nats>
 std::string save_option_block(Nats& nats,
                               const boost::uuids::uuid& instrument_id,
                               const ores::trading::domain::bond_instrument_data& data) {
-    using ores::trading::messaging::save_instrument_option_exercise_fee_request;
-    using ores::trading::messaging::save_instrument_option_payment_date_request;
-    using ores::trading::messaging::save_instrument_option_premium_request;
-    using ores::trading::messaging::save_instrument_option_request;
+    using ores::trading::messaging::put_instrument_option_exercise_fee_request;
+    using ores::trading::messaging::put_instrument_option_payment_date_request;
+    using ores::trading::messaging::put_instrument_option_premium_request;
+    using ores::trading::messaging::put_instrument_option_request;
 
     std::string error;
     if (data.option_data) {
         const auto& block = *data.option_data;
-        save_instrument_option_request req;
-        req.data.instrument_id = instrument_id;
-        req.data.long_short = block.long_short;
-        req.data.option_type = block.option_type;
-        req.data.payoff_type = block.payoff_type;
-        req.data.payoff_type_2 = block.payoff_type_2;
-        req.data.style = block.style;
-        req.data.notice_period = block.notice_period;
-        req.data.notice_calendar = block.notice_calendar;
-        req.data.notice_convention = block.notice_convention;
-        req.data.mid_coupon_exercise = block.mid_coupon_exercise;
-        req.data.settlement = block.settlement;
-        req.data.settlement_method = block.settlement_method;
-        req.data.pay_off_at_expiry = block.pay_off_at_expiry;
-        req.data.premium_amount = block.premium_amount;
-        req.data.premium_currency = block.premium_currency;
-        req.data.premium_pay_date = block.premium_pay_date;
-        req.data.exercise_prices = block.exercise_prices;
-        req.data.exercise_fee_settlement_period = block.exercise_fee_settlement_period;
-        req.data.exercise_fee_settlement_calendar = block.exercise_fee_settlement_calendar;
-        req.data.exercise_fee_settlement_convention = block.exercise_fee_settlement_convention;
-        req.data.automatic_exercise = block.automatic_exercise;
+        put_instrument_option_request req;
+        req.change.write.instrument_id = instrument_id;
+        req.change.write.long_short = block.long_short;
+        req.change.write.option_type = block.option_type;
+        req.change.write.payoff_type = block.payoff_type;
+        req.change.write.payoff_type_2 = block.payoff_type_2;
+        req.change.write.style = block.style;
+        req.change.write.notice_period = block.notice_period;
+        req.change.write.notice_calendar = block.notice_calendar;
+        req.change.write.notice_convention = block.notice_convention;
+        req.change.write.mid_coupon_exercise = block.mid_coupon_exercise;
+        req.change.write.settlement = block.settlement;
+        req.change.write.settlement_method = block.settlement_method;
+        req.change.write.pay_off_at_expiry = block.pay_off_at_expiry;
+        req.change.write.premium_amount = block.premium_amount;
+        req.change.write.premium_currency = block.premium_currency;
+        req.change.write.premium_pay_date = block.premium_pay_date;
+        req.change.write.exercise_prices = block.exercise_prices;
+        req.change.write.exercise_fee_settlement_period = block.exercise_fee_settlement_period;
+        req.change.write.exercise_fee_settlement_calendar = block.exercise_fee_settlement_calendar;
+        req.change.write.exercise_fee_settlement_convention =
+            block.exercise_fee_settlement_convention;
+        req.change.write.automatic_exercise = block.automatic_exercise;
 
-        req.data.has_exercise_data = block.exercise_data.has_value();
+        req.change.write.has_exercise_data = block.exercise_data.has_value();
         if (block.exercise_data) {
-            req.data.exercise_date = block.exercise_data->date;
-            req.data.exercise_price = block.exercise_data->price;
+            req.change.write.exercise_date = block.exercise_data->date;
+            req.change.write.exercise_price = block.exercise_data->price;
         }
 
-        req.data.has_payment_data = block.payment_data.has_value();
+        req.change.write.has_payment_data = block.payment_data.has_value();
         if (block.payment_data && block.payment_data->rules) {
             const auto& rules = *block.payment_data->rules;
-            req.data.payment_lag = static_cast<std::int64_t>(rules.lag);
-            req.data.payment_calendar = rules.calendar;
-            req.data.payment_convention = rules.convention;
-            req.data.payment_relative_to = rules.relative_to;
+            req.change.write.payment_lag = static_cast<std::int64_t>(rules.lag);
+            req.change.write.payment_calendar = rules.calendar;
+            req.change.write.payment_convention = rules.convention;
+            req.change.write.payment_relative_to = rules.relative_to;
         }
 
-        req.data.has_settlement_data = block.settlement_data.has_value();
+        req.change.write.has_settlement_data = block.settlement_data.has_value();
         if (block.settlement_data) {
-            req.data.settlement_pay_currency = block.settlement_data->pay_currency;
-            req.data.settlement_fx_index = block.settlement_data->fx_index;
-            req.data.settlement_fixing_date = block.settlement_data->fixing_date;
+            req.change.write.settlement_pay_currency = block.settlement_data->pay_currency;
+            req.change.write.settlement_fx_index = block.settlement_data->fx_index;
+            req.change.write.settlement_fixing_date = block.settlement_data->fixing_date;
         }
 
         auto resp = nats_call(nats, req, error);
-        if (!resp || !resp->success)
+        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_instrument_option failed" : error;
 
         int sequence_number = 0;
         for (const auto& premium : block.premiums) {
-            save_instrument_option_premium_request child;
-            child.data.instrument_id = instrument_id;
-            child.data.sequence_number = ++sequence_number;
-            child.data.amount = premium.amount;
-            child.data.currency = premium.currency;
-            child.data.pay_date = premium.pay_date;
-            child.data.has_settlement = premium.settlement.has_value();
+            put_instrument_option_premium_request child;
+            child.change.write.instrument_id = instrument_id;
+            child.change.write.sequence_number = ++sequence_number;
+            child.change.write.amount = premium.amount;
+            child.change.write.currency = premium.currency;
+            child.change.write.pay_date = premium.pay_date;
+            child.change.write.has_settlement = premium.settlement.has_value();
             if (premium.settlement) {
-                child.data.settlement_pay_currency = premium.settlement->pay_currency;
-                child.data.settlement_fx_index = premium.settlement->fx_index;
-                child.data.settlement_fixing_date = premium.settlement->fixing_date;
+                child.change.write.settlement_pay_currency = premium.settlement->pay_currency;
+                child.change.write.settlement_fx_index = premium.settlement->fx_index;
+                child.change.write.settlement_fixing_date = premium.settlement->fixing_date;
             }
             auto child_resp = nats_call(nats, child, error);
-            if (!child_resp || !child_resp->success)
+            if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
                 return error.empty() ? "save_instrument_option_premium failed" : error;
         }
 
         sequence_number = 0;
         for (const auto& fee : block.exercise_fees) {
-            save_instrument_option_exercise_fee_request child;
-            child.data.instrument_id = instrument_id;
-            child.data.sequence_number = ++sequence_number;
-            child.data.amount = fee.amount;
-            child.data.type = fee.type;
-            child.data.start_date = fee.start_date;
-            child.data.currency = fee.currency;
+            put_instrument_option_exercise_fee_request child;
+            child.change.write.instrument_id = instrument_id;
+            child.change.write.sequence_number = ++sequence_number;
+            child.change.write.amount = fee.amount;
+            child.change.write.type = fee.type;
+            child.change.write.start_date = fee.start_date;
+            child.change.write.currency = fee.currency;
             auto child_resp = nats_call(nats, child, error);
-            if (!child_resp || !child_resp->success)
+            if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
                 return error.empty() ? "save_instrument_option_exercise_fee failed" : error;
         }
 
         if (block.payment_data) {
             int payment_number = 0;
             for (const auto& date : block.payment_data->dates) {
-                save_instrument_option_payment_date_request child;
-                child.data.instrument_id = instrument_id;
-                child.data.sequence_number = ++payment_number;
-                child.data.payment_date = date;
+                put_instrument_option_payment_date_request child;
+                child.change.write.instrument_id = instrument_id;
+                child.change.write.sequence_number = ++payment_number;
+                child.change.write.payment_date = date;
                 auto child_resp = nats_call(nats, child, error);
-                if (!child_resp || !child_resp->success)
+                if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
                     return error.empty() ? "save_instrument_option_payment_date failed" : error;
             }
         }
@@ -740,20 +751,20 @@ template <typename Nats>
 std::string save_strike(Nats& nats,
                         const boost::uuids::uuid& instrument_id,
                         const ores::trading::domain::bond_strike_data& strike) {
-    using ores::trading::messaging::save_instrument_strike_request;
+    using ores::trading::messaging::put_instrument_strike_request;
 
-    save_instrument_strike_request req;
-    req.data.instrument_id = instrument_id;
-    req.data.price_value = strike.price_value;
-    req.data.price_currency = strike.price_currency;
-    req.data.yield_value = strike.yield_value;
-    req.data.yield_compounding = strike.yield_compounding;
-    req.data.bare_value = strike.bare_value;
-    req.data.bare_currency = strike.bare_currency;
+    put_instrument_strike_request req;
+    req.change.write.instrument_id = instrument_id;
+    req.change.write.price_value = strike.price_value;
+    req.change.write.price_currency = strike.price_currency;
+    req.change.write.yield_value = strike.yield_value;
+    req.change.write.yield_compounding = strike.yield_compounding;
+    req.change.write.bare_value = strike.bare_value;
+    req.change.write.bare_currency = strike.bare_currency;
 
     std::string error;
     auto resp = nats_call(nats, req, error);
-    if (!resp || !resp->success)
+    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
         return error.empty() ? "save_instrument_strike failed" : error;
     return {};
 }
@@ -770,33 +781,33 @@ template <typename Nats>
 std::string save_forward(Nats& nats,
                          const boost::uuids::uuid& instrument_id,
                          const ores::trading::domain::bond_instrument_data& data) {
-    using ores::trading::messaging::save_bond_forward_request;
+    using ores::trading::messaging::put_bond_forward_request;
 
     if (!data.forward_long_in_forward && !data.forward_settlement && !data.forward_premium)
         return {};
 
-    save_bond_forward_request req;
-    req.data.instrument_id = instrument_id;
-    req.data.long_in_forward = data.forward_long_in_forward;
+    put_bond_forward_request req;
+    req.change.write.instrument_id = instrument_id;
+    req.change.write.long_in_forward = data.forward_long_in_forward;
     if (data.forward_settlement) {
         const auto& settlement = *data.forward_settlement;
-        req.data.forward_maturity_date = settlement.forward_maturity_date;
-        req.data.forward_settlement_date = settlement.forward_settlement_date;
-        req.data.settlement = settlement.settlement;
-        req.data.amount = settlement.amount;
-        req.data.lock_rate = settlement.lock_rate;
-        req.data.dv01 = settlement.dv01;
-        req.data.lock_rate_day_counter = settlement.lock_rate_day_counter;
-        req.data.settlement_dirty = settlement.settlement_dirty;
+        req.change.write.forward_maturity_date = settlement.forward_maturity_date;
+        req.change.write.forward_settlement_date = settlement.forward_settlement_date;
+        req.change.write.settlement = settlement.settlement;
+        req.change.write.amount = settlement.amount;
+        req.change.write.lock_rate = settlement.lock_rate;
+        req.change.write.dv01 = settlement.dv01;
+        req.change.write.lock_rate_day_counter = settlement.lock_rate_day_counter;
+        req.change.write.settlement_dirty = settlement.settlement_dirty;
     }
     if (data.forward_premium) {
-        req.data.premium_amount = data.forward_premium->amount;
-        req.data.premium_date = data.forward_premium->date;
+        req.change.write.premium_amount = data.forward_premium->amount;
+        req.change.write.premium_date = data.forward_premium->date;
     }
 
     std::string error;
     auto resp = nats_call(nats, req, error);
-    if (!resp || !resp->success)
+    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
         return error.empty() ? "save_bond_forward failed" : error;
     return {};
 }
@@ -810,17 +821,17 @@ template <typename Nats>
 std::string save_delivery_basket(Nats& nats,
                                  const boost::uuids::uuid& instrument_id,
                                  const std::vector<std::string>& basket) {
-    using ores::trading::messaging::save_bond_future_delivery_basket_request;
+    using ores::trading::messaging::put_bond_future_delivery_basket_request;
 
     std::string error;
     int sequence_number = 0;
     for (const auto& delivery_basket_id : basket) {
-        save_bond_future_delivery_basket_request req;
-        req.data.instrument_id = instrument_id;
-        req.data.sequence_number = ++sequence_number;
-        req.data.delivery_basket_id = delivery_basket_id;
+        put_bond_future_delivery_basket_request req;
+        req.change.write.instrument_id = instrument_id;
+        req.change.write.sequence_number = ++sequence_number;
+        req.change.write.delivery_basket_id = delivery_basket_id;
         auto resp = nats_call(nats, req, error);
-        if (!resp || !resp->success)
+        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_future_delivery_basket failed" : error;
     }
     return {};
@@ -845,15 +856,15 @@ std::string
 save_bond_instrument(Nats& nats,
                      const ores::trading::domain::bond_instrument_data& data,
                      std::unordered_map<std::string, std::string>& issue_ids_by_security) {
-    using ores::trading::messaging::save_ascot_request;
-    using ores::trading::messaging::save_bond_future_request;
-    using ores::trading::messaging::save_bond_instrument_request;
-    using ores::trading::messaging::save_bond_issue_call_date_request;
-    using ores::trading::messaging::save_bond_issue_conversion_target_request;
-    using ores::trading::messaging::save_bond_issue_request;
-    using ores::trading::messaging::save_bond_option_request;
-    using ores::trading::messaging::save_bond_repo_request;
-    using ores::trading::messaging::save_bond_trs_request;
+    using ores::trading::messaging::put_ascot_request;
+    using ores::trading::messaging::put_bond_future_request;
+    using ores::trading::messaging::put_bond_instrument_request;
+    using ores::trading::messaging::put_bond_issue_call_date_request;
+    using ores::trading::messaging::put_bond_issue_conversion_target_request;
+    using ores::trading::messaging::put_bond_issue_request;
+    using ores::trading::messaging::put_bond_option_request;
+    using ores::trading::messaging::put_bond_repo_request;
+    using ores::trading::messaging::put_bond_trs_request;
 
     std::string error;
     auto instrument = data.instrument;
@@ -870,39 +881,61 @@ save_bond_instrument(Nats& nats,
     // trade of it tries the issue again rather than opening an instrument
     // against a row that is not there.
     if (issue_is_new) {
-        save_bond_issue_request issue_req;
-        issue_req.data = issue;
+        put_bond_issue_request issue_req;
+        issue_req.change.write.issue_id = issue.issue_id;
+        issue_req.change.write.security_id = issue.security_id;
+        issue_req.change.write.issuer = issue.issuer;
+        issue_req.change.write.currency = issue.currency;
+        issue_req.change.write.face_value = issue.face_value;
+        issue_req.change.write.coupon_rate = issue.coupon_rate;
+        issue_req.change.write.coupon_frequency_code = issue.coupon_frequency_code;
+        issue_req.change.write.day_count_code = issue.day_count_code;
+        issue_req.change.write.issue_date = issue.issue_date;
+        issue_req.change.write.settlement_days = issue.settlement_days;
+        issue_req.change.write.calendar = issue.calendar;
+        issue_req.change.write.credit_curve_id = issue.credit_curve_id;
+        issue_req.change.write.reference_curve_id = issue.reference_curve_id;
+        issue_req.change.write.income_curve_id = issue.income_curve_id;
+        issue_req.change.write.bond_notional = issue.bond_notional;
         auto resp = nats_call(nats, issue_req, error);
-        if (!resp || !resp->success)
+        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_issue failed" : error;
         issue_ids_by_security[issue.security_id] = boost::uuids::to_string(issue.issue_id);
     }
 
-    save_bond_instrument_request instrument_req;
-    instrument_req.data = instrument;
+    put_bond_instrument_request instrument_req;
+    instrument_req.change.write.instrument_id = instrument.identity.instrument_id;
+    instrument_req.change.write.trade_type_code = instrument.identity.trade_type_code;
+    instrument_req.change.write.trade_id = instrument.identity.trade_id;
+    instrument_req.change.write.issue_id = instrument.issue_id;
     auto resp = nats_call(nats, instrument_req, error);
-    if (!resp || !resp->success)
+    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
         return error.empty() ? "save_bond_instrument failed" : error;
 
     int sequence_number = 0;
     for (const auto& call_date : data.call_dates) {
-        save_bond_issue_call_date_request child_req;
-        child_req.data = call_date;
-        child_req.data.issue_id = issue.issue_id;
-        child_req.data.sequence_number = ++sequence_number;
+        put_bond_issue_call_date_request child_req;
+        child_req.change.write.issue_id = call_date.issue_id;
+        child_req.change.write.sequence_number = call_date.sequence_number;
+        child_req.change.write.call_date = call_date.call_date;
+        child_req.change.write.issue_id = issue.issue_id;
+        child_req.change.write.sequence_number = ++sequence_number;
         auto child_resp = nats_call(nats, child_req, error);
-        if (!child_resp || !child_resp->success)
+        if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_issue_call_date failed" : error;
     }
 
     sequence_number = 0;
     for (const auto& target : data.conversion_targets) {
-        save_bond_issue_conversion_target_request child_req;
-        child_req.data = target;
-        child_req.data.issue_id = issue.issue_id;
-        child_req.data.sequence_number = ++sequence_number;
+        put_bond_issue_conversion_target_request child_req;
+        child_req.change.write.issue_id = target.issue_id;
+        child_req.change.write.sequence_number = target.sequence_number;
+        child_req.change.write.underlying_id = target.underlying_id;
+        child_req.change.write.conversion_ratio = target.conversion_ratio;
+        child_req.change.write.issue_id = issue.issue_id;
+        child_req.change.write.sequence_number = ++sequence_number;
         auto child_resp = nats_call(nats, child_req, error);
-        if (!child_resp || !child_resp->success)
+        if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_issue_conversion_target failed" : error;
     }
 
@@ -943,46 +976,78 @@ save_bond_instrument(Nats& nats,
 
     const auto& ttc = instrument.identity.trade_type_code;
     if (ttc == "BondOption" && data.option) {
-        save_bond_option_request fact_req;
-        fact_req.data = *data.option;
-        fact_req.data.instrument_id = instrument.identity.instrument_id;
-        fact_req.data.redemption = data.option_redemption;
-        fact_req.data.price_type = data.option_price_type;
-        fact_req.data.knocks_out = data.option_knocks_out;
+        put_bond_option_request fact_req;
+        fact_req.change.write.instrument_id = (*data.option).instrument_id;
+        fact_req.change.write.option_type = (*data.option).option_type;
+        fact_req.change.write.option_strike = (*data.option).option_strike;
+        fact_req.change.write.redemption = (*data.option).redemption;
+        fact_req.change.write.price_type = (*data.option).price_type;
+        fact_req.change.write.knocks_out = (*data.option).knocks_out;
+        fact_req.change.write.instrument_id = instrument.identity.instrument_id;
+        fact_req.change.write.redemption = data.option_redemption;
+        fact_req.change.write.price_type = data.option_price_type;
+        fact_req.change.write.knocks_out = data.option_knocks_out;
         auto fact_resp = nats_call(nats, fact_req, error);
-        if (!fact_resp || !fact_resp->success)
+        if (!fact_resp || fact_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_option failed" : error;
     } else if (ttc == "BondTRS" && data.trs) {
-        save_bond_trs_request fact_req;
-        fact_req.data = *data.trs;
-        fact_req.data.instrument_id = instrument.identity.instrument_id;
-        fact_req.data.payer = data.trs_payer;
-        fact_req.data.initial_price = data.trs_initial_price;
+        put_bond_trs_request fact_req;
+        fact_req.change.write.instrument_id = (*data.trs).instrument_id;
+        fact_req.change.write.return_type = (*data.trs).return_type;
+        fact_req.change.write.funding_leg_type = (*data.trs).funding_leg_type;
+        fact_req.change.write.funding_rate = (*data.trs).funding_rate;
+        fact_req.change.write.funding_index = (*data.trs).funding_index;
+        fact_req.change.write.payer = (*data.trs).payer;
+        fact_req.change.write.price_type = (*data.trs).price_type;
+        fact_req.change.write.initial_price = (*data.trs).initial_price;
+        fact_req.change.write.instrument_id = instrument.identity.instrument_id;
+        fact_req.change.write.payer = data.trs_payer;
+        fact_req.change.write.initial_price = data.trs_initial_price;
         if (!data.trs_price_type.empty())
-            fact_req.data.price_type = data.trs_price_type;
+            fact_req.change.write.price_type = data.trs_price_type;
         auto fact_resp = nats_call(nats, fact_req, error);
-        if (!fact_resp || !fact_resp->success)
+        if (!fact_resp || fact_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_trs failed" : error;
     } else if (ttc == "BondRepo" && data.repo) {
-        save_bond_repo_request fact_req;
-        fact_req.data = *data.repo;
-        fact_req.data.instrument_id = instrument.identity.instrument_id;
+        put_bond_repo_request fact_req;
+        fact_req.change.write.instrument_id = (*data.repo).instrument_id;
+        fact_req.change.write.repo_type = (*data.repo).repo_type;
+        fact_req.change.write.repo_rate = (*data.repo).repo_rate;
+        fact_req.change.write.repo_index = (*data.repo).repo_index;
+        fact_req.change.write.instrument_id = instrument.identity.instrument_id;
         auto fact_resp = nats_call(nats, fact_req, error);
-        if (!fact_resp || !fact_resp->success)
+        if (!fact_resp || fact_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_repo failed" : error;
     } else if (ttc == "BondFuture" && data.future) {
-        save_bond_future_request fact_req;
-        fact_req.data = *data.future;
-        fact_req.data.instrument_id = instrument.identity.instrument_id;
+        put_bond_future_request fact_req;
+        fact_req.change.write.instrument_id = (*data.future).instrument_id;
+        fact_req.change.write.contract_name = (*data.future).contract_name;
+        fact_req.change.write.contract_notional = (*data.future).contract_notional;
+        fact_req.change.write.long_short = (*data.future).long_short;
+        fact_req.change.write.currency = (*data.future).currency;
+        fact_req.change.write.contract_month = (*data.future).contract_month;
+        fact_req.change.write.deliverable_grade = (*data.future).deliverable_grade;
+        fact_req.change.write.fair_price = (*data.future).fair_price;
+        fact_req.change.write.settlement = (*data.future).settlement;
+        fact_req.change.write.settlement_dirty = (*data.future).settlement_dirty;
+        fact_req.change.write.root_date = (*data.future).root_date;
+        fact_req.change.write.expiry_basis = (*data.future).expiry_basis;
+        fact_req.change.write.settlement_basis = (*data.future).settlement_basis;
+        fact_req.change.write.expiry_lag = (*data.future).expiry_lag;
+        fact_req.change.write.settlement_lag = (*data.future).settlement_lag;
+        fact_req.change.write.last_trading_date = (*data.future).last_trading_date;
+        fact_req.change.write.last_delivery_date = (*data.future).last_delivery_date;
+        fact_req.change.write.instrument_id = instrument.identity.instrument_id;
         auto fact_resp = nats_call(nats, fact_req, error);
-        if (!fact_resp || !fact_resp->success)
+        if (!fact_resp || fact_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_future failed" : error;
     } else if (ttc == "Ascot" && data.ascot_row) {
-        save_ascot_request fact_req;
-        fact_req.data = *data.ascot_row;
-        fact_req.data.instrument_id = instrument.identity.instrument_id;
+        put_ascot_request fact_req;
+        fact_req.change.write.instrument_id = (*data.ascot_row).instrument_id;
+        fact_req.change.write.ascot_option_type = (*data.ascot_row).ascot_option_type;
+        fact_req.change.write.instrument_id = instrument.identity.instrument_id;
         auto fact_resp = nats_call(nats, fact_req, error);
-        if (!fact_resp || !fact_resp->success)
+        if (!fact_resp || fact_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_ascot failed" : error;
     }
 
@@ -1268,20 +1333,42 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         const auto src = item.source_file.string();
         const auto ext_id = item.trade.identity.external_id;
 
-        ores::trading::messaging::save_trade_request save_req;
-        save_req.trades = {std::move(item.trade)};
+        ores::trading::messaging::put_many_trades_request save_req;
+        {
+            ores::trading::messaging::trade_change change;
+            const auto& trade = item.trade;
+            change.write.id = trade.identity.id;
+            change.write.external_id = trade.identity.external_id;
+            change.write.book_id = trade.parties.book_id;
+            change.write.portfolio_id = trade.parties.portfolio_id;
+            change.write.successor_trade_id = trade.parties.successor_trade_id;
+            change.write.trade_type = trade.classification.trade_type;
+            change.write.counterparty_id = trade.parties.counterparty_id;
+            change.write.product_type =
+                ores::trading::domain::to_string(trade.classification.product_type);
+            change.write.instrument_id = trade.classification.instrument_id;
+            change.write.asset_class = trade.classification.asset_class;
+            change.write.netting_set_id = trade.classification.netting_set_id;
+            change.write.activity_type_code = trade.classification.activity_type_code;
+            change.write.status_id = trade.classification.status_id;
+            change.write.trade_date = trade.lifecycle.trade_date.value_or("");
+            change.write.execution_timestamp = trade.lifecycle.execution_timestamp.value_or("");
+            change.write.effective_date = trade.lifecycle.effective_date.value_or("");
+            change.write.termination_date = trade.lifecycle.termination_date.value_or("");
+            save_req.changes.push_back(std::move(change));
+        }
 
         std::string trade_error;
         auto resp = nats_call(delegated_nats, save_req, trade_error);
-        if (!resp || !resp->success) {
-            const auto trade_msg = resp ? resp->message : trade_error;
+        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
+            const auto trade_msg = resp ? resp->result.message : trade_error;
             BOOST_LOG_SEV(lg(), warn)
                 << "ore.import.execute trade save failed | corr=" << req.correlation_id
                 << " trade_id=" << tid << " source=" << src << " error=" << trade_msg;
             result.item_errors.push_back(
                 {.source_file = src, .item_id = ext_id, .message = trade_msg});
         } else {
-            result.saved_trade_ids.push_back(tid);
+            result.saved_trade_external_ids.push_back(ext_id);
             const auto envelope_error = save_envelope(delegated_nats, trade_id, item.envelope);
             if (!envelope_error.empty()) {
                 BOOST_LOG_SEV(lg(), warn)
@@ -1294,7 +1381,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     }
 
     BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 7 complete | corr=" << req.correlation_id
-                              << " saved=" << result.saved_trade_ids.size()
+                              << " saved=" << result.saved_trade_external_ids.size()
                               << " failed=" << result.item_errors.size();
 
     // -------------------------------------------------------------------------
@@ -1326,54 +1413,131 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             using InstrT = std::decay_t<decltype(instr)>;
                             using namespace ores::trading::domain;
                             if constexpr (std::is_same_v<InstrT, fra_instrument>) {
-                                save_fra_instrument_request req;
-                                req.data = instr;
+                                put_fra_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.start_date = instr.start_date;
+                                req.change.write.end_date = instr.end_date;
+                                req.change.write.currency = instr.currency;
+                                req.change.write.rate_index = instr.rate_index;
+                                req.change.write.long_short = instr.long_short;
+                                req.change.write.strike = instr.strike;
+                                req.change.write.notional = instr.notional;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT, vanilla_swap_instrument>) {
-                                save_vanilla_swap_instrument_request req;
-                                req.data = instr;
+                                put_vanilla_swap_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.start_date = instr.start_date;
+                                req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.settlement_lag = instr.settlement_lag;
+                                req.change.write.netting_set_id = instr.netting_set_id;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT, cap_floor_instrument>) {
-                                save_cap_floor_instrument_request req;
-                                req.data = instr;
+                                put_cap_floor_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.start_date = instr.start_date;
+                                req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT, swaption_instrument>) {
-                                save_swaption_instrument_request req;
-                                req.data = instr;
+                                put_swaption_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.expiry_date = instr.expiry_date;
+                                req.change.write.exercise_type = instr.exercise_type;
+                                req.change.write.settlement_type = instr.settlement_type;
+                                req.change.write.long_short = instr.long_short;
+                                req.change.write.start_date = instr.start_date;
+                                req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<
                                                      InstrT,
                                                      balance_guaranteed_swap_instrument>) {
-                                save_balance_guaranteed_swap_instrument_request req;
-                                req.data = instr;
+                                put_balance_guaranteed_swap_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.start_date = instr.start_date;
+                                req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.lockout_days = instr.lockout_days;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT, callable_swap_instrument>) {
-                                save_callable_swap_instrument_request req;
-                                req.data = instr;
+                                put_callable_swap_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.start_date = instr.start_date;
+                                req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.call_dates_json = instr.call_dates_json;
+                                req.change.write.call_type = instr.call_type;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 knock_out_swap_instrument>) {
-                                save_knock_out_swap_instrument_request req;
-                                req.data = instr;
+                                put_knock_out_swap_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.start_date = instr.start_date;
+                                req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.barrier_level = instr.barrier_level;
+                                req.change.write.barrier_type = instr.barrier_type;
+                                req.change.write.knock_out_dates_json = instr.knock_out_dates_json;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 inflation_swap_instrument>) {
-                                save_inflation_swap_instrument_request req;
-                                req.data = instr;
+                                put_inflation_swap_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.start_date = instr.start_date;
+                                req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.inflation_index_code = instr.inflation_index_code;
+                                req.change.write.base_cpi = instr.base_cpi;
+                                req.change.write.lag_convention = instr.lag_convention;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT, rpa_instrument>) {
-                                save_rpa_instrument_request req;
-                                req.data = instr;
+                                put_rpa_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.start_date = instr.start_date;
+                                req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.reference_counterparty =
+                                    instr.reference_counterparty;
+                                req.change.write.participation_rate = instr.participation_rate;
+                                req.change.write.protection_fee = instr.protection_fee;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else {
                                 return true;
                             }
@@ -1385,46 +1549,136 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             using InstrT = std::decay_t<decltype(instr)>;
                             using namespace ores::trading::domain;
                             if constexpr (std::is_same_v<InstrT, fx_forward_instrument>) {
-                                save_fx_forward_instrument_request req;
-                                req.data = instr;
+                                put_fx_forward_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.bought_currency = instr.bought_currency;
+                                req.change.write.bought_amount = instr.bought_amount;
+                                req.change.write.sold_currency = instr.sold_currency;
+                                req.change.write.sold_amount = instr.sold_amount;
+                                req.change.write.value_date = instr.value_date;
+                                req.change.write.settlement = instr.settlement;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 fx_vanilla_option_instrument>) {
-                                save_fx_vanilla_option_instrument_request req;
-                                req.data = instr;
+                                put_fx_vanilla_option_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.bought_currency = instr.bought_currency;
+                                req.change.write.bought_amount = instr.bought_amount;
+                                req.change.write.sold_currency = instr.sold_currency;
+                                req.change.write.sold_amount = instr.sold_amount;
+                                req.change.write.option_type = instr.option_type;
+                                req.change.write.expiry_date = instr.expiry_date;
+                                req.change.write.exercise_style = instr.exercise_style;
+                                req.change.write.settlement = instr.settlement;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 fx_barrier_option_instrument>) {
-                                save_fx_barrier_option_instrument_request req;
-                                req.data = instr;
+                                put_fx_barrier_option_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.bought_currency = instr.bought_currency;
+                                req.change.write.bought_amount = instr.bought_amount;
+                                req.change.write.sold_currency = instr.sold_currency;
+                                req.change.write.sold_amount = instr.sold_amount;
+                                req.change.write.option_type = instr.option_type;
+                                req.change.write.expiry_date = instr.expiry_date;
+                                req.change.write.settlement = instr.settlement;
+                                req.change.write.barrier_type = instr.barrier_type;
+                                req.change.write.lower_barrier = instr.lower_barrier;
+                                req.change.write.upper_barrier = instr.upper_barrier;
+                                req.change.write.underlying_code = instr.underlying_code;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 fx_digital_option_instrument>) {
-                                save_fx_digital_option_instrument_request req;
-                                req.data = instr;
+                                put_fx_digital_option_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.foreign_currency = instr.foreign_currency;
+                                req.change.write.domestic_currency = instr.domestic_currency;
+                                req.change.write.payoff_currency = instr.payoff_currency;
+                                req.change.write.payoff_amount = instr.payoff_amount;
+                                req.change.write.option_type = instr.option_type;
+                                req.change.write.expiry_date = instr.expiry_date;
+                                req.change.write.long_short = instr.long_short;
+                                req.change.write.strike = instr.strike;
+                                req.change.write.barrier_type = instr.barrier_type;
+                                req.change.write.lower_barrier = instr.lower_barrier;
+                                req.change.write.upper_barrier = instr.upper_barrier;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 fx_asian_forward_instrument>) {
-                                save_fx_asian_forward_instrument_request req;
-                                req.data = instr;
+                                put_fx_asian_forward_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.fx_index = instr.fx_index;
+                                req.change.write.reference_currency = instr.reference_currency;
+                                req.change.write.reference_notional = instr.reference_notional;
+                                req.change.write.settlement_currency = instr.settlement_currency;
+                                req.change.write.settlement_notional = instr.settlement_notional;
+                                req.change.write.payment_date = instr.payment_date;
+                                req.change.write.long_short = instr.long_short;
+                                req.change.write.currency = instr.currency;
+                                req.change.write.fixing_amount = instr.fixing_amount;
+                                req.change.write.target_amount = instr.target_amount;
+                                req.change.write.strike = instr.strike;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 fx_accumulator_instrument>) {
-                                save_fx_accumulator_instrument_request req;
-                                req.data = instr;
+                                put_fx_accumulator_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.currency = instr.currency;
+                                req.change.write.fixing_amount = instr.fixing_amount;
+                                req.change.write.strike = instr.strike;
+                                req.change.write.underlying_code = instr.underlying_code;
+                                req.change.write.long_short = instr.long_short;
+                                req.change.write.start_date = instr.start_date;
+                                req.change.write.knock_out_barrier = instr.knock_out_barrier;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 fx_variance_swap_instrument>) {
-                                save_fx_variance_swap_instrument_request req;
-                                req.data = instr;
+                                put_fx_variance_swap_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.start_date = instr.start_date;
+                                req.change.write.end_date = instr.end_date;
+                                req.change.write.currency = instr.currency;
+                                req.change.write.underlying_code = instr.underlying_code;
+                                req.change.write.long_short = instr.long_short;
+                                req.change.write.strike = instr.strike;
+                                req.change.write.notional = instr.notional;
+                                req.change.write.moment_type = instr.moment_type;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else {
                                 return true;
                             }
@@ -1451,57 +1705,177 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             using InstrT = std::decay_t<decltype(instr)>;
                             using namespace ores::trading::domain;
                             if constexpr (std::is_same_v<InstrT, equity_option_instrument>) {
-                                save_equity_option_instrument_request req;
-                                req.data = instr;
+                                put_equity_option_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.underlying_name = instr.underlying_name;
+                                req.change.write.currency = instr.currency;
+                                req.change.write.notional = instr.notional;
+                                req.change.write.option_type = instr.option_type;
+                                req.change.write.strike = instr.strike;
+                                req.change.write.expiry_date = instr.expiry_date;
+                                req.change.write.exercise_type = instr.exercise_type;
+                                req.change.write.long_short = instr.long_short;
+                                req.change.write.settlement_type = instr.settlement_type;
+                                req.change.write.cliquet_frequency = instr.cliquet_frequency;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 equity_digital_option_instrument>) {
-                                save_equity_digital_option_instrument_request req;
-                                req.data = instr;
+                                put_equity_digital_option_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.underlying_name = instr.underlying_name;
+                                req.change.write.currency = instr.currency;
+                                req.change.write.notional = instr.notional;
+                                req.change.write.option_type = instr.option_type;
+                                req.change.write.strike = instr.strike;
+                                req.change.write.barrier_level = instr.barrier_level;
+                                req.change.write.barrier_type = instr.barrier_type;
+                                req.change.write.expiry_date = instr.expiry_date;
+                                req.change.write.long_short = instr.long_short;
+                                req.change.write.payout_amount = instr.payout_amount;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 equity_barrier_option_instrument>) {
-                                save_equity_barrier_option_instrument_request req;
-                                req.data = instr;
+                                put_equity_barrier_option_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.underlying_name = instr.underlying_name;
+                                req.change.write.currency = instr.currency;
+                                req.change.write.notional = instr.notional;
+                                req.change.write.option_type = instr.option_type;
+                                req.change.write.strike = instr.strike;
+                                req.change.write.expiry_date = instr.expiry_date;
+                                req.change.write.exercise_type = instr.exercise_type;
+                                req.change.write.long_short = instr.long_short;
+                                req.change.write.lower_barrier = instr.lower_barrier;
+                                req.change.write.lower_barrier_type = instr.lower_barrier_type;
+                                req.change.write.upper_barrier = instr.upper_barrier;
+                                req.change.write.upper_barrier_type = instr.upper_barrier_type;
+                                req.change.write.rebate = instr.rebate;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 equity_asian_option_instrument>) {
-                                save_equity_asian_option_instrument_request req;
-                                req.data = instr;
+                                put_equity_asian_option_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.underlying_name = instr.underlying_name;
+                                req.change.write.currency = instr.currency;
+                                req.change.write.notional = instr.notional;
+                                req.change.write.option_type = instr.option_type;
+                                req.change.write.strike = instr.strike;
+                                req.change.write.expiry_date = instr.expiry_date;
+                                req.change.write.exercise_type = instr.exercise_type;
+                                req.change.write.long_short = instr.long_short;
+                                req.change.write.average_type = instr.average_type;
+                                req.change.write.averaging_start_date = instr.averaging_start_date;
+                                req.change.write.averaging_end_date = instr.averaging_end_date;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 equity_forward_instrument>) {
-                                save_equity_forward_instrument_request req;
-                                req.data = instr;
+                                put_equity_forward_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.underlying_name = instr.underlying_name;
+                                req.change.write.currency = instr.currency;
+                                req.change.write.quantity = instr.quantity;
+                                req.change.write.forward_price = instr.forward_price;
+                                req.change.write.expiry_date = instr.expiry_date;
+                                req.change.write.long_short = instr.long_short;
+                                req.change.write.settlement_type = instr.settlement_type;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 equity_variance_swap_instrument>) {
-                                save_equity_variance_swap_instrument_request req;
-                                req.data = instr;
+                                put_equity_variance_swap_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.underlying_name = instr.underlying_name;
+                                req.change.write.currency = instr.currency;
+                                req.change.write.notional = instr.notional;
+                                req.change.write.variance_strike = instr.variance_strike;
+                                req.change.write.start_date = instr.start_date;
+                                req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.long_short = instr.long_short;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT, equity_swap_instrument>) {
-                                save_equity_swap_instrument_request req;
-                                req.data = instr;
+                                put_equity_swap_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.underlying_name = instr.underlying_name;
+                                req.change.write.basket_json = instr.basket_json;
+                                req.change.write.currency = instr.currency;
+                                req.change.write.notional = instr.notional;
+                                req.change.write.return_type = instr.return_type;
+                                req.change.write.start_date = instr.start_date;
+                                req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.long_short = instr.long_short;
+                                req.change.write.payment_frequency = instr.payment_frequency;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 equity_accumulator_instrument>) {
-                                save_equity_accumulator_instrument_request req;
-                                req.data = instr;
+                                put_equity_accumulator_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.underlying_name = instr.underlying_name;
+                                req.change.write.currency = instr.currency;
+                                req.change.write.strike = instr.strike;
+                                req.change.write.fixing_amount = instr.fixing_amount;
+                                req.change.write.start_date = instr.start_date;
+                                req.change.write.expiry_date = instr.expiry_date;
+                                req.change.write.fixing_frequency = instr.fixing_frequency;
+                                req.change.write.long_short = instr.long_short;
+                                req.change.write.knock_out_level = instr.knock_out_level;
+                                req.change.write.target_amount = instr.target_amount;
+                                req.change.write.target_type = instr.target_type;
+                                req.change.write.payoff_type = instr.payoff_type;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 equity_position_instrument>) {
-                                save_equity_position_instrument_request req;
-                                req.data = instr;
+                                put_equity_position_instrument_request req;
+                                req.change.write.instrument_id = instr.identity.instrument_id;
+                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.underlying_name = instr.underlying_name;
+                                req.change.write.currency = instr.currency;
+                                req.change.write.quantity = instr.quantity;
+                                req.change.write.price = instr.price;
+                                req.change.write.option_data_json = instr.option_data_json;
+                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp && resp->success;
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else {
                                 // Unknown per-type alternative — fail loudly so a new
                                 // variant added without updating this dispatch surfaces
@@ -1553,8 +1927,9 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     // -------------------------------------------------------------------------
     // Total failure: all planned trades failed to save (and at least one was attempted).
     // Adjust this constant to change the threshold for saga compensation.
-    const bool all_trades_failed =
-        !plan.trades.empty() && result.saved_trade_ids.empty() && !result.item_errors.empty();
+    const bool all_trades_failed = !plan.trades.empty() &&
+                                   result.saved_trade_external_ids.empty() &&
+                                   !result.item_errors.empty();
 
     using wf_outcome = ores::workflow::messaging::step_outcome;
     using wf_log_level = ores::workflow::messaging::step_log_level;
@@ -1570,10 +1945,10 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     }
 
     std::vector<wf_log_entry> step_log;
-    if (!result.saved_trade_ids.empty()) {
+    if (!result.saved_trade_external_ids.empty()) {
         step_log.push_back(
             {.level = wf_log_level::info,
-             .message = std::format("Saved {} trade(s).", result.saved_trade_ids.size()),
+             .message = std::format("Saved {} trade(s).", result.saved_trade_external_ids.size()),
              .context = {}});
     }
     for (const auto& ie : result.item_errors) {
@@ -1593,7 +1968,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                               << " currencies=" << result.saved_currency_iso_codes.size()
                               << " portfolios=" << result.saved_portfolio_ids.size()
                               << " books=" << result.saved_book_ids.size()
-                              << " trades=" << result.saved_trade_ids.size()
+                              << " trades=" << result.saved_trade_external_ids.size()
                               << " item_errors=" << result.item_errors.size()
                               << " outcome=" << ores::workflow::messaging::to_string(outcome);
 
@@ -1640,15 +2015,20 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
         outbound_nats_.with_delegation(req.bearer_token).with_correlation_id(req.correlation_id);
 
     // ── Delete trades ────────────────────────────────────────────────────────
-    if (!req.saved_trade_ids.empty()) {
+    if (!req.saved_trade_external_ids.empty()) {
         BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: delete trades | corr="
-                                  << req.correlation_id << " count=" << req.saved_trade_ids.size();
-        ores::trading::messaging::delete_trade_request del_req;
-        del_req.ids = req.saved_trade_ids;
+                                  << req.correlation_id
+                                  << " count=" << req.saved_trade_external_ids.size();
+        ores::trading::messaging::delete_many_trades_request del_req;
+        for (const auto& saved_id : req.saved_trade_external_ids) {
+            ores::trading::messaging::trade_removal removal;
+            removal.key.external_id = saved_id;
+            del_req.removals.push_back(std::move(removal));
+        }
         std::string err;
         auto r = nats_call(delegated_nats, del_req, err);
-        if (!r || !r->success) {
-            const auto reason = (r && !r->message.empty()) ? r->message : err;
+        if (!r || r->result.outcome != ores::utility::domain::outcome::ok) {
+            const auto reason = (r && !r->result.message.empty()) ? r->result.message : err;
             BOOST_LOG_SEV(lg(), error)
                 << "ore.import.rollback delete_trades failed | corr=" << req.correlation_id
                 << " error=" << reason;

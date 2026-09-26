@@ -1,0 +1,68 @@
+PR 2, the recipe for migrating a consumer to the generated protocol
+
+Measured 2026-09-26 from the generated headers and the two consumers.
+
+The generated request shapes
+----------------------------
+Write, one row:
+    struct put_<x>_request {
+        <x>_change change;                  // <x>_change { <x>_write write; precondition precondition; }
+        ores::utility::domain::change_intent intent;
+    };
+Write, many rows:
+    std::vector<<x>_change> changes;        // plus the same intent
+Read, many rows:
+    struct list_<x>s_request {
+        std::uint32_t offset = 0;
+        std::uint32_t limit = 100;
+        ores::utility::domain::order order;
+    };
+Remove:
+    struct delete_<x>_request { <x>_removal removal; change_intent intent; };
+
+Every response carries
+    ores::utility::domain::result result;   // outcome, code, message, fields
+and the row or rows it wrote. None of them carries a bool named success.
+
+The canonical construction is the generated shell unit's:
+    request_type req;
+    req.change.write.<field> = ...;
+    req.intent.reason_code = ...;
+    req.intent.commentary = ...;
+    req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
+
+The mapping
+-----------
+    save_<x>_request            -> put_<x>_request
+    get_<x>s_request            -> list_<x>s_request
+    delete_<x>_request          -> unchanged
+    <var>.data.<field> = e      -> <var>.change.write.<field> = e
+    <var>.data = obj            -> one assignment per <x>_write member
+    (!resp || !resp->success)   -> (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
+
+ores.ore's ore_import_execute_handler.cpp
+-----------------------------------------
+    26 using declarations name old request types
+    192 lines reach through <var>.data.
+    13 request variables are involved: req, rate_req, leg_req, fact_req,
+        child_req, child, date_req, envelope_req, issue_req and the rest
+    62 response checks read ->success
+    its nats_call helper needs no change: it is templated on
+        typename Req::response_type
+
+The whole-object sites are the ones a rename cannot carry:
+    save_bond_issue_request issue_req; issue_req.data = issue;
+Each expands to one assignment per member of the generated <x>_write,
+which the generated protocol header states, so a codemod can read the
+member list from the header rather than from a hand-written table.
+
+ores.shell's nine rates units
+-----------------------------
+The same mapping, on the same request types.
+
+The precondition
+----------------
+A create states must_not_exist. An importer that re-imports states the
+precondition its read supports, or leaves the default and accepts
+replace-whatever, which is what the old save did. The choice is per
+call site and is worth stating in the migration commit.

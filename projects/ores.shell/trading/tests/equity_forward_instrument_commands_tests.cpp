@@ -17,11 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_shell_command_tests.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/trading/equity_forward_instrument_commands.hpp"
-#include "ores.shell/app/pagination_context.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
 #include <sstream>
@@ -31,7 +36,6 @@
 
 using ores::nats::service::nats_client;
 using ores::shell::app::command_feedback;
-using ores::shell::app::pagination_context;
 using ores::shell::app::commands::equity_forward_instrument_commands;
 using namespace ores::logging;
 
@@ -42,142 +46,306 @@ const std::string tags("[commands]");
 
 const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
-void log_in(nats_client& session, const std::string& party_id) {
+void log_in(nats_client& session) {
     nats_client::login_info info;
     info.username = "tester";
     info.jwt = "token";
-    info.default_party_id = party_id;
+    info.default_party_id = valid_party_id;
     session.set_auth(std::move(info));
 }
 
-// The positionals the add verb reads: one per user-supplied column, then the
-// change reason and the change commentary.
-std::vector<std::string> add_tokens() {
-    return {"sample",
-            "3f2504e0-4f89-11d3-9a0c-0305e82c3301",
-            "3f2504e0-4f89-11d3-9a0c-0305e82c3301",
-            "sample",
-            "sample",
-            "1.0",
-            "1.0",
-            "sample",
-            "sample",
-            "sample",
-            "sample",
-            "reason",
-            "commentary"};
+// One token per positional the command takes. A value the command parses is
+// not a value the guard reaches, so any token does to prove the guard.
+std::vector<std::string> tokens(const std::size_t count) {
+    return std::vector<std::string>(count, std::string{"sample"});
 }
 
 }
 
-TEST_CASE("equity_forward_instrument_commands_register_commands_registers_the_pagination_callback",
-          tags) {
+TEST_CASE("equity_forward_instrument_commands_registers_every_derived_verb", tags) {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
     nats_client session;
-    pagination_context pagination;
 
-    equity_forward_instrument_commands::register_commands(root_menu, session, pagination);
+    equity_forward_instrument_commands::register_commands(root_menu, session);
 
-    BOOST_LOG_SEV(lg, debug)
-        << "Looking up the pagination callback for equity_forward_instruments.";
-    CHECK(pagination.get_list_callback("equity_forward_instruments") != nullptr);
+    // The menu's completion list is the only public view of its children, so
+    // a verb that is missing from it was never registered.
+    const auto completions = root_menu.GetCompletions("equity_forward_instruments ");
+    for (const auto& verb : {
+             std::string{"equity_forward_instruments list"},
+             std::string{"equity_forward_instruments get"},
+             std::string{"equity_forward_instruments get-many"},
+             std::string{"equity_forward_instruments add"},
+             std::string{"equity_forward_instruments set"},
+             std::string{"equity_forward_instruments put-many"},
+             std::string{"equity_forward_instruments delete"},
+             std::string{"equity_forward_instruments delete-many"},
+             std::string{"equity_forward_instruments versions"},
+             std::string{"equity_forward_instruments version"},
+         })
+        CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
+
+    BOOST_LOG_SEV(lg, debug) << "Registered 10 command(s).";
 }
 
-TEST_CASE("equity_forward_instrument_commands_process_add_requires_a_logged_in_session", tags) {
+TEST_CASE("equity_forward_instrument_commands_process_list_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    equity_forward_instrument_commands::process_add_equity_forward_instrument(
-        out, session, add_tokens());
+    equity_forward_instrument_commands::process_list(out, session, tokens(0));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("equity_forward_instrument_commands_process_add_reports_the_expected_argument_count",
-          tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    log_in(session, valid_party_id);
-    std::ostringstream out;
-
-    command_feedback::reset();
-    equity_forward_instrument_commands::process_add_equity_forward_instrument(
-        out, session, {"sample"});
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a short argument list: " << out.str();
-    CHECK(out.str().find("Expected 13 arguments, got 1.") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("equity_forward_instrument_commands_process_add_names_the_field_of_a_malformed_token",
-          tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    log_in(session, valid_party_id);
-    auto tokens = add_tokens();
-    tokens[1] = "not-a-value";
-    std::ostringstream out;
-
-    command_feedback::reset();
-    equity_forward_instrument_commands::process_add_equity_forward_instrument(out, session, tokens);
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a malformed party_id: " << out.str();
-    CHECK(out.str().find("Invalid value for party_id") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("equity_forward_instrument_commands_process_add_sends_a_valid_token_vector_to_the_server",
-          tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    log_in(session, valid_party_id);
-    std::ostringstream out;
-
-    command_feedback::reset();
-    equity_forward_instrument_commands::process_add_equity_forward_instrument(
-        out, session, add_tokens());
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
-    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("equity_forward_instrument_commands_process_delete_requires_a_logged_in_session", tags) {
+TEST_CASE("equity_forward_instrument_commands_process_get_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    equity_forward_instrument_commands::process_delete_equity_forward_instrument(
-        out, session, "missing-key");
+    equity_forward_instrument_commands::process_get(out, session, tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out delete: " << out.str();
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("equity_forward_instrument_commands_process_history_requires_a_logged_in_session", tags) {
+TEST_CASE("equity_forward_instrument_commands_process_get_reports_the_expected_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    equity_forward_instrument_commands::process_get(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("equity_forward_instrument_commands_process_get_many_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    equity_forward_instrument_commands::process_get_equity_forward_instrument_history(
-        out, session, "missing-key");
+    equity_forward_instrument_commands::process_get_many(out, session, tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out history request: " << out.str();
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("equity_forward_instrument_commands_process_add_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    equity_forward_instrument_commands::process_add(out, session, tokens(11));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("equity_forward_instrument_commands_process_add_reports_the_expected_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    equity_forward_instrument_commands::process_add(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("equity_forward_instrument_commands_process_set_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    equity_forward_instrument_commands::process_set(out, session, tokens(11));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("equity_forward_instrument_commands_process_set_reports_the_expected_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    equity_forward_instrument_commands::process_set(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("equity_forward_instrument_commands_process_put_many_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    equity_forward_instrument_commands::process_put_many(out, session, tokens(11));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("equity_forward_instrument_commands_process_delete_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    equity_forward_instrument_commands::process_delete(out, session, tokens(1));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("equity_forward_instrument_commands_process_delete_reports_the_expected_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    equity_forward_instrument_commands::process_delete(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("equity_forward_instrument_commands_process_delete_many_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    equity_forward_instrument_commands::process_delete_many(out, session, tokens(1));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("equity_forward_instrument_commands_process_versions_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    equity_forward_instrument_commands::process_versions(out, session, tokens(1));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("equity_forward_instrument_commands_process_versions_reports_the_expected_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    equity_forward_instrument_commands::process_versions(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("equity_forward_instrument_commands_process_version_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    equity_forward_instrument_commands::process_version(out, session, tokens(1));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("equity_forward_instrument_commands_process_version_reports_the_expected_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    equity_forward_instrument_commands::process_version(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }

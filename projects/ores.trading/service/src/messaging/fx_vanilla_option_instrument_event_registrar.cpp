@@ -17,11 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_event_registrar.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.service/messaging/fx_vanilla_option_instrument_event_registrar.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
-#include "ores.trading.api/eventing/fx_vanilla_option_instrument_changed_event.hpp"
+#include "ores.trading.api/eventing/fx_vanilla_option_instrument_event.hpp"
+#include "ores.trading.api/messaging/fx_vanilla_option_instrument_protocol.hpp"
 
 namespace ores::trading::service::messaging {
 
@@ -33,23 +39,21 @@ namespace ev = ores::eventing;
     ev::service::postgres_event_source& event_source,
     ev::service::event_bus& event_bus,
     ores::nats::service::client& nats) {
-    ev::service::registrar::register_mapping<
-        trading::eventing::fx_vanilla_option_instrument_changed_event>(
-        event_source,
-        "ores.trading.fx_vanilla_option_instrument",
-        "ores_trading_fx_vanilla_option_instruments");
+    // The trigger publishes on the table's own channel, and the mapping turns
+    // what it says into this entity's event.
+    event_source
+        .register_entity_event_mapping<trading::messaging::fx_vanilla_option_instrument_event>(
+            "ores_trading_fx_vanilla_option_instruments");
 
-    return event_bus.subscribe<trading::eventing::fx_vanilla_option_instrument_changed_event>(
-        [&nats](const trading::eventing::fx_vanilla_option_instrument_changed_event& e) {
+    return event_bus.subscribe<trading::messaging::fx_vanilla_option_instrument_event>(
+        [&nats](const trading::messaging::fx_vanilla_option_instrument_event& e) {
+            // One payload is addressed by three subjects, so the subject is
+            // the collection's prefix and the action the event reports.
             ev::service::publish_entity_event(
                 nats,
-                std::string(ev::domain::event_traits<
-                            trading::eventing::fx_vanilla_option_instrument_changed_event>::name),
-                ev::domain::entity_change_event{.entity =
-                                                    "ores.trading.fx_vanilla_option_instrument",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.fx_vanilla_option_instrument_ids,
-                                                .tenant_id = e.tenant_id});
+                ev::domain::event_subject<trading::messaging::fx_vanilla_option_instrument_event>(
+                    e.action),
+                e);
         });
 }
 

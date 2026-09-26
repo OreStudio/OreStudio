@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/fx_accumulator_instruments/fx_accumulator_instrument.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+fx_accumulator_instruments list --limit 1

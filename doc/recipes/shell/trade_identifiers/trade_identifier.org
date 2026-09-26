@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 6BCB9BAC-789A-5D5F-9AE3-B803F0358655
+:END:
+#+title: How do I run the trade_identifiers commands from the shell?
+#+description: Every command the trade_identifiers submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:trade_identifiers:
+
+This file documents the trade_identifiers resource at the shell, one section per command. Every command is a subcommand of =trade_identifiers=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: EF9BD069-34C0-51DE-AC11-1059F36E9292
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_identifiers list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.trade_identifiers.list=.
+
+#+name: trade_identifiers-list
+#+begin_src ores-shell :tangle trade_identifiers-list.ores :exports none
+trade_identifiers list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: F3412B72-9447-57AB-8429-B811FFFF7D9E
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_identifiers get <id>
+#+end_example
+
+It is addressed at =trading.v1.trade_identifiers.get=.
+
+#+name: trade_identifiers-get
+#+begin_src ores-shell :tangle trade_identifiers-get.ores :exports none
+trade_identifiers get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 2AB3AA7E-228F-54B8-9476-EB35A9038954
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_identifiers get-many <id>
+#+end_example
+
+It is addressed at =trading.v1.trade_identifiers.get_many=.
+
+#+name: trade_identifiers-get-many
+#+begin_src ores-shell :tangle trade_identifiers-get-many.ores :exports none
+trade_identifiers get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: C3F148CD-190B-5A01-9E00-96C2F07A8DA3
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_identifiers add <trade_id> <issuing_party_id> <id_value> <id_type> <id_scheme> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.trade_identifiers.put=.
+
+#+name: trade_identifiers-add
+#+begin_src ores-shell :tangle trade_identifiers-add.ores :exports none
+trade_identifiers add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: E444822B-D550-5A90-9B36-64D7F6080A84
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_identifiers set <id> <trade_id> <issuing_party_id> <id_value> <id_type> <id_scheme> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.trade_identifiers.put=.
+
+#+name: trade_identifiers-set
+#+begin_src ores-shell :tangle trade_identifiers-set.ores :exports none
+trade_identifiers set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: E39C232C-3D39-513A-B54A-E2BB424212AC
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_identifiers put-many --count <n> <id> <trade_id> <issuing_party_id> <id_value> <id_type> <id_scheme> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.trade_identifiers.put_many=.
+
+#+name: trade_identifiers-put-many
+#+begin_src ores-shell :tangle trade_identifiers-put-many.ores :exports none
+trade_identifiers put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 0D191E7F-0E46-5912-932B-274C35403195
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_identifiers delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.trade_identifiers.delete=.
+
+#+name: trade_identifiers-delete
+#+begin_src ores-shell :tangle trade_identifiers-delete.ores :exports none
+trade_identifiers delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 809DA621-39FF-5B50-B7BC-A84888013A40
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_identifiers delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.trade_identifiers.delete_many=.
+
+#+name: trade_identifiers-delete-many
+#+begin_src ores-shell :tangle trade_identifiers-delete-many.ores :exports none
+trade_identifiers delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: D610ABDA-B0E7-5CF1-A33A-F6433A2303C0
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_identifiers versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.trade_identifiers_versions.list=.
+
+#+name: trade_identifiers-versions
+#+begin_src ores-shell :tangle trade_identifiers-versions.ores :exports none
+trade_identifiers versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: CDA8493D-4EB5-5DA1-9A10-66D2117DB5F1
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_identifiers version <id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.trade_identifiers_versions.get=.
+
+#+name: trade_identifiers-version
+#+begin_src ores-shell :tangle trade_identifiers-version.ores :exports none
+trade_identifiers version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

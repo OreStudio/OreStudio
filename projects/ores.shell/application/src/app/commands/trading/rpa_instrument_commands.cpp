@@ -21,7 +21,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.trading.api/domain/rpa_instrument_table_io.hpp" // IWYU pragma: keep.
-#include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ores.trading.api/messaging/rpa_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/lexical_cast.hpp>
@@ -126,21 +126,21 @@ void rpa_instrument_commands::process_get_rpa_instruments(std::ostream& out,
 
     auto& state = pagination.state_for("rpa_instruments");
 
-    trading::messaging::get_rpa_instruments_request req;
+    trading::messaging::list_rpa_instruments_request req;
     req.offset = state.current_offset;
     req.limit = pagination.page_size();
 
-    auto result = do_auth_request<trading::messaging::get_rpa_instruments_response>(
-        out, session, "trading.v1.rpa_instruments.list", req);
+    auto result = do_auth_request<trading::messaging::list_rpa_instruments_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    state.total_count = result->total_available_count;
+    state.total_count = result->total;
     pagination.set_last_entity("rpa_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->rpa_instruments.size()
                               << " Risk participation agreement instruments.";
-    out << result->instruments << std::endl;
+    out << result->rpa_instruments << std::endl;
 
     // Display pagination info
     const auto page = (state.current_offset / pagination.page_size()) + 1;
@@ -148,7 +148,7 @@ void rpa_instrument_commands::process_get_rpa_instruments(std::ostream& out,
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " (" << result->instruments.size()
+    out << "\nPage " << page << " of " << total_pages << " (" << result->rpa_instruments.size()
         << " of " << state.total_count << " total)" << std::endl;
 }
 
@@ -195,20 +195,28 @@ void rpa_instrument_commands::process_add_rpa_instrument(std::ostream& out,
     v.audit.change_reason_code = std::move(change_reason_code);
     v.audit.change_commentary = std::move(change_commentary);
 
-    auto req = trading::messaging::save_rpa_instrument_request{.data = std::move(v)};
+    auto req = trading::messaging::put_rpa_instrument_request{
+        .change = {.write = {.instrument_id = v.identity.instrument_id,
+                             .trade_id = v.identity.trade_id,
+                             .start_date = v.start_date,
+                             .maturity_date = v.maturity_date,
+                             .reference_counterparty = v.reference_counterparty,
+                             .participation_rate = v.participation_rate,
+                             .protection_fee = v.protection_fee,
+                             .description = v.description}}};
 
-    auto result = do_auth_request<trading::messaging::save_rpa_instrument_response>(
-        out, session, "trading.v1.rpa_instruments.save", req);
+    auto result = do_auth_request<trading::messaging::put_rpa_instrument_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (result->success) {
+    if (result->result.outcome == ores::utility::domain::outcome::ok) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Risk participation agreement instrument.";
         out << "✓ Risk participation agreement instrument added successfully!" << std::endl;
-        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+        out << "Instrument id: " << boost::uuids::to_string(req.change.write.instrument_id)
             << std::endl;
     } else {
-        const auto& msg = result->message.empty() ? "Unknown error" : result->message;
+        const auto& msg = result->result.message.empty() ? "Unknown error" : result->result.message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Risk participation agreement instrument: "
                                   << msg;
         fail(out) << "Failed to add Risk participation agreement instrument: " << msg << std::endl;
@@ -229,22 +237,22 @@ void rpa_instrument_commands::process_delete_rpa_instrument(std::ostream& out,
     }
 
     trading::messaging::delete_rpa_instrument_request req;
-    req.ids = {std::move(instrument_id)};
+    req.removal.key.instrument_id = boost::uuids::string_generator()(instrument_id);
 
     auto result = do_auth_request<trading::messaging::delete_rpa_instrument_response>(
-        out, session, "trading.v1.rpa_instruments.delete", req);
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (result->success) {
+    if (result->result.outcome == ores::utility::domain::outcome::ok) {
         BOOST_LOG_SEV(lg(), info)
             << "Successfully deleted Risk participation agreement instrument.";
         out << "✓ Risk participation agreement instrument deleted successfully!" << std::endl;
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete Risk participation agreement instrument: "
-                                  << result->message;
-        fail(out) << "Failed to delete Risk participation agreement instrument: " << result->message
-                  << std::endl;
+                                  << result->result.message;
+        fail(out) << "Failed to delete Risk participation agreement instrument: "
+                  << result->result.message << std::endl;
     }
 }
 
@@ -260,27 +268,28 @@ void rpa_instrument_commands::process_get_rpa_instrument_history(std::ostream& o
         return;
     }
 
-    trading::messaging::get_rpa_instrument_history_request req;
-    req.id = std::move(instrument_id);
+    trading::messaging::list_rpa_instrument_versions_request req;
+    req.key.instrument_id = boost::uuids::string_generator()(instrument_id);
 
-    auto result = do_auth_request<trading::messaging::get_rpa_instrument_history_response>(
-        out, session, "trading.v1.rpa_instruments.history", req);
+    auto result = do_auth_request<trading::messaging::list_rpa_instrument_versions_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (!result->success) {
+    if (result->result.outcome != ores::utility::domain::outcome::ok) {
         BOOST_LOG_SEV(lg(), warn)
-            << "Failed to get Risk participation agreement instrument history: " << result->message;
-        fail(out) << result->message << std::endl;
+            << "Failed to get Risk participation agreement instrument history: "
+            << result->result.message;
+        fail(out) << result->result.message << std::endl;
         return;
     }
 
-    if (result->history.empty()) {
+    if (result->versions.empty()) {
         out << "No history found for this Risk participation agreement instrument." << std::endl;
         return;
     }
 
-    out << result->history << std::endl;
+    out << result->versions << std::endl;
 }
 
 }

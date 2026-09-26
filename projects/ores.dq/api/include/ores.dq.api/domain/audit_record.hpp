@@ -65,6 +65,16 @@ struct audit_record {
      * @brief Wall-clock timestamp at which this version of the record was persisted.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality.
+     *
+     * A field group is a value like the entity that holds it: the entity's
+     * comparison is defaulted and reads every member, so a group without a
+     * comparison deletes the entity's and fails a build that treats that as
+     * an error.
+     */
+    friend bool operator==(const audit_record&, const audit_record&) = default;
 };
 
 }

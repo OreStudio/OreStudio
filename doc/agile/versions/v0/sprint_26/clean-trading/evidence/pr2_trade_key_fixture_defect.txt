@@ -1,0 +1,57 @@
+The trade's declared key had no value in its fixtures
+
+Found 2026-09-26 by the regenerated trade eventing integration test, and
+fixed in PR 2.
+
+Symptom
+-------
+write_trade_publishes_an_event failed at
+
+    auto versions = svc.get_trade_history(v.identity.external_id);
+    REQUIRE(versions.size() >= 2);          // expanded to 0 >= 2
+
+while the NATS assertion above it passed.
+
+Reading
+-------
+The test's trade carried an empty external_id. The mapper writes an empty
+domain string as NULL, and the generated lookup compares the column to
+'', which NULL never matches, so read_any_by_external_id returns empty and
+get_trade_history returns {} before it reaches read_all. The event
+assertion passed because both sides of its comparison were empty.
+
+    select count(*) from ores_trading_trades_tbl where external_id = '';
+    -- 0, while the table held rows for the test's trade
+
+Cause
+-----
+projects/ores.trading/modeling/ores.trading.trade.org declares
+external_id as the trade's key at line 1390, and declares the same column
+nullable with the generator std::string() at line 59. A key with no value
+cannot be looked up.
+
+Across the models, exactly three declared keys are declared nullable:
+refdata.business_unit.unit_code, iam.account_contact_information.email and
+trading.trade.external_id. The first two populate their fixtures --
+
+    r.unit_code = std::string("DESK") + std::to_string(idx);
+    r.email = std::string("contact@example.com");
+
+-- and their generated tests pass. Trade was the only one that did not.
+
+Fixed here
+----------
+The generator produces a value, mirroring the fixture style of the other
+text keys:
+
+    std::string("TRD-") + std::string(faker::string::alphanumeric(12))
+
+The regenerated fixture writes it, and the test passes.
+
+Left for PR 3, recorded as defect 17 on the story
+-------------------------------------------------
+The declared key is nullable, and the canonical protocol addresses a trade
+by it. A trade saved without one cannot be deleted through the protocol,
+and the shell's add-trade command supplies none. Making the column
+non-nullable is a schema change, and D8 already assigns the key
+declaration to PR 3.

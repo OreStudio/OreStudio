@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/equity_accumulator_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -31,7 +36,7 @@ std::string convert_to_table(const std::vector<equity_accumulator_instrument>& v
     table << fort::header << "ID" << "Type" << "Underlying" << "Ccy" << "Strike" << "Fixing Amt"
           << "Expiry Date" << "Long/Short" << "Recorded At" << fort::endr;
 
-    for (const auto& eaci : v) {
+    for ([[maybe_unused]] const auto& eaci : v) {
         table << eaci.identity.instrument_id << eaci.identity.trade_type_code
               << eaci.underlying_name << eaci.currency << eaci.strike << eaci.fixing_amount
               << eaci.expiry_date << eaci.long_short << eaci.audit.recorded_at << fort::endr;

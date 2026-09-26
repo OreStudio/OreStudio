@@ -17,73 +17,281 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_TRADING_API_MESSAGING_EQUITY_DIGITAL_OPTION_INSTRUMENT_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_EQUITY_DIGITAL_OPTION_INSTRUMENT_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::trading::messaging {
 
-struct get_equity_digital_option_instruments_request {
-    using response_type = struct get_equity_digital_option_instruments_response;
+struct equity_digital_option_instrument_key {
+    boost::uuids::uuid instrument_id;
+};
+
+struct equity_digital_option_instrument_write {
+    boost::uuids::uuid instrument_id;
+    std::string trade_type_code;
+    std::optional<boost::uuids::uuid> trade_id;
+    std::string underlying_name;
+    std::string currency;
+    double notional;
+    std::string option_type;
+    std::optional<double> strike;
+    std::optional<double> barrier_level;
+    std::string barrier_type;
+    std::string expiry_date;
+    std::string long_short;
+    std::optional<double> payout_amount;
+    std::string description;
+};
+
+struct equity_digital_option_instrument_change {
+    equity_digital_option_instrument_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct equity_digital_option_instrument_removal {
+    equity_digital_option_instrument_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct equity_digital_option_instrument_lookup {
+    equity_digital_option_instrument_key key;
+    std::optional<ores::trading::domain::equity_digital_option_instrument>
+        equity_digital_option_instrument;
+};
+
+struct equity_digital_option_instrument_event {
+    boost::uuids::uuid event_id;
+    equity_digital_option_instrument_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct equity_digital_option_instrument_version_key {
+    equity_digital_option_instrument_key equity_digital_option_instrument;
+    std::uint32_t version;
+};
+
+struct equity_digital_option_instrument_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_equity_digital_option_instruments_request {
+    using response_type = struct list_equity_digital_option_instruments_response;
     static constexpr std::string_view nats_subject =
         "trading.v1.equity_digital_option_instruments.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
 };
 
-struct get_equity_digital_option_instruments_response {
+struct list_equity_digital_option_instruments_response {
+    ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_digital_option_instrument>
         equity_digital_option_instruments;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_equity_digital_option_instrument_request {
-    using response_type = struct save_equity_digital_option_instrument_response;
+struct get_equity_digital_option_instrument_request {
+    using response_type = struct get_equity_digital_option_instrument_response;
     static constexpr std::string_view nats_subject =
-        "trading.v1.equity_digital_option_instruments.save";
-    ores::trading::domain::equity_digital_option_instrument data;
-
-    static save_equity_digital_option_instrument_request
-    from(ores::trading::domain::equity_digital_option_instrument v) {
-        return {.data = std::move(v)};
-    }
+        "trading.v1.equity_digital_option_instruments.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    equity_digital_option_instrument_key key;
 };
 
-struct save_equity_digital_option_instrument_response {
-    bool success = false;
-    std::string message;
+struct get_equity_digital_option_instrument_response {
+    ores::utility::domain::result result;
+    std::optional<ores::trading::domain::equity_digital_option_instrument>
+        equity_digital_option_instrument;
+};
+
+struct get_many_equity_digital_option_instruments_request {
+    using response_type = struct get_many_equity_digital_option_instruments_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_digital_option_instruments.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<equity_digital_option_instrument_key> keys;
+};
+
+struct get_many_equity_digital_option_instruments_response {
+    ores::utility::domain::result result;
+    std::vector<equity_digital_option_instrument_lookup> entries;
+};
+
+struct put_equity_digital_option_instrument_request {
+    using response_type = struct put_equity_digital_option_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_digital_option_instruments.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    equity_digital_option_instrument_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_equity_digital_option_instrument_response {
+    ores::utility::domain::result result;
+    ores::trading::domain::equity_digital_option_instrument equity_digital_option_instrument;
+};
+
+struct put_many_equity_digital_option_instruments_request {
+    using response_type = struct put_many_equity_digital_option_instruments_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_digital_option_instruments.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<equity_digital_option_instrument_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_equity_digital_option_instruments_response {
+    ores::utility::domain::result result;
+    std::vector<ores::trading::domain::equity_digital_option_instrument>
+        equity_digital_option_instruments;
 };
 
 struct delete_equity_digital_option_instrument_request {
     using response_type = struct delete_equity_digital_option_instrument_response;
     static constexpr std::string_view nats_subject =
         "trading.v1.equity_digital_option_instruments.delete";
-    std::vector<std::string> ids;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    equity_digital_option_instrument_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_equity_digital_option_instrument_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_equity_digital_option_instrument_history_request {
-    using response_type = struct get_equity_digital_option_instrument_history_response;
+struct delete_many_equity_digital_option_instruments_request {
+    using response_type = struct delete_many_equity_digital_option_instruments_response;
     static constexpr std::string_view nats_subject =
-        "trading.v1.equity_digital_option_instruments.history";
-    std::string instrument_id;
+        "trading.v1.equity_digital_option_instruments.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<equity_digital_option_instrument_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_equity_digital_option_instrument_history_response {
-    std::vector<ores::trading::domain::equity_digital_option_instrument> history;
-    bool success = false;
-    std::string message;
+struct delete_many_equity_digital_option_instruments_response {
+    ores::utility::domain::result result;
 };
+
+struct list_equity_digital_option_instrument_versions_request {
+    using response_type = struct list_equity_digital_option_instrument_versions_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_digital_option_instruments_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    equity_digital_option_instrument_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<equity_digital_option_instrument_versions_filter> filter;
+};
+
+struct list_equity_digital_option_instrument_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::trading::domain::equity_digital_option_instrument> versions;
+    std::uint64_t total;
+};
+
+struct get_equity_digital_option_instrument_version_request {
+    using response_type = struct get_equity_digital_option_instrument_version_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_digital_option_instruments_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    equity_digital_option_instrument_version_key key;
+};
+
+struct get_equity_digital_option_instrument_version_response {
+    ores::utility::domain::result result;
+    ores::trading::domain::equity_digital_option_instrument version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace equity_digital_option_instrument_event_subjects {
+inline constexpr std::string_view created =
+    "trading.v1.equity_digital_option_instruments_events.created";
+inline constexpr std::string_view updated =
+    "trading.v1.equity_digital_option_instruments_events.updated";
+inline constexpr std::string_view deleted =
+    "trading.v1.equity_digital_option_instruments_events.deleted";
+}
 
 }
 

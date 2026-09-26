@@ -17,7 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/messaging/rates_instrument_handler.hpp"
+#include "ores.trading.core/messaging/fra_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/vanilla_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/cap_floor_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/swaption_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/balance_guaranteed_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/callable_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/knock_out_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/inflation_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/rpa_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
 
 namespace ores::trading::messaging::detail {
@@ -27,296 +35,51 @@ register_rates_handlers(ores::nats::service::client& nats,
                         ores::database::context ctx,
                         std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    constexpr auto queue = queue_name;
 
-    // FRA instruments
-    subs.push_back(nats.queue_subscribe(std::string(get_fra_instruments_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            rates_instrument_handler h(nats, ctx, verifier);
-                                            h.list_fra(std::move(msg));
-                                        }));
+    auto fra_instrument_subs = register_fra_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(fra_instrument_subs.begin()),
+                std::make_move_iterator(fra_instrument_subs.end()));
 
-    subs.push_back(nats.queue_subscribe(std::string(save_fra_instrument_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            rates_instrument_handler h(nats, ctx, verifier);
-                                            h.save_fra(std::move(msg));
-                                        }));
+    auto vanilla_swap_instrument_subs = register_vanilla_swap_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(vanilla_swap_instrument_subs.begin()),
+                std::make_move_iterator(vanilla_swap_instrument_subs.end()));
 
-    subs.push_back(nats.queue_subscribe(std::string(delete_fra_instrument_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            rates_instrument_handler h(nats, ctx, verifier);
-                                            h.remove_fra(std::move(msg));
-                                        }));
+    auto cap_floor_instrument_subs = register_cap_floor_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(cap_floor_instrument_subs.begin()),
+                std::make_move_iterator(cap_floor_instrument_subs.end()));
 
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_fra_instrument_history_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.history_fra(std::move(msg));
-                             }));
+    auto swaption_instrument_subs = register_swaption_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(swaption_instrument_subs.begin()),
+                std::make_move_iterator(swaption_instrument_subs.end()));
 
-    // Vanilla swap instruments
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_vanilla_swap_instruments_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.list_vanilla_swap(std::move(msg));
-                             }));
+    auto balance_guaranteed_swap_instrument_subs = register_balance_guaranteed_swap_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(balance_guaranteed_swap_instrument_subs.begin()),
+                std::make_move_iterator(balance_guaranteed_swap_instrument_subs.end()));
 
-    subs.push_back(
-        nats.queue_subscribe(std::string(save_vanilla_swap_instrument_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.save_vanilla_swap(std::move(msg));
-                             }));
+    auto callable_swap_instrument_subs = register_callable_swap_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(callable_swap_instrument_subs.begin()),
+                std::make_move_iterator(callable_swap_instrument_subs.end()));
 
-    subs.push_back(
-        nats.queue_subscribe(std::string(delete_vanilla_swap_instrument_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.remove_vanilla_swap(std::move(msg));
-                             }));
+    auto knock_out_swap_instrument_subs = register_knock_out_swap_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(knock_out_swap_instrument_subs.begin()),
+                std::make_move_iterator(knock_out_swap_instrument_subs.end()));
 
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_vanilla_swap_instrument_history_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.history_vanilla_swap(std::move(msg));
-                             }));
+    auto inflation_swap_instrument_subs = register_inflation_swap_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(inflation_swap_instrument_subs.begin()),
+                std::make_move_iterator(inflation_swap_instrument_subs.end()));
 
-    // Cap/floor instruments
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_cap_floor_instruments_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.list_cap_floor(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(save_cap_floor_instrument_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.save_cap_floor(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(delete_cap_floor_instrument_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.remove_cap_floor(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_cap_floor_instrument_history_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.history_cap_floor(std::move(msg));
-                             }));
-
-    // Swaption instruments
-    subs.push_back(nats.queue_subscribe(std::string(get_swaption_instruments_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            rates_instrument_handler h(nats, ctx, verifier);
-                                            h.list_swaption(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(save_swaption_instrument_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            rates_instrument_handler h(nats, ctx, verifier);
-                                            h.save_swaption(std::move(msg));
-                                        }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(delete_swaption_instrument_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.remove_swaption(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_swaption_instrument_history_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.history_swaption(std::move(msg));
-                             }));
-
-    // Balance guaranteed swap instruments
-    subs.push_back(nats.queue_subscribe(
-        std::string(get_balance_guaranteed_swap_instruments_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            rates_instrument_handler h(nats, ctx, verifier);
-            h.list_balance_guaranteed_swap(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(save_balance_guaranteed_swap_instrument_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            rates_instrument_handler h(nats, ctx, verifier);
-            h.save_balance_guaranteed_swap(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(delete_balance_guaranteed_swap_instrument_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            rates_instrument_handler h(nats, ctx, verifier);
-            h.remove_balance_guaranteed_swap(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(get_balance_guaranteed_swap_instrument_history_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            rates_instrument_handler h(nats, ctx, verifier);
-            h.history_balance_guaranteed_swap(std::move(msg));
-        }));
-
-    // Callable swap instruments
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_callable_swap_instruments_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.list_callable_swap(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(save_callable_swap_instrument_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.save_callable_swap(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(delete_callable_swap_instrument_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.remove_callable_swap(std::move(msg));
-                             }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(get_callable_swap_instrument_history_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            rates_instrument_handler h(nats, ctx, verifier);
-            h.history_callable_swap(std::move(msg));
-        }));
-
-    // Knock-out swap instruments
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_knock_out_swap_instruments_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.list_knock_out_swap(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(save_knock_out_swap_instrument_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.save_knock_out_swap(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(delete_knock_out_swap_instrument_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.remove_knock_out_swap(std::move(msg));
-                             }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(get_knock_out_swap_instrument_history_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            rates_instrument_handler h(nats, ctx, verifier);
-            h.history_knock_out_swap(std::move(msg));
-        }));
-
-    // Inflation swap instruments
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_inflation_swap_instruments_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.list_inflation_swap(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(save_inflation_swap_instrument_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.save_inflation_swap(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(delete_inflation_swap_instrument_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.remove_inflation_swap(std::move(msg));
-                             }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(get_inflation_swap_instrument_history_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            rates_instrument_handler h(nats, ctx, verifier);
-            h.history_inflation_swap(std::move(msg));
-        }));
-
-    // RPA instruments
-    subs.push_back(nats.queue_subscribe(std::string(get_rpa_instruments_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            rates_instrument_handler h(nats, ctx, verifier);
-                                            h.list_rpa(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(save_rpa_instrument_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            rates_instrument_handler h(nats, ctx, verifier);
-                                            h.save_rpa(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(delete_rpa_instrument_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            rates_instrument_handler h(nats, ctx, verifier);
-                                            h.remove_rpa(std::move(msg));
-                                        }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_rpa_instrument_history_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 rates_instrument_handler h(nats, ctx, verifier);
-                                 h.history_rpa(std::move(msg));
-                             }));
+    auto rpa_instrument_subs = register_rpa_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(rpa_instrument_subs.begin()),
+                std::make_move_iterator(rpa_instrument_subs.end()));
 
     return subs;
 }

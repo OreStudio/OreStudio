@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/bond_trs_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -45,7 +50,7 @@ std::string convert_to_table(const std::vector<bond_trs>& v) {
           << "Funding Leg" << "Funding Rate" << "Funding Index" << "Modified By" << "Version"
           << fort::endr;
 
-    for (const auto& bts : v) {
+    for ([[maybe_unused]] const auto& bts : v) {
         table << bts.return_type << opt_str(bts.payer) << opt_str(bts.price_type)
               << opt_str(bts.initial_price) << bts.funding_leg_type << bts.funding_rate
               << bts.funding_index << bts.modified_by << bts.version << fort::endr;

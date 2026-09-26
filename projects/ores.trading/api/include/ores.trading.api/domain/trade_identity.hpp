@@ -72,6 +72,16 @@ struct trade_identity {
      * @brief Optional external trade identifier (e.g. UTI prefix or legacy system ID).
      */
     std::string external_id;
+
+    /**
+     * @brief Value equality.
+     *
+     * A field group is a value like the entity that holds it: the entity's
+     * comparison is defaulted and reads every member, so a group without a
+     * comparison deletes the entity's and fails a build that treats that as
+     * an error.
+     */
+    friend bool operator==(const trade_identity&, const trade_identity&) = default;
 };
 
 }

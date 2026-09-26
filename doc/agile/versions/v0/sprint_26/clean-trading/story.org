@@ -48,7 +48,7 @@ that bound each one.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:AC960907-8838-4254-9C45-F5E48FA8840C][Baseline, decisions and evidence for ores.trading]] | DONE | 2026-09-26 | 2026-09-26 | PR 1. Record the B01 to B06 baseline, the consumer census, the open work and the seven decisions, with the evidence files. No code change. |
-| [[id:14795122-7D5B-442E-9B2A-E7517632F612][Sync the ores.trading tree to its models]] | BACKLOG | | | PR 2. Regenerate the modelled component, land the canonical protocol and the canonical notify triggers, delete the hand consolidation and the superseded hand-written twins, and make the tree build and test green. |
+| [[id:14795122-7D5B-442E-9B2A-E7517632F612][Sync the ores.trading tree to its models]] | STARTED | 2026-09-26 | | PR 2. Regenerate the modelled component, land the canonical protocol and the canonical notify triggers, delete the hand consolidation and the superseded hand-written twins, and make the tree build and test green. |
 | [[id:13217FCC-66E9-4887-B950-8C73FFC8D067][Model the unmodelled trading families and bind the unbound]] | BACKLOG | | | PR 3. Author the missing entity models, bind the 26 unbound entities to profiles or record the no-match, clear the legacy model fragments, and close the type defects the trade model investigation lists. |
 | [[id:8EB4DE8E-1A9B-40CB-9B61-2918F778557C][Collapse the instrument identity into the trade and split the bond security]] | BACKLOG | | | PR 4. One trade identity, one instrument identity and one security identity, with a real foreign key where a soft link sits today, regenerated. |
 | [[id:E586441E-B73E-4E8C-917F-50161B05588D][Finish the bond pilot]] | BACKLOG | | | PR 5. Re-model the bond future against the current ORE schema, add the missing constraints and child tables, fix the delete and add paths, and run the corpus-wide round trip. |
@@ -273,6 +273,16 @@ belong to this story:
 | 14 | Declared coverage is incomplete, and elsewhere undeclared | PR 3 |
 | 15 | An underlying is an unqualified name | PR 3 |
 | 16 | No observation schedule | PR 3 |
+| 17 | The trade's declared key is nullable, and its fixture left it empty | PR 3 |
+
+Defect 17 surfaced in PR 2, not in PR 3, because the regenerated trade
+eventing test reads the version history by the declared key. The model
+declares =external_id= as the key and as nullable with the generator
+=std::string()=, so the fixture wrote no key, the mapper stored NULL, and
+the lookup by =''= found nothing. PR 2 gives the fixture a value, which is
+a test-shape fix; making the column non-nullable, and making every writer
+supply it, is PR 3's.
+=evidence/pr2_trade_key_fixture_defect.txt=.
 
 ** Open work that could collide
 
@@ -285,6 +295,16 @@ commit from 2026-09-08 that scaffolds the sprint 25
 not ours, so the PR 1 task records it rather than deletes it.
 
 The backlog captures that touch this work are listed in the PR 1 task.
+
+One latent defect belongs to another component but surfaces here. Two
+models on main name =ores.storage/net/storage_transfer.hpp=, a path that
+does not exist: =ores.trading.trade.org= and
+=ores.marketdata.market_series.org=. The header is at
+=ores.storage.core/net/storage_transfer.hpp=, and the hand-written
+consumers use that path. Trading was regenerated in PR 2, so its model was
+corrected to the path that exists; neither component is under the drift
+gate, which is why the wrong path sat unnoticed. The marketdata half is
+left to that component's own clean-up.
 
 * Target shape
 
@@ -329,21 +349,21 @@ row is updated as each PR lands.
 | M08 | Entity | Mostly met; defects 2, 3, 4 and 6 are this item | PR 3 |
 | M09 | All | Not met: 5 presentation drawers, 25 singular generator facet names | PR 3 |
 | M10 | All | Met: composite overview with three parts; validate_docs passes | - |
-| P01 | Protocol | Not met: only =trade= speaks the canonical protocol | PR 2 |
-| P02 | Protocol | Not met: 249 raw subject literals, none declared in a model | PR 2, PR 3 |
+| P01 | Protocol | Met in PR 2: every modelled family has its generated protocol, and the consolidated rates header is deleted | PR 2 |
+| P02 | Protocol | Partly in PR 2: the migrated consumers name =req.nats_subject=; 20 literals remain in the four shell units whose families have no model | PR 3 |
 | P03 | Protocol | Cannot tell until the B04 inventory is complete | PR 2 |
 | P04 | Protocol | Partly: no operation models; two hand-written operations | PR 2, PR 6 |
-| P05 | Protocol | Not met: consumers not migrated | PR 2 |
+| P05 | Protocol | Met in PR 2: the shell and ORE consumers are migrated and nothing is carried for compatibility | PR 2 |
 | P06 | Protocol | Not applicable: no warmed event cache | Recorded in PR 1 |
-| G01 | Entity | Not met: 1751 files | PR 2 |
+| G01 | Entity | Met in PR 2: the drift dry run reports nothing to change and nothing to create, on two runs | PR 2 |
 | G02 | All | Not met: 48 protocol headers and 732 hand-written sources remain | PR 2 |
 | G03 | All | Partly: 35 marked files; correctness follows G01 | PR 2 |
 | G04 | Entity | Not met: no review record | PR 2, PR 6 |
 | G05 | All | Not started: no generator defect found yet | Every PR |
-| G06 | All | Not met: 6 stale CMake source lists | PR 2 |
+| G06 | All | Met in PR 2: the api, core and service source lists are up to date | PR 2 |
 | G07 | All | To honour: dry run first, never refresh while a defect is open | Policy |
 | G08 | All | Met: core and service namespace headers; no api header, as in iam | - |
-| W01 | Entity | Cannot tell; read the composition points in PR 2 | PR 2 |
+| W01 | Entity | Met in PR 2: 57 handler registrars, 31 history providers and 61 event mappings are composed; the read is =evidence/pr2_w01_composition_read.txt= | PR 2 |
 | W02 | Entity | Not met: 98 codes checked, 6 seeded | PR 6 |
 | W03 | Entity | Met: populate references resolve | - |
 | W04 | Entity | Partly: aggregator reachable; grants need a live run | PR 6 |
@@ -354,11 +374,11 @@ row is updated as each PR lands.
 | H03 | All | To review: comment pass | PR 6 |
 | H04 | All | Met: only the standard =_WIN32= export macro | - |
 | H05 | All | Structure met; the ER diagram is stale | PR 6 |
-| V01 | All | Not met: to run the whole-tree build | PR 2, PR 6 |
-| V02 | All | Not met: core suite 21 failures, all eventing | PR 2 |
+| V01 | All | Met in PR 2: the whole tree builds clean | PR 2 |
+| V02 | All | Met in PR 2: 102 of 102 trading core cases, and the api, service, shell and ore suites pass; =evidence/pr2_acceptance_checks.txt= | PR 2 |
 | V03 | Entity | To run: database recreate and fleet start | PR 6 |
 | V04 | Entity | Depends on S01 and S02 | PR 6 |
-| V05 | All | Not met: 6 stale CMake lists, other gates green only by exclusion | PR 2, PR 6 |
+| V05 | All | Partly in PR 2: the trading source lists are up to date and the drift dry run is empty; the remaining gates stay green only by exclusion until PR 6 | PR 6 |
 | V06 | All | Not met: absent from =COMPONENTS_UNDER_TEST= | PR 6 |
 | V07 | All | To run: vacuous-test review | PR 6 |
 | V08 | All | Not met: 732 sources and 58 test files | PR 6 |
@@ -368,8 +388,11 @@ row is updated as each PR lands.
 - *D1, the rates wire.* The nine consolidated rates families ship as
   generated per-family protocols. The hand consolidation is deleted:
   the per-family sections of =instrument_protocol.hpp=,
-  =rates_instrument_handler.hpp= and =registrar_rates.cpp=. The subject
-  names do not change, so no consumer changes. The alternative, making
+  =rates_instrument_handler.hpp=, and =registrar_rates.cpp= is rewritten
+  to call the nine generated registrar functions. The generated protocol
+  renames two verbs per family, =save= to =put= and =history= to
+  =_versions.list=, so the nine hand-written shell units and the ORE
+  import handler migrate in the same PR. The alternative, making
   consolidation a model decision, needs generator work and is recorded
   as a later option rather than taken here. Reason: the generator
   already emits the per-family shape, and leaving both shapes in place
@@ -397,13 +420,42 @@ row is updated as each PR lands.
   it scaffolds is superseded.
 - *D7, the shape of PR 1.* Documentation and evidence only, so that the
   decisions are on the record before 1751 files move.
+- *D8, how a rollback names a trade.* The trade model declares its wire
+  key as =external_id=, so the canonical protocol cannot remove a row by
+  the uuid the import rollback held. Decided, on the reviewer's ruling,
+  to record the external ids: the handler has the value in hand at the
+  save site, so it stores the external identifier, and the rollback
+  builds a =trade_removal= whose key is that identifier. Because the
+  field now carries a key and not a uuid, the ores.ore model renames it
+  =saved_trade_external_ids=, and its generated C++ and TypeScript and
+  the hand-drawn diagram follow it. The trading protocol does not change.
+  The trading model changes in one place: the trade key's fixture
+  generator gains a value, which is defect 17's PR 2 half; no column and
+  no shape change. The other two options stay recorded: declaring the
+  storage key as the wire key is PR 3 model work, and a removal by
+  storage key is a generator change. If PR 3 settles the key the other
+  way, the handler change is what reverts, and it is one line. The key's
+  nullability is the same thread and is recorded as defect 17.
+- *D9, the shape of the rollback's saved lists.* The rollback request
+  carries one string list per entity kind: =saved_currency_iso_codes=,
+  =saved_portfolio_ids=, =saved_book_ids= and =saved_trade_external_ids=.
+  A single ordered collection of kind-and-key entries is the cleaner
+  shape long term: an enumerated kind with its keys, or a flat list of
+  key-value pairs. Adding a kind then changes one model field instead of
+  four lists, two handlers and a wire name, and the order the rollback
+  traverses becomes explicit. It is deferred, because the rollback must
+  dispatch a different delete request per kind whatever the payload
+  shape, so a generic bag trades a typed field for a stringly kind and
+  moves exhaustiveness from the compiler to a switch. Recommendation:
+  take it up when the ore import workflow is next revised, not inside
+  PR 2. Recorded as a capture on the product backlog.
 
 * Delivery plan
 
 | PR | Task | Lands | Gate |
 |----+------+-------+------|
 | 1 | [[id:AC960907-8838-4254-9C45-F5E48FA8840C][Baseline, decisions and evidence for ores.trading]] | The analysis, the B01 to B06 evidence and the decisions | =compass lint=, =validate_docs.sh=, drift unchanged |
-| 2 | [[id:14795122-7D5B-442E-9B2A-E7517632F612][Sync the ores.trading tree to its models]] | The generated tree, the canonical protocol, the canonical triggers, the deletions | Whole-tree build, four suites green, drift dry run empty, D1 applied |
+| [[https://github.com/OreStudio/OreStudio/pull/2204][#2204]] | [[id:14795122-7D5B-442E-9B2A-E7517632F612][Sync the ores.trading tree to its models]] | The generated tree, the canonical protocol, the canonical triggers, the deletions | Whole-tree build, four suites green, drift dry run empty, D1 applied |
 | 3 | [[id:13217FCC-66E9-4887-B950-8C73FFC8D067][Model the unmodelled trading families and bind the unbound]] | The missing orgs, the profile bindings, the type repairs | Drift stays empty with the new entities, model drift clean |
 | 4 | [[id:8EB4DE8E-1A9B-40CB-9B61-2918F778557C][Collapse the instrument identity into the trade and split the bond security]] | One identity, real foreign keys, the security split | Drift empty, round trip at zero loss, suites green |
 | 5 | [[id:E586441E-B73E-4E8C-917F-50161B05588D][Finish the bond pilot]] | The v17 bond future, the missing child table and constraints, the delete and add paths, the corpus sweep | The corpus-wide round trip, drift empty |

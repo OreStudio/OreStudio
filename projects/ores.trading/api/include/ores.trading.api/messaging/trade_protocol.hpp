@@ -31,6 +31,8 @@
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -38,58 +40,255 @@
 
 namespace ores::trading::messaging {
 
-struct get_trades_request {
-    using response_type = struct get_trades_response;
+struct trade_key {
+    std::string external_id;
+};
+
+struct trade_write {
+    boost::uuids::uuid id;
+    std::string external_id;
+    boost::uuids::uuid book_id;
+    boost::uuids::uuid portfolio_id;
+    std::optional<boost::uuids::uuid> successor_trade_id;
+    std::string trade_type;
+    std::optional<boost::uuids::uuid> counterparty_id;
+    std::string product_type;
+    std::optional<boost::uuids::uuid> instrument_id;
+    std::optional<std::string> asset_class;
+    std::string netting_set_id;
+    std::string activity_type_code;
+    boost::uuids::uuid status_id;
+    std::string trade_date;
+    std::string execution_timestamp;
+    std::string effective_date;
+    std::string termination_date;
+};
+
+struct trade_change {
+    trade_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct trade_removal {
+    trade_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct trade_lookup {
+    trade_key key;
+    std::optional<ores::trading::domain::trade> trade;
+};
+
+struct trades_filter {
+    std::optional<std::string> node_id;
+};
+
+struct trade_event {
+    boost::uuids::uuid event_id;
+    trade_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct trade_version_key {
+    trade_key trade;
+    std::uint32_t version;
+};
+
+struct trade_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_trades_request {
+    using response_type = struct list_trades_response;
     static constexpr std::string_view nats_subject = "trading.v1.trades.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
-    std::string node_id;
+    ores::utility::domain::order order;
+    std::optional<trades_filter> filter;
 };
 
-struct get_trades_response {
+struct list_trades_response {
+    ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade> trades;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_trade_request {
-    using response_type = struct save_trade_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trades.save";
+struct get_trade_request {
+    using response_type = struct get_trade_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    trade_key key;
+};
+
+struct get_trade_response {
+    ores::utility::domain::result result;
+    std::optional<ores::trading::domain::trade> trade;
+};
+
+struct get_many_trades_request {
+    using response_type = struct get_many_trades_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<trade_key> keys;
+};
+
+struct get_many_trades_response {
+    ores::utility::domain::result result;
+    std::vector<trade_lookup> entries;
+};
+
+struct put_trade_request {
+    using response_type = struct put_trade_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    trade_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_trade_response {
+    ores::utility::domain::result result;
+    ores::trading::domain::trade trade;
+};
+
+struct put_many_trades_request {
+    using response_type = struct put_many_trades_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<trade_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_trades_response {
+    ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade> trades;
-
-    static save_trade_request from(std::vector<ores::trading::domain::trade> v) {
-        return {.trades = std::move(v)};
-    }
-};
-
-struct save_trade_response {
-    bool success = false;
-    std::string message;
 };
 
 struct delete_trade_request {
     using response_type = struct delete_trade_response;
     static constexpr std::string_view nats_subject = "trading.v1.trades.delete";
-    std::vector<std::string> ids;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    trade_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_trade_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_trade_history_request {
-    using response_type = struct get_trade_history_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trades.history";
-    std::string id;
+struct delete_many_trades_request {
+    using response_type = struct delete_many_trades_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<trade_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_trade_history_response {
-    std::vector<ores::trading::domain::trade> history;
-    bool success = false;
-    std::string message;
+struct delete_many_trades_response {
+    ores::utility::domain::result result;
 };
+
+struct list_trade_versions_request {
+    using response_type = struct list_trade_versions_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    trade_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<trade_versions_filter> filter;
+};
+
+struct list_trade_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::trading::domain::trade> versions;
+    std::uint64_t total;
+};
+
+struct get_trade_version_request {
+    using response_type = struct get_trade_version_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    trade_version_key key;
+};
+
+struct get_trade_version_response {
+    ores::utility::domain::result result;
+    ores::trading::domain::trade version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace trade_event_subjects {
+inline constexpr std::string_view created = "trading.v1.trades_events.created";
+inline constexpr std::string_view updated = "trading.v1.trades_events.updated";
+inline constexpr std::string_view deleted = "trading.v1.trades_events.deleted";
+}
 
 struct get_activity_types_request {
     using response_type = struct get_activity_types_response;

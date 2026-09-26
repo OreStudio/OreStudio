@@ -62,6 +62,16 @@ struct trade_lifecycle {
      * @brief Exact moment the trade was executed (ISO-8601 timestamp string).
      */
     std::optional<std::string> execution_timestamp;
+
+    /**
+     * @brief Value equality.
+     *
+     * A field group is a value like the entity that holds it: the entity's
+     * comparison is defaulted and reads every member, so a group without a
+     * comparison deletes the entity's and fails a build that treats that as
+     * an error.
+     */
+    friend bool operator==(const trade_lifecycle&, const trade_lifecycle&) = default;
 };
 
 }

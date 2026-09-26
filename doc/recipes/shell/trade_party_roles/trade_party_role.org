@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 3907B9D9-5A0A-5533-910F-C42F701E6BA7
+:END:
+#+title: How do I run the trade_party_roles commands from the shell?
+#+description: Every command the trade_party_roles submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:trade_party_roles:
+
+This file documents the trade_party_roles resource at the shell, one section per command. Every command is a subcommand of =trade_party_roles=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: BF6EC0E6-8A48-535C-B9CF-489589B79209
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_party_roles list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.trade_party_roles.list=.
+
+#+name: trade_party_roles-list
+#+begin_src ores-shell :tangle trade_party_roles-list.ores :exports none
+trade_party_roles list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: EA20F25E-8BD1-50D8-B67C-E3FCFC6B56FC
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_party_roles get <id>
+#+end_example
+
+It is addressed at =trading.v1.trade_party_roles.get=.
+
+#+name: trade_party_roles-get
+#+begin_src ores-shell :tangle trade_party_roles-get.ores :exports none
+trade_party_roles get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: A1333A83-EE67-5A76-BD72-8682234A3788
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_party_roles get-many <id>
+#+end_example
+
+It is addressed at =trading.v1.trade_party_roles.get_many=.
+
+#+name: trade_party_roles-get-many
+#+begin_src ores-shell :tangle trade_party_roles-get-many.ores :exports none
+trade_party_roles get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: C64205CB-16EE-5BD1-9331-B44EACDF26EC
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_party_roles add <trade_id> <counterparty_id> <role> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.trade_party_roles.put=.
+
+#+name: trade_party_roles-add
+#+begin_src ores-shell :tangle trade_party_roles-add.ores :exports none
+trade_party_roles add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: F06C8F66-0E2A-5FFE-9FB3-A20D2F0305B7
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_party_roles set <id> <trade_id> <counterparty_id> <role> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.trade_party_roles.put=.
+
+#+name: trade_party_roles-set
+#+begin_src ores-shell :tangle trade_party_roles-set.ores :exports none
+trade_party_roles set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B365C06C-B056-574F-BC31-8A4606D80E8F
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_party_roles put-many --count <n> <id> <trade_id> <counterparty_id> <role> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.trade_party_roles.put_many=.
+
+#+name: trade_party_roles-put-many
+#+begin_src ores-shell :tangle trade_party_roles-put-many.ores :exports none
+trade_party_roles put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: A3D4E081-AA2F-5707-BC61-4B23EB7A9432
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_party_roles delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.trade_party_roles.delete=.
+
+#+name: trade_party_roles-delete
+#+begin_src ores-shell :tangle trade_party_roles-delete.ores :exports none
+trade_party_roles delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 1905D089-78F1-59BF-A805-481BDED4B8E8
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_party_roles delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.trade_party_roles.delete_many=.
+
+#+name: trade_party_roles-delete-many
+#+begin_src ores-shell :tangle trade_party_roles-delete-many.ores :exports none
+trade_party_roles delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 4B71CE2D-51A8-5EC3-BF3F-58F1C937C7CA
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_party_roles versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.trade_party_roles_versions.list=.
+
+#+name: trade_party_roles-versions
+#+begin_src ores-shell :tangle trade_party_roles-versions.ores :exports none
+trade_party_roles versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 84E63DD1-0DA3-5FB2-AFD7-1D2944CAA045
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_party_roles version <id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.trade_party_roles_versions.get=.
+
+#+name: trade_party_roles-version
+#+begin_src ores-shell :tangle trade_party_roles-version.ores :exports none
+trade_party_roles version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

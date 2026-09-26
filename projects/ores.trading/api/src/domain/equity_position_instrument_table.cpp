@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/equity_position_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -31,7 +36,7 @@ std::string convert_to_table(const std::vector<equity_position_instrument>& v) {
     table << fort::header << "ID" << "Type" << "Underlying" << "Ccy" << "Quantity" << "Recorded At"
           << fort::endr;
 
-    for (const auto& epi : v) {
+    for ([[maybe_unused]] const auto& epi : v) {
         table << epi.identity.instrument_id << epi.identity.trade_type_code << epi.underlying_name
               << epi.currency << epi.quantity << epi.audit.recorded_at << fort::endr;
     }

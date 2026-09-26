@@ -1,0 +1,37 @@
+PR 2, the first generator defect the build found
+Measured 2026-09-26 on feature/sync-trading-drift after the regeneration.
+
+$ cmake --build build/output/linux-clang-debug-make --target ores.trading.api.lib ores.trading.core.lib -j 3
+
+exit 2. The API library stops on the first domain class it compiles.
+
+3 error line(s) in the log, all the same error:
+
+  projects/ores.trading/api/include/ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp:84:17: error: explicitly defaulted equality comparison operator is implicitly deleted [-Werror,-Wdefaulted-function-deleted]
+  projects/ores.trading/api/include/ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp:84:17: error: explicitly defaulted equality comparison operator is implicitly deleted [-Werror,-Wdefaulted-function-deleted]
+  projects/ores.trading/api/include/ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp:84:17: error: explicitly defaulted equality comparison operator is implicitly deleted [-Werror,-Wdefaulted-function-deleted]
+
+The note that names the cause:
+  projects/ores.trading/api/include/ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp:43:25: note: defaulted 'operator==' is implicitly deleted because there is no viable 'operator==' for member 'identity'
+  projects/ores.trading/api/include/ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp:85:73: note: replace 'default' with 'delete'
+
+Cause
+-----
+projects/ores.codegen/library/templates/cpp_domain_type_class.hpp.mustache:161 emits
+    friend bool operator==(const <entity>&, const <entity>&) = default;
+for every generated domain class.
+projects/ores.codegen/library/templates/cpp_field_group.hpp.mustache emits no
+comparison operator for the field-group struct, so a domain class whose member is a
+field group has its defaulted comparison implicitly deleted, and the build treats
+that as an error under -Werror.
+
+At 39f99acef3 neither file had a comparison operator, so the committed tree
+compiled. The current templates add one to the domain class only.
+
+The fix is at the source, in the field-group template, with a regression test in the
+codegen suite, and then a regeneration. The other field-group models live in ores.dq
+(one) and ores.codegen (one, a worked example); ores.dq is not in
+COMPONENTS_UNDER_TEST, so no registered component is affected, but its generated
+output would change and that is recorded.
+
+The full log is at tmp/pr2-build-trading.log while the branch is in flight.

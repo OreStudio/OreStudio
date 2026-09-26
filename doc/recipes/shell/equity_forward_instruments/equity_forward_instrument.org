@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 6C33B7E9-4DC1-54C6-8606-989D027270D0
+:END:
+#+title: How do I run the equity_forward_instruments commands from the shell?
+#+description: Every command the equity_forward_instruments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:equity_forward_instruments:
+
+This file documents the equity_forward_instruments resource at the shell, one section per command. Every command is a subcommand of =equity_forward_instruments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: C42185C2-2292-5619-AA88-3F21E13AEDB6
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_forward_instruments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.equity_forward_instruments.list=.
+
+#+name: equity_forward_instruments-list
+#+begin_src ores-shell :tangle equity_forward_instruments-list.ores :exports none
+equity_forward_instruments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: EEBE345E-9DB9-574F-945E-1D7DB80D88FC
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_forward_instruments get <instrument_id>
+#+end_example
+
+It is addressed at =trading.v1.equity_forward_instruments.get=.
+
+#+name: equity_forward_instruments-get
+#+begin_src ores-shell :tangle equity_forward_instruments-get.ores :exports none
+equity_forward_instruments get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 223B483A-1B47-541A-9DC8-38435191EA1D
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_forward_instruments get-many <instrument_id>
+#+end_example
+
+It is addressed at =trading.v1.equity_forward_instruments.get_many=.
+
+#+name: equity_forward_instruments-get-many
+#+begin_src ores-shell :tangle equity_forward_instruments-get-many.ores :exports none
+equity_forward_instruments get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: C40C1FBE-631E-57BE-BE16-B0CA6ABCC4C8
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_forward_instruments add <trade_type_code> <trade_id> <underlying_name> <currency> <quantity> <forward_price> <expiry_date> <long_short> <settlement_type> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.equity_forward_instruments.put=.
+
+#+name: equity_forward_instruments-add
+#+begin_src ores-shell :tangle equity_forward_instruments-add.ores :exports none
+equity_forward_instruments add __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: B19358B9-1181-56BB-AB97-EE44D2081063
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_forward_instruments set <instrument_id> <trade_type_code> <trade_id> <underlying_name> <currency> <quantity> <forward_price> <expiry_date> <long_short> <settlement_type> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.equity_forward_instruments.put=.
+
+#+name: equity_forward_instruments-set
+#+begin_src ores-shell :tangle equity_forward_instruments-set.ores :exports none
+equity_forward_instruments set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 3809F81C-7F2B-5C96-A6BB-5C4D9F0BB8B0
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_forward_instruments put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <underlying_name> <currency> <quantity> <forward_price> <expiry_date> <long_short> <settlement_type> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.equity_forward_instruments.put_many=.
+
+#+name: equity_forward_instruments-put-many
+#+begin_src ores-shell :tangle equity_forward_instruments-put-many.ores :exports none
+equity_forward_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 956CA1FF-516C-575F-8FD5-0E12654B8794
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_forward_instruments delete <instrument_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.equity_forward_instruments.delete=.
+
+#+name: equity_forward_instruments-delete
+#+begin_src ores-shell :tangle equity_forward_instruments-delete.ores :exports none
+equity_forward_instruments delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: DB6E23DA-DDEC-5BB2-80FD-C35333BE5719
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_forward_instruments delete-many <instrument_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.equity_forward_instruments.delete_many=.
+
+#+name: equity_forward_instruments-delete-many
+#+begin_src ores-shell :tangle equity_forward_instruments-delete-many.ores :exports none
+equity_forward_instruments delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: A4F83F80-D2EF-5C6C-86D3-265A9DE14A3B
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_forward_instruments versions <instrument_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.equity_forward_instruments_versions.list=.
+
+#+name: equity_forward_instruments-versions
+#+begin_src ores-shell :tangle equity_forward_instruments-versions.ores :exports none
+equity_forward_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: DCD9E5C4-F600-5055-834D-018FAFAAFBC3
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_forward_instruments version <instrument_id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.equity_forward_instruments_versions.get=.
+
+#+name: equity_forward_instruments-version
+#+begin_src ores-shell :tangle equity_forward_instruments-version.ores :exports none
+equity_forward_instruments version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

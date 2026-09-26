@@ -1,0 +1,78 @@
+PR 2, the eighth migration trial: the hand-written shell trades move over
+
+Measured 2026-09-26, branch feature/sync-trading-drift.
+
+The shell trading surface is two trees
+--------------------------------------
+ores.shell/trading holds 22 generated command units: the equity and fx
+families and the trading reference types. ores.shell/application/src/app/
+commands/trading holds 17 hand-written units: the nine rates families,
+the four families with no model, bond instrument, trade, and the two
+aggregators. The generated units take their protocol from the generator
+already; the hand-written ones are what this trial migrates.
+
+What the codemod had to learn
+-----------------------------
+Each item was found by building, and each is in the codemod:
+
+1. The history verb renames to versions. get_x_history_request becomes
+   list_x_versions_request, and the response follows it.
+2. A response type renames wherever it appears, including a
+   do_auth_request<> template argument. The old pass renamed requests
+   only, so the template argument kept the consolidated response name.
+3. The subject literal becomes std::string(req.nats_subject). The
+   generated subject is the request's own, so a literal is a second copy
+   that drifts.
+4. The include list follows the migration: the entity's own generated
+   protocol header is added, and the consolidated
+   instrument_protocol.hpp drops when the file names none of the four
+   families with no model.
+5. The row key. req.ids = {...} becomes
+   req.removal.key.<member> = ..., and req.id or the key member's own
+   name becomes req.key.<member>. A uuid key is parsed with
+   boost::uuids::string_generator; a text key is taken as it stands.
+6. The generated list response names its rows and its count itself:
+   ->instruments becomes -><entity plural>, ->history becomes ->versions,
+   and ->total_available_count becomes ->total.
+7. A request declared through a dependent type,
+   do_auth_request<typename request_type::response_type>, is canonical by
+   construction, so its response takes the result member. The bond save
+   lambda is the case.
+8. Entity tracking follows the declaration in force. A consolidated
+   declaration clears the variable, so a branch with no model no longer
+   inherits the previous branch's entity. This removes the four hand
+   restores the seventh trial needed, and the codemod is now a no-op when
+   it is run twice.
+9. The struct reader joins a declaration that wraps onto the next line,
+   because a generated write record or list response may split a type and
+   its member across two lines.
+
+Two decisions a person made
+---------------------------
+- The shell add-trade command builds one trade inline. The inline object
+  now has a name, and the codemod expands it into the single-row
+  put_trade_request. The batch form is not used, because the command adds
+  one row.
+- The registration function mixes two signatures. The generated units
+  take (root_menu, session) and the hand-written ones take (root_menu,
+  session, pagination), so trading_commands.cpp drops the pagination
+  argument from the 22 generated calls and keeps it on the other 15.
+
+Damage, recorded because it is not recoverable
+---------------------------------------------
+Two files, commodity_instrument_commands.cpp and
+scripted_instrument_commands.cpp, carried one added line each before this
+trial. A `git checkout HEAD -- <dir>/*.cpp`, run to clear a bad codemod
+run, overwrote both. The line is in no commit and in no index entry, so
+its content is lost. Both files compile, the migration leaves them
+unchanged, and the missing line is whatever they gained between the
+branch point and this trial. The lesson: restore a file from the index or
+from a copy, never from HEAD, while the worktree holds uncommitted work.
+
+The build
+---------
+    cmake --build build/output/linux-clang-debug-make \
+        --target ores.shell.application.lib -j 3
+
+builds clean, and a second codemod run over both trees reports nothing to
+migrate.

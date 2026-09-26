@@ -23,7 +23,12 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+// A seeded parent is system-tenant reference data (its soft FK carries
+// :use_system_tenant:), so its row is forced to the system tenant and
+// written under a system-scoped context, and the tenant_id helpers are
+// needed.
+#include "ores.eventing.api/domain/entity_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
@@ -35,10 +40,12 @@
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_json_io.hpp" // IWYU pragma: keep.
-#include "ores.trading.api/eventing/trade_changed_event.hpp"
+#include "ores.trading.api/eventing/trade_event.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/service/trade_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 // Party seeds (mandatory party_id soft FKs, direct or via a parent's own
 // mandatory party_id FK): the party generator and repository are used
 // regardless of the child's generator facet, hence the fully-qualified
@@ -120,7 +127,7 @@ using ores::refdata::repository::currency_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_trade_publishes_nats_changed_event", tags) {
+TEST_CASE("write_trade_publishes_an_event", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -138,26 +145,22 @@ TEST_CASE("write_trade_publishes_nats_changed_event", tags) {
     nats.connect();
     REQUIRE(nats.is_connected());
 
-    auto sub = bus.subscribe<ores::trading::eventing::trade_changed_event>(
-        [&nats](const ores::trading::eventing::trade_changed_event& e) {
-            ev::service::publish_entity_event(
-                nats,
-                std::string(
-                    ev::domain::event_traits<ores::trading::eventing::trade_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.trading.trade",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.trade_ids,
-                                                .tenant_id = e.tenant_id});
-        });
+    using event_type = ores::trading::messaging::trade_event;
+    auto sub = bus.subscribe<event_type>([&nats](const event_type& e) {
+        // One payload is addressed by three subjects, so the subject is the
+        // collection's prefix and the action the event reports.
+        ev::service::publish_entity_event(nats, ev::domain::event_subject<event_type>(e.action), e);
+    });
 
-    event_source.register_mapping<ores::trading::eventing::trade_changed_event>(
-        "ores.trading.trade", "ores_trading_trades");
+    event_source.register_entity_event_mapping<event_type>("ores_trading_trades");
 
     // 2. Subscribe as an external observer would, on the relative subject --
-    // client::subscribe() prepends the subject_prefix itself.
+    // client::subscribe() prepends the subject_prefix itself. The wildcard
+    // takes every action: the first write creates the row and a re-drive
+    // updates it, and the chain is what is under test rather than which of
+    // the three subjects carried it.
     auto observer = nats.subscribe_buffered(
-        std::string(ev::domain::event_traits<ores::trading::eventing::trade_changed_event>::name),
-        10);
+        std::string(ev::domain::entity_event_traits<event_type>::subject_prefix) + ".>", 10);
 
     // The listener thread issues LISTEN asynchronously on its own
     // dedicated connection. Block until it has actually done so before
@@ -182,39 +185,42 @@ TEST_CASE("write_trade_publishes_nats_changed_event", tags) {
     // written row is owned by a party the session cannot see, which makes it
     // invisible to the very session that wrote it.
     book_id_parent.party_id = *party_ctx.party_id();
-    auto functional_currency_parent = ores::refdata::generators::generate_synthetic_currency(ctx);
-    functional_currency_parent.change_reason_code = "system.test";
-    auto parent_portfolio_id_parent = ores::refdata::generators::generate_synthetic_portfolio(ctx);
-    parent_portfolio_id_parent.change_reason_code = "system.test";
+    auto book_id_parent_currency_parent =
+        ores::refdata::generators::generate_synthetic_currency(ctx);
+    book_id_parent_currency_parent.change_reason_code = "system.test";
+    auto book_id_parent_portfolio_parent =
+        ores::refdata::generators::generate_synthetic_portfolio(ctx);
+    book_id_parent_portfolio_parent.change_reason_code = "system.test";
     // Seed the active currency row ores_refdata_currencies_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.
-    ores::refdata::repository::currency_repository functional_currency_parent_repo;
-    functional_currency_parent_repo.write(party_ctx, functional_currency_parent);
-    book_id_parent.functional_currency = functional_currency_parent.iso_code;
+    ores::refdata::repository::currency_repository book_id_parent_currency_parent_repo;
+    book_id_parent_currency_parent_repo.write(party_ctx, book_id_parent_currency_parent);
+    book_id_parent.functional_currency = book_id_parent_currency_parent.iso_code;
     // portfolio carries a mandatory party_id FK of its own
     // (session-set in production), so seed a party for it before its write,
     // exactly as the direct-parent branch does.
-    auto parent_portfolio_id_parent_party =
+    auto book_id_parent_portfolio_parent_party =
         ores::refdata::generators::generate_synthetic_party(ctx);
-    parent_portfolio_id_parent_party.change_reason_code = "system.test";
-    auto parent_portfolio_id_parent_party_existing =
+    book_id_parent_portfolio_parent_party.change_reason_code = "system.test";
+    auto book_id_parent_portfolio_parent_party_existing =
         ores::refdata::repository::party_repository().read_latest(party_ctx);
-    for (const auto& e : parent_portfolio_id_parent_party_existing) {
-        if (e.tenant_id == parent_portfolio_id_parent_party.tenant_id) {
-            parent_portfolio_id_parent_party.parent_party_id = e.id;
+    for (const auto& e : book_id_parent_portfolio_parent_party_existing) {
+        if (e.tenant_id == book_id_parent_portfolio_parent_party.tenant_id) {
+            book_id_parent_portfolio_parent_party.parent_party_id = e.id;
             break;
         }
     }
-    ores::refdata::repository::party_repository parent_portfolio_id_parent_party_repo;
-    parent_portfolio_id_parent_party_repo.write(party_ctx, parent_portfolio_id_parent_party);
-    parent_portfolio_id_parent.party_id = parent_portfolio_id_parent_party.id;
+    ores::refdata::repository::party_repository book_id_parent_portfolio_parent_party_repo;
+    book_id_parent_portfolio_parent_party_repo.write(party_ctx,
+                                                     book_id_parent_portfolio_parent_party);
+    book_id_parent_portfolio_parent.party_id = book_id_parent_portfolio_parent_party.id;
     // Seed the active portfolio row ores_refdata_portfolios_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.
-    ores::refdata::repository::portfolio_repository parent_portfolio_id_parent_repo;
-    parent_portfolio_id_parent_repo.write(party_ctx, parent_portfolio_id_parent);
-    book_id_parent.parent_portfolio_id = parent_portfolio_id_parent.id;
+    ores::refdata::repository::portfolio_repository book_id_parent_portfolio_parent_repo;
+    book_id_parent_portfolio_parent_repo.write(party_ctx, book_id_parent_portfolio_parent);
+    book_id_parent.parent_portfolio_id = book_id_parent_portfolio_parent.id;
     ores::refdata::repository::book_repository book_id_repo;
     book_id_repo.write(party_ctx, book_id_parent);
     v.parties.book_id = book_id_parent.id;
@@ -278,15 +284,11 @@ TEST_CASE("write_trade_publishes_nats_changed_event", tags) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             auto snap = observer.snapshot();
             for (const auto& msg : snap) {
-                auto decoded =
-                    ores::nats::default_wire_codec().decode<ev::domain::entity_change_event>(
-                        msg.data);
-                if (decoded && decoded->entity == "ores.trading.trade") {
-                    for (const auto& changed_id : decoded->entity_ids) {
-                        if (changed_id == id_str)
-                            received.push_back(msg);
-                    }
-                }
+                auto decoded = ores::nats::default_wire_codec().decode<event_type>(msg.data);
+                // The event carries the row's own key record, so the row under
+                // test is recognised by comparing it with the row written.
+                if (decoded && decoded->key.external_id == v.identity.external_id)
+                    received.push_back(msg);
             }
         }
     }
@@ -328,15 +330,15 @@ TEST_CASE("write_trade_publishes_nats_changed_event", tags) {
         v.classification.activity_type_code = "amendment";
         repo.write(crud_ctx, v);
 
-        auto versions = svc.get_trade_history(id_str);
+        auto versions = svc.get_trade_history(v.identity.external_id);
         REQUIRE(versions.size() >= 2);
         REQUIRE(versions.front().audit.change_commentary == "updated-by-crud-round-trip");
 
-        svc.delete_trade(id_str);
+        svc.delete_trade(v.identity.id);
         // Delete soft-closes the active row (the instead-of delete
         // rule sets valid_to): the row disappears from latest reads,
         // and the version history keeps every version.
-        REQUIRE_FALSE(svc.get_trade(id_str).has_value());
-        REQUIRE(svc.get_trade_history(id_str).size() == versions.size());
+        REQUIRE_FALSE(svc.get_trade(v.identity.id).has_value());
+        REQUIRE(svc.get_trade_history(v.identity.external_id).size() == versions.size());
     }
 }

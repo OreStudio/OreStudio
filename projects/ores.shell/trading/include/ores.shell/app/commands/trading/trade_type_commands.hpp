@@ -17,12 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_shell_command_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_SHELL_APP_COMMANDS_TRADE_TYPE_COMMANDS_HPP
 #define ORES_SHELL_APP_COMMANDS_TRADE_TYPE_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.shell/app/pagination_context.hpp"
 #include <ostream>
 #include <string>
 #include <vector>
@@ -36,7 +40,13 @@ class Menu;
 namespace ores::shell::app::commands {
 
 /**
- * @brief Manages commands related to trade types.
+ * @brief Every verb trade types answer, as one command each.
+ *
+ * The unit is the entity's own derivation addressed from the REPL, so a verb
+ * the model gains appears as a command without an edit here and a verb it
+ * loses takes its command with it. What each command asks for follows from its
+ * shape: a paged read is addressed by nothing, a write by its write record,
+ * and everything else by the key.
  */
 class trade_type_commands {
 private:
@@ -51,47 +61,82 @@ private:
 
 public:
     /**
-     * @brief Register trade type related commands.
+     * @brief Register the trade types submenu.
      */
-    static void register_commands(cli::Menu& root_menu,
-                                  ores::nats::service::nats_client& session,
-                                  pagination_context& pagination);
+    static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
-     * @brief Process a get trade types request.
+     * @brief list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
-    static void process_get_trade_types(std::ostream& out,
-                                        ores::nats::service::nats_client& session,
-                                        pagination_context& pagination);
+    static void process_list(std::ostream& out,
+                             ores::nats::service::nats_client& session,
+                             const std::vector<std::string>& args);
 
     /**
-     * @brief Process an add trade type request.
-     *
-     * The value arguments arrive as free-form tokens and are parsed in the
-     * body. A per-argument typed handler builds one template instantiation
-     * per argument count, which the Windows clang toolchain cannot mangle
-     * beyond a few dozen arguments.
+     * @brief get <code>
      */
-    static void process_add_trade_type(std::ostream& out,
-                                       ores::nats::service::nats_client& session,
-                                       const std::vector<std::string>& args);
+    static void process_get(std::ostream& out,
+                            ores::nats::service::nats_client& session,
+                            const std::vector<std::string>& args);
 
     /**
-     * @brief Process a delete trade type request.
+     * @brief get-many <code>
      */
-    static void process_delete_trade_type(std::ostream& out,
-                                          ores::nats::service::nats_client& session,
-                                          std::string code);
+    static void process_get_many(std::ostream& out,
+                                 ores::nats::service::nats_client& session,
+                                 const std::vector<std::string>& args);
 
     /**
-     * @brief Process the trade type history request.
-     *
-     * The verb takes free-form tokens rather than the key alone, because it
-     * also answers --diff and --version.
+     * @brief add <code> <description> <product_type> <has_options> <has_extension> <reason>
+     * <commentary>
      */
-    static void process_get_trade_type_history(std::ostream& out,
-                                               ores::nats::service::nats_client& session,
-                                               const std::vector<std::string>& args);
+    static void process_add(std::ostream& out,
+                            ores::nats::service::nats_client& session,
+                            const std::vector<std::string>& args);
+
+    /**
+     * @brief set <code> <description> <product_type> <has_options> <has_extension> <reason>
+     * <commentary> [--version <n>]
+     */
+    static void process_set(std::ostream& out,
+                            ores::nats::service::nats_client& session,
+                            const std::vector<std::string>& args);
+
+    /**
+     * @brief put-many --count <n> <code> <description> <product_type> <has_options> <has_extension>
+     * <reason> <commentary>
+     */
+    static void process_put_many(std::ostream& out,
+                                 ores::nats::service::nats_client& session,
+                                 const std::vector<std::string>& args);
+
+    /**
+     * @brief delete <code> <reason> <commentary> [--version <n>]
+     */
+    static void process_delete(std::ostream& out,
+                               ores::nats::service::nats_client& session,
+                               const std::vector<std::string>& args);
+
+    /**
+     * @brief delete-many <code> <reason> <commentary>
+     */
+    static void process_delete_many(std::ostream& out,
+                                    ores::nats::service::nats_client& session,
+                                    const std::vector<std::string>& args);
+
+    /**
+     * @brief versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+     */
+    static void process_versions(std::ostream& out,
+                                 ores::nats::service::nats_client& session,
+                                 const std::vector<std::string>& args);
+
+    /**
+     * @brief version <code> --version <n>
+     */
+    static void process_version(std::ostream& out,
+                                ores::nats::service::nats_client& session,
+                                const std::vector<std::string>& args);
 };
 
 }

@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_registrar.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.core/messaging/trade_party_role_registrar.hpp"
 #include "ores.trading.api/messaging/trade_party_role_protocol.hpp"
 #include "ores.trading.core/messaging/trade_party_role_handler.hpp"
@@ -34,20 +39,42 @@ register_trade_party_role_handlers(ores::nats::service::client& nats,
                                    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<trade_party_role_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_trade_party_roles_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_trade_party_role_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_trade_party_roles_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_trade_party_roles(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_trade_party_role_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_trade_party_role(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_trade_party_roles_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_many_trade_party_roles(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_trade_party_role_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_trade_party_role(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_trade_party_roles_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_many_trade_party_roles(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_trade_party_role_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->remove(std::move(msg));
+            h->delete_trade_party_role(std::move(msg));
         }));
-    subs.push_back(
-        nats.queue_subscribe(get_trade_party_role_history_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_trade_party_roles_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_many_trade_party_roles(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_trade_party_role_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_trade_party_role_versions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_trade_party_role_version_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_trade_party_role_version(std::move(msg)); }));
     return subs;
 }
 

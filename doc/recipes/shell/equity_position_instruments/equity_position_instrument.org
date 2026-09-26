@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 8255D54F-6D95-588F-BDF8-1E06BBFC7B68
+:END:
+#+title: How do I run the equity_position_instruments commands from the shell?
+#+description: Every command the equity_position_instruments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:equity_position_instruments:
+
+This file documents the equity_position_instruments resource at the shell, one section per command. Every command is a subcommand of =equity_position_instruments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 72E80113-4346-5A88-9D1D-05C78F792905
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_position_instruments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.equity_position_instruments.list=.
+
+#+name: equity_position_instruments-list
+#+begin_src ores-shell :tangle equity_position_instruments-list.ores :exports none
+equity_position_instruments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 2827D309-8A0C-54BA-9F05-3DF6A740B8FB
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_position_instruments get <instrument_id>
+#+end_example
+
+It is addressed at =trading.v1.equity_position_instruments.get=.
+
+#+name: equity_position_instruments-get
+#+begin_src ores-shell :tangle equity_position_instruments-get.ores :exports none
+equity_position_instruments get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 4A747BBC-8DDD-556D-B323-8F26F2225E0D
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_position_instruments get-many <instrument_id>
+#+end_example
+
+It is addressed at =trading.v1.equity_position_instruments.get_many=.
+
+#+name: equity_position_instruments-get-many
+#+begin_src ores-shell :tangle equity_position_instruments-get-many.ores :exports none
+equity_position_instruments get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 16E4A989-0736-5090-ADDA-1449FE04095C
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_position_instruments add <trade_type_code> <trade_id> <underlying_name> <currency> <quantity> <price> <option_data_json> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.equity_position_instruments.put=.
+
+#+name: equity_position_instruments-add
+#+begin_src ores-shell :tangle equity_position_instruments-add.ores :exports none
+equity_position_instruments add __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: AB5E1B3B-9B3F-5D8B-87CE-0B03006D631C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_position_instruments set <instrument_id> <trade_type_code> <trade_id> <underlying_name> <currency> <quantity> <price> <option_data_json> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.equity_position_instruments.put=.
+
+#+name: equity_position_instruments-set
+#+begin_src ores-shell :tangle equity_position_instruments-set.ores :exports none
+equity_position_instruments set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 1BCC3BDB-FAEC-5B21-A3CD-67F6320AA7BC
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_position_instruments put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <underlying_name> <currency> <quantity> <price> <option_data_json> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.equity_position_instruments.put_many=.
+
+#+name: equity_position_instruments-put-many
+#+begin_src ores-shell :tangle equity_position_instruments-put-many.ores :exports none
+equity_position_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 6E9A10D3-8559-5C75-A35E-DE20B91307CB
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_position_instruments delete <instrument_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.equity_position_instruments.delete=.
+
+#+name: equity_position_instruments-delete
+#+begin_src ores-shell :tangle equity_position_instruments-delete.ores :exports none
+equity_position_instruments delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 4C798BCB-BCA9-5A0A-817C-92271B367DA3
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_position_instruments delete-many <instrument_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.equity_position_instruments.delete_many=.
+
+#+name: equity_position_instruments-delete-many
+#+begin_src ores-shell :tangle equity_position_instruments-delete-many.ores :exports none
+equity_position_instruments delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: DE589A8E-921E-5C4E-8A66-B6675878EF28
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_position_instruments versions <instrument_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.equity_position_instruments_versions.list=.
+
+#+name: equity_position_instruments-versions
+#+begin_src ores-shell :tangle equity_position_instruments-versions.ores :exports none
+equity_position_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: FCBC95B3-32AB-52A2-B590-04F511409B78
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_position_instruments version <instrument_id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.equity_position_instruments_versions.get=.
+
+#+name: equity_position_instruments-version
+#+begin_src ores-shell :tangle equity_position_instruments-version.ores :exports none
+equity_position_instruments version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

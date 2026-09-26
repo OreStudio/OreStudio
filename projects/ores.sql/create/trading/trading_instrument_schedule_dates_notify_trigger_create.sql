@@ -27,25 +27,42 @@ create or replace function ores_trading_instrument_schedule_dates_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.trading.instrument_schedule_date';
-    change_timestamp timestamptz := NOW();
+    change_action text;
+    changed_version integer := 0;
     changed_instrument_id uuid;
     changed_owner_role text;
     changed_owner_number integer;
     changed_schedule_role text;
     changed_schedule_sequence_number integer;
     changed_sequence_number integer;
+    changed_key jsonb;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
+        change_action := 'deleted';
         changed_instrument_id := OLD.instrument_id;
         changed_owner_role := OLD.owner_role;
         changed_owner_number := OLD.owner_number;
         changed_schedule_role := OLD.schedule_role;
         changed_schedule_sequence_number := OLD.schedule_sequence_number;
         changed_sequence_number := OLD.sequence_number;
+        changed_version := OLD.version;
         changed_tenant_id := OLD.tenant_id::text;
+    elsif TG_OP = 'UPDATE' then
+        -- A versioned table's update is the internal close of the current
+        -- row; the insert that follows it carries the change. Announcing
+        -- both would report one change twice, so the close announces
+        -- nothing.
+        return null;
     else
+        -- The first version of a row is a create; every later one is an
+        -- update, because the row it replaces was already there.
+        if NEW.version <= 1 then
+            change_action := 'created';
+        else
+            change_action := 'updated';
+        end if;
+        changed_version := NEW.version;
         changed_instrument_id := NEW.instrument_id;
         changed_owner_role := NEW.owner_role;
         changed_owner_number := NEW.owner_number;
@@ -55,10 +72,16 @@ begin
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 
+    changed_key := jsonb_build_object('instrument_id', changed_instrument_id, 'owner_role', changed_owner_role, 'owner_number', changed_owner_number, 'schedule_role', changed_schedule_role, 'schedule_sequence_number', changed_schedule_sequence_number, 'sequence_number', changed_sequence_number);
+
     notification_payload := jsonb_build_object(
-        'entity', entity_name,
-        'timestamp', ores_utility_iso8601_timestamp_fn(change_timestamp),
-        'entity_ids', jsonb_build_array(changed_instrument_id, changed_owner_role, changed_owner_number, changed_schedule_role, changed_schedule_sequence_number, changed_sequence_number),
+        'event_id', gen_random_uuid()::text,
+        'entity', 'ores.trading.instrument_schedule_date',
+        'key', changed_key::text,
+        'action', change_action,
+        'version', changed_version,
+        'occurred_at', ores_utility_iso8601_timestamp_fn(clock_timestamp()),
+        'correlation_id', nullif(current_setting('ores.request.correlation_id', true), ''),
         'tenant_id', changed_tenant_id
     );
 

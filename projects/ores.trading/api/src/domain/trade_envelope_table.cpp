@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/trade_envelope_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -44,7 +49,7 @@ std::string convert_to_table(const std::vector<trade_envelope>& v) {
     table << fort::header << "Counterparty" << "Netting Set" << "Modified By" << "Version"
           << fort::endr;
 
-    for (const auto& env : v) {
+    for ([[maybe_unused]] const auto& env : v) {
         table << opt_str(env.counter_party) << opt_str(env.netting_set_id) << env.modified_by
               << env.version << fort::endr;
     }

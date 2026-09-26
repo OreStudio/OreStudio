@@ -1,0 +1,164 @@
+PR 2, what the migrated handler still needs
+
+Measured 2026-09-26 by running the codemod with both defects fixed and
+building ores.ore.service.lib. Four things remain, all in the codemod or
+the include list, none of them judgment calls.
+
+1. A negated response check keeps the negation
+   The rewrite of `!resp->success` emitted `resp->result.outcome == ok`,
+   and the `!` in front then negates the enum:
+       if (!resp || !resp->result.outcome == ores::utility::domain::outcome::ok)
+   The pattern must carry the optional `!` and choose the operator:
+   `!X->success` becomes `X->result.outcome != ok`, and a bare
+   `X->success` becomes `X->result.outcome == ok`.
+
+2. A failure message moved into the result
+       resp ? resp->message : trade_error
+   The generated response carries no `message`; it is
+   `resp->result.message`.
+
+3. A container save is not a row save
+       put_trade_request save_req;
+       save_req.trades = {std::move(item.trade)};
+   The generated single-row request takes a `trade_change`, and the
+   batch form is `put_many_trades_request` with
+   `std::vector<trade_change> changes`. The element is a change record,
+   so the site needs the same write expansion the codemod does for
+   `.data =`, applied to each element of the brace list. This is the one
+   site where a human decides between the single and the batch request.
+
+4. The consumer's include list is the consolidated header
+   The handler includes `ores.trading.api/messaging/instrument_protocol.hpp`,
+   which after D1 declares only the four families with no model. The
+   nine rates families' request types live in their own generated
+   headers now, so the include list needs them added and the consolidated
+   header kept for the four.
+
+Errors 3 and 4 are what the last build reported; 1 and 2 it also
+reported, at lines 1330 and 1331.
+
+Update, same day, after fixing 1, 2 and 4 above and the container save
+--------------------------------------------------------------------
+The trial then reached 11 errors in three groups.
+
+a. is_generated misses the plural. The list verb is
+   list_<stem>s_request where the stem already ends in s for a plural
+   entity, so "bond_issues" is tested as list_bond_issuess_request and
+   the check fails, leaving resp->success on a generated response that
+   has no success. The check must accept both spellings.
+
+b. An optional domain member into a non-optional write member. The
+   trade change expansion needs trade.lifecycle.execution_timestamp,
+   effective_date and termination_date, which are
+   std::optional<std::string> in the domain and std::string on the wire,
+   so each needs value_or(""). The codemod can know this: the group
+   header states the optional, so the expansion should read it the same
+   way it reads the path.
+
+c. The unmodelled families' branch may take the generated arm.
+   Inside the if-constexpr chain the same response variable name is
+   reused, so a later branch inherits the earlier branch's response
+   entity and the four families with no model get a result member they
+   do not have. The arm must be decided per branch, or those four sites
+   restored by hand after the run.
+
+All three are in the codemod, not in the consumer.
+
+Update, second trial
+--------------------
+The three fixes landed and the trial reports three things the codemod
+still gets wrong:
+
+- The many-row request's entity is not derivable by stripping the verb.
+  put_many_trades_request names the plural, so the stem reads "trades"
+  and the response check is left unrewritten. The write record's own
+  header is the reliable source: read the entity from the protocol
+  header that declares the request.
+- value_or belongs only where the wire member is not optional. The
+  identity members are optional on both sides (a nullable uuid), so
+  adding the empty string breaks them; the codemod now reads the write
+  record's member types and converts only where the two differ.
+- The four families with no model still take a generated arm somewhere
+  in the dispatch chain. The block-scoped reset is not enough; the
+  decision has to follow the request type actually declared in the
+  branch.
+
+Update, third trial
+-------------------
+The many-row entity is now read from the protocol header that declares
+the request, which is the reliable source.
+
+The block-scoped reset over-corrects: response checks that the codemod
+rewrote before the reset are now left alone, so most sites keep
+->success on a generated response that has no such member. The reset
+must follow the request type the branch actually declares rather than
+clearing on every block, and the trial's coverage is the check to run
+after each change: it should rewrite the generated sites and leave the
+four unmodelled families' sites untouched.
+
+So the remaining work is one decision, not three: pair each response
+with the request variable of the branch it is in, and the four families
+with no model fall out of that correctly.
+
+Update, fourth trial
+--------------------
+The block-scoped reset is removed. The call line alone decides the
+pairing, and the trial rewrites 60 response checks, the highest coverage
+so far. The pairing is right for every branch that declares its own
+request and calls nats_call before its check, which is all but the four
+families with no model.
+
+Those four sites are the only known over-rewrite. They are restored by
+hand after the run, which is cheaper and safer than a scope analysis the
+codemod cannot do textually: four lines, identifiable by the response
+type name the compiler reports.
+
+Update, fifth trial (13 errors to 3)
+------------------------------------
+Running the codemod and its documented post-steps, then repairing what
+the compiler named, reaches three errors:
+
+- The optional conversion must not be added where the wire member is a
+  uuid. Twenty-six sites came out as x.value_or("") on a field the write
+  record declares optional; the fix is to read the write record's types,
+  which the codemod does now, and to strip the empty value on the
+  members whose name ends in _id.
+- product_type needs to_string: the domain member is the enumeration and
+  the wire member is text, the mirror of the arm core.py emits for a
+  write.
+- A revert window 60 lines wide caught two modelled families along with
+  the four unmodelled ones, so two equity responses were reverted that
+  should not have been.
+- The batch delete is the same reshape as the batch save:
+  delete_trade_request.ids does not exist, and
+  delete_many_trades_request carries std::vector<trade_removal> removals.
+
+The first three are mechanical. The fourth is the second place a person
+chooses the request: a removal record carries the key and the version it
+expects, so the delete needs the version the old call did not state.
+
+Update, sixth trial (6 errors)
+------------------------------
+With the wire-member map keyed correctly the migration reaches six
+errors, and one of them is not mechanical.
+
+- Four are the known over-rewrite: the four families with no model take
+  a result member their consolidated response does not have. Restore
+  those four lines after the run.
+- One is product_type again: the enum-to-text rule did not fire in the
+  batch expansion. Whether the domain type map or the expansion is at
+  fault is for the next run to say; the conversion is
+  ores::trading::domain::to_string(...).
+- One is a protocol gap, not a rewrite. The trade's declared key is its
+  external_id, not its uuid:
+
+      struct trade_key { std::string external_id; };
+
+  The rollback path holds saved_trade_ids, which are uuids, so it cannot
+  name the rows it wants to remove. The consolidated protocol accepted a
+  list of ids; the canonical one addresses a trade by the key the model
+  declares. Either the handler records the external ids as it saves (the
+  value is in hand at the save site, and the log line already prints it),
+  or the trade model declares the storage key as the wire key, or the
+  protocol gains a removal by storage key. That is a decision for the
+  task, and PR 3 owns the model if the answer is the second.

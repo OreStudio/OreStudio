@@ -39,11 +39,11 @@ already reproduces the tree's semantics.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | PR 1 merged, so the decisions are on the main branch. |
-| Next         | Re-measure the baseline at the new head, then regenerate. |
+| Now          | PR [#2204](https://github.com/OreStudio/OreStudio/pull/2204) is raised, with the evidence and an independent verification round running. |
+| Waiting on   | The PR review and CI. |
+| Next         | Raise PR 2, answer the review, merge, then start PR 3. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -82,6 +82,41 @@ The classification to expect: banner only, eventing rename, the trigger
 template, and the creates. If a block appears under a cause the PR 1
 baseline does not have, stop and explain it before regenerating.
 
+Measured at 39f99acef3: 1636 would change and 115 would be created,
+unchanged from PR 1. The record is =evidence/pr2_drift_baseline.txt=.
+
+** What the survey before regeneration found
+
+=instrument_protocol.hpp= holds two groups, and only one can go here.
+
+- The nine rates families. Their structs go, because the generated
+  per-family headers replace them.
+- Four families with no model at all: =commodity=, =composite=,
+  =credit= and =scripted=. Their messages live only in this header, so
+  deleting the whole file would break their handlers and their shell
+  units. They stay until PR 3 models them, and the header disappears
+  when the last one moves.
+
+Consumers of the nine families' consolidated request types outside the
+trading component, all of which this PR migrates:
+
+- Nine hand-written shell units under
+  =projects/ores.shell/application/src/app/commands/trading/=, one for
+  each rates family.
+- =projects/ores.ore/service/src/messaging/ore_import_execute_handler.cpp=.
+
+The shell has two trading command trees. The generated one is
+=projects/ores.shell/trading/= and the regeneration rewrites 66 of its
+files. The rates units and the four unmodelled families' units are
+hand-written under =ores.shell/application/=. Check both when the
+protocol moves.
+
+=registrar_rates.cpp= registers the nine families against
+=rates_instrument_handler.hpp=. Both are deleted, and the generated
+per-family registrars are wired at the same composition point. Read the
+composition point before deleting, because the drift gate cannot see an
+unwired registrar.
+
 ** 2. Apply D1 before regenerating, not after
 
 The generator emits per-family protocols, handlers and registrars for
@@ -94,9 +129,321 @@ would subscribe the same subjects twice.
 
 The work: let the nine per-family files be created, then delete the
 per-family sections of =instrument_protocol.hpp=, delete
-=rates_instrument_handler.hpp= and =registrar_rates.cpp=, and wire the
-generated registrars at the same composition point. The subject names
-do not change, so no consumer changes for this step.
+=rates_instrument_handler.hpp=, and rewrite =registrar_rates.cpp= to
+call the nine generated registrar functions, exactly as
+=registrar_equity.cpp= calls the equity ones. The family master stays,
+because it is the composition point: =registrar.cpp= calls
+=detail::register_rates_handlers=, and the other families keep the same
+shape.
+
+** Where the work stands after the first regeneration
+
+The component was regenerated at 39f99acef3: 1636 files changed, 115
+were created, and the run reports untracked files because none of the
+creates is committed yet. That report is expected, not a defect.
+
+The D1 edits are applied on the working tree, uncommitted:
+
+- =instrument_protocol.hpp= keeps the four families that have no model
+  (=commodity=, =composite= with its legs, =credit=, =scripted=), 34
+  structs, and loses the nine rates families and the 17 now-unused
+  domain includes.
+- =rates_instrument_handler.hpp= is deleted.
+- =registrar_rates.cpp= is rewritten to call the nine generated
+  =register_<family>_instrument_handlers= functions.
+
+** The consumer migration the wire rename forces
+
+The generated canonical protocol does not keep the consolidated struct
+names or subjects. Per family, the mapping is:
+
+| Consolidated | Generated | Subject |
+|--------------+-----------+---------|
+| =get_<family>_instruments_request/response= | =list_<family>_instruments_request/response= | =trading.v1.<family>_instruments.list=, unchanged |
+| =save_<family>_instrument_request/response= | =put_<family>_instrument_request/response= | =...save= becomes =...put= |
+| =delete_<family>_instrument_request/response= | unchanged | unchanged |
+| =get_<family>_instrument_history_request/response= | =list_<family>_instrument_versions_request/response= | =...history= becomes =..._versions.list= |
+
+The families are fra, vanilla swap, cap floor, swaption, balance
+guaranteed swap, callable swap, knock out swap, inflation swap and rpa.
+The request and response fields differ from the consolidated ones as
+well, so each call site is read against the generated struct rather
+than renamed mechanically.
+
+The call sites are the nine hand-written shell units under
+=projects/ores.shell/application/src/app/commands/trading/= and
+=projects/ores.ore/service/src/messaging/ore_import_execute_handler.cpp=.
+The shell units also carry the subject strings as literals, so the
+migration replaces them with the generated constants, which is item P02.
+
+Still to do after the migration: regenerate the CMake source lists,
+because =rates_instrument_handler.hpp= is gone; build the whole tree;
+run the four suites; then run the dry run twice for idempotence.
+
+** The first generator defect the build found
+
+The regenerated component does not compile, and the defect is in the
+generator, not in the model. =evidence/pr2_generator_defect_equality.txt=
+holds the error and the templates.
+
+=cpp_domain_type_class.hpp.mustache= emits a defaulted =operator== = for
+every domain class. =cpp_field_group.hpp.mustache= emits no comparison
+for the field-group struct it generates. A domain class whose member is
+a field group therefore has its comparison implicitly deleted, and the
+build treats that as an error under =-Werror=. At 39f99acef3 neither
+file had a comparison, so the committed tree compiled; the current
+templates add one to the domain class and not to the field group.
+
+Every trading entity with a field-group member is affected, which is
+=trade= and the entities that inherit =instrument_identity=. This is
+item G05 work: fix the field-group template at its source in the org
+source that tangles to =cpp_field_group.hpp.mustache=, add a regression
+test to the codegen suite, then regenerate. Item G07 applies while the
+defect is open: do not refresh any other artefact that the same
+generator feeds.
+
+The other field-group models are one in =ores.dq= and one worked
+example in =ores.codegen=. Neither component is in
+=COMPONENTS_UNDER_TEST=, so no registered component changes, but
+=ores.dq='s generated output does and that is recorded here.
+
+** The second generator defect: the repository ignores the group pair
+
+The API library builds after the equality fix. The core library stops on
+the 26 instrument repositories, and the defect is in the repository
+template.
+
+Two grammar forms exist for a grouped entity. =trade= uses the modern
+=** Domain groups= table, which replaces the struct body entirely. The 26
+instrument entities use the older pair, =:domain_identity_group:= and
+=:domain_audit_group:=, which nests those two groups and leaves the
+entity's own columns flat. The domain-class template and the mapper
+template honour the pair; the repository template does not, so it emits
+=v.instrument_id= where the domain type has =v.identity.instrument_id=.
+The committed tree compiled because that repository was hand-written;
+the regeneration replaces it.
+
+Evidence: =evidence/pr2_generator_defect_repository_group.txt=.
+
+Two ways forward, and the choice is a model-shape decision:
+
+- Teach the repository template the pair, addressing the grouped columns
+  through their member. This keeps the current model shape and the wire
+  format, and it is the smaller change.
+- Migrate the 26 models to the =** Domain groups= table. The loader then
+  requires every column to be in a group, so each entity needs a third
+  field group for its own columns, the struct body changes from "two
+  nested members plus flat columns" to a member list, and the wire JSON
+  changes shape for 26 instrument types. It also needs the loader to
+  resolve the shared =ores.dq.audit_record= group across components;
+  the table form resolves a group only beside the entity's own model
+  today, which is a second small defect the experiment confirmed.
+
+Recorded recommendation: take the first now, because the component's
+acceptance is drift-clean regeneration, not a wire reshape, and revisit
+the table form when PR 3 models the remaining families.
+
+** The group prefix reaches further than the repository
+
+The repository template is fixed, and the repository layer builds. The
+service layer stops at the same defect in its own template:
+key_from reads v.instrument_id with no member, the version literal has
+no scaffold prefix, change_commentary is an audit member read flat, and
+a compound key's integer member is passed to a parameter that takes
+text. Evidence:
+=evidence/pr2_generator_defect_service_group.txt=.
+
+The template states its conversions inline, as {{#is_uuid}} arms, at six
+sites and has no arm for a number. The durable fix is to prepare those
+expressions in core.py as string fields and have the template splice
+them, the way it already splices =primary_key.v_args= and
+=removal_key_args=. That deletes the inline arms instead of adding a
+fourth type to each one.
+
+The same class of site may exist in the service header, the table I/O,
+the JSON I/O, the generator and the history-difference payloads. Expect
+the build to name them one at a time; each is the same prefix or the
+same text conversion.
+
+** The enum write field
+
+With the prefixes and the key text in place the services compile, and
+one error is left: =to_domain= assigns a text wire field to the domain's
+enum member.
+
+    v.classification.product_type = write.product_type;
+
+The model states both sides. The column is text (=:cpp_type:
+std::string=, =:type: product_type_t=) and the field group that carries
+it declares =domain::product_type=, so the domain is an enumeration
+while the wire is text. The conversion between them is what is missing,
+and the domain header already provides it as
+=product_type_from_string=. Evidence:
+=evidence/pr2_generator_defect_enum_write.txt=.
+
+The fix is an arm in both =to_domain= functions for a write field whose
+column states =:is_enum: true=, with a regression test, because every
+enum column in every component needs the same arm.
+
+** Where the build stands after the enum arm
+
+The enum arm is in, and the whole ores.trading component compiles: the
+API library, the core library, the service library and the executables.
+Two further blockers were cleared on the way.
+
+- The generated shell command units take a product type as an argument
+  and the shell's token reader had no conversion for it, so the build
+  stopped on its own static assert. =product_type= now states its own
+  =parse_token=, which the reader finds by argument-dependent lookup, as
+  ores.synthetic's =binding_mode= and =scope= do.
+- The six =component_files.cmake= lists were stale, so the nine
+  generated registrar sources were never compiled and the service
+  library linked with undefined handler registrars. Item G06.
+
+** The consumer migration the tree build now reaches
+
+The tree build stops at 67 per cent in ores.ore's hand-written
+=ore_import_execute_handler.cpp=. It speaks the old consolidated
+protocol: 26 =using= declarations name old request types and 192 lines
+reach through =req.data.=.
+
+This is a rename and a reshape, not a rename alone. The generated write
+request carries the domain object under the entity's own member rather
+than under =data=, and it carries a change intent:
+
+    save_bond_leg_amount_request req;      becomes
+    req.data.amount_role = ...;            put_bond_leg_amount_request req;
+                                           req.bond_leg_amount.amount_role = ...;
+
+The read side is a rename with the paged fields to check: an old
+=get_bond_issues_request= with =offset= and =limit= becomes
+=list_bond_issues_request=, whose fields are the model's, not the
+consolidated header's.
+
+Every call site is read against the generated struct rather than
+renamed mechanically, and the nine shell units under
+=ores.shell/application/= need the same pass.
+
+=evidence/pr2_consumer_migration_recipe.txt= states the mapping in full:
+the four request shapes, the canonical construction the generated shell
+units use, the line-by-line mapping, and the counts for the handler.
+Two things a rename cannot carry: a whole-object assignment expands to
+one assignment per member of the generated =<x>_write=, whose member
+list the protocol header states; and every response check reads
+=result.outcome= rather than a =success= bool. The handler's =nats_call=
+helper needs no change, because it is templated on
+=typename Req::response_type=.
+
+** The codemod, and the two defects left in it
+
+=projects/ores.codegen/scripts/migrate_consumer_to_generated_protocol.py=
+applies the mapping in one linear pass. Its dry run on the handler
+reports 81 declarations renamed, 211 field accesses, 34 whole-object
+sites and 59 response checks, and it leaves the four families with no
+model on the consolidated request they have today.
+
+Two defects are known and unfixed, both found by building the migrated
+handler:
+
+- The domain path for an identity-group member is not always resolved,
+  so an expansion reads =obj.instrument_id= where the domain type has
+  =obj.identity.instrument_id=. The group-header parse in
+  =domain_paths= is what needs the fix.
+- An expression that dereferences a smart pointer is appended to
+  without parentheses, so =*data.option= becomes
+  =*data.option.instrument_id=. The expansion must parenthesise the
+  expression before appending the member.
+
+The handler was reverted after the trial, so the codemod is committed
+and the migration is one run away once those two are fixed.
+
+Both defects are fixed: a nested group member is resolved by its type
+rather than by its name, and an expression that is not a plain member
+path is parenthesised before the member is appended. The trial then
+reported four further consequences, all of them in the codemod or the
+include list rather than judgment calls:
+=evidence/pr2_migration_remaining_work.txt=. The one place a person
+decides is the container save, which must choose between the single-row
+request and the batch one. The handler was reverted again, so the tree
+stays coherent until all four are fixed.
+
+** The seventh trial: the handler migrates, and the rollback key is renamed
+
+The codemod's enum arm tested =("string" not in wire_type)=, which is
+false exactly when the wire member is text, so the conversion never
+fired. The correction inverts the test: a domain member that names an
+enumeration and reaches a wire member that is text converts with
+=ores::trading::domain::to_string=. It is one line in the codemod, and
+it is the defect the fifth trial left open.
+
+The run over the handler reports 81 declarations renamed, 211 field
+accesses, 34 whole-object sites and 60 response checks. The documented
+post-steps then apply: the nine rates includes, the container save as a
+=put_many_trades_request= with one =trade_change= per row, the batch
+delete as a =delete_many_trades_request= with one =trade_removal= per
+row, and the four families with no model restored to the consolidated
+response check the codemod over-rewrote. The four restores are the only
+hand edits, and the compiler named each one.
+=ores.ore.service.lib= then builds clean.
+
+D8 is applied here. The handler records the trade's external identifier
+at the save site, and the rollback addresses the trade by that key.
+Because the field carries an identifier and not a uuid, the ores.ore
+model renames it =saved_trade_external_ids=, and its generated C++ and
+TypeScript and its hand-drawn diagram follow the model. No trading model
+changes.
+
+** The eighth trial: the hand-written shell trades migrate
+
+The shell trading surface is two trees. =ores.shell/trading= holds 22
+generated command units; =ores.shell/application/src/app/commands/trading=
+holds 17 hand-written ones, which are the nine rates families, the four
+families with no model, bond instrument, trade and two aggregators. The
+second tree is what consumes the consolidated protocol and is what this
+trial migrates.
+
+The codemod grew nine rules, each found by building:
+=evidence/pr2_shell_migration_trial8.txt=. Six are mechanical: the
+history verb renames to versions; a response type renames with its
+request wherever it appears, including a =do_auth_request<= template
+argument; the subject literal becomes =std::string(req.nats_subject)=;
+the include list gains the entity's generated protocol and drops the
+consolidated header when no family without a model is named; the row key
+moves under =req.key= or =req.removal.key=, with a uuid key parsed by
+=string_generator=; and the generated list response names its rows,
+=versions= and =total= itself.
+
+Three are structural. A request declared through a dependent type,
+=do_auth_request<typename request_type::response_type>=, is canonical by
+construction, so its response takes the =result= member. Entity tracking
+now follows the declaration in force, so a consolidated declaration
+clears the variable and the four families with no model no longer inherit
+the previous branch's entity; that removes the four hand restores the
+seventh trial needed, and the codemod is now a no-op on a second run.
+And the struct reader joins a declaration that wraps onto the next line.
+
+Two decisions belong to a person:
+
+- The shell add-trade command builds one trade inline. The inline object
+  now has a name, and the codemod expands it into the single-row
+  =put_trade_request=. The batch form is not used, because the command
+  adds one row. This is the second place the container shape needs a
+  choice, and it is the same choice the ORE rollback made in the
+  opposite direction.
+- The registration function mixes two signatures. The generated units
+  take =(root_menu, session)= and the hand-written ones take
+  =(root_menu, session, pagination)=, so =trading_commands.cpp= drops the
+  pagination argument from the 22 generated calls and keeps it on the
+  other 15.
+
+One loss is recorded rather than hidden. Two files,
+=commodity_instrument_commands.cpp= and =scripted_instrument_commands.cpp=,
+carried one added line each before this trial. A =git checkout HEAD --=
+run to clear a bad codemod run overwrote both, and the line is in no
+commit, so its content is lost. Both files compile and the migration
+leaves them unchanged; the lesson is that a worktree with uncommitted
+work is restored from the index, never from HEAD.
+
 
 ** 3. Regenerate
 
@@ -182,7 +529,7 @@ component joins the registry and which are still vacuous.
 
 | PR | Title |
 |----+-------|
-|    | Sync ores.trading to its models |
+| https://github.com/OreStudio/OreStudio/pull/2204[#2204] | Sync the ores.trading tree to its models |
 
 * Review
 
@@ -190,4 +537,88 @@ component joins the registry and which are still vacuous.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Rebase before merge
+
+Main moved 197 commits while this PR was open. The rebase held one
+conflict, in =doc/recipes/shell/shell.org=, which is derived: main's
+version was taken and the inventory regenerated on top, so both sides'
+rows are present. The rebase also brought a main-side change the trading
+tree had not seen: two models name =ores.storage/net/storage_transfer.hpp=,
+a path that does not exist, and the regeneration followed it into
+=trade_handler.hpp= and broke the build. The trade model now names the
+header that exists, =ores.storage.core/net/storage_transfer.hpp=, and the
+marketdata half is recorded on the story for that component. Neither
+trading nor marketdata is under the drift gate, which is why the wrong
+path sat unnoticed.
+
+* Verification, round 1
+
+An independent verifier read the diff against the six claims the task
+makes. It confirmed D1, the trade eventing change, the header deletion and
+the trade key record, found the codemod a genuine no-op, and raised four
+findings. All four are answered here.
+
+1. *Blocker: four dead subjects in the bond shell unit.*
+   =bond_instrument_commands.cpp= handed =save_row= the literals
+   =trading.v1.bond_issues.save= and three siblings. The migration
+   renamed the types but not a literal that a helper forwards, and no
+   handler answers =...save=, so =bond add= would time out.
+   Fixed: =save_row= derives the subject from the request,
+   =std::string(request.nats_subject)=, so the row cannot be sent to a
+   subject no handler answers. The codemod now reports a subject literal
+   that survives a migration, because a literal a helper forwards is
+   beyond a textual pass; the four reports that remain are the four
+   families with no model, whose consolidated subjects are still correct.
+2. *Should-fix: the W01 history provider count was wrong.*
+   The first read called 31 of 31 composed; it counted declarations, not
+   call sites, and 21 were never composed. Caught by the verification and
+   fixed: the 21 are composed in =registrar.cpp=, and the read is 31 of
+   31 by call site. The correction is written into
+   =evidence/pr2_w01_composition_read.txt=.
+3. *Note: the trading diagram still declared the deleted type.*
+   =ores.trading.api.puml= showed =trade_changed_event=. It now shows the
+   canonical =trade_event= with its own members.
+4. *Note: the decision said no model changed, and one did.*
+   D8 now states what changed: the trading protocol does not change, and
+   the trade model changes only in the key's fixture generator, which is
+   defect 17's PR 2 half.
+
+Two claims the verifier could not re-derive are recorded as derived by
+script here: the three nullable declared keys (a script over every
+modeling directory found exactly =business_unit.unit_code=,
+=account_contact_information.email= and =trade.external_id=), and the
+database trigger counts, read with =compass sql= before and after the
+environment's refresh.
+
 * Result
+
+PR 2 is done. The evidence is =evidence/pr2_acceptance_checks.txt=.
+
+- The tree is regenerated: 1,463 files under ores.trading, 114 SQL
+  scripts, the eventing headers, the shell command units and their
+  recipes, and the TypeScript projection.
+- D1 is applied: the consolidated rates protocol is deleted and the nine
+  families are served by their generated handlers and registrars.
+- The consumers are migrated by
+  =projects/ores.codegen/scripts/migrate_consumer_to_generated_protocol.py=,
+  whose rules and trials are recorded in
+  =evidence/pr2_migration_trial7.txt= and =pr2_shell_migration_trial8.txt=.
+- W01 is closed by reading the composition points, not by trusting the
+  drift gate: twenty-five event mappings were declared and unwired, and
+  the trade family's legacy block was the reason the superseded
+  =trade_changed_event= header stayed alive.
+  =evidence/pr2_w01_composition_read.txt=.
+- A model defect surfaced here and is recorded as defect 17 on the story:
+  the trade's declared key was nullable and its fixture left it empty.
+  =evidence/pr2_trade_key_fixture_defect.txt=.
+- One loss is recorded rather than hidden: a =git checkout HEAD --= run
+  overwrote two one-line edits in the files with no model. They compile
+  and the migration leaves them unchanged, and the loss is written down in
+  =pr2_shell_migration_trial8.txt=.
+
+Gates: the whole tree builds; =ores.trading.api.tests=,
+=ores.trading.core.tests=, =ores.trading.service.tests=,
+=ores.shell.trading.tests=, =ores.shell.application.tests=,
+=ores.ore.api.tests=, =ores.ore.core.tests= and =ores.ore.service.tests=
+pass; the drift check reports no drift on two dry runs; the three CMake
+source lists are up to date.

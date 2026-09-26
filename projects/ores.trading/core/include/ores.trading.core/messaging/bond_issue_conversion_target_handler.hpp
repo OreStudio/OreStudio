@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_handler.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_TRADING_CORE_MESSAGING_BOND_ISSUE_CONVERSION_TARGET_HANDLER_HPP
 #define ORES_TRADING_CORE_MESSAGING_BOND_ISSUE_CONVERSION_TARGET_HANDLER_HPP
 
@@ -60,7 +65,16 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves trading.v1.bond_issue_conversion_targets.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_bond_issue_conversion_targets(ores::nats::message msg) {
         BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -69,31 +83,133 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::bond_issue_conversion_target_service svc(req_ctx);
-        get_bond_issue_conversion_targets_response resp;
-        if (auto req = decode<get_bond_issue_conversion_targets_request>(msg)) {
-            try {
-                resp.conversion_targets = svc.list_conversion_targets(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_conversion_targets());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
+        auto req = decode<list_bond_issue_conversion_targets_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
-            << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        service::bond_issue_conversion_target_service svc(req_ctx);
+        try {
+            auto response = svc.list_bond_issue_conversion_targets(*req);
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_bond_issue_conversion_targets_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves trading.v1.bond_issue_conversion_targets.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_bond_issue_conversion_target(ores::nats::message msg) {
+        BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_bond_issue_conversion_target_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::bond_issue_conversion_target_service svc(req_ctx);
+        try {
+            auto response = svc.get_bond_issue_conversion_target(*req);
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_bond_issue_conversion_target_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves trading.v1.bond_issue_conversion_targets.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_bond_issue_conversion_targets(ores::nats::message msg) {
+        BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_bond_issue_conversion_targets_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::bond_issue_conversion_target_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_bond_issue_conversion_targets(*req);
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_bond_issue_conversion_targets_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves trading.v1.bond_issue_conversion_targets.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_bond_issue_conversion_target(ores::nats::message msg) {
         BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -106,29 +222,43 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::bond_issue_conversion_target_service svc(req_ctx);
-        if (auto req = decode<save_bond_issue_conversion_target_request>(msg)) {
-            try {
-                svc.save_conversion_target(req->data);
-                BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, save_bond_issue_conversion_target_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      save_bond_issue_conversion_target_response{.success = false,
-                                                                 .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_bond_issue_conversion_target_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::bond_issue_conversion_target_service svc(req_ctx);
+        try {
+            auto response = svc.put_bond_issue_conversion_target(*req);
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_bond_issue_conversion_target_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves trading.v1.bond_issue_conversion_targets.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_bond_issue_conversion_targets(ores::nats::message msg) {
         BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -137,32 +267,47 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::bond_issue_conversion_target_service svc(req_ctx);
-        if (auto req = decode<get_bond_issue_conversion_target_history_request>(msg)) {
-            try {
-                auto hist = svc.get_conversion_target_history(req->issue_id, req->sequence_number);
-                BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_bond_issue_conversion_target_history_response{.history = std::move(hist),
-                                                                        .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      get_bond_issue_conversion_target_history_response{.success = false,
-                                                                        .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "trading::bond_issue_conversion_targets:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_bond_issue_conversion_targets_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::bond_issue_conversion_target_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_bond_issue_conversion_targets(*req);
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_many_bond_issue_conversion_targets_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves trading.v1.bond_issue_conversion_targets.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_bond_issue_conversion_target(ores::nats::message msg) {
         BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -175,25 +320,169 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::bond_issue_conversion_target_service svc(req_ctx);
-        if (auto req = decode<delete_bond_issue_conversion_target_request>(msg)) {
-            try {
-                svc.delete_conversion_targets(req->ids, req->sequence_numbers);
-                BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, delete_bond_issue_conversion_target_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      delete_bond_issue_conversion_target_response{.success = false,
-                                                                   .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_bond_issue_conversion_target_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::bond_issue_conversion_target_service svc(req_ctx);
+        try {
+            auto response = svc.delete_bond_issue_conversion_target(*req);
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_bond_issue_conversion_target_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves trading.v1.bond_issue_conversion_targets.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_bond_issue_conversion_targets(ores::nats::message msg) {
+        BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::bond_issue_conversion_targets:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_bond_issue_conversion_targets_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::bond_issue_conversion_target_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_bond_issue_conversion_targets(*req);
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_many_bond_issue_conversion_targets_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves trading.v1.bond_issue_conversion_targets_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_bond_issue_conversion_target_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_bond_issue_conversion_target_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::bond_issue_conversion_target_service svc(req_ctx);
+        try {
+            auto response = svc.list_bond_issue_conversion_target_versions(*req);
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_bond_issue_conversion_target_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves trading.v1.bond_issue_conversion_targets_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_bond_issue_conversion_target_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_bond_issue_conversion_target_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::bond_issue_conversion_target_service svc(req_ctx);
+        try {
+            auto response = svc.get_bond_issue_conversion_target_version(*req);
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(bond_issue_conversion_target_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_bond_issue_conversion_target_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

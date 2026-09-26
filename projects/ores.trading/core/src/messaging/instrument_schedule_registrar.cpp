@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_registrar.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.core/messaging/instrument_schedule_registrar.hpp"
 #include "ores.trading.api/messaging/instrument_schedule_protocol.hpp"
 #include "ores.trading.core/messaging/instrument_schedule_handler.hpp"
@@ -35,20 +40,42 @@ std::vector<ores::nats::service::subscription> register_instrument_schedule_hand
     std::vector<ores::nats::service::subscription> subs;
     auto h =
         std::make_shared<instrument_schedule_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_instrument_schedules_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_instrument_schedule_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(delete_instrument_schedule_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(get_instrument_schedule_history_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_instrument_schedules_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_instrument_schedules(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_instrument_schedule_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_instrument_schedule(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_instrument_schedules_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_many_instrument_schedules(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_instrument_schedule_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_instrument_schedule(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_instrument_schedules_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_many_instrument_schedules(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_instrument_schedule_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_instrument_schedule(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_instrument_schedules_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_many_instrument_schedules(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_instrument_schedule_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_instrument_schedule_versions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_instrument_schedule_version_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_instrument_schedule_version(std::move(msg)); }));
     return subs;
 }
 

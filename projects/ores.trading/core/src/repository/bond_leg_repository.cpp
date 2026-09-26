@@ -17,14 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.core/repository/bond_leg_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.trading.api/domain/bond_leg_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/bond_leg_entity.hpp"
 #include "ores.trading.core/repository/bond_leg_mapper.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <set>
 #include <sqlgen/postgres.hpp>
 #include <stdexcept>
+#include <tuple>
 
 namespace ores::trading::repository {
 
@@ -37,15 +45,75 @@ std::string bond_leg_repository::sql() {
     return generate_create_table_sql<bond_leg_entity>(lg());
 }
 
+ores::utility::domain::precondition bond_leg_repository::replace_claim(context ctx,
+                                                                       const domain::bond_leg& v) {
+    const auto current = read_latest(
+        ctx, boost::uuids::to_string(v.instrument_id), v.leg_role, std::to_string(v.leg_number));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
+
+domain::bond_leg bond_leg_repository::apply_claim(
+    context ctx, const domain::bond_leg& v, const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx,
+                                             boost::uuids::to_string(v.instrument_id),
+                                             v.leg_role,
+                                             std::to_string(v.leg_number));
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
+
 void bond_leg_repository::write(context ctx, const domain::bond_leg& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond leg. " << "instrument_id: " << v.instrument_id
-                               << " leg_role: " << v.leg_role << " leg_number: " << v.leg_number;
-    execute_write_query(ctx, bond_leg_mapper::map(v), lg(), "Writing bond leg to database.");
+    write(ctx, v, replace_claim(ctx, v));
 }
 
 void bond_leg_repository::write(context ctx, const std::vector<domain::bond_leg>& v) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void bond_leg_repository::write(context ctx,
+                                const domain::bond_leg& v,
+                                const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing bond leg. " << "instrument_id: " << v.instrument_id
+                               << " leg_role: " << v.leg_role << " leg_number: " << v.leg_number;
+    const auto t = apply_claim(ctx, v, claim);
+    execute_write_query(ctx, bond_leg_mapper::map(t), lg(), "Writing bond leg to database.");
+}
+
+void bond_leg_repository::write(context ctx,
+                                const std::vector<domain::bond_leg>& v,
+                                const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond legs. Count: " << v.size();
-    execute_write_query(ctx, bond_leg_mapper::map(v), lg(), "Writing bond legs to database.");
+    std::vector<domain::bond_leg> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(ctx, bond_leg_mapper::map(batch), lg(), "Writing bond legs to database.");
 }
 
 std::vector<domain::bond_leg> bond_leg_repository::read_latest(context ctx) {
@@ -134,20 +202,46 @@ bond_leg_repository::read_at_version(context ctx,
     return entities.front();
 }
 
-void bond_leg_repository::remove(context ctx,
-                                 const std::string& instrument_id,
-                                 const std::string& leg_role,
-                                 const std::string& leg_number) {
+bond_leg_repository::remove_status
+bond_leg_repository::remove(context ctx,
+                            const std::string& instrument_id,
+                            const std::string& leg_role,
+                            const std::string& leg_number,
+                            std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing bond leg. " << "instrument_id: " << instrument_id
                                << " leg_role: " << leg_role << " leg_number: " << leg_number;
+    const auto current = read_latest(ctx, instrument_id, leg_role, leg_number);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<bond_leg_entity> |
                        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
                              "leg_role"_c == leg_role && "leg_number"_c == leg_number &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing bond leg from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, instrument_id, leg_role, leg_number).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void bond_leg_repository::remove(context ctx,
+                                 const std::string& instrument_id,
+                                 const std::string& leg_role,
+                                 const std::string& leg_number) {
+    static_cast<void>(remove(ctx, instrument_id, leg_role, leg_number, std::nullopt));
 }
 
 std::vector<domain::bond_leg>
@@ -188,6 +282,45 @@ std::uint32_t bond_leg_repository::get_total_bond_leg_count(context ctx) {
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active bond leg count: " << count;
     return count;
+}
+
+std::vector<domain::bond_leg>
+bond_leg_repository::read_latest(context ctx,
+                                 const std::vector<std::string>& instrument_ids,
+                                 const std::vector<std::string>& leg_roles,
+                                 const std::vector<std::string>& leg_numbers) {
+    if (instrument_ids.empty() || leg_roles.empty() || leg_numbers.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<bond_leg_entity>> |
+                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
+                             "leg_role"_c.in(leg_roles) && "leg_number"_c.in(leg_numbers) &&
+                             "valid_to"_c == max.value());
+    auto result = execute_read_query<bond_leg_entity, domain::bond_leg>(
+        ctx,
+        query,
+        [](const auto& entities) { return bond_leg_mapper::map(entities); },
+        lg(),
+        "Reading latest bond legs by ids.");
+    // Compound key: the query above is a per-column .in() cross-product
+    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // exact requested key-tuples here.
+    if (leg_roles.size() != instrument_ids.size() || leg_numbers.size() != instrument_ids.size())
+        throw std::invalid_argument(
+            "bond_leg_repository::read_latest: key column vectors must be the same length");
+    std::set<std::tuple<std::string, std::string, std::string>> requested;
+    for (std::size_t i = 0; i < instrument_ids.size(); ++i)
+        requested.emplace(instrument_ids[i], leg_roles[i], leg_numbers[i]);
+    std::vector<domain::bond_leg> filtered;
+    filtered.reserve(result.size());
+    for (auto& item : result) {
+        if (requested.contains(std::make_tuple(boost::uuids::to_string(item.instrument_id),
+                                               item.leg_role,
+                                               std::to_string(item.leg_number))))
+            filtered.push_back(std::move(item));
+    }
+    return filtered;
 }
 
 void bond_leg_repository::remove(context ctx,

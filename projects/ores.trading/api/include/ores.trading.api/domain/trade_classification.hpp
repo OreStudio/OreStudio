@@ -78,6 +78,16 @@ struct trade_classification {
      * @brief Trade status (soft FK to ores_refdata_trade_statuses_tbl).
      */
     boost::uuids::uuid status_id;
+
+    /**
+     * @brief Value equality.
+     *
+     * A field group is a value like the entity that holds it: the entity's
+     * comparison is defaulted and reads every member, so a group without a
+     * comparison deletes the entity's and fails a build that treats that as
+     * an error.
+     */
+    friend bool operator==(const trade_classification&, const trade_classification&) = default;
 };
 
 }

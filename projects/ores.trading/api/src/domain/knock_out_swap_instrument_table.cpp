@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/knock_out_swap_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -31,7 +36,7 @@ std::string convert_to_table(const std::vector<knock_out_swap_instrument>& v) {
     table << fort::header << "ID" << "Type" << "Start Date" << "Maturity Date" << "Barrier Level"
           << "Barrier Type" << "Recorded At" << fort::endr;
 
-    for (const auto& ko : v) {
+    for ([[maybe_unused]] const auto& ko : v) {
         table << ko.identity.instrument_id << ko.identity.trade_type_code << ko.start_date
               << ko.maturity_date << ko.barrier_level << ko.barrier_type << ko.audit.recorded_at
               << fort::endr;

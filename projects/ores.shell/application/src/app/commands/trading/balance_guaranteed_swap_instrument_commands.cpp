@@ -21,7 +21,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument_table_io.hpp" // IWYU pragma: keep.
-#include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ores.trading.api/messaging/balance_guaranteed_swap_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/lexical_cast.hpp>
@@ -134,22 +134,23 @@ void balance_guaranteed_swap_instrument_commands::process_get_balance_guaranteed
 
     auto& state = pagination.state_for("balance_guaranteed_swap_instruments");
 
-    trading::messaging::get_balance_guaranteed_swap_instruments_request req;
+    trading::messaging::list_balance_guaranteed_swap_instruments_request req;
     req.offset = state.current_offset;
     req.limit = pagination.page_size();
 
     auto result =
-        do_auth_request<trading::messaging::get_balance_guaranteed_swap_instruments_response>(
-            out, session, "trading.v1.balance_guaranteed_swap_instruments.list", req);
+        do_auth_request<trading::messaging::list_balance_guaranteed_swap_instruments_response>(
+            out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    state.total_count = result->total_available_count;
+    state.total_count = result->total;
     pagination.set_last_entity("balance_guaranteed_swap_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                              << result->balance_guaranteed_swap_instruments.size()
                               << " Balance guaranteed swap instruments.";
-    out << result->instruments << std::endl;
+    out << result->balance_guaranteed_swap_instruments << std::endl;
 
     // Display pagination info
     const auto page = (state.current_offset / pagination.page_size()) + 1;
@@ -157,8 +158,9 @@ void balance_guaranteed_swap_instrument_commands::process_get_balance_guaranteed
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " (" << result->instruments.size()
-        << " of " << state.total_count << " total)" << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " ("
+        << result->balance_guaranteed_swap_instruments.size() << " of " << state.total_count
+        << " total)" << std::endl;
 }
 
 void balance_guaranteed_swap_instrument_commands::process_add_balance_guaranteed_swap_instrument(
@@ -209,22 +211,28 @@ void balance_guaranteed_swap_instrument_commands::process_add_balance_guaranteed
     v.audit.change_reason_code = std::move(change_reason_code);
     v.audit.change_commentary = std::move(change_commentary);
 
-    auto req =
-        trading::messaging::save_balance_guaranteed_swap_instrument_request{.data = std::move(v)};
+    auto req = trading::messaging::put_balance_guaranteed_swap_instrument_request{
+        .change = {.write = {.instrument_id = v.identity.instrument_id,
+                             .trade_type_code = v.identity.trade_type_code,
+                             .trade_id = v.identity.trade_id,
+                             .start_date = v.start_date,
+                             .maturity_date = v.maturity_date,
+                             .lockout_days = v.lockout_days,
+                             .description = v.description}}};
 
     auto result =
-        do_auth_request<trading::messaging::save_balance_guaranteed_swap_instrument_response>(
-            out, session, "trading.v1.balance_guaranteed_swap_instruments.save", req);
+        do_auth_request<trading::messaging::put_balance_guaranteed_swap_instrument_response>(
+            out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (result->success) {
+    if (result->result.outcome == ores::utility::domain::outcome::ok) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Balance guaranteed swap instrument.";
         out << "✓ Balance guaranteed swap instrument added successfully!" << std::endl;
-        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+        out << "Instrument id: " << boost::uuids::to_string(req.change.write.instrument_id)
             << std::endl;
     } else {
-        const auto& msg = result->message.empty() ? "Unknown error" : result->message;
+        const auto& msg = result->result.message.empty() ? "Unknown error" : result->result.message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Balance guaranteed swap instrument: " << msg;
         fail(out) << "Failed to add Balance guaranteed swap instrument: " << msg << std::endl;
     }
@@ -242,22 +250,22 @@ void balance_guaranteed_swap_instrument_commands::process_delete_balance_guarant
     }
 
     trading::messaging::delete_balance_guaranteed_swap_instrument_request req;
-    req.ids = {std::move(instrument_id)};
+    req.removal.key.instrument_id = boost::uuids::string_generator()(instrument_id);
 
     auto result =
         do_auth_request<trading::messaging::delete_balance_guaranteed_swap_instrument_response>(
-            out, session, "trading.v1.balance_guaranteed_swap_instruments.delete", req);
+            out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (result->success) {
+    if (result->result.outcome == ores::utility::domain::outcome::ok) {
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted Balance guaranteed swap instrument.";
         out << "✓ Balance guaranteed swap instrument deleted successfully!" << std::endl;
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete Balance guaranteed swap instrument: "
-                                  << result->message;
-        fail(out) << "Failed to delete Balance guaranteed swap instrument: " << result->message
-                  << std::endl;
+                                  << result->result.message;
+        fail(out) << "Failed to delete Balance guaranteed swap instrument: "
+                  << result->result.message << std::endl;
     }
 }
 
@@ -274,28 +282,28 @@ void balance_guaranteed_swap_instrument_commands::
         return;
     }
 
-    trading::messaging::get_balance_guaranteed_swap_instrument_history_request req;
-    req.id = std::move(instrument_id);
+    trading::messaging::list_balance_guaranteed_swap_instrument_versions_request req;
+    req.key.instrument_id = boost::uuids::string_generator()(instrument_id);
 
     auto result = do_auth_request<
-        trading::messaging::get_balance_guaranteed_swap_instrument_history_response>(
-        out, session, "trading.v1.balance_guaranteed_swap_instruments.history", req);
+        trading::messaging::list_balance_guaranteed_swap_instrument_versions_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (!result->success) {
+    if (result->result.outcome != ores::utility::domain::outcome::ok) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get Balance guaranteed swap instrument history: "
-                                  << result->message;
-        fail(out) << result->message << std::endl;
+                                  << result->result.message;
+        fail(out) << result->result.message << std::endl;
         return;
     }
 
-    if (result->history.empty()) {
+    if (result->versions.empty()) {
         out << "No history found for this Balance guaranteed swap instrument." << std::endl;
         return;
     }
 
-    out << result->history << std::endl;
+    out << result->versions << std::endl;
 }
 
 }

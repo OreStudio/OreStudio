@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/bond_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -31,7 +36,7 @@ std::string convert_to_table(const std::vector<bond_instrument>& v) {
     table << fort::header << "ID" << "Type" << "Issue ID" << "Version" << "Recorded At"
           << fort::endr;
 
-    for (const auto& bi : v) {
+    for ([[maybe_unused]] const auto& bi : v) {
         table << bi.identity.instrument_id << bi.identity.trade_type_code
               << boost::uuids::to_string(bi.issue_id) << bi.identity.version << bi.audit.recorded_at
               << fort::endr;

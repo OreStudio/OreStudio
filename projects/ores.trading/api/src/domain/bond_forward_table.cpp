@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/bond_forward_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -44,7 +49,7 @@ std::string convert_to_table(const std::vector<bond_forward>& v) {
     table << fort::header << "Maturity" << "Settlement" << "Long/Short" << "Premium"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& forward : v) {
+    for ([[maybe_unused]] const auto& forward : v) {
         table << opt_str(forward.forward_maturity_date) << opt_str(forward.forward_settlement_date)
               << opt_str(forward.long_in_forward) << opt_str(forward.premium_amount)
               << forward.modified_by << forward.version << fort::endr;

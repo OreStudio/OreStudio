@@ -67,8 +67,12 @@ Optional external trade identifier.
 
 e.g., UTI prefix or legacy system ID.
 
+The model declares this column as the trade's key, so a fixture needs a
+value here: an empty key cannot be looked up, and the mapper writes an
+empty domain string as NULL, which no equality filter matches.
+
 #+begin_src cpp :name generator
-std::string()
+std::string("TRD-") + std::string(faker::string::alphanumeric(12))
 #+end_src
 
 ** book_id
@@ -658,9 +662,10 @@ save path reads its transitions from.
 #include "ores.dq.api/messaging/fsm_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
-#include "ores.storage/net/storage_transfer.hpp"
+#include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include "ores.trading.core/service/activity_type_service.hpp"
 #include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
@@ -826,8 +831,8 @@ type, then read each product's table in one batch.
                             &rpa_ids})
                 all_swap.insert(all_swap.end(), v->begin(), v->end());
             if (!all_swap.empty()) {
-                service::fra_instrument_service fra_svc(ctx);
-                for (auto& leg : fra_svc.get_swap_legs_batch(all_swap))
+                repository::swap_leg_repository leg_repo;
+                for (auto& leg : leg_repo.read_by_instruments_batch(ctx, all_swap))
                     legs_map[boost::uuids::to_string(leg.identity.instrument_id)].push_back(
                         std::move(leg));
             }
@@ -1103,7 +1108,7 @@ export paths.
         get_trade_instrument_response resp;
         try {
             if (auto req = decode<get_trade_instrument_request>(msg)) {
-                auto trade_opt = svc.get_trade(req->trade_id);
+                auto trade_opt = svc.get_trade(boost::uuids::string_generator()(req->trade_id));
                 if (!trade_opt) {
                     resp.success = false;
                     resp.message = "Trade not found: " + req->trade_id;

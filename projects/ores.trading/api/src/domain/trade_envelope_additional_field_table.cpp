@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/trade_envelope_additional_field_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -31,7 +36,7 @@ std::string convert_to_table(const std::vector<trade_envelope_additional_field>&
     table << fort::header << "Sequence" << "Name" << "Value" << "Modified By" << "Version"
           << fort::endr;
 
-    for (const auto& field : v) {
+    for ([[maybe_unused]] const auto& field : v) {
         table << field.sequence_number << field.name << field.value << field.modified_by
               << field.version << fort::endr;
     }

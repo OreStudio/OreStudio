@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/instrument_strike_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -44,7 +49,7 @@ std::string convert_to_table(const std::vector<instrument_strike>& v) {
     table << fort::header << "Price" << "Price Ccy" << "Yield" << "Modified By" << "Version"
           << fort::endr;
 
-    for (const auto& strike : v) {
+    for ([[maybe_unused]] const auto& strike : v) {
         table << opt_str(strike.price_value) << opt_str(strike.price_currency)
               << opt_str(strike.yield_value) << strike.modified_by << strike.version << fort::endr;
     }

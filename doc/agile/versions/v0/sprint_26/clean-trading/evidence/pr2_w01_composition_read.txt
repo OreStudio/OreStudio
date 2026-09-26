@@ -1,0 +1,61 @@
+W01 composition read, PR 2
+
+Measured 2026-09-26 on feature/sync-trading-drift, by counting the
+generated registrar families and their composition points rather than by
+trusting the drift gate.
+
+| Family kind                 | Declared | Composed | Composition point                              |
+|-----------------------------+----------+----------+------------------------------------------------|
+| Messaging handler registrar |       57 |       57 | core/src/messaging/registrar*.cpp              |
+| History provider            |       31 |       31 | the same registrar sources                     |
+| Event mapping               |       61 |       61 | service/src/app/application.cpp                |
+
+Correction, same day
+--------------------
+The first read of this table counted history provider *declarations* and
+their presence in the registrar sources, not their call sites, and so
+called 31 of 31 composed when 21 were never called: the bond families,
+the instrument children and ascot. The independent verification caught
+it. The 21 are now composed in registrar.cpp, and the count above is by
+call site.
+
+The handler registrars are reached from the component's single
+composition entry point, ores::trading::messaging::registrar::register_handlers,
+which service/src/app/application.cpp and the core registrar detail both
+call.
+
+Twenty-five event mappings were declared and unwired:
+
+  ascot, bond_forward, bond_future, bond_future_delivery_basket,
+  bond_issue, bond_issue_call_date, bond_issue_conversion_target,
+  bond_leg, bond_leg_amortization, bond_leg_amount, bond_leg_rate,
+  bond_option, bond_repo, bond_trs, instrument_option,
+  instrument_option_exercise_fee, instrument_option_payment_date,
+  instrument_option_premium, instrument_schedule,
+  instrument_schedule_date, instrument_strike, trade_envelope,
+  trade_envelope_additional_field, trade_envelope_portfolio_id, trade.
+
+The trade family is the one that matters. application.cpp carried a
+hand-written legacy block for it -- register_mapping<trade_changed_event>
+plus a subscribe that published the legacy {entity, timestamp, entity_ids,
+tenant_id} payload -- while the generated register_trade_event_mapping was
+never called. The block left the canonical family unwired and kept the
+superseded trade_changed_event header alive. The other twenty-four were
+simply never added when the regeneration materialised them.
+
+All twenty-five are now composed. The legacy block is deleted, its
+publish_entity_event wrapper with it, and the fifty-seven superseded
+hand-written eventing headers and the api test that exercised one of them
+are deleted:
+
+    projects/ores.trading/api/include/ores.trading.api/eventing/*_changed_event.hpp
+    projects/ores.trading/api/tests/eventing_trade_events_tests.cpp
+
+The four families with no model -- commodity, composite, credit and
+scripted -- keep their hand-written header, because their registrar still
+subscribes to the legacy type and their event protocol is PR 3's. Who
+still reads the legacy shape is recorded as part of the eventing payload
+capture.
+
+What the read does not cover: the permissions each handler checks (W02)
+and the shell surface (S01, S02) are PR 6.

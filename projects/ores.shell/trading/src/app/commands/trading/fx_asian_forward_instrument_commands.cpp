@@ -17,268 +17,737 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_shell_command_impl.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.shell/app/commands/trading/fx_asian_forward_instrument_commands.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
-#include "ores.trading.api/domain/fx_asian_forward_instrument_table_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/fx_asian_forward_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 #include <cli/cli.h>
+#include <cstddef>
 #include <functional>
+#include <optional>
 #include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <vector>
 
 namespace ores::shell::app::commands {
 
 using namespace logging;
 using ores::nats::service::nats_client;
-namespace domain = ores::trading::domain;
+namespace messaging = ores::trading::messaging;
+
+namespace {
+
+/**
+ * @brief Fill one request member from one token.
+ *
+ * A member's own type decides how its token reads, so the caller states the
+ * token and the name it answers to and nothing else. The four cases are the
+ * four shapes a token has: a word, a flag, a comma-separated list and
+ * everything from_token already converts.
+ */
+template <typename T>
+void read_token(T& target, const std::string& raw, const std::string& name) {
+    if constexpr (std::is_same_v<T, std::string>) {
+        target = raw;
+    } else if constexpr (std::is_same_v<T, bool>) {
+        if (raw.empty() || raw == "false") {
+            target = false;
+        } else if (raw == "true") {
+            target = true;
+        } else {
+            throw std::invalid_argument(name + " must be 'true' or 'false'");
+        }
+    } else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>) {
+        target = ores::platform::time::datetime::from_iso8601_utc(raw);
+    } else if constexpr (std::is_same_v<T, boost::asio::ip::address>) {
+        target = boost::asio::ip::make_address(raw);
+    } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+        target.clear();
+        std::string current;
+        for (const char c : raw) {
+            if (c == ',') {
+                target.push_back(current);
+                current.clear();
+            } else {
+                current.push_back(c);
+            }
+        }
+        target.push_back(current);
+    } else {
+        target = ores::shell::app::from_token<T>(raw, name);
+    }
+}
+
+/// Apply the page and the order a caller stated, leaving the defaults alone.
+template <typename Request>
+void apply_page(Request& req, const parsed_args& parsed) {
+    if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
+        req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
+    }
+    if (const auto& raw = parsed.flag("limit"); !raw.empty()) {
+        req.limit = ores::shell::app::from_token<std::uint32_t>(raw, "limit");
+    }
+    if (const auto& raw = parsed.flag("order"); !raw.empty()) {
+        req.order.field = raw;
+    }
+    req.order.descending = parsed.flag_set("desc");
+}
+
+} // namespace
 
 void fx_asian_forward_instrument_commands::register_commands(cli::Menu& root_menu,
-                                                             nats_client& session,
-                                                             pagination_context& pagination) {
-    auto fx_asian_forward_instruments_menu =
-        std::make_unique<cli::Menu>("fx_asian_forward_instruments");
+                                                             nats_client& session) {
+    auto menu = std::make_unique<cli::Menu>("fx_asian_forward_instruments");
 
-    fx_asian_forward_instruments_menu->Insert(
-        "get",
-        [&session, &pagination](std::ostream& out) {
-            process_get_fx_asian_forward_instruments(
-                std::ref(out), std::ref(session), std::ref(pagination));
+    menu->Insert(
+        "list",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_list(std::ref(out), std::ref(session), std::move(args));
         },
-        "Retrieve FX Asian Forward instruments from the server (paginated)");
+        "list [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
-    pagination.register_list_callback(
-        "fx_asian_forward_instruments", [&session, &pagination](std::ostream& out) {
-            process_get_fx_asian_forward_instruments(out, session, pagination);
-        });
+    menu->Insert(
+        "get",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_get(std::ref(out), std::ref(session), std::move(args));
+        },
+        "get <instrument_id>");
 
-    fx_asian_forward_instruments_menu->Insert(
+    menu->Insert(
+        "get-many",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_get_many(std::ref(out), std::ref(session), std::move(args));
+        },
+        "get-many <instrument_id>");
+
+    menu->Insert(
         "add",
         [&session](std::ostream& out, std::vector<std::string> args) {
-            process_add_fx_asian_forward_instrument(std::ref(out), std::ref(session), args);
+            process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "Add FX Asian Forward instrument (trade_type_code "
-        "party_id "
-        "trade_id "
-        "fx_index "
-        "reference_currency "
-        "reference_notional "
-        "settlement_currency "
-        "settlement_notional "
-        "payment_date "
-        "long_short "
-        "currency "
-        "fixing_amount "
-        "target_amount "
-        "strike "
-        "description "
-        "change_reason_code "
-        "\"change_commentary\")");
+        "add <trade_type_code> <trade_id> <fx_index> <reference_currency> <reference_notional> "
+        "<settlement_currency> <settlement_notional> <payment_date> <long_short> <currency> "
+        "<fixing_amount> <target_amount> <strike> <description> <reason> <commentary>");
 
-    fx_asian_forward_instruments_menu->Insert(
+    menu->Insert(
+        "set",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_set(std::ref(out), std::ref(session), std::move(args));
+        },
+        "set <instrument_id> <trade_type_code> <trade_id> <fx_index> <reference_currency> "
+        "<reference_notional> <settlement_currency> <settlement_notional> <payment_date> "
+        "<long_short> <currency> <fixing_amount> <target_amount> <strike> <description> <reason> "
+        "<commentary> [--version <n>]");
+
+    menu->Insert(
+        "put-many",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_put_many(std::ref(out), std::ref(session), std::move(args));
+        },
+        "put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <fx_index> "
+        "<reference_currency> <reference_notional> <settlement_currency> <settlement_notional> "
+        "<payment_date> <long_short> <currency> <fixing_amount> <target_amount> <strike> "
+        "<description> <reason> <commentary>");
+
+    menu->Insert(
         "delete",
-        [&session](std::ostream& out, std::string id) {
-            process_delete_fx_asian_forward_instrument(
-                std::ref(out), std::ref(session), std::move(id));
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "Delete FX Asian Forward instrument by instrument_id");
+        "delete <instrument_id> <reason> <commentary> [--version <n>]");
 
-    fx_asian_forward_instruments_menu->Insert(
-        "history",
-        [&session](std::ostream& out, std::string id) {
-            process_get_fx_asian_forward_instrument_history(
-                std::ref(out), std::ref(session), std::move(id));
+    menu->Insert(
+        "delete-many",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "Show FX Asian Forward instrument's version history");
+        "delete-many <instrument_id> <reason> <commentary>");
 
-    root_menu.Insert(std::move(fx_asian_forward_instruments_menu));
+    menu->Insert(
+        "versions",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_versions(std::ref(out), std::ref(session), std::move(args));
+        },
+        "versions <instrument_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+
+    menu->Insert(
+        "version",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_version(std::ref(out), std::ref(session), std::move(args));
+        },
+        "version <instrument_id> --version <n>");
+
+    root_menu.Insert(std::move(menu));
 }
 
-void fx_asian_forward_instrument_commands::process_get_fx_asian_forward_instruments(
-    std::ostream& out, nats_client& session, pagination_context& pagination) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get FX Asian Forward instrument request.";
+void fx_asian_forward_instrument_commands::process_list(std::ostream& out,
+                                                        nats_client& session,
+                                                        const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list request.";
 
-    auto& state = pagination.state_for("fx_asian_forward_instruments");
-
-    trading::messaging::get_fx_asian_forward_instruments_request req;
-    req.offset = state.current_offset;
-    req.limit = pagination.page_size();
-
-    auto result = do_auth_request<trading::messaging::get_fx_asian_forward_instruments_response>(
-        out, session, "trading.v1.fx_asian_forward_instruments.list", req);
-    if (!result)
-        return;
-
-    state.total_count = result->total_available_count;
-    pagination.set_last_entity("fx_asian_forward_instruments");
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->fx_asian_forward_instruments.size()
-                              << " FX Asian Forward instruments.";
-    out << result->fx_asian_forward_instruments << std::endl;
-
-    const auto page = (state.current_offset / pagination.page_size()) + 1;
-    const auto total_pages =
-        state.total_count > 0 ?
-            ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
-            1;
-    out << "\nPage " << page << " of " << total_pages << " ("
-        << result->fx_asian_forward_instruments.size() << " of " << state.total_count << " total)"
-        << std::endl;
-}
-
-void fx_asian_forward_instrument_commands::process_add_fx_asian_forward_instrument(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating add FX Asian Forward instrument request.";
-
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to add FX Asian Forward instrument." << std::endl;
-        return;
+    using request_type = messaging::list_fx_asian_forward_instruments_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run list." << std::endl;
+            return;
+        }
     }
 
-    const auto parsed = parse_args(args, {});
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+        {.name = "order", .requires_value = true, .default_value = ""},
+        {.name = "desc", .requires_value = false, .default_value = "false"},
+    };
+    const auto parsed = parse_args(args, specs);
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
     }
 
-    constexpr std::size_t positional_count = 15 + 2;
-    if (parsed->positionals.size() != positional_count) {
-        fail(out) << "Expected " << positional_count << " arguments, got "
-                  << parsed->positionals.size() << "." << std::endl;
-        return;
-    }
-
-    domain::fx_asian_forward_instrument v;
-    std::size_t next = 0;
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
     try {
-        if (const auto tenant = utility::uuid::tenant_id::from_string(session.auth().tenant_id);
-            tenant) {
-            v.identity.tenant_id = *tenant;
+
+        apply_page(req, *parsed);
+        if (!parsed->positionals.empty()) {
+            fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
         }
-        v.identity.instrument_id = boost::uuids::random_generator()();
-        v.identity.trade_type_code = ores::shell::app::from_token<std::string>(
-            parsed->positionals[next++], "trade_type_code");
-        v.identity.party_id = ores::shell::app::from_token<boost::uuids::uuid>(
-            parsed->positionals[next++], "party_id");
-        v.identity.trade_id = ores::shell::app::from_token<std::optional<boost::uuids::uuid>>(
-            parsed->positionals[next++], "trade_id");
-        v.fx_index =
-            ores::shell::app::from_token<std::string>(parsed->positionals[next++], "fx_index");
-        v.reference_currency = ores::shell::app::from_token<std::string>(
-            parsed->positionals[next++], "reference_currency");
-        v.reference_notional = ores::shell::app::from_token<std::optional<double>>(
-            parsed->positionals[next++], "reference_notional");
-        v.settlement_currency = ores::shell::app::from_token<std::string>(
-            parsed->positionals[next++], "settlement_currency");
-        v.settlement_notional = ores::shell::app::from_token<std::optional<double>>(
-            parsed->positionals[next++], "settlement_notional");
-        v.payment_date =
-            ores::shell::app::from_token<std::string>(parsed->positionals[next++], "payment_date");
-        v.long_short =
-            ores::shell::app::from_token<std::string>(parsed->positionals[next++], "long_short");
-        v.currency =
-            ores::shell::app::from_token<std::string>(parsed->positionals[next++], "currency");
-        v.fixing_amount = ores::shell::app::from_token<std::optional<double>>(
-            parsed->positionals[next++], "fixing_amount");
-        v.target_amount = ores::shell::app::from_token<std::optional<double>>(
-            parsed->positionals[next++], "target_amount");
-        v.strike = ores::shell::app::from_token<std::optional<double>>(parsed->positionals[next++],
-                                                                       "strike");
-        v.description =
-            ores::shell::app::from_token<std::string>(parsed->positionals[next++], "description");
-        v.audit.modified_by = session.auth().username;
-        v.audit.change_reason_code = std::move(parsed->positionals[next++]);
-        v.audit.change_commentary = std::move(parsed->positionals[next++]);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    auto req = trading::messaging::save_fx_asian_forward_instrument_request::from(std::move(v));
-
-    auto result = do_auth_request<trading::messaging::save_fx_asian_forward_instrument_response>(
-        out, session, "trading.v1.fx_asian_forward_instruments.save", req);
+    auto result = do_auth_request<messaging::list_fx_asian_forward_instruments_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (result->success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully added FX Asian Forward instrument.";
-        out << "✓ FX Asian Forward instrument added successfully!" << std::endl;
-    } else {
-        const auto& msg = result->message.empty() ? "Unknown error" : result->message;
-        BOOST_LOG_SEV(lg(), warn) << "Failed to add FX Asian Forward instrument: " << msg;
-        fail(out) << "Failed to add FX Asian Forward instrument: " << msg << std::endl;
-    }
+    out << rfl::json::write(*result) << std::endl;
 }
 
-void fx_asian_forward_instrument_commands::process_delete_fx_asian_forward_instrument(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete FX Asian Forward instrument request for: "
-                               << instrument_id;
+void fx_asian_forward_instrument_commands::process_get(std::ostream& out,
+                                                       nats_client& session,
+                                                       const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to delete FX Asian Forward instrument." << std::endl;
+    using request_type = messaging::get_fx_asian_forward_instrument_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
         return;
     }
 
-    trading::messaging::delete_fx_asian_forward_instrument_request req;
-    req.ids = {std::move(instrument_id)};
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
 
-    auto result = do_auth_request<trading::messaging::delete_fx_asian_forward_instrument_response>(
-        out, session, "trading.v1.fx_asian_forward_instruments.delete", req);
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::get_fx_asian_forward_instrument_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (result->success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully deleted FX Asian Forward instrument.";
-        out << "✓ FX Asian Forward instrument deleted successfully!" << std::endl;
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete FX Asian Forward instrument: "
-                                  << result->message;
-        fail(out) << "Failed to delete FX Asian Forward instrument: " << result->message
-                  << std::endl;
-    }
+    out << rfl::json::write(*result) << std::endl;
 }
 
-void fx_asian_forward_instrument_commands::process_get_fx_asian_forward_instrument_history(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get FX Asian Forward instrument history for: "
-                               << instrument_id;
+void fx_asian_forward_instrument_commands::process_get_many(std::ostream& out,
+                                                            nats_client& session,
+                                                            const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get-many request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get FX Asian Forward instrument history."
-                  << std::endl;
+    using request_type = messaging::get_many_fx_asian_forward_instruments_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get-many." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
         return;
     }
 
-    trading::messaging::get_fx_asian_forward_instrument_history_request req;
-    req.instrument_id = std::move(instrument_id);
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
 
-    auto result =
-        do_auth_request<trading::messaging::get_fx_asian_forward_instrument_history_response>(
-            out, session, "trading.v1.fx_asian_forward_instruments.history", req);
+        if (parsed->positionals.empty() || parsed->positionals.size() % 1 != 0) {
+            fail(out) << "Expected a multiple of 1 arguments, got " << parsed->positionals.size()
+                      << "." << std::endl;
+            return;
+        }
+        for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
+            messaging::fx_asian_forward_instrument_key key;
+            read_token(key.instrument_id, parsed->positionals[i + 0], "instrument_id");
+            req.keys.push_back(std::move(key));
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::get_many_fx_asian_forward_instruments_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get FX Asian Forward instrument history: "
-                                  << result->message;
-        fail(out) << result->message << std::endl;
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void fx_asian_forward_instrument_commands::process_add(std::ostream& out,
+                                                       nats_client& session,
+                                                       const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating add request.";
+
+    using request_type = messaging::put_fx_asian_forward_instrument_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run add." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
         return;
     }
 
-    if (result->history.empty()) {
-        out << "No history found for this FX Asian Forward instrument." << std::endl;
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
+                      << "." << std::endl;
+            return;
+        }
+        req.change.write.instrument_id = boost::uuids::random_generator()();
+        read_token(
+            req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
+        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        read_token(req.change.write.fx_index, parsed->positionals[next++], "fx_index");
+        read_token(
+            req.change.write.reference_currency, parsed->positionals[next++], "reference_currency");
+        read_token(
+            req.change.write.reference_notional, parsed->positionals[next++], "reference_notional");
+        read_token(req.change.write.settlement_currency,
+                   parsed->positionals[next++],
+                   "settlement_currency");
+        read_token(req.change.write.settlement_notional,
+                   parsed->positionals[next++],
+                   "settlement_notional");
+        read_token(req.change.write.payment_date, parsed->positionals[next++], "payment_date");
+        read_token(req.change.write.long_short, parsed->positionals[next++], "long_short");
+        read_token(req.change.write.currency, parsed->positionals[next++], "currency");
+        read_token(req.change.write.fixing_amount, parsed->positionals[next++], "fixing_amount");
+        read_token(req.change.write.target_amount, parsed->positionals[next++], "target_amount");
+        read_token(req.change.write.strike, parsed->positionals[next++], "strike");
+        read_token(req.change.write.description, parsed->positionals[next++], "description");
+        req.intent.reason_code = parsed->positionals[next++];
+        req.intent.commentary = parsed->positionals[next++];
+        req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
         return;
     }
 
-    out << result->history << std::endl;
+    auto result = do_auth_request<messaging::put_fx_asian_forward_instrument_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void fx_asian_forward_instrument_commands::process_set(std::ostream& out,
+                                                       nats_client& session,
+                                                       const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating set request.";
+
+    using request_type = messaging::put_fx_asian_forward_instrument_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run set." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "version", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 15 + 2) {
+            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+                      << "." << std::endl;
+            return;
+        }
+        read_token(req.change.write.instrument_id, parsed->positionals[next++], "instrument_id");
+        read_token(
+            req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
+        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        read_token(req.change.write.fx_index, parsed->positionals[next++], "fx_index");
+        read_token(
+            req.change.write.reference_currency, parsed->positionals[next++], "reference_currency");
+        read_token(
+            req.change.write.reference_notional, parsed->positionals[next++], "reference_notional");
+        read_token(req.change.write.settlement_currency,
+                   parsed->positionals[next++],
+                   "settlement_currency");
+        read_token(req.change.write.settlement_notional,
+                   parsed->positionals[next++],
+                   "settlement_notional");
+        read_token(req.change.write.payment_date, parsed->positionals[next++], "payment_date");
+        read_token(req.change.write.long_short, parsed->positionals[next++], "long_short");
+        read_token(req.change.write.currency, parsed->positionals[next++], "currency");
+        read_token(req.change.write.fixing_amount, parsed->positionals[next++], "fixing_amount");
+        read_token(req.change.write.target_amount, parsed->positionals[next++], "target_amount");
+        read_token(req.change.write.strike, parsed->positionals[next++], "strike");
+        read_token(req.change.write.description, parsed->positionals[next++], "description");
+        req.intent.reason_code = parsed->positionals[next++];
+        req.intent.commentary = parsed->positionals[next++];
+        req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
+        if (const auto& raw = parsed->flag("version"); !raw.empty()) {
+            req.change.precondition.kind =
+                ores::utility::domain::precondition_kind::must_match_version;
+            req.change.precondition.version =
+                ores::shell::app::from_token<std::uint32_t>(raw, "version");
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::put_fx_asian_forward_instrument_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void fx_asian_forward_instrument_commands::process_put_many(std::ostream& out,
+                                                            nats_client& session,
+                                                            const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating put-many request.";
+
+    using request_type = messaging::put_many_fx_asian_forward_instruments_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run put-many." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "count", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        const auto count_raw = parsed->flag("count");
+        if (count_raw.empty()) {
+            fail(out) << "--count is required." << std::endl;
+            return;
+        }
+        const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
+        if (parsed->positionals.size() != change_count * 15 + 2) {
+            fail(out) << "Expected " << (change_count * 15 + 2) << " arguments, got "
+                      << parsed->positionals.size() << "." << std::endl;
+            return;
+        }
+        for (std::uint32_t i = 0; i < change_count; ++i) {
+            messaging::fx_asian_forward_instrument_change change;
+            read_token(change.write.instrument_id, parsed->positionals[next++], "instrument_id");
+            read_token(
+                change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
+            read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
+            read_token(change.write.fx_index, parsed->positionals[next++], "fx_index");
+            read_token(
+                change.write.reference_currency, parsed->positionals[next++], "reference_currency");
+            read_token(
+                change.write.reference_notional, parsed->positionals[next++], "reference_notional");
+            read_token(change.write.settlement_currency,
+                       parsed->positionals[next++],
+                       "settlement_currency");
+            read_token(change.write.settlement_notional,
+                       parsed->positionals[next++],
+                       "settlement_notional");
+            read_token(change.write.payment_date, parsed->positionals[next++], "payment_date");
+            read_token(change.write.long_short, parsed->positionals[next++], "long_short");
+            read_token(change.write.currency, parsed->positionals[next++], "currency");
+            read_token(change.write.fixing_amount, parsed->positionals[next++], "fixing_amount");
+            read_token(change.write.target_amount, parsed->positionals[next++], "target_amount");
+            read_token(change.write.strike, parsed->positionals[next++], "strike");
+            read_token(change.write.description, parsed->positionals[next++], "description");
+            change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
+            req.changes.push_back(std::move(change));
+        }
+        req.intent.reason_code = parsed->positionals[next++];
+        req.intent.commentary = parsed->positionals[next++];
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::put_many_fx_asian_forward_instruments_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void fx_asian_forward_instrument_commands::process_delete(std::ostream& out,
+                                                          nats_client& session,
+                                                          const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating delete request.";
+
+    using request_type = messaging::delete_fx_asian_forward_instrument_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run delete." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "version", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 1 + 2) {
+            fail(out) << "Expected " << (1 + 2) << " arguments, got " << parsed->positionals.size()
+                      << "." << std::endl;
+            return;
+        }
+        req.intent.reason_code = parsed->positionals[next++];
+        req.intent.commentary = parsed->positionals[next++];
+        if (const auto& raw = parsed->flag("version"); !raw.empty()) {
+            req.removal.precondition.kind =
+                ores::utility::domain::precondition_kind::must_match_version;
+            req.removal.precondition.version =
+                ores::shell::app::from_token<std::uint32_t>(raw, "version");
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::delete_fx_asian_forward_instrument_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void fx_asian_forward_instrument_commands::process_delete_many(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating delete-many request.";
+
+    using request_type = messaging::delete_many_fx_asian_forward_instruments_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run delete-many." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() < 1 + 2 || (parsed->positionals.size() - 2) % 1 != 0) {
+            fail(out) << "Expected a whole number of key groups and an intent, got "
+                      << parsed->positionals.size() << "." << std::endl;
+            return;
+        }
+        const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
+        for (std::size_t i = 0; i < key_groups; ++i) {
+            messaging::fx_asian_forward_instrument_key key;
+            read_token(key.instrument_id, parsed->positionals[i * 1 + 0], "instrument_id");
+            req.removals.push_back(
+                messaging::fx_asian_forward_instrument_removal{.key = std::move(key)});
+        }
+        req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
+        req.intent.commentary = parsed->positionals[parsed->positionals.size() - 1];
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::delete_many_fx_asian_forward_instruments_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void fx_asian_forward_instrument_commands::process_versions(std::ostream& out,
+                                                            nats_client& session,
+                                                            const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating versions request.";
+
+    using request_type = messaging::list_fx_asian_forward_instrument_versions_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run versions." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+        {.name = "order", .requires_value = true, .default_value = ""},
+        {.name = "desc", .requires_value = false, .default_value = "false"},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+        apply_page(req, *parsed);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::list_fx_asian_forward_instrument_versions_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void fx_asian_forward_instrument_commands::process_version(std::ostream& out,
+                                                           nats_client& session,
+                                                           const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating version request.";
+
+    using request_type = messaging::get_fx_asian_forward_instrument_version_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run version." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "version", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+        req.key.version =
+            ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::get_fx_asian_forward_instrument_version_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
 }
 
 }

@@ -558,7 +558,7 @@ bond_instrument_reader::read_instruments(const std::vector<std::string>& instrum
         if (issue_cache.contains(issue_id))
             continue;
         issue_ids.push_back(issue_id);
-        if (auto issue = issue_svc.get_issue(issue_id))
+        if (auto issue = issue_svc.get_issue(row.issue_id))
             issue_cache[issue_id] = *issue;
     }
 
@@ -597,15 +597,15 @@ bond_instrument_reader::read_instruments(const std::vector<std::string>& instrum
 
         const auto& ttc = data.instrument.identity.trade_type_code;
         if (ttc == "BondOption")
-            data.option = option_svc.get_option(id);
+            data.option = option_svc.get_option(row.identity.instrument_id);
         else if (ttc == "BondTRS")
-            data.trs = trs_svc.get_trs(id);
+            data.trs = trs_svc.get_trs(row.identity.instrument_id);
         else if (ttc == "BondRepo")
-            data.repo = repo_svc.get_repo(id);
+            data.repo = repo_svc.get_repo(row.identity.instrument_id);
         else if (ttc == "BondFuture")
-            data.future = future_svc.get_future(id);
+            data.future = future_svc.get_future(row.identity.instrument_id);
         else if (ttc == "Ascot")
-            data.ascot_row = ascot_svc.get_ascot(id);
+            data.ascot_row = ascot_svc.get_ascot(row.identity.instrument_id);
 
         apply_option_residue(data);
         if (family != leg_family.end())

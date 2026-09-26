@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 8F3A3A44-D28F-5064-A4BB-2167FF836A59
+:END:
+#+title: How do I run the fx_forward_instruments commands from the shell?
+#+description: Every command the fx_forward_instruments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_forward_instruments:
+
+This file documents the fx_forward_instruments resource at the shell, one section per command. Every command is a subcommand of =fx_forward_instruments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: E1DC167C-BA04-55B8-A6A7-AD16B7246003
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_instruments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_instruments.list=.
+
+#+name: fx_forward_instruments-list
+#+begin_src ores-shell :tangle fx_forward_instruments-list.ores :exports none
+fx_forward_instruments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 008FB1E6-FF9D-56C8-97B2-731D5427E46A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_instruments get <instrument_id>
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_instruments.get=.
+
+#+name: fx_forward_instruments-get
+#+begin_src ores-shell :tangle fx_forward_instruments-get.ores :exports none
+fx_forward_instruments get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 9F79D946-522E-532D-9CAA-9C43C0BE01D8
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_instruments get-many <instrument_id>
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_instruments.get_many=.
+
+#+name: fx_forward_instruments-get-many
+#+begin_src ores-shell :tangle fx_forward_instruments-get-many.ores :exports none
+fx_forward_instruments get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 8C456C3F-4C25-5635-B1F9-74D94F3FF3B1
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_instruments add <trade_type_code> <trade_id> <bought_currency> <bought_amount> <sold_currency> <sold_amount> <value_date> <settlement> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_instruments.put=.
+
+#+name: fx_forward_instruments-add
+#+begin_src ores-shell :tangle fx_forward_instruments-add.ores :exports none
+fx_forward_instruments add __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 8A63E3B2-A116-57AA-9AAF-AB32CF9A58D9
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_instruments set <instrument_id> <trade_type_code> <trade_id> <bought_currency> <bought_amount> <sold_currency> <sold_amount> <value_date> <settlement> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_instruments.put=.
+
+#+name: fx_forward_instruments-set
+#+begin_src ores-shell :tangle fx_forward_instruments-set.ores :exports none
+fx_forward_instruments set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 80BA0E01-87AB-5DF0-8F14-269AD852883E
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_instruments put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <bought_currency> <bought_amount> <sold_currency> <sold_amount> <value_date> <settlement> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_instruments.put_many=.
+
+#+name: fx_forward_instruments-put-many
+#+begin_src ores-shell :tangle fx_forward_instruments-put-many.ores :exports none
+fx_forward_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 4B7EAD5F-9AE4-55B4-A9E3-0075FBAC3B77
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_instruments delete <instrument_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_instruments.delete=.
+
+#+name: fx_forward_instruments-delete
+#+begin_src ores-shell :tangle fx_forward_instruments-delete.ores :exports none
+fx_forward_instruments delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: C816ADD1-8A60-59A1-A77E-49DAF9C32F73
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_instruments delete-many <instrument_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_instruments.delete_many=.
+
+#+name: fx_forward_instruments-delete-many
+#+begin_src ores-shell :tangle fx_forward_instruments-delete-many.ores :exports none
+fx_forward_instruments delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 9848547E-B9B2-5172-9F2D-47AD438D8B64
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_instruments versions <instrument_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_instruments_versions.list=.
+
+#+name: fx_forward_instruments-versions
+#+begin_src ores-shell :tangle fx_forward_instruments-versions.ores :exports none
+fx_forward_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: E8040811-CB06-574E-8BA7-077633101B85
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_instruments version <instrument_id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.fx_forward_instruments_versions.get=.
+
+#+name: fx_forward_instruments-version
+#+begin_src ores-shell :tangle fx_forward_instruments-version.ores :exports none
+fx_forward_instruments version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

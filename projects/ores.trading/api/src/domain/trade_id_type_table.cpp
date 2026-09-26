@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/trade_id_type_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -30,7 +35,7 @@ std::string convert_to_table(const std::vector<trade_id_type>& v) {
 
     table << fort::header << "Code" << "Description" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& tit : v) {
+    for ([[maybe_unused]] const auto& tit : v) {
         table << tit.code << tit.description << tit.modified_by << tit.version << fort::endr;
     }
     return table.to_string();

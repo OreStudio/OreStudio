@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 7615AAAE-778E-442B-8B9D-41D060C30A72
+:END:
+#+title: Never build in a worktree while a verifier is building in it
+#+description: Concurrent cmake builds in one worktree truncate shared libraries and produce false build failures.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+Never build in the same worktree while an independent verifier is building in it. Two cmake builds share one build directory, and the loser reads a truncated shared library: the link warns that libores.ore.core.so.0 is not found and the test binary dies with "file too short".
+
+*Why:* Hit while verifying PR #2155: I started ./compass.sh build test_ores.utility.tests and then spawned the verifier, which built the same target in the same tree. My run failed at load time with a truncated libores.ore.core.so.0; the verifier re-ran alone and passed, so no code was at fault, but the failure looked like a build break.
+
+*How to apply:* When a verifier (or any other agent) will run builds in your worktree, stop your own builds until it reports. If a build fails with "file too short" or a missing .so, delete the truncated file under build/output/<preset>/publish/lib/ and rebuild; make relinks it.

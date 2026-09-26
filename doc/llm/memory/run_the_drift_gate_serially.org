@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: C42563F5-083A-4671-B857-DA1815A63077
+:END:
+#+title: Run check_component_drift.py with no untracked files and nothing else running
+#+description: The drift gate treats any untracked file in the tree as drift and can flag another commands scratch output.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+Run `check_component_drift.py --all` on a tree with no untracked files and nothing else writing to the tree. It regenerates the whole codegen surface and then diffs, so an untracked scratch file that another command is still writing reads as drift.
+
+*Why:* The verifier for PR #2155 saw the gate flag two of its own scratch files while it ran the gate in parallel with other commands. The gate is correct about the tree; the tree was temporarily dirty on purpose.
+
+*How to apply:* Before running the gate, clear or move scratch files out of the repository, and run it serially rather than alongside generators or other writers. If it reports files you know are scratch, re-run it once they are gone before treating the result as drift.

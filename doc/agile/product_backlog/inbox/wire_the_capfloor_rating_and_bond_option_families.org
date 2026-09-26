@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: AD0956F8-B519-4D75-A3CB-86FE70F9E17C
+:END:
+#+title: Wire the capfloor, rating and bond-option families, whose grammar the catalogue documents
+#+description: doc/knowledge/domain/ore_market_data_catalogue.org states the key grammar of every ORE quote family, and three of the eleven types oresmd does not represent can be wired straight from it. Recorded so the next pass reads the catalogue first.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Eleven of the 43 ORE series types the shape table defines have no oresmd
+representation. Three of them are blocked only on the field work, because the
+grammar is already written down in
+=doc/knowledge/domain/ore_market_data_catalogue.org=:
+
+**CAPFLOOR**, 96,790 corpus lines across three shapes the catalogue names
+dimension by dimension:
+
+| Key | Lines | Catalogue reading |
+|-----+-------+-------------------|
+| =CAPFLOOR/RATE_LNVOL/CHF/5Y/6M/0/0/0.03= | 78,269 | dim3=CCY, dim4=maturity, dim5=float tenor, dim6/7=shift/strip flags, dim8=strike |
+| =CAPFLOOR/PRICE/EUHICPXT/10Y/C/0.00= | 18,424 | the same shape as =ZC_INFLATIONCAPFLOOR/PRICE=: index, maturity, cap-or-floor, strike |
+| =CAPFLOOR/SHIFT/EUR/6M= | 97 | shift for the displaced log-normal model, keyed by currency and tenor |
+
+The first is the largest single wireable block left in the corpus, a sixth of
+everything it carries. The two flag slots are =0= on 97% of lines and =1/1= on
+the rest, and the catalogue says what they are, which the corpus alone did not.
+
+**RATING**, =RATING/TRANSITION_PROBABILITY/SP/BBB/BB/1Y= -- provider,
+from-rating, to-rating, tenor. 128 lines.
+
+**BOND_OPTION**, =BOND_OPTION/RATE_LNVOL/EUR_GENERIC/1Y/10Y/ATM= -- dim3 is a
+generic index name rather than a currency, dim4 the option expiry, dim5 the bond
+tenor, dim6 the strike. 154 lines.
+
+Each needs an oresmd model addition and, where its key is not keyed by a
+currency, a decision about which identifier carries it: CAPFLOOR/PRICE and
+BOND_OPTION are index-keyed, so neither fits the IR identifier's entity field.
+
+* Why
+
+This capture replaces an earlier one that said the option and capfloor grammars
+were not derivable and needed ORE's own source. That was wrong: the grammar is
+in this repository, in the catalogue page, and the gap was that the coverage
+work never read it. The correction is worth keeping in the record because the
+catalogue is the first place to look the next time a key looks underdetermined.
+
+What the catalogue does not settle is narrower, and is captured separately: the
+futures' qualifier depth, which is a contradiction in our own shape table rather
+than a missing grammar.
+
+* References
+
+- =doc/knowledge/domain/ore_market_data_catalogue.org= -- the quote-type tables,
+  one per asset class, each naming every key dimension.
+- =projects/ores.codegen/scripts/check_oresmd_ore_coverage.py= -- which types
+  oresmd represents today, and the reason for each that it does not.
+- =external/ore/examples/= -- the corpus line counts above.
+
+* See also
+
+- [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Story: Clean ores.marketdata to the component clean standard]]

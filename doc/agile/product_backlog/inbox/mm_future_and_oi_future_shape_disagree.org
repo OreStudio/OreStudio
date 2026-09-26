@@ -42,6 +42,14 @@ ordering puts the contract month between the currency and the exchange, so a
 single qualifier depth cannot separate "the contract month identifies the
 series" from "the exchange and tenor do". Every depth is a compromise.
 
+The market data catalogue does not settle it either, and its silence is the
+clearest evidence that the shape changed. It documents both as five segments --
+=MM_FUTURE/PRICE/USD/2025-09/3M= and =OI_FUTURE/PRICE/USD/2025-09/SOFR=, currency,
+contract month, then a tenor or an index -- with no exchange at all. The corpus
+writes six. So the exchange was added to the key after the catalogue was
+written, and neither our shape table nor the catalogue has been reconciled with
+that.
+
 * Why
 
 The depth is not a display choice. It decides what a stored =market_series= row
@@ -64,6 +72,8 @@ rewritten to say it.
 
 - =projects/ores.sql/populate/ore/ore_series_key_shapes_populate.sql= -- the two
   rows, with their descriptions and qualifier depths.
+- =doc/knowledge/domain/ore_market_data_catalogue.org= -- both types at five
+  segments, without the exchange the corpus writes.
 - =projects/ores.codegen/scripts/check_oresmd_ore_coverage.py= -- records both
   types as unrepresented, and why.
 - =external/ore/examples/= -- the corpus keys above, and 939 lines of them.

@@ -46,7 +46,9 @@ target_link_libraries(${lib_target_name}
         ores.service.lib
         ores.database.lib
         Boost::boost
-        LibArchive::LibArchive)
+        LibArchive::LibArchive
+    PRIVATE
+        Boost::process)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

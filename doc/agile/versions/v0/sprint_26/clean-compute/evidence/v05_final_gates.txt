@@ -1,6 +1,6 @@
 ## drift --all
-
-Generated output does not match what's checked in -- a generated file was hand-edited, or its .org model changed without running `compass codegen regenerate` afterwards. Run the regenerate command locally and commit the result.
+INFO Regeneration complete.
+No drift: regenerated output matches the checked-in tree.
 
 ## model drift
 No model drift: every bound model agrees with its profile (1 known exception(s)).
@@ -17,5 +17,14 @@ populate references resolve.
 ## recipe inventory
 exit=0
 
+## cmake lists
+ores.compute.api       All component_files.cmake up to date.
+ores.compute.core      All component_files.cmake up to date.
+ores.compute.service   All component_files.cmake up to date.
+ores.compute.client    All component_files.cmake up to date.
+ores.compute.wrapper   All component_files.cmake up to date.
+ores.iam.api           All component_files.cmake up to date.
+ores.shell.compute     All component_files.cmake up to date.
+
 ## codegen suite
-538 passed in 9.87s
+538 passed in 9.89s

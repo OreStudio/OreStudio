@@ -28,9 +28,9 @@ ores.compute passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:543DE51B-B9D8-4261-9DB1-9B97D4C9F187][Clean ores.compute to the component clean standard]] |
-| Now          | Section 2 is settled except M06. Five more model items pass, G03 and G06 pass, and the component has no accepted model-drift exception left. |
+| Now          | Section 2 is settled except M06. Platform and the telemetry protocol are modelled, leaving the work surface. Five model items pass, G03 and G06 pass, and the component has no accepted model-drift exception left. |
 | Waiting on   | Nothing. |
-| Next         | M06, which is the modelling of the platform, telemetry and work wire types, then section 3 Protocol. |
+| Next         | M06, the work wire surface, which is the last hand-written protocol and the last four raw subject literals. Then section 3 Protocol. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -59,8 +59,8 @@ record each item's result in the table below.
 |------+---------+----------|
 | B01  | Pass    | =evidence/b01_component_drift_baseline.txt= records 88 changed and 34 created files. =evidence/b01_model_drift_baseline.txt= records two known exceptions, one of them compute's =result.has_change_reason_cache= and the other =reporting.report_definition.has_workspace_id=. |
 | B02  | Pass    | =evidence/b02_b03_b04_inventory.txt=: nine models. Six entity, one junction, one module and one component overview. The module and the overview carry no variability. |
-| B03  | Partial | Re-surveyed after the platform model: 285 C++ files outside tests, 223 generated and 62 hand-written, against 258, 189 and 69 at the baseline. Messaging headers 45, with 7 hand-written. Evidence in =evidence/b02_b03_b04_inventory_after_platform.txt=. |
-| B04  | Pass    | Same file: 40 subjects across ten protocol headers. Eleven raw subject literals in hand-written code, seven of them in the three hand-written protocol headers. |
+| B03  | Partial | Re-surveyed after the telemetry operation model: 285 C++ files outside tests, 224 generated and 61 hand-written, against 258, 189 and 69 at the baseline. Messaging headers 45, with 6 hand-written. Evidence in =evidence/b02_b03_b04_inventory_after_telemetry.txt=. |
+| B04  | Pass    | Same file: 79 subjects across ten protocol headers. Eight raw subject literals in hand-written code, down from eleven, four of them in the one hand-written protocol header left. |
 | B05  | Pass    | Nothing blocks the work. PR #2138 merged, so the branch rebased onto =origin/main= at =5de59e3fb8= and picked up its M09 chrome removal. No other in-flight branch touches =projects/ores.compute=. |
 | G01  | Pass    | Regeneration is byte-clean and the component builds. =compass build ores.compute.api.lib ores.compute.core.lib ores.compute.service.lib ores.compute.wrapper.lib ores.compute.client.lib= exits 0. =evidence/g01_regeneration_run4.txt=. |
 | G03  | Pass    | 200 files under =projects/ores.compute= carry the generated marker and 69 do not, and the 69 are the hand-written set B03 classified. The argument that every generated file is marked is the empty drift list: the generator writes the marker, so a generated file missing it would always differ from the tree and appear there. |
@@ -69,7 +69,7 @@ record each item's result in the table below.
 | M02  | Pass    | All seven entity and junction models bind to a profile: six to =uuid-identified-lookup= and the junction to =tenant-scoped-junction=. No model needed a no-match record. |
 | M04  | Pass    | No property sits in a namespace the loader does not read for it. The one that did was =has_change_reason_cache=, moved to the model root for M09, and it is now removed as dead. |
 | M05  | Pass    | Each model describes one table. The junction is modelled as a junction and no joined shape is modelled as an entity. No compute table is current-state, so no model needs the current-state shape. |
-| M06  | Partial | =platform= is modelled: its domain, protocol, entity, repository, service, handler, registrar, SQL, shell unit and TypeScript twin all generate, and the hand-written versions are deleted. The telemetry and work wire surfaces remain hand-written. Telemetry is blocked on a read the codegen does not generate, and the work surface wants an operation model. Both are recorded in Notes. |
+| M06  | Partial | =platform= and the telemetry protocol are modelled. The platform model generates its domain, protocol, entity, repository, service, handler, registrar, SQL, shell unit and TypeScript twin, and the hand-written versions are deleted. The telemetry operation model generates =telemetry_protocol.hpp= and its TypeScript twin from one source. The work wire surface remains hand-written. The telemetry entities stay hand-written and are blocked on a read the codegen does not generate. Both the operation-model route and the blocker are recorded in Notes. |
 | M07  | Pass    | The junction names its singular (=#+name_singular: app_version_platform=), gives both key columns their real type (uuid), and its row-level security is tenant scoped, =ores_compute_app_version_platforms_tbl= with a =tenant_id= policy and a current-tenant check. =read_only=, =client_read_only= and =party_id_is_target= do not apply: the junction is written by publish, and it has no party column. |
 | M08  | Pass    | Every =cpp_type= in the component is a scalar or a registered built-in, so no custom type needs a header binding. =validate_schemas.sh= passes with 303 tables and no warnings, so the SQL spellings are canonical. No flag is an integer. |
 | M10  | Pass    | The component overview declares the parts and the composite generates its root =CMakeLists.txt= (the file carries the generated marker). =validate_docs.py= passes all 41 components. |
@@ -80,7 +80,7 @@ record each item's result in the table below.
 | V05  | Partial | Every gate is green with the component under test: component drift, model drift, protocol twin coverage, handler permissions, populate references, recipe inventory and the CMake source lists. The registry entry V06 is not made yet. |
 | P05  | Pass    | Every consumer follows the protocol: the shell application and, before main deleted the component, the CLI. Nothing is carried for backwards compatibility. |
 | P01  | Pass    | Every audited entity speaks list, get, put and delete, and carries the versions facet for the history and point-in-time reads: =compute.v1.<plural>_versions.list= and =.get=. The junction carries neither, and no junction in the codebase does, iam's included. That is a codegen-level decision, recorded as a finding rather than fixed here. |
-| P02  | Partial | Ten raw subject literals remain, down from eleven. Six are in the two hand-written protocol headers M06 still owns, and four build a =compute.v1.work.assignments.= subject at runtime in the result submit handler, the workunit dispatcher and the wrapper. |
+| P02  | Partial | Eight raw subject literals remain, down from eleven. Four are in =work_protocol.hpp=, which M06 still owns, and four build a =compute.v1.work.assignments.= subject at runtime in the result submit handler, the workunit dispatcher and the wrapper. |
 | P03  | Pass    | 70 declared subjects, 70 distinct, no duplicate. Every generated registrar subscribes to as many subjects as it has handlers (9, 8, 9, 9, 9, 10, 10). One generated type is unused: =app_version_platform_event=, which no registrar maps and nothing publishes. iam's junction has the same shape, so it is a codegen pattern and is recorded as a finding. |
 | P06  | N/A     | The component keeps no warmed event cache. No generated cache file exists in it, and none exists in any component, so the item has nothing to check. |
 | W01  | Pass    | The messaging registrars are composed at the core composition point and the six entities' event mappings at the service's. The junction materialises no event family, because the generator emits none for junctions, which iam's junction also shows. |
@@ -91,7 +91,7 @@ Items not listed are not yet worked. Sections 2 to 8 are open.
 
 * Notes
 
-** Telemetry is blocked on a read the codegen does not generate
+** A read the codegen does not generate blocks the telemetry entities
 
 The telemetry tables map cleanly onto the time-series shape. =grid_sample=
 and =node_sample= are append-only hypertables with no audit tail, and
@@ -123,18 +123,51 @@ So the item needs a decision before the model lands, and there are two.
 
 The second is a product decision about what the telemetry surface is for,
 so it is not mine to take. The attempt was reverted rather than forced,
-and the tree is as it was.
+and the tree is as it was. The blocker still stops the two telemetry
+entities. It does not stop the protocol, which is a separate model, as
+the next note records.
+
+** The telemetry protocol is an operation model
+
+The blocker above stops the telemetry *entities*, not the telemetry
+*protocol*. The two are separate models, and the protocol does not need
+the repository read that the entities do. =ores.compute.telemetry= is an
+operation model (=#+type: ores.codegen.operation=) with three messages: a
+request and reply pair for the grid summary, and a fire-and-forget publish
+for the node samples. The generated header keeps the hand-written file's
+name, order and fields, so no consumer changed, and the check-in diff is
+the generated marker, the doc comments and one added constant.
+
+The handler stays hand-written beside the model. An operation model
+generates its protocol, its TypeScript twin and, when
+=:ores.cpp.shell-command.enabled:= is true, its shell command units. It
+does not generate a service handler. =ores.iam.account_messages= shows
+this: =account_operations_protocol.hpp= carries the generated marker and
+=account_operations_handler.hpp= does not. So the read the codegen lacks
+does not block the protocol, and the model lands while the entity
+question stays open.
+
+The model states =:auth: none= on =node_sample_message=. A wrapper node
+publishes a sample before it has a session, and =ingest_node_sample=
+reads it without one, so the message is public. The loader copies that
+fact to =requires_session=, which both protocol twins emit and which the
+shell command generator reads. The hand-written header stated nothing, so
+both twins claimed a session the publisher never sends.
 
 ** The work surface wants an operation model
 
 =pull=, =heartbeat=, =reap= and =submit= are orchestrations rather than
 entity verbs, so P04 puts them in an operation model
 (=#+type: ores.codegen.operation=) rather than an entity. iam's
-=account_messages.org= is the template, and an operation model generates
-both its protocol and a handler, so the existing handler's logic moves into
-the model as a paste block rather than staying a hand-written file beside a
-generated one. That is the shape the next round takes, and it is also what
-removes the last four raw subject literals, so P02 follows it.
+=account_messages.org= is the template. The model generates the protocol
+and, when the shell flag is set, the shell command units. It does not
+generate the service handler, so =work_handler.hpp= stays hand-written
+beside the model and only the protocol moves. That removes the four raw
+subject literals in =work_protocol.hpp=, so P02 follows it.
+
+An earlier version of this note said the operation model generates a
+handler too. The telemetry model disproved that, and the account model
+confirms the correction.
 
 ** M06, the platform model
 
@@ -158,11 +191,10 @@ The table and the seed are unchanged, so the recreation is unchanged, and
 the generated SQL now carries the natural-key uniqueness index the
 hand-written table did not.
 
-Still hand-written and still to model: =telemetry_protocol.hpp= with its
-handler, and =work_protocol.hpp= with its three handlers. The work surface
-is the harder of the two, because pull, heartbeat, reap and submit are
-operations rather than entity verbs, so it wants an operation model under
-P04 rather than an entity.
+Still hand-written: the telemetry handler, and =work_protocol.hpp= with
+its three handlers. The work surface is the harder of the two, because
+pull, heartbeat, reap and submit are operations rather than entity verbs,
+so it wants an operation model under P04 rather than an entity.
 
 ** Two codegen-wide findings from the protocol audit
 
@@ -304,12 +336,16 @@ there is nothing left to preserve.
 
 ** B03 classification of the 69 hand-written C++ files
 
-- *Generatable, still hand-written*: the three protocol headers
-  (=platform_protocol.hpp=, =telemetry_protocol.hpp=,
-  =work_protocol.hpp=) and their six handlers (=platform_handler.hpp=,
-  =telemetry_handler.hpp=, =work_handler.hpp=,
-  =report_submit_handler.hpp=, =result_submit_handler.hpp=,
-  =registrar.hpp=). M06 and P04 turn these into models.
+The baseline held 69. The platform model moved five and the telemetry
+operation model moved one, so 61 remain. The class sizes below are the
+baseline ones.
+
+- *Generatable, still hand-written*: =work_protocol.hpp=, which P04 turns
+  into an operation model, and the four handlers beside it
+  (=telemetry_handler.hpp=, =work_handler.hpp=,
+  =report_submit_handler.hpp=, =result_submit_handler.hpp=). The handlers
+  stay hand-written, because an operation model generates no service
+  handler.
 - *Generatable domain left hand-written*: =compute_platform.hpp=,
   =grid_sample.hpp=, =node_sample.hpp=, their entities and their
   repositories, plus =workflow_batch_link_entity.hpp= and
@@ -320,7 +356,8 @@ there is nothing left to preserve.
   the service and wrapper =application=, =host=, =main.cpp=,
   =archiver=, =http_client=, =log_publisher=, =compute_grid_poller=,
   =batch_workflow_bridge=, =workunit_dispatcher=,
-  =compute_telemetry_repository= and =package_publisher=.
+  =compute_telemetry_repository=, =package_publisher= and the messaging
+  =registrar.hpp= composition point.
 - *Dead*: none found yet. Generation replaces no hand-written compute
   file, because the component has never been regenerated.
 

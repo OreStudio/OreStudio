@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_COMPUTE_MESSAGING_TELEMETRY_PROTOCOL_HPP
 #define ORES_COMPUTE_MESSAGING_TELEMETRY_PROTOCOL_HPP
 
@@ -27,73 +32,68 @@
 
 namespace ores::compute::messaging {
 
-// =============================================================================
-// Dashboard stats query (request/reply)
-// =============================================================================
-
 struct get_grid_stats_request {
     using response_type = struct get_grid_stats_response;
     static constexpr std::string_view nats_subject = "compute.v1.telemetry.get_grid_stats";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
 };
 
 struct node_stats_summary {
     std::string host_id;
-    int tasks_completed{0};
-    int tasks_since_last{0};
-    std::int64_t avg_task_duration_ms{0};
-    std::int64_t input_bytes_fetched{0};
-    std::int64_t output_bytes_uploaded{0};
-    int seconds_since_hb{0};
+    int tasks_completed = 0;
+    int tasks_since_last = 0;
+    std::int64_t avg_task_duration_ms = 0;
+    std::int64_t input_bytes_fetched = 0;
+    std::int64_t output_bytes_uploaded = 0;
+    int seconds_since_hb = 0;
 };
 
 struct get_grid_stats_response {
-    bool success{false};
+    bool success = false;
     std::string message;
-
-    // Grid-level fields (mirrors domain::grid_sample)
-    int total_hosts{0};
-    int online_hosts{0};
-    int idle_hosts{0};
-
-    int results_inactive{0};
-    int results_unsent{0};
-    int results_in_progress{0};
-    int results_done{0};
-
-    int total_workunits{0};
-    int total_batches{0};
-    int active_batches{0};
-
-    int outcomes_success{0};
-    int outcomes_client_error{0};
-    int outcomes_no_reply{0};
-
-    /** @brief ISO-8601 timestamp of when this sample was taken. */
+    int total_hosts = 0;
+    int online_hosts = 0;
+    int idle_hosts = 0;
+    int results_inactive = 0;
+    int results_unsent = 0;
+    int results_in_progress = 0;
+    int results_done = 0;
+    int total_workunits = 0;
+    int total_batches = 0;
+    int active_batches = 0;
+    int outcomes_success = 0;
+    int outcomes_client_error = 0;
+    int outcomes_no_reply = 0;
     std::string sampled_at;
-
-    /** @brief Per-node summaries from the most recent node samples. */
     std::vector<node_stats_summary> node_summaries;
 };
 
-// =============================================================================
-// Per-node sample publish (fire-and-forget from wrapper → service)
-// =============================================================================
-
 struct node_sample_message {
     static constexpr std::string_view nats_subject = "compute.v1.telemetry.node_samples";
-
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = false;
     std::string tenant_id;
     std::string host_id;
-    std::string sampled_at; // ISO-8601
-
-    int tasks_completed{0};
-    int tasks_failed{0};
-    int tasks_since_last{0};
-    std::int64_t avg_task_duration_ms{0};
-    std::int64_t max_task_duration_ms{0};
-    std::int64_t input_bytes_fetched{0};
-    std::int64_t output_bytes_uploaded{0};
-    int seconds_since_hb{0};
+    std::string sampled_at;
+    int tasks_completed = 0;
+    int tasks_failed = 0;
+    int tasks_since_last = 0;
+    std::int64_t avg_task_duration_ms = 0;
+    std::int64_t max_task_duration_ms = 0;
+    std::int64_t input_bytes_fetched = 0;
+    std::int64_t output_bytes_uploaded = 0;
+    int seconds_since_hb = 0;
 };
 
 }

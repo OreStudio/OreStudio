@@ -1,0 +1,347 @@
+:PROPERTIES:
+:ID: 05BA3A23-3596-4881-BFB6-D4E3438FD9AC
+:END:
+#+title: ores.compute.telemetry
+#+description: Codegen operation model for the compute telemetry protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: compute
+#+subcomponent: api
+#+entity_singular: telemetry
+#+namespace: ores::compute::messaging
+#+brief: compute telemetry protocol messages.
+#+filetags: :model:operation:compute:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+The grid telemetry surface: one request and reply for the dashboard
+summary, and one fire-and-forget publish from a wrapper node reporting
+what it has done since the last sample.
+
+These are operations rather than entity verbs, so they are declared here
+instead of being derived from an entity. The grid summary is computed, not
+stored, and the node sample arrives from outside the service, so neither
+is a row a caller addresses by key.
+
+The handler that serves them stays hand-written beside this model, because
+it reads the newest stored samples and calls the grid-stats function.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** get_grid_stats_request
+:PROPERTIES:
+:subject: compute.v1.telemetry.get_grid_stats
+:response: get_grid_stats_response
+:END:
+
+Requests the current grid summary. It carries no fields: the caller's
+tenant decides what it sees.
+
+** node_stats_summary
+:PROPERTIES:
+:END:
+
+One node's contribution to the grid summary, as the dashboard renders it.
+
+*** host_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The node the summary describes.
+
+*** tasks_completed
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Tasks the node has finished since its wrapper started.
+
+*** tasks_since_last
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Tasks the node finished since its previous sample.
+
+*** avg_task_duration_ms
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Mean task duration over the tasks since the last sample.
+
+*** input_bytes_fetched
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Bytes the node fetched for those tasks.
+
+*** output_bytes_uploaded
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Bytes the node uploaded for those tasks.
+
+*** seconds_since_hb
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Seconds since the node last heartbeated.
+
+** get_grid_stats_response
+:PROPERTIES:
+:END:
+
+The grid summary. The counters mirror one stored grid sample, and the
+node summaries come from the most recent sample of every node.
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+Whether the summary was produced.
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Why it was not, when it was not.
+
+*** total_hosts
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Hosts registered for the tenant.
+
+*** online_hosts
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Hosts that heartbeated inside the online window.
+
+*** idle_hosts
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Online hosts with nothing in flight.
+
+*** results_inactive
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Results in server state 1.
+
+*** results_unsent
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Results in server state 2.
+
+*** results_in_progress
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Results in server state 4.
+
+*** results_done
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Results in server state 5.
+
+*** total_workunits
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Workunits the tenant holds.
+
+*** total_batches
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Batches the tenant holds.
+
+*** active_batches
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Batches that are not closed.
+
+*** outcomes_success
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Results that finished with outcome 1 in the last day.
+
+*** outcomes_client_error
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Results that finished with outcome 3 in the last day.
+
+*** outcomes_no_reply
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Results that finished with outcome 4 in the last day.
+
+*** sampled_at
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+ISO-8601 timestamp of when the sample was taken.
+
+*** node_summaries
+:PROPERTIES:
+:cpp_type: std::vector<node_stats_summary>
+:END:
+
+Per-node summaries from the most recent node samples.
+
+** node_sample_message
+:PROPERTIES:
+:subject: compute.v1.telemetry.node_samples
+:auth: none
+:END:
+
+One node's report, published fire-and-forget from a wrapper. It carries no
+response, so the wrapper does not wait for one. The publishing node has no
+session, and the handler reads it without one, so the model marks the
+message public rather than claiming a token it never sends.
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The tenant the node works for.
+
+*** host_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The reporting node.
+
+*** sampled_at
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+ISO-8601 timestamp of the sample.
+
+*** tasks_completed
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Tasks finished since the wrapper started.
+
+*** tasks_failed
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Tasks that failed since the wrapper started.
+
+*** tasks_since_last
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Tasks finished since the previous sample.
+
+*** avg_task_duration_ms
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Mean task duration over the tasks since the last sample.
+
+*** max_task_duration_ms
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Longest task duration over the tasks since the last sample.
+
+*** input_bytes_fetched
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Bytes fetched for those tasks.
+
+*** output_bytes_uploaded
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Bytes uploaded for those tasks.
+
+*** seconds_since_hb
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+Seconds since this node last heartbeated.
+
+* See also
+
+- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.

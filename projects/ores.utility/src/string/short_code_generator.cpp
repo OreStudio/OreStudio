@@ -71,10 +71,9 @@ std::string strip_corporate_suffixes(const std::string& name) {
 }
 
 std::string generate_short_code(const std::string& name) {
-    // Step 1: strip corporate suffixes.
     auto input = strip_corporate_suffixes(name);
 
-    // Step 2: uppercase, remove non-alpha (keep spaces), collapse whitespace.
+    // Uppercase, drop non-alpha, and collapse runs of spaces.
     std::string clean;
     bool prev_space = false;
     for (char c : input) {
@@ -89,11 +88,9 @@ std::string generate_short_code(const std::string& name) {
     while (!clean.empty() && clean.back() == ' ')
         clean.pop_back();
 
-    // Step 3: empty check.
     if (clean.empty())
         return "UNKNWN";
 
-    // Step 4: split into words.
     std::vector<std::string> words;
     std::string word;
     for (char c : clean) {

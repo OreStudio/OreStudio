@@ -162,15 +162,8 @@ TEST_CASE("base64_decode_empty_throws", tags) {
 TEST_CASE("base64_encode_various_lengths", tags) {
     auto lg(make_logger(test_suite));
 
-    // Test various input lengths to verify padding is correct
-    std::vector<std::string> tests = {
-        "a",     // 1 byte
-        "ab",    // 2 bytes
-        "abc",   // 3 bytes (no padding needed)
-        "abcd",  // 4 bytes
-        "abcde", // 5 bytes
-        "abcdef" // 6 bytes (no padding needed)
-    };
+    // Padding is needed unless the byte count is a multiple of three.
+    std::vector<std::string> tests = {"a", "ab", "abc", "abcd", "abcde", "abcdef"};
 
     for (const auto& test : tests) {
         std::vector<uint8_t> input(test.begin(), test.end());

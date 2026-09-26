@@ -99,7 +99,8 @@ TEST_CASE("uuid_v7_has_correct_variant", tags) {
     BOOST_LOG_SEV(lg, info) << "Variant byte: 0x" << std::hex << static_cast<int>(variant_byte);
     BOOST_LOG_SEV(lg, info) << "Variant: 0b" << std::bitset<2>(variant);
 
-    CHECK(variant == 0x02); // 0b10
+    // 0b10 is the RFC 4122 variant.
+    CHECK(variant == 0x02);
 }
 
 TEST_CASE("uuid_v7_preserves_time_ordering", tags) {

@@ -66,6 +66,38 @@ std::pair<std::regex, std::vector<std::string>> compile_pattern(const std::strin
     return {std::regex(regex_str.str()), param_names};
 }
 
+/**
+ * @brief The method as a caller of the API spells it, for an error message.
+ */
+std::string_view method_name(domain::http_method method) {
+    switch (method) {
+        case domain::http_method::get:
+            return "GET";
+        case domain::http_method::post:
+            return "POST";
+        case domain::http_method::put:
+            return "PUT";
+        case domain::http_method::patch:
+            return "PATCH";
+        case domain::http_method::delete_:
+            return "DELETE";
+        case domain::http_method::head:
+            return "HEAD";
+        case domain::http_method::options:
+            return "OPTIONS";
+    }
+    return "UNKNOWN";
+}
+
+/**
+ * @brief The failure a route with no stated authentication position names.
+ */
+std::logic_error undeclared_auth(const domain::http_method method, const std::string& pattern) {
+    return std::logic_error("Route " + std::string(method_name(method)) + " " + pattern +
+                            " declares no authentication position; call auth_required() or "
+                            "auth_optional() before build().");
+}
+
 }
 
 // route_builder implementation
@@ -81,12 +113,20 @@ route_builder& route_builder::handler(domain::request_handler h) {
 
 route_builder& route_builder::auth_required() {
     requires_auth_ = true;
+    auth_declared_ = true;
+    return *this;
+}
+
+route_builder& route_builder::auth_optional() {
+    requires_auth_ = false;
+    auth_declared_ = true;
     return *this;
 }
 
 route_builder& route_builder::roles(std::vector<std::string> r) {
     required_roles_ = std::move(r);
     requires_auth_ = true; // Roles imply auth required
+    auth_declared_ = true;
     return *this;
 }
 
@@ -124,6 +164,9 @@ route_builder& route_builder::query_param(const std::string& name,
 }
 
 domain::route route_builder::build() const {
+    if (!auth_declared_)
+        throw undeclared_auth(method_, pattern_);
+
     auto [regex, param_names] = compile_pattern(pattern_);
 
     domain::route r;
@@ -133,6 +176,7 @@ domain::route route_builder::build() const {
     r.param_names = std::move(param_names);
     r.handler = handler_;
     r.requires_auth = requires_auth_;
+    r.auth_declared = true;
     r.required_roles = required_roles_;
     r.summary = summary_;
     r.description = description_;
@@ -174,6 +218,9 @@ route_builder router::head(const std::string& pattern) {
 }
 
 void router::add_route(const domain::route& route) {
+    if (!route.auth_declared)
+        throw undeclared_auth(route.method, route.pattern);
+
     BOOST_LOG_SEV(lg(), info) << "Registered route: " << static_cast<int>(route.method) << " "
                               << route.pattern;
     routes_.push_back(route);

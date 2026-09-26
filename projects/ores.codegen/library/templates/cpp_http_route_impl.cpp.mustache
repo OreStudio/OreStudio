@@ -299,6 +299,9 @@ void {{entity_singular}}_routes::register_routes(
 {{#requires_session}}
                                     .auth_required()
 {{/requires_session}}
+{{^requires_session}}
+                                    .auth_optional()
+{{/requires_session}}
 {{#has_order}}
                                     .query_param("offset", "integer", "", false, "Rows to skip")
                                     .query_param("limit", "integer", "", false, "Rows to return")

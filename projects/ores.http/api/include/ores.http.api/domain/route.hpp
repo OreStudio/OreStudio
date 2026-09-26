@@ -108,8 +108,19 @@ struct ORES_HTTP_API_EXPORT route final {
 
     /**
      * @brief Whether this route requires authentication.
+     *
+     * Only meaningful when auth_declared is true. A builder sets both together
+     * through auth_required(), auth_optional() or roles().
      */
     bool requires_auth = false;
+
+    /**
+     * @brief Whether the route states an authentication position at all.
+     *
+     * False on a route assembled by hand. The router refuses such a route
+     * rather than let requires_auth's default decide access in silence.
+     */
+    bool auth_declared = false;
 
     /**
      * @brief Required roles for accessing this route (empty = any authenticated user).

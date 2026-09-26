@@ -108,6 +108,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
                      .summary("User login")
                      .description("Authenticate user with username and password")
                      .tags({"auth"})
+                     .auth_optional()
                      .body<iam::messaging::login_request>()
                      .response<iam::messaging::login_response>()
                      .handler([this](const http_request& req) { return handle_login(req); });
@@ -128,6 +129,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
                       .summary("User signup")
                       .description("Create a new account (when self-registration is enabled)")
                       .tags({"auth"})
+                      .auth_optional()
                       .body<iam::messaging::signup_request>()
                       .response<iam::messaging::signup_response>()
                       .handler([this](const http_request& req) { return handle_signup(req); });
@@ -139,6 +141,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
             .summary("Get bootstrap status")
             .description("Check if system is in bootstrap mode awaiting initial admin")
             .tags({"auth"})
+            .auth_optional()
             .response<iam::messaging::bootstrap_status_response>()
             .handler([this](const http_request& req) { return handle_bootstrap_status(req); });
     router->add_route(bootstrap_status.build());
@@ -149,6 +152,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
             .summary("Create initial admin")
             .description("Create initial admin account (bootstrap mode only, localhost only)")
             .tags({"auth"})
+            .auth_optional()
             .body<iam::messaging::create_initial_admin_request>()
             .response<iam::messaging::create_initial_admin_response>()
             .handler([this](const http_request& req) { return handle_create_initial_admin(req); });

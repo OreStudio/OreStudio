@@ -48,6 +48,13 @@ the subject the message states. The service's generated handler validates
 that token and checks the entity's permission. The gateway maps the answer,
 including the error the service names, and never decides access itself.
 
+*Every route states a position.* ={{#requires_session}}= emits
+=.auth_required()= and ={{^requires_session}}= emits =.auth_optional()=, so
+the route states exactly one of the two and the operation alone decides which.
+The builder refuses a route that states neither, so the template has no branch
+that emits nothing. A public route is therefore public on purpose, not because
+a default said so.
+
 * Template
 
 The full template source. Edit here and re-tangle with
@@ -355,6 +362,9 @@ void {{entity_singular}}_routes::register_routes(
                                     .tags({"{{component}}"})
 {{#requires_session}}
                                     .auth_required()
+{{/requires_session}}
+{{^requires_session}}
+                                    .auth_optional()
 {{/requires_session}}
 {{#has_order}}
                                     .query_param("offset", "integer", "", false, "Rows to skip")

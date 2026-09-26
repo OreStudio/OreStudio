@@ -134,6 +134,9 @@ TEST_CASE("image_routes_requires_a_session_where_the_operation_does", tags) {
         });
         REQUIRE(found != routes.end());
         CHECK(found->requires_auth == expected.requires_auth);
+        // The builder refuses a route that states no position, so every
+        // registered route must carry the declaration as well as the value.
+        CHECK(found->auth_declared);
     }
 
     BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of 10 route(s).";

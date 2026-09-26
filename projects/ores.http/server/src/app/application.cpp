@@ -26,13 +26,14 @@
 #include "ores.eventing.core/service/registrar.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.http.api/net/http_server.hpp"
-#include "ores.http.core/routes/assets_routes.hpp"
 #include "ores.http.core/routes/iam_routes.hpp"
 #include "ores.http.core/routes/risk_routes.hpp"
 #include "ores.http.core/routes/storage_routes.hpp"
 #include "ores.http.core/routes/variability_routes.hpp"
 #include "ores.http.server/messaging/registrar.hpp"
+#include "ores.http/routes/assets/assets_routes.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
+#include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.nats/service/client.hpp"
@@ -67,6 +68,14 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     nats::service::client nats(cfg.nats);
     nats.connect();
+
+    // The generated route units forward over NATS rather than calling a
+    // service in process, so the gateway needs a service-path client. Each
+    // route delegates the caller's own token on top of this identity, which
+    // is what the downstream service checks.
+    nats::service::nats_client service_nats(
+        nats,
+        iam::client::make_service_token_provider(nats, cfg.database.user, cfg.database.password()));
 
     BOOST_LOG_SEV(lg(), info) << "Initializing database connection...";
     database::context_factory::configuration db_cfg{
@@ -140,6 +149,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
             .summary("API Information")
             .description("Returns information about the API")
             .tags({"info"})
+            .auth_optional()
             .handler([](const http::domain::http_request&)
                          -> asio::awaitable<http::domain::http_response> {
                 co_return http::domain::http_response::json(
@@ -157,8 +167,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     routes::variability_routes variability(ctx, system_flags, sessions);
     variability.register_routes(router, registry);
 
-    routes::assets_routes assets(ctx, sessions);
-    assets.register_routes(router, registry);
+    ores::http::routes::assets::assets_routes::register_routes(router, registry, service_nats);
 
     routes::storage_routes storage(cfg.storage_dir, auth_service);
     storage.register_routes(router, registry);

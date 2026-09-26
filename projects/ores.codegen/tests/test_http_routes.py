@@ -269,6 +269,20 @@ class TestTheSecurityRule:
         text = _rendered_impl(_entity(requires_session=False))
         assert ".auth_required()" not in text
 
+    def test_a_public_operation_renders_the_explicit_public_form(self):
+        # A route that states neither position is refused at registration, so
+        # the public form has to be written, not left out.
+        entity = _entity(requires_session=False)
+        text = _rendered_impl(entity)
+        assert text.count(".auth_optional()") == entity_http_route_plan(entity)[
+            "route_count"]
+
+    def test_every_route_states_exactly_one_position(self):
+        entity = _entity()
+        text = _rendered_impl(entity)
+        count = entity_http_route_plan(entity)["route_count"]
+        assert text.count(".auth_required()") + text.count(".auth_optional()") == count
+
     def test_the_unit_forwards_the_callers_token_not_its_own(self):
         # The service validates the caller, so the gateway takes the caller's
         # token from the HTTP request and delegates it on the NATS call.

@@ -74,9 +74,10 @@ handler already checks the entity's permission (=assets::images:read=,
 =write=, =delete=). The gateway must not re-implement authorisation, and does
 two things instead:
 
-- it sets =.auth_required()= on a route exactly when the operation states
-  =requires_session=, so a route that needs security cannot be registered
-  without it; and
+- it states the route's position explicitly from the operation:
+  =.auth_required()= when the operation states =requires_session=, and
+  =.auth_optional()= when it does not, so every route declares one of the two
+  and a route that declares neither is refused rather than read as public; and
 - it forwards the caller's own bearer token on the NATS request through
   =nats_client::with_delegation=, so the service validates that caller and its
   own permission check governs. A caller the service refuses is refused,

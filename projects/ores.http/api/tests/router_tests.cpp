@@ -21,6 +21,8 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <stdexcept>
+#include <string>
 
 namespace {
 
@@ -40,6 +42,7 @@ TEST_CASE("router_matches_simple_path", tags) {
     router r;
     auto builder = r.get("/health")
                        .summary("Health check")
+                       .auth_optional()
                        .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
                            co_return http_response::json(R"({"status":"ok"})");
                        });
@@ -60,6 +63,7 @@ TEST_CASE("router_matches_path_with_parameter", tags) {
     router r;
     auto builder = r.get("/users/{id}")
                        .summary("Get user")
+                       .auth_optional()
                        .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
                            co_return http_response::json(R"({"id":"123"})");
                        });
@@ -81,6 +85,7 @@ TEST_CASE("router_matches_path_with_multiple_parameters", tags) {
     router r;
     auto builder = r.get("/users/{userId}/posts/{postId}")
                        .summary("Get user post")
+                       .auth_optional()
                        .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
                            co_return http_response::json(R"({})");
                        });
@@ -100,8 +105,8 @@ TEST_CASE("router_returns_empty_for_unmatched_path", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing unmatched path";
 
     router r;
-    auto builder =
-        r.get("/health").handler([](const http_request&) -> boost::asio::awaitable<http_response> {
+    auto builder = r.get("/health").auth_optional().handler(
+        [](const http_request&) -> boost::asio::awaitable<http_response> {
             co_return http_response::json(R"({})");
         });
     r.add_route(builder.build());
@@ -118,11 +123,13 @@ TEST_CASE("router_distinguishes_methods", tags) {
 
     router r;
     r.add_route(r.get("/resource")
+                    .auth_optional()
                     .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
                         co_return http_response::json(R"({"method":"get"})");
                     })
                     .build());
     r.add_route(r.post("/resource")
+                    .auth_optional()
                     .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
                         co_return http_response::json(R"({"method":"post"})");
                     })
@@ -138,4 +145,39 @@ TEST_CASE("router_distinguishes_methods", tags) {
 
     auto put_match = r.match(http_method::put, "/resource", params);
     REQUIRE_FALSE(put_match.has_value());
+}
+
+TEST_CASE("route_build_refuses_a_route_with_no_auth_position", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that an undeclared auth position is refused";
+
+    router r;
+    auto builder = r.delete_("/things/{id}")
+                       .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
+                           co_return http_response::json(R"({})");
+                       });
+
+    REQUIRE_THROWS_AS(builder.build(), std::logic_error);
+
+    try {
+        builder.build();
+    } catch (const std::logic_error& e) {
+        const std::string message = e.what();
+        CHECK(message.find("DELETE") != std::string::npos);
+        CHECK(message.find("/things/{id}") != std::string::npos);
+    }
+}
+
+TEST_CASE("router_refuses_a_route_assembled_without_a_builder", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a hand-assembled route is refused";
+
+    // domain::route's requires_auth defaults to false. A caller that skips the
+    // builder must not be able to register that default as a public route.
+    route raw;
+    raw.method = http_method::get;
+    raw.pattern = "/raw";
+
+    router r;
+    REQUIRE_THROWS_AS(r.add_route(raw), std::logic_error);
 }

@@ -92,6 +92,27 @@ struct unschedule_report_definitions_response {
     std::vector<std::string> failed_ids;
 };
 
+/**
+ * @brief The workflow step that publishes a DQ-cleared report definitions bundle.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply, so it states a subject and no response. Its body is the DQ artefact
+ * the server-side function knows how to expand, which is why it declares no
+ * fields. It is declared here, and referenced rather than spelled out, because
+ * the SQL function name the handler derives from it depends on the spelling.
+ */
+struct publish_report_definitions_from_dq_request {
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.report-definitions.publish-from-dq";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
 struct gather_trades_request {
     using response_type = struct gather_trades_result;
     static constexpr std::string_view nats_subject = "reporting.v1.report.gather-trades";

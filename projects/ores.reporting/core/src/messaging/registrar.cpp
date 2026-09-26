@@ -247,7 +247,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
-        subs.push_back(nats.queue_subscribe("reporting.v1.report-definitions.publish-from-dq",
+        subs.push_back(nats.queue_subscribe(publish_report_definitions_from_dq_request::nats_subject,
                                             group,
                                             [pdq](ores::nats::message msg) {
                                                 pdq->handle(std::move(msg));

@@ -56,6 +56,18 @@ export interface UnscheduleReportDefinitionsResponse {
     failed_ids: string[];
 }
 
+/**
+ * @brief The workflow step that publishes a DQ-cleared report definitions bundle.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply, so it states a subject and no response. Its body is the DQ artefact
+ * the server-side function knows how to expand, which is why it declares no
+ * fields. It is declared here, and referenced rather than spelled out, because
+ * the SQL function name the handler derives from it depends on the spelling.
+ */
+export interface PublishReportDefinitionsFromDqRequest {
+}
+
 export interface GatherTradesRequest {
     report_instance_id: string;
     definition_id: string;
@@ -175,6 +187,7 @@ export const subjects = {
     trigger_report_instance_request: "reporting.v1.ops.trigger_report_instance",
     schedule_report_definitions_request: "reporting.v1.report-definitions.schedule",
     unschedule_report_definitions_request: "reporting.v1.report-definitions.unschedule",
+    publish_report_definitions_from_dq_request: "reporting.v1.report-definitions.publish-from-dq",
     gather_trades_request: "reporting.v1.report.gather-trades",
     gather_market_data_request: "reporting.v1.report.gather-market-data",
     assemble_bundle_request: "reporting.v1.report.assemble-bundle",
@@ -193,6 +206,7 @@ export const requiresSession = {
     trigger_report_instance_request: true,
     schedule_report_definitions_request: true,
     unschedule_report_definitions_request: true,
+    publish_report_definitions_from_dq_request: true,
     gather_trades_request: true,
     gather_market_data_request: true,
     assemble_bundle_request: true,

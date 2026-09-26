@@ -158,6 +158,23 @@ The report definitions to stop firing.
 :cpp_type: std::vector<std::string>
 :END:
 
+** publish_report_definitions_from_dq_request
+:PROPERTIES:
+:subject: reporting.v1.report-definitions.publish-from-dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes a DQ-cleared report definitions bundle.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply, so it states a subject and no response. Its body is the DQ artefact
+ * the server-side function knows how to expand, which is why it declares no
+ * fields. It is declared here, and referenced rather than spelled out, because
+ * the SQL function name the handler derives from it depends on the spelling.
+ */
+#+end_src
+
 ** gather_trades_request
 :PROPERTIES:
 :subject: reporting.v1.report.gather-trades

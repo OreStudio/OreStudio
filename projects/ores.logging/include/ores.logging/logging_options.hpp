@@ -43,7 +43,7 @@ struct logging_options final {
     /**
      * @brief If true, dumps the log into the console.
      */
-    bool output_to_console;
+    bool output_to_console = false;
     /**
      * @brief Directory in which to place the output.
      */

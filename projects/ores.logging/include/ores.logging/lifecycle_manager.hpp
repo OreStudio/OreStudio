@@ -26,7 +26,6 @@
 #include <boost/log/sinks.hpp>
 #include <boost/shared_ptr.hpp>
 #include <filesystem>
-#include <memory>
 #include <optional>
 
 namespace ores::logging {
@@ -38,8 +37,8 @@ namespace ores::logging {
  * For telemetry sink support (OTLP log correlation), use the extended
  * lifecycle_manager in ores.telemetry.
  *
- * Note: this class uses boost shared_ptr due to legacy reasons (boost log does
- * not support std::shared_ptr).
+ * @note This class uses boost::shared_ptr because Boost.Log does not
+ * accept std::shared_ptr.
  */
 class ORES_LOGGING_EXPORT lifecycle_manager {
 protected:
@@ -55,8 +54,6 @@ public:
 protected:
     /**
      * @brief Creates a boost log file sink.
-     *
-     * @note path is non-const by ref by design.
      */
     static boost::shared_ptr<file_sink_type>
     make_file_sink(std::filesystem::path path, boost_severity severity, std::string tag);

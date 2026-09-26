@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-logging:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/clean-logging
+#+pr: 2151
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
-#+updated: 2026-09-23
-#+environment:
+#+updated: 2026-09-26
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A6D32783-BE66-4FE3-99A8-227BE7C7DE63][Clean ores.logging to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ ores.logging passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A6D32783-BE66-4FE3-99A8-227BE7C7DE63][Clean ores.logging to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-26                               |
 
 * Acceptance
 
@@ -57,9 +57,129 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | pass | Baseline taken before any edit, at HEAD =5de59e3fb8=. =check_component_drift.py --component logging --dry-run= answers =Unknown component: 'logging'=, because logging is absent from =component_catalogue.org=. =check_model_drift.py= reports no drift, with the 2 known exceptions in =compute= and =reporting=. =regenerate_cmake_component_files.py --component ores.logging --check= reports 1 stale file, =src/component_files.cmake=. The repo-wide =--all --check= reports 147 stale source lists. All 147 are pre-existing and belong to other components' stories. |
+| B02 | pass | Every model file classified by metatype. =projects/ores.logging/modeling/= holds =component_overview.org= (=#+type: ores.codegen.component=, metatype component, carries no variability), =ores.logging.puml= and =ores.logging.png=. 0 entity, 0 junction, 0 operation, 0 message, 0 field-group and 0 module models. |
+| B03 | pass | All 16 non-test C++ files classified. 11 headers and 5 translation units. Domain: =severity_level.hpp=, =boost_severity.hpp/.cpp=, =lifecycle_manager.hpp/.cpp=, =logging_configuration.hpp/.cpp=, =logging_options.hpp/.cpp=, =logging_options_validator.hpp/.cpp=, =logging_exception.hpp=, =scoped_attribute.hpp=, =make_logger.hpp=. Build: =export.hpp= and the =ores.logging.hpp= umbrella. Every one is hand-written infrastructure. None matches a codegen archetype's output, and none is dead. The =CMakeLists.txt= and =component_files.cmake= files are build files, not C++. |
+| B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. |
+| B05 | pass | Captures and in-flight branches read. No in-flight branch touches the component; the fleet's =clean-*= branches belong to other components. Two captures name it. =sanitize_test_log_filename_from_test_name= (inbox) records a filename-parsing landmine in =lifecycle_manager.cpp='s =build_filename= and in =ores.testing='s =logging_listener=. =log_name_simplification= (next) concerns generated handler log names, not this component. Neither collides with this task. The first changes behaviour, so it stays its own task. |
+| B06 | pass | Every public symbol classified by its consumer. =make_logger= and =logger_t= serve every component that logs. =logging_options= is composed into the service config options of dq, synthetic and assets, among others. =logging_configuration= is used by =ores.nats= and =ores.service=. =scoped_attribute= backs =ores.telemetry='s =skip_telemetry_guard= and the =ores.testing= listeners. =severity_level=, =boost_severity= and =to_domain_severity= serve =ores.telemetry= and =ores.database=. =logging_exception=, =logging_options_validator= and =lifecycle_manager= are consumed by the component's own translation units, and =lifecycle_manager= is the base =ores.telemetry= extends. No symbol is test-only and none is unused, so nothing is deleted under this item. |
+| M01 | not applicable | No org entity model, so no format to migrate and no =lookup_entity= to move. |
+| M02 | not applicable | No entity model, so no variability profile to bind. |
+| M03 | not applicable | No model states a property, so none can repeat its profile. |
+| M04 | not applicable | No model feature to place in a namespace. |
+| M05 | not applicable | No entity, so no table to describe. |
+| M06 | not applicable | The component exchanges no wire type and has no hand-written protocol header. |
+| M07 | not applicable | No junction. |
+| M08 | not applicable | No org-model custom-type binding. |
+| M09 | pass | The only model is the component overview, and it carries no legacy fragment: no Qt or Wt drawer or property, no retired message type, no retired feature and no dead history property. A grep of =modeling/= for the retired keywords returns nothing. |
+| M10 | pass | The overview carries its six required sections and declares its parts. =validate_docs.sh= reports all 40 components passing, ores.logging among them. Two defects were fixed. The =See also= section was an empty bullet. The =Dependencies= section named only Boost.Log, and omitted the =Boost.ProgramOptions= and =Boost.Exception= links and =ores.platform=. |
+| P01 | not applicable | No entity and no protocol. |
+| P02 | not applicable | No subject is owned, and no raw subject literal exists in the component. |
+| P03 | not applicable | No registrar and no declared message. |
+| P04 | not applicable | No operation model and no hand-written protocol header. |
+| P05 | not applicable | No protocol change reaches a consumer. |
+| P06 | not applicable | No event cache. |
+| G01 | not applicable | logging is not in =component_catalogue.org=, so it has no codegen model to regenerate. V06 records the consequence. |
+| G02 | pass | No hand-written file that the generation supersedes remains. =src/component_files.cmake= is the generation's own output, and no hand-written protocol umbrella exists. |
+| G03 | pass | =src/component_files.cmake= now carries the =AUTO-GENERATED FILE= marker and names its template. Before this task it carried neither. No hand-written file carries the marker. |
+| G04 | not applicable | No generated code to review against the component's best hand-written code. |
+| G05 | pass | One generator defect found, and its repair landed on main while this branch was open. The =src= component-files template justified its =HEADERS= list with "AUTOMOC to find Q_OBJECT declarations", a Qt-era reference that shipped into every component's generated list. Main's compute pass replaced the line with one that says what the header list is for. This branch rebased onto that and kept main's wording, because it explains the block. The branch's own contribution is =projects/ores.codegen/tests/test_cmake_component_files.py=, which pins the rendered output and fails against the Qt-era template. |
+| G06 | pass | =regenerate_cmake_component_files.py --component ores.logging --check= reports the component up to date. The repo-wide =--all --check= reports the inherited stale lists that B01 records. That count belongs to other components, and it moves whenever trunk changes a template or another owner regenerates; this branch adds none of it. |
+| G07 | exception | The diagram capture still has a known defect, and this pass refreshed the diagram anyway, so the item is recorded rather than met. The capture misses =logging_exception= because its base clause wraps onto a second line. The fix was written and reverted on evidence. Joining the continuation changes 9 of the 12 component diagrams, and it deletes hand-authored content wherever a component keeps any. =ores.orgmode= loses 24 hand-authored lines above its sentinel, and =ores.diff= has no sentinel at all, so a refresh replaces its whole diagram and takes the hand-drawn engine namespace and its edge with it. Fixing the shared parser is therefore a program-level tooling change with per-component review, not one component's work. The component keeps a hand repair above the sentinel, redone after each capture, and the refresh reads the capture's diff line by line against the committed artefact. The other two capture defects, a one-line enum body and a wrapped parameter list, main already fixed with regression tests of their own. |
+| W01 | not applicable | No registrar family, so no composition point. |
+| W02 | not applicable | No handler checks a permission. |
+| W03 | not applicable | No populate script names the component. |
+| W04 | not applicable | The component owns no SQL script. |
+| S01 | not applicable | No entity or junction, so no shell command unit. |
+| S02 | not applicable | No command, so no recipe and no destructive flag. |
+| H01 | pass | The Component Architecture Audit ran and its record is this task. Shape: a simple component, matching the signed-off folder catalogue (=CMakeLists.txt=, =include/=, =src/=, =tests/=, =modeling/=). No leftover artefact, no platform-specific code, tests present and green, names snake_case and matching their types. The Foundation layer page already carried the component, and the component catalogue treats it as a tool-free simple component. Findings fixed: the component had no test suite at all, the diagram was missing =logging_exception= and the =make_logger= entry point, the =See also= was empty, and the =Dependencies= list was incomplete. Complexity measure from =lizard= over =include/= and =src/=: 461 NLOC, 21 functions, average cyclomatic complexity 3.3, 0 warnings; top file =boost_severity.cpp= (average 6.3) and top function =to_boost_severity= (CCN 7). Recorded finding: the diagram capture cannot parse a class whose base clause wraps onto a second line, so =logging_exception= is drawn by hand above the sentinel and redone after each capture, while the =make_logger= entry-point note sits below it and survives. Only that one defect remains. The one-line enum body and the wrapped parameter list were fixed on main with regression tests of their own. |
+| H02 | pass | No legacy code remains: no Qt or Wt fragment, no dead code, no commented-out code, no hand-written duplicate of a generated artefact. Fixed in this pass: the retired Qt comment in the generated source list, a false PUBLIC =Boost::process= link that =ores.compute.wrapper= was resolving through, an unused =<boost/filesystem/operations.hpp>= include, an unused =<memory>= include, and the constructor comments that restated the code beside them. |
+| H03 | pass | Comments reviewed against the project comment rules. Removed: four block comments in the =lifecycle_manager= constructor that restated the code beside them, two in the validator, and =scoped_attribute='s "// Non-copyable" and "// Movable". Left in place: the =make_console_sink= =auto_flush= note, which names a non-obvious symptom and which this change did not touch, the validator's output-directory rationale, and the Doxygen blocks on the public API. Two Doxygen blocks that lied were fixed: =read_options= documented two parameters it does not take, and =make_file_sink= claimed "path is non-const by ref by design" while it takes the path by value. =logging_exception.hpp= gained the =<string_view>= and =<boost/exception/exception.hpp>= it uses. |
+| H04 | pass | No hand-rolled per-platform shim. A grep for =_WIN32=, =__linux__=, =__APPLE__=, =<unistd.h>=, =<windows.h>= and =<sys/...>= over =include/= and =src/= returns nothing. The component takes the portable path throughout: =std::filesystem= for paths, and =ores.platform::process::current_pid()= for process identity, which is the abstraction =ores.platform= owns. No shim exists to delete. |
+| V01 | pass | =compass build= over the whole tree reached 100% with exit code 0. The first run failed at 87% on an underlinked consumer that this change exposed; the same build proved the fix. See * Notes. |
+| V02 | pass | The component's new suite passes. =ctest -R ores.logging.tests= reports 1 of 1 passed, and the binary reports =All tests passed (76 assertions in 24 test cases)= with exit code 0. The codegen Python suite passes at 555, and the compass suite at 230 with 1 skipped. No test covers the diagram, the regenerated source list or the document edits; the renderer's exit code, =regenerate_cmake_component_files.py --check= and =validate_docs.sh= are their evidence. |
+| V03 | not applicable | No entity and no service, so the database holds nothing of this component. |
+| V04 | not applicable | No generated shell command, so nothing to run against the fleet. |
+| V05 | pass | Every gate run and green: component drift (=--all=), model drift (1 known exception), protocol twin coverage (30 headers in 2 components), handler permissions (160 codes in 2 components), populate references, shell recipe inventory, =regenerate_cmake_component_files.py --component ores.logging=, =compass lint=, and the site build. =validate_docs.sh= reports all 40 components passing, because main fixed the =ores.shell.iam= finding this record previously carried as pre-existing. =regenerate_cmake_component_files.py --all --check= reports no staleness in ores.logging, and this branch adds none anywhere; the repo-wide count is held by other components and moves with trunk. =misspell-fixer= over the changed paths reports nothing to replace, and =clang-format --dry-run --Werror= is silent over every changed C++ file. The roundtrip check the raise skill names no longer exists; the =ores.cli= round-trip chain that owned it was deleted. |
+| V06 | exception | ores.logging stays out of =COMPONENTS_UNDER_TEST=. It is not a codegen component: it has no entity, junction or operation model, and it is absent from =component_catalogue.org= by construction. The entry cannot be added safely, and the dry run proves it. Add a catalogue row mapping =logging= to =projects/ores.logging/modeling=, then run =check_component_drift.py --component logging --dry-run=. It reports 12 files in total. It would change 9 of the component's own committed files: =CMakeLists.txt=, =include/ores.logging/export.hpp=, =include/ores.logging/ores.logging.hpp=, =modeling/CMakeLists.txt=, =src/CMakeLists.txt=, =src/component_files.cmake=, =tests/CMakeLists.txt=, =tests/component_files.cmake= and =tests/main.cpp=. It would create three files: =include/ores.logging/domain/stub.hpp=, =src/domain/stub.cpp= and =tests/stub_tests.cpp=, whose template text is "STUB code to be removed". The stub trio is dead code, which H02 forbids. The registry entry is superseded and recorded here with its reason. The gate the entry feeds still passes for the current list: =check_component_drift.py --all --dry-run= is green. |
+| V07 | pass | No vacuous test. The independent review found two. =validate_accepts_console_only_options= and =validate_accepts_file_only_options= asserted only a non-throw, so both passed when =validate= did nothing. Each now pairs its acceptance with a control that must throw. The proof is the standard's own: with =validate='s body stubbed to =(void)cfg;= and the suite rebuilt, both cases fail with "expected exception, got none". The stub was reverted and the suite is green at 76 assertions in 24 test cases. |
+| V08 | pass | Per-file survey under =src/=. =boost_severity.cpp=, =logging_configuration.cpp=, =logging_options.cpp= and =logging_options_validator.cpp= each have a test file on the same subject. =lifecycle_manager.cpp= is exercised through its constructor's enable and disable paths. Untested and recorded: =make_file_sink= and the internal =build_filename=, one protected and the other of internal linkage, whose file-name decoration writes real rotating log files when exercised. That pair is the coverage work item this item names. |
 
 * Notes
+
+- Inventory, 2026-09-26. 0 entity, junction or operation models. 16 C++
+  files outside tests, 0 of them generated (0%). 0 messaging headers, 0 of
+  them hand-written.
+- Consumer census. Components across the tree link =ores.logging.lib=.
+  =ores.telemetry= extends the library with OTLP export and trace
+  correlation. The library links Boost.Log, Boost.ProgramOptions,
+  Boost.Exception, =ores.platform=, =ores.utility= and the rfl precompiled
+  header. The utility link and the precompiled header are new here. The
+  header force-includes =<ores.utility/rfl/reflectors.hpp>=, so the utility
+  link is required, and it is the idiom every other =ores.rfl.pch= user
+  follows.
+- The component had no tests. The architecture audit calls a component with
+  translation units and no tests a finding, so this pass adds a Catch2 suite
+  over the severity conversions, the options validator, the option parsing
+  and the scoped attribute.
+- Defect fixed in this pass. =logging_options::output_to_console= had no
+  initialiser while its sibling =include_pid= had one. A default-constructed
+  =logging_options= therefore carried an indeterminate bool that
+  =logging_options_validator::validate= branches on, so validation of a
+  default-constructed object could fail at random. It now defaults to
+  =false=.
+- Defects found and not fixed, recorded for a later pass.
+  - The validator signals a structural violation with =logging_exception=,
+    but lets =std::invalid_argument= escape from =to_boost_severity= for an
+    unknown severity. A caller that catches =logging_exception= misses that
+    case. Aligning the contract is a behaviour change, so it stays a
+    finding.
+  - =--log-level fatal= is unreachable through the CLI, although
+    =severity_level::fatal= exists and maps to =boost_severity::error=. The
+    help text agrees with the rejection, so the gap reads as intentional.
+  - =read_options= reads =log-filename=, =log-directory= and =log-level=
+    unconditionally, so it works only with a =variables_map= built from its
+    own option description.
+- Removing the unused =Boost::process= link from =ores.logging= exposed a
+  consumer that had been relying on it.
+  =ores.compute/wrapper/src/app/application.cpp= includes
+  =<boost/process/v2/...>= but linked nothing that provided Boost.Process,
+  so it was resolving those symbols through =ores.logging='s PUBLIC link.
+  The whole-tree build then failed at the link of =ores.compute.wrapper=
+  with five undefined =boost::process::v2= symbols. The wrapper now links
+  =Boost::process= PRIVATE, which is where the include lives. A leaked
+  PUBLIC dependency is a consumer migration the change owes, not a separate
+  component's work.
+- Coverage gap, recorded. =make_file_sink= and the internal =build_filename=
+  are unreachable from a test: one is protected and the other has internal
+  linkage. The file-name decoration that adds the replica index and the
+  process ID is therefore untested, and exercising it writes real rotating
+  log files.
+- The diagram was refreshed in the audit's two passes. The automated pass is
+  =build/scripts/generate_component_puml.py --project ores.logging=, and the
+  manual pass follows it. The capture has one defect left.
+  - It drops a class whose base clause wraps onto a second line.
+    =logging_exception= derives from =std::exception= and
+    =boost::exception=, and the =_CLASS_RE= pattern needs the opening brace
+    on the declaration line. The capture's dry run confirms it. The other
+    two capture defects, a one-line enum body and a wrapped parameter list,
+    main fixed before this branch rebased, each with a regression test.
+  The manual pass restores =logging_exception= inside the namespace block
+  above the sentinel, so the next capture drops it again. Placing it below
+  the sentinel was tried and rejected: PlantUML then renders a second
+  =ores::logging= box holding that class alone, because a relationship
+  resolves only inside the namespace block that holds the other classes.
+  The =make_logger= entry-point note does sit below the sentinel, and a
+  re-run of the capture proved it survives.
+- The parser fix for the wrapped base clause was written, measured, and
+  reverted. It works, and it changes 9 of the 12 component diagrams. It
+  deletes hand-authored content wherever a component keeps any.
+  =ores.orgmode= loses 24 hand-authored lines above its sentinel, and
+  =ores.diff= has no sentinel, so a refresh replaces its whole diagram. A
+  shared parser change therefore needs per-component review of every
+  affected diagram, which is a program-level tooling task. This component
+  keeps the hand repair and reads the capture's diff line by line against
+  the committed artefact.
 
 * Test Scenarios
 
@@ -76,12 +196,72 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2151][#2151]] | [ores.logging] Bring the component to the clean standard |
 
 * Review
 
+The local review ran on the change before the PR, per the [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] runbook. It used the [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] for the delta, a clang-format pass, =misspell-fixer=, and an independent comment review.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The new test translation units were not clang-format clean. | =projects/ores.logging/tests/*.cpp= | Accepted | Fixed with =clang-format -i=; =clang-format --dry-run --Werror= is now silent over every changed C++ file. |
+| 2 | The module docstring of the new codegen test narrated edit history, with "Qt was retired" and "it shipped into". | =projects/ores.codegen/tests/test_cmake_component_files.py= | Accepted | Trimmed to the forward purpose and the reason the drift gate cannot cover it. |
+| 3 | The comment above the sink setup in the constructor sat away from the sinks and restated the =validate= call nine lines above it. | =projects/ores.logging/src/lifecycle_manager.cpp= | Accepted | Deleted. The unconditional =validate= call already states the guarantee. |
+| 4 | =logging_options::output_to_console= had no initialiser while its sibling =include_pid= had one, so a default-constructed object carried an indeterminate bool. | =projects/ores.logging/include/ores.logging/logging_options.hpp= | Accepted | Now defaults to =false=. Found while writing the test suite. |
+| 5 | The task notes cited the ores.orgmode pass for a sentinel placement that its puml does not have. | =doc/agile/versions/v0/sprint_26/clean-logging/task_clean_logging.org= | Accepted | The citation is gone. The note now records that below-sentinel placement renders a second namespace box, with the reason. |
+| 6 | =# noqa: E402= on the new test's import is a style suppression that nothing in the repo enforces. | =projects/ores.codegen/tests/test_cmake_component_files.py= | Declined | All 60 sibling tests in that directory carry the same marker and no linter is configured, so removing one instance changes nothing. The durable fix is a ruff per-file =E402= ignore across the suite; that is a codegen-suite task, not this component's. |
+| 7 | The validator signals a structural violation with =logging_exception= but lets =std::invalid_argument= escape for an unknown severity. | =projects/ores.logging/src/logging_options_validator.cpp= | Declined | Aligning the contract is a behaviour change, so it belongs to a feature task. Recorded in * Notes. |
+| 8 | =make_file_sink= and the internal =build_filename= are unreachable from a test, so the replica-index and PID file-name decoration is untested. | =projects/ores.logging/src/lifecycle_manager.cpp= | Declined | Reaching them needs a design change that this pass does not own. Recorded as a coverage gap in * Notes. |
+| 9 | =read_options= reads =log-filename=, =log-directory= and =log-level= unconditionally, so it works only with a =variables_map= built from its own description. | =projects/ores.logging/src/logging_configuration.cpp= | Declined | Pre-existing coupling to its own option description. Recorded in * Notes. |
+| 10 | =--log-level fatal= is unreachable through the CLI although =severity_level::fatal= exists. | =projects/ores.logging/src/logging_configuration.cpp= | Declined | The help text agrees with the rejection, so the gap reads as intentional. Recorded in * Notes. |
+| 11 | =misspell-fixer= over the changed paths. | all changed paths | Accepted | Reports "nothing to replace", exit 0. The repo-wide run exits 1 from its prefilter list, the known benign status recorded in sprint 25. |
+| 12 | The checklist pass over the delta. | all changed files | Accepted | GPL headers and mode lines present on every new file; snake_case names and file-to-class match; include order follows =.clang-format=; no platform-specific code; Doxygen on the public API; no hardcoded secrets; no new error handling. |
+| 13 | The diagram had not been through the audit's two passes. It was hand-edited after a dry run of the capture, so the automated pass never wrote the file. The diagram also omitted =make_logger=, the component's factory entry point. | =projects/ores.logging/modeling/ores.logging.puml= | Accepted | The capture was run in write mode, then the manual pass restored what it drops and added the factory as a note below the sentinel. A second capture run proved the note survives and the two above-sentinel repairs do not. The rendered image was checked against the types the headers declare. |
+| 14 | The branch conflicted with =main=, which had grown 64 commits. | =doc/agile/versions/v0/sprint_26/sprint.org= | Accepted | Rebased onto =origin/main=. One conflict, in the sprint stories table, because main had closed ores.platform and this branch had closed ores.logging. Both closes are preserved. The rebase then made =ores.iam.core= and =ores.platform= freshly stale, because the template change drops a line their committed lists still carried; both were regenerated in the same wave. No new =Boost::process= consumer appeared on main. A second rebase followed the ores.orgmode merge, and its src list was regenerated for the same reason. The repo-wide stale count is now 140 against main's 141. |
+| 16 | A third rebase, after main grew another 86 commits, conflicted in the shared template. | =projects/ores.codegen/library/templates/=, =projects/ores.compute/wrapper/src/CMakeLists.txt= | Accepted | Main's compute pass had already replaced the Qt-era line with one that says what the header list is for, so this branch took main's wording and dropped its own template edit. The commits that regenerated other components' lists were dropped with it, because against main's template they produced the wrong content. =ores.orgmode='s list is left exactly as main has it. Only =ores.logging='s list is regenerated, gaining main's line and the generated marker it lacked. The repo-wide stale count is held by other components and moves with trunk. The =Boost::process= consumer fix is still needed and still present, because main has not made it. |
+| 17 | A second independent verification at the rebased head. | all changed files | Accepted | It confirmed the suite at 76 assertions, reproduced the V07 proof by stubbing =validate= and watching both cases fail, confirmed the table covers all 47 items, and confirmed the codegen test fails when the Qt-era line is restored. It corrected four figures that had gone stale as trunk moved: the codegen suite count, the protocol twin and handler permission totals, the model-drift exceptions, and the parser blast radius. The record now states its figures at the verified head and no longer compares the repo-wide stale count with trunk, which moves under it. It also caught the story claiming credit for the template fix that main had already made. |
+| 15 | Independent verification of the PR found the task record out of step with the standard and two vacuous tests. | all changed files, and =projects/ores.logging/tests/logging_options_validator_tests.cpp= | Accepted | The standard grew to 47 items on main and the table had 42. B06, G07, H04, V07 and V08 are now recorded, G07 as an exception with the measured parser blast radius. The two tests that asserted only a non-throw now carry a control that must throw, proved by stubbing =validate= and watching both fail. The false claim that the capture strips enum values is corrected, as are the stale suite counts. |
 
 * Result
+
+ores.logging is brought to the Component Clean Standard. Every item that
+applies to a component of kind *All* passes, and every item that does not
+apply carries its reason.
+
+The component is a hand-written simple library, not a codegen component,
+so the model, protocol, wiring and shell sections do not apply. The work
+that did apply: one shared generator defect fixed at source with a
+regression test, the component's generated source list regenerated, the
+missing test suite added, the component overview and the class diagram
+corrected, and the comment rules applied across the component.
+
+Verification. =compass build= over the whole tree reached 100% with exit
+code 0. The new suite reports =All tests passed (76 assertions in 24 test
+cases)=, and =ctest -R ores.logging.tests= reports 1 of 1 passed. The
+codegen Python suite passes at 555, and the compass suite at 230 with 1
+skipped. Every codegen gate passes: component
+drift, model drift, protocol twin coverage, handler permissions, populate
+references, recipe inventory, the component's CMake source lists, and
+=validate_docs.sh=, which reports all 40 components passing.
+
+Two changes reach beyond the component. The branch adds
+=projects/ores.codegen/tests/test_cmake_component_files.py=, which pins
+the source-list template against the Qt-era line it used to carry; main
+removed that line while this branch was open, and the branch kept main's
+replacement wording. Removing the component's unused =Boost::process= link
+exposed =ores.compute.wrapper=, which had been resolving Boost.Process
+through it. The whole-tree build failed on five undefined symbols, and the
+wrapper now links =Boost::process= itself. Both are recorded in * Notes.
+
+The exceptions are V06 and G07. ores.logging does not join
+=COMPONENTS_UNDER_TEST= because it is not a codegen component, and
+enrolling it would generate the stub trio that H02 forbids. The dry run in
+the table is the proof, and a reviewer can rerun it. G07 is recorded
+because the diagram capture still misses a wrapped base clause, and the
+fix changes 9 of the 12 component diagrams, so it is a program-level
+tooling change rather than one component's.
+
+Recorded for later work: the diagram capture's wrapped base clause, the
+validator's split error contract, the unreachable =fatal= level, the
+=read_options= coupling to its own option description, and the untested
+file-name decoration behind =make_file_sink=.

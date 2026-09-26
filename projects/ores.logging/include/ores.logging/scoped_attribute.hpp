@@ -80,11 +80,9 @@ public:
         }
     }
 
-    // Non-copyable
     scoped_attribute(const scoped_attribute&) = delete;
     scoped_attribute& operator=(const scoped_attribute&) = delete;
 
-    // Movable
     scoped_attribute(scoped_attribute&& other) noexcept
         : iterator_(std::move(other.iterator_)) {
         other.iterator_.reset();

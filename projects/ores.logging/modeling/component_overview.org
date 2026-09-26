@@ -9,7 +9,7 @@
 #+level: cross
 #+filetags: :logging:infrastructure:component:
 #+created: 2026-05-20
-#+updated: 2026-05-20
+#+updated: 2026-09-26
 
 * Diagram
 
@@ -47,8 +47,21 @@ trace correlation.
 
 * Dependencies
 
-- Boost.Log — logging back-end.
+- Boost.Log — the back-end, its sinks, and record formatting.
+- Boost.ProgramOptions — the =--log-*= command line.
+- Boost.Exception — the =logging_exception= base.
+- [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]] — the process
+  ID embedded in the log file name.
 
 * See also
 
--
+- [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]] — the
+  cross-platform abstraction the component consumes.
+- [[id:C5F35442-A2C3-415A-80F2-C09CAA0842FF][System Model: Foundation
+  Layer]] — the layer the component belongs to.
+- [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][Component Architecture
+  Audit]] — the structural check the component passes.
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] —
+  the checklist this component was brought to.
+- [[id:A6D32783-BE66-4FE3-99A8-227BE7C7DE63][Clean ores.logging to the
+  component clean standard]] — the story that did the work.

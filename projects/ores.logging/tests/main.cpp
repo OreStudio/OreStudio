@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,34 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_LOGGING_LOGGING_EXCEPTION_HPP
-#define ORES_LOGGING_LOGGING_EXCEPTION_HPP
+#include "ores.testing/logging_listener.hpp"
+#include <catch2/catch_session.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
 
-#include "ores.logging/export.hpp"
-#include <boost/exception/exception.hpp>
-#include <exception>
-#include <string>
-#include <string_view>
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
 
-namespace ores::logging {
-
-/**
- * @brief An exception has occurred during logging.
- */
-class ORES_LOGGING_EXPORT logging_exception : public virtual std::exception,
-                                              public virtual boost::exception {
-public:
-    explicit logging_exception(std::string_view message = "")
-        : message_(message) {}
-
-    [[nodiscard]] const char* what() const noexcept override {
-        return message_.c_str();
-    }
-
-private:
-    std::string message_;
-};
-
+int main(int argc, char* argv[]) {
+    ores::testing::logging_listener::set_test_module_name("ores.logging.tests");
+    return Catch::Session().run(argc, argv);
 }
-
-#endif

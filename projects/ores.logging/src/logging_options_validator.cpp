@@ -20,15 +20,12 @@
 #include "ores.logging/logging_options_validator.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/logging_exception.hpp"
-#include <boost/filesystem/operations.hpp>
 #include <boost/throw_exception.hpp>
+#include <string>
 
 namespace ores::logging {
 
 void logging_options_validator::validate(const logging_options& cfg) {
-    /*
-     * We must have at least one form of logging, file or console.
-     */
     const bool output_to_file(!cfg.filename.empty());
     if (!cfg.output_to_console && !output_to_file) {
         const std::string no_logging("Must log to file and/or console");
@@ -44,9 +41,6 @@ void logging_options_validator::validate(const logging_options& cfg) {
         BOOST_THROW_EXCEPTION(logging_exception(unexpected_dir));
     }
 
-    /*
-     * Attempt to convert severity. Function throws if invalid.
-     */
     to_boost_severity(cfg.severity);
 }
 

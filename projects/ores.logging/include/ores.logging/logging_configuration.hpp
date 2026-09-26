@@ -54,8 +54,6 @@ public:
      * If logging is not enabled (no --log-enabled flag), returns std::nullopt.
      *
      * @param vm Parsed command-line options.
-     * @param default_filename Default log filename to use if not specified
-     * @param default_directory Default log directory (defaults to "log")
      * @return logging_options if logging was enabled, std::nullopt otherwise.
      */
     static std::optional<logging_options>

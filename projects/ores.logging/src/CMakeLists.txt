@@ -42,9 +42,10 @@ target_link_libraries(${lib_target_name}
         Boost::log
         Boost::program_options
         Boost::exception
-        Boost::process
     PRIVATE
         ores.platform.lib
+        ores.utility.lib
+        ores.rfl.pch
         Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

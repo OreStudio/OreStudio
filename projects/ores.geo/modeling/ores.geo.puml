@@ -46,9 +46,9 @@ namespace ores #F2F2F2 {
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
 '
-' A capture run replaces everything above the sentinel with class boxes only.
-' The lookup methods and the two dependency arrows above it are hand-authored,
-' so re-add them after running generate_component_puml.py.
+' A capture run replaces everything above the sentinel with class boxes only,
+' so it drops every member and relationship that was added by hand. Re-add
+' them after running generate_component_puml.py.
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.geo.puml"

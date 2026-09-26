@@ -136,7 +136,8 @@ the component. Every claim was re-verified on this branch.
   the org dataset pipeline. The overview and the service header now state
   that a fresh database answers =address_not_found= until a publish has run.
 - The diagram runs the two passes. The capture gives the class boxes, and the
-  hand pass adds the two =lookup= signatures and the service-to-result and
+  hand pass adds the members and relationships they do not carry, such as the
+  constructor, the two =lookup= signatures and the service-to-result and
   service-to-error arrows. PlantUML resolves a relationship only in the
   namespace block that declares its classes, so the hand-authored lines sit
   above the sentinel, and the warning below the sentinel says a capture run

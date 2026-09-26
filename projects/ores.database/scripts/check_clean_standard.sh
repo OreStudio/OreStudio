@@ -168,10 +168,18 @@ fi
 
 # The component owns no C++ model, so nothing outside it may name one. This
 # caught a shell script and a diagram left pointing at the deleted stack.
-expect_no_hits H02 'database_info_entity|database_info_mapper|database_info_repository|database_info_json_io|ores_database_info_fn' \
-    "no file outside the component names a deleted database_info symbol" \
-    grep -rn 'database_info_entity|database_info_mapper|database_info_repository|database_info_json_io|ores_database_info_fn' \
-    "${REPO_ROOT}/projects/ores.sql" "${REPO_ROOT}/projects/ores.compass/src" "${COMPONENT_DIR}/modeling"
+# The pattern is proven to match before the search trusts it: a bare grep
+# treats the alternation as literal text and reports a clean tree it never
+# examined, which is how the first version of this check missed a real hit.
+deleted_symbols='database_info_entity|database_info_mapper|database_info_repository|database_info_json_io|ores_database_info_fn'
+if printf 'ores_database_info_fn()\n' | grep -qE "${deleted_symbols}"; then
+    expect_no_hits H02 "${deleted_symbols}" \
+        "no file outside the component names a deleted database_info symbol" \
+        grep -rnE "${deleted_symbols}" \
+        "${REPO_ROOT}/projects/ores.sql" "${REPO_ROOT}/projects/ores.compass/src" "${COMPONENT_DIR}/modeling"
+else
+    say FAIL H02 "the stray-symbol pattern does not match its own probe; the search would report a clean tree without examining one"
+fi
 
 # --- 6. Shell ----------------------------------------------------------------
 

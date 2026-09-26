@@ -71,22 +71,21 @@ echo "=== OreStudio Database Version ==="
 echo ""
 
 "${RUN_SQL}" -c "
-select
-    'Schema version  : ' || schema_version    as info
-from ores_database_info_tbl
+with info as (
+    select schema_version, build_environment, git_commit, git_date, created_at
+    from ores_database_info_tbl
+    order by created_at desc
+    limit 1
+)
+select 'Schema version  : ' || schema_version from info
 union all
-select 'Build environment: ' || build_environment
-from ores_database_info_tbl
+select 'Build environment: ' || build_environment from info
 union all
-select 'Git commit       : ' || git_commit
-from ores_database_info_tbl
+select 'Git commit       : ' || git_commit from info
 union all
-select 'Git date         : ' || git_date
-from ores_database_info_tbl
+select 'Git date         : ' || git_date from info
 union all
-select 'Created at       : ' || to_char(created_at, 'YYYY-MM-DD HH24:MI:SS TZ')
-from ores_database_info_tbl
-order by 1;
+select 'Created at       : ' || to_char(created_at, 'YYYY-MM-DD HH24:MI:SS TZ') from info;
 "
 
 echo ""

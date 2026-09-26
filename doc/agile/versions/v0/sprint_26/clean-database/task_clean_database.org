@@ -370,10 +370,18 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | =dump_database_version.sh= still calls =ores_database_info_fn()=, which the change deleted, so the script would fail at runtime | =projects/ores.sql/utility/dump_database_version.sh= | Accepted | Fixed in =9917c01030=: the script selects from =ores_database_info_tbl= directly, which is what the deleted function wrapped. The B03 classification that missed this bash consumer is corrected above |
-| 2 | The component diagram still draws =database_info=, =database_info_entity=, =database_info_mapper= and =database_info_repository= | =projects/ores.database/modeling/ores.database.puml= | Accepted | Fixed in =9917c01030=: regenerated with =build/scripts/generate_component_puml.py= and re-rendered. The manual section below the sentinel is unchanged |
+| 1 | =dump_database_version.sh= still calls =ores_database_info_fn()=, which the change deleted, so the script would fail at runtime | =projects/ores.sql/utility/dump_database_version.sh= | Accepted | Fixed by the commit "Answer the review: fix the script and the diagram": the script selects from =ores_database_info_tbl= directly, which is what the deleted function wrapped. The B03 classification that missed this bash consumer is corrected above |
+| 2 | The component diagram still draws =database_info=, =database_info_entity=, =database_info_mapper= and =database_info_repository= | =projects/ores.database/modeling/ores.database.puml= | Accepted | Fixed by the commit "Answer the review: fix the script and the diagram": regenerated with =build/scripts/generate_component_puml.py= and re-rendered. The manual section below the sentinel is unchanged |
 | 3 | The record claims =ores_database_info_fn()= had zero consumers; true for C++ and Python, false for the shell | =doc/agile/.../task_clean_database.org= | Accepted | Corrected above. The claim now names the consumer the review found |
 | 4 | The stale =ores_schema.puml= ER diagram is pre-existing drift outside the component | =projects/ores.sql/modeling/ores_schema.puml= | Declined for this change | Recorded as the capture [[id:BE48603C-18AC-4C98-8E1F-221D1E43F350][Refresh the stale ER diagram from its generator]]. Regenerating it here would carry 26 hunks of unrelated component churn |
+| 5 | The H02 stray-symbol check is a silent no-op: its inner grep is missing =-E=, so the alternation is literal text and the check always passes | =projects/ores.database/scripts/check_clean_standard.sh= | Accepted | Fixed by the commit "Fix the inert H02 check the review found". The check now proves its pattern matches a probe before it trusts the search, and it was verified in both directions: it fails on a planted reference and it fails on a pattern that cannot match its own probe |
+| 6 | =dump_database_version.sh= lost the =limit 1= the deleted function applied | =projects/ores.sql/utility/dump_database_version.sh= | Accepted | Fixed by the commit "Fix the inert H02 check the review found": the query takes the newest row in a CTE and the five fields read from it |
+| 7 | The PR body said 38 mechanical items where the lever asserts 39 | PR #2146 body | Accepted | Corrected on the PR |
+
+Finding 5 is the one that matters. It is the second time a check on this
+branch was itself the defect, and the first time a reviewer rather than a
+green gate caught it. Both times the lesson was the same: a check that has
+never failed has not been shown to work.
 
 * Result
 

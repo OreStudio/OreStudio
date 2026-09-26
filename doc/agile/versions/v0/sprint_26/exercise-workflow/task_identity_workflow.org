@@ -409,6 +409,44 @@ it. Every sibling shell test directory has the registration; this one, created b
 the clean-up, did not. The new =workflow start= cases could not have been run at
 all without it.
 
+** Found on the rebased branch: the engine races itself on one step row
+
+After rebasing onto a main 76 commits further on, a plain two-step run stalled:
+=workflow wait= reported =[1/1] one: in_progress= and timed out, while the log
+showed that step's command had completed.
+
+#+begin_example
+Publishing step command:  step_index=0 step_name=one step_id=c3f1d1ce-...
+Step-completed event received: step=c3f1d1ce-... outcome=completed
+Workflow STARTED: step_count=2 first_step=one
+ERROR Executing INSERT failed: Version conflict: expected version 1, but current version is 2
+ERROR Unhandled exception in NATS message handler for subject '...events.step-completed'
+#+end_example
+
+Two handlers write the same step row with a read-modify-write and optimistic
+locking. =on_start_workflow= calls =stamp_command_published= after it publishes,
+and =on_step_completed= calls =set_step_state= when the answer arrives. The
+fixture answers in about two milliseconds, so the second callback runs while the
+first is still finishing, and one of the two writes loses. The loser here was
+=set_step_state=, so the step never left =in_progress= and the instance stalled
+with nothing the shell could report as an error.
+
+The engine's own header claims "each NATS message callback runs on the NATS IO
+thread; a single engine instance is shared across all queue-group subscribers,
+protected by the NATS library's serialisation guarantees". The timestamps say
+otherwise: the completion was received at .775478 and =Workflow STARTED= was
+logged at .786977, so the completion was processed inside the start. The start
+subscription and the step-completed subscription are two callbacks, and they are
+not serialised against each other.
+
+The instance id work did not cause this and the defect is not new: it is a race
+the fixture makes easy to hit because it is the fastest step the engine can be
+given. The earlier verified runs were the same code winning the same race. It
+wants its own change, and the fix needs care rather than a mutex bolted on. If a
+publish can re-enter a handler on the same thread, a plain =std::mutex= would
+deadlock where a recursive one would only paper over the re-entrancy. Until it is
+fixed, a configuration cannot be trusted to report a stall.
+
 ** What is left
 
 The configurations are designed but not yet named or scripted. Each still needs a

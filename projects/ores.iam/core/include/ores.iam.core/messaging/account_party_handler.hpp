@@ -478,13 +478,13 @@ private:
         using ores::service::messaging::extract_workflow_header;
         using ores::service::messaging::publish_step_completion;
         using ores::service::messaging::check_step_idempotency;
-        using ores::service::messaging::workflow_step_id_header;
-        using ores::service::messaging::workflow_instance_id_header;
-        using ores::service::messaging::workflow_tenant_id_header;
+        using ores::workflow::messaging::step_id_header;
+        using ores::workflow::messaging::instance_id_header;
+        using ores::workflow::messaging::tenant_id_header;
 
-        const auto step_id = extract_workflow_header(msg, workflow_step_id_header);
-        const auto inst_id = extract_workflow_header(msg, workflow_instance_id_header);
-        const auto tenant_id = extract_workflow_header(msg, workflow_tenant_id_header);
+        const auto step_id = extract_workflow_header(msg, step_id_header);
+        const auto inst_id = extract_workflow_header(msg, instance_id_header);
+        const auto tenant_id = extract_workflow_header(msg, tenant_id_header);
 
         if (auto cached = check_step_idempotency(nats_, step_id)) {
             publish_step_completion(nats_,

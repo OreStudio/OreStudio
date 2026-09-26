@@ -232,10 +232,17 @@ rather than two.
 :cpp_type: std::vector<std::string>
 :END:
 
-*** saved_trade_ids
+*** saved_trade_external_ids
 :PROPERTIES:
 :cpp_type: std::vector<std::string>
 :END:
+
+#+begin_src cpp :name comment
+/**
+ * The external identifier of each saved trade, which is the key the
+ * trade model declares. The rollback addresses a trade by this key.
+ */
+#+end_src
 
 ** ore_import_rollback_request
 :PROPERTIES:
@@ -281,10 +288,14 @@ rather than two.
 :cpp_type: std::vector<std::string>
 :END:
 
-*** saved_trade_ids
+*** saved_trade_external_ids
 :PROPERTIES:
 :cpp_type: std::vector<std::string>
 :END:
+
+#+begin_src cpp :name comment
+/** The external identifier of each saved trade, which the rollback deletes by. */
+#+end_src
 
 * See also
 

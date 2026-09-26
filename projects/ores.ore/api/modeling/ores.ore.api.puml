@@ -60,7 +60,7 @@ namespace ores #F2F2F2 {
                 +saved_currency_iso_codes : vector<string>
                 +saved_portfolio_ids : vector<string>
                 +saved_book_ids : vector<string>
-                +saved_trade_ids : vector<string>
+                +saved_trade_external_ids : vector<string>
             }
             class ore_import_rollback_request <<struct>> {
                 +correlation_id : string
@@ -68,7 +68,7 @@ namespace ores #F2F2F2 {
                 +saved_currency_iso_codes : vector<string>
                 +saved_portfolio_ids : vector<string>
                 +saved_book_ids : vector<string>
-                +saved_trade_ids : vector<string>
+                +saved_trade_external_ids : vector<string>
             }
             class ore_import_item_error <<struct>> {
                 +source_file : string

@@ -97,3 +97,10 @@ Evidence. 11 new cases across =test_env_create.py=, =test_env_init.py= and
 from 215. =compass systemd deploy --use-busctl= parses and runs, and
 =compass systemd deploy --no-use-busctl= is still rejected, which matches the
 =services= pillar whose flag shape this mirrors.
+
+The new variable changes the =.env= shape, so the
+[[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][Environment format version log]]
+gains version 24. Without it the existing checkouts stay at versions 21 to 23,
+the version check passes, and none of them is told to reconfigure, so the
+default would never reach them and the fix would be inert outside a new
+worktree. Recorded with =compass env version new=.

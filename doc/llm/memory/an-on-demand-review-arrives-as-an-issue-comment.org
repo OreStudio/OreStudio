@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 1353DDFE-4F8C-4FE3-975E-7F6A0AB611A0
+:END:
+#+title: An on-demand review arrives as an issue comment
+#+description: A @claude review posts its findings to the PR as an issue comment from claude[bot], so checking the reviews endpoint finds nothing and the review looks absent.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+After pushing a pull request, check whether a review has been requested and answered before treating the work as ready, and read it from the issue comments rather than the reviews.
+
+*Why:* A review of PR #2176 ran and posted six findings while this session went on to check only the PR checks and the review threads, all of which were empty. The findings sat unread through several more pushes. Four of them were real, including a SECURITY DEFINER function left world-executable and a version history the task's own seed fix had severed.
+
+*How to apply:* Run gh api repos/<owner>/<repo>/issues/<pr>/comments and read the body from claude[bot]; gh pr view --json reviews and the reviewThreads GraphQL query both return empty for this kind of review because it is an ordinary issue comment. Do it after every push, not once: the review is triggered by a human commenting '@claude review PR', and it lands minutes later.

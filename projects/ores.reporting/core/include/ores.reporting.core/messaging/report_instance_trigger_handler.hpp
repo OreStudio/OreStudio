@@ -28,7 +28,6 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"

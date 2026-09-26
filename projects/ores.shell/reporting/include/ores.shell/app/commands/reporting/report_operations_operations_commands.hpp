@@ -82,6 +82,64 @@ public:
     static void process_unschedule_report_definitions(std::ostream& out,
                                                       ores::nats::service::nats_client& session,
                                                       const std::vector<std::string>& args);
+
+    /**
+     * @brief gather-trades <report_instance_id> <definition_id> <tenant_id> <correlation_id>
+     */
+    static void process_gather_trades(std::ostream& out,
+                                      ores::nats::service::nats_client& session,
+                                      const std::vector<std::string>& args);
+
+    /**
+     * @brief gather-market-data <report_instance_id> <definition_id> <tenant_id> <correlation_id>
+     */
+    static void process_gather_market_data(std::ostream& out,
+                                           ores::nats::service::nats_client& session,
+                                           const std::vector<std::string>& args);
+
+    /**
+     * @brief assemble-bundle <report_instance_id> <definition_id> <tenant_id> <correlation_id>
+     * <trades_storage_key> <market_data_storage_key> [--trade_count <v>] [--series_count <v>]
+     */
+    static void process_assemble_bundle(std::ostream& out,
+                                        ores::nats::service::nats_client& session,
+                                        const std::vector<std::string>& args);
+
+    /**
+     * @brief prepare-ore-package <report_instance_id> <bundle_id> <tenant_id> <correlation_id>
+     * <trades_storage_key> <market_data_storage_key>
+     */
+    static void process_prepare_ore_package(std::ostream& out,
+                                            ores::nats::service::nats_client& session,
+                                            const std::vector<std::string>& args);
+
+    /**
+     * @brief submit-compute <report_instance_id> <tenant_id> <correlation_id> <tarball_uris>
+     */
+    static void process_submit_compute(std::ostream& out,
+                                       ores::nats::service::nats_client& session,
+                                       const std::vector<std::string>& args);
+
+    /**
+     * @brief collect-compute-results <report_instance_id> <tenant_id> <correlation_id> <batch_id>
+     */
+    static void process_collect_compute_results(std::ostream& out,
+                                                ores::nats::service::nats_client& session,
+                                                const std::vector<std::string>& args);
+
+    /**
+     * @brief finalise-report <report_instance_id> <tenant_id> <correlation_id>
+     */
+    static void process_finalise_report(std::ostream& out,
+                                        ores::nats::service::nats_client& session,
+                                        const std::vector<std::string>& args);
+
+    /**
+     * @brief fail-report <report_instance_id> <tenant_id> <correlation_id> <error_message>
+     */
+    static void process_fail_report(std::ostream& out,
+                                    ores::nats::service::nats_client& session,
+                                    const std::vector<std::string>& args);
 };
 
 }

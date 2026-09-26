@@ -20,7 +20,7 @@
 #ifndef ORES_REPORTING_API_WORKFLOW_REPORT_EXECUTION_WORKFLOW_HPP
 #define ORES_REPORTING_API_WORKFLOW_REPORT_EXECUTION_WORKFLOW_HPP
 
-#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
+#include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"

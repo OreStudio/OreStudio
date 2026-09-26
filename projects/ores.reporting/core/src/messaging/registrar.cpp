@@ -22,7 +22,6 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
-#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.api/messaging/report_type_protocol.hpp"

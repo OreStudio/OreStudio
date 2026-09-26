@@ -27,7 +27,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
+#include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include <boost/uuid/uuid_generators.hpp>

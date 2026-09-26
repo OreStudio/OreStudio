@@ -74,3 +74,171 @@ It is addressed at =reporting.v1.report-definitions.unschedule=.
 report_operations unschedule-report-definitions __none__
 #+end_src
 
+** =gather-trades=
+:PROPERTIES:
+:ID: 244D8475-7F5E-55AA-8B60-6E3C2C7A9853
+:END:
+
+Sends =gather_trades_request= and prints =gather_trades_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =definition_id=, =tenant_id=, =correlation_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations gather-trades <report_instance_id> <definition_id> <tenant_id> <correlation_id>
+#+end_example
+
+It is addressed at =reporting.v1.report.gather-trades=.
+
+#+name: report_operations-gather-trades
+#+begin_src ores-shell :tangle report_operations-gather-trades.ores :exports none
+report_operations gather-trades __none__ __none__ __none__ __none__
+#+end_src
+
+** =gather-market-data=
+:PROPERTIES:
+:ID: C211383C-BB63-538D-A87D-5213D1F5B8DE
+:END:
+
+Sends =gather_market_data_request= and prints =gather_market_data_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =definition_id=, =tenant_id=, =correlation_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations gather-market-data <report_instance_id> <definition_id> <tenant_id> <correlation_id>
+#+end_example
+
+It is addressed at =reporting.v1.report.gather-market-data=.
+
+#+name: report_operations-gather-market-data
+#+begin_src ores-shell :tangle report_operations-gather-market-data.ores :exports none
+report_operations gather-market-data __none__ __none__ __none__ __none__
+#+end_src
+
+** =assemble-bundle=
+:PROPERTIES:
+:ID: 022F891D-FBE4-5A1D-B943-7DAFC75471DE
+:END:
+
+Sends =assemble_bundle_request= and prints =assemble_bundle_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =definition_id=, =tenant_id=, =correlation_id=, =trades_storage_key=, =market_data_storage_key=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations assemble-bundle <report_instance_id> <definition_id> <tenant_id> <correlation_id> <trades_storage_key> <market_data_storage_key> [--trade_count <v>] [--series_count <v>]
+#+end_example
+
+It is addressed at =reporting.v1.report.assemble-bundle=.
+
+#+name: report_operations-assemble-bundle
+#+begin_src ores-shell :tangle report_operations-assemble-bundle.ores :exports none
+report_operations assemble-bundle __none__ __none__ __none__ __none__ __none__ __none__
+#+end_src
+
+** =prepare-ore-package=
+:PROPERTIES:
+:ID: FAA80C51-0DFB-50B6-B78F-DFC4025F0F26
+:END:
+
+Sends =prepare_ore_package_request= and prints =prepare_ore_package_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =bundle_id=, =tenant_id=, =correlation_id=, =trades_storage_key=, =market_data_storage_key=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations prepare-ore-package <report_instance_id> <bundle_id> <tenant_id> <correlation_id> <trades_storage_key> <market_data_storage_key>
+#+end_example
+
+It is addressed at =ore.v1.report.prepare-package=.
+
+#+name: report_operations-prepare-ore-package
+#+begin_src ores-shell :tangle report_operations-prepare-ore-package.ores :exports none
+report_operations prepare-ore-package __none__ __none__ __none__ __none__ __none__ __none__
+#+end_src
+
+** =submit-compute=
+:PROPERTIES:
+:ID: 6BC90285-5367-5771-A1F1-228AF637CA23
+:END:
+
+Sends =submit_compute_request= and prints =submit_compute_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =tenant_id=, =correlation_id=, =tarball_uris=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations submit-compute <report_instance_id> <tenant_id> <correlation_id> <tarball_uris>
+#+end_example
+
+It is addressed at =compute.v1.report.submit=.
+
+#+name: report_operations-submit-compute
+#+begin_src ores-shell :tangle report_operations-submit-compute.ores :exports none
+report_operations submit-compute __none__ __none__ __none__ __none__
+#+end_src
+
+** =collect-compute-results=
+:PROPERTIES:
+:ID: 368A8337-4C91-5246-AC61-F91C48A48183
+:END:
+
+Sends =collect_compute_results_request= and prints =collect_compute_results_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =tenant_id=, =correlation_id=, =batch_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations collect-compute-results <report_instance_id> <tenant_id> <correlation_id> <batch_id>
+#+end_example
+
+It is addressed at =reporting.v1.report.collect-compute-results=.
+
+#+name: report_operations-collect-compute-results
+#+begin_src ores-shell :tangle report_operations-collect-compute-results.ores :exports none
+report_operations collect-compute-results __none__ __none__ __none__ __none__
+#+end_src
+
+** =finalise-report=
+:PROPERTIES:
+:ID: A8B1B9DE-7361-55BC-B2C5-D1FC0462C75E
+:END:
+
+Sends =finalise_report_request= and prints =finalise_report_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =tenant_id=, =correlation_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations finalise-report <report_instance_id> <tenant_id> <correlation_id>
+#+end_example
+
+It is addressed at =reporting.v1.report.finalise=.
+
+#+name: report_operations-finalise-report
+#+begin_src ores-shell :tangle report_operations-finalise-report.ores :exports none
+report_operations finalise-report __none__ __none__ __none__
+#+end_src
+
+** =fail-report=
+:PROPERTIES:
+:ID: 6ED51D8C-A161-5075-BB8C-D13A160311DB
+:END:
+
+Sends =fail_report_request= and prints =fail_report_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =tenant_id=, =correlation_id=, =error_message=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations fail-report <report_instance_id> <tenant_id> <correlation_id> <error_message>
+#+end_example
+
+It is addressed at =reporting.v1.report.fail=.
+
+#+name: report_operations-fail-report
+#+begin_src ores-shell :tangle report_operations-fail-report.ores :exports none
+report_operations fail-report __none__ __none__ __none__ __none__
+#+end_src
+

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: D13788DB-E90E-498B-A6B2-E8A7FA78CAF6
+:END:
+#+title: A SECURITY DEFINER function is world-executable until told otherwise
+#+description: PostgreSQL grants EXECUTE on every new function to PUBLIC, and no REVOKE EXECUTE exists anywhere in this tree, so a definer function that takes the tenant as a parameter is readable by every service role.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+Check every SECURITY DEFINER function's EXECUTE grant: PostgreSQL grants it to PUBLIC by default, so any role in the database can call it, and a definer function that takes a tenant id as a parameter bypasses row-level security for whatever tenant the caller names.
+
+*Why:* A review of PR #2176 found this in two functions that read system settings. The same pattern is repo-wide: grep for REVOKE EXECUTE across projects/ores.sql and there is nothing, so every other definer function carries the same exposure. The functions are SECURITY DEFINER for a real reason -- a service context holds no direct SELECT grant -- so the answer is a grant list, not removal.
+
+*How to apply:* After creating or editing any function declared security definer, add revoke execute on function <name>(<args>) from public; and grant execute to exactly the roles that call it, traced from every construction site in the C++ rather than guessed. Verify on the database with select r.rolname, has_function_privilege(r.rolname, '<name>(<args>)', 'EXECUTE') from pg_roles r where r.rolname like 'ores_%' -- and note that counting rows instead of reading the boolean proves nothing. The repo-wide sweep of the other definer functions is not done.

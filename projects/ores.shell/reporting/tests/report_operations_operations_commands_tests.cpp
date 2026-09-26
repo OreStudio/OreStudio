@@ -58,7 +58,7 @@ TEST_CASE("report_operations_operations_registers_every_declared_command", tags)
 
     report_operations_operations_commands::register_commands(root_menu, session);
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 3 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 11 command(s).";
     CHECK(true);
 }
 
@@ -225,6 +225,426 @@ TEST_CASE(
     command_feedback::reset();
     report_operations_operations_commands::process_unschedule_report_definitions(
         out, session, tokens(1));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_gather_trades_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_gather_trades(out, session, tokens(4));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_gather_trades_reports_the_expected_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_gather_trades(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    CHECK(out.str().find("Expected 4 arguments, got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_gather_trades_reaches_the_transport", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_gather_trades(out, session, tokens(4));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_gather_market_data_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_gather_market_data(out, session, tokens(4));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_gather_market_data_reports_the_expected_count",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_gather_market_data(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    CHECK(out.str().find("Expected 4 arguments, got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_gather_market_data_reaches_the_transport", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_gather_market_data(out, session, tokens(4));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_assemble_bundle_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_assemble_bundle(out, session, tokens(6));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_assemble_bundle_reports_the_expected_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_assemble_bundle(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    CHECK(out.str().find("Expected 6 arguments, got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_assemble_bundle_reaches_the_transport", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_assemble_bundle(out, session, tokens(6));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_prepare_ore_package_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_prepare_ore_package(out, session, tokens(6));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_prepare_ore_package_reports_the_expected_count",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_prepare_ore_package(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    CHECK(out.str().find("Expected 6 arguments, got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_prepare_ore_package_reaches_the_transport", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_prepare_ore_package(out, session, tokens(6));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_submit_compute_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_submit_compute(out, session, tokens(4));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_submit_compute_reports_the_expected_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_submit_compute(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    CHECK(out.str().find("Expected 4 arguments, got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_submit_compute_reaches_the_transport", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_submit_compute(out, session, tokens(4));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_collect_compute_results_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_collect_compute_results(out, session, tokens(4));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_collect_compute_results_reports_the_expected_count",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_collect_compute_results(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    CHECK(out.str().find("Expected 4 arguments, got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_collect_compute_results_reaches_the_transport",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_collect_compute_results(out, session, tokens(4));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_finalise_report_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_finalise_report(out, session, tokens(3));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_finalise_report_reports_the_expected_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_finalise_report(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    CHECK(out.str().find("Expected 3 arguments, got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_finalise_report_reaches_the_transport", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_finalise_report(out, session, tokens(3));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_fail_report_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_fail_report(out, session, tokens(4));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_fail_report_reports_the_expected_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_fail_report(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    CHECK(out.str().find("Expected 4 arguments, got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_fail_report_reaches_the_transport", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_fail_report(out, session, tokens(4));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

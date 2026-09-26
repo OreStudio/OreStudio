@@ -158,6 +158,433 @@ The report definitions to stop firing.
 :cpp_type: std::vector<std::string>
 :END:
 
+** gather_trades_request
+:PROPERTIES:
+:subject: reporting.v1.report.gather-trades
+:response: gather_trades_result
+:END:
+
+Step 0: gather trades from the trading service.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+
+** gather_trades_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** trade_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** gather_market_data_request
+:PROPERTIES:
+:subject: reporting.v1.report.gather-market-data
+:response: gather_market_data_result
+:END:
+
+Step 1: gather market data series.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+
+** gather_market_data_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** series_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** assemble_bundle_request
+:PROPERTIES:
+:subject: reporting.v1.report.assemble-bundle
+:response: assemble_bundle_result
+:END:
+
+Step 2: assemble and persist the report input bundle.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** trades_storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** market_data_storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** trade_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** series_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+
+** assemble_bundle_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** bundle_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** prepare_ore_package_request
+:PROPERTIES:
+:subject: ore.v1.report.prepare-package
+:response: prepare_ore_package_result
+:END:
+
+Step 3: ORE mapping and tarball packaging. Served by ores.ore.service.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** bundle_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** trades_storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** market_data_storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+
+** prepare_ore_package_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tarball_uris
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** submit_compute_request
+:PROPERTIES:
+:subject: compute.v1.report.submit
+:response: submit_compute_result
+:END:
+
+Step 4: submit tarballs to the compute grid. Served by ores.compute.service.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tarball_uris
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+
+** submit_compute_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** batch_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** collect_compute_results_request
+:PROPERTIES:
+:subject: reporting.v1.report.collect-compute-results
+:response: collect_compute_results_result
+:END:
+
+Step 5: collect and persist compute results.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** batch_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+
+** collect_compute_results_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** finalise_report_request
+:PROPERTIES:
+:subject: reporting.v1.report.finalise
+:response: finalise_report_result
+:END:
+
+Final step: mark the report instance as completed.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+
+** finalise_report_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** fail_report_request
+:PROPERTIES:
+:subject: reporting.v1.report.fail
+:response: fail_report_result
+:END:
+
+Compensation: mark the report instance as failed.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+
+** fail_report_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** report_execution_request
+
+The payload the workflow engine stores as =workflow_instance.request_json= and
+hands to every step builder. It states no subject, because it is not a bus
+message: it is serialised into the start message's =request_json=, never sent
+on a subject of its own.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
 * See also
 
 - [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the operation rules this model follows.

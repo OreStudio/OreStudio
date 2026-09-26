@@ -24,7 +24,7 @@
 #include "ores.ore.service/messaging/ore_import_execute_handler.hpp"
 #include "ores.ore.service/messaging/ore_import_handler.hpp"
 #include "ores.ore.service/messaging/report_package_handler.hpp"
-#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
+#include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include <memory>
 
 namespace ores::ore::service::messaging {

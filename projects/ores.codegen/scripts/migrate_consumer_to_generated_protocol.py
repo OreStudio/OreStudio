@@ -121,6 +121,27 @@ def optional_fields(entity: str) -> set[str]:
     return optional
 
 
+def domain_types(entity: str) -> dict[str, str]:
+    """The domain member's own type, per field, from the group headers."""
+    header = API / "domain" / f"{entity}.hpp"
+    if not header.exists():
+        return {}
+    types: dict[str, str] = {}
+    for type_name, member in struct_member_pairs(
+            header.read_text(encoding="utf-8"), entity):
+        bare = type_name.split("::")[-1]
+        fields = struct_member_pairs(
+            next((d / f"{bare}.hpp" for d in DOMAIN_DIRS
+                  if (d / f"{bare}.hpp").exists()), header).read_text(
+                      encoding="utf-8"), bare) \
+            if group_fields(bare) else []
+        for field_type, field_name in fields:
+            types[field_name] = field_type
+        if not fields:
+            types.setdefault(member, type_name)
+    return types
+
+
 def domain_paths(entity: str) -> dict[str, str]:
     """Field name -> the path it is read at on the domain object.
 
@@ -257,15 +278,23 @@ def migrate(text: str, path: Path, report: list[str]) -> str:
                 wire = dict(struct_member_pairs(
                     (MSG / f"{entity}_protocol.hpp").read_text(encoding="utf-8"),
                     f"{entity}_write"))
+                types = domain_types(entity)
                 rendered = []
                 for m in members:
+                    field = paths.get(m, m).split(".")[-1]
                     value = f"{ref}.{paths.get(m, m)}"
-                    # An optional domain member reaches a non-optional wire
-                    # member through its empty value; where the wire member is
-                    # optional too, the two agree and nothing converts.
-                    if (paths.get(m, m).split(".")[-1] in optional
-                            and "optional<" not in wire.get(m, "")):
+                    wire_type = wire.get(m, "")
+                    if "optional<" in wire_type:
+                        pass
+                    elif field in optional:
+                        # An optional domain member reaches a non-optional
+                        # wire member through its empty value.
                         value += '.value_or("")'
+                    elif "domain::" in types.get(field, "") and "string" not in wire_type:
+                        # The domain member is an enumeration and the wire
+                        # member is text, so the value converts on the way
+                        # out, as the generator converts it on the way in.
+                        value = f"ores::trading::domain::to_string({value})"
                     rendered.append(f"{indent}{var}.change.write.{m} = {value};\n")
                 lines = rendered
                 out.extend(lines)

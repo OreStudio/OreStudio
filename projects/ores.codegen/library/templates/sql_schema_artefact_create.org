@@ -42,6 +42,9 @@ create table if not exists "ores_dq_{{entity.entity_plural}}_artefact_tbl" (
 {{^entity.artefact_columns}}
     "{{entity.primary_key.column}}" {{entity.primary_key.type}} not null,
     "version" integer not null,
+{{#entity.natural_keys}}
+    "{{column}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
+{{/entity.natural_keys}}
 {{#entity.columns}}
     "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
 {{/entity.columns}}

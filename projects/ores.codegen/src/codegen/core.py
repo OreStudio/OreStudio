@@ -1167,6 +1167,24 @@ def _mark_last_item(data_list):
             data_list[-1]['last'] = True
 
 
+def _mark_artefact_natural_keys(owner):
+    """Mark the natural-keys list for the two artefact/staging templates.
+
+    An artefact table renders its natural keys before its plain columns,
+    so the two lists have to join into one valid column list. A natural
+    key therefore keeps its trailing comma whenever any plain column
+    follows it, which is exactly when it is not the last column overall.
+    Without this the last natural key would lose its comma and the CREATE
+    TABLE would not parse; with the plain columns absent it must lose it.
+    """
+    keys = owner.get('natural_keys')
+    if not keys:
+        return
+    _mark_last_item(keys)
+    if owner.get('columns'):
+        keys[-1]['last'] = False
+
+
 def _format_description_as_comment(description):
     """
     Format a multi-line description as SQL comment block content.
@@ -2220,6 +2238,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # body renders its commas correctly.
         if 'artefact_columns' in entity:
             _mark_last_item(entity['artefact_columns'])
+        _mark_artefact_natural_keys(entity)
         # Derive component paths from component + subcomponent
         if 'component' in entity:
             component = entity['component']
@@ -2847,7 +2866,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 injected.extend(g['header'] for g in domain_groups)
             includes_dict['domain'] = sorted(injected) + existing_domain
         if 'natural_keys' in domain_entity:
-            _mark_last_item(domain_entity['natural_keys'])
+            _mark_artefact_natural_keys(domain_entity)
             # Add iterator_var and is_uuid/is_int to natural_keys for protocol serialization
             for key in domain_entity['natural_keys']:
                 key['iter_var'] = iter_var

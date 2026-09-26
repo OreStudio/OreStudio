@@ -298,3 +298,111 @@ def test_the_lookup_entity_template_is_unchanged_without_the_section(tmp_path):
         "create index if not exists dq_test_entities_artefact_code_idx\n"
         "on ores_dq_test_entities_artefact_tbl (code);"
     ) in sql
+
+
+# --- natural keys -----------------------------------------------------------
+#
+# The templates used to render only the plain columns, so an entity with a
+# natural key got a staging table missing that column -- silently, because
+# the SQL still parsed. Every model that used the archetype had zero natural
+# keys, so the gap stayed latent until ores.dq.badge_definition opted in.
+
+COLUMNS_WITH_NATURAL_KEY = """\
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+"""
+
+COLUMNS_ONLY_NATURAL_KEY = """\
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+"""
+
+
+def test_a_natural_key_is_rendered_before_the_plain_columns(tmp_path):
+    body = HEADER + FLAGS + COLUMNS_WITH_NATURAL_KEY
+
+    sql = _render(
+        tmp_path, body, "sql_schema_domain_entity_artefact_create.mustache", "nat_key"
+    )
+
+    assert (
+        '    "code" text not null,\n'
+        '    "version" integer not null,\n'
+        '    "name" text not null,\n'
+        '    "description" text not null\n'
+        ");"
+    ) in sql
+
+
+def test_the_last_natural_key_keeps_its_comma_when_a_plain_column_follows(tmp_path):
+    body = HEADER + FLAGS + COLUMNS_WITH_NATURAL_KEY
+
+    sql = _render(
+        tmp_path, body, "sql_schema_domain_entity_artefact_create.mustache", "nat_comma"
+    )
+
+    # Without the comma the CREATE TABLE would not parse.
+    assert '"name" text not null,\n' in sql
+
+
+def test_an_entity_whose_only_key_is_natural_has_no_trailing_comma(tmp_path):
+    body = HEADER + FLAGS + COLUMNS_ONLY_NATURAL_KEY
+
+    sql = _render(
+        tmp_path, body, "sql_schema_domain_entity_artefact_create.mustache", "nat_only"
+    )
+
+    assert (
+        '    "code" text not null,\n'
+        '    "version" integer not null,\n'
+        '    "name" text not null\n'
+        ");"
+    ) in sql
+
+
+def test_the_lookup_template_renders_the_natural_key_too(tmp_path):
+    body = HEADER.replace(
+        "#+type: ores.codegen.entity", "#+type: ores.codegen.lookup_entity"
+    ) + FLAGS + COLUMNS_WITH_NATURAL_KEY
+
+    sql = _render(
+        tmp_path, body, "sql_schema_artefact_create.mustache", "lookup_nat_key"
+    )
+
+    assert '    "name" text not null,\n' in sql
+

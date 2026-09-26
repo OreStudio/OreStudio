@@ -25,7 +25,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
+#include "ores.scheduler.api/messaging/scheduling_operations_protocol.hpp"
 #include "ores.scheduler.core/repository/job_definition_repository.hpp"
 #include "ores.scheduler.core/repository/job_instance_repository.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"

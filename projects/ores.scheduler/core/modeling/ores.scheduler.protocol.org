@@ -7,16 +7,70 @@
 #+startup: overview
 
 NATS messaging reference for [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler]]. All subjects use the
-=scheduler.v1.>= namespace. See [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for transport details.
+=scheduler.v1.>= namespace, except the generic history read. See
+[[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for transport details.
 
-* Job Definitions
+The entity subjects below are declared by the entity model
+=projects/ores.scheduler/modeling/ores.scheduler.job_definition.org= and
+generated into =ores.scheduler.api/messaging/job_definition_protocol.hpp=.
+The operational views are declared by the operation model
+=modeling/ores.scheduler.scheduling_operations.org=. A subject is listed here
+once, and code refers to the generated constant rather than the literal.
+
+* Job definitions
+
+The canonical entity protocol: read, write, and version reads.
 
 | Subject | Description |
 |---------+-------------|
-| =scheduler.v1.job-definitions.list= | Retrieve all job definitions |
-| =scheduler.v1.job-definitions.schedule= | Create or update a job definition and activate scheduling |
-| =scheduler.v1.job-definitions.unschedule= | Deactivate scheduling for a job definition |
-| =scheduler.v1.job-definitions.history= | Retrieve execution history for a job definition |
+| =scheduler.v1.job_definitions.list= | List the current job definitions of the caller's tenant, paged and ordered |
+| =scheduler.v1.job_definitions.get= | Read one current job definition by its identifier |
+| =scheduler.v1.job_definitions.get_many= | Read several current job definitions by identifier |
+| =scheduler.v1.job_definitions.put= | Create or update one job definition, stating a change reason and a precondition |
+| =scheduler.v1.job_definitions.put_many= | Create or update several job definitions in one request |
+| =scheduler.v1.job_definitions.delete= | Remove one job definition, stating a change reason |
+| =scheduler.v1.job_definitions.delete_many= | Remove several job definitions in one request |
+| =scheduler.v1.job_definitions_versions.list= | List the stored versions of one job definition, filtered by version range |
+| =scheduler.v1.job_definitions_versions.get= | Read one stored version of a job definition |
+
+* Job definition change events
+
+Published when a job definition changes, one subject per action.
+
+| Subject | Description |
+|---------+-------------|
+| =scheduler.v1.job_definitions_events.created= | A job definition was created |
+| =scheduler.v1.job_definitions_events.updated= | A job definition was updated |
+| =scheduler.v1.job_definitions_events.deleted= | A job definition was removed |
+
+* Job definition history
+
+The generic history read, served by the component's history provider
+registrar. The request names the entity as =ores.scheduler.job_definition=.
+
+| Subject | Description |
+|---------+-------------|
+| =history.v1.get= | Read the change history of a job definition through the shared history handler |
+
+* Operational views
+
+Computed views rather than stored rows, declared by the operation model and
+served by hand-written handlers.
+
+| Subject | Description |
+|---------+-------------|
+| =scheduler.v1.job-instances.list= | List job executions across every job the caller can see, with the job's name folded in |
+| =scheduler.v1.status= | The live status of every job: its schedule, its last run, its next fire time, and the running total |
+
+* Execution events
+
+Published by the scheduler loop as it fires jobs. Nothing in the tree
+subscribes to this subject today; the payload is the shared
+=eventing::domain::entity_change_event=.
+
+| Subject | Description |
+|---------+-------------|
+| =scheduler.v1.job-instance-events= | A job execution changed state |
 
 * Useful Pages
 

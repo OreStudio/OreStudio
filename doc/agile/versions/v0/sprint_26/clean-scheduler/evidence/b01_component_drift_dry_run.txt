@@ -1,0 +1,576 @@
+Checking component 'scheduler-cpp' at address 'ores.cmake' (dry run, no writes)...
+Checking component 'scheduler-cpp' at address 'ores.cpp' (dry run, no writes)...
+Checking component 'scheduler-cpp' at address 'ores.doc' (dry run, no writes)...
+Checking component 'scheduler-cpp' at address 'ores.plantuml' (dry run, no writes)...
+Checking component 'scheduler-cpp' at address 'ores.shell' (dry run, no writes)...
+Checking component 'scheduler-cpp' at address 'ores.sql' (dry run, no writes)...
+
+would change: projects/ores.scheduler/CMakeLists.txt
+--- a/projects/ores.scheduler/CMakeLists.txt
++++ b/projects/ores.scheduler/CMakeLists.txt
+@@ -16,6 +16,9 @@
+ # this program; if not, write to the Free Software Foundation, Inc., 51
+ # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ #
++# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++# Template: cmake_composite_root.mustache
++# To modify, update the template and regenerate.
+ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/api)
+ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/core)
+ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/service)
+
+would change: projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition.hpp
+--- a/projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition.hpp
++++ b/projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition.hpp
+@@ -17,83 +17,105 @@
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
+  */
+-#ifndef ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_HPP
+-#define ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_HPP
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_domain_type_class.hpp.mustache
++ * To modify, update the template and regenerate.
++ */
++#ifndef ORES_SCHEDULER_API_DOMAIN_JOB_DEFINITION_HPP
++#define ORES_SCHEDULER_API_DOMAIN_JOB_DEFINITION_HPP
+ 
+ #include "ores.scheduler.api/domain/cron_expression.hpp"
+-#include <boost/uuid/uuid.hpp>
+-#include <chrono>
+-#include <optional>
++#include "ores.utility/uuid/tenant_id.hpp"
+ #include <string>
++#include <string_view>
+ 
+ namespace ores::scheduler::domain {
+ 
+ /**
+- * @brief Persistent plan for an in-process scheduled job.
++ * @brief Persistent plan for a pg_cron scheduled SQL job.
+  *
+- * Represents a single scheduled task managed by the OreStudio in-process
+- * scheduler. Tracks the job name, cron expression, SQL command or MQ message
+- * payload, and active state.
++ * Metadata overlay for a pg_cron cron.job entry. Tracks the job name,
++ * cron expression, SQL command, target database, and active state.
++ *
++ * DO NOT regenerate this entity at all -- every facet is out of sync with
++ * the hand-maintained C++ (the model's own tenant_id/schedule_expression/
++ * is_active column shapes don't match the hand-written job_definition
++ * struct's actual types: std::optional<boost::uuids::uuid>, cron_expression,
++ * bool. A regenerated tenant_id would come out as the codegen
++ * utility::uuid::tenant_id wrapper, not the hand-written std::optional
++ * type, so even the "safe" domain/repository-entity/mapper facets would
++ * regenerate *wrong types*, not just wrong formatting) on top of the
++ * deeper repository/service/messaging divergence documented under
++ * ** Custom repository methods below.
++ * None of this is modeled here yet; regenerating clobbers it with a
++ * generic CRUD-only stack (and silently wrong column types) that breaks
++ * all of the above. This model needs a proper resync -- correcting the
++ * column shapes to match the hand-written struct, then re-adding
++ * repository/messaging support for the four hand-written operations --
++ * before any facet of it can be regenerated safely. The deleted Qt
++ * templates were excluded for the same reason: their generated
++ * controllers/dialogs bound to the hand-maintained
++ * scheduler_protocol.hpp classes, so a regen would have emitted code
++ * against a protocol surface that does not exist. Mirrors
++ * party's hand-maintained-SQL treatment in the refdata drift-fix task,
++ * but wider in scope (no facet is currently safe, not just SQL).
+  */
+ struct job_definition final {
++    /**
++     * @brief Version number for optimistic locking and change tracking.
++     */
++    int version = 0;
++
++    /**
++     * @brief Tenant identifier for multi-tenancy isolation.
++     */
++    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
++
+     /**
+      * @brief UUID primary key for the job definition.
+      */
+     boost::uuids::uuid id;
+ 
+     /**
+-     * @brief Tenant identifier for multi-tenancy isolation. Null for system jobs.
+-     */
+-    std::optional<boost::uuids::uuid> tenant_id;
+-
+
+would change: projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition_json_io.hpp
+--- a/projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition_json_io.hpp
++++ b/projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition_json_io.hpp
+@@ -17,8 +17,13 @@
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
+  */
+-#ifndef ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_JSON_IO_HPP
+-#define ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_JSON_IO_HPP
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_domain_type_json_io.hpp.mustache
++ * To modify, update the template and regenerate.
++ */
++#ifndef ORES_SCHEDULER_API_DOMAIN_JOB_DEFINITION_JSON_IO_HPP
++#define ORES_SCHEDULER_API_DOMAIN_JOB_DEFINITION_JSON_IO_HPP
+ 
+ #include "ores.scheduler.api/domain/job_definition.hpp"
+ #include "ores.scheduler.api/export.hpp"
+
+would change: projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition_table.hpp
+--- a/projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition_table.hpp
++++ b/projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition_table.hpp
+@@ -17,8 +17,13 @@
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
+  */
+-#ifndef ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_TABLE_HPP
+-#define ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_TABLE_HPP
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_domain_type_table.hpp.mustache
++ * To modify, update the template and regenerate.
++ */
++#ifndef ORES_SCHEDULER_API_DOMAIN_JOB_DEFINITION_TABLE_HPP
++#define ORES_SCHEDULER_API_DOMAIN_JOB_DEFINITION_TABLE_HPP
+ 
+ #include "ores.scheduler.api/domain/job_definition.hpp"
+ #include "ores.scheduler.api/export.hpp"
+
+would change: projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition_table_io.hpp
+--- a/projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition_table_io.hpp
++++ b/projects/ores.scheduler/api/include/ores.scheduler.api/domain/job_definition_table_io.hpp
+@@ -17,8 +17,13 @@
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
+  */
+-#ifndef ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_TABLE_IO_HPP
+-#define ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_TABLE_IO_HPP
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_domain_type_table_io.hpp.mustache
++ * To modify, update the template and regenerate.
++ */
++#ifndef ORES_SCHEDULER_API_DOMAIN_JOB_DEFINITION_TABLE_IO_HPP
++#define ORES_SCHEDULER_API_DOMAIN_JOB_DEFINITION_TABLE_IO_HPP
+ 
+ #include "ores.scheduler.api/domain/job_definition.hpp"
+ #include "ores.scheduler.api/export.hpp"
+
+would change: projects/ores.scheduler/api/src/domain/job_definition_json_io.cpp
+--- a/projects/ores.scheduler/api/src/domain/job_definition_json_io.cpp
++++ b/projects/ores.scheduler/api/src/domain/job_definition_json_io.cpp
+@@ -17,9 +17,13 @@
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
+  */
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_domain_type_json_io.cpp.mustache
++ * To modify, update the template and regenerate.
++ */
+ #include "ores.scheduler.api/domain/job_definition_json_io.hpp"
+-#include "ores.scheduler.api/rfl/reflectors.hpp" // IWYU pragma: keep.
+-#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
++#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+ #include <ostream>
+ #include <rfl.hpp>
+ #include <rfl/json.hpp>
+
+would change: projects/ores.scheduler/api/src/domain/job_definition_table.cpp
+--- a/projects/ores.scheduler/api/src/domain/job_definition_table.cpp
++++ b/projects/ores.scheduler/api/src/domain/job_definition_table.cpp
+@@ -17,11 +17,17 @@
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
+  */
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_domain_type_table.cpp.mustache
++ * To modify, update the template and regenerate.
++ */
+ #include "ores.scheduler.api/domain/job_definition_table.hpp"
+ #include <boost/uuid/uuid_io.hpp>
+ #include <fort.hpp>
+ 
+ namespace ores::scheduler::domain {
++
+ 
+ std::string convert_to_table(const std::vector<job_definition>& v) {
+     fort::char_table table;
+
+would change: projects/ores.scheduler/api/src/domain/job_definition_table_io.cpp
+--- a/projects/ores.scheduler/api/src/domain/job_definition_table_io.cpp
++++ b/projects/ores.scheduler/api/src/domain/job_definition_table_io.cpp
+@@ -16,6 +16,11 @@
+  * this program; if not, write to the Free Software Foundation, Inc., 51
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
++ */
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_domain_type_table_io.cpp.mustache
++ * To modify, update the template and regenerate.
+  */
+ #include "ores.scheduler.api/domain/job_definition_table_io.hpp"
+ #include "ores.scheduler.api/domain/job_definition_table.hpp"
+
+would change: projects/ores.scheduler/core/include/ores.scheduler.core/messaging/job_definition_handler.hpp
+--- a/projects/ores.scheduler/core/include/ores.scheduler.core/messaging/job_definition_handler.hpp
++++ b/projects/ores.scheduler/core/include/ores.scheduler.core/messaging/job_definition_handler.hpp
+@@ -17,41 +17,24 @@
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
+  */
+-#ifndef ORES_SCHEDULER_MESSAGING_JOB_DEFINITION_HANDLER_HPP
+-#define ORES_SCHEDULER_MESSAGING_JOB_DEFINITION_HANDLER_HPP
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_nats_handler.hpp.mustache
++ * To modify, update the template and regenerate.
++ */
++#ifndef ORES_SCHEDULER_CORE_MESSAGING_JOB_DEFINITION_HANDLER_HPP
++#define ORES_SCHEDULER_CORE_MESSAGING_JOB_DEFINITION_HANDLER_HPP
+ 
+ #include "ores.database/domain/context.hpp"
+ #include "ores.logging/make_logger.hpp"
+ #include "ores.nats/domain/message.hpp"
+ #include "ores.nats/service/client.hpp"
+-#include "ores.scheduler.api/domain/cron_expression.hpp"
+-#include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
++#include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
+ #include "ores.scheduler.core/service/job_definition_service.hpp"
+ #include "ores.security/jwt/jwt_authenticator.hpp"
+ #include "ores.service/messaging/handler_helpers.hpp"
+ #include "ores.service/service/request_context.hpp"
+-#include <boost/uuid/uuid_io.hpp>
+ #include <optional>
+-#include <rfl/json.hpp>
+-#include <stdexcept>
+-
+-namespace rfl {
+-template <>
+-struct Reflector<ores::scheduler::domain::cron_expression> {
+-    using ReflType = std::string;
+-    static ores::scheduler::domain::cron_expression to(const ReflType& str) {
+-        if (str.empty())
+-            return {};
+-        auto r = ores::scheduler::domain::cron_expression::from_string(str);
+-        if (!r)
+-            throw std::runtime_error("Invalid cron expression: " + r.error());
+-        return *r;
+-    }
+-    static ReflType from(const ores::scheduler::domain::cron_expression& v) {
+-        return v.to_string();
+-    }
+-};
+-} // namespace rfl
+ 
+ namespace ores::scheduler::messaging {
+ 
+
+would change: projects/ores.scheduler/core/include/ores.scheduler.core/repository/job_definition_entity.hpp
+--- a/projects/ores.scheduler/core/include/ores.scheduler.core/repository/job_definition_entity.hpp
++++ b/projects/ores.scheduler/core/include/ores.scheduler.core/repository/job_definition_entity.hpp
+@@ -17,8 +17,13 @@
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
+  */
+-#ifndef ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_ENTITY_HPP
+-#define ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_ENTITY_HPP
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_domain_type_entity.hpp.mustache
++ * To modify, update the template and regenerate.
++ */
++#ifndef ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_ENTITY_HPP
++#define ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_ENTITY_HPP
+ 
+ #include "ores.database/repository/db_types.hpp"
+ #include "sqlgen/PrimaryKey.hpp"
+
+would change: projects/ores.scheduler/core/include/ores.scheduler.core/repository/job_definition_mapper.hpp
+--- a/projects/ores.scheduler/core/include/ores.scheduler.core/repository/job_definition_mapper.hpp
++++ b/projects/ores.scheduler/core/include/ores.scheduler.core/repository/job_definition_mapper.hpp
+@@ -17,11 +17,17 @@
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
+  */
+-#ifndef ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_MAPPER_HPP
+-#define ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_MAPPER_HPP
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_domain_type_mapper.hpp.mustache
++ * To modify, update the template and regenerate.
++ */
++#ifndef ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_MAPPER_HPP
++#define ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_MAPPER_HPP
+ 
+ #include "ores.logging/make_logger.hpp"
+ #include "ores.scheduler.api/domain/job_definition.hpp"
++#include "ores.scheduler.core/export.hpp"
+ #include "ores.scheduler.core/repository/job_definition_entity.hpp"
+ 
+ namespace ores::scheduler::repository {
+
+would change: projects/ores.scheduler/core/include/ores.scheduler.core/repository/job_definition_repository.hpp
+--- a/projects/ores.scheduler/core/include/ores.scheduler.core/repository/job_definition_repository.hpp
++++ b/projects/ores.scheduler/core/include/ores.scheduler.core/repository/job_definition_repository.hpp
+@@ -17,14 +17,21 @@
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
+  */
+-#ifndef ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
+-#define ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_domain_type_repository.hpp.mustache
++ * To modify, update the template and regenerate.
++ */
++#ifndef ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
++#define ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
+ 
+ #include "ores.database/domain/context.hpp"
+ #include "ores.logging/make_logger.hpp"
+ #include "ores.scheduler.api/domain/job_definition.hpp"
+ #include "ores.scheduler.core/export.hpp"
+-#include <boost/uuid/uuid.hpp>
++#include "ores.utility/domain/protocol.hpp"
++#include <chrono>
++#include <cstdint>
+ #include <optional>
+ #include <sqlgen/postgres.hpp>
+ #include <string>
+
+would change: projects/ores.scheduler/core/include/ores.scheduler.core/service/job_definition_service.hpp
+--- a/projects/ores.scheduler/core/include/ores.scheduler.core/service/job_definition_service.hpp
++++ b/projects/ores.scheduler/core/include/ores.scheduler.core/service/job_definition_service.hpp
+@@ -17,14 +17,22 @@
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
+  */
+-#ifndef ORES_SCHEDULER_SERVICE_JOB_DEFINITION_SERVICE_HPP
+-#define ORES_SCHEDULER_SERVICE_JOB_DEFINITION_SERVICE_HPP
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_service.hpp.mustache
++ * To modify, update the template and regenerate.
++ */
++#ifndef ORES_SCHEDULER_CORE_SERVICE_JOB_DEFINITION_SERVICE_HPP
++#define ORES_SCHEDULER_CORE_SERVICE_JOB_DEFINITION_SERVICE_HPP
+ 
+ #include "ores.database/domain/context.hpp"
+ #include "ores.logging/make_logger.hpp"
+ #include "ores.scheduler.api/domain/job_definition.hpp"
++#include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
+ #include "ores.scheduler.core/export.hpp"
+ #include "ores.scheduler.core/repository/job_definition_repository.hpp"
++#include <chrono>
++#include <cstdint>
+ #include <optional>
+ #include <string>
+ #include <vector>
+
+would change: projects/ores.scheduler/core/src/repository/job_definition_entity.cpp
+--- a/projects/ores.scheduler/core/src/repository/job_definition_entity.cpp
++++ b/projects/ores.scheduler/core/src/repository/job_definition_entity.cpp
+@@ -17,7 +17,13 @@
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
+  */
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_domain_type_entity.cpp.mustache
++ * To modify, update the template and regenerate.
++ */
+ #include "ores.scheduler.core/repository/job_definition_entity.hpp"
++#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+ #include <ostream>
+ #include <rfl.hpp>
+ #include <rfl/json.hpp>
+
+would change: projects/ores.scheduler/core/src/repository/job_definition_mapper.cpp
+--- a/projects/ores.scheduler/core/src/repository/job_definition_mapper.cpp
++++ b/projects/ores.scheduler/core/src/repository/job_definition_mapper.cpp
+@@ -17,9 +17,13 @@
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
+  */
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_domain_type_mapper.cpp.mustache
++ * To modify, update the template and regenerate.
++ */
+ #include "ores.scheduler.core/repository/job_definition_mapper.hpp"
+ #include "ores.database/repository/mapper_helpers.hpp"
+-#include "ores.scheduler.api/domain/cron_expression.hpp"
+ #include "ores.scheduler.api/domain/job_definition_json_io.hpp" // IWYU pragma: keep.
+ #include <boost/lexical_cast.hpp>
+ #include <boost/uuid/uuid_io.hpp>
+
+would change: projects/ores.scheduler/core/src/repository/job_definition_repository.cpp
+--- a/projects/ores.scheduler/core/src/repository/job_definition_repository.cpp
++++ b/projects/ores.scheduler/core/src/repository/job_definition_repository.cpp
+@@ -17,16 +17,18 @@
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
+  */
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_domain_type_repository.cpp.mustache
++ * To modify, update the template and regenerate.
++ */
+ #include "ores.scheduler.core/repository/job_definition_repository.hpp"
+ #include "ores.database/repository/bitemporal_operations.hpp"
+-#include "ores.database/repository/db_types.hpp"
+ #include "ores.database/repository/helpers.hpp"
+-#include "ores.database/repository/mapper_helpers.hpp"
+-#include "ores.platform/time/datetime.hpp"
+ #include "ores.scheduler.api/domain/job_definition_json_io.hpp" // IWYU pragma: keep.
+ #include "ores.scheduler.core/repository/job_definition_entity.hpp"
+ #include "ores.scheduler.core/repository/job_definition_mapper.hpp"
+-#include <boost/uuid/uuid_io.hpp>
++#include "ores.utility/domain/protocol.hpp"
+ #include <sqlgen/postgres.hpp>
+ 
+ namespace ores::scheduler::repository {
+
+would change: projects/ores.scheduler/core/src/service/job_definition_service.cpp
+--- a/projects/ores.scheduler/core/src/service/job_definition_service.cpp
++++ b/projects/ores.scheduler/core/src/service/job_definition_service.cpp
+@@ -17,9 +17,24 @@
+  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  *
+  */
++/**
++ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++ * Template: cpp_service.cpp.mustache
++ * To modify, update the template and regenerate.
++ */
+ #include "ores.scheduler.core/service/job_definition_service.hpp"
+-#include <boost/uuid/uuid_io.hpp>
++#include "ores.platform/time/datetime.hpp"
++#include "ores.service/messaging/handler_helpers.hpp"
++#include <algorithm>
++#include <cstdint>
++#include <iterator>
++#include <optional>
+ #include <stdexcept>
++#include <string>
++#include <utility>
++#include <vector>
++
++using ores::service::messaging::stamp;
+ 
+ namespace ores::scheduler::service {
+ 
+
+would change: projects/ores.sql/create/scheduler/scheduler_job_definitions_create.sql
+--- a/projects/ores.sql/create/scheduler/scheduler_job_definitions_create.sql
++++ b/projects/ores.sql/create/scheduler/scheduler_job_definitions_create.sql
+@@ -42,10 +42,11 @@
+  * all of the above. This model needs a proper resync -- correcting the
+  * column shapes to match the hand-written struct, then re-adding
+  * repository/messaging support for the four hand-written operations --
+- * before any facet of it can be regenerated safely. The Qt facet is
+- * equally excluded: its generated controllers/dialogs bind to the
+- * hand-maintained scheduler_protocol.hpp classes, so a Qt regen would
+- * emit code against a protocol surface that does not exist. Mirrors
++ * before any facet of it can be regenerated safely. The deleted Qt
++ * templates were excluded for the same reason: their generated
++ * controllers/dialogs bound to the hand-maintained
++ * scheduler_protocol.hpp classes, so a regen would have emitted code
++ * against a protocol surface that does not exist. Mirrors
+  * party's hand-maintained-SQL treatment in the refdata drift-fix task,
+  * but wider in scope (no facet is currently safe, not just SQL).
+  */
+
+would change: projects/ores.sql/create/scheduler/scheduler_job_definitions_notify_trigger_create.sql
+--- a/projects/ores.sql/create/scheduler/scheduler_job_definitions_notify_trigger_create.sql
++++ b/projects/ores.sql/create/scheduler/scheduler_job_definitions_notify_trigger_create.sql
+@@ -27,23 +27,46 @@
+ returns trigger as $$
+ declare
+     notification_payload jsonb;
+-    entity_name text := 'ores.scheduler.job_definition';
+-    change_timestamp timestamptz := NOW();
+-    changed_id uuid;
++    change_action text;
++    changed_version integer := 0;
++    changed_job_name text;
++    changed_key jsonb;
+     changed_tenant_id text;
+ begin
+     if TG_OP = 'DELETE' then
+-        changed_id := OLD.id;
++        change_action := 'deleted';
++        changed_job_name := OLD.job_name;
++        changed_version := OLD.version;
+         changed_tenant_id := OLD.tenant_id::text;
++    elsif TG_OP = 'UPDATE' then
++        -- A versioned table's update is the internal close of the current
++        -- row; the insert that follows it carries the change. Announcing
++        -- both would report one change twice, so the close announces
++        -- nothing.
++        return null;
+     else
+-        changed_id := NEW.id;
++        -- The first version of a row is a create; every later one is an
++        -- update, because the row it replaces was already there.
++        if NEW.version <= 1 then
++            change_action := 'created';
++        else
++            change_action := 'updated';
++        end if;
++        changed_version := NEW.version;
++        changed_job_name := NEW.job_name;
+         changed_tenant_id := NEW.tenant_id::text;
+     end if;
+ 
++    changed_key := jsonb_build_object('job_name', changed_job_name);
++
+     notification_payload := jsonb_build_object(
+-        'entity', entity_name,
+-        'timestamp', ores_utility_iso8601_timestamp_fn(change_timestamp),
+-        'entity_ids', jsonb_build_array(changed_id),
++        'event_id', gen_random_uuid()::text,
++        'entity', 'ores.scheduler.job_definition',
++        'key', changed_key::text,
++        'action', change_action,
++        'version', changed_version,
++        'occurred_at', ores_utility_iso8601_timestamp_fn(clock_timestamp()),
++        'correlation_id', nullif(current_setting('ores.request.correlation_id', true), ''),
+         'tenant_id', changed_tenant_id
+     );
+ 
+
+would create: projects/ores.scheduler/api/include/ores.scheduler.api/eventing/job_definition_event.hpp
+
+would create: projects/ores.scheduler/api/include/ores.scheduler.api/generator/job_definition_generator.hpp
+
+would create: projects/ores.scheduler/api/include/ores.scheduler.api/messaging/job_definition_protocol.hpp
+
+would create: projects/ores.scheduler/api/src/generator/job_definition_generator.cpp
+
+would create: projects/ores.scheduler/core/include/ores.scheduler.core/messaging/job_definition_history_provider_registrar.hpp
+
+would create: projects/ores.scheduler/core/include/ores.scheduler.core/messaging/job_definition_registrar.hpp
+
+would create: projects/ores.scheduler/core/include/ores.scheduler.core/presentation/job_definition_history_field_mapper.hpp
+
+would create: projects/ores.scheduler/core/src/messaging/job_definition_history_provider_registrar.cpp
+
+would create: projects/ores.scheduler/core/src/messaging/job_definition_registrar.cpp
+
+would create: projects/ores.scheduler/core/src/presentation/job_definition_history_field_mapper.cpp
+
+would create: projects/ores.scheduler/service/include/ores.scheduler.service/messaging/job_definition_event_registrar.hpp
+
+would create: projects/ores.scheduler/service/src/messaging/job_definition_event_registrar.cpp
+
+19 file(s) would change, 12 file(s) would be created (31 file(s) in total).
+The tree does not match its models. Run without --dry-run to apply the change, then commit the result.

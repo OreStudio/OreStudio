@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "domain/cron_expression.cpp"
     "domain/job_definition_json_io.cpp"
@@ -24,7 +27,7 @@ set(files
     "generators/job_definition_generator.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/domain/cron_expression.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/domain/job_definition.hpp"
@@ -33,8 +36,10 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/domain/job_definition_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/domain/job_instance.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/domain/job_status.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/eventing/job_definition_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/generators/job_definition_generator.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/messaging/scheduler_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/messaging/job_definition_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/messaging/scheduling_operations_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/rfl/reflectors.hpp"
 )

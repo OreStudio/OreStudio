@@ -66,7 +66,7 @@ void scheduler_loop::publish_instance_event(std::string_view change_type,
         ev.timestamp = std::chrono::system_clock::now();
         ev.entity_ids = {boost::uuids::to_string(job.id), std::to_string(inst_id)};
         if (job.tenant_id)
-            ev.tenant_id = boost::uuids::to_string(*job.tenant_id);
+            ev.tenant_id = job.tenant_id->to_string();
 
         nats_.publish(job_instance_events_subject, ores::nats::default_wire_codec().encode(ev));
     } catch (const std::exception& e) {
@@ -103,7 +103,7 @@ boost::asio::awaitable<void> scheduler_loop::fire_job(const domain::job_definiti
 
     const auto now = std::chrono::system_clock::now();
     domain::job_instance inst;
-    inst.tenant_id = job.tenant_id;
+    inst.tenant_id = job.tenant_id ? std::optional(job.tenant_id->to_uuid()) : std::nullopt;
     inst.party_id = job.party_id;
     inst.job_definition_id = job.id;
     inst.action_type = job.action_type;

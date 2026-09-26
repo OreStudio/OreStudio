@@ -22,6 +22,9 @@
 #include "ores.scheduler.api/export.hpp"
 #include <chrono>
 #include <expected>
+#include <ostream>
+#include <rfl.hpp>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 
@@ -84,3 +87,42 @@ private:
 };
 
 } // namespace ores::scheduler::domain
+
+/**
+ * @brief Writes the expression's validated string.
+ *
+ * A cron expression is read as the string it wraps, which is what a table,
+ * a log line or a message shows.
+ */
+inline std::ostream& operator<<(std::ostream& s,
+                                const ores::scheduler::domain::cron_expression& v) {
+    return s << v.to_string();
+}
+
+namespace rfl {
+
+/**
+ * @brief Custom reflector for ores::scheduler::domain::cron_expression.
+ *
+ * Serialises the expression as its validated string and parses it back
+ * through the factory, so a round trip cannot produce an invalid expression.
+ * The reflector sits beside the type it reflects, which is what lets the
+ * generated JSON I/O for an entity that carries one see it.
+ */
+template <>
+struct Reflector<ores::scheduler::domain::cron_expression> {
+    using ReflType = std::string;
+
+    static ores::scheduler::domain::cron_expression to(const ReflType& str) {
+        auto result = ores::scheduler::domain::cron_expression::from_string(str);
+        if (!result)
+            throw std::runtime_error("Invalid cron expression: " + result.error());
+        return *result;
+    }
+
+    static ReflType from(const ores::scheduler::domain::cron_expression& v) {
+        return v.to_string();
+    }
+};
+
+}

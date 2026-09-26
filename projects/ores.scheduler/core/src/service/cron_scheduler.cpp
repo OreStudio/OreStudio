@@ -58,17 +58,14 @@ void cron_scheduler::unschedule(const boost::uuids::uuid& job_definition_id,
                                 const std::string& /*change_commentary*/) {
     BOOST_LOG_SEV(lg(), info) << "Unscheduling job: " << job_definition_id;
 
-    const auto def = repo_.find_by_id(ctx_, job_definition_id);
-    if (!def) {
+    const auto id_str = boost::uuids::to_string(job_definition_id);
+    if (repo_.read_latest(ctx_, id_str).empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Job not found: " << job_definition_id;
-        throw std::runtime_error("Job definition not found: " +
-                                 boost::uuids::to_string(job_definition_id));
+        throw std::runtime_error("Job definition not found: " + id_str);
     }
 
     // Mark is_active = 0 on the current active record without creating a new
     // bitemporal version.
-    const auto id_str = boost::uuids::to_string(job_definition_id);
-
     const std::string sql = "UPDATE ores_scheduler_job_definitions_tbl "
                             "SET is_active = 0 "
                             "WHERE id = $1::uuid "

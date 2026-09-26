@@ -19,6 +19,8 @@
  */
 #include "ores.scheduler.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.scheduler.core/messaging/registrar.hpp"
 #include "ores.scheduler.core/service/mq_action_handler.hpp"
@@ -26,6 +28,7 @@
 #include "ores.scheduler.core/service/scheduler_loop.hpp"
 #include "ores.scheduler.core/service/sql_action_handler.hpp"
 #include "ores.scheduler.service/app/application_exception.hpp"
+#include "ores.scheduler.service/messaging/job_definition_event_registrar.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
@@ -37,6 +40,8 @@
 namespace ores::scheduler::service::app {
 
 using namespace ores::logging;
+
+namespace ev = ores::eventing;
 
 namespace {
 constexpr std::string_view service_name = "ores.scheduler.service";
@@ -65,6 +70,17 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
+
+    // Entity change event pipeline: PostgreSQL LISTEN/NOTIFY → NATS publish.
+    // The generated registrar owns the job definition's mapping and its NATS
+    // publication: it reads the trigger's channel and publishes the canonical
+    // change event.
+    ev::service::event_bus event_bus;
+    ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
+    auto job_definition_events =
+        ores::scheduler::service::messaging::register_job_definition_event_mapping(
+            event_source, event_bus, nats);
+    event_source.start();
 
     auto db_ctx = make_context(cfg.database);
 

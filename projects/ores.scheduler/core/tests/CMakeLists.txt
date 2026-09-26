@@ -30,11 +30,17 @@ set_target_properties(${tests_target_name}
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.refdata.core.lib
         ores.telemetry.core.lib
         ores.utility.lib
         ores.testing.lib
+        ores.logging.lib
         Catch2::Catch2
         faker-cxx::faker-cxx
+        ores.openssl_cleanup
         Threads::Threads)
 
 add_custom_target(test_${tests_target_name}

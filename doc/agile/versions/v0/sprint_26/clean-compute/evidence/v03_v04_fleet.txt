@@ -68,3 +68,15 @@ The first goes through the generated node_sample_repository::write and the
 second through the generated grid_sample_repository::write. The dashboard
 recipe reads them back through the generated read_newest and the
 hand-written per-node read.
+
+Run once more after the workflow batch link was modelled and the database
+was recreated, so the final schema is the one under test. The sweep passes
+56 commands with no failure, and the live telemetry path still writes
+through the generated repositories:
+
+  select count(*) from ores_compute_node_samples_tbl;   30
+
+The link table's row-level policy was verified in the same environment, as
+a role that neither owns the table nor bypasses row-level security:
+
+  owning tenant -> 1 row, another tenant -> 0 rows, system tenant -> 1 row

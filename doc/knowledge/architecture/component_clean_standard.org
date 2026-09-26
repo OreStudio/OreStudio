@@ -161,7 +161,7 @@ a typecheck all missed; only a build and a test run found them.
 A survey of four model-free infrastructure components, =ores.platform=,
 =ores.utility=, =ores.security= and =ores.geo=, run on 2026-09-25 by agents
 that did not write them, added items B06, H04, G07, V07 and V08. The
-standard now holds 47 items. The findings behind the new items:
+standard now holds 49 items. The findings behind the new items:
 
 - A component can pass every gate and still be unclean. All four passed
   =validate_docs.py=, carried no leftover artefact and broke no naming

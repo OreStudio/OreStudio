@@ -41,7 +41,7 @@ the component falls into one of four jobs:
 | — the =xsdcpp= bindings | =core/domain/domain.{hpp,cpp}=, =domain_xsd.hpp= | 56,645 generated | Yes |
 | B. ORE market data readers | =core/market= | 1,105, of which 639 read and 466 do not | Mostly |
 | C. Import orchestration | =core/planner=, =core/hierarchy=, =core/scanner=, the import protocols in =api=, =service/app=, =service/config=, the import handlers in =service/messaging= | 4,461 | No |
-| D. A CRUD service for =series_key_shape= | =api/domain=, =api/eventing=, =api/generators=, the entity protocol, =core/repository=, =core/service=, =core/messaging=, =core/presentation=, the event registrar | 3,196 plus SQL and a generated shell unit | No |
+| D. The =series_key_shape= entity | =api/domain=, =core/repository= | ~1,400 plus SQL | No, but read in process |
 
 Job A is the component's reason to exist and is in scope by the stated intent.
 The other three are what the component does /besides/ map ORE representations.
@@ -64,24 +64,27 @@ sit the =ore.import= protocol, the object-storage tarball helper, and the
 workflow registration. None of this maps a representation; all of it decides
 policy and drives a saga. It is a service.
 
-**Job D, the entity service.** The component models one entity,
-[[id:8316E5A7-9BDA-4C88-856C-C933290F7396][=ores.ore.series_key_shape=]], and
-owns everything a domain entity needs: a table in the =ore= schema, generated
-repository, service and handler, a 35-class NATS protocol in the api, change
-events, a sample generator, a =presentation= renderer, a shell command unit,
-and the =ores.ore.service= executable that hosts the import saga. The entity's
-own model page justifies the *table* belonging to =ores.ore=: the key grammar
-is ORE's, and a table lets ORE add a type later without a rebuild. That
-argument covers the data. It does not cover the protocol, the events, the
-executable, or the shell surface.
+**Job D, the =series_key_shape= entity.** This was the component's largest
+unjustified surface when this page was written: a full CRUD stack for one
+entity, with a 35-class NATS protocol, change events, a sample generator, a
+=presentation= renderer, a service layer and a shell command unit. It has since
+been cut back to what is used. The entity's model page justifies the *table*
+belonging to =ores.ore=, because the key grammar is ORE's and a table lets ORE
+add a type later without a rebuild, and that argument covers the data and the
+repository that reads it. It never covered the surface, and nothing served the
+surface: the registrars were composed nowhere and the shell unit was never in
+the build. The protocol, the events, the generator, the presentation mapper,
+the service layer, the shell command and the TypeScript twins are now disabled
+in the model, leaving an entity, a repository and their SQL. What remains is
+still not ORE representation, and the ownership question below is unchanged: a
+reference table one component reads in process could live anywhere.
 
-**Job D is also unwired.** Of the four registrar families the regeneration
-produces, three are declared, defined, compiled and called from nowhere: the
-entity handler registrar in =core/messaging=, the history provider registrar in
-=core/messaging=, and the event mapping registrar in =service/messaging=. The
-nine =ore.v1.series_key_shapes*= subjects therefore answer nothing, and the
-generated shell command unit that would drive them is not compiled because it
-lands in a directory no CMake target owns.
+**Job D was unwired.** Of the four registrar families the regeneration
+produced, three were declared, defined, compiled and called from nowhere, so
+the nine =ore.v1.series_key_shapes*= subjects answered nothing and the generated
+shell command unit was not compiled because it landed in a directory no CMake
+target owned. All of it is now removed rather than wired: the surface served
+nobody, and a reference table an operator does not edit needs no commands.
 
 * The three external use cases
 
@@ -127,15 +130,18 @@ client.
 
 Three consequences, in order of confidence.
 
-**The entity service (Job D) does not belong in this component.** The owner
-intent and the entity's own justification point the same way: the grammar is
-ORE's, but the entity is an =oresmd= series key shape, and =oresmd= is
-=ores.marketdata='s vocabulary. =ores.marketdata= already models =market_series=,
+**The entity (Job D) does not belong in this component.** The owner intent and
+the entity's own justification point the same way: the grammar is ORE's, but the
+entity is an =oresmd= series key shape, and =oresmd= is =ores.marketdata='s
+vocabulary. =ores.marketdata= already models =market_series=,
 =market_observation=, =feed_binding= and the =oresmd/quote_type= models, and it
-is the only real consumer of the table. Moving the entity to =ores.marketdata=
-removes the component's NATS surface, its executable, its shell unit, its
-events and its SQL schema in one move, and puts the table next to the code that
-reads it.
+is the only real consumer of the table. Cutting the surface back has already
+removed the component's NATS exposure, its shell unit and its events; what a
+move would still buy is the entity and its repository, its SQL schema, and its
+key registry. It would also cost a full =ores.marketdata= regeneration: that
+component is not in =COMPONENTS_UNDER_TEST=, so its committed output predates
+the current templates, and adding one model to it materialises 135 files, of
+which about thirty are the entity's.
 
 **Import orchestration (Job C) is a service and should be named as one.** Either
 =a slimmed =ores.ore.service= keeps it, in which case the component is a library
@@ -154,8 +160,9 @@ either follows it or moves to the shared contract, because its input is
 
 | Option | What moves | Effect on the component |
 |--------|-----------|-------------------------|
-| 1. Record the current shape | Nothing | =ores.ore= stays a library, a service and an entity host. Cheapest, and the survey's finding 2 is answered with a reason rather than a change. Leaves the unwired surface in place. |
-| 2. Move the entity to =ores.marketdata= | Job D, plus =series_key_registry= | Removes the api, the executable's entity work, the entity SQL and the shell unit. =ores.ore= keeps =api= for the import contract and =service= for the saga. Medium change, touches =ores.marketdata=, =ores.sql= and the service registry. |
+| 0. Remove the unwired surface *(done)* | The entity's protocol, events, generator, presentation mapper, service layer, shell command, recipe and TypeScript twins | Already landed. The component exposes six subjects and serves all six; the api is a third smaller. Does not move the entity, so the ownership question stays open. |
+| 1. Record the remaining shape | Nothing further | =ores.ore= stays a library, a service and the entity's table. Cheapest, and the survey's finding 2 is answered with a reason rather than a change. |
+| 2. Move the entity to =ores.marketdata= | The entity and its repository and SQL, plus =series_key_registry= | Puts the table next to the only code that reads it. Costs that component's whole regenerated backlog in the same branch: 135 files, about thirty of them the entity's. |
 | 3. Move the entity, and move the saga out | Jobs C and D | =ores.ore= becomes =core= only: a pure library with bindings, mappers and readers. The strongest match to the stated intent, and the largest change: a new component, a new service registry entry, and the shell's export step must move onto a protocol. |
 
 Options 2 and 3 both require the shell to stop calling =exporter::export_portfolio=
@@ -163,16 +170,22 @@ directly. That is a small, independent piece of work and can be done first.
 
 * Recommendation
 
-Take option 2 now and treat option 3 as the target. Option 2 removes the
-component's largest surface of unjustified ownership in one move, and it is
-where the evidence is strongest: the entity is =ores.marketdata='s, its only
-consumer already reads its table directly, and moving it deletes the unwired
-NATS surface rather than documenting it. Option 3 then becomes a question about
-one service's name and location, which is cheap to answer once the entity has
-gone.
+Option 0 is taken: the surface was the part of this component that no evidence
+supported, and removing it closes the survey's P03, W01 and D13 findings
+outright. The remaining question is smaller than it was and no longer blocks the
+clean standard, which is why it is recorded rather than forced.
 
-Under either option the survey's W01 finding dissolves instead of needing a
-decision: there is no entity protocol left in =ores.ore= to wire.
+Between options 1 and 2, the argument for 2 is that the entity is
+=ores.marketdata='s vocabulary and it is the only consumer. The argument for 1
+is the cost: 135 files of another component's backlog would ride along in the
+same branch, none of it this component's to regenerate, and the entity's own
+contribution to that number is about a quarter of it. That coupling is the real
+obstacle, and it is worth clearing first: bring =ores.marketdata= to a
+regenerable state in its own task, then move the entity in one clean step.
+Until then the table is documented as living here deliberately.
+
+Option 3 is unaffected by any of this and remains the target if =ores.ore= is to
+stop hosting a service at all.
 
 * See also
 

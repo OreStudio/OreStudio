@@ -443,7 +443,7 @@ row is updated as each PR lands.
 | PR | Task | Lands | Gate |
 |----+------+-------+------|
 | 1 | [[id:AC960907-8838-4254-9C45-F5E48FA8840C][Baseline, decisions and evidence for ores.trading]] | The analysis, the B01 to B06 evidence and the decisions | =compass lint=, =validate_docs.sh=, drift unchanged |
-| 2 | [[id:14795122-7D5B-442E-9B2A-E7517632F612][Sync the ores.trading tree to its models]] | The generated tree, the canonical protocol, the canonical triggers, the deletions | Whole-tree build, four suites green, drift dry run empty, D1 applied |
+| [[https://github.com/OreStudio/OreStudio/pull/2204][#2204]] | [[id:14795122-7D5B-442E-9B2A-E7517632F612][Sync the ores.trading tree to its models]] | The generated tree, the canonical protocol, the canonical triggers, the deletions | Whole-tree build, four suites green, drift dry run empty, D1 applied |
 | 3 | [[id:13217FCC-66E9-4887-B950-8C73FFC8D067][Model the unmodelled trading families and bind the unbound]] | The missing orgs, the profile bindings, the type repairs | Drift stays empty with the new entities, model drift clean |
 | 4 | [[id:8EB4DE8E-1A9B-40CB-9B61-2918F778557C][Collapse the instrument identity into the trade and split the bond security]] | One identity, real foreign keys, the security split | Drift empty, round trip at zero loss, suites green |
 | 5 | [[id:E586441E-B73E-4E8C-917F-50161B05588D][Finish the bond pilot]] | The v17 bond future, the missing child table and constraints, the delete and add paths, the corpus sweep | The corpus-wide round trip, drift empty |

@@ -223,13 +223,13 @@ std::nullopt
 
 *** Detail fields
 
-| field               | label              | widget                 | type      | is_key | is_required | placeholder                  |
+| field               | label              | type      | is_key | is_required | placeholder                  |
 |---------------------+--------------------+------------------------+-----------+--------+-------------+------------------------------|
-| name                | Name               | nameEdit               | line_edit | true   | true        | Enter report definition name |
-| description         | Description        | descriptionEdit        | text_edit |        |             | Enter a description          |
-| report_type         | Report Type        | reportTypeEdit         | line_edit |        | true        | e.g. risk                    |
-| schedule_expression | Schedule (cron)    | scheduleExpressionEdit | line_edit |        | true        | e.g. 0 6 * * 1               |
-| concurrency_policy  | Concurrency Policy | concurrencyPolicyEdit  | line_edit |        | true        | e.g. skip                    |
+| name                | Name               | line_edit | true   | true        | Enter report definition name |
+| description         | Description        | text_edit |        |             | Enter a description          |
+| report_type         | Report Type        | line_edit |        | true        | e.g. risk                    |
+| schedule_expression | Schedule (cron)    | line_edit |        | true        | e.g. 0 6 * * 1               |
+| concurrency_policy  | Concurrency Policy | line_edit |        | true        | e.g. skip                    |
 
 *** Columns
 

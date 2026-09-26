@@ -152,11 +152,11 @@ faker::number::integer(1, 100)
 
 *** Detail fields
 
-| field       | label       | widget          | type      | is_key | is_required | placeholder            |
+| field       | label       | type      | is_key | is_required | placeholder            |
 |-------------+-------------+-----------------+-----------+--------+-------------+------------------------|
-| code        | Code        | codeEdit        | line_edit | true   | true        | Enter report type code |
-| name        | Name        | nameEdit        | line_edit |        | true        | Enter display name     |
-| description | Description | descriptionEdit | text_edit |        |             | Enter a description    |
+| code        | Code        | line_edit | true   | true        | Enter report type code |
+| name        | Name        | line_edit |        | true        | Enter display name     |
+| description | Description | text_edit |        |             | Enter a description    |
 
 *** Columns
 

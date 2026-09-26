@@ -22,8 +22,8 @@
 #include "ores.compute.api/messaging/telemetry_protocol.hpp"
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.wrapper/app/log_publisher.hpp"
-#include "ores.compute.wrapper/filesystem/archiver.hpp"
-#include "ores.compute.wrapper/net/http_client.hpp"
+#include "ores.storage.core/filesystem/archiver.hpp"
+#include "ores.storage.core/net/http_client.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
@@ -463,7 +463,7 @@ void process_assignment(ores::nats::service::client& nats,
             BOOST_LOG_SEV(lg, debug) << "Downloading package: " << evt.app_version_id;
             const fs::path pkg_archive =
                 pkg_cache_dir.parent_path() / (evt.app_version_id + ".tar.gz");
-            net::http_client::download(make_url(cfg.http_base_url, evt.package_uri), pkg_archive);
+            ores::storage::net::http_client::get(make_url(cfg.http_base_url, evt.package_uri), pkg_archive);
 
             const auto actual_sha256 =
                 ores::utility::crypto::sha256::hex_digest_of_file(pkg_archive);
@@ -475,7 +475,7 @@ void process_assignment(ores::nats::service::client& nats,
             }
 
             fs::create_directories(pkg_cache_dir);
-            ores::compute::wrapper::filesystem::archiver::extract(pkg_archive, pkg_cache_dir);
+            ores::storage::filesystem::archiver::extract(pkg_archive, pkg_cache_dir);
         }
 
         const auto mf = read_manifest(pkg_cache_dir);
@@ -489,11 +489,11 @@ void process_assignment(ores::nats::service::client& nats,
         // Download input archive and unpack into job_dir.
         const fs::path input_archive = job_dir / "input.tar.gz";
         BOOST_LOG_SEV(lg, debug) << "Downloading input";
-        net::http_client::download(make_url(cfg.http_base_url, evt.input_uri), input_archive);
+        ores::storage::net::http_client::get(make_url(cfg.http_base_url, evt.input_uri), input_archive);
         input_bytes = static_cast<std::int64_t>(fs::file_size(input_archive));
         BOOST_LOG_SEV(lg, debug) << "Extracting input (" << input_bytes << " bytes)"
                                  << " to: " << job_dir.string();
-        ores::compute::wrapper::filesystem::archiver::extract(input_archive, job_dir);
+        ores::storage::filesystem::archiver::extract(input_archive, job_dir);
 
         // 3. Spawn engine using Boost.Process to avoid shell injection.
         //    Args in the manifest are passed verbatim; no placeholder substitution
@@ -585,12 +585,12 @@ void process_assignment(ores::nats::service::client& nats,
                 BOOST_LOG_SEV(lg, warn) << "No output found in: " << output_dir.string();
             } else {
                 const fs::path output_archive = job_dir / "output.tar.gz";
-                ores::compute::wrapper::filesystem::archiver::pack(output_dir, output_archive);
+                ores::storage::filesystem::archiver::pack(output_dir, output_archive);
 
                 output_bytes = static_cast<std::int64_t>(fs::file_size(output_archive));
                 BOOST_LOG_SEV(lg, debug) << "Uploading output archive: " << output_archive.string()
                                          << " (" << output_bytes << " bytes)";
-                net::http_client::upload(make_url(cfg.http_base_url, evt.output_uri),
+                ores::storage::net::http_client::put(make_url(cfg.http_base_url, evt.output_uri),
                                          output_archive);
             }
             BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;

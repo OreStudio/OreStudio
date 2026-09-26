@@ -25,9 +25,7 @@ set(files
     "app/log_publisher.cpp"
     "config/options.cpp"
     "config/parser.cpp"
-    "filesystem/archiver.cpp"
     "main.cpp"
-    "net/http_client.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -39,6 +37,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.wrapper/config/parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.wrapper/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.wrapper/export.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.wrapper/filesystem/archiver.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.wrapper/net/http_client.hpp"
 )

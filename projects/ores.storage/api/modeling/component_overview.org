@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 8778E5E5-2123-4E40-A16D-B13B16D1B7AD
+:END:
+#+title: ores.storage.api
+#+description: The public contract of object storage: the bucket and key path and URL helpers its consumers link, and the modelled operation surface.
+#+type: ores.codegen.component
+#+component_kind: api
+#+level: cross
+#+filetags: :storage:api:component:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+name: storage.api
+#+full_name: ores.storage.api
+#+brief: Object storage public contract.
+
+* Summary
+
+=ores.storage.api= is the part a consumer is allowed to link. It holds the
+bucket and key path and URL helpers that turn a bucket, a key and an endpoint
+into an address, and the modelled operation surface that both interfaces are
+generated from. It holds no bucket name of its own.
+
+* Entry points
+
+- =include/ores.storage.api/net/storage_paths.hpp= — bucket and key to path and URL.
+- =include/ores.storage.api/messaging/= — the generated protocol messages.
+
+* Inputs
+
+- A bucket name, an object key and an endpoint, from the caller.
+- The generated protocol messages, once the operation surface is modelled.
+
+* Outputs
+
+- The =/api/v1/storage/{bucket}/{key}= path, and its absolute URL against a base.
+
+* Dependencies
+
+- None beyond the standard library. The part is header-only, so a consumer
+  linking it takes on no socket, no archive library and no logging.
+
+* See also
+
+- [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]] — the component group overview.
+- [[id:9C11A981-EAA8-4AE2-AAEA-7FEE01982CE4][ores.storage.core]] — the implementation both interfaces call.

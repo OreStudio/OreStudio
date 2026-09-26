@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 288678EF-EB55-4F89-9005-7B3532671C91
+:END:
+#+title: ores.storage.service
+#+description: The storage service: the NATS entry point that answers the object operation set.
+#+type: ores.codegen.component
+#+component_kind: service
+#+level: cross
+#+filetags: :storage:service:component:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+name: storage.service
+#+full_name: ores.storage.service
+#+brief: Object storage service.
+
+* Summary
+
+=ores.storage.service= is the process that lets a component reach storage over
+the bus. It binds the operation set's subjects, authenticates the caller and
+checks the operation's permission code before it acts, and calls
+=ores.storage.core= to move the bytes.
+
+* Inputs
+
+- The bus endpoint and the service's own configuration.
+- An authenticated request on one of the operation set's subjects.
+
+* Outputs
+
+- One reply per request, carrying the protocol's =result= and, where the
+  operation returns data, the object's metadata or page.
+
+* Entry points
+
+- =src/main.cpp= — the process entry point.
+- =include/ores.storage.service/messaging/registrar.hpp= — the handler registration.
+
+* Dependencies
+
+- [[id:9C11A981-EAA8-4AE2-AAEA-7FEE01982CE4][ores.storage.core]] — the implementation it serves.
+- =ores.service= — the domain service runner every service shares.
+- =ores.nats= — the transport.
+
+* See also
+
+- [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]] — the component group overview.

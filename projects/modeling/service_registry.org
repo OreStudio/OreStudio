@@ -363,6 +363,26 @@
 :entry_point: packages/bff/dist/main.js
 :END:
 
+* ores.storage.service
+:PROPERTIES:
+:psql_var:    storage_service
+:env_key:     STORAGE_SERVICE
+:iam_role:    StorageService
+:description: Object storage over the bus. Answers put, get, delete and list on the storage.v1.objects.* subjects, over the same storage root the HTTP routes are given, so a caller reaches one set of objects either way. It holds no tables: the database gives it the request context the shared runner hands to a handler, and nothing else.
+:email:       storage_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
+:END:
+
+** Extra args
+
+# The same root the HTTP server is given, because the two processes are two
+# front doors onto one set of objects. Without this the service falls back to
+# its own default and the two stop seeing each other's writes.
+
+- --storage-dir ../storage
+
 * ores.compute.wrapper
 :PROPERTIES:
 :description: Compute grid worker nodes. {host_id} = stable UUID derived from hostname:replica_index; {work_dir} = ../run/wrappers/node_N; all replicas share the same certificate (ores.compute.wrapper.crt).

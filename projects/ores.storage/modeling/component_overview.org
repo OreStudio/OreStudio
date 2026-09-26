@@ -4,104 +4,45 @@
 #+title: ores.storage
 #+name: storage
 #+full_name: ores.storage
-#+description: The generic object storage client: bucket and key path helpers, an HTTP file client, a tar.gz archiver, and the composite transfer helpers the domain components share.
+#+description: Generic object storage for ORE Studio: a public contract, an implementation core, and the service that answers the operation set over NATS.
 #+type: ores.codegen.component
+#+component_kind: composite
+#+parts: api core service
 #+level: cross
-#+filetags: :storage:filesystem:component:
+#+filetags: :storage:component:
 #+created: 2026-05-20
 #+updated: 2026-09-26
-#+brief: Generic object storage API for ORE Studio.
-
-* Diagram
-
-#+attr_html: :width 100% :alt ores.storage component diagram
-#+caption: ores.storage
-[[file:ores.storage.png][file:ores.storage.png]]
+#+brief: Generic object storage for ORE Studio.
 
 * Summary
 
-=ores.storage= is the client half of ORE Studio's object storage. It moves
-files between a local disk and an S3-shaped HTTP API that keeps objects
-under a bucket and a key, and it holds no bucket names of its own: a caller
-names its bucket, the way =ores.compute= names its package bucket and
-=ores.ore= its import and report buckets.
+=ores.storage= is ORE Studio's object storage: a bucket-and-key namespace of
+opaque bytes, reachable over HTTP when a caller is moving a body and over NATS
+when it is sending a command. It is a composite, and the three parts exist
+because the contract, the implementation and the service have different
+consumers and different dependencies.
 
-Four types carry that work. =net/storage_paths= builds the
-=/api/v1/storage/{bucket}/{key}= path and URL. =net/http_client= is the
-synchronous HTTP/1.1 GET and PUT over Boost.Beast, streaming file bodies
-rather than buffering them, and it is the only piece that knows about
-sockets. =filesystem/archiver= packs and extracts =tar.gz= trees through
-libarchive. =net/storage_transfer= composes the three into the atomic
-=pack=, =unpack=, =upload= and =download= operations, plus the composite
-=pack_and_upload=, =fetch_and_unpack=, =upload_blob= and =download_blob=
-helpers that every caller actually uses.
+- [[id:8778E5E5-2123-4E40-A16D-B13B16D1B7AD][ores.storage.api]] — the contract: the bucket and key path helpers, and the
+  modelled operation surface both interfaces are generated from.
+- [[id:9C11A981-EAA8-4AE2-AAEA-7FEE01982CE4][ores.storage.core]] — the implementation: the streaming HTTP client, the
+  =tar.gz= archiver, and the atomic and composite transfer helpers.
+- [[id:288678EF-EB55-4F89-9005-7B3532671C91][ores.storage.service]] — the process: it binds the operation set's subjects,
+  authenticates the caller and answers them.
 
-The component is model-free. It owns no entity, no junction, no NATS
-subject and no protocol header, so none of its types is generated and none
-appears on the wire; its wire contract is the HTTP path shape above, which
-it documents rather than declares. Everything it exposes is hand-written.
+Storage holds no bucket name of its own, no registry and no allow-list: a
+caller names its bucket, and which buckets exist is the caller's concern. The
+target is stated in [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]].
 
-Every operation is synchronous and blocking, and the callers run them on
-background threads. The composite helpers stage through a temporary file
-under the system temporary directory.
+* Parts
 
-* Facets
-
-- =filesystem/= — =archiver=, the libarchive =pack= and =extract= pair for
-  =tar.gz= trees, including the platform difference in how libarchive is
-  handed a path.
-- =net/= — =storage_paths= for the bucket and key path and URL,
-  =http_client= for the GET and PUT primitive, and =storage_transfer= for
-  the atomic and composite operations built on the two.
-
-* Inputs
-
-- A local directory or file to pack, upload or download.
-- A storage endpoint: the HTTP base URL, a bucket name and an object key.
-- A =tar.gz= archive to extract.
-- An in-memory blob to upload, and the compressed bytes to decode on the
-  way back.
-
-* Outputs
-
-- Files written to a local path, or objects written to the remote bucket.
-- Extracted directory trees.
-- The server's response body, for the uploads that read a server-computed
-  checksum out of it.
-- Decompressed blobs in memory.
-
-* Entry points
-
-- =include/ores.storage/ores.storage.hpp= — the namespace =@brief= doxygen
-  renders, and the description the diagram conventions read.
-- =include/ores.storage/net/storage_transfer.hpp= — the composite helpers
-  the callers use.
-- =include/ores.storage/net/storage_paths.hpp= — bucket and key to path and
-  URL.
-- =include/ores.storage/net/http_client.hpp= — the GET and PUT primitive.
-- =include/ores.storage/filesystem/archiver.hpp= — =tar.gz= pack and
-  extract.
-
-* Dependencies
-
-- =ores.utility= — gzip, for the in-memory blob transfers.
-- =ores.platform= — the scoped temporary file the composite helpers stage
-  through.
-- LibArchive — the =tar.gz= pack and extract.
-- Boost.Beast and Boost.Asio — the HTTP client.
-
-=ores.logging= is linked but is the ubiquitous logging dependency every
-component carries.
+| Part | What it is for |
+|------+----------------|
+| [[id:8778E5E5-2123-4E40-A16D-B13B16D1B7AD][ores.storage.api]] | The public contract a consumer links, and no dependency it does not need. |
+| [[id:9C11A981-EAA8-4AE2-AAEA-7FEE01982CE4][ores.storage.core]] | Where the bytes move: HTTP, archive and the transfer helpers. |
+| [[id:288678EF-EB55-4F89-9005-7B3532671C91][ores.storage.service]] | The NATS entry point, and the process shell around it. |
 
 * See also
 
-- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] -- the bucket and key scheme the compute callers read and write, and the flow the package upload serves.
-- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] -- a consumer: the package publisher and the compute storage helper.
-- [[id:5F280C8C-8C50-40A2-8C84-C85B8821D33E][ores.ore]] -- a consumer: the import saga's execute handler and the report package handler.
-- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] -- the catalogue that fixes the facet folder names above.
-- [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component Documentation Guide]] -- what fills this overview well.
-- [[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][PlantUML class diagram conventions]] -- the rules the component diagram follows.
-- [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] -- the Catch2 conventions the component's tests follow.
-- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] -- the naming and component-only checks this component passes.
-- [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][Component Architecture Audit]] -- the structural checklist and the platform-placement rule the archiver currently breaks.
-- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] -- the checklist this component was worked through.
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] -- the target state for the contract these parts implement.
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] -- where object storage sits among the other stores.
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] -- the largest consumer, and the bucket and key scheme it owns.

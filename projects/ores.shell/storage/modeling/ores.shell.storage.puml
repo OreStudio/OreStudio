@@ -1,0 +1,60 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.shell.storage Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace shell #F2F2F2 {
+        namespace app #F2F2F2 {
+            namespace commands #F2F2F2 {
+                class objects_operations_commands {
+                }
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The unit is generated from the storage operation model, so its methods are
+' the model's messages: one process_* per message that declares a subject and a
+' response. It is a NATS client like every other shell command unit — the same
+' verbs serve the HTTP path too, because both interfaces answer the same
+' operation set.
+
+class ores::shell::app::commands::objects_operations_commands #ECECEC {
+    {static} +register_commands(root_menu : Menu, session : nats_client) : void
+    {static} +process_put_objects(out : ostream, session : nats_client, args : vector<string>) : void
+    {static} +process_get_objects(out : ostream, session : nats_client, args : vector<string>) : void
+    {static} +process_delete_objects(out : ostream, session : nats_client, args : vector<string>) : void
+    {static} +process_list_objects(out : ostream, session : nats_client, args : vector<string>) : void
+}
+note right of "ores::shell::app::commands::objects_operations_commands"
+The raw surface: every verb takes a bucket, a key and a
+local path, so a caller that only wants bytes somewhere
+does not have to learn a domain verb. The consumer verbs
+that wrap storage live with their own domains.
+end note
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.shell.storage.puml"
+' End:
+@enduml

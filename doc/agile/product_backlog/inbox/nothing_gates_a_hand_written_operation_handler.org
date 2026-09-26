@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7
+:END:
+#+title: Nothing gates a hand-written operation handler
+#+description: check_handler_permissions.py compares only the four components in its registry, and only their generated messaging handlers. An operation model generates no handler, so its handler is hand-written and can ship with no permission check at all: ores.scheduler's operation handlers call has_permission zero times. The HTTP server has no route-level permission hook either, and only iam_routes checks codes.
+#+type: capture
+#+level: cross
+#+filetags: :security:auth:codegen:permissions:defect:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The gate that keeps a handler's permission checks honest sees only part of the
+tree. =check_handler_permissions.py= scans
+=projects/ores.<component>/**/messaging/*_handler.hpp|.cpp= and compares the code
+a handler checks against the literals in the IAM seed SQL. It runs for the four
+components in its registry — =refdata=, =analytics=, =compute=, =assets= — and the
+file says why: a component whose seeds are still incomplete would fail the tree
+for a gap that predates the check.
+
+Both halves of that leave a hole, because an operation model generates no
+handler. The =ores.cpp.nats-handler= and =ores.cpp.service= facets do not admit
+=ores.codegen.operation=, so a component that models its surface as operations —
+twenty models do, and =ores.telemetry= is entirely built that way — hand-writes
+its handler. And a hand-written handler is:
+
+- outside the registry, so the gate never reads it;
+- free to check nothing, which is what =ores.scheduler='s operation handlers do:
+  =job_instance_handler.hpp= and =scheduler_status_handler.hpp= call
+  =has_permission= zero times;
+- gated by nothing else, since the generated-handler template is what emits the
+  check for entity handlers, and it emits it for writes only.
+
+The HTTP side has the mirror of the same gap: the router has an
+=auth_required()= flag and no permission hook at all, so a route authenticates and
+then checks nothing. The only route file in the server that checks a code is
+=iam_routes.cpp=, through a hand-written =check_auth= helper; =risk=,
+=variability= and =assets= all authenticate and stop there.
+
+* Why
+
+Authorisation is a per-operation decision, and this is the class of handler the
+gate cannot see making it. The consequence is not hypothetical: an operation
+handler that mutates state can be published, reviewed and merged with no check,
+and the permission seeds stay consistent with a handler that never consults them,
+so the gate reports green.
+
+It matters now because storage is about to become exactly this shape. Its surface
+is an operation model — the handler cannot be generated — so its permission checks
+will be hand-written, and unless =storage= joins the registry the new handler
+lands ungated. The same applies to every future operation-only component, which is
+the direction =ores.telemetry= and =ores.scheduler= already point.
+
+The fix is to give the gate a way to see a hand-written handler: require an
+=has_permission= call in any component in the registry that owns an operation
+handler, and add components to the registry as their seeds complete. The HTTP
+side needs a route-level permission declaration, so the check stops depending on
+each route remembering to call a helper.
+
+* References
+
+- =projects/ores.codegen/scripts/check_handler_permissions.py:39= — =REGISTRY=, and =:44-62= for the scan
+- =projects/ores.codegen/library/templates/ores.cpp.nats-handler.org:7= and =ores.cpp.service.org:7= — the facets that do not admit =operation=
+- =projects/ores.scheduler/core/include/ores.scheduler.core/messaging/job_instance_handler.hpp= — zero =has_permission= calls
+- =projects/ores.iam/core/include/ores.iam.core/messaging/account_operations_handler.hpp= — a hand-written operation handler that does check
+- =projects/ores.http/core/src/routes/iam_routes.cpp:413-449= — the only =check_auth= in the server
+- =projects/ores.http/api/src/net/router.cpp:82-91= — =auth_required()= and =roles()=, and no permission hook
+
+* See also
+
+- [[id:12666A97-69C2-4874-ABE0-E8C497C9EAE1][Authentication is optional at runtime on both transports]] — the other half: the checks that do exist can be turned off by configuration.
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — where authorisation is supposed to be enforced at each layer.

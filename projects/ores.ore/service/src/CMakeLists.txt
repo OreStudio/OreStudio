@@ -46,7 +46,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.ore.core.lib
         ores.ore.api.lib
-        ores.storage.lib
+        ores.storage.core.lib
         ores.workflow.api.lib
         ores.iam.client.lib
         ores.refdata.api.lib

@@ -20,7 +20,7 @@
 #include "ores.ore.service/messaging/report_package_handler.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
-#include "ores.storage/net/storage_transfer.hpp"
+#include "ores.storage.core/net/storage_transfer.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <filesystem>

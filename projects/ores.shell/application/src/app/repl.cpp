@@ -27,6 +27,7 @@
 #include "ores.shell/app/commands/change_reason_categories_commands.hpp"
 #include "ores.shell/app/commands/change_reasons_commands.hpp"
 #include "ores.shell/app/commands/assets/assets_commands.hpp"
+#include "ores.shell/app/commands/storage/storage_commands.hpp"
 #include "ores.shell/app/commands/compute_commands.hpp"
 #include "ores.shell/app/commands/compute/app_commands.hpp"
 #include "ores.shell/app/commands/compute/app_version_commands.hpp"
@@ -105,6 +106,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     assets_commands::register_commands(*root, session_);
     refdata_commands::register_commands(*root, session_);
     analytics_commands::register_commands(*root, session_);
+    storage_commands::register_commands(*root, session_);
     accounts_commands::register_commands(*root, session_, pagination_);
     system_setting_commands::register_commands(*root, session_);
     subscription_commands::register_commands(*root, session_);

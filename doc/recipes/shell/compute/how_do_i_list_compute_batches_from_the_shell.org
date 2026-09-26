@@ -7,11 +7,12 @@
 #+level: cross
 #+filetags: :recipe:shell:compute:batches:
 #+created: 2026-08-10
-#+updated: 2026-08-10
+#+updated: 2026-09-26
 
-The compute grid verbs live in the shell's =compute= menu. They talk to
-the ~ores.compute~ service over NATS; the domain shapes and table
-renderers come from ~ores.compute.api~.
+The compute entity verbs live in their own shell menus, one per entity
+(=apps=, =app_versions=, =platforms=, =batches=, =hosts=, =workunits=,
+=results=). They talk to the ~ores.compute~ service over NATS; the
+domain shapes and table renderers come from ~ores.compute.api~.
 
 * Question
 
@@ -20,7 +21,7 @@ How do I list compute batches from the shell?
 * Answer
 
 Log in as the system super admin (principals are
-=username@hostname=), then =compute list-batches=: the shell prints the
+=username@hostname=), then =batches list=: the shell prints the
 batches as a table — id, external ref, status, modified by, recorded
 at. The table is empty until a batch exists.
 
@@ -28,7 +29,7 @@ at. The table is empty until a batch exists.
 #+begin_src ores-shell :exports none
 connect $ORES_NATS_URL
 login super_admin@localhost Secure-Password-123
-compute list-batches
+batches list
 logout
 exit
 #+end_src

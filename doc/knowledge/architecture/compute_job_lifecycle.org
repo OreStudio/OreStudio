@@ -361,8 +361,8 @@ every result has outcome Success. See
 
 - [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.
 - [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]] — the ORE engine: what a run computes and how its output is produced.
-- [[id:C4C10772-C8E0-4E0E-B976-C407A6135317][How do I add a compute batch from the shell?]] — add-batch.
-- [[id:A5834202-A38A-4FB4-B341-CAD621C1D8ED][How do I dispatch a compute batch from the shell?]] — dispatch-batch.
+- [[id:C4C10772-C8E0-4E0E-B976-C407A6135317][How do I add a compute batch from the shell?]] — batches add.
+- [[id:A5834202-A38A-4FB4-B341-CAD621C1D8ED][How do I dispatch a compute batch from the shell?]] — compute dispatch-batch.
 - [[id:E75065F1-5B56-4027-8454-9226E102E725][How do I view compute grid stats from the shell?]] — grid-stats.
 - [[id:92E51A3E-935B-49AE-8429-B36181FB9AFA][How do I download a compute result output from the shell?]] — download-output.
 - [[id:A6E676BD-E907-4F29-8D55-07174C846AA9][How do I download a compute job input from the shell?]] — download-input.

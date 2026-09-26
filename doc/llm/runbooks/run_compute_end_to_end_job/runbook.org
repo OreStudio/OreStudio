@@ -144,7 +144,7 @@ In execution order:
 7. /Download one job's output./ Each finished result has an archive in
    storage, holding the =Output/= directory the engine wrote:
    #+begin_example
-   compute list-results
+   results list
    compute download-output <result_id> build/e2e/out
    #+end_example
 

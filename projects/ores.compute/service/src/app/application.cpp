@@ -18,11 +18,6 @@
  *
  */
 #include "ores.compute.service/app/application.hpp"
-#include "ores.compute.api/eventing/app_changed_event.hpp"
-#include "ores.compute.api/eventing/app_version_changed_event.hpp"
-#include "ores.compute.api/eventing/batch_changed_event.hpp"
-#include "ores.compute.api/eventing/host_changed_event.hpp"
-#include "ores.compute.api/eventing/result_changed_event.hpp"
 #include "ores.compute.api/eventing/workunit_changed_event.hpp"
 #include "ores.compute.core/messaging/registrar.hpp"
 #include "ores.compute.service/app/application_exception.hpp"
@@ -33,12 +28,11 @@
 #include "ores.compute.service/messaging/app_version_event_registrar.hpp"
 #include "ores.compute.service/messaging/batch_event_registrar.hpp"
 #include "ores.compute.service/messaging/host_event_registrar.hpp"
+#include "ores.compute.service/messaging/platform_event_registrar.hpp"
 #include "ores.compute.service/messaging/result_event_registrar.hpp"
 #include "ores.compute.service/messaging/workunit_event_registrar.hpp"
 #include "ores.database/service/context_factory.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
-#include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
 #include "ores.nats/service/client.hpp"
@@ -94,10 +88,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
 
     // The generated registrars own each entity's mapping and its NATS
-    // publication. Registering here with the legacy register_mapping() instead
-    // left the channel on the older notification shape, which the generated
-    // trigger does not emit, so every notification failed to parse and nothing
-    // reached the dispatcher.
+    // publication: each reads the trigger's channel and publishes the
+    // canonical event the dispatcher's subscriber consumes.
     auto app_sub = ores::compute::service::messaging::register_app_event_mapping(
         event_source, event_bus, nats);
     auto app_version_sub = ores::compute::service::messaging::register_app_version_event_mapping(
@@ -109,6 +101,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto result_sub = ores::compute::service::messaging::register_result_event_mapping(
         event_source, event_bus, nats);
     auto host_sub = ores::compute::service::messaging::register_host_event_mapping(
+        event_source, event_bus, nats);
+    auto platform_sub = ores::compute::service::messaging::register_platform_event_mapping(
         event_source, event_bus, nats);
 
     // The dispatch seam reads the in-process bus, and the bus event it wants
@@ -133,6 +127,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     (void)workunit_sub;
     (void)result_sub;
     (void)host_sub;
+    (void)platform_sub;
     (void)dispatch_sub;
 
     event_source.start();

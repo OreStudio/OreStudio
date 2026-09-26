@@ -2,7 +2,7 @@
 :ID: CA6A6FA0-0DA7-4FF6-8F66-F51FAF620A94
 :END:
 #+title: Migrate the remaining temp path call sites to the shared scoped temp types
-#+description: Six components still build their own temporary paths, two of them in production code that never cleans up after a failed run; migrate them to ores.platform::filesystem::scoped_temp_file and scoped_temp_directory.
+#+description: Six components still build their own temporary paths, two of them in production code that cleans up by hand; migrate them to ores.platform::filesystem::scoped_temp_file and scoped_temp_directory.
 #+type: capture
 #+level: cross
 #+filetags: :tech_debt:filesystem:testing:cpp:
@@ -19,8 +19,8 @@ still build their own temporary paths and should migrate to them.
 
 | Call site | Kind | Today |
 |-----------+------+-------|
-| =ores.storage/src/net/storage_transfer.cpp= | production | a local =make_temp_archive()= plus a second inline path, UUID named, never removed |
-| =ores.ore/service/src/messaging/report_package_handler.cpp= | production | a staging directory created inline, UUID named, never removed |
+| =ores.storage/src/net/storage_transfer.cpp= | production | a local =make_temp_archive()= plus a second inline path, UUID named, removed by hand on success and in a =catch= block |
+| =ores.ore/service/src/messaging/report_package_handler.cpp= | production | a staging directory created inline, UUID named, removed by hand after the upload |
 | =ores.compute/wrapper/tests/filesystem_archiver_tests.cpp= | test | its own variant |
 | =ores.ore/core/tests/planner_import_planner_tests.cpp= | test | its own variant |
 | =ores.orgmode/tests/resolver_tests.cpp= | test | its own variant |
@@ -29,10 +29,13 @@ still build their own temporary paths and should migrate to them.
 * Why
 
 One behaviour had seven implementations and three naming strategies, which
-is the duplicate case that B06 and H02 exist for. The two production sites
-leak their temp file or directory whenever a run fails between creation and
-cleanup, and every test site repeats a manual =std::filesystem::remove=
-that a destructor should own.
+is the duplicate case that B06 and H02 exist for. Cleanup is a per-site
+obligation today, so it holds only where each site remembers it: the
+=storage_transfer.cpp= paths remove their archive on success and in a
+=catch (...)=, while =report_package_handler.cpp= removes its staging
+directory only after the upload, so a throw between =create_directories=
+and that =remove_all= leaves the directory behind. Every test site
+repeats a manual =std::filesystem::remove= that a destructor should own.
 
 Each call site belongs to a component with its own clean-up story, so this
 is a separate pass rather than part of the platform story. The migration is

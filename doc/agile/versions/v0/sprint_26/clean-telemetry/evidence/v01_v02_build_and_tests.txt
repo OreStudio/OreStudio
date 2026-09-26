@@ -1,0 +1,51 @@
+# V01: the whole tree builds, with the component's tests and every consumer.
+# V02: the codegen suite passes, and the component's test suites pass.
+# Run 2026-09-26 on the committed tree, after the last source edit.
+
+$ ./compass.sh build
+...
+[ 57%] Built target ores.telemetry.service.lib
+[ 66%] Built target ores.telemetry.service.exe
+...
+/usr/bin/x86_64-linux-gnu-ld.bfd: /lib/x86_64-linux-gnu/Scrt1.o: in function `_start':
+(.text+0x17): undefined reference to `main'
+gmake[2]: *** [projects/ores.shell/workflow/tests/CMakeFiles/ores.shell.workflow.tests.dir/build.make:164:
+              publish/bin/ores.shell.workflow.tests] Error 1
+
+  Every telemetry target builds — core, database and service libraries, the
+  service executable, and the three test binaries — and so do the two
+  components that consume its protocol: ores.compute's wrapper and
+  ores.testing.
+
+  The one failure is pre-existing and not this branch's:
+  projects/ores.shell/workflow/tests/ has no main.cpp, so its test binary
+  links without an entry point. The clean-workflow change left it on main,
+  together with the same part's missing component_overview.org and .puml that
+  fails validate_docs.sh. `git diff origin/main -- projects/ores.shell/workflow`
+  is empty on this branch. It is recorded as the capture
+  shell_workflow_tests_link_without_a_main.
+
+  Two full runs were made: the first stopped at 84 percent, and the second
+  built the targets that abort had skipped and stopped on the same target, so
+  the only unbuilt target is the one that cannot link.
+
+$ ./compass.sh test run -- -R "ores.telemetry"
+    Start 10: ores.telemetry.core.tests
+1/3 Test #10: ores.telemetry.core.tests ........   Passed
+    Start 11: ores.telemetry.database.tests
+2/3 Test #11: ores.telemetry.database.tests ....   Passed
+    Start 12: ores.telemetry.service.tests
+3/3 Test #12: ores.telemetry.service.tests .....   Passed
+
+100% tests passed, 0 tests failed out of 3
+
+$ the same three binaries, run directly
+All tests passed: core 2175 assertions in 50 cases, database 70 in 12,
+service 32 in 10.
+
+$ ./projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q
+594 passed.
+
+# The fleet-dependent half of V02 belongs to the components that serve; this
+# one owns no service of its own, and the tests that need a database run
+# against the shared test harness.

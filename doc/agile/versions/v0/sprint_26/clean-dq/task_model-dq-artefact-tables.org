@@ -106,6 +106,23 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part six: the FSM vocabulary is narrower than part five said
+
+Run on 2026-09-26. Part five claimed the FSM tables have "no natural key anywhere". **That was wrong**, and the error was mine: I grepped for =create unique index= and read only the first few lines of the output. The tables do carry a composite natural key.
+
+**What they actually have.** =fsm_states= has a unique index on =(tenant_id, machine_id, name)= and a plain index on =(tenant_id, machine_id)=; =fsm_transitions= is the same shape. Both tables also carry =check ("is_initial" in (0, 1))= style constraints on their integer flags.
+
+**The vocabulary was tested rather than guessed.** A model with a uuid primary key, **plain uuid reference columns**, integer columns with =:default: 0=, and =profile: uuid-surrogate-lookup= regenerated =dq_fsm_states_create.sql= to within three differences of the committed hand-written file:
+
+- the hand-written table has =check ("is_initial" in (0, 1))= and =check ("is_terminal" in (0, 1))=;
+- it has the composite unique index and the machine index above.
+
+Everything else was identical: every column and its nullability, the integer defaults, the bitemporal primary key, the exclusion constraint, the nil-uuid check and the stamps. So plain uuid columns, integer defaults, and a uuid key with no *single-column* natural key all work already — the vocabulary is not missing a whole shape.
+
+**The gap is three specific things, none demonstrated by a dq model today.** The vocabulary for a **composite natural key** — two plain columns marked as one key — for an **index on a reference column**, and for a **check constraint on an integer column**. They are the next thing to find, and the places to look are the junction models (which already declare a two-column identity) and the =** Validations= table the entity scaffold emits but no dq model fills in.
+
+**Nothing was left behind.** The model and the scaffold were removed and the two regenerated SQL files restored, so the working tree is clean and =dq_fsm_states_create.sql= still regenerates to its committed content.
+
 * Step 8 part five: what the remaining nine need, and the vocabulary they do not have
 
 Run on 2026-09-26. No migration this time: the round set out to take the read-only group and found that the plan's grouping was too tidy. The remaining nine do not divide into "read-only" and "operations". They divide by **what model vocabulary they need**, and seven of them need vocabulary the component has never used.

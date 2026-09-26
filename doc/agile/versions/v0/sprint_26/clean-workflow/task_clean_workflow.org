@@ -576,6 +576,18 @@ register the two generated units in =repl.cpp=, and move =wait_for_instance= out
 the class being retired so =ore_commands= and =provision_commands= keep working.
 The last piece is the only one that touches behaviour; the first two are wiring.
 
+That check is done, and the answer is reassuring: the shell modules' build files
+are hand-written by convention, not generated. Every sibling --
+=ores.shell.iam=, =refdata=, =compute= and =trading= -- has a hand-written
+=src/CMakeLists.txt= with no generated marker, and the codegen's templates cover a
+component's own modules (=cmake_component_api_src=, =_core_src=, =_root= and the
+source lists), not the shell's per-domain command modules. So scaffolding
+workflow's is a one-off by design and does not need a generator change.
+
+What that fixes: the earlier worry that hand-writing these would create exactly the
+kind of artefact this branch exists to generate. It would not. The artefact is
+hand-written for every component, and this one is simply absent.
+
 Worth checking at the same time whether generation is supposed to emit those build
 files and does not, because if it is, this is a generator defect to fix at source
 under G05 rather than a one-off scaffold.

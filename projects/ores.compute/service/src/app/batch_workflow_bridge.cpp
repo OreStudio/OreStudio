@@ -55,13 +55,12 @@ void batch_workflow_bridge::poll_once() {
     for (const auto& link : links) {
         const auto batch_id = link.batch_id.value();
         try {
-            // Load batch under the appropriate tenant context.
             const auto tenant_ctx =
                 ores::database::service::tenant_context::with_tenant(ctx_, link.tenant_id);
 
             ores::compute::service::batch_service batch_svc(std::move(tenant_ctx));
-            const auto batch = batch_svc.get_batch(
-                boost::lexical_cast<boost::uuids::uuid>(batch_id));
+            const auto batch =
+                batch_svc.get_batch(boost::lexical_cast<boost::uuids::uuid>(batch_id));
 
             if (!batch) {
                 BOOST_LOG_SEV(lg(), warn) << "Batch not found, removing stale link: " << batch_id;
@@ -75,7 +74,6 @@ void batch_workflow_bridge::poll_once() {
                 continue;
             }
 
-            // Batch closed: publish step_completed_event.
             ores::workflow::messaging::step_completed_event evt;
             evt.workflow_instance_id = link.workflow_instance_id;
             evt.step_id = link.workflow_step_id;

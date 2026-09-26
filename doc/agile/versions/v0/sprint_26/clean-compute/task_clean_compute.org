@@ -93,8 +93,89 @@ record each item's result in the table below.
 | W04  | Pass    | =validate_schemas.sh= reports 303 tables and no warning, against two =WIRE_001= warnings before the fix: the platform model generated a notify trigger pair and the compute aggregators did not include it. Both aggregators now do. Evidence in =evidence/w04_validate_schemas.txt=. |
 | S01  | Pass    | The seven generated command units are registered in the repl and linked into =ores.shell.application=. The commands they supersede are deleted, and the commands no unit covers stay hand-written. |
 | S02  | Pass    | The recipe inventory lists 191 recipes in 110 categories and the gate passes. |
+| H01  | Pass    | The Component Architecture Audit ran against =projects/ores.compute=. Shape and part catalogue pass, every directory at depth 3 is signed off, no never-tracked file and no empty directory exists, the facade dirs mirror, and =validate_docs.sh= passes all 41 components. Its two real findings are fixed: the stale =service= and =wrapper= part diagrams are refreshed and re-rendered. The missing root =.puml= is not a finding, because a composite root's =modeling/= is the group index the validator exempts. Details in Notes. |
+| H02  | Pass    | No Qt or Wt code, no commented-out code and no dead code remain. The one hand-written duplicate of a generated artefact is deleted: =wrapper/src/app/log_publisher.hpp=, a redirect header that nothing included. Details in Notes. |
+| H03  | Pass    | A comment-rule review of the whole component found 65 violations, and all 65 are fixed: 27 restatements and edit-history narrations in sources, tests and models, 21 end-of-line comments, and the retired-technology names in model prose, which regeneration carries into the generated headers and SQL. The one template-level violation, the =AUTOMOC= comment in the generated =component_files.cmake=, is fixed in its org source too, so compute carries none. The remaining stale copies live in 22 other components and are recorded as a codegen-wide finding. Details in Notes. |
 
 Items not listed are not yet worked. Sections 2 to 8 are open.
+
+The H01 and H03 work is a review, so the method and the findings are worth
+more than the verdict.
+
+** H01, the architecture audit
+
+The automated half is =validate_docs.sh=, which passes all 41 components.
+The manual half was walked item by item and produced two findings, both in
+the diagrams beside the part overviews. =ores.compute.service.puml= was
+written in June and had never been refreshed, so it carried neither the
+seven generated =*_event_registrar= units in the new =messaging= facet nor
+=workunit_dispatcher=; =ores.compute.wrapper.puml= was missing
+=log_publisher=. Both are refreshed above the sentinel line, the
+hand-authored region below it is byte-identical, and both render to their
+=.png= again.
+
+The capture script, =build/scripts/generate_component_puml.py=, resolves
+simple components only, so a part of a composite is refreshed by hand.
+That is a codegen-wide finding, and it is recorded here.
+
+Two items that look like findings are not.
+
+- The composite root has no =.puml=. The audit asks for a diagram beside
+  every component overview, and =validate_docs.py= inspects part
+  =modeling/= dirs only; a composite root's =modeling/= holds the group
+  index and the models, and no other composite root in the repository
+  carries one either.
+- The =client= part has no =tests/= directory, so it exposes no ctest
+  target. Its own overview already records that as a deliberate gap, and
+  =ores.iam/client=, =ores.workspace/{api,core,service}= and
+  =ores.http/core= share it.
+
+One audit finding was wrong and is not acted on: the reviewer expected
+=wrapper/include/ores.compute.wrapper/app/application_exception.hpp=. No
+such header exists in the wrapper, and none is missing.
+
+** H02, the legacy scan
+
+The scan covered Qt and Wt code fragments, commented-out code and
+hand-written duplicates of generated artefacts. It found one of the three:
+=wrapper/src/app/log_publisher.hpp=, a two-line redirect to the real header
+in =include/=, included by nobody and not listed in the generated source
+list. It is deleted.
+
+The Qt and Wt hits that remain are prose. Two of them were edit history and
+are rewritten with the rest of the comment pass. The rest name the retired
+technology only to say the component does not use it, which the comment
+rules allow.
+
+** H03, the comment pass
+
+The review covered every hand-written and generated file under
+=projects/ores.compute/= plus its org models, against the project comment
+rules. It found 65 violations in four classes: 10 comments that restate
+the code, 20 that narrate edit history, 21 end-of-line comments, and 14
+that name a technology the component no longer uses.
+
+The fixes split by where the text lives. Comments in hand-written sources
+and tests are edited in place. Comments in generated files are not touched
+at all: the prose lives in the org model, so the model is rewritten and the
+tree is regenerated, which is what carries the fix into the C++ header and
+the SQL schema comment together.
+
+One violation lived in a template rather than in the component. The
+generated =component_files.cmake= files carried ="Headers must be listed
+for AUTOMOC to find Q_OBJECT declarations."=, and the text comes from
+=library/templates/ores.cmake.component.files_src.org=. The line is
+corrected in the org source, re-tangled, and the source lists of compute,
+iam and shell are regenerated, so compute carries no retired-technology
+comment at all.
+
+The rest of that regeneration is deferred, and this is a codegen-wide
+finding. The same one-line template change reaches 145 source
+lists across 22 components, and 123 of them are stale for unrelated reasons
+and would pull their own drift into this branch. So the components the
+branch owns are regenerated and the rest are recorded.
+=regenerate_cmake_component_files.py --all --check= now reports 123 stale
+lists outside the branch against 0 for compute, iam and shell.
 
 * Notes
 

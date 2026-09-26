@@ -50,8 +50,10 @@ TEST_CASE("create_result_with_valid_fields", tags) {
     sut.workunit_id = boost::uuids::random_generator()();
     sut.host_id = boost::uuids::random_generator()();
     sut.pgmq_msg_id = 42;
-    sut.server_state = 5; // Done
-    sut.outcome = 1;      // Success
+    // Done.
+    sut.server_state = 5;
+    // Success.
+    sut.outcome = 1;
     sut.output_uri = "s3://bucket/outputs/result-001.zip";
     sut.received_at = std::chrono::system_clock::now();
 
@@ -74,7 +76,8 @@ TEST_CASE("create_inactive_result", tags) {
     sut.workunit_id = boost::uuids::random_generator()();
     sut.host_id = boost::uuids::nil_uuid();
     sut.pgmq_msg_id = 0;
-    sut.server_state = 1; // Inactive
+    // Inactive.
+    sut.server_state = 1;
     sut.outcome = 0;
     sut.output_uri = "";
     sut.received_at = std::chrono::system_clock::time_point{};
@@ -95,7 +98,8 @@ TEST_CASE("create_in_progress_result", tags) {
     sut.workunit_id = boost::uuids::random_generator()();
     sut.host_id = boost::uuids::random_generator()();
     sut.pgmq_msg_id = 789;
-    sut.server_state = 4; // InProgress
+    // InProgress.
+    sut.server_state = 4;
     sut.outcome = 0;
     sut.output_uri = "";
     sut.received_at = std::chrono::system_clock::time_point{};
@@ -212,7 +216,8 @@ TEST_CASE("result_convert_empty_vector_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
-    CHECK(!table.empty()); // Table should still have headers
+    // The header row survives an empty result set.
+    CHECK(!table.empty());
 }
 
 TEST_CASE("create_result_with_faker", tags) {

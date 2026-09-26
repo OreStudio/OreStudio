@@ -60,9 +60,8 @@ using namespace ores::logging;
  * on the request session) rejects them. Like the heartbeat, this channel is
  * trusted at the transport layer and uses the service context directly.
  *
- * This class must stay hand-written: the per-entity result handler is
- * regenerated from the entity model on every bind, and the original submit
- * path was dropped that way when the result entity was bound to profiles.
+ * This class stays hand-written: the per-entity result handler is regenerated
+ * from the entity model on every bind, so it cannot carry the submit path.
  * The terminal half of the result lifecycle lives here: mark the result
  * Done, accept the canonical result once the redundancy target is met, and
  * close the batch once every workunit has a canonical result.
@@ -78,8 +77,8 @@ public:
         if (auto req = decode<submit_result_request>(msg)) {
             try {
                 service::result_service result_svc(ctx_);
-                auto existing = result_svc.get_result(
-                    boost::lexical_cast<boost::uuids::uuid>(req->result_id));
+                auto existing =
+                    result_svc.get_result(boost::lexical_cast<boost::uuids::uuid>(req->result_id));
                 if (!existing) {
                     reply(nats_,
                           msg,
@@ -89,7 +88,8 @@ public:
                 }
 
                 auto r = *existing;
-                r.server_state = 5; // Done
+                // Done.
+                r.server_state = 5;
                 r.output_uri = req->output_uri;
                 r.received_at = std::chrono::system_clock::now();
                 r.outcome = req->outcome;

@@ -45,8 +45,8 @@ namespace ores::compute::domain {
  *
  * is_active retires a triplet without deleting it, so a package that names
  * it still resolves. It is a plain column and not a declared filter, because
- * the generated read refuses a filter today and a filter the service rejects
- * is worse than no filter at all.
+ * the generated read refuses a filter, and a filter the service rejects is
+ * worse than no filter at all.
  */
 struct platform final {
     /**

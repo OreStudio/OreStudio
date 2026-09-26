@@ -111,7 +111,7 @@ set(files
     "service/tenant_type_service.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/domain/token_settings.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/export.hpp"

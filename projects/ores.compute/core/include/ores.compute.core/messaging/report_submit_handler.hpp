@@ -36,10 +36,9 @@ namespace ores::compute::messaging {
  * creates a compute batch and one workunit per tarball URI, publishes
  * work_assignment_event messages, and completes the workflow step.
  *
- * Phase 3.9: calls wf->complete() immediately so the report workflow
- * proceeds to finalise for end-to-end validation.  Phase 3.10 will
- * change this to an async bridge where the assimilator fires
- * step_completed when the batch terminates.
+ * Records a row in ores_compute_workflow_batch_links_tbl;
+ * batch_workflow_bridge publishes step_completed_event once the batch
+ * reaches closed status.
  */
 class ORES_COMPUTE_CORE_EXPORT report_submit_handler {
 private:

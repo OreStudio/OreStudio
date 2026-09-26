@@ -9,7 +9,7 @@ set(files
 )
 {{#has_headers}}
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
 {{#headers}}
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/{{.}}"

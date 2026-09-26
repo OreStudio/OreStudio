@@ -54,7 +54,7 @@ set(files
     "generators/workunit_generator.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/domain/app.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.api/domain/app_json_io.hpp"

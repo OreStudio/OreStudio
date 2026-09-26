@@ -199,7 +199,7 @@ messaging::{{response}}
         response.result.code = "not_found";
         return response;
     }
-    response.{{entity_singular}} = std::move(found.front());
+    response.{{payload_member}} = std::move(found.front());
     return response;
 }
 
@@ -235,7 +235,7 @@ messaging::{{response}}
     repo_.write(ctx_, value, request.change.precondition);
     auto written = read_one(repo_, ctx_, key_from(value));
     if (!written.empty())
-        response.{{entity_singular}} = std::move(written.front());
+        response.{{payload_member}} = std::move(written.front());
     return response;
 }
 

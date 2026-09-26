@@ -30,8 +30,8 @@
 
 // The canonical junction surface writes and removes rows one claim at a time:
 // the repository offers no operation that replaces a whole set for one parent,
-// because the protocol retired that operation. A caller that wants the set
-// replaced composes the writes and the removals itself.
+// so a caller that wants the set replaced composes the writes and the
+// removals itself.
 
 namespace {
 

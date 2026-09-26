@@ -43,8 +43,8 @@ namespace ores::compute::domain {
  * The junction uses the full generated stack: NATS protocol, handler
  * and registrar. The generated list_by_app_version op returns the
  * platform rows enriched with the platform code. Both it and the write
- * and remove ops are consumed by the desktop console and by the repository
- * tests.
+ * and remove ops are consumed by the ores.shell compute commands and by the
+ * repository tests.
  */
 struct app_version_platform final {
     /**

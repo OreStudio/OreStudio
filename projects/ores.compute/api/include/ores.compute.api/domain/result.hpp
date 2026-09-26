@@ -41,22 +41,15 @@ namespace ores::compute::domain {
  * Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),
  * and the location of output data. The BOINC equivalent of 'result'.
  *
- * The grid machinery writes results and there is no human edit flow, so the
- * entity carries no change-reason cache. The profile it binds to sets that
- * feature for the controller's detail dialogs, which the Qt retirement
- * deleted with the controller.
+ * The entity carries no change-reason cache: the grid machinery writes results
+ * and there is no human edit flow.
  *
- * Generator-signature exception (recorded in the codegen drift loop): the
- * pre-drift handcrafted generator took a workunit_id parameter
- * (generate_synthetic_result(workunit_id, ctx)). The template signature
- * takes only the generation context, and the sole consumer (the result
- * eventing integration test) now links the FK by member assignment after
- * generation. No model knob or paste block is needed for the parameterized
- * overload; the template shape is the sanctioned surface.
+ * Generator-signature exception: the generator takes only the generation
+ * context; a caller that needs a specific workunit links it by member
+ * assignment after generation. No parameterized overload or model knob is
+ * needed.
  *
- * Key exception: result declares no key field, so callers address it by its
- * storage key. The retired Qt list window keyed on the audit column
- * modified_by, which is not an identity and is not a column of this model.
+ * result declares no key field, so callers address it by its storage key.
  */
 struct result final {
     /**

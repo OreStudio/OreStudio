@@ -107,7 +107,8 @@ void report_submit_handler::submit(ores::nats::message msg) {
             domain::workunit wu;
             wu.id = wu_uuid;
             wu.batch_id = batch_uuid;
-            wu.app_version_id = {}; // Placeholder: no ORE app version yet
+            // No ORE app version is assigned to this workunit yet.
+            wu.app_version_id = {};
             wu.input_uri = tarball_uri;
             wu.priority = 1;
             wu.target_redundancy = 1;
@@ -116,7 +117,6 @@ void report_submit_handler::submit(ores::nats::message msg) {
             wu_svc.save_workunit(wu);
             workunit_ids.push_back(wu_id);
 
-            // Publish work assignment event (fire-and-forget).
             work_assignment_event evt;
             evt.workunit_id = wu_id;
             evt.app_version_id = boost::uuids::to_string(wu.app_version_id);

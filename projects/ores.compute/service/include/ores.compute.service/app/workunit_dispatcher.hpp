@@ -35,10 +35,9 @@ namespace ores::compute::service::app {
  * CRUD path; the backend side of that contract lives here: create one result
  * row per redundancy target and publish each as a JetStream work assignment.
  *
- * This class must live in the hand-written service app layer, not in the
- * generated workunit handler. The handler is regenerated from the entity
- * model on every bind, and hand-placed behavior is silently dropped on
- * regeneration — PR #2012 lost the original dispatcher exactly that way.
+ * This class lives in the hand-written service app layer, not in the
+ * generated workunit handler, which is regenerated from the entity model on
+ * every bind and cannot carry hand-placed behavior.
  *
  * Dispatch runs on the entity event pipeline after the workunit commit, so
  * it is asynchronous relative to the shell request: failures surface in the

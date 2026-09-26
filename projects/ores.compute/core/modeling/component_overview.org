@@ -49,7 +49,7 @@ job assignments via NATS; results flow back through the same channel.
 - =ores.compute.api= — shared domain types and NATS protocol schemas.
 - =ores.dq= — ORM base classes.
 - =ores.iam.core= — authorisation context.
-- =rfl=, =soci=, =nats.c=.
+- =rfl=, =sqlgen=, =nats.c=.
 
 * See also
 

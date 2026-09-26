@@ -114,7 +114,8 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
         ores::compute::domain::result r;
         r.id = result_id;
         r.workunit_id = wu->id;
-        r.server_state = 2; // Unsent
+        // Unsent.
+        r.server_state = 2;
         r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
         r.change_commentary = "Created on workunit dispatch";
         stamp(r, tenant_ctx);

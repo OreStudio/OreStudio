@@ -135,7 +135,7 @@ grep -rho '#include "ores\.trading[^"]*"' projects/ --include=*.hpp --include=*.
 
 Result: 1446 files inside the component, 38 in ores.shell, 17 in
 ores.ore, 1 in ores.reporting, and 0 in ores.web. One hundred and
-twenty distinct headers are consumed outside the component. The full
+twenty-six distinct headers are consumed outside the component. The full
 symbol-level census belongs to PR 6.
 
 ** The decisions
@@ -230,6 +230,8 @@ analytics is the fifth that the release notes count.
 | 13 | The local lint pass is required by the acceptance and recorded nowhere | task_clean_trading.org | Accept | =evidence/pr1_local_checks.txt= now holds lint, the site check, docs and misspell |
 | 14 | The sprint 25 documentation correction is outside the acceptance | task_clean_trading.org | Accept | The acceptance and the plan now own the retraction, and the health review reconciles with the release notes |
 | 15 | The five new tasks carry empty =Test Scenarios=, =PRs= and =Review= tables | the five task files | Decline | The repository's task template carries them and every other task keeps them. They are filled as each task runs |
+| 16 | A stale figure survives: the B06 section still says "one hundred and twenty distinct headers" | task_clean_trading.org | Accept | The phrase spans a line break, which is why the first pass missed it. Corrected to 126 |
+| 17 | The story ends with an empty =* Result= heading | story.org | Accept | Sprint 26 stories take that heading when the story closes, not when the first task does. The heading is removed until PR 6 |
 
 * Result
 

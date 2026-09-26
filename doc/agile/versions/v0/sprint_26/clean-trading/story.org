@@ -437,5 +437,3 @@ row is updated as each PR lands.
   models need.
 - The stale =ores_schema.puml= ER diagram, which is a repository-wide
   sweep and not a trading fix. PR 6 records it.
-
-* Result

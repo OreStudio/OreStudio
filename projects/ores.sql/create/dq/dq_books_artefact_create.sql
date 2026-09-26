@@ -17,6 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- Operational ledger leaves. The only entity that holds trades. Serves as the basis for accounting, ownership, and regulatory capital treatment. Must belong to exactly one portfolio. - Artefact Table
+-- =============================================================================
+
 create table if not exists "ores_dq_books_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
@@ -30,23 +40,44 @@ create table if not exists "ores_dq_books_artefact_tbl" (
     "book_status" text not null,
     "regulatory_book_type" text not null,
     "is_sweepable" boolean not null default false,
-    -- Null means "region-agnostic -- inherit the publishing party's own
-    -- business_center_code at publish time" (see
-    -- ores_refdata_publish_books_from_dq_fn); a template can't know
-    -- which party it will be published to. Only set this when the book
-    -- itself is tied to a real trading desk location regardless of
-    -- owning party (e.g. a GBP rates desk always trades out of London).
     "rates_centre_code" text null
 );
 
-create index if not exists books_artefact_dataset_idx
-on "ores_dq_books_artefact_tbl" (dataset_id);
+create index if not exists dq_books_artefact_dataset_idx
+on ores_dq_books_artefact_tbl (dataset_id);
 
-create index if not exists books_artefact_tenant_idx
-on "ores_dq_books_artefact_tbl" (tenant_id);
+create index if not exists dq_books_artefact_tenant_idx
+on ores_dq_books_artefact_tbl (tenant_id);
 
-create index if not exists books_artefact_id_idx
-on "ores_dq_books_artefact_tbl" (id);
+create index if not exists dq_books_artefact_id_idx
+on ores_dq_books_artefact_tbl (id);
 
-create index if not exists books_artefact_name_idx
-on "ores_dq_books_artefact_tbl" (name);
+create index if not exists dq_books_artefact_id_idx
+on ores_dq_books_artefact_tbl (id);
+
+create index if not exists dq_books_artefact_id_idx
+on ores_dq_books_artefact_tbl (id);
+
+create index if not exists dq_books_artefact_id_idx
+on ores_dq_books_artefact_tbl (id);
+
+create index if not exists dq_books_artefact_id_idx
+on ores_dq_books_artefact_tbl (id);
+
+create index if not exists dq_books_artefact_id_idx
+on ores_dq_books_artefact_tbl (id);
+
+create index if not exists dq_books_artefact_id_idx
+on ores_dq_books_artefact_tbl (id);
+
+create index if not exists dq_books_artefact_id_idx
+on ores_dq_books_artefact_tbl (id);
+
+create index if not exists dq_books_artefact_id_idx
+on ores_dq_books_artefact_tbl (id);
+
+create index if not exists dq_books_artefact_id_idx
+on ores_dq_books_artefact_tbl (id);
+
+create index if not exists dq_books_artefact_id_idx
+on ores_dq_books_artefact_tbl (id);

@@ -102,8 +102,6 @@ UNREPRESENTED: dict[str, str] = {
 SHAPE_MISMATCH: dict[str, str] = {
     "CPR": "real key is CPR/RATE/ISIN:<isin>, with no currency",
     "MM": "the 5-segment form ccy/settle/tenor now projects; the 6-segment form still fails where the producer spells the index ESTER, which index_family calls estr",
-    "MM_FUTURE": "real key is ccy/contract-month/exchange:code/tenor",
-    "OI_FUTURE": "real key is ccy/contract-month/exchange:code/tenor",
 }
 
 # ORE types oresmd represents through a volatility surface point rather than

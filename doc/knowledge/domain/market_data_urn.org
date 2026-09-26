@@ -340,8 +340,8 @@ needs =point=.
 | =oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y= | — | — | =BMA_SWAP/RATIO/USD/3M/5Y= |
 | =oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=rate&point=5y= | — | — | =ZERO/RATE/EUR/EURIBOR/3M/5Y= |
 | =oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y= | — | — | =ZERO/YIELD_SPREAD/EUR/EURIBOR/3M/5Y= |
-| =oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme= | — | — | =MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME= |
-| =oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme= | — | — | =OI_FUTURE/PRICE/USD/SOFR/3M/CME= |
+| =oresmd://ir/eur?tenor=3m&contract_month=2024-04&contract_code=XICE:FEI&type=quote&quote=mm_future&metric=price= | — | — | =MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M= |
+| =oresmd://ir/usd?tenor=3m&contract_month=2024-01&contract_code=XCME:SRA&type=quote&quote=oi_future&metric=price= | — | — | =OI_FUTURE/PRICE/USD/2024-01/XCME:SRA/3M= |
 
 *** Tenor-index gap, resolved
 

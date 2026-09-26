@@ -407,7 +407,7 @@ actual message bytes.)
 
 | Instrument | RIC | Bloomberg ticker | ORE quote key |
 |------------+-----+-------------------+--------------------|
-| USD overnight rate (SOFR) | ~USDSOFR=~ | =SOFRRATE Index= | No standalone ORE type for a raw overnight fixing (see note); closest concrete ORE representation is the front SOFR future, =OI_FUTURE/PRICE/USD/2025-09/SOFR= |
+| USD overnight rate (SOFR) | ~USDSOFR=~ | =SOFRRATE Index= | No standalone ORE type for a raw overnight fixing (see note); closest concrete ORE representation is the front SOFR future, =OI_FUTURE/PRICE/USD/2025-09/XCME:SRA/3M= |
 | EUR 6M EURIBOR | ~EUR6MFSR=~ | =EUR006M Index= | =MM/RATE/EUR/2D/6M= (money-market deposit rate at the 6M tenor — the closest single-rate analog to a EURIBOR fixing) |
 | USD 5Y IRS par rate | =USDSB5Y=ICAP= | =USSA5 Curncy= | =IR_SWAP/RATE/USD/2D/3M/5Y= |
 | EUR 10Y IRS par rate | =EURABS10Y=ICAP= | =EUSA10 Curncy= | =IR_SWAP/RATE/EUR/2D/6M/10Y= |

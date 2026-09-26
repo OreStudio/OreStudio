@@ -226,7 +226,7 @@ TEST_CASE("no_series_type_oresmd_cannot_name_has_gone_unrecorded", tags) {
     // the data rather than from the models.
     const std::set<std::string> recorded{
         "BOND", "COMMODITY_OPTION", "CPR", "INDEX_CDS_OPTION",
-        "MM_FUTURE", "OI_FUTURE", "RATING", "SHAPE_PROFILE"};
+        "RATING", "SHAPE_PROFILE"};
 
     REQUIRE(types_oresmd_cannot_name() == recorded);
 }
@@ -253,7 +253,7 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
         "CORRELATION", "EQUITY", "EQUITY_DIVIDEND", "EQUITY_FWD",
         "EQUITY_OPTION", "FRA",
         "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
-        "INDEX_CDS_TRANCHE", "SEASONALITY",
+        "INDEX_CDS_TRANCHE", "MM_FUTURE", "OI_FUTURE", "SEASONALITY",
         "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",
         "ZC_INFLATIONSWAP", "ZERO"};
 
@@ -261,7 +261,7 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
         "BMA_SWAP", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
         "CC_FIX_FLOAT_SWAP", "CDS_INDEX", "COMMODITY", "EQUITY_DIVIDEND",
         "FRA", "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
-        "INDEX_CDS_TRANCHE", "IR_SWAP", "SEASONALITY",
+        "INDEX_CDS_TRANCHE", "IR_SWAP", "MM_FUTURE", "OI_FUTURE", "SEASONALITY",
         "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",
         "ZC_INFLATIONSWAP", "ZERO"};
 

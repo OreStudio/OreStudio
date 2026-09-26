@@ -27,8 +27,8 @@
 | cc_basis_swap       | CC_BASIS_SWAP     | cc_basis_swap          | BASIS_SPREAD    | tenor           | cross_currency          | 7-segment: CC_BASIS_SWAP/BASIS_SPREAD/CCY1/TENOR1/CCY2/TENOR2/MATURITY | CC_BASIS_SWAP (cross-currency basis swap spread). |
 | cc_fix_float_swap   | CC_FIX_FLOAT_SWAP | cc_fix_float_swap      | RATE            | tenor           | cross_currency          | 7-segment: CC_FIX_FLOAT_SWAP/RATE/CCY1/TENOR1/CCY2/TENOR2/MATURITY | CC_FIX_FLOAT_SWAP (cross-currency fix-float swap rate). |
 | zero                | ZERO              | zero                   | RATE            | tenor           | curve_id_day_count      | 6-segment: ZERO/RATE/CCY/CURVE_ID/DAY_COUNT/POINT, where the curve id is a free-text name and the day count a token like A365 | ZERO (zero-coupon rate). |
-| mm_future           | MM_FUTURE         | mm_future              | PRICE           | tenor           | includes_index          | 6-segment: MM_FUTURE/PRICE/CCY/INDEX/TENOR/POINT | MM_FUTURE (money market future price). |
-| oi_future           | OI_FUTURE         | oi_future              | PRICE           | tenor           | includes_index          | 6-segment: OI_FUTURE/PRICE/CCY/INDEX/TENOR/POINT | OI_FUTURE (overnight index future price). |
+| mm_future           | MM_FUTURE         | mm_future              | PRICE           | tenor           | futures                 | 6-segment: MM_FUTURE/PRICE/CCY/CONTRACT_MONTH/CONTRACT_CODE/TENOR, where the contract code is the exchange-qualified token ORE writes (XICE:FEI, XCME:SRA) | MM_FUTURE (money market future price). |
+| oi_future           | OI_FUTURE         | oi_future              | PRICE           | tenor           | futures                 | 6-segment: OI_FUTURE/PRICE/CCY/CONTRACT_MONTH/CONTRACT_CODE/TENOR | OI_FUTURE (overnight index future price). |
 | capfloor            | CAPFLOOR          | capfloor               | RATE            | surface         | capfloor_vol            | 8-segment: CAPFLOOR/RATE_NVOL/CCY/MATURITY/FLOAT_TENOR/SHIFT/STRIP/STRIKE, and the same shape under RATE_LNVOL; the metric segment comes from the vol model, not from this table's ore_metric | CAPFLOOR (cap/floor volatility on a strike grid). |
 | bond_option         | BOND_OPTION       | bond_option            | RATE            | surface         | swaption_vol            | 6-segment: BOND_OPTION/RATE_LNVOL/UNDERLYING/EXPIRY/BOND_TENOR/STRIKE -- the swaption shape over a bond, so the underlying is a generic name rather than a currency | BOND_OPTION (bond option implied vol). |
 
@@ -90,6 +90,8 @@ A logical, possibly-partial oresmd requirement for an interest-rate instrument.
 | tenor      | std::optional<std::string>      | no        | tenor     |                        |
 | second_tenor | std::optional<std::string>    | no        | second_tenor |                     |
 | second_ccy | std::optional<std::string>      | no        | second_ccy |                       |
+| contract_month | std::optional<std::string>  | no        | contract_month |                    |
+| contract_code | std::optional<std::string>   | no        | contract_code |                     |
 | shift      | std::optional<std::string>      | no        | shift     |                        |
 | strip      | std::optional<std::string>      | no        | strip     |                        |
 | curve_id   | std::optional<std::string>      | no        | curve_id  |                        |
@@ -134,6 +136,8 @@ branch), which no field-table ordering can express.
 | second_tenor |
 | second_ccy |
 | second_factor |
+| contract_month |
+| contract_code |
 | shift |
 | strip |
 | curve_id |
@@ -196,8 +200,8 @@ IR has the most complex qualifier shape variants:
 | oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y | BMA_SWAP/RATIO/USD/3M/5Y | ir_bma_swap_ratio_quote_key |
 | oresmd://ir/eur?type=quote&quote=zero&metric=rate&curve_id=BANK_EUR_BORROW&day_count=A365&point=2y | ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y | ir_zero_rate_quote_key_matches_the_corpus |
 | oresmd://ir/eur?type=quote&quote=zero&metric=yield_spread&curve_id=EONIA_ESTER_SPREAD&day_count=A365&point=1d | ZERO/YIELD_SPREAD/EUR/EONIA_ESTER_SPREAD/A365/1D | ir_zero_yield_spread_quote_key_matches_the_corpus |
-| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme | MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME | ir_mm_future_price_quote_key |
-| oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme | OI_FUTURE/PRICE/USD/SOFR/3M/CME | ir_oi_future_price_quote_key |
+| oresmd://ir/eur?tenor=3m&contract_month=2024-04&contract_code=XICE:FEI&type=quote&quote=mm_future&metric=price | MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M | ir_mm_future_price_quote_key_matches_the_corpus |
+| oresmd://ir/usd?tenor=3m&contract_month=2024-01&contract_code=XCME:SRA&type=quote&quote=oi_future&metric=price | OI_FUTURE/PRICE/USD/2024-01/XCME:SRA/3M | ir_oi_future_price_quote_key_matches_the_corpus |
 | oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03 | CAPFLOOR/RATE_NVOL/CHF/5Y/6M/0/0/0.03 | ir_capfloor_normal_vol_quote_key_matches_the_corpus |
 | oresmd://ir/chf?type=vol&quote=capfloor&point=5y,6m,0,0,0.03 | CAPFLOOR/RATE_LNVOL/CHF/5Y/6M/0/0/0.03 | ir_capfloor_log_normal_vol_quote_key_matches_the_corpus |
 | oresmd://ir/eur?type=vol&quote=capfloor&model=shift&tenor=6m | CAPFLOOR/SHIFT/EUR/6M | ir_capfloor_shift_quote_key_matches_the_corpus |
@@ -209,7 +213,7 @@ IR has the most complex qualifier shape variants:
 |-----+----------+-------------|
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&point=1m | MM/RATE/EUR/EURIBOR/3M/1M | ir_mm_rate_metric_defaulted_from_quote_type |
 | oresmd://ir/eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&point=10y | BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y | ir_basis_swap_metric_defaulted_to_basis_spread |
-| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&point=cme | MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME | ir_mm_future_metric_defaulted_to_price |
+| oresmd://ir/eur?tenor=3m&contract_month=2024-04&contract_code=XICE:FEI&type=quote&quote=mm_future | MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M | ir_mm_future_metric_defaulted_to_price |
 
 ** Projections (quote_type required)
 

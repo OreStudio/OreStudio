@@ -427,11 +427,16 @@ TEST_CASE("from_ore_key_ir_indexed_families", tags) {
     REQUIRE(oresmd_projections::from_ore_key("ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y") ==
             parse("oresmd://ir/"
                   "eur?type=quote&quote=zero&metric=rate&curve_id=BANK_EUR_BORROW&day_count=A365&point=2y"));
-    REQUIRE(oresmd_projections::from_ore_key("MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME") ==
+    // A future names its delivery month and the exchange-qualified contract code
+    // its producer quotes, then the underlying index tenor. The corpus writes
+    // MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M, so the contract code is a token ORE
+    // spells with a colon inside and we keep verbatim.
+    REQUIRE(oresmd_projections::from_ore_key("MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M") ==
             parse("oresmd://ir/"
-                  "eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme"));
-    REQUIRE(oresmd_projections::from_ore_key("OI_FUTURE/PRICE/USD/SOFR/3M/CME") ==
-            parse("oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme"));
+                  "eur?tenor=3m&contract_month=2024-04&contract_code=XICE:FEI&type=quote&metric=price&quote=mm_future"));
+    REQUIRE(oresmd_projections::from_ore_key("OI_FUTURE/PRICE/USD/2024-01/XCME:SRA/3M") ==
+            parse("oresmd://ir/"
+                  "usd?tenor=3m&contract_month=2024-01&contract_code=XCME:SRA&type=quote&metric=price&quote=oi_future"));
 }
 
 TEST_CASE("from_ore_key_ir_no_index_families", tags) {
@@ -532,6 +537,10 @@ TEST_CASE("from_ore_key_pins_the_canonical_uri_of_the_import_boundary", tags) {
             "oresmd://fx/eurusd?type=quote&quote=spot");
     REQUIRE(oresmd_parser::to_uri(*oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/2D/3M/5Y"))
                 .value == "oresmd://ir/usd?tenor=3m&type=quote&metric=rate&quote=ir_swap&point=5y");
+    REQUIRE(oresmd_parser::to_uri(*oresmd_projections::from_ore_key("MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M"))
+                .value ==
+            "oresmd://ir/"
+            "eur?tenor=3m&contract_month=2024-04&contract_code=XICE:FEI&type=quote&metric=price&quote=mm_future");
     REQUIRE(oresmd_parser::to_uri(*oresmd_projections::from_ore_key("CDS/CREDIT_SPREAD/VOD/SR/EUR/5Y"))
                 .value == "oresmd://credit/vod?ccy=eur&type=quote&quote=cds&point=sr,5y");
 }

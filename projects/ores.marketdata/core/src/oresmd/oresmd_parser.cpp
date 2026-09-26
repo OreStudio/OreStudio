@@ -54,6 +54,8 @@ struct query_params final {
     std::optional<std::string> tenor;
     std::optional<std::string> second_tenor;
     std::optional<std::string> second_ccy;
+    std::optional<std::string> contract_month;
+    std::optional<std::string> contract_code;
     std::optional<std::string> second_factor;
     std::optional<std::string> curve_id;
     std::optional<std::string> day_count;
@@ -80,6 +82,10 @@ struct query_params final {
                 qp.second_tenor = p.value;
             else if (p.key == "second_ccy")
                 qp.second_ccy = p.value;
+            else if (p.key == "contract_month")
+                qp.contract_month = p.value;
+            else if (p.key == "contract_code")
+                qp.contract_code = p.value;
             else if (p.key == "second_factor")
                 qp.second_factor = p.value;
             else if (p.key == "curve_id")
@@ -238,6 +244,10 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
         id.second_tenor = to_lower(*qp.second_tenor);
     if (qp.second_ccy)
         id.second_ccy = to_upper(*qp.second_ccy);
+    if (qp.contract_month)
+        id.contract_month = *qp.contract_month;
+    if (qp.contract_code)
+        id.contract_code = *qp.contract_code;
     if (qp.curve_id)
         id.curve_id = *qp.curve_id;
     if (qp.day_count)
@@ -599,6 +609,8 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 append_if(u, "tenor", id.tenor);
                 append_if(u, "second_tenor", id.second_tenor);
                 append_if(u, "second_ccy", id.second_ccy);
+                append_if(u, "contract_month", id.contract_month);
+                append_if(u, "contract_code", id.contract_code);
                 append_if(u, "shift", id.shift);
                 append_if(u, "strip", id.strip);
                 append_if(u, "curve_id", id.curve_id);

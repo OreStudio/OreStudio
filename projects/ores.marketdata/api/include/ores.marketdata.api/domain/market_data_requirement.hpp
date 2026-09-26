@@ -56,6 +56,8 @@ struct ir_market_data_requirement final {
     std::optional<std::string> tenor;
     std::optional<std::string> second_tenor;
     std::optional<std::string> second_ccy;
+    std::optional<std::string> contract_month;
+    std::optional<std::string> contract_code;
     std::optional<std::string> shift;
     std::optional<std::string> strip;
     std::optional<std::string> curve_id;

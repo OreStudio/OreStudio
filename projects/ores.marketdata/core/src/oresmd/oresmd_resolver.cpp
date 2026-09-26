@@ -87,6 +87,8 @@ market_data_identifier resolve_ir(const ir_market_data_requirement& req,
     id.tenor = pick_optional(req.tenor, d ? d->tenor : std::nullopt);
     id.second_tenor = pick_optional(req.second_tenor, d ? d->second_tenor : std::nullopt);
     id.second_ccy = pick_optional(req.second_ccy, d ? d->second_ccy : std::nullopt);
+    id.contract_month = pick_optional(req.contract_month, d ? d->contract_month : std::nullopt);
+    id.contract_code = pick_optional(req.contract_code, d ? d->contract_code : std::nullopt);
     id.shift = pick_optional(req.shift, d ? d->shift : std::nullopt);
     id.strip = pick_optional(req.strip, d ? d->strip : std::nullopt);
     id.curve_id = pick_optional(req.curve_id, d ? d->curve_id : std::nullopt);

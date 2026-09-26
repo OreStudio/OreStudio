@@ -191,6 +191,8 @@ bool qualifier_includes_index(ir_quote_type qt) {
         case ir_quote_type::bma_swap:
         case ir_quote_type::fra:
         case ir_quote_type::imm_fra:
+        case ir_quote_type::mm_future:
+        case ir_quote_type::oi_future:
             return false;
         default:
             return true;
@@ -282,6 +284,27 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
                            *id.curve_id,
                            *id.day_count,
                            to_upper(*id.point));
+    }
+    // A future is keyed by its delivery month and the exchange-qualified contract
+    // code the producer quotes, then the underlying index tenor:
+    // MM_FUTURE/PRICE/CCY/CONTRACT_MONTH/CONTRACT_CODE/TENOR. The contract code is
+    // emitted verbatim -- the corpus writes XICE:FEI and XCME:SRA, and the token is
+    // a name for the contract rather than a pair of fields we can decompose.
+    // A future carries no point, so it does not pass the guard below.
+    if (id.type == instrument_type::quote &&
+        (id.quote_type == ir_quote_type::mm_future ||
+         id.quote_type == ir_quote_type::oi_future)) {
+        if (!id.contract_month || !id.contract_code || !id.tenor)
+            return std::nullopt;
+        const auto qt = *id.quote_type;
+        const auto m = id.metric ? *id.metric : default_metric(qt);
+        return std::format("{}/{}/{}/{}/{}/{}",
+                           ore_type(qt),
+                           ore_metric(m),
+                           id.ccy,
+                           *id.contract_month,
+                           *id.contract_code,
+                           to_upper(*id.tenor));
     }
     if (id.type != instrument_type::quote || !id.quote_type || !id.point || !id.tenor)
         return std::nullopt;
@@ -859,7 +882,7 @@ std::optional<market_data_identifier> from_ir_zero(const std::vector<std::string
 std::optional<market_data_identifier>
 from_ir_indexed(ir_quote_type qt, const std::vector<std::string>& parts) {
     // TYPE/METRIC/CCY/INDEX/TENOR/POINT — the families whose qualifier includes
-    // the index (MM, FRA, IMM_FRA, BASIS_SWAP, ZERO, MM_FUTURE, OI_FUTURE).
+    // the index (MM, FRA, IMM_FRA, BASIS_SWAP, ZERO).
     if (parts.size() != 6)
         return std::nullopt;
     const auto m = parse_metric(parts[1]);
@@ -874,6 +897,27 @@ from_ir_indexed(ir_quote_type qt, const std::vector<std::string>& parts) {
     id.index = *idx;
     id.tenor = to_lower(parts[4]);
     id.point = to_lower(parts[5]);
+    return id;
+}
+
+std::optional<market_data_identifier>
+from_ir_future(ir_quote_type qt, const std::vector<std::string>& parts) {
+    // TYPE/METRIC/CCY/CONTRACT_MONTH/CONTRACT_CODE/TENOR -- the delivery month and
+    // the exchange-qualified contract code sit between the currency and the
+    // underlying index tenor (MM_FUTURE, OI_FUTURE).
+    if (parts.size() != 6)
+        return std::nullopt;
+    const auto m = parse_metric(parts[1]);
+    if (!m)
+        return std::nullopt;
+    ir_market_data_identifier id;
+    id.ccy = to_upper(parts[2]);
+    id.type = instrument_type::quote;
+    id.quote_type = qt;
+    id.metric = *m;
+    id.contract_month = parts[3];
+    id.contract_code = parts[4];
+    id.tenor = to_lower(parts[5]);
     return id;
 }
 
@@ -1295,7 +1339,7 @@ inverse_projection(const std::vector<std::string>& parts,
         return from_ir_zero(parts);
     if (type == ore_type_spec::mm_future || type == ore_type_spec::oi_future) {
         const auto qt = parse_enum_lower<ir_quote_type>(type);
-        return qt ? from_ir_indexed(*qt, parts) : std::nullopt;
+        return qt ? from_ir_future(*qt, parts) : std::nullopt;
     }
     // FRA and IMM_FRA carry no index: ORE writes ccy/start/length, where the
     // start is a tenor or an IMM date. The registry's shape table states the

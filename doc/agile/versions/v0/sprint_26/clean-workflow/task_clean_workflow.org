@@ -1379,9 +1379,9 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
+** First increment (PR #2173)
 
-First increment. PR #2173 lands the regeneration and the wiring that makes it
+PR #2173 landed the regeneration and the wiring that makes it
 build; the standard is not met in full, and the remainder is listed below rather
 than implied by the diff's size.
 
@@ -1415,6 +1415,73 @@ asked for explicitly and which is deliberately last. V: no full-tree build, no t
 run with the fleet up, no database recreation. G05: the new regression test
 compiles but has never executed.
 
-Two recorded exceptions stand rather than being forced: the partial
-=correlation_id= index and the cascading foreign key stay hand-written because the
-generator can express neither.
+Two recorded exceptions stood at the time. One has since gone: the cascading foreign
+key was deleted in the second increment, because the database cannot express it
+either and the create path failed on it outright. The partial =correlation_id= index
+stays hand-written, because no model can state a partial index.
+
+** Second increment (PR #2179)
+
+S01, S02, W01, H01 and the documentation gate are done, and V01 to V06 pass or are
+recorded with the half that cannot.
+
+What landed. The two generated shell units are registered from the REPL, and the
+hand-written unit they supersede is retired -- as a move rather than a deletion,
+because =wait_for_instance= is shared infrastructure no generated unit provides, so
+it survives as =workflow_wait_commands= with the =workflow wait= verb that bundle
+publication tells operators to follow progress with. The shell workflow module gained
+the Catch2 main every sibling test module has, its =modeling= directory and its
+component overview, which is what the documentation gate was failing on. The parent
+composite's =#+parts:= was missing four modules and was repaired with it.
+
+The four unwired registrars turned out to be two families with two homes. The history
+providers are composed in the aggregate registrar, as five other components compose
+theirs, because one generic subject serves both entities through a shared table that
+must outlive the subscription. The event mappings are wired in the service's
+composition root, which needed an event bus and a postgres event source built first;
+the subscriptions are held and the source starts only after they are registered. The
+service log confirms it: the workflow service listens on both entities' NOTIFY
+channels and subscribes =workflow.v1.history.get=.
+
+All three diagrams now carry an authored manual pass. That exposed two things. The
+api diagram's =eventing= block named a type B06 deleted and showed neither of its two
+generated replacements, and it was stale content the generator does not own, which
+deleting it and regenerating proved. And the generated per-entity protocol collides
+by name with the hand-written query protocol -- which the diagram recorded as latent
+and which running the commands proved live: the generated instance registrar's list
+subscription had bound to the query protocol's subject, so =workflow_instances list=
+addressed a subject nothing served while the query subject was subscribed twice in one
+process. The hand-written operation-side types were renamed.
+
+The recipe inventory carried six git conflict markers, and =--check= reported it
+clean, because the generator preserves arbitrary prose and so reproduced them byte for
+byte. The markers are gone and the generator now refuses a conflicted inventory,
+naming the lines, with three tests.
+
+Two defects surfaced only once a database could be created at all. The hand-written
+cascading foreign key was not expressible against a temporal parent, so
+=compass db recreate= failed outright and no database in this tree had ever contained
+it; it is deleted, and the orphaned-steps gap it was meant to close is recorded where
+the statement was. And the shell's provisioning chapter no longer documents a
+=workflow steps= command that had been retired.
+
+Verification. The whole tree builds, with =ores.reporting.service=, the executable
+that reported the undefined streaming operators, linking. =compass test run -- -R
+"ores.workflow"= is 3 of 3 passed with the fleet up. =validate_docs.sh= reports all 40
+components passing. =check_component_drift.py --component workflow-cpp= reports no
+drift. =regenerate_shell_recipe_inventory.py --check= is silent. The inventory suite is
+14 passed and the shell command suite 37 cases. =compass db recreate -y -k= exits 0 and
+24 of 24 units run, =ores.web= included. All three diagrams render.
+
+What did not land. V07 and V08 are unsurveyed and recorded as such rather than passed.
+=check_component_drift.py --all= still fails on roughly 24 components, none of them
+this one, verified pre-existing against =ores.reporting.core=; the acceptance clause
+that asks for a tree-wide pass therefore cannot be met from this component, and the
+row says so rather than being quietly omitted.
+
+Two blockers were environmental and are not this component's: the host ships nodejs
+without npm, so =ores.web= could not be built or started until npm was unpacked beside
+the other user tools; and the shell's bootstrap banner names =bootstrap <principal>
+<password> <email>= when the real command is =bootstrap create-initial-admin ...=,
+which makes the checked-in =bootstrap_smoke.ores= abort on its own ninth line. Both are
+recorded under V03 for whoever owns them.

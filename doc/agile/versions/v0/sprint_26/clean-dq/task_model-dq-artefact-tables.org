@@ -106,6 +106,14 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part fifteen: the coding scheme artefact table is generated
+
+Run on 2026-09-26. The smallest item from part fourteen is closed. The =coding_scheme= model now opts in to the artefact archetype, so =dq_coding_schemes_artefact_create.sql= is generated rather than hand-written. The generated table matches the hand-written one column for column.
+
+**One difference was accepted deliberately.** The generated table has ="version" integer not null= where the hand-written file had =default 0=. Every other generated artefact table in the component has the same no-default form, so the hand-written file was the deviation rather than the template -- and nothing inserts into this table, because the artefact upsert function takes the version as a parameter. The alternative was to change the artefact template, which would have altered every artefact table in every component to preserve one file's local quirk. That is the same trade part ten made for the composite index names: a cosmetic difference is accepted, with the reason, rather than paid for across the tree.
+
+**The classified census is now one file shorter**: 80 generated, 28 hand-written.
+
 * Step 8 part fourteen: every hand-written SQL file, classified
 
 Run on 2026-09-26. =create/dq= holds 108 files, of which **79 are generated and 29 hand-written**. The acceptance criterion is that each is "generated from a model, or recorded with the reason it is not", so this part classifies all 29. Nothing here is changed; it is the reason each file has none yet.
@@ -907,6 +915,7 @@ via its "Verifies task" field.
 | https://github.com/OreStudio/OreStudio/pull/2200 | [dq] Model methodology, retiring the data organization layer |
 | https://github.com/OreStudio/OreStudio/pull/2203 | [dq] Model the coding scheme pair, retiring its hand-written protocol |
 | https://github.com/OreStudio/OreStudio/pull/2216 | [dq] Model the FSM pair, and fix the mapper templates for an optional uuid |
+| https://github.com/OreStudio/OreStudio/pull/2220 | [dq] Generate the coding scheme artefact table from its model |
 
 * Review
 

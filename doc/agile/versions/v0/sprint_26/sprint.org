@@ -89,7 +89,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] | DONE | 2026-09-23 | 2026-09-26 | Remove the ores.cli component, its round-trip dataset and its recipes. A clean-standard review found no capability the shell or the service layer does not already provide. The directory round trip was kept and covered by a test, which found a 17-document export defect. |
 | [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] | STARTED | 2026-09-23 | | Second pass of the sprint 26 mission: document the user journeys of every component that had a UX, including its legacy ores.qt screens. |
 | [[id:3085B911-3030-4AB8-976F-0F037D4332E7][Show the current agile work item inside DSH]] | DONE | 2026-09-23 | 2026-09-23 | A DSH plugin that renders the sprint's stories and tasks as a kanban board, read from the org tree, with the work tree properties visible on every card. |
-| [[id:83339FFC-6314-443F-893D-BA053EEC9379][Reach systemd from a sandboxed compass session]] | BACKLOG | | | Make the busctl transport the default so a sandboxed compass session can see and change the systemd fleet, give the systemd pillar the flag the services pillar has, and stop the deploy hiding a failed daemon-reload. |
+| [[id:83339FFC-6314-443F-893D-BA053EEC9379][Reach systemd from a sandboxed compass session]] | DONE | | 2026-09-26 | Make the busctl transport the default so a sandboxed compass session can see and change the systemd fleet, give the systemd pillar the flag the services pillar has, and stop the deploy hiding a failed daemon-reload. |
 
 ** Hotfixes
 

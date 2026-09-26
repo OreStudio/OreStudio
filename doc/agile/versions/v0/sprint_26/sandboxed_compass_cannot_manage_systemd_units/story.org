@@ -40,11 +40,11 @@ fleet state it cannot actually see or change.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Tasks written; implementation not started. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the first task.                  |
+| Next          | Nothing. |
 | Last touched  | 2026-09-26                               |
 
 * Acceptance
@@ -59,8 +59,8 @@ fleet state it cannot actually see or change.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:3252AE89-8071-4E22-819B-8FDF4B4A6A3A][Default the environment to the busctl transport]] | STARTED | 2026-09-26 | | Write ORES_USE_BUSCTL into the .env that provision and configure generate, default it on, add a --use-busctl / --no-use-busctl pair to both, and give the systemd pillar the flag it lacks. |
-| [[id:FB024ABF-41F1-41F4-860F-E53D8F577F8A][Stop a failed daemon-reload passing as a successful deploy]] | BACKLOG | | | Make cmd_deploy print why the daemon-reload failed and return non-zero, instead of reporting success while systemd never reloads. |
+| [[id:3252AE89-8071-4E22-819B-8FDF4B4A6A3A][Default the environment to the busctl transport]] | DONE | 2026-09-26 | 2026-09-26 | Write ORES_USE_BUSCTL into the .env that provision and configure generate, default it on, add a --use-busctl / --no-use-busctl pair to both, and give the systemd pillar the flag it lacks. |
+| [[id:FB024ABF-41F1-41F4-860F-E53D8F577F8A][Stop a failed daemon-reload passing as a successful deploy]] | DONE | | 2026-09-26 | Make cmd_deploy print why the daemon-reload failed and return non-zero, instead of reporting success while systemd never reloads. |
 
 * Decisions
 
@@ -143,3 +143,28 @@ whether =env provision= should deploy units, is the larger question.
 ** See also
 
 - [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] — the design this defect undermines.
+
+* Result
+
+The transport defaults on, and a failed reload fails the command.
+
+A provisioned environment now carries =ORES_USE_BUSCTL=1= in its =.env=, so a
+sandboxed session reaches the user manager through busctl without anyone
+exporting a variable. =compass env provision= and =compass env configure= both
+take =--use-busctl= / =--no-use-busctl=, an explicit flag wins, an existing
+=.env= value stands, and a fresh checkout defaults to on. =compass systemd=
+accepts the flag the =services= pillar already had.
+
+=compass systemd deploy= now exits 1 and prints why when systemd does not
+reload, instead of exiting 0 with the connection failure on stderr.
+
+Verification. The =ores.compass= suite passes at 230, up from 215, with 15 new
+cases across =test_env_create.py=, =test_env_init.py= and
+=test_systemd_generate.py=. The failure path was proved on the real one: with
+one deployed unit removed and the bus switched off, the deploy exits 1 with
+the reason and the hint. Through the bus it re-installs the unit, exits 0, and
+=compass services status= reports =stopped=24 missing=0=.
+
+The status command reporting =missing= instead of =unreachable= needed no
+separate change. It was a symptom of the unreachable manager, and the default
+removes it.

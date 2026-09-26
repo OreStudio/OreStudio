@@ -4569,6 +4569,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     if is_operation and isinstance(model, dict) and 'operation' in model:
         op = model['operation']
         op['component_upper'] = op.get('component', 'unknown').upper()
+        # An operation model in a composite names its part, so its include
+        # guard has to carry the part the way a domain entity's does. Without
+        # this a part-qualified operation renders ORES_<COMPONENT>_MESSAGING_*,
+        # the same guard its sibling part would render for an operation of the
+        # same name, and the preprocessor silently drops the second header.
+        op.update(_component_path_vars(op))
+        for path_var in ('component', 'component_include', 'component_core',
+                         'component_service'):
+            op[f'{path_var}_upper'] = op[path_var].replace('.', '_').upper()
         if 'entity_singular' in op:
             op['entity_singular_upper'] = op['entity_singular'].upper()
         # An operation model's unit is projected from its declared messages, so

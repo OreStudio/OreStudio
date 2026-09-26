@@ -67,7 +67,7 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 1. Baseline | DONE | Census and drift captured; see Notes |
 | 2. Liveness census | DONE | 49 tables, 0 deletion candidates; see Step 2 results |
 | 3. Divergent tables | DONE | 12 tables, 6 difference classes, 0 defects; see Step 3 results |
-| 4. Foreign models | TODO | Unblocked, except the FPML family; see below |
+| 4. Foreign models | PARTIAL | 3 of 6 switched; the other 3 are junctions with no artefact archetype; see Step 4 results |
 | 5. Derivable tables | PARTIAL | 3 of 5 switched; badge_mappings and coding_schemes need a model; see Step 5 results |
 | 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
 | 7. Publication template | TODO | Unblocked |
@@ -75,6 +75,31 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 9. Regenerate C++ | TODO | |
 | 10. Eventing headers | TODO | |
 | 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
+
+* Step 4 results (part)
+
+Run on 2026-09-26. The =foreign= bucket held six staging tables whose base table belongs to refdata. Three are now generated; the other three turn out to be a different shape entirely.
+
+| Entity | Model type | Outcome |
+|--------+------------+---------|
+| =calendar_type= | domain_entity | generated from =ores.refdata.calendar_type= |
+| =currency_pair= | domain_entity | generated from =ores.refdata.currency_pair= |
+| =payment_frequency= | domain_entity | generated from =ores.refdata.payment_frequency= |
+| =currency_calendar= | junction | needs a junction artefact archetype, which does not exist |
+| =currency_country= | junction | same |
+| =currency_pair_convention_calendar= | junction | same |
+
+**The three domain entities are one-liners.** Each gained =:ores.sql.schema.domain_entity_artefact_create.enabled: true= in its property drawer. The generated staging table is a pure projection of the refdata table, as step 3's census already said.
+
+Two of the three carry a natural key, so this step also depended on the template fix from step 5. Nothing structural changed in the swap. The differences are the generated banner, the model's prose, the index names gaining their =dq_= prefix and the table name being quoted, =period_multiplier integer= becoming =period_multiplier integer null=, and =display_order= gaining =default 0= from the model. The last is a widening, not a break: an insert that omitted the column used to fail and now takes the model's default.
+
+The refdata side did not move. The regeneration rewrote 15 files across the three entities and only the three dq staging tables differ, so refdata's own create, drop and notify-trigger files were already current. Both drift figures confirm it: refdata stays at 516 and dq stays at 507, because a hand-written staging table was never in the drift in the first place.
+
+**The three junctions are not one-liners, and the property is inert on them.** =get_junction_template_mappings= maps a junction to exactly one archetype, =sql_schema_junction_create.mustache=, and no junction artefact archetype exists. So a junction cannot reach the staging path at all today. Their hand-written staging tables are simple — =dataset_id=, =tenant_id=, the two key columns, =version=, with an index on each key — so the shape is a clean projection of a junction too, but it needs an archetype written for it.
+
+The property was therefore reverted on all three. Leaving it in place would have been the M04 failure this task is meant to remove: an assignment that is inert without any error.
+
+**Figures.** Census: generated 22 to 25, foreign 6 to 3. Validator 0 warnings; codegen suite 676 passing; refdata drift 516 and dq drift 507, both unchanged.
 
 * Step 5 results (part)
 

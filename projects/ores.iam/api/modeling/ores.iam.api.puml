@@ -26,17 +26,43 @@ namespace ores #F2F2F2 {
         namespace domain #F2F2F2 {
             class account <<struct>> {
                 +version : int
+                +tenant_id : utility::uuid::tenant_id
                 +id : boost::uuids::uuid
-                +modified_by : string
-                +change_reason_code : string
-                +change_commentary : string
-                +performed_by : string
-                +account_type : string
                 +username : string
+                +account_type : string
+                +full_name : string
                 +password_hash : string
                 +password_salt : string
                 +totp_secret : string
                 +email : string
+                +default_party_id : optional<boost::uuids::uuid>
+                +image_id : optional<boost::uuids::uuid>
+                +job_title : string
+                +reports_to_account_id : optional<boost::uuids::uuid>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class account_contact_information <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +account_id : boost::uuids::uuid
+                +street_line_1 : string
+                +street_line_2 : string
+                +city : string
+                +state : string
+                +country_code : string
+                +postal_code : string
+                +phone : string
+                +email : string
+                +web_page : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class account_party <<struct>> {
@@ -51,6 +77,7 @@ namespace ores #F2F2F2 {
                 +recorded_at : chrono::system_clock::time_point
             }
             class account_role <<struct>> {
+                +tenant_id : utility::uuid::tenant_id
                 +account_id : boost::uuids::uuid
                 +role_id : boost::uuids::uuid
                 +assigned_by : string
@@ -60,57 +87,57 @@ namespace ores #F2F2F2 {
             }
             class account_type <<struct>> {
                 +version : int
+                +tenant_id : utility::uuid::tenant_id
                 +type : string
                 +name : string
                 +description : string
                 +display_order : int
                 +modified_by : string
+                +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +performed_by : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class login_info <<struct>> {
-                +last_login : chrono::system_clock::time_point
+                +tenant_id : utility::uuid::tenant_id
                 +account_id : boost::uuids::uuid
-                +failed_logins : int
-                +locked : bool
-                +online : bool
-                +password_reset_required : bool
                 +last_ip : boost::asio::ip::address
                 +last_attempt_ip : boost::asio::ip::address
+                +failed_logins : int
+                +locked : bool
+                +last_login : chrono::system_clock::time_point
+                +online : bool
+                +password_reset_required : bool
             }
             class permission <<struct>> {
+                +tenant_id : utility::uuid::tenant_id
                 +id : boost::uuids::uuid
                 +code : string
                 +description : string
             }
             class role <<struct>> {
                 +version : int
+                +tenant_id : utility::uuid::tenant_id
                 +id : boost::uuids::uuid
                 +name : string
                 +description : string
                 +modified_by : string
+                +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +performed_by : string
                 +recorded_at : chrono::system_clock::time_point
-                +permission_codes : vector<string>
             }
             class role_permission <<struct>> {
+                +tenant_id : utility::uuid::tenant_id
                 +role_id : boost::uuids::uuid
                 +permission_id : boost::uuids::uuid
             }
-            enum session_protocol {
-                binary
-                http
-            }
             class session <<struct>> {
+                +tenant_id : utility::uuid::tenant_id
                 +id : boost::uuids::uuid
-                +account_id : boost::uuids::uuid
-                +visible_party_ids : vector<boost::uuids::uuid>
                 +start_time : chrono::system_clock::time_point
-                +end_time : optional<chrono::system_clock::time_point>
+                +account_id : boost::uuids::uuid
+                +end_time : string
                 +client_ip : boost::asio::ip::address
                 +client_identifier : string
                 +client_version_major : uint16_t
@@ -118,23 +145,11 @@ namespace ores #F2F2F2 {
                 +bytes_sent : uint64_t
                 +bytes_received : uint64_t
                 +country_code : string
-                +protocol : session_protocol
-                +username : string
-            }
-            class session_statistics <<struct>> {
-                +period_start : chrono::system_clock::time_point
-                +period_end : chrono::system_clock::time_point
-                +account_id : boost::uuids::uuid
-                +session_count : uint64_t
-                +avg_duration_seconds : double
-                +total_bytes_sent : uint64_t
-                +total_bytes_received : uint64_t
-                +avg_bytes_sent : double
-                +avg_bytes_received : double
-                +unique_countries : uint32_t
+                +protocol : string
             }
             class tenant <<struct>> {
                 +version : int
+                +tenant_id : utility::uuid::tenant_id
                 +id : boost::uuids::uuid
                 +code : string
                 +name : string
@@ -143,51 +158,43 @@ namespace ores #F2F2F2 {
                 +hostname : string
                 +status : string
                 +modified_by : string
+                +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +performed_by : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class tenant_status <<struct>> {
                 +version : int
+                +tenant_id : utility::uuid::tenant_id
                 +status : string
                 +name : string
                 +description : string
                 +display_order : int
                 +modified_by : string
+                +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +performed_by : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class tenant_type <<struct>> {
                 +version : int
+                +tenant_id : utility::uuid::tenant_id
                 +type : string
                 +name : string
                 +description : string
                 +display_order : int
                 +modified_by : string
+                +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +performed_by : string
                 +recorded_at : chrono::system_clock::time_point
             }
         }
         namespace eventing #F2F2F2 {
-            class account_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +account_ids : vector<string>
-                +tenant_id : string
-            }
             class account_permissions_changed_event <<struct>> {
                 +account_id : boost::uuids::uuid
                 +permission_codes : vector<string>
                 +timestamp : chrono::system_clock::time_point
-                +tenant_id : string
-            }
-            class permission_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +permission_ids : vector<string>
                 +tenant_id : string
             }
             class role_assigned_event <<struct>> {
@@ -195,62 +202,151 @@ namespace ores #F2F2F2 {
                 +role_id : boost::uuids::uuid
                 +timestamp : chrono::system_clock::time_point
             }
-            class role_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +role_ids : vector<string>
-                +tenant_id : string
-            }
             class role_revoked_event <<struct>> {
                 +account_id : boost::uuids::uuid
                 +role_id : boost::uuids::uuid
                 +timestamp : chrono::system_clock::time_point
             }
-            class tenant_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +tenant_ids : vector<string>
-                +tenant_id : string
-            }
         }
         namespace messaging #F2F2F2 {
-            class account_party_key <<struct>> {
-                +account_id : string
-                +party_id : string
+            class account_contact_information_key <<struct>> {
+                +email : string
             }
-            class get_account_parties_request <<struct>> {
-                +offset : int
-                +limit : int
+            class account_contact_information_write <<struct>> {
+                +id : boost::uuids::uuid
+                +account_id : boost::uuids::uuid
+                +street_line_1 : string
+                +street_line_2 : string
+                +city : string
+                +state : string
+                +country_code : string
+                +postal_code : string
+                +phone : string
+                +email : string
+                +web_page : string
             }
-            class get_account_parties_response <<struct>> {
-                +account_parties : vector<ores::iam::domain::account_party>
-                +total_available_count : int
+            class account_contact_information_change <<struct>> {
+                +write : account_contact_information_write
+                +precondition : ores::utility::domain::precondition
             }
-            class get_account_parties_by_account_request <<struct>> {
-                +account_id : string
+            class account_contact_information_removal <<struct>> {
+                +key : account_contact_information_key
+                +precondition : ores::utility::domain::precondition
             }
-            class get_account_parties_by_account_response <<struct>> {
-                +account_parties : vector<ores::iam::domain::account_party>
+            class account_contact_information_lookup <<struct>> {
+                +key : account_contact_information_key
+                +account_contact_information : optional<ores::iam::domain::account_contact_information>
             }
-            class save_account_party_request <<struct>> {
-                +account_parties : vector<ores::iam::domain::account_party>
+            class account_contact_informations_filter <<struct>> {
+                +account_id : optional<boost::uuids::uuid>
             }
-            class save_account_party_response <<struct>> {
-                +success : bool
-                +message : string
+            class account_contact_information_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : account_contact_information_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
             }
-            class delete_account_party_request <<struct>> {
-                +keys : vector<account_party_key>
+            class account_contact_information_version_key <<struct>> {
+                +account_contact_information : account_contact_information_key
+                +version : uint32_t
             }
-            class delete_account_party_response <<struct>> {
-                +success : bool
-                +message : string
+            class account_contact_information_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
             }
-            class get_accounts_request <<struct>> {
-                +offset : int
-                +limit : int
+            class list_account_contact_informations_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<account_contact_informations_filter>
             }
-            class get_accounts_response <<struct>> {
-                +accounts : vector<ores::iam::domain::account>
-                +total_available_count : int
+            class list_account_contact_informations_response <<struct>> {
+                +result : ores::utility::domain::result
+                +account_contact_informations : vector<ores::iam::domain::account_contact_information>
+                +total : uint64_t
+            }
+            class get_account_contact_information_request <<struct>> {
+                +key : account_contact_information_key
+            }
+            class get_account_contact_information_response <<struct>> {
+                +result : ores::utility::domain::result
+                +account_contact_information : optional<ores::iam::domain::account_contact_information>
+            }
+            class get_many_account_contact_informations_request <<struct>> {
+                +keys : vector<account_contact_information_key>
+            }
+            class get_many_account_contact_informations_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<account_contact_information_lookup>
+            }
+            class put_account_contact_information_request <<struct>> {
+                +change : account_contact_information_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_account_contact_information_response <<struct>> {
+                +result : ores::utility::domain::result
+                +account_contact_information : ores::iam::domain::account_contact_information
+            }
+            class put_many_account_contact_informations_request <<struct>> {
+                +changes : vector<account_contact_information_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_account_contact_informations_response <<struct>> {
+                +result : ores::utility::domain::result
+                +account_contact_informations : vector<ores::iam::domain::account_contact_information>
+            }
+            class delete_account_contact_information_request <<struct>> {
+                +removal : account_contact_information_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_account_contact_information_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_account_contact_informations_request <<struct>> {
+                +removals : vector<account_contact_information_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_account_contact_informations_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_by_account_id_account_contact_informations_request <<struct>> {
+                +account_id : boost::uuids::uuid
+                +scope : ores::utility::domain::scope
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<account_contact_informations_filter>
+            }
+            class list_by_account_id_account_contact_informations_response <<struct>> {
+                +result : ores::utility::domain::result
+                +account_contact_informations : vector<ores::iam::domain::account_contact_information>
+                +total : uint64_t
+            }
+            class list_account_contact_information_versions_request <<struct>> {
+                +key : account_contact_information_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<account_contact_information_versions_filter>
+            }
+            class list_account_contact_information_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::iam::domain::account_contact_information>
+                +total : uint64_t
+            }
+            class get_account_contact_information_version_request <<struct>> {
+                +key : account_contact_information_version_key
+            }
+            class get_account_contact_information_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::iam::domain::account_contact_information
+            }
+            class publish_account_contact_informations_from_dq_request <<struct>> {
+            }
+            class publish_accounts_from_dq_request <<struct>> {
             }
             class save_account_request <<struct>> {
                 +principal : string
@@ -262,6 +358,11 @@ namespace ores #F2F2F2 {
             class update_account_request <<struct>> {
                 +account_id : string
                 +email : string
+                +full_name : string
+                +default_party_id : string
+                +job_title : string
+                +reports_to_account_id : string
+                +image_id : string
                 +change_reason_code : string
                 +change_commentary : string
             }
@@ -297,11 +398,6 @@ namespace ores #F2F2F2 {
             class unlock_account_response <<struct>> {
                 +results : vector<account_operation_result>
             }
-            class list_login_info_request <<struct>> {
-            }
-            class list_login_info_response <<struct>> {
-                +login_infos : vector<ores::iam::domain::login_info>
-            }
             class reset_password_request <<struct>> {
                 +account_ids : vector<string>
                 +new_password : string
@@ -326,7 +422,17 @@ namespace ores #F2F2F2 {
                 +success : bool
                 +message : string
             }
+            class set_my_default_party_request <<struct>> {
+                +party_id : string
+            }
+            class set_my_default_party_response <<struct>> {
+                +success : bool
+                +message : string
+            }
             class select_party_request <<struct>> {
+                +party_id : string
+            }
+            class switch_party_request <<struct>> {
                 +party_id : string
             }
             class select_party_response <<struct>> {
@@ -337,22 +443,339 @@ namespace ores #F2F2F2 {
                 +tenant_name : string
                 +party_name : string
                 +party_setup_required : bool
+                +party_setup_warning : string
                 +access_lifetime_s : int
-            }
-            class get_accounts_request_typed <<struct>> {
-                +offset : int
-                +limit : int
             }
             class change_password_request_typed <<struct>> {
                 +current_password : string
                 +new_password : string
             }
-            class list_roles_request <<struct>> {
+            class account_party_key <<struct>> {
+                +account_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
             }
-            class list_roles_response <<struct>> {
+            class account_party_write <<struct>> {
+                +account_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+            }
+            class account_party_change <<struct>> {
+                +write : account_party_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class account_party_removal <<struct>> {
+                +key : account_party_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class account_party_lookup <<struct>> {
+                +key : account_party_key
+                +account_party : optional<ores::iam::domain::account_party>
+            }
+            class account_parties_filter <<struct>> {
+                +account_id : optional<boost::uuids::uuid>
+            }
+            class list_account_parties_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<account_parties_filter>
+            }
+            class list_account_parties_response <<struct>> {
+                +result : ores::utility::domain::result
+                +account_parties : vector<ores::iam::domain::account_party>
+                +total : uint64_t
+            }
+            class get_account_party_request <<struct>> {
+                +key : account_party_key
+            }
+            class get_account_party_response <<struct>> {
+                +result : ores::utility::domain::result
+                +account_party : optional<ores::iam::domain::account_party>
+            }
+            class get_many_account_parties_request <<struct>> {
+                +keys : vector<account_party_key>
+            }
+            class get_many_account_parties_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<account_party_lookup>
+            }
+            class put_account_party_request <<struct>> {
+                +change : account_party_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_account_party_response <<struct>> {
+                +result : ores::utility::domain::result
+                +account_party : ores::iam::domain::account_party
+            }
+            class put_many_account_parties_request <<struct>> {
+                +changes : vector<account_party_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_account_parties_response <<struct>> {
+                +result : ores::utility::domain::result
+                +account_parties : vector<ores::iam::domain::account_party>
+            }
+            class delete_account_party_request <<struct>> {
+                +removal : account_party_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_account_party_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_account_parties_request <<struct>> {
+                +removals : vector<account_party_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_account_parties_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_by_account_id_account_parties_request <<struct>> {
+                +account_id : boost::uuids::uuid
+                +scope : ores::utility::domain::scope
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<account_parties_filter>
+            }
+            class list_by_account_id_account_parties_response <<struct>> {
+                +result : ores::utility::domain::result
+                +account_parties : vector<ores::iam::domain::account_party>
+                +total : uint64_t
+            }
+            class account_key <<struct>> {
+                +username : string
+            }
+            class account_lookup <<struct>> {
+                +key : account_key
+                +account : optional<ores::iam::domain::account>
+            }
+            class account_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : account_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class account_version_key <<struct>> {
+                +account : account_key
+                +version : uint32_t
+            }
+            class account_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_accounts_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_accounts_response <<struct>> {
+                +result : ores::utility::domain::result
+                +accounts : vector<ores::iam::domain::account>
+                +total : uint64_t
+            }
+            class get_account_request <<struct>> {
+                +key : account_key
+            }
+            class get_account_response <<struct>> {
+                +result : ores::utility::domain::result
+                +account : optional<ores::iam::domain::account>
+            }
+            class get_many_accounts_request <<struct>> {
+                +keys : vector<account_key>
+            }
+            class get_many_accounts_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<account_lookup>
+            }
+            class list_account_versions_request <<struct>> {
+                +key : account_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<account_versions_filter>
+            }
+            class list_account_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::iam::domain::account>
+                +total : uint64_t
+            }
+            class get_account_version_request <<struct>> {
+                +key : account_version_key
+            }
+            class get_account_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::iam::domain::account
+            }
+            class account_type_key <<struct>> {
+                +type : string
+            }
+            class account_type_write <<struct>> {
+                +type : string
+                +name : string
+                +description : string
+                +display_order : int
+            }
+            class account_type_change <<struct>> {
+                +write : account_type_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class account_type_removal <<struct>> {
+                +key : account_type_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class account_type_lookup <<struct>> {
+                +key : account_type_key
+                +account_type : optional<ores::iam::domain::account_type>
+            }
+            class account_type_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : account_type_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class account_type_version_key <<struct>> {
+                +account_type : account_type_key
+                +version : uint32_t
+            }
+            class account_type_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_account_types_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_account_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +types : vector<ores::iam::domain::account_type>
+                +total : uint64_t
+            }
+            class get_account_type_request <<struct>> {
+                +key : account_type_key
+            }
+            class get_account_type_response <<struct>> {
+                +result : ores::utility::domain::result
+                +account_type : optional<ores::iam::domain::account_type>
+            }
+            class get_many_account_types_request <<struct>> {
+                +keys : vector<account_type_key>
+            }
+            class get_many_account_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<account_type_lookup>
+            }
+            class put_account_type_request <<struct>> {
+                +change : account_type_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_account_type_response <<struct>> {
+                +result : ores::utility::domain::result
+                +account_type : ores::iam::domain::account_type
+            }
+            class put_many_account_types_request <<struct>> {
+                +changes : vector<account_type_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_account_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +types : vector<ores::iam::domain::account_type>
+            }
+            class delete_account_type_request <<struct>> {
+                +removal : account_type_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_account_type_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_account_types_request <<struct>> {
+                +removals : vector<account_type_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_account_types_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_account_type_versions_request <<struct>> {
+                +key : account_type_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<account_type_versions_filter>
+            }
+            class list_account_type_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::iam::domain::account_type>
+                +total : uint64_t
+            }
+            class get_account_type_version_request <<struct>> {
+                +key : account_type_version_key
+            }
+            class get_account_type_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::iam::domain::account_type
+            }
+            class assign_role_request <<struct>> {
+                +account_id : string
+                +role_id : string
+            }
+            class assign_role_response <<struct>> {
+                +success : bool
+                +error_message : string
+            }
+            class assign_role_by_name_response <<struct>> {
+                +success : bool
+                +error_message : string
+            }
+            class assign_role_by_name_request <<struct>> {
+                +principal : string
+                +role_name : string
+            }
+            class revoke_role_request <<struct>> {
+                +account_id : string
+                +role_id : string
+            }
+            class revoke_role_response <<struct>> {
+                +success : bool
+                +error_message : string
+            }
+            class revoke_role_by_name_response <<struct>> {
+                +success : bool
+                +error_message : string
+            }
+            class revoke_role_by_name_request <<struct>> {
+                +principal : string
+                +role_name : string
+            }
+            class get_account_roles_request <<struct>> {
+                +account_id : string
+            }
+            class get_account_roles_response <<struct>> {
                 +roles : vector<ores::iam::domain::role>
             }
-            class list_permissions_request <<struct>> {
+            class get_account_permissions_request <<struct>> {
+                +account_id : string
+            }
+            class get_account_permissions_response <<struct>> {
+                +permission_codes : vector<string>
+            }
+            class get_role_permissions_request <<struct>> {
+                +role_id : string
+            }
+            class get_role_permissions_response <<struct>> {
+                +permission_codes : vector<string>
+            }
+            class suggest_role_commands_request <<struct>> {
+                +username : string
+                +tenant_id : string
+                +hostname : string
+            }
+            class suggest_role_commands_response <<struct>> {
+                +commands : vector<string>
             }
             class bootstrap_status_request <<struct>> {
             }
@@ -373,6 +796,7 @@ namespace ores #F2F2F2 {
                 +tenant_id : string
             }
             class provision_tenant_request <<struct>> {
+                +type : string
                 +code : string
                 +name : string
                 +hostname : string
@@ -386,6 +810,45 @@ namespace ores #F2F2F2 {
                 +error_message : string
                 +account_id : string
                 +tenant_id : string
+            }
+            class login_info_key <<struct>> {
+                +account_id : boost::uuids::uuid
+            }
+            class login_info_lookup <<struct>> {
+                +key : login_info_key
+                +login_info : optional<ores::iam::domain::login_info>
+            }
+            class login_info_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : login_info_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class list_login_info_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_login_info_response <<struct>> {
+                +result : ores::utility::domain::result
+                +login_info : vector<ores::iam::domain::login_info>
+                +total : uint64_t
+            }
+            class get_login_info_request <<struct>> {
+                +key : login_info_key
+            }
+            class get_login_info_response <<struct>> {
+                +result : ores::utility::domain::result
+                +login_info : optional<ores::iam::domain::login_info>
+            }
+            class get_many_login_info_request <<struct>> {
+                +keys : vector<login_info_key>
+            }
+            class get_many_login_info_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<login_info_lookup>
             }
             class party_summary <<struct>> {
                 +id : string
@@ -407,11 +870,13 @@ namespace ores #F2F2F2 {
                 +password_reset_required : bool
                 +tenant_bootstrap_mode : bool
                 +party_setup_required : bool
+                +party_setup_warning : string
                 +token : string
                 +error_message : string
                 +message : string
                 +selected_party_id : string
                 +available_parties : vector<party_summary>
+                +default_party_id : string
                 +access_lifetime_s : int
                 +session_id : string
             }
@@ -441,27 +906,314 @@ namespace ores #F2F2F2 {
                 +message : string
                 +access_lifetime_s : int
             }
-            class list_sessions_request <<struct>> {
-                +account_id : string
-                +limit : int
-                +offset : int
+            class permission_key <<struct>> {
+                +code : string
             }
-            class list_sessions_response <<struct>> {
-                +sessions : vector<ores::iam::domain::session>
-                +total_count : int
+            class permission_write <<struct>> {
+                +id : boost::uuids::uuid
+                +code : string
+                +description : string
+            }
+            class permission_change <<struct>> {
+                +write : permission_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class permission_removal <<struct>> {
+                +key : permission_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class permission_lookup <<struct>> {
+                +key : permission_key
+                +permission : optional<ores::iam::domain::permission>
+            }
+            class permission_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : permission_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class list_permissions_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_permissions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +permissions : vector<ores::iam::domain::permission>
+                +total : uint64_t
+            }
+            class get_permission_request <<struct>> {
+                +key : permission_key
+            }
+            class get_permission_response <<struct>> {
+                +result : ores::utility::domain::result
+                +permission : optional<ores::iam::domain::permission>
+            }
+            class get_many_permissions_request <<struct>> {
+                +keys : vector<permission_key>
+            }
+            class get_many_permissions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<permission_lookup>
+            }
+            class put_permission_request <<struct>> {
+                +change : permission_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_permission_response <<struct>> {
+                +result : ores::utility::domain::result
+                +permission : ores::iam::domain::permission
+            }
+            class put_many_permissions_request <<struct>> {
+                +changes : vector<permission_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_permissions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +permissions : vector<ores::iam::domain::permission>
+            }
+            class delete_permission_request <<struct>> {
+                +removal : permission_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_permission_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_permissions_request <<struct>> {
+                +removals : vector<permission_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_permissions_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class reset_tenant_command <<struct>> {
+                +tenant_code : string
+            }
+            class reset_tenant_result <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class reset_system_command <<struct>> {
+            }
+            class reset_system_result <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class role_key <<struct>> {
+                +name : string
+            }
+            class role_write <<struct>> {
+                +id : boost::uuids::uuid
+                +name : string
+                +description : string
+            }
+            class role_change <<struct>> {
+                +write : role_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class role_removal <<struct>> {
+                +key : role_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class role_lookup <<struct>> {
+                +key : role_key
+                +role : optional<ores::iam::domain::role>
+            }
+            class role_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : role_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class role_version_key <<struct>> {
+                +role : role_key
+                +version : uint32_t
+            }
+            class role_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_roles_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_roles_response <<struct>> {
+                +result : ores::utility::domain::result
+                +roles : vector<ores::iam::domain::role>
+                +total : uint64_t
+            }
+            class get_role_request <<struct>> {
+                +key : role_key
+            }
+            class get_role_response <<struct>> {
+                +result : ores::utility::domain::result
+                +role : optional<ores::iam::domain::role>
+            }
+            class get_many_roles_request <<struct>> {
+                +keys : vector<role_key>
+            }
+            class get_many_roles_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<role_lookup>
+            }
+            class put_role_request <<struct>> {
+                +change : role_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_role_response <<struct>> {
+                +result : ores::utility::domain::result
+                +role : ores::iam::domain::role
+            }
+            class put_many_roles_request <<struct>> {
+                +changes : vector<role_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_roles_response <<struct>> {
+                +result : ores::utility::domain::result
+                +roles : vector<ores::iam::domain::role>
+            }
+            class delete_role_request <<struct>> {
+                +removal : role_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_role_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_roles_request <<struct>> {
+                +removals : vector<role_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_roles_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_role_versions_request <<struct>> {
+                +key : role_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<role_versions_filter>
+            }
+            class list_role_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::iam::domain::role>
+                +total : uint64_t
+            }
+            class get_role_version_request <<struct>> {
+                +key : role_version_key
+            }
+            class get_role_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::iam::domain::role
+            }
+            class session_view <<struct>> {
+                +session : ores::iam::domain::session
+                +party_id : string
+                +visible_party_ids : vector<string>
+                +username : string
             }
             class get_active_sessions_request <<struct>> {
             }
             class get_active_sessions_response <<struct>> {
                 +sessions : vector<ores::iam::domain::session>
+                +success : bool
+                +message : string
             }
-            class get_session_statistics_request <<struct>> {
-                +account_id : string
+            class session_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class session_write <<struct>> {
+                +id : boost::uuids::uuid
                 +start_time : chrono::system_clock::time_point
-                +end_time : chrono::system_clock::time_point
+                +account_id : boost::uuids::uuid
+                +end_time : string
+                +client_ip : boost::asio::ip::address
+                +client_identifier : string
+                +client_version_major : uint16_t
+                +client_version_minor : uint16_t
+                +bytes_sent : uint64_t
+                +bytes_received : uint64_t
+                +country_code : string
+                +protocol : string
             }
-            class get_session_statistics_response <<struct>> {
-                +statistics : vector<ores::iam::domain::session_statistics>
+            class session_change <<struct>> {
+                +write : session_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class session_removal <<struct>> {
+                +key : session_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class session_lookup <<struct>> {
+                +key : session_key
+                +session : optional<ores::iam::domain::session>
+            }
+            class session_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : session_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class list_sessions_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_sessions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +sessions : vector<ores::iam::domain::session>
+                +total : uint64_t
+            }
+            class get_session_request <<struct>> {
+                +key : session_key
+            }
+            class get_session_response <<struct>> {
+                +result : ores::utility::domain::result
+                +session : optional<ores::iam::domain::session>
+            }
+            class get_many_sessions_request <<struct>> {
+                +keys : vector<session_key>
+            }
+            class get_many_sessions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<session_lookup>
+            }
+            class put_session_request <<struct>> {
+                +change : session_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_session_response <<struct>> {
+                +result : ores::utility::domain::result
+                +session : ores::iam::domain::session
+            }
+            class put_many_sessions_request <<struct>> {
+                +changes : vector<session_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_sessions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +sessions : vector<ores::iam::domain::session>
+            }
+            class delete_session_request <<struct>> {
+                +removal : session_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_session_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_sessions_request <<struct>> {
+                +removals : vector<session_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_sessions_response <<struct>> {
+                +result : ores::utility::domain::result
             }
             class session_sample_dto <<struct>> {
                 +sample_time_ms : uint64_t
@@ -473,6 +1225,8 @@ namespace ores #F2F2F2 {
             }
             class get_session_samples_response <<struct>> {
                 +samples : vector<session_sample_dto>
+                +success : bool
+                +message : string
             }
             class signup_request <<struct>> {
                 +principal : string
@@ -484,87 +1238,359 @@ namespace ores #F2F2F2 {
                 +message : string
                 +account_id : string
             }
-            class get_tenants_request <<struct>> {
-                +include_deleted : bool
+            class tenant_key <<struct>> {
+                +code : string
             }
-            class get_tenants_response <<struct>> {
+            class tenant_write <<struct>> {
+                +id : boost::uuids::uuid
+                +code : string
+                +name : string
+                +type : string
+                +description : string
+                +hostname : string
+                +status : string
+            }
+            class tenant_change <<struct>> {
+                +write : tenant_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class tenant_removal <<struct>> {
+                +key : tenant_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class tenant_lookup <<struct>> {
+                +key : tenant_key
+                +tenant : optional<ores::iam::domain::tenant>
+            }
+            class tenant_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : tenant_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class tenant_version_key <<struct>> {
+                +tenant : tenant_key
+                +version : uint32_t
+            }
+            class tenant_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_tenants_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_tenants_response <<struct>> {
+                +result : ores::utility::domain::result
+                +tenants : vector<ores::iam::domain::tenant>
+                +total : uint64_t
+            }
+            class get_tenant_request <<struct>> {
+                +key : tenant_key
+            }
+            class get_tenant_response <<struct>> {
+                +result : ores::utility::domain::result
+                +tenant : optional<ores::iam::domain::tenant>
+            }
+            class get_many_tenants_request <<struct>> {
+                +keys : vector<tenant_key>
+            }
+            class get_many_tenants_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<tenant_lookup>
+            }
+            class put_tenant_request <<struct>> {
+                +change : tenant_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_tenant_response <<struct>> {
+                +result : ores::utility::domain::result
+                +tenant : ores::iam::domain::tenant
+            }
+            class put_many_tenants_request <<struct>> {
+                +changes : vector<tenant_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_tenants_response <<struct>> {
+                +result : ores::utility::domain::result
                 +tenants : vector<ores::iam::domain::tenant>
             }
-            class save_tenant_request <<struct>> {
-                +data : ores::iam::domain::tenant
-            }
-            class save_tenant_response <<struct>> {
-                +success : bool
-                +message : string
-            }
             class delete_tenant_request <<struct>> {
-                +ids : vector<string>
+                +removal : tenant_removal
+                +intent : ores::utility::domain::change_intent
             }
             class delete_tenant_response <<struct>> {
-                +success : bool
-                +message : string
+                +result : ores::utility::domain::result
             }
-            class get_tenant_history_request <<struct>> {
-                +id : string
+            class delete_many_tenants_request <<struct>> {
+                +removals : vector<tenant_removal>
+                +intent : ores::utility::domain::change_intent
             }
-            class get_tenant_history_response <<struct>> {
-                +success : bool
-                +message : string
+            class delete_many_tenants_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_tenant_versions_request <<struct>> {
+                +key : tenant_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<tenant_versions_filter>
+            }
+            class list_tenant_versions_response <<struct>> {
+                +result : ores::utility::domain::result
                 +versions : vector<ores::iam::domain::tenant>
+                +total : uint64_t
             }
-            class get_tenant_statuses_request <<struct>> {
+            class get_tenant_version_request <<struct>> {
+                +key : tenant_version_key
             }
-            class get_tenant_statuses_response <<struct>> {
+            class get_tenant_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::iam::domain::tenant
+            }
+            class complete_tenant_provisioning_command <<struct>> {
+            }
+            class complete_tenant_provisioning_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class provision_acme_tenant_command <<struct>> {
+            }
+            class provision_acme_tenant_step <<struct>> {
+                +step : string
+                +action : string
+                +record_count : uint64_t
+            }
+            class provision_acme_tenant_response <<struct>> {
+                +success : bool
+                +message : string
+                +steps : vector<provision_acme_tenant_step>
+            }
+            class tenant_status_key <<struct>> {
+                +status : string
+            }
+            class tenant_status_write <<struct>> {
+                +status : string
+                +name : string
+                +description : string
+                +display_order : int
+            }
+            class tenant_status_change <<struct>> {
+                +write : tenant_status_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class tenant_status_removal <<struct>> {
+                +key : tenant_status_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class tenant_status_lookup <<struct>> {
+                +key : tenant_status_key
+                +tenant_status : optional<ores::iam::domain::tenant_status>
+            }
+            class tenant_status_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : tenant_status_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class tenant_status_version_key <<struct>> {
+                +tenant_status : tenant_status_key
+                +version : uint32_t
+            }
+            class tenant_status_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_tenant_statuses_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_tenant_statuses_response <<struct>> {
+                +result : ores::utility::domain::result
+                +statuses : vector<ores::iam::domain::tenant_status>
+                +total : uint64_t
+            }
+            class get_tenant_status_request <<struct>> {
+                +key : tenant_status_key
+            }
+            class get_tenant_status_response <<struct>> {
+                +result : ores::utility::domain::result
+                +tenant_status : optional<ores::iam::domain::tenant_status>
+            }
+            class get_many_tenant_statuses_request <<struct>> {
+                +keys : vector<tenant_status_key>
+            }
+            class get_many_tenant_statuses_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<tenant_status_lookup>
+            }
+            class put_tenant_status_request <<struct>> {
+                +change : tenant_status_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_tenant_status_response <<struct>> {
+                +result : ores::utility::domain::result
+                +tenant_status : ores::iam::domain::tenant_status
+            }
+            class put_many_tenant_statuses_request <<struct>> {
+                +changes : vector<tenant_status_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_tenant_statuses_response <<struct>> {
+                +result : ores::utility::domain::result
                 +statuses : vector<ores::iam::domain::tenant_status>
             }
-            class save_tenant_status_request <<struct>> {
-                +data : ores::iam::domain::tenant_status
-            }
-            class save_tenant_status_response <<struct>> {
-                +success : bool
-                +message : string
-            }
             class delete_tenant_status_request <<struct>> {
-                +status : string
+                +removal : tenant_status_removal
+                +intent : ores::utility::domain::change_intent
             }
             class delete_tenant_status_response <<struct>> {
-                +success : bool
-                +message : string
+                +result : ores::utility::domain::result
             }
-            class get_tenant_status_history_request <<struct>> {
-                +status : string
+            class delete_many_tenant_statuses_request <<struct>> {
+                +removals : vector<tenant_status_removal>
+                +intent : ores::utility::domain::change_intent
             }
-            class get_tenant_status_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::iam::domain::tenant_status>
+            class delete_many_tenant_statuses_response <<struct>> {
+                +result : ores::utility::domain::result
             }
-            class get_tenant_types_request <<struct>> {
+            class list_tenant_status_versions_request <<struct>> {
+                +key : tenant_status_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<tenant_status_versions_filter>
             }
-            class get_tenant_types_response <<struct>> {
+            class list_tenant_status_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::iam::domain::tenant_status>
+                +total : uint64_t
+            }
+            class get_tenant_status_version_request <<struct>> {
+                +key : tenant_status_version_key
+            }
+            class get_tenant_status_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::iam::domain::tenant_status
+            }
+            class tenant_type_key <<struct>> {
+                +type : string
+            }
+            class tenant_type_write <<struct>> {
+                +type : string
+                +name : string
+                +description : string
+                +display_order : int
+            }
+            class tenant_type_change <<struct>> {
+                +write : tenant_type_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class tenant_type_removal <<struct>> {
+                +key : tenant_type_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class tenant_type_lookup <<struct>> {
+                +key : tenant_type_key
+                +tenant_type : optional<ores::iam::domain::tenant_type>
+            }
+            class tenant_type_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : tenant_type_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class tenant_type_version_key <<struct>> {
+                +tenant_type : tenant_type_key
+                +version : uint32_t
+            }
+            class tenant_type_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_tenant_types_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_tenant_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +types : vector<ores::iam::domain::tenant_type>
+                +total : uint64_t
+            }
+            class get_tenant_type_request <<struct>> {
+                +key : tenant_type_key
+            }
+            class get_tenant_type_response <<struct>> {
+                +result : ores::utility::domain::result
+                +tenant_type : optional<ores::iam::domain::tenant_type>
+            }
+            class get_many_tenant_types_request <<struct>> {
+                +keys : vector<tenant_type_key>
+            }
+            class get_many_tenant_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<tenant_type_lookup>
+            }
+            class put_tenant_type_request <<struct>> {
+                +change : tenant_type_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_tenant_type_response <<struct>> {
+                +result : ores::utility::domain::result
+                +tenant_type : ores::iam::domain::tenant_type
+            }
+            class put_many_tenant_types_request <<struct>> {
+                +changes : vector<tenant_type_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_tenant_types_response <<struct>> {
+                +result : ores::utility::domain::result
                 +types : vector<ores::iam::domain::tenant_type>
             }
-            class save_tenant_type_request <<struct>> {
-                +data : ores::iam::domain::tenant_type
-            }
-            class save_tenant_type_response <<struct>> {
-                +success : bool
-                +message : string
-            }
             class delete_tenant_type_request <<struct>> {
-                +type : string
+                +removal : tenant_type_removal
+                +intent : ores::utility::domain::change_intent
             }
             class delete_tenant_type_response <<struct>> {
-                +success : bool
-                +message : string
+                +result : ores::utility::domain::result
             }
-            class get_tenant_type_history_request <<struct>> {
-                +type : string
+            class delete_many_tenant_types_request <<struct>> {
+                +removals : vector<tenant_type_removal>
+                +intent : ores::utility::domain::change_intent
             }
-            class get_tenant_type_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::iam::domain::tenant_type>
+            class delete_many_tenant_types_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_tenant_type_versions_request <<struct>> {
+                +key : tenant_type_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<tenant_type_versions_filter>
+            }
+            class list_tenant_type_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::iam::domain::tenant_type>
+                +total : uint64_t
+            }
+            class get_tenant_type_version_request <<struct>> {
+                +key : tenant_type_version_key
+            }
+            class get_tenant_type_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::iam::domain::tenant_type
             }
         }
         namespace service #F2F2F2 {
@@ -577,6 +1603,1117 @@ namespace ores #F2F2F2 {
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass reads data members and nothing else. It drops every
+' method, every static member and every using alias; it drops a declaration
+' that wraps onto a second line; and it drops facets that hold only free
+' functions or constants, because a namespace with no type in it is skipped
+' wholesale. A request struct therefore arrives as a box holding its data
+' fields but not the response type it pairs with or the subject it travels
+' on, auth_session_service arrives with its private state and no behaviour,
+' and the generators, the entity_type_of overloads and the event-subject
+' namespaces do not arrive at all.
+'
+' The blocks below fill those boxes and draw the relationships the automated
+' pass cannot see. They use fully-qualified class names rather than a
+' reopened namespace block, because this PlantUML version crashes when a
+' namespace that already holds classes is declared a second time.
+' Redeclaring a class merges its members into the box the automated pass
+' already drew, so a refresh keeps both halves.
+'
+' The component is a header-only contract whose surface is mostly message
+' schemas. Three facets are drawn in full below because the
+' automated pass loses them completely -- the request statics, the
+' event-subject namespaces, and the free functions (generators,
+' entity_type_of, the two traits specialisations). The uniform per-entity
+' boilerplate that the pass also loses -- the four equality operators, the
+' convert_to_table, convert_to_json and ostream overloads -- is stated in a
+' note instead of drawn, because it repeats one shape eleven times.
+
+' ============================== domain ==============================
+
+class ores::iam::domain::entity_type_of {
+    {static} +entity_type_of(v : account) : string_view
+    {static} +entity_type_of(v : account_contact_information) : string_view
+    {static} +entity_type_of(v : account_party) : string_view
+    {static} +entity_type_of(v : account_type) : string_view
+    {static} +entity_type_of(v : login_info) : string_view
+    {static} +entity_type_of(v : permission) : string_view
+    {static} +entity_type_of(v : role) : string_view
+    {static} +entity_type_of(v : session) : string_view
+    {static} +entity_type_of(v : tenant) : string_view
+    {static} +entity_type_of(v : tenant_status) : string_view
+    {static} +entity_type_of(v : tenant_type) : string_view
+}
+note top of "ores::iam::domain::entity_type_of"
+Eleven free overloads, one per generated entity, each declared in that
+entity's own header and returning its dispatch key (for example
+"ores.iam.account"). Every call site spells entity_type_of(value), so the
+key is the single source of truth for the generic history-diff request and
+for the action registries. The two junction entities, account_role and
+role_permission, declare no overload.
+end note
+note bottom of "ores::iam::domain::entity_type_of"
+Every generated entity also gets a convert_to_table overload taking a
+vector of the entity, in its *_table.hpp; an ostream operator in its
+*_table_io.hpp; a convert_to_json overload in its *_json.hpp (account,
+login_info, permission and role only); and an ostream operator in its
+*_json_io.hpp. They are uniform boilerplate and are not drawn.
+end note
+
+class ores::iam::domain::permissions {
+    {static} +accounts_create : string_view = "iam::accounts:create"
+    {static} +accounts_read : string_view = "iam::accounts:read"
+    {static} +accounts_update : string_view = "iam::accounts:update"
+    {static} +accounts_delete : string_view = "iam::accounts:delete"
+    {static} +accounts_lock : string_view = "iam::accounts:lock"
+    {static} +accounts_unlock : string_view = "iam::accounts:unlock"
+    {static} +accounts_reset_password : string_view = "iam::accounts:reset_password"
+    {static} +roles_create : string_view = "iam::roles:create"
+    {static} +roles_read : string_view = "iam::roles:read"
+    {static} +roles_update : string_view = "iam::roles:update"
+    {static} +roles_delete : string_view = "iam::roles:delete"
+    {static} +roles_assign : string_view = "iam::roles:assign"
+    {static} +roles_revoke : string_view = "iam::roles:revoke"
+    {static} +login_info_read : string_view = "iam::login_info:read"
+    {static} +tenants_create : string_view = "iam::tenants:create"
+    {static} +tenants_read : string_view = "iam::tenants:read"
+    {static} +tenants_update : string_view = "iam::tenants:update"
+    {static} +tenants_delete : string_view = "iam::tenants:delete"
+    {static} +tenants_suspend : string_view = "iam::tenants:suspend"
+    {static} +tenants_terminate : string_view = "iam::tenants:terminate"
+    {static} +tenants_impersonate : string_view = "iam::tenants:impersonate"
+    {static} +iam_all : string_view = "iam::*"
+    {static} +currencies_create : string_view = "refdata::currencies:create"
+    {static} +currencies_read : string_view = "refdata::currencies:read"
+    {static} +currencies_update : string_view = "refdata::currencies:update"
+    {static} +currencies_delete : string_view = "refdata::currencies:delete"
+    {static} +currencies_history : string_view = "refdata::currencies:history"
+    {static} +refdata_all : string_view = "refdata::*"
+    {static} +flags_create : string_view = "variability::flags:create"
+    {static} +flags_read : string_view = "variability::flags:read"
+    {static} +flags_update : string_view = "variability::flags:update"
+    {static} +flags_delete : string_view = "variability::flags:delete"
+    {static} +variability_all : string_view = "variability::*"
+    {static} +change_reasons_read : string_view = "dq::change_reasons:read"
+    {static} +change_reasons_write : string_view = "dq::change_reasons:write"
+    {static} +change_reasons_delete : string_view = "dq::change_reasons:delete"
+    {static} +change_reason_categories_read : string_view = "dq::change_reason_categories:read"
+    {static} +change_reason_categories_write : string_view = "dq::change_reason_categories:write"
+    {static} +change_reason_categories_delete : string_view = "dq::change_reason_categories:delete"
+    {static} +catalogs_read : string_view = "dq::catalogs:read"
+    {static} +catalogs_write : string_view = "dq::catalogs:write"
+    {static} +catalogs_delete : string_view = "dq::catalogs:delete"
+    {static} +data_domains_read : string_view = "dq::data_domains:read"
+    {static} +data_domains_write : string_view = "dq::data_domains:write"
+    {static} +data_domains_delete : string_view = "dq::data_domains:delete"
+    {static} +subject_areas_read : string_view = "dq::subject_areas:read"
+    {static} +subject_areas_write : string_view = "dq::subject_areas:write"
+    {static} +subject_areas_delete : string_view = "dq::subject_areas:delete"
+    {static} +datasets_read : string_view = "dq::datasets:read"
+    {static} +datasets_write : string_view = "dq::datasets:write"
+    {static} +datasets_delete : string_view = "dq::datasets:delete"
+    {static} +methodologies_read : string_view = "dq::methodologies:read"
+    {static} +methodologies_write : string_view = "dq::methodologies:write"
+    {static} +methodologies_delete : string_view = "dq::methodologies:delete"
+    {static} +coding_schemes_read : string_view = "dq::coding_schemes:read"
+    {static} +coding_schemes_write : string_view = "dq::coding_schemes:write"
+    {static} +coding_schemes_delete : string_view = "dq::coding_schemes:delete"
+    {static} +coding_scheme_authority_types_read : string_view = "dq::coding_scheme_authority_types:read"
+    {static} +coding_scheme_authority_types_write : string_view = "dq::coding_scheme_authority_types:write"
+    {static} +coding_scheme_authority_types_delete : string_view = "dq::coding_scheme_authority_types:delete"
+    {static} +nature_dimensions_read : string_view = "dq::nature_dimensions:read"
+    {static} +nature_dimensions_write : string_view = "dq::nature_dimensions:write"
+    {static} +nature_dimensions_delete : string_view = "dq::nature_dimensions:delete"
+    {static} +origin_dimensions_read : string_view = "dq::origin_dimensions:read"
+    {static} +origin_dimensions_write : string_view = "dq::origin_dimensions:write"
+    {static} +origin_dimensions_delete : string_view = "dq::origin_dimensions:delete"
+    {static} +treatment_dimensions_read : string_view = "dq::treatment_dimensions:read"
+    {static} +treatment_dimensions_write : string_view = "dq::treatment_dimensions:write"
+    {static} +treatment_dimensions_delete : string_view = "dq::treatment_dimensions:delete"
+    {static} +dataset_bundles_read : string_view = "dq::dataset_bundles:read"
+    {static} +dataset_bundles_write : string_view = "dq::dataset_bundles:write"
+    {static} +dataset_bundles_delete : string_view = "dq::dataset_bundles:delete"
+    {static} +dataset_bundle_members_read : string_view = "dq::dataset_bundle_members:read"
+    {static} +dataset_bundle_members_write : string_view = "dq::dataset_bundle_members:write"
+    {static} +dataset_bundle_members_delete : string_view = "dq::dataset_bundle_members:delete"
+    {static} +dq_all : string_view = "dq::*"
+    {static} +all : string_view = "*"
+}
+note right of "ores::iam::domain::permissions"
+Hand-maintained header (domain/permission_codes.hpp), not codegen output:
+the codes must match the rows seeded in ores_iam_permissions_tbl, and
+codegen cannot express "also emit this namespace of constants", so a
+regeneration of permission.hpp would silently drop them. Naming is
+component::resource:action; the iam:: codes are this component's own, and
+the refdata, variability and dq codes are declared here because no other
+home exists for them. iam_all, refdata_all, variability_all, dq_all and
+all are the wildcards.
+end note
+
+class ores::iam::domain::roles {
+    {static} +super_admin : string_view = "SuperAdmin"
+    {static} +tenant_admin : string_view = "TenantAdmin"
+    {static} +trading : string_view = "Trading"
+    {static} +sales : string_view = "Sales"
+    {static} +operations : string_view = "Operations"
+    {static} +support : string_view = "Support"
+    {static} +viewer : string_view = "Viewer"
+}
+note right of "ores::iam::domain::roles"
+Hand-maintained header (domain/role_codes.hpp). The seven names must match
+the rows seeded in ores_iam_roles_tbl. They lived in the hand-written
+role.hpp until that header became codegen output, and codegen cannot emit a
+second namespace, so they moved beside it.
+end note
+
+' Notes on the generated domain types. Each claim is from the type's own
+' header.
+note right of "ores::iam::domain::account"
+Bi-temporal and audited (domain/account.hpp): version, the four audit
+columns and the valid_from/valid_to pair with the GIST exclusion. One row
+per user, service, algorithm or LLM identity; username is the natural key,
+unique on (tenant_id, username), and account_type defaults to "user".
+image_id, reports_to_account_id and default_party_id are nullable uuid soft
+references held as optional, and reports_to_account_id makes the type
+self-referencing. The table is a composite parent:
+ores_iam_accounts_touch_version_fn lets account contact information or an
+account-party row bump this account's version when the child is written.
+service_password_hash is a real column with no domain member, reached only
+by check_service_credentials, so it never travels on the wire. This entity
+is read_only: the generated account_protocol.hpp owns the reads
+(iam.v1.accounts.list, .get and the version reads) and the hand-written
+account_operations_protocol.hpp owns the writes.
+end note
+note right of "ores::iam::domain::session"
+TimescaleDB hypertable partitioned by start_time with 7-day chunks
+(domain/session.hpp). It has no version column, no audit tail and no
+valid_from/valid_to, and it keys on (id, start_time) rather than a single
+surrogate key, because a hypertable's partition column must sit in its
+primary key. end_time is text not null default '', not a nullable
+timestamp, so an active session carries the empty string; client_ip is
+text, not inet. The hand-written struct's party_id, visible_party_ids and
+username have no backing column and now live on session_view.
+end note
+note right of "ores::iam::domain::tenant"
+Core entity for multi-tenancy (domain/tenant.hpp). The system tenant's id
+is the maximum UUID value, ffffffff-ffff-ffff-ffff-ffffffffffff, and it
+owns shared reference data; SQL also carries tenant_id = id as a
+self-reference. A tenant is addressed by id, by its unique code ('system',
+'acme') or by its unique hostname, which routes a login to a tenant. type
+is a foreign key to tenant_types and status a foreign key to
+tenant_statuses; both are strings here.
+end note
+note right of "ores::iam::domain::login_info"
+Current-state table, one row per account keyed by account_id
+(domain/login_info.hpp): no valid_from/valid_to, no version column and no
+audit tail, unlike the bi-temporal types beside it. last_login, last_ip,
+last_attempt_ip, failed_logins, locked, online and password_reset_required
+are the login history and security state.
+end note
+note right of "ores::iam::domain::permission"
+Temporal but unaudited (domain/permission.hpp): it keeps the
+valid_from/valid_to window, the GIST exclusion and the delete rule, and has
+no version column and no audit tail, because permissions are
+system-defined constants seeded from bootstrap data rather than user-edited
+records. code is the atomic grant, named component::resource:action.
+end note
+note right of "ores::iam::domain::role"
+Bi-temporal and audited (domain/role.hpp). name is the natural key, unique
+on (tenant_id, name). The hand-written struct also carried permission_codes,
+which no column backs: it is denormalised from ores_iam_role_permissions_tbl
+by an RBAC join, so it was removed from the entity and the join stays in
+the hand-written authorization layer. The generated role_protocol.hpp still
+declares the entity CRUD messages; only the competing handler is switched
+off, because the hand-written role_handler owns iam.v1.roles.*.
+end note
+note right of "ores::iam::domain::account_contact_information"
+Real name and contact details for an account
+(domain/account_contact_information.hpp). One record per account rather
+than one per contact type: a person needs no
+Legal/Operations/Settlement/Billing split. The account's real name lives
+on account.full_name, not here; this entity answers only how to reach the
+holder. It is a child of account, so writing it bumps the account's own
+version through the touch function.
+end note
+note right of "ores::iam::domain::account_party"
+Junction table linking an IAM account to a party (domain/account_party.hpp).
+One account may hold several parties, which controls the parties a user can
+act on behalf of. party_id is a plain uuid: the party itself is
+ores.refdata's entity, and no party type is declared in this component.
+end note
+note right of "ores::iam::domain::account_role"
+Junction entity linking accounts to roles (domain/account_role.hpp), the
+many-to-many grant: one account holds many roles and one role is held by
+many accounts. assigned_by records who granted it, and it carries no
+version column.
+end note
+note right of "ores::iam::domain::role_permission"
+Junction entity linking roles to permissions (domain/role_permission.hpp).
+It carries tenant_id, role_id and permission_id and nothing else; the RBAC
+join that reads it is what produces an account's effective permission
+codes.
+end note
+
+' ============================= eventing =============================
+
+class ores::eventing::domain::entity_event_traits {
+    {static} +entity_event_traits<ores::iam::messaging::account_contact_information_event>
+    {static} +entity_event_traits<ores::iam::messaging::account_event>
+    {static} +entity_event_traits<ores::iam::messaging::account_type_event>
+    {static} +entity_event_traits<ores::iam::messaging::login_info_event>
+    {static} +entity_event_traits<ores::iam::messaging::permission_event>
+    {static} +entity_event_traits<ores::iam::messaging::role_event>
+    {static} +entity_event_traits<ores::iam::messaging::session_event>
+    {static} +entity_event_traits<ores::iam::messaging::tenant_event>
+    {static} +entity_event_traits<ores::iam::messaging::tenant_status_event>
+    {static} +entity_event_traits<ores::iam::messaging::tenant_type_event>
+}
+note top of "ores::eventing::domain::entity_event_traits"
+Ten specialisations, one per entity event struct, each declared in that
+entity's own eventing header. The automated pass skips template
+declarations, so none of the ten appears. Each states a subject_prefix and
+converts the generic entity_event_notification into the entity's own event;
+the notification carries the key as raw JSON, and only the entity knows
+which columns its key record holds, so from_notification reads the key with
+rfl::json and leaves the key default-constructed when that read fails. The
+prefixes are: iam.v1.account_contact_informations_events, iam.v1.accounts_events, iam.v1.account_types_events, iam.v1.login_info_events, iam.v1.permissions_events, iam.v1.roles_events, iam.v1.sessions_events, iam.v1.tenants_events, iam.v1.tenant_statuses_events, iam.v1.tenant_types_events.
+end note
+
+class ores::eventing::domain::event_traits {
+    {static} +event_traits<ores::iam::eventing::account_permissions_changed_event>
+    {static} +event_traits<ores::iam::eventing::role_assigned_event>
+    {static} +event_traits<ores::iam::eventing::role_revoked_event>
+}
+note right of "ores::eventing::domain::event_traits"
+Three specialisations for the component's own domain events, each carrying
+only a name: "ores.iam.account_permissions_changed", "ores.iam.role_assigned", "ores.iam.role_revoked". They are distinct from the
+generated entity event structs. The header states that
+account_permissions_changed_event is distinct from permission_changed_event
+which signals changes to the permissions table itself;
+account_permissions_changed_event instead carries the complete new set of
+effective permission codes after roles are recomputed.
+end note
+
+' ============================= messaging ============================
+
+' Request structs. Each declares a using response_type alias, a static
+' nats_subject and normally a static requires_session; the automated pass
+' drops all three, so the redeclarations below restore the subject and the
+' session rule. Grouped by header.
+
+' --- messaging/account_contact_information_protocol.hpp
+class ores::iam::messaging::list_account_contact_informations_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_contact_informations.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_account_contact_information_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_contact_informations.get"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_many_account_contact_informations_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_contact_informations.get_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_account_contact_information_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_contact_informations.put"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_many_account_contact_informations_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_contact_informations.put_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_account_contact_information_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_contact_informations.delete"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_many_account_contact_informations_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_contact_informations.delete_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::list_by_account_id_account_contact_informations_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_contact_informations.list_by_account_id"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::list_account_contact_information_versions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_contact_informations_versions.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_account_contact_information_version_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_contact_informations_versions.get"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::publish_account_contact_informations_from_dq_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account-contact-informations.publish-from-dq"
+    {static} +requires_session : bool = true
+}
+' --- messaging/account_operations_protocol.hpp
+class ores::iam::messaging::publish_accounts_from_dq_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts.publish-from-dq"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::save_account_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts.save"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::update_account_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts.update"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_account_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts.delete"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::lock_account_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts.lock"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::unlock_account_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts.unlock"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::reset_password_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts.reset-password"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::update_my_email_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts.update-email"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::set_my_default_party_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts.set-default-party"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::select_party_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts.select-party"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::switch_party_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts.switch-party"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::change_password_request_typed <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts.change-password"
+    {static} +requires_session : bool = true
+}
+' --- messaging/account_party_protocol.hpp
+class ores::iam::messaging::list_account_parties_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_parties.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_account_party_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_parties.get"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_many_account_parties_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_parties.get_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_account_party_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_parties.put"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_many_account_parties_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_parties.put_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_account_party_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_parties.delete"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_many_account_parties_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_parties.delete_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::list_by_account_id_account_parties_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_parties.list_by_account_id"
+    {static} +requires_session : bool = true
+}
+' --- messaging/account_protocol.hpp
+class ores::iam::messaging::list_accounts_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_account_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts.get"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_many_accounts_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts.get_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::list_account_versions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts_versions.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_account_version_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.accounts_versions.get"
+    {static} +requires_session : bool = true
+}
+' --- messaging/account_type_protocol.hpp
+class ores::iam::messaging::list_account_types_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_types.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_account_type_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_types.get"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_many_account_types_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_types.get_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_account_type_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_types.put"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_many_account_types_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_types.put_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_account_type_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_types.delete"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_many_account_types_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_types.delete_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::list_account_type_versions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_types_versions.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_account_type_version_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.account_types_versions.get"
+    {static} +requires_session : bool = true
+}
+' --- messaging/authorization_protocol.hpp
+class ores::iam::messaging::assign_role_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.assign"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::assign_role_by_name_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.assign-by-name"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::revoke_role_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.revoke"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::revoke_role_by_name_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.revoke-by-name"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_account_roles_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.by-account"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_account_permissions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.permissions-by-account"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_role_permissions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.permissions"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::suggest_role_commands_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.suggest-commands"
+    {static} +requires_session : bool = true
+}
+' --- messaging/bootstrap_protocol.hpp
+class ores::iam::messaging::bootstrap_status_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.bootstrap.status"
+    {static} +requires_session : bool = false
+}
+class ores::iam::messaging::create_initial_admin_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.bootstrap.create-admin"
+    {static} +requires_session : bool = false
+}
+class ores::iam::messaging::provision_tenant_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.bootstrap.provision-tenant"
+    {static} +requires_session : bool = false
+}
+' --- messaging/login_info_protocol.hpp
+class ores::iam::messaging::list_login_info_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.login_info.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_login_info_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.login_info.get"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_many_login_info_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.login_info.get_many"
+    {static} +requires_session : bool = true
+}
+' --- messaging/login_protocol.hpp
+class ores::iam::messaging::login_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.auth.login"
+    {static} +requires_session : bool = false
+}
+class ores::iam::messaging::logout_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.auth.logout"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::public_key_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.auth.public-key"
+    {static} +requires_session : bool = false
+}
+class ores::iam::messaging::refresh_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.auth.refresh"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::service_login_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.auth.service-login"
+    {static} +requires_session : bool = false
+}
+' --- messaging/permission_protocol.hpp
+class ores::iam::messaging::list_permissions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.permissions.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_permission_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.permissions.get"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_many_permissions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.permissions.get_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_permission_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.permissions.put"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_many_permissions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.permissions.put_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_permission_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.permissions.delete"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_many_permissions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.permissions.delete_many"
+    {static} +requires_session : bool = true
+}
+' --- messaging/reset_protocol.hpp
+class ores::iam::messaging::reset_tenant_command <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.system.reset-tenant"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::reset_system_command <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.system.reset"
+    {static} +requires_session : bool = true
+}
+' --- messaging/role_protocol.hpp
+class ores::iam::messaging::list_roles_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_role_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.get"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_many_roles_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.get_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_role_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.put"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_many_roles_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.put_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_role_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.delete"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_many_roles_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.delete_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::list_role_versions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles_versions.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_role_version_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles_versions.get"
+    {static} +requires_session : bool = true
+}
+' --- messaging/session_operations_protocol.hpp
+class ores::iam::messaging::get_active_sessions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.sessions.active"
+    {static} +requires_session : bool = true
+}
+' --- messaging/session_protocol.hpp
+class ores::iam::messaging::list_sessions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.sessions.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_session_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.sessions.get"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_many_sessions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.sessions.get_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_session_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.sessions.put"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_many_sessions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.sessions.put_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_session_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.sessions.delete"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_many_sessions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.sessions.delete_many"
+    {static} +requires_session : bool = true
+}
+' --- messaging/session_samples_protocol.hpp
+class ores::iam::messaging::get_session_samples_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.sessions.samples"
+    {static} +requires_session : bool = true
+}
+' --- messaging/signup_protocol.hpp
+class ores::iam::messaging::signup_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.auth.signup"
+    {static} +requires_session : bool = false
+}
+' --- messaging/tenant_protocol.hpp
+class ores::iam::messaging::list_tenants_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenants.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_tenant_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenants.get"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_many_tenants_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenants.get_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_tenant_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenants.put"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_many_tenants_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenants.put_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_tenant_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenants.delete"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_many_tenants_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenants.delete_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::list_tenant_versions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenants_versions.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_tenant_version_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenants_versions.get"
+    {static} +requires_session : bool = true
+}
+' --- messaging/tenant_provisioning_protocol.hpp
+class ores::iam::messaging::complete_tenant_provisioning_command <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenants.complete-provisioning"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::provision_acme_tenant_command <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenants.provision-acme"
+    {static} +requires_session : bool = true
+}
+' --- messaging/tenant_status_protocol.hpp
+class ores::iam::messaging::list_tenant_statuses_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_statuses.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_tenant_status_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_statuses.get"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_many_tenant_statuses_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_statuses.get_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_tenant_status_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_statuses.put"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_many_tenant_statuses_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_statuses.put_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_tenant_status_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_statuses.delete"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_many_tenant_statuses_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_statuses.delete_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::list_tenant_status_versions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_statuses_versions.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_tenant_status_version_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_statuses_versions.get"
+    {static} +requires_session : bool = true
+}
+' --- messaging/tenant_type_protocol.hpp
+class ores::iam::messaging::list_tenant_types_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_types.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_tenant_type_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_types.get"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_many_tenant_types_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_types.get_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_tenant_type_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_types.put"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_many_tenant_types_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_types.put_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_tenant_type_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_types.delete"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::delete_many_tenant_types_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_types.delete_many"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::list_tenant_type_versions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_types_versions.list"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::get_tenant_type_version_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.tenant_types_versions.get"
+    {static} +requires_session : bool = true
+}
+
+' Event-subject namespaces. A namespace of constants holds no type, so the
+' automated pass draws no part of it: ten namespaces, three subjects each.
+class ores::iam::messaging::account_contact_information_event_subjects {
+    {static} +created : string_view = "iam.v1.account_contact_informations_events.created"
+    {static} +updated : string_view = "iam.v1.account_contact_informations_events.updated"
+    {static} +deleted : string_view = "iam.v1.account_contact_informations_events.deleted"
+}
+class ores::iam::messaging::account_event_subjects {
+    {static} +created : string_view = "iam.v1.accounts_events.created"
+    {static} +updated : string_view = "iam.v1.accounts_events.updated"
+    {static} +deleted : string_view = "iam.v1.accounts_events.deleted"
+}
+class ores::iam::messaging::account_type_event_subjects {
+    {static} +created : string_view = "iam.v1.account_types_events.created"
+    {static} +updated : string_view = "iam.v1.account_types_events.updated"
+    {static} +deleted : string_view = "iam.v1.account_types_events.deleted"
+}
+class ores::iam::messaging::login_info_event_subjects {
+    {static} +created : string_view = "iam.v1.login_info_events.created"
+    {static} +updated : string_view = "iam.v1.login_info_events.updated"
+    {static} +deleted : string_view = "iam.v1.login_info_events.deleted"
+}
+class ores::iam::messaging::permission_event_subjects {
+    {static} +created : string_view = "iam.v1.permissions_events.created"
+    {static} +updated : string_view = "iam.v1.permissions_events.updated"
+    {static} +deleted : string_view = "iam.v1.permissions_events.deleted"
+}
+class ores::iam::messaging::role_event_subjects {
+    {static} +created : string_view = "iam.v1.roles_events.created"
+    {static} +updated : string_view = "iam.v1.roles_events.updated"
+    {static} +deleted : string_view = "iam.v1.roles_events.deleted"
+}
+class ores::iam::messaging::session_event_subjects {
+    {static} +created : string_view = "iam.v1.sessions_events.created"
+    {static} +updated : string_view = "iam.v1.sessions_events.updated"
+    {static} +deleted : string_view = "iam.v1.sessions_events.deleted"
+}
+class ores::iam::messaging::tenant_event_subjects {
+    {static} +created : string_view = "iam.v1.tenants_events.created"
+    {static} +updated : string_view = "iam.v1.tenants_events.updated"
+    {static} +deleted : string_view = "iam.v1.tenants_events.deleted"
+}
+class ores::iam::messaging::tenant_status_event_subjects {
+    {static} +created : string_view = "iam.v1.tenant_statuses_events.created"
+    {static} +updated : string_view = "iam.v1.tenant_statuses_events.updated"
+    {static} +deleted : string_view = "iam.v1.tenant_statuses_events.deleted"
+}
+class ores::iam::messaging::tenant_type_event_subjects {
+    {static} +created : string_view = "iam.v1.tenant_types_events.created"
+    {static} +updated : string_view = "iam.v1.tenant_types_events.updated"
+    {static} +deleted : string_view = "iam.v1.tenant_types_events.deleted"
+}
+
+' Notes on the messaging facet.
+note top of "ores::iam::messaging::list_account_contact_informations_request"
+Every request struct declares a using response_type alias naming its paired
+response, and a static constexpr string_view nats_subject. The automated
+pass skips using and static lines, so neither arrives. A CRUD subject reads
+iam.v1.RESOURCE.VERB with VERB one of list, get, get_many, put, put_many,
+delete or delete_many, and the matching version subject reads
+iam.v1.RESOURCE_versions.VERB. The remaining subjects carry a descriptive or
+hyphenated verb instead: auth.login, auth.logout, auth.refresh,
+auth.public-key, auth.service-login, auth.signup, accounts.save,
+accounts.update, accounts.delete, accounts.lock, accounts.unlock,
+accounts.change-password, accounts.reset-password, accounts.update-email,
+accounts.select-party, accounts.switch-party, accounts.set-default-party,
+accounts.publish-from-dq, account_parties.list_by_account_id,
+roles.assign, roles.assign-by-name, roles.revoke, roles.revoke-by-name,
+roles.by-account, roles.permissions, roles.permissions-by-account,
+roles.suggest-commands, sessions.active, sessions.samples,
+bootstrap.status, bootstrap.create-admin, bootstrap.provision-tenant,
+system.reset, system.reset-tenant, tenants.complete-provisioning and
+tenants.provision-acme. Most requests also declare a static
+requires_session, true wherever the caller must already hold a session and
+false for the seven operations that produce one: login, signup,
+service-login, public-key, bootstrap status, bootstrap create-admin and
+bootstrap provision-tenant.
+end note
+note bottom of "ores::iam::messaging::publish_account_contact_informations_from_dq_request"
+The automated pass reads this subject wrong: the static declaration wraps
+onto a second line and the pass takes only the first, so the member never
+arrives. It is the only wrapped member declaration in the component. Both
+publish-from-dq structs are triggers rather than requests: each states a
+subject and no response_type, and each body is empty because the
+server-side function knows how to expand the DQ artefact. This one's
+subject, iam.v1.account-contact-informations.publish-from-dq, hyphenates the
+resource where every other subject for the same entity uses underscores
+(iam.v1.account_contact_informations.list and its siblings).
+end note
+note right of "ores::iam::messaging::switch_party_request"
+Deliberately a separate subject from select_party
+(account_operations_protocol.hpp): select_party accepts only the
+narrowly-scoped, single-use token with audience "select_party_only" that
+the login flow issues, while switch_party accepts a normal
+already-authenticated session token, so an account with access to several
+parties can change the party in view mid-session without logging out.
+Membership check and token issuance are otherwise the same, which is why
+switch_party_request names select_party_response as its response_type.
+end note
+note right of "ores::iam::messaging::login_response"
+login is the one protocol whose request does not require a session, since
+it is what produces one (login_protocol.hpp). session_id is the IAM session
+uuid created for this login and matches a row in ores_iam_sessions_tbl; the
+header tells clients to forward it as Nats-Session-Id on every later
+request so one login's calls correlate in the logs. access_lifetime_s
+defaults to 1800 and lets a client arm its proactive refresh timer from the
+server's own configuration, and available_parties carries one
+party_summary per party the account may act on.
+end note
+note right of "ores::iam::messaging::session_view"
+The party-scoped shape of a session (session_operations_protocol.hpp).
+session is the entity; party_id, visible_party_ids and username are
+denormalised fields reached through the account-party association, and no
+column backs any of them, so they are message fields rather than domain
+members. get_active_sessions_response returns domain sessions, not views.
+end note
+note right of "ores::iam::messaging::account_event_subjects"
+Every entity family declares a namespace of three subject constants, one
+per action, because an event reports what happened and no caller asked for
+it: the payload is the family's own event struct and the subject's last
+segment is the action. The other nine are
+account_contact_information_, account_type_, login_info_, permission_,
+role_, session_, tenant_, tenant_status_ and tenant_type_event_subjects.
+Each underscore suffix matches the subject_prefix its entity_event_traits
+states.
+end note
+
+' ============================ generators ============================
+
+class ores::iam::generators::generate_synthetic_account_contact_information {
+    {static} +generate_synthetic_account_contact_information(ctx : generation_context&) : account_contact_information
+    {static} +generate_synthetic_account_contact_informations(n : size_t, ctx : generation_context&) : vector<account_contact_information>
+}
+class ores::iam::generators::generate_synthetic_account {
+    {static} +generate_synthetic_account(ctx : generation_context&) : account
+    {static} +generate_synthetic_accounts(n : size_t, ctx : generation_context&) : vector<account>
+}
+class ores::iam::generators::generate_synthetic_account_party {
+    {static} +generate_synthetic_account_party(ctx : generation_context&) : account_party
+    {static} +generate_synthetic_account_partys(n : size_t, ctx : generation_context&) : vector<account_party>
+}
+class ores::iam::generators::generate_synthetic_account_role {
+    {static} +generate_synthetic_account_role(ctx : generation_context&) : account_role
+    {static} +generate_synthetic_account_roles(n : size_t, ctx : generation_context&) : vector<account_role>
+}
+class ores::iam::generators::generate_synthetic_account_type {
+    {static} +generate_synthetic_account_type(ctx : generation_context&) : account_type
+    {static} +generate_synthetic_account_types(n : size_t, ctx : generation_context&) : vector<account_type>
+}
+class ores::iam::generators::generate_synthetic_login_info {
+    {static} +generate_synthetic_login_info(ctx : generation_context&) : login_info
+    {static} +generate_synthetic_login_infos(n : size_t, ctx : generation_context&) : vector<login_info>
+}
+class ores::iam::generators::generate_synthetic_permission {
+    {static} +generate_synthetic_permission(ctx : generation_context&) : permission
+    {static} +generate_synthetic_permissions(n : size_t, ctx : generation_context&) : vector<permission>
+}
+class ores::iam::generators::generate_synthetic_role {
+    {static} +generate_synthetic_role(ctx : generation_context&) : role
+    {static} +generate_synthetic_roles(n : size_t, ctx : generation_context&) : vector<role>
+}
+class ores::iam::generators::generate_synthetic_session {
+    {static} +generate_synthetic_session(ctx : generation_context&) : session
+    {static} +generate_synthetic_sessions(n : size_t, ctx : generation_context&) : vector<session>
+}
+class ores::iam::generators::generate_synthetic_tenant {
+    {static} +generate_synthetic_tenant(ctx : generation_context&) : tenant
+    {static} +generate_synthetic_tenants(n : size_t, ctx : generation_context&) : vector<tenant>
+}
+class ores::iam::generators::generate_synthetic_tenant_status {
+    {static} +generate_synthetic_tenant_status(ctx : generation_context&) : tenant_status
+    {static} +generate_synthetic_tenant_statuss(n : size_t, ctx : generation_context&) : vector<tenant_status>
+}
+class ores::iam::generators::generate_synthetic_tenant_type {
+    {static} +generate_synthetic_tenant_type(ctx : generation_context&) : tenant_type
+    {static} +generate_synthetic_tenant_types(n : size_t, ctx : generation_context&) : vector<tenant_type>
+}
+note top of "ores::iam::generators::generate_synthetic_account"
+Free functions, codegen output: each generated entity has this pair, one
+and N, in its own *_generator.hpp, from the same template as the entity
+struct. All randomness comes from ores.utility's generation_context, so the
+same seed rebuilds the same rows. The automated pass draws no part of this
+namespace, because the namespace holds no types. Eleven entities have a
+generator; account_role has none.
+end note
+
+' ============================= service =============================
+
+class ores::iam::service::auth_session_service {
+    +add_session(token : const string&, session : ores::iam::domain::session) : void
+    +remove_session(token : const string&) : void
+    +find_session(token : const string&) : optional<ores::iam::domain::session>
+    +get_all_sessions() : vector<ores::iam::domain::session>
+    {static} -logger_name : string_view = "ores.iam.service.auth_session_service"
+    {static} -lg()
+}
+note right of "ores::iam::service::auth_session_service"
+Hand-written, and the component's only hand-written source
+(src/service/auth_session_service.cpp). It is an in-process map from Bearer
+token to domain session, and every method takes the private mutable mutex_,
+so one instance is safe to share. Nothing is persisted and nothing is
+evicted on a timer: a session stays until remove_session is called. It
+holds no account or permission state, so it answers who a token belongs to
+and not what that account may do. The class is exported
+(ORES_IAM_API_EXPORT), so consumers link it rather than re-implement it.
+end note
+
+' ---- relationships the automated pass cannot infer -------------------
+
+' domain: the junction rows and the soft references the generated boxes
+' carry as uuids.
+ores::iam::domain::account_role ..> ores::iam::domain::account : account_id
+ores::iam::domain::account_role ..> ores::iam::domain::role : role_id
+ores::iam::domain::role_permission ..> ores::iam::domain::role : role_id
+ores::iam::domain::role_permission ..> ores::iam::domain::permission : permission_id
+ores::iam::domain::account_party ..> ores::iam::domain::account : account_id
+ores::iam::domain::account_contact_information ..> ores::iam::domain::account : child of
+ores::iam::domain::login_info ..> ores::iam::domain::account : keyed by account_id
+ores::iam::domain::session ..> ores::iam::domain::account : account_id
+ores::iam::domain::account o-- ores::iam::domain::account : reports_to_account_id
+ores::iam::domain::tenant o-- ores::iam::domain::tenant : tenant_id self-reference
+ores::iam::domain::account ..> ores::iam::domain::account_type : classified by account_type code
+ores::iam::domain::tenant ..> ores::iam::domain::tenant_type : typed by type code
+ores::iam::domain::tenant ..> ores::iam::domain::tenant_status : lifecycle status by code
+ores::iam::domain::permissions ..> ores::iam::domain::permission : codes match the seeded rows
+ores::iam::domain::roles ..> ores::iam::domain::role : names match the seeded rows
+ores::iam::domain::entity_type_of ..> ores::iam::domain::account : returns the dispatch key for
+ores::iam::domain::entity_type_of ..> ores::iam::domain::session : returns the dispatch key for
+
+' messaging: the key/lookup pairs, the response payloads, and the
+' response_type pairing that a redeclared box still cannot show.
+ores::iam::messaging::account_lookup ..> ores::iam::messaging::account_key : key
+ores::iam::messaging::account_lookup ..> ores::iam::domain::account : carries
+ores::iam::messaging::login_info_lookup ..> ores::iam::messaging::login_info_key : key
+ores::iam::messaging::login_info_lookup ..> ores::iam::domain::login_info : carries
+ores::iam::messaging::session_lookup ..> ores::iam::messaging::session_key : key
+ores::iam::messaging::session_lookup ..> ores::iam::domain::session : carries
+ores::iam::messaging::role_lookup ..> ores::iam::messaging::role_key : key
+ores::iam::messaging::role_lookup ..> ores::iam::domain::role : carries
+ores::iam::messaging::session_view ..> ores::iam::domain::session : wraps
+ores::iam::messaging::login_response o-- ores::iam::messaging::party_summary : available_parties
+ores::iam::messaging::list_accounts_response o-- ores::iam::domain::account : accounts
+ores::iam::messaging::get_account_response ..> ores::iam::domain::account : account
+ores::iam::messaging::list_account_contact_informations_response o-- ores::iam::domain::account_contact_information : account_contact_informations
+ores::iam::messaging::list_account_parties_response o-- ores::iam::domain::account_party : account_parties
+ores::iam::messaging::list_roles_response o-- ores::iam::domain::role : roles
+ores::iam::messaging::get_account_roles_response o-- ores::iam::domain::role : roles
+ores::iam::messaging::list_permissions_response o-- ores::iam::domain::permission : permissions
+ores::iam::messaging::list_sessions_response o-- ores::iam::domain::session : sessions
+ores::iam::messaging::get_active_sessions_response o-- ores::iam::domain::session : sessions
+ores::iam::messaging::list_tenants_response o-- ores::iam::domain::tenant : tenants
+ores::iam::messaging::list_login_info_response o-- ores::iam::domain::login_info : login_info
+ores::iam::messaging::list_account_types_response o-- ores::iam::domain::account_type : types
+ores::iam::messaging::list_tenant_types_response o-- ores::iam::domain::tenant_type : types
+ores::iam::messaging::list_tenant_statuses_response o-- ores::iam::domain::tenant_status : statuses
+
+' response_type pairings. The pass draws none of them; the obvious
+' request/response name pairs are stated once here, and the non-obvious
+' pairs are drawn in full.
+ores::iam::messaging::list_accounts_request ..> ores::iam::messaging::list_accounts_response : declares response_type
+ores::iam::messaging::get_account_request ..> ores::iam::messaging::get_account_response : declares response_type
+ores::iam::messaging::list_sessions_request ..> ores::iam::messaging::list_sessions_response : declares response_type
+ores::iam::messaging::list_roles_request ..> ores::iam::messaging::list_roles_response : declares response_type
+ores::iam::messaging::list_tenants_request ..> ores::iam::messaging::list_tenants_response : declares response_type
+ores::iam::messaging::get_active_sessions_request ..> ores::iam::messaging::get_active_sessions_response : declares response_type
+ores::iam::messaging::switch_party_request ..> ores::iam::messaging::select_party_response : reuses as response_type
+ores::iam::messaging::change_password_request_typed ..> ores::iam::messaging::change_password_response : declares response_type
+ores::iam::messaging::reset_tenant_command ..> ores::iam::messaging::reset_tenant_result : declares response_type
+ores::iam::messaging::reset_system_command ..> ores::iam::messaging::reset_system_result : declares response_type
+ores::iam::messaging::complete_tenant_provisioning_command ..> ores::iam::messaging::complete_tenant_provisioning_response : declares response_type
+ores::iam::messaging::provision_acme_tenant_command ..> ores::iam::messaging::provision_acme_tenant_response : declares response_type
+
+' eventing: each event struct is announced on its family's three subjects,
+' and the traits convert the generic notification into it.
+ores::iam::messaging::account_contact_information_event ..> ores::iam::messaging::account_contact_information_event_subjects : announced on
+ores::iam::messaging::account_event ..> ores::iam::messaging::account_event_subjects : announced on
+ores::iam::messaging::account_type_event ..> ores::iam::messaging::account_type_event_subjects : announced on
+ores::iam::messaging::login_info_event ..> ores::iam::messaging::login_info_event_subjects : announced on
+ores::iam::messaging::permission_event ..> ores::iam::messaging::permission_event_subjects : announced on
+ores::iam::messaging::role_event ..> ores::iam::messaging::role_event_subjects : announced on
+ores::iam::messaging::session_event ..> ores::iam::messaging::session_event_subjects : announced on
+ores::iam::messaging::tenant_event ..> ores::iam::messaging::tenant_event_subjects : announced on
+ores::iam::messaging::tenant_status_event ..> ores::iam::messaging::tenant_status_event_subjects : announced on
+ores::iam::messaging::tenant_type_event ..> ores::iam::messaging::tenant_type_event_subjects : announced on
+
+ores::eventing::domain::entity_event_traits ..> ores::iam::messaging::account_contact_information_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::iam::messaging::account_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::iam::messaging::account_type_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::iam::messaging::login_info_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::iam::messaging::permission_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::iam::messaging::role_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::iam::messaging::session_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::iam::messaging::tenant_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::iam::messaging::tenant_status_event : converts notifications into
+ores::eventing::domain::entity_event_traits ..> ores::iam::messaging::tenant_type_event : converts notifications into
+
+ores::eventing::domain::event_traits ..> ores::iam::eventing::account_permissions_changed_event : names
+ores::eventing::domain::event_traits ..> ores::iam::eventing::role_assigned_event : names
+ores::eventing::domain::event_traits ..> ores::iam::eventing::role_revoked_event : names
+
+' service and generators.
+ores::iam::service::auth_session_service ..> ores::iam::domain::session : tracks
+ores::iam::generators::generate_synthetic_account ..> ores::iam::domain::account : generates
+ores::iam::generators::generate_synthetic_account ..> ores::utility::generation::generation_context : draws randomness from
+ores::iam::generators::generate_synthetic_session ..> ores::iam::domain::session : generates
+ores::iam::generators::generate_synthetic_tenant ..> ores::iam::domain::tenant : generates
+
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.iam.api.puml"

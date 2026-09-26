@@ -32,7 +32,17 @@ namespace ores #F2F2F2 {
             }
         }
         namespace messaging #F2F2F2 {
+            class account_contact_information_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
             class account_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class account_operations_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -signer_ : ores::security::jwt::jwt_authenticator
@@ -44,6 +54,11 @@ namespace ores #F2F2F2 {
                 -ctx_ : ores::database::context
                 -signer_ : ores::security::jwt::jwt_authenticator
             }
+            class account_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
             class auth_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
@@ -51,20 +66,54 @@ namespace ores #F2F2F2 {
                 -party_cache_ : shared_ptr<service::cache::party_cache>
                 -token_settings_ : domain::token_settings
             }
+            class authorization_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -signer_ : ores::security::jwt::jwt_authenticator
+            }
             class bootstrap_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -signer_ : ores::security::jwt::jwt_authenticator
                 -party_cache_ : shared_ptr<service::cache::party_cache>
             }
+            class login_info_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class permission_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class principal_parts <<struct>> {
+                +username : string
+                +hostname : string
+                +has_hostname : bool
+            }
+            class publish_from_dq_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+            }
             class registrar {
             }
-            class role_handler {
+            class reset_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -signer_ : ores::security::jwt::jwt_authenticator
             }
+            class role_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
             class session_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class session_operations_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -signer_ : ores::security::jwt::jwt_authenticator
@@ -72,37 +121,76 @@ namespace ores #F2F2F2 {
             class tenant_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class tenant_provisioning_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
                 -signer_ : ores::security::jwt::jwt_authenticator
+                -impersonation_ : ores::iam::service::internal_impersonation_service
             }
             class tenant_status_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
-                -signer_ : ores::security::jwt::jwt_authenticator
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
             class tenant_type_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
-                -signer_ : ores::security::jwt::jwt_authenticator
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
         }
         namespace repository #F2F2F2 {
+            class account_contact_information_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +account_id : string
+                +street_line_1 : optional<string>
+                +street_line_2 : optional<string>
+                +city : optional<string>
+                +state : optional<string>
+                +country_code : optional<string>
+                +postal_code : optional<string>
+                +phone : optional<string>
+                +email : optional<string>
+                +web_page : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class account_contact_information_mapper {
+            }
+            class account_contact_information_repository {
+                +remove_status : enum class
+            }
             class account_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
                 +version : int
-                +account_type : string
                 +username : string
+                +account_type : string
+                +full_name : optional<string>
                 +password_hash : string
                 +password_salt : string
+                +service_password_hash : optional<string>
                 +totp_secret : string
                 +email : string
-                +service_password_hash : optional<string>
+                +default_party_id : optional<string>
+                +image_id : optional<string>
+                +job_title : optional<string>
+                +reports_to_account_id : optional<string>
                 +modified_by : string
+                +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +performed_by : string
                 +valid_from : db_timestamp
                 +valid_to : db_timestamp
             }
@@ -125,10 +213,11 @@ namespace ores #F2F2F2 {
             class account_party_mapper {
             }
             class account_party_repository {
+                +remove_status : enum class
                 -ctx_ : context
             }
             class account_repository {
-                -ctx_ : context
+                +remove_status : enum class
             }
             class account_role_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -148,6 +237,40 @@ namespace ores #F2F2F2 {
             class account_role_repository {
                 -ctx_ : context
             }
+            class account_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +type : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class account_type_mapper {
+            }
+            class account_type_repository {
+                +remove_status : enum class
+            }
+            class auth_event_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +event_time : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +account_id : string
+                +event_type : string
+                +username : string
+                +session_id : string
+                +party_id : string
+                +error_detail : string
+            }
             class auth_event_repository {
                 -ctx_ : context
             }
@@ -159,15 +282,15 @@ namespace ores #F2F2F2 {
                 +last_ip : string
                 +last_attempt_ip : string
                 +failed_logins : int
-                +locked : int
-                +last_login : db_timestamp
-                +online : int
-                +password_reset_required : int
+                +locked : bool
+                +last_login : string
+                +online : bool
+                +password_reset_required : bool
             }
             class login_info_mapper {
             }
             class login_info_repository {
-                -ctx_ : context
+                +remove_status : enum class
             }
             class permission_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -182,7 +305,7 @@ namespace ores #F2F2F2 {
             class permission_mapper {
             }
             class permission_repository {
-                -ctx_ : context
+                +remove_status : enum class
             }
             class role_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -216,64 +339,29 @@ namespace ores #F2F2F2 {
                 -ctx_ : context
             }
             class role_repository {
-                -ctx_ : context
+                +remove_status : enum class
             }
             class session_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
+                +start_time : sqlgen::PrimaryKey<string>
                 +tenant_id : string
                 +account_id : string
-                +start_time : sqlgen::PrimaryKey<db_timestamp>
                 +end_time : string
                 +client_ip : string
                 +client_identifier : string
-                +client_version_major : int
-                +client_version_minor : int
-                +bytes_sent : int64_t
-                +bytes_received : int64_t
+                +client_version_major : uint16_t
+                +client_version_minor : uint16_t
+                +bytes_sent : uint64_t
+                +bytes_received : uint64_t
                 +country_code : string
                 +protocol : string
-            }
-            class session_statistics_entity <<struct>> {
-                +schema : constexpr static const char*
-                +tablename : constexpr static const char*
-                +day : string
-                +account_id : string
-                +session_count : int64_t
-                +avg_duration_seconds : double
-                +total_bytes_sent : int64_t
-                +total_bytes_received : int64_t
-            }
-            class session_sample_entity <<struct>> {
-                +schema : constexpr static const char*
-                +tablename : constexpr static const char*
-                +session_id : sqlgen::PrimaryKey<string>
-                +tenant_id : string
-                +sample_time : sqlgen::PrimaryKey<db_timestamp>
-                +bytes_sent : int64_t
-                +bytes_received : int64_t
-                +latency_ms : int64_t
-            }
-            class auth_event_entity <<struct>> {
-                +schema : constexpr static const char*
-                +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
-                +event_time : sqlgen::PrimaryKey<db_timestamp>
-                +tenant_id : string
-                +account_id : string
-                +event_type : string
-                +username : string
-                +session_id : string
-                +party_id : string
-                +error_detail : string
             }
             class session_mapper {
             }
             class session_repository {
-                +limit : uint32_t
-                +limit : uint32_t
-                -ctx_ : context
+                +remove_status : enum class
             }
             class tenant_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -281,10 +369,10 @@ namespace ores #F2F2F2 {
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
                 +version : int
-                +type : string
                 +code : string
                 +name : string
-                +description : string
+                +type : string
+                +description : optional<string>
                 +hostname : string
                 +status : string
                 +modified_by : string
@@ -297,7 +385,7 @@ namespace ores #F2F2F2 {
             class tenant_mapper {
             }
             class tenant_repository {
-                -ctx_ : context
+                +remove_status : enum class
             }
             class tenant_status_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -312,12 +400,13 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class tenant_status_mapper {
             }
             class tenant_status_repository {
+                +remove_status : enum class
             }
             class tenant_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -332,34 +421,43 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class tenant_type_mapper {
             }
             class tenant_type_repository {
+                +remove_status : enum class
             }
         }
         namespace service #F2F2F2 {
+            class account_contact_information_service {
+                -ctx_ : context
+                -repo_ : repository::account_contact_information_repository
+            }
+            class account_operations_service {
+                -account_repo_ : repository::account_repository
+                -login_info_repo_ : repository::login_info_repository
+                -ctx_ : database::context
+                -uuid_generator_ : utility::uuid::uuid_v7_generator
+            }
             class account_party_service {
                 -repo_ : repository::account_party_repository
             }
             class account_service {
-                +change_commentary : const string&
-                +change_commentary : const string&
-                -account_repo_ : repository::account_repository
-                -login_info_repo_ : repository::login_info_repository
-                -uuid_generator_ : utility::uuid::uuid_v7_generator
+                -ctx_ : context
+                -repo_ : repository::account_repository
             }
             class account_setup_service {
-                +change_commentary : const string&
-                +change_commentary : const string&
-                -account_svc_ : account_service&
+                -account_svc_ : account_operations_service&
                 -auth_svc_ : shared_ptr<authorization_service>
             }
+            class account_type_service {
+                -ctx_ : context
+                -repo_ : repository::account_type_repository
+            }
             class authorization_service {
-                +event_bus : event_bus*
-                +change_commentary : const string&
+                -ctx_ : context
                 -permission_repo_ : repository::permission_repository
                 -role_repo_ : repository::role_repository
                 -account_role_repo_ : repository::account_role_repository
@@ -373,36 +471,53 @@ namespace ores #F2F2F2 {
                 -auth_service_ : shared_ptr<authorization_service>
                 -ctx_ : database::context
             }
-            class database_name_service {
-                +max_attempts : int
-                -ctx_ : database::context
+            class internal_impersonation_service {
+                -signer_ : ores::security::jwt::jwt_authenticator
+                -visible_party_ids_ : visible_party_ids_fn
             }
-            class party_cache {
+            class internal_request_client {
                 -nats_ : ores::nats::service::client&
-                -mutex_ : mutable shared_mutex
-                -cache_ : unordered_map<string, partition_t>
+                -token_ : string
+            }
+            class login_info_service {
+                -ctx_ : context
+                -repo_ : repository::login_info_repository
+            }
+            class permission_service {
+                -ctx_ : context
+                -repo_ : repository::permission_repository
+            }
+            class role_service {
+                -ctx_ : context
+                -repo_ : repository::role_repository
             }
             class service_session_service {
-                +protocol : domain::session_protocol
-                +protocol : domain::session_protocol
-                +bytes_received : uint64_t
+                -ctx_ : context
                 -session_repo_ : repository::session_repository
                 -account_repo_ : repository::account_repository
                 -uuid_generator_ : utility::uuid::uuid_v7_generator
             }
+            class session_service {
+                -ctx_ : context
+                -repo_ : repository::session_repository
+            }
             class signup_result <<struct>> {
                 +success : bool
                 +error_message : string
-                +error_code : ores::utility::serialization::error_code
                 +account_id : boost::uuids::uuid
                 +username : string
             }
             class signup_service {
                 -account_repo_ : repository::account_repository
                 -login_info_repo_ : repository::login_info_repository
+                -ctx_ : database::context
                 -system_flags_ : shared_ptr<variability::service::system_settings_service>
                 -auth_service_ : shared_ptr<authorization_service>
                 -uuid_generator_ : utility::uuid::uuid_v7_generator
+            }
+            class tenant_service {
+                -ctx_ : context
+                -repo_ : repository::tenant_repository
             }
             class tenant_status_service {
                 -ctx_ : context
@@ -412,11 +527,1559 @@ namespace ores #F2F2F2 {
                 -ctx_ : context
                 -repo_ : repository::tenant_type_repository
             }
+            namespace cache #F2F2F2 {
+                class party_cache {
+                    -nats_ : ores::nats::service::client&
+                    -cache_ : cache_t
+                }
+            }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+' The automated pass reads data members and little else. It drops every
+' method, it drops a static or using member, it drops a declaration that
+' wraps onto a second line, and a facet of free functions does not arrive at
+' all -- so a repository, a service, a handler, a registrar and a history
+' provider all arrive as empty boxes. The blocks below fill those boxes and
+' draw the relationships the automated pass cannot see.
+'
+' They use fully-qualified class names rather than a reopened namespace
+' block, because this PlantUML version crashes when a namespace that already
+' holds classes is declared a second time. Redeclaring a class merges its
+' members into the box the automated pass already drew, so a refresh keeps
+' both.
+
+' ---------------------------------------------------------------------------
+' Domain value types
+' ---------------------------------------------------------------------------
+
+class ores::iam::domain::token_settings <<struct>> {
+    +access_lifetime_s : int
+    +party_selection_lifetime_s : int
+    +max_session_s : int
+    +refresh_threshold_pct : int
+    {static} +load(svc : system_settings_service&) : token_settings
+}
+note right of "ores::iam::domain::token_settings"
+The token-lifetime policy, loaded once per handler construction from
+ores.variability's system_settings_service. The four members are the
+iam.token.* settings: access_lifetime_seconds,
+party_selection_lifetime_seconds, max_session_seconds and
+refresh_threshold_pct. The defaults in the header (1800, 300, 28800,
+80) apply only until load() overwrites them, so the settings table is
+the single place the policy lives.
+end note
+
+class ores::iam::messaging::split_principal {
+    {static} +split_principal(principal : string) : principal_parts
+}
+class ores::iam::messaging::username_of {
+    {static} +username_of(principal : string) : string
+}
+note right of "ores::iam::messaging::split_principal"
+Free functions, hand-written in principal.hpp. A principal is
+"username@hostname": the username is the account key a login looks up,
+the hostname routes the request to the tenant that serves it. The split
+is on the last '@', so a username may itself contain one. The rule lives
+here because call sites once each wrote it out, and the ones that forgot
+it stored an account under "name@host" while login looked up "name".
+end note
+
+note right of "ores::iam::messaging::principal_parts"
+The two parts a principal decomposes into, plus has_hostname so a caller
+that routes by hostname knows whether one was stated. A bare username
+routes nowhere.
+end note
+
+' ---------------------------------------------------------------------------
+' Repositories. account_repository is the reference instance and is stated
+' in full. Every generated repository carries the same contract: sql(), the
+' write overloads under a claim, the read_latest family, read_all and
+' read_at_version for a versioned table, a total-count read, and the three
+' remove forms. The claim is what makes a write safe: replace_claim states
+' the version the caller read (must_match_version), or that no row exists
+' (must_not_exist), and the store decides in the write's own transaction. A
+' row that moved on is a conflict, never a silent overwrite. remove(id,
+' version) applies the same rule and answers removed, conflicting, missing
+' or unsupported, so a caller reports an outcome instead of catching.
+' ---------------------------------------------------------------------------
+
+class ores::iam::repository::account_repository {
+    +account_repository()
+    +sql() : string
+    +write(ctx : context, v : account)
+    +write(ctx : context, v : vector<account>)
+    +write(ctx : context, v : account, claim : precondition)
+    +write(ctx : context, v : vector<account>, claims : vector<precondition>)
+    +read_latest(ctx : context) : vector<account>
+    +read_latest(ctx : context, id : string) : vector<account>
+    +read_latest(ctx : context, ids : vector<string>) : vector<account>
+    +read_latest(ctx : context, offset : uint32_t, limit : uint32_t) : vector<account>
+    +read_latest_by_username(ctx : context, username : string) : vector<account>
+    +read_latest_by_email(ctx : context, email : string) : vector<account>
+    +read_any_by_username(ctx : context, username : string) : vector<account>
+    +read_all(ctx : context) : vector<account>
+    +read_all(ctx : context, id : string) : vector<account>
+    +read_at_version(ctx : context, id : string, version : uint32_t) : optional<account>
+    +get_total_account_count(ctx : context) : uint32_t
+    +remove(ctx : context, id : string)
+    +remove(ctx : context, id : string, version : optional<uint32_t>) : remove_status
+    +remove(ctx : context, ids : vector<string>)
+    +check_service_credentials(ctx : context, username : string, password : string) : optional<uuid>
+}
+note right of "ores::iam::repository::account_repository"
+The account table is the one repository with reads no other has:
+read_any_by_username and read_latest_by_username/email. History is
+addressed by the model key (the username) and must stay readable after a
+delete, which closes the transaction-time window rather than removing
+the row; a latest read cannot resolve a closed row, so read_any_by_username
+ignores the window. check_service_credentials answers a uuid for the
+service-login path, where the caller has a password but no session yet.
+end note
+
+class ores::iam::repository::account_contact_information_repository {
+    +sql() : string
+    +write(ctx : context, v : account_contact_information)
+    +write(ctx : context, v : vector<account_contact_information>)
+    +write(ctx : context, v : account_contact_information, claim : precondition)
+    +write(ctx : context, v : vector<account_contact_information>, claims : vector<precondition>)
+    +read_latest(ctx : context) : vector<account_contact_information>
+    +read_latest(ctx : context, id : string) : vector<account_contact_information>
+    +read_latest(ctx : context, ids : vector<string>) : vector<account_contact_information>
+    +read_latest(ctx : context, offset : uint32_t, limit : uint32_t) : vector<account_contact_information>
+    +read_latest_by_email(ctx : context, email : string) : vector<account_contact_information>
+    +read_any_by_email(ctx : context, email : string) : vector<account_contact_information>
+    +read_all(ctx : context, id : string) : vector<account_contact_information>
+    +read_at_version(ctx : context, id : string, version : uint32_t) : optional<account_contact_information>
+    +read_latest_by_account_id(ctx : context, account_id : string, offset : uint32_t, limit : uint32_t) : vector<account_contact_information>
+    +read_by_account_id_as_of(ctx : context, account_id : string, from : time_point, to : time_point) : vector<account_contact_information>
+    +get_total_account_contact_information_count(ctx : context) : uint32_t
+    +get_total_account_contact_information_count_by_account_id(ctx : context, account_id : string) : uint32_t
+    +remove(ctx : context, id : string)
+    +remove(ctx : context, id : string, version : optional<uint32_t>) : remove_status
+    +remove(ctx : context, ids : vector<string>)
+}
+note bottom of "ores::iam::repository::account_contact_information_repository"
+read_by_account_id_as_of is the one read that returns a child entity
+"as of" a parent version's own [valid_from, valid_to) window, so a
+caller can compose a historical account with the contact information
+that stood at the same instant.
+end note
+
+class ores::iam::repository::account_party_repository {
+    +account_party_repository(ctx : context)
+    +sql() : string
+    +write(v : account_party)
+    +write(v : vector<account_party>)
+    +write(v : account_party, claim : precondition)
+    +write(v : vector<account_party>, claims : vector<precondition>)
+    +read_latest() : vector<account_party>
+    +read_latest(offset : uint32_t, limit : uint32_t) : vector<account_party>
+    +read_latest(account_id : uuid, party_id : uuid) : vector<account_party>
+    +read_latest_by_account(account_id : uuid) : vector<account_party>
+    +read_latest_by_account(account_id : uuid, offset : uint32_t, limit : uint32_t) : vector<account_party>
+    +read_latest_by_party(party_id : uuid) : vector<account_party>
+    +get_total_account_party_count() : uint32_t
+    +get_total_account_party_count_by_account(account_id : uuid) : uint32_t
+    +get_total_account_party_count_by_party(party_id : uuid) : uint32_t
+    +remove(account_id : uuid, party_id : uuid)
+    +remove(account_id : uuid, party_id : uuid, version : optional<uint32_t>) : remove_status
+    +remove(account_ids : vector<uuid>, party_ids : vector<uuid>)
+    +remove_by_account(account_id : uuid)
+}
+note right of "ores::iam::repository::account_party_repository"
+The junction between an account and the parties it may act for. It
+differs from the generated repositories in two ways: the context is a
+constructor member rather than a parameter, and party_id is not a
+security boundary -- it is the party being targeted by the association,
+an arbitrary value the client supplies. Every read is either by account
+or by party, which is exactly the two directions the party cache and the
+account detail view need.
+end note
+
+class ores::iam::repository::account_role_repository {
+    +account_role_repository(ctx : context)
+    +sql() : string
+    +write(v : account_role)
+    +write(v : vector<account_role>)
+    +read_latest() : vector<account_role>
+    +read_latest_by_account(account_id : uuid) : vector<account_role>
+    +read_latest_by_role(role_id : uuid) : vector<account_role>
+    +exists(account_id : uuid, role_id : uuid) : bool
+    +remove(account_id : uuid, role_id : uuid)
+    +remove_all_for_account(account_id : uuid)
+    +read_effective_permissions(account_id : uuid) : vector<string>
+    +read_roles_with_permissions(account_id : uuid) : vector<role>
+}
+note top of "ores::iam::repository::account_role_repository"
+A junction with the role side joined in: read_effective_permissions
+returns the flat permission codes an account holds through every role,
+and read_roles_with_permissions returns the roles each carrying its
+permission list. Both are single queries, so authorization does not walk
+the junction in C++.
+end note
+
+class ores::iam::repository::role_permission_repository {
+    +role_permission_repository(ctx : context)
+    +sql() : string
+    +write(v : role_permission)
+    +write(v : vector<role_permission>)
+    +read_latest() : vector<role_permission>
+    +read_latest_by_role(role_id : uuid) : vector<role_permission>
+    +read_latest_by_permission(permission_id : uuid) : vector<role_permission>
+    +remove(role_id : uuid, permission_id : uuid)
+    +remove_all_for_role(role_id : uuid)
+    +read_all_role_permission_codes() : map<string, vector<string>>
+    +read_role_permission_codes(role_ids : vector<uuid>) : map<string, vector<string>>
+}
+note bottom of "ores::iam::repository::role_permission_repository"
+read_all_role_permission_codes and read_role_permission_codes return
+role name to permission codes in one query. The first is what the shell
+uses to render the whole matrix; the second is the scoped form a caller
+that already holds role ids uses.
+end note
+
+class ores::iam::repository::auth_event_repository {
+    +auth_event_repository(ctx : context)
+    +record_login_success(event_time : time_point, tenant_id : string, account_id : string, username : string, session_id : string, party_id : string)
+    +record_login_failure(event_time : time_point, tenant_id : string, username : string, error_detail : string)
+    +record_logout(event_time : time_point, tenant_id : string, account_id : string, username : string, session_id : string)
+    +record_token_refresh(event_time : time_point, tenant_id : string, account_id : string, username : string, session_id : string)
+    +record_max_session_exceeded(event_time : time_point, tenant_id : string, account_id : string, username : string, session_id : string)
+    +record_signup_success(event_time : time_point, tenant_id : string, account_id : string, username : string)
+    +record_signup_failure(event_time : time_point, tenant_id : string, username : string, error_detail : string)
+}
+note right of "ores::iam::repository::auth_event_repository"
+Append-only audit trail: the table has no version column and no
+mapper, so every record_* builds an auth_event_entity and inserts it.
+A failure row may carry an empty tenant_id when hostname resolution did
+not get as far as a tenant, which is why the tenant column is nullable
+in the SQL.
+end note
+
+class ores::iam::repository::session_repository {
+    +sql() : string
+    +write(ctx : context, v : session)
+    +write(ctx : context, v : vector<session>)
+    +write(ctx : context, v : session, claim : precondition)
+    +read_latest(ctx : context) : vector<session>
+    +read_latest(ctx : context, id : string, start_time : string) : vector<session>
+    +read_latest(ctx : context, ids : vector<string>, start_times : vector<string>) : vector<session>
+    +read_latest(ctx : context, offset : uint32_t, limit : uint32_t) : vector<session>
+    +read_latest_by_id(ctx : context, id : string) : vector<session>
+    +read_all(ctx : context, id : string, start_time : string) : vector<session>
+    +read_at_version(ctx : context, id : string, start_time : string, version : uint32_t) : optional<session>
+    +get_total_session_count(ctx : context) : uint32_t
+    +read(ctx : context, session_id : uuid) : optional<session>
+    +read_by_account(ctx : context, account_id : uuid, limit : uint32_t, offset : uint32_t) : vector<session>
+    +read_active_by_account(ctx : context, account_id : uuid) : vector<session>
+    +read_all_active(ctx : context) : vector<session>
+    +count_by_account(ctx : context, account_id : uuid) : uint32_t
+    +update_bytes(ctx : context, session_id : uuid, start_time : time_point, bytes_sent : uint64_t, bytes_received : uint64_t)
+    +end_session(ctx : context, session_id : uuid, start_time : time_point, end_time : time_point, bytes_sent : uint64_t, bytes_received : uint64_t)
+    +remove(ctx : context, id : string, start_time : string)
+    +remove(ctx : context, id : string, start_time : string, version : optional<uint32_t>) : remove_status
+    +remove(ctx : context, ids : vector<string>, start_times : vector<string>)
+}
+note right of "ores::iam::repository::session_repository"
+sessions is a temporal composite keyed by (id, start_time), not by a
+single id, so every read and removal states both. Beyond the generated
+contract the hand-written reads serve the session dashboards:
+read_active_by_account, count_by_account, read_all_active, and the two
+byte-accounting writes update_bytes and end_session.
+end note
+
+' account_type, login_info, permission, role, tenant, tenant_status and
+' tenant_type share one generated shape: sql, the four write forms, the
+' read_latest family, read_all, read_at_version, one total-count read, the
+' three remove forms and the nested remove_status. Their keys differ, which
+' is the only signature difference: account_type and tenant_type are keyed
+' by their type code, tenant_status by its status code, permission by uuid
+' with a code lookup, role by uuid with a name lookup, tenant by uuid with
+' a code lookup, login_info by account_id.
+
+class ores::iam::repository::account_type_repository {
+    +sql() : string
+    +write(ctx : context, v : account_type, claim : precondition)
+    +read_latest(ctx : context) : vector<account_type>
+    +read_latest(ctx : context, types : vector<string>) : vector<account_type>
+    +read_latest(ctx : context, offset : uint32_t, limit : uint32_t) : vector<account_type>
+    +read_all(ctx : context, type : string) : vector<account_type>
+    +read_at_version(ctx : context, type : string, version : uint32_t) : optional<account_type>
+    +get_total_type_count(ctx : context) : uint32_t
+    +remove(ctx : context, type : string, version : optional<uint32_t>) : remove_status
+}
+
+class ores::iam::repository::login_info_repository {
+    +sql() : string
+    +write(ctx : context, v : login_info, claim : precondition)
+    +read_latest(ctx : context, account_id : string) : vector<login_info>
+    +read_latest(ctx : context, account_ids : vector<string>) : vector<login_info>
+    +read_latest(ctx : context, offset : uint32_t, limit : uint32_t) : vector<login_info>
+    +read_all(ctx : context, account_id : string) : vector<login_info>
+    +get_total_login_info_count(ctx : context) : uint32_t
+    +remove(ctx : context, account_id : string, version : optional<uint32_t>) : remove_status
+}
+note right of "ores::iam::repository::login_info_repository"
+Login tracking is a current-state table with no version column -- a
+versioned removal reports unsupported there -- and it is keyed by
+account_id, because one account has exactly one tracking row.
+end note
+
+class ores::iam::repository::permission_repository {
+    +sql() : string
+    +write(ctx : context, v : permission, claim : precondition)
+    +read_latest(ctx : context) : vector<permission>
+    +read_latest_by_code(ctx : context, code : string) : vector<permission>
+    +read_any_by_code(ctx : context, code : string) : vector<permission>
+    +read_at_version(ctx : context, id : string, version : uint32_t) : optional<permission>
+    +get_total_permission_count(ctx : context) : uint32_t
+    +remove(ctx : context, id : string, version : optional<uint32_t>) : remove_status
+}
+
+class ores::iam::repository::role_repository {
+    +sql() : string
+    +write(ctx : context, v : role, claim : precondition)
+    +read_latest(ctx : context) : vector<role>
+    +read_latest_by_name(ctx : context, name : string) : vector<role>
+    +read_any_by_name(ctx : context, name : string) : vector<role>
+    +read_at_version(ctx : context, id : string, version : uint32_t) : optional<role>
+    +get_total_role_count(ctx : context) : uint32_t
+    +remove(ctx : context, id : string, version : optional<uint32_t>) : remove_status
+}
+
+class ores::iam::repository::tenant_repository {
+    +sql() : string
+    +write(ctx : context, v : tenant, claim : precondition)
+    +read_latest(ctx : context) : vector<tenant>
+    +read_latest(ctx : context, ids : vector<string>) : vector<tenant>
+    +read_latest_by_code(ctx : context, code : string) : vector<tenant>
+    +read_any_by_code(ctx : context, code : string) : vector<tenant>
+    +read_at_version(ctx : context, id : string, version : uint32_t) : optional<tenant>
+    +get_total_tenant_count(ctx : context) : uint32_t
+    +remove(ctx : context, id : string, version : optional<uint32_t>) : remove_status
+}
+note right of "ores::iam::repository::tenant_repository"
+Every read filters on the tenant carried by the context, which serves
+the CRUD flows but not login (hostname resolution happens before any
+tenant context exists). tenant_lookups holds the unfiltered counterparts.
+end note
+
+class ores::iam::repository::tenant_status_repository {
+    +sql() : string
+    +write(ctx : context, v : tenant_status, claim : precondition)
+    +read_latest(ctx : context) : vector<tenant_status>
+    +read_latest(ctx : context, status : string) : vector<tenant_status>
+    +read_at_version(ctx : context, status : string, version : uint32_t) : optional<tenant_status>
+    +get_total_status_count(ctx : context) : uint32_t
+    +remove(ctx : context, status : string, version : optional<uint32_t>) : remove_status
+}
+
+class ores::iam::repository::tenant_type_repository {
+    +sql() : string
+    +write(ctx : context, v : tenant_type, claim : precondition)
+    +read_latest(ctx : context) : vector<tenant_type>
+    +read_latest(ctx : context, type : string) : vector<tenant_type>
+    +read_at_version(ctx : context, type : string, version : uint32_t) : optional<tenant_type>
+    +get_total_type_count(ctx : context) : uint32_t
+    +remove(ctx : context, type : string, version : optional<uint32_t>) : remove_status
+}
+
+class ores::iam::repository::read_all_active_tenants {
+    {static} +read_all_active_tenants(ctx : context&) : vector<tenant>
+}
+class ores::iam::repository::read_active_tenant_by_id {
+    {static} +read_active_tenant_by_id(ctx : context&, id : uuid) : vector<tenant>
+}
+class ores::iam::repository::read_active_tenant_by_hostname {
+    {static} +read_active_tenant_by_hostname(ctx : context&, hostname : string) : vector<tenant>
+}
+note top of "ores::iam::repository::read_all_active_tenants"
+Free functions, hand-authored in tenant_lookups.hpp (no codegen template
+emits this file, so regeneration leaves it alone). They are the
+pre-rebind, unfiltered counterparts of tenant_repository: login resolves
+a hostname before any tenant context exists, and the registrar warms the
+party cache as the system tenant acting for all tenants. Row-level
+security still applies, so a caller resolves only what the
+tenants_read_policy admits.
+end note
+
+' ---------------------------------------------------------------------------
+' Mappers. The automated pass draws each box and nothing inside it, because
+' every method is a static overload of map(). account_mapper is stated in
+' full; the other twelve carry the same four overloads (entity -> domain,
+' domain -> entity, and the two vector forms).
+' ---------------------------------------------------------------------------
+
+class ores::iam::repository::account_mapper {
+    {static} +map(v : account_entity) : account
+    {static} +map(v : account) : account_entity
+    {static} +map(v : vector<account_entity>) : vector<account>
+    {static} +map(v : vector<account>) : vector<account_entity>
+}
+
+class ores::iam::repository::account_contact_information_mapper {
+    {static} +map(v : account_contact_information_entity) : account_contact_information
+    {static} +map(v : account_contact_information) : account_contact_information_entity
+}
+
+class ores::iam::repository::account_party_mapper {
+    {static} +map(v : account_party_entity) : account_party
+    {static} +map(v : account_party) : account_party_entity
+}
+
+class ores::iam::repository::account_role_mapper {
+    {static} +map(v : account_role_entity) : account_role
+    {static} +map(v : account_role) : account_role_entity
+}
+
+class ores::iam::repository::account_type_mapper {
+    {static} +map(v : account_type_entity) : account_type
+    {static} +map(v : account_type) : account_type_entity
+}
+
+class ores::iam::repository::login_info_mapper {
+    {static} +map(v : login_info_entity) : login_info
+    {static} +map(v : login_info) : login_info_entity
+}
+
+class ores::iam::repository::permission_mapper {
+    {static} +map(v : permission_entity) : permission
+    {static} +map(v : permission) : permission_entity
+}
+
+class ores::iam::repository::role_mapper {
+    {static} +map(v : role_entity) : role
+    {static} +map(v : role) : role_entity
+}
+
+class ores::iam::repository::role_permission_mapper {
+    {static} +map(v : role_permission_entity) : role_permission
+    {static} +map(v : role_permission) : role_permission_entity
+}
+
+class ores::iam::repository::session_mapper {
+    {static} +map(v : session_entity) : session
+    {static} +map(v : session) : session_entity
+}
+
+class ores::iam::repository::tenant_mapper {
+    {static} +map(v : tenant_entity) : tenant
+    {static} +map(v : tenant) : tenant_entity
+}
+
+class ores::iam::repository::tenant_status_mapper {
+    {static} +map(v : tenant_status_entity) : tenant_status
+    {static} +map(v : tenant_status) : tenant_status_entity
+}
+
+class ores::iam::repository::tenant_type_mapper {
+    {static} +map(v : tenant_type_entity) : tenant_type
+    {static} +map(v : tenant_type) : tenant_type_entity
+}
+
+note top of "ores::iam::repository::account_mapper"
+Every mapper exists for the same reason: sqlgen reads and writes the
+*_entity struct, while the protocol and the services speak the domain
+type. The mapper is the only place the two meet, so a column rename
+touches the entity, the mapper and the migration -- never a service or a
+handler. auth_event has no mapper: nothing reads the audit trail back
+through the domain type.
+end note
+
+' ---------------------------------------------------------------------------
+' Services. Each service owns its repositories and answers either the
+' canonical protocol request or a plain value, so a handler never touches a
+' repository. A service fills the result -- missing, conflicting, denied --
+' where the storage call that decided it is made; it throws only when the
+' store itself fails, and the handler reports that separately.
+' ---------------------------------------------------------------------------
+
+class ores::iam::service::account_service {
+    +account_service(ctx : context)
+    +list_accounts(request : list_accounts_request) : list_accounts_response
+    +get_account(request : get_account_request) : get_account_response
+    +get_many_accounts(request : get_many_accounts_request) : get_many_accounts_response
+    +list_account_versions(request : list_account_versions_request) : list_account_versions_response
+    +get_account_version(request : get_account_version_request) : get_account_version_response
+    +list_accounts(offset : uint32_t, limit : uint32_t) : vector<account>
+    +count_accounts() : uint32_t
+    +get_account_at_version(id : uuid, version : uint32_t) : optional<account>
+    +get_account(id : uuid) : optional<account>
+    +get_account_by_username(username : string) : optional<account>
+    +get_accounts(ids : vector<string>) : vector<account>
+    +save_account(account : account)
+    +save_accounts(accounts : vector<account>)
+    +delete_account(id : uuid)
+    +delete_accounts(ids : vector<string>)
+    +get_account_history(key : string) : vector<account>
+}
+note right of "ores::iam::service::account_service"
+The uuid overload and the username overload are deliberate: the two keys
+an account holds are different keys, and a call site has to say which one
+it means. get_account_history is addressed by the model key the caller
+holds -- the repository resolves the storage key -- and is what the
+generic history provider calls.
+end note
+
+class ores::iam::service::account_operations_service {
+    +account_operations_service(ctx : context)
+    +create_account(username : string, email : string, password : string, modified_by : string, change_commentary : string) : account
+    +create_service_account(username : string, email : string, account_type : string, modified_by : string, change_commentary : string) : account
+    +get_account(account_id : uuid) : optional<account>
+    +list_accounts() : vector<account>
+    +list_accounts(offset : uint32_t, limit : uint32_t) : vector<account>
+    +get_total_account_count() : uint32_t
+    +list_login_info() : vector<login_info>
+    +delete_account(account_id : uuid)
+    +login(username : string, password : string, ip_address : address) : account
+    +lock_account(account_id : uuid) : bool
+    +unlock_account(account_id : uuid) : bool
+    +logout(account_id : uuid)
+    +update_account(account_id : uuid, email : string, full_name : string, default_party_id : optional<uuid>, job_title : string, reports_to_account_id : uuid, image_id : uuid, change_commentary : string)
+    +find_account_by_username(username : string) : optional<account>
+    +find_account_by_id(account_id : uuid) : optional<account>
+    +set_password_reset_required(account_id : uuid) : bool
+    +change_password(account_id : uuid, new_password : string) : string
+    +get_login_info(account_id : uuid) : login_info
+    +update_my_email(account_id : uuid, new_email : string) : string
+    +set_my_default_party(account_id : uuid, party_id : uuid) : string
+}
+note right of "ores::iam::service::account_operations_service"
+Hand-written. Passwords are hashed with ores.security's scrypt
+password_hasher -- create_account hashes, login verifies -- and the
+password columns never hold a plaintext value. login() refuses a
+non-user account type and a locked account, increments failed_logins on
+a bad password, and locks the account at five failed attempts. unlock()
+clears both the lock and the counter; a successful login resets the
+counter, stamps last_ip and last_login, and marks the account online.
+create_service_account refuses a "user" type, because a service account
+authenticates without a password.
+end note
+
+class ores::iam::service::account_setup_service {
+    +account_setup_service(account_svc : account_operations_service&, auth_svc : shared_ptr<authorization_service>)
+    +create_account(username : string, email : string, password : string, modified_by : string, change_commentary : string) : account
+    +create_account_with_role(username : string, email : string, password : string, modified_by : string, role_name : string, change_commentary : string) : account
+}
+note right of "ores::iam::service::account_setup_service"
+Hand-written composition seam: it creates the account through
+account_operations_service and then assigns the named role through
+authorization_service, in that order. It exists so the two steps that
+must not be separated -- a new account with no role is unreachable --
+happen behind one call.
+end note
+
+class ores::iam::service::account_party_service {
+    +account_party_service(ctx : context)
+    +list_account_parties() : vector<account_party>
+    +list_account_parties(offset : uint32_t, limit : uint32_t) : vector<account_party>
+    +get_total_account_party_count() : uint32_t
+    +list_account_parties_by_account(account_id : uuid) : vector<account_party>
+    +list_account_parties_by_account(account_id : uuid, offset : uint32_t, limit : uint32_t) : vector<account_party>
+    +get_total_account_party_count_by_account(account_id : uuid) : uint32_t
+    +get_total_account_party_count_by_party(party_id : uuid) : uint32_t
+    +find_account_party(account_id : uuid, party_id : uuid) : optional<account_party>
+    +save_account_party(account_party : account_party)
+    +remove_account_party(account_id : uuid, party_id : uuid)
+}
+
+class ores::iam::service::account_contact_information_service {
+    +account_contact_information_service(ctx : context)
+    +list_account_contact_informations(request : list_account_contact_informations_request) : list_account_contact_informations_response
+    +get_account_contact_information(request : get_account_contact_information_request) : get_account_contact_information_response
+    +get_many_account_contact_informations(request : get_many_account_contact_informations_request) : get_many_account_contact_informations_response
+    +put_account_contact_information(request : put_account_contact_information_request) : put_account_contact_information_response
+    +put_many_account_contact_informations(request : put_many_account_contact_informations_request) : put_many_account_contact_informations_response
+    +delete_account_contact_information(request : delete_account_contact_information_request) : delete_account_contact_information_response
+    +delete_many_account_contact_informations(request : delete_many_account_contact_informations_request) : delete_many_account_contact_informations_response
+    +list_by_account_id_account_contact_informations(request : list_by_account_id_account_contact_informations_request) : list_by_account_id_account_contact_informations_response
+    +list_account_contact_information_versions(request : list_account_contact_information_versions_request) : list_account_contact_information_versions_response
+    +get_account_contact_information_version(request : get_account_contact_information_version_request) : get_account_contact_information_version_response
+    +list_account_contact_informations(offset : uint32_t, limit : uint32_t) : vector<account_contact_information>
+    +count_account_contact_informations() : uint32_t
+    +list_account_contact_informations_by_account_id(account_id : string, offset : uint32_t, limit : uint32_t) : vector<account_contact_information>
+    +count_account_contact_informations_by_account_id(account_id : string) : uint32_t
+    +list_account_contact_informations_by_account_id_as_of(account_id : string, from : time_point, to : time_point) : vector<account_contact_information>
+    +get_account_contact_information_at_version(id : uuid, version : uint32_t) : optional<account_contact_information>
+    +get_account_contact_information(id : uuid) : optional<account_contact_information>
+    +get_account_contact_information_by_email(email : string) : optional<account_contact_information>
+    +get_account_contact_informations(ids : vector<string>) : vector<account_contact_information>
+    +save_account_contact_information(v : account_contact_information)
+    +save_account_contact_informations(v : vector<account_contact_information>)
+    +delete_account_contact_information(id : uuid)
+    +delete_account_contact_informations(ids : vector<string>)
+    +get_account_contact_information_history(key : string) : vector<account_contact_information>
+}
+
+class ores::iam::service::account_type_service {
+    +account_type_service(ctx : context)
+    +list_account_types(request : list_account_types_request) : list_account_types_response
+    +get_account_type(request : get_account_type_request) : get_account_type_response
+    +get_many_account_types(request : get_many_account_types_request) : get_many_account_types_response
+    +put_account_type(request : put_account_type_request) : put_account_type_response
+    +put_many_account_types(request : put_many_account_types_request) : put_many_account_types_response
+    +delete_account_type(request : delete_account_type_request) : delete_account_type_response
+    +delete_many_account_types(request : delete_many_account_types_request) : delete_many_account_types_response
+    +list_account_type_versions(request : list_account_type_versions_request) : list_account_type_versions_response
+    +get_account_type_version(request : get_account_type_version_request) : get_account_type_version_response
+    +list_types(offset : uint32_t, limit : uint32_t) : vector<account_type>
+    +count_types() : uint32_t
+    +get_type_at_version(type : string, version : uint32_t) : optional<account_type>
+    +find_type(type : string) : optional<account_type>
+    +get_types(types : vector<string>) : vector<account_type>
+    +save_type(type : account_type)
+    +save_types(types : vector<account_type>)
+    +delete_type(type : string)
+    +delete_types(types : vector<string>)
+    +get_type_history(type : string) : vector<account_type>
+}
+
+class ores::iam::service::authorization_service {
+    +authorization_service(ctx : context, event_bus : event_bus*)
+    +list_permissions() : vector<permission>
+    +find_permission_by_code(code : string) : optional<permission>
+    +create_permission(code : string, description : string) : permission
+    +list_roles() : vector<role>
+    +find_role(role_id : uuid) : optional<role>
+    +find_role_by_name(name : string) : optional<role>
+    +create_role(name : string, description : string, permission_codes : vector<string>, modified_by : string) : role
+    +get_role_permissions(role_id : uuid) : vector<string>
+    +assign_role(account_id : uuid, role_id : uuid, assigned_by : string, change_commentary : string)
+    +revoke_role(account_id : uuid, role_id : uuid)
+    +get_account_roles(account_id : uuid) : vector<role>
+    +get_effective_permissions(account_id : uuid) : vector<string>
+    +has_permission(account_id : uuid, permission_code : string_view) : bool
+    {static} +check_permission(permissions : vector<string>, required_permission : string_view) : bool
+}
+note right of "ores::iam::service::authorization_service"
+The RBAC core. get_effective_permissions flattens every role an account
+holds into permission codes; has_permission is the per-request check
+every handler's has_permission(...) call reaches. check_permission is
+static so a caller that already holds a permission list -- the request
+context does -- tests it without a database round trip. assign_role,
+revoke_role and create_permission publish an account-permissions-changed
+event on the optional event bus so caches downstream can drop stale
+grants.
+end note
+
+class ores::iam::service::bootstrap_mode_service {
+    +bootstrap_mode_service(ctx : context, tenant_id : string, auth_service : shared_ptr<authorization_service>)
+    +is_in_bootstrap_mode() : bool
+    +initialize_bootstrap_state()
+    +exit_bootstrap_mode()
+}
+note right of "ores::iam::service::bootstrap_mode_service"
+The flag lives in system_settings under "system.bootstrap_mode":
+enabled means no administrator exists yet, so only the initial admin may
+be created; disabled is secure mode. initialize_bootstrap_state() runs
+at startup and exit_bootstrap_mode() is the one-way transition once the
+admin exists.
+end note
+
+class ores::iam::service::database_name_service {
+    +database_name_service(ctx : context)
+    +generate_whimsical_name() : string
+    +generate_whimsical_name(with_suffix : bool) : string
+    +generate_database_name(with_suffix : bool) : string
+    +generate_unique_database_name(existing_names : vector<string>, max_attempts : int) : string
+    +generate_unique_database_name_from_server() : string
+}
+note right of "ores::iam::service::database_name_service"
+Heroku-style tenant database names, ores_<adjective>_<noun>[_<number>].
+The word lists and the generation logic live in the PostgreSQL
+utility_whimsical_names_create.sql functions, which every ORES database
+carries, so this service only issues the scalar query. The unique forms
+retry against the names already taken, up to max_attempts.
+end note
+
+class ores::iam::service::internal_impersonation_service {
+    +internal_impersonation_service(signer : jwt_authenticator, visible_party_ids : visible_party_ids_fn)
+    +mint_token(ctx : context&, tenant_id : string, account_id : uuid, party_id : uuid, username : string, ttl : seconds) : string
+}
+note right of "ores::iam::service::internal_impersonation_service"
+Mints short-lived JWTs for server-side actor impersonation. The token
+carries the same jwt_claims shape the real login path produces --
+including the account's effective permissions and visible-party set --
+but with no password check, because the server never holds a plaintext
+password. It is deliberately not exposed on any NATS subject; the
+visible-party resolver is injected as a function so the service stays
+unit-testable without a live NATS connection. A default TTL of 60
+seconds makes each token use-once and discardable.
+end note
+
+class ores::iam::service::internal_request_client {
+    +internal_request_client(nats : client&, token : string, refresh_token : function<string()>)
+    +request(req : Request, timeout : seconds) : Request::response_type
+    +wait_for_workflow_instance(instance_id : string, timeout : seconds, expected_steps : size_t, on_progress : function<void(const string&)>) : workflow_wait_result
+}
+note right of "ores::iam::service::internal_request_client"
+Drives the real NATS handler pipeline as an impersonated client. It
+attaches the token as a plain Authorization header (not
+X-Delegated-Authorization: this request originates an identity, it does
+not forward one) and throws rather than returning a result type, because
+a server-side orchestrator has no user to show a graceful error to. On a
+token_expired rejection it re-mints through the refresh callback and
+retries once -- needed because wait_for_workflow_instance polls for
+minutes and outlives the token's TTL.
+end note
+
+note bottom of "ores::iam::service::internal_request_client"
+Thrown when the server rejected the request at the protocol level (an
+X-Error reply header) is the nested service_error, as distinct from the
+std::runtime_error thrown on transport or parse failure. It carries the
+error_code so a caller can tell "the server told us why, and retrying
+will not help" apart from a transient hiccup worth retrying. The nested
+workflow_wait_result carries the exact failure reason of a workflow wait
+so an orchestrator can surface it verbatim.
+end note
+
+class ores::iam::service::login_info_service {
+    +login_info_service(ctx : context)
+    +list_login_info(request : list_login_info_request) : list_login_info_response
+    +get_login_info(request : get_login_info_request) : get_login_info_response
+    +get_many_login_info(request : get_many_login_info_request) : get_many_login_info_response
+    +list_login_info(offset : uint32_t, limit : uint32_t) : vector<login_info>
+    +count_login_info() : uint32_t
+    +get_login_info(account_id : uuid) : optional<login_info>
+    +get_login_info(account_ids : vector<string>) : vector<login_info>
+    +save_login_info(login_info : login_info)
+    +save_login_info(login_info : vector<login_info>)
+    +delete_login_info(account_id : uuid)
+    +delete_login_info(account_ids : vector<string>)
+}
+
+class ores::iam::service::permission_service {
+    +permission_service(ctx : context)
+    +list_permissions(request : list_permissions_request) : list_permissions_response
+    +get_permission(request : get_permission_request) : get_permission_response
+    +get_many_permissions(request : get_many_permissions_request) : get_many_permissions_response
+    +put_permission(request : put_permission_request) : put_permission_response
+    +put_many_permissions(request : put_many_permissions_request) : put_many_permissions_response
+    +delete_permission(request : delete_permission_request) : delete_permission_response
+    +delete_many_permissions(request : delete_many_permissions_request) : delete_many_permissions_response
+    +list_permissions(offset : uint32_t, limit : uint32_t) : vector<permission>
+    +count_permissions() : uint32_t
+    +get_permission(id : uuid) : optional<permission>
+    +get_permission_by_code(code : string) : optional<permission>
+    +find_permission_by_code(code : string) : optional<permission>
+    +get_permissions(ids : vector<string>) : vector<permission>
+    +save_permission(permission : permission)
+    +save_permissions(permissions : vector<permission>)
+    +delete_permission(id : uuid)
+    +delete_permissions(ids : vector<string>)
+    +get_permission_history(key : string) : vector<permission>
+}
+
+class ores::iam::service::role_service {
+    +role_service(ctx : context)
+    +list_roles(request : list_roles_request) : list_roles_response
+    +get_role(request : get_role_request) : get_role_response
+    +get_many_roles(request : get_many_roles_request) : get_many_roles_response
+    +put_role(request : put_role_request) : put_role_response
+    +put_many_roles(request : put_many_roles_request) : put_many_roles_response
+    +delete_role(request : delete_role_request) : delete_role_response
+    +delete_many_roles(request : delete_many_roles_request) : delete_many_roles_response
+    +list_role_versions(request : list_role_versions_request) : list_role_versions_response
+    +get_role_version(request : get_role_version_request) : get_role_version_response
+    +list_roles(offset : uint32_t, limit : uint32_t) : vector<role>
+    +count_roles() : uint32_t
+    +get_role_at_version(id : uuid, version : uint32_t) : optional<role>
+    +get_role(id : uuid) : optional<role>
+    +get_role_by_name(name : string) : optional<role>
+    +get_roles(ids : vector<string>) : vector<role>
+    +save_role(role : role)
+    +save_roles(roles : vector<role>)
+    +delete_role(id : uuid)
+    +delete_roles(ids : vector<string>)
+    +get_role_history(key : string) : vector<role>
+}
+
+class ores::iam::service::service_session_service {
+    +service_session_service(ctx : context)
+    +start_service_session(username : string, client_identifier : string, protocol : string) : optional<session>
+    +start_service_session(account_id : uuid, client_identifier : string, protocol : string) : optional<session>
+    +end_service_session(session_id : uuid, start_time : time_point, bytes_sent : uint64_t, bytes_received : uint64_t)
+    +get_service_account(username : string) : optional<account>
+}
+note right of "ores::iam::service::service_session_service"
+The session side of service login: a service account is looked up by
+username and a session row is opened without a password, then closed
+with its byte counters. This is what the service-token provider's
+service_login request lands on.
+end note
+
+class ores::iam::service::session_service {
+    +session_service(ctx : context)
+    +list_sessions(request : list_sessions_request) : list_sessions_response
+    +get_session(request : get_session_request) : get_session_response
+    +get_many_sessions(request : get_many_sessions_request) : get_many_sessions_response
+    +put_session(request : put_session_request) : put_session_response
+    +put_many_sessions(request : put_many_sessions_request) : put_many_sessions_response
+    +delete_session(request : delete_session_request) : delete_session_response
+    +delete_many_sessions(request : delete_many_sessions_request) : delete_many_sessions_response
+    +list_sessions(offset : uint32_t, limit : uint32_t) : vector<session>
+    +count_sessions() : uint32_t
+    +get_session(id : string, start_time : string) : optional<session>
+    +get_session_by_id(id : string) : optional<session>
+    +get_sessions(ids : vector<string>, start_times : vector<string>) : vector<session>
+    +save_session(session : session)
+    +save_sessions(sessions : vector<session>)
+    +delete_session(id : string, start_time : string)
+    +delete_sessions(ids : vector<string>, start_times : vector<string>)
+}
+
+class ores::iam::service::signup_service {
+    +signup_service(ctx : context, system_flags : shared_ptr<system_settings_service>, auth_service : shared_ptr<authorization_service>)
+    +register_user(username : string, email : string, password : string) : signup_result
+    +is_signup_enabled() : bool
+}
+note right of "ores::iam::service::signup_service"
+Self-service registration. register_user refuses when the signup flag
+is off, when authorization is required, on an invalid request, on a
+taken username or email, and on a weak password -- each as a distinct
+ores.utility error_code in signup_result, never an exception. It scrypt-
+hashes the password and assigns the default Viewer role, so a registered
+account is immediately usable but not privileged.
+end note
+
+class ores::iam::service::tenant_service {
+    +tenant_service(ctx : context)
+    +list_tenants(request : list_tenants_request) : list_tenants_response
+    +get_tenant(request : get_tenant_request) : get_tenant_response
+    +get_many_tenants(request : get_many_tenants_request) : get_many_tenants_response
+    +put_tenant(request : put_tenant_request) : put_tenant_response
+    +put_many_tenants(request : put_many_tenants_request) : put_many_tenants_response
+    +delete_tenant(request : delete_tenant_request) : delete_tenant_response
+    +delete_many_tenants(request : delete_many_tenants_request) : delete_many_tenants_response
+    +list_tenant_versions(request : list_tenant_versions_request) : list_tenant_versions_response
+    +get_tenant_version(request : get_tenant_version_request) : get_tenant_version_response
+    +list_tenants(offset : uint32_t, limit : uint32_t) : vector<tenant>
+    +count_tenants() : uint32_t
+    +get_tenant_at_version(id : uuid, version : uint32_t) : optional<tenant>
+    +get_tenant(id : uuid) : optional<tenant>
+    +get_tenant_by_code(code : string) : optional<tenant>
+    +get_tenants(ids : vector<string>) : vector<tenant>
+    +save_tenant(tenant : tenant)
+    +save_tenants(tenants : vector<tenant>)
+    +delete_tenant(id : uuid)
+    +delete_tenants(ids : vector<string>)
+    +get_tenant_history(key : string) : vector<tenant>
+}
+
+class ores::iam::service::tenant_status_service {
+    +tenant_status_service(ctx : context)
+    +list_tenant_statuses(request : list_tenant_statuses_request) : list_tenant_statuses_response
+    +get_tenant_status(request : get_tenant_status_request) : get_tenant_status_response
+    +get_many_tenant_statuses(request : get_many_tenant_statuses_request) : get_many_tenant_statuses_response
+    +put_tenant_status(request : put_tenant_status_request) : put_tenant_status_response
+    +put_many_tenant_statuses(request : put_many_tenant_statuses_request) : put_many_tenant_statuses_response
+    +delete_tenant_status(request : delete_tenant_status_request) : delete_tenant_status_response
+    +delete_many_tenant_statuses(request : delete_many_tenant_statuses_request) : delete_many_tenant_statuses_response
+    +list_tenant_status_versions(request : list_tenant_status_versions_request) : list_tenant_status_versions_response
+    +get_tenant_status_version(request : get_tenant_status_version_request) : get_tenant_status_version_response
+    +list_statuses(offset : uint32_t, limit : uint32_t) : vector<tenant_status>
+    +count_statuses() : uint32_t
+    +get_status_at_version(status : string, version : uint32_t) : optional<tenant_status>
+    +find_status(status : string) : optional<tenant_status>
+    +get_statuses(statuses : vector<string>) : vector<tenant_status>
+    +save_status(status : tenant_status)
+    +save_statuses(statuses : vector<tenant_status>)
+    +delete_status(status : string)
+    +delete_statuses(statuses : vector<string>)
+    +get_status_history(status : string) : vector<tenant_status>
+}
+
+class ores::iam::service::tenant_type_service {
+    +tenant_type_service(ctx : context)
+    +list_tenant_types(request : list_tenant_types_request) : list_tenant_types_response
+    +get_tenant_type(request : get_tenant_type_request) : get_tenant_type_response
+    +get_many_tenant_types(request : get_many_tenant_types_request) : get_many_tenant_types_response
+    +put_tenant_type(request : put_tenant_type_request) : put_tenant_type_response
+    +put_many_tenant_types(request : put_many_tenant_types_request) : put_many_tenant_types_response
+    +delete_tenant_type(request : delete_tenant_type_request) : delete_tenant_type_response
+    +delete_many_tenant_types(request : delete_many_tenant_types_request) : delete_many_tenant_types_response
+    +list_tenant_type_versions(request : list_tenant_type_versions_request) : list_tenant_type_versions_response
+    +get_tenant_type_version(request : get_tenant_type_version_request) : get_tenant_type_version_response
+    +list_types(offset : uint32_t, limit : uint32_t) : vector<tenant_type>
+    +count_types() : uint32_t
+    +get_type_at_version(type : string, version : uint32_t) : optional<tenant_type>
+    +find_type(type : string) : optional<tenant_type>
+    +get_types(types : vector<string>) : vector<tenant_type>
+    +save_type(type : tenant_type)
+    +save_types(types : vector<tenant_type>)
+    +delete_type(type : string)
+    +delete_types(types : vector<string>)
+    +get_type_history(type : string) : vector<tenant_type>
+}
+
+note top of "ores::iam::service::account_type_service"
+The generated CRUD services share one body: every protocol method maps
+one-to-one onto the repository and fills the result object, and the
+plain-value overloads are why a handler never touches a repository. The
+versioned services also expose a private prepare_change that validates a
+*_change against the intent before the write, which is where a missing
+or conflicting record becomes a result rather than an exception.
+end note
+
+' ---------------------------------------------------------------------------
+' Cache
+' ---------------------------------------------------------------------------
+
+class ores::iam::service::cache::party_cache {
+    +party_cache(nats : client&, token_provider : function<string(bool)>)
+    +set_token_provider(token_provider : function<string(bool)>)
+    +load(tenant_id : string) : string
+    +lookup(tenant_id : string, key : uuid) : optional<party>
+    +compute_visible_party_ids(tenant_id : string, root_id : uuid) : vector<uuid>
+}
+note right of "ores::iam::service::cache::party_cache"
+A partitioned, tenant-keyed cache of ores.refdata parties and the
+party hierarchy. compute_visible_party_ids walks the cached children map
+from a root party, which is how login, auth_event recording and internal
+impersonation all resolve "the parties this account may see". load()
+issues read_parties_for_cache over NATS, which needs a signed JWT, so the
+cache is useless until set_token_provider arms it with a service token.
+Copy and move are deleted: handlers share one instance through a
+shared_ptr.
+end note
+
+class ores::iam::service::cache::warm_and_subscribe_party_cache {
+    {static} +warm_and_subscribe_party_cache(nats : client&, cache : shared_ptr<party_cache>, tenant_ids : vector<string>) : vector<subscription>
+}
+note right of "ores::iam::service::cache::warm_and_subscribe_party_cache"
+An inline free function in party_cache_registrar.hpp. It warms each
+tenant's partition, then subscribes to the party created, updated and
+deleted event subjects; a mutation reloads the affected partition on a
+detached thread, because load() blocks on request_sync and would
+otherwise stall the NATS callback thread. A warm-up failure is logged
+and does not fail startup.
+end note
+
+' ---------------------------------------------------------------------------
+' Handlers. Each handler is a NATS adapter: it proves the request,
+' checks the permission the operation needs, decodes the canonical
+' request, constructs the service for that one call and replies with the
+' response the service filled. The outcome a caller reads -- missing,
+' conflicting, denied -- is the service's answer, so adapter and service
+' cannot disagree about what happened. The constructor takes the NATS
+' client, the base database context and either a verifier (read paths) or
+' a signer (paths that mint a token).
+' ---------------------------------------------------------------------------
+
+class ores::iam::messaging::account_handler {
+    +account_handler(nats : client&, ctx : context, verifier : optional<jwt_authenticator>)
+    +list_accounts(msg : message)
+    +get_account(msg : message)
+    +get_many_accounts(msg : message)
+    +list_account_versions(msg : message)
+    +get_account_version(msg : message)
+}
+
+class ores::iam::messaging::account_contact_information_handler {
+    +account_contact_information_handler(nats : client&, ctx : context, verifier : optional<jwt_authenticator>)
+    +list_account_contact_informations(msg : message)
+    +get_account_contact_information(msg : message)
+    +get_many_account_contact_informations(msg : message)
+    +put_account_contact_information(msg : message)
+    +put_many_account_contact_informations(msg : message)
+    +delete_account_contact_information(msg : message)
+    +delete_many_account_contact_informations(msg : message)
+    +list_by_account_id_account_contact_informations(msg : message)
+    +list_account_contact_information_versions(msg : message)
+    +get_account_contact_information_version(msg : message)
+}
+
+class ores::iam::messaging::account_operations_handler {
+    +account_operations_handler(nats : client&, ctx : context, signer : jwt_authenticator, party_cache : shared_ptr<party_cache>)
+    +reload_token_settings()
+    +save(msg : message)
+    +remove(msg : message)
+    +lock(msg : message)
+    +unlock(msg : message)
+    +reset_password(msg : message)
+    +change_password(msg : message)
+    +update(msg : message)
+    +update_email(msg : message)
+    +set_default_party(msg : message)
+    +select_party(msg : message)
+    +switch_party(msg : message)
+}
+note right of "ores::iam::messaging::account_operations_handler"
+Hand-written, because these are the account operations a generic CRUD
+subject cannot state: lock/unlock, reset and change password, profile
+update, and the party selection commands. Each method checks its own
+iam::accounts:* permission before calling the service, and the handler
+constructs account_setup_service -- not the plain operations service --
+when a write must also assign a role. reload_token_settings is called
+when the variability system_setting_changed event fires, so a token
+lifetime change takes effect without a restart.
+end note
+
+class ores::iam::messaging::account_party_handler {
+    +account_party_handler(nats : client&, ctx : context, signer : jwt_authenticator)
+    +list_account_parties(msg : message)
+    +list_by_account_id_account_parties(msg : message)
+    +get_account_party(msg : message)
+    +get_many_account_parties(msg : message)
+    +put_account_party(msg : message)
+    +put_many_account_parties(msg : message)
+    +delete_account_party(msg : message)
+    +delete_many_account_parties(msg : message)
+    -begin_request(msg : message) : optional<context>
+    -may_update(msg : message, ctx : context&) : bool
+    -refuse_stated_order(msg : message, order : order, result : result&) : bool
+    -refuse_stated_filter(msg : message, filter_stated : bool, result : result&) : bool
+    -refuse_subtree_scope(msg : message, scope : scope, result : result&) : bool
+    {static} -to_domain(write : account_party_write) : account_party
+    -handle_workflow_step(msg : message)
+}
+note right of "ores::iam::messaging::account_party_handler"
+Hand-written, since the junction's messaging layer is not generated. It
+is the one handler that deliberately replaces ores.service.messaging's
+generic stamp(): that helper treats any field named party_id as a
+security boundary and overwrites it with the caller's own party, but on
+account_party party_id is the association *target* the client supplies.
+The local stamp_account_party sets tenant_id and the provenance fields
+and leaves the target party alone. The refuse_* helpers answer the
+workflow's stated order, filter and subtree scope, and
+handle_workflow_step is the publish-from-dq entry point for the
+association.
+end note
+
+class ores::iam::messaging::account_type_handler {
+    +account_type_handler(nats : client&, ctx : context, verifier : optional<jwt_authenticator>)
+    +list_account_types(msg : message)
+    +get_account_type(msg : message)
+    +get_many_account_types(msg : message)
+    +put_account_type(msg : message)
+    +put_many_account_types(msg : message)
+    +delete_account_type(msg : message)
+    +delete_many_account_types(msg : message)
+    +list_account_type_versions(msg : message)
+    +get_account_type_version(msg : message)
+}
+
+class ores::iam::messaging::auth_handler {
+    +auth_handler(nats : client&, ctx : context, signer : jwt_authenticator, party_cache : shared_ptr<party_cache>)
+    +reload_token_settings()
+    +signup(msg : message)
+    +login(msg : message)
+    +public_key(msg : message)
+    +logout(msg : message)
+    +refresh(msg : message)
+    +service_login(msg : message)
+    -record_auth_event(ctx : context&, event_name : const char*, fn : Func&&)
+}
+note right of "ores::iam::messaging::auth_handler"
+The largest hand-written handler and the one that mints tokens. signup
+delegates to signup_service; login verifies the scrypt password through
+account_operations_service, resolves the account's parties from
+party_cache, and mints either an access token or -- when more than one
+party is visible -- a short party-selection token. public_key answers the
+verification key. refresh validates the signature even when the token is
+expired, refuses once the session reaches max_session_s (recording a
+max_session_exceeded audit event), and re-mints. service_login serves the
+no-password service-account path through service_session_service. The
+record_auth_event helper is the single place login, logout, refresh and
+signup outcomes reach auth_event_repository.
+end note
+
+class ores::iam::messaging::authorization_handler {
+    +authorization_handler(nats : client&, ctx : context, signer : jwt_authenticator)
+    +assign(msg : message)
+    +revoke(msg : message)
+    +by_account(msg : message)
+    +account_permissions(msg : message)
+    +permissions(msg : message)
+    +assign_by_name(msg : message)
+    +revoke_by_name(msg : message)
+    +suggest_commands(msg : message)
+}
+note right of "ores::iam::messaging::authorization_handler"
+Role assignment is not CRUD on a table: assign and revoke write the
+account-role junction, by_account and permissions read it back, and the
+_by_name forms resolve a role name first so the shell can pass what the
+user typed. suggest_commands derives the shell commands an account's
+effective permissions admit.
+end note
+
+class ores::iam::messaging::bootstrap_handler {
+    +bootstrap_handler(nats : client&, ctx : context, signer : jwt_authenticator, party_cache : shared_ptr<party_cache>)
+    +status(msg : message)
+    +create_admin(msg : message)
+    +provision_tenant(msg : message)
+}
+note right of "ores::iam::messaging::bootstrap_handler"
+The pre-authentication surface: status answers whether the system is in
+bootstrap mode (bootstrap_mode_service), and create_admin is the one
+operation permitted in that mode. provision_tenant creates the tenant's
+system party and associates it, which is why the handler holds
+account_party_service as well as account_operations_service.
+end note
+
+class ores::iam::messaging::login_info_handler {
+    +login_info_handler(nats : client&, ctx : context, verifier : optional<jwt_authenticator>)
+    +list_login_info(msg : message)
+    +get_login_info(msg : message)
+    +get_many_login_info(msg : message)
+}
+
+class ores::iam::messaging::permission_handler {
+    +permission_handler(nats : client&, ctx : context, verifier : optional<jwt_authenticator>)
+    +list_permissions(msg : message)
+    +get_permission(msg : message)
+    +get_many_permissions(msg : message)
+    +put_permission(msg : message)
+    +put_many_permissions(msg : message)
+    +delete_permission(msg : message)
+    +delete_many_permissions(msg : message)
+}
+
+class ores::iam::messaging::publish_from_dq_handler {
+    +publish_from_dq_handler(nats : client&, ctx : context)
+    +handle(msg : message)
+}
+note right of "ores::iam::messaging::publish_from_dq_handler"
+One handler instance serves every iam publish-from-dq subject. It maps
+the subject name onto the corresponding SECURITY DEFINER SQL function
+(for example iam.v1.accounts.publish-from-dq reaches
+ores_iam_publish_accounts_from_dq_fn), the same convention
+ores.refdata uses, so the staging-to-live promotion stays in SQL.
+end note
+
+class ores::iam::messaging::role_handler {
+    +role_handler(nats : client&, ctx : context, verifier : optional<jwt_authenticator>)
+    +list_roles(msg : message)
+    +get_role(msg : message)
+    +get_many_roles(msg : message)
+    +put_role(msg : message)
+    +put_many_roles(msg : message)
+    +delete_role(msg : message)
+    +delete_many_roles(msg : message)
+    +list_role_versions(msg : message)
+    +get_role_version(msg : message)
+}
+
+class ores::iam::messaging::session_handler {
+    +session_handler(nats : client&, ctx : context, verifier : optional<jwt_authenticator>)
+    +list_sessions(msg : message)
+    +get_session(msg : message)
+    +get_many_sessions(msg : message)
+    +put_session(msg : message)
+    +put_many_sessions(msg : message)
+    +delete_session(msg : message)
+    +delete_many_sessions(msg : message)
+}
+
+class ores::iam::messaging::session_operations_handler {
+    +session_operations_handler(nats : client&, ctx : context, signer : jwt_authenticator)
+    +active(msg : message)
+    +samples(msg : message)
+}
+note bottom of "ores::iam::messaging::session_operations_handler"
+Both methods currently reply with success and an empty payload -- a
+documented placeholder for the active-sessions and session-samples
+views, left in place until the session instrumentation feeds them. It
+does not touch a repository. Do not read it as working behaviour.
+end note
+
+class ores::iam::messaging::tenant_handler {
+    +tenant_handler(nats : client&, ctx : context, verifier : optional<jwt_authenticator>)
+    +list_tenants(msg : message)
+    +get_tenant(msg : message)
+    +get_many_tenants(msg : message)
+    +put_tenant(msg : message)
+    +put_many_tenants(msg : message)
+    +delete_tenant(msg : message)
+    +delete_many_tenants(msg : message)
+    +list_tenant_versions(msg : message)
+    +get_tenant_version(msg : message)
+}
+
+class ores::iam::messaging::tenant_provisioning_handler {
+    +tenant_provisioning_handler(nats : client&, ctx : context, signer : jwt_authenticator, impersonation : internal_impersonation_service)
+    +complete_provisioning(msg : message)
+    +provision_acme(msg : message)
+    -make_client(party_id : uuid) : internal_request_client
+    {static} -extract_bearer(msg : message) : string
+    {static} -publish_bundle(client : internal_request_client&, bundle_code : string, username : string, params_json : string, add_step : function, on_progress : function, timeout : seconds) : bool
+    {static} -find_party(client : internal_request_client&, full_name : string) : optional<party>
+    {static} -find_system_party(client : internal_request_client&) : optional<party>
+    {static} -start_synthetic_theme_feeds(client : internal_request_client&, dataset_code : string) : bool
+    {static} -create_theme_feed_bindings(resolve_client : internal_request_client&, save_client : internal_request_client&, dataset_code : string, party_id : string) : bool
+    -copy_template_image(client : internal_request_client&, ctx : context&, tenant_id : string, key : string) : optional<uuid>
+    -attach_staff_photos(client : internal_request_client&, ctx : context&, tenant_id : string, office_code : string, username : string)
+    -finish_party(client : internal_request_client&, ctx : context&, tenant_id : string, account_id : uuid, username : string, party : party, set_default : bool)
+    -grant_cross_entity_access(ctx : context&, tenant_id : string, office_parties : vector<pair<string, uuid>>)
+}
+note right of "ores::iam::messaging::tenant_provisioning_handler"
+The Acme holding-group orchestrator, the first consumer of internal
+actor impersonation. Rather than calling services in process -- which
+would bypass the authorization, validation and audit trail a real
+request goes through -- it mints one token per impersonated identity and
+drives the real NATS pipeline through internal_request_client, hitting
+refdata, dq and synthetic subjects as each party in turn. It holds no
+repository. It is hand-written and not exposed as generated CRUD; the
+two commands are wired by the registrar beside it.
+end note
+
+class ores::iam::messaging::tenant_status_handler {
+    +tenant_status_handler(nats : client&, ctx : context, verifier : optional<jwt_authenticator>)
+    +list_tenant_statuses(msg : message)
+    +get_tenant_status(msg : message)
+    +get_many_tenant_statuses(msg : message)
+    +put_tenant_status(msg : message)
+    +put_many_tenant_statuses(msg : message)
+    +delete_tenant_status(msg : message)
+    +delete_many_tenant_statuses(msg : message)
+    +list_tenant_status_versions(msg : message)
+    +get_tenant_status_version(msg : message)
+}
+
+class ores::iam::messaging::tenant_type_handler {
+    +tenant_type_handler(nats : client&, ctx : context, verifier : optional<jwt_authenticator>)
+    +list_tenant_types(msg : message)
+    +get_tenant_type(msg : message)
+    +get_many_tenant_types(msg : message)
+    +put_tenant_type(msg : message)
+    +put_many_tenant_types(msg : message)
+    +delete_tenant_type(msg : message)
+    +delete_many_tenant_types(msg : message)
+    +list_tenant_type_versions(msg : message)
+    +get_tenant_type_version(msg : message)
+}
+
+class ores::iam::messaging::reset_handler {
+    +reset_handler(nats : client&, ctx : context, signer : jwt_authenticator)
+    +reset_tenant(msg : message)
+    +reset_system(msg : message)
+}
+note right of "ores::iam::messaging::reset_handler"
+The one handler with no service: both methods check their
+iam::system:* permission and then call a SECURITY DEFINER SQL function
+(ores_iam_reset_tenant_bootstrap_fn, ores_iam_reset_system_fn) under a
+system-tenant context, so the reset semantics live in the migration
+beside the data they clear. reset_system returns the system to its
+pre-bootstrap state.
+end note
+
+class ores::iam::messaging::registrar {
+    {static} +register_handlers(nats : client&, ctx : context, signer : jwt_authenticator, service_password : string) : vector<subscription>
+}
+note right of "ores::iam::messaging::registrar"
+The component seam. register_handlers runs in two phases. Phase 1
+constructs and subscribes every handler -- including service-login and
+the generated registrars -- so every subject is answerable before
+anything is called. Phase 2 then mints a service token through the
+service account password, arms party_cache with it, reads every active
+tenant through the unfiltered tenant_lookups and warms the cache, and
+registers the seven per-entity history providers into one dispatch
+registry behind the generic history.v1.get subject. It also wires the
+variability system_setting_changed event to both token-settings reloads.
+The signature carries service_password because the cache's
+read_parties_for_cache calls need a signed JWT.
+end note
+
+note top of "ores::iam::messaging::auth_handler"
+Every generated handler in this component has the same shape as the
+account handler above: one method per protocol subject, each proving the
+request through make_request_context, decoding the canonical request,
+constructing its service for that call, and reporting a store failure as
+a failed result rather than letting the exception escape.
+end note
+
+' ---------------------------------------------------------------------------
+' Generated handler registrars (one free function per entity) and the
+' per-entity history providers. A registrar subscribes its handler's
+' subjects under the ores.iam.service queue group.
+' ---------------------------------------------------------------------------
+
+class ores::iam::messaging::register_account_handlers {
+    {static} +register_account_handlers(nats : client&, ctx : context, verifier : optional<jwt_authenticator>) : vector<subscription>
+}
+class ores::iam::messaging::register_account_contact_information_handlers {
+    {static} +register_account_contact_information_handlers(nats : client&, ctx : context, verifier : optional<jwt_authenticator>) : vector<subscription>
+}
+class ores::iam::messaging::register_account_type_handlers {
+    {static} +register_account_type_handlers(nats : client&, ctx : context, verifier : optional<jwt_authenticator>) : vector<subscription>
+}
+class ores::iam::messaging::register_login_info_handlers {
+    {static} +register_login_info_handlers(nats : client&, ctx : context, verifier : optional<jwt_authenticator>) : vector<subscription>
+}
+class ores::iam::messaging::register_permission_handlers {
+    {static} +register_permission_handlers(nats : client&, ctx : context, verifier : optional<jwt_authenticator>) : vector<subscription>
+}
+class ores::iam::messaging::register_role_handlers {
+    {static} +register_role_handlers(nats : client&, ctx : context, verifier : optional<jwt_authenticator>) : vector<subscription>
+}
+class ores::iam::messaging::register_session_handlers {
+    {static} +register_session_handlers(nats : client&, ctx : context, verifier : optional<jwt_authenticator>) : vector<subscription>
+}
+class ores::iam::messaging::register_tenant_handlers {
+    {static} +register_tenant_handlers(nats : client&, ctx : context, verifier : optional<jwt_authenticator>) : vector<subscription>
+}
+class ores::iam::messaging::register_tenant_status_handlers {
+    {static} +register_tenant_status_handlers(nats : client&, ctx : context, verifier : optional<jwt_authenticator>) : vector<subscription>
+}
+class ores::iam::messaging::register_tenant_type_handlers {
+    {static} +register_tenant_type_handlers(nats : client&, ctx : context, verifier : optional<jwt_authenticator>) : vector<subscription>
+}
+
+class ores::iam::messaging::register_account_history_provider {
+    {static} +register_account_history_provider(registry : dispatch_registry&)
+}
+class ores::iam::messaging::register_account_contact_information_history_provider {
+    {static} +register_account_contact_information_history_provider(registry : dispatch_registry&)
+}
+class ores::iam::messaging::register_account_type_history_provider {
+    {static} +register_account_type_history_provider(registry : dispatch_registry&)
+}
+class ores::iam::messaging::register_role_history_provider {
+    {static} +register_role_history_provider(registry : dispatch_registry&)
+}
+class ores::iam::messaging::register_tenant_history_provider {
+    {static} +register_tenant_history_provider(registry : dispatch_registry&)
+}
+class ores::iam::messaging::register_tenant_status_history_provider {
+    {static} +register_tenant_status_history_provider(registry : dispatch_registry&)
+}
+class ores::iam::messaging::register_tenant_type_history_provider {
+    {static} +register_tenant_type_history_provider(registry : dispatch_registry&)
+}
+note top of "ores::iam::messaging::register_account_history_provider"
+Seven generated free functions, one per history-bearing entity, each
+registering a lambda under the entity's entity_type key
+("ores.iam.account" and so on). The lambda constructs the entity's
+service on the scoped request context, reads the full history vector,
+and turns it into versions with ores.history's
+build_entity_history_versions and the entity's presentation renderer, so
+the generic history.v1.get subject serves every IAM entity without one
+subject per entity.
+end note
+
+' ---------------------------------------------------------------------------
+' Presentation renderers. One free function per history-bearing entity,
+' each rendering the domain type to an ordered field list for the diff
+' view.
+' ---------------------------------------------------------------------------
+
+class ores::iam::presentation::render_account_fields {
+    {static} +render_account_fields(v : account) : vector<field_value>
+}
+class ores::iam::presentation::render_account_contact_information_fields {
+    {static} +render_account_contact_information_fields(v : account_contact_information) : vector<field_value>
+}
+class ores::iam::presentation::render_account_type_fields {
+    {static} +render_account_type_fields(v : account_type) : vector<field_value>
+}
+class ores::iam::presentation::render_permission_fields {
+    {static} +render_permission_fields(v : permission) : vector<field_value>
+}
+class ores::iam::presentation::render_role_fields {
+    {static} +render_role_fields(v : role) : vector<field_value>
+}
+class ores::iam::presentation::render_tenant_fields {
+    {static} +render_tenant_fields(v : tenant) : vector<field_value>
+}
+class ores::iam::presentation::render_tenant_status_fields {
+    {static} +render_tenant_status_fields(v : tenant_status) : vector<field_value>
+}
+class ores::iam::presentation::render_tenant_type_fields {
+    {static} +render_tenant_type_fields(v : tenant_type) : vector<field_value>
+}
+note top of "ores::iam::presentation::render_account_fields"
+One renderer per entity, generated. Each returns the fields in a fixed
+declaration order -- domain columns first, then the provenance fields --
+and maps a null optional to an empty string, so the diff view compares
+plain values and never reflects over the type at runtime.
+end note
+
+' ---------------------------------------------------------------------------
+' Relationships. The automated pass draws none of these: it sees no method
+' bodies, so it cannot tell that a handler constructs a service, that a
+' service reads through a repository, or that a repository maps through a
+' mapper.
+' ---------------------------------------------------------------------------
+
+' Handlers construct or use their service.
+ores::iam::messaging::account_handler ..> ores::iam::service::account_service : constructs per request
+ores::iam::messaging::account_contact_information_handler ..> ores::iam::service::account_contact_information_service : constructs per request
+ores::iam::messaging::account_operations_handler ..> ores::iam::service::account_operations_service : constructs per request
+ores::iam::messaging::account_operations_handler ..> ores::iam::service::account_setup_service : creates accounts with a role through
+ores::iam::messaging::account_operations_handler ..> ores::iam::service::cache::party_cache : resolves visible parties through
+ores::iam::messaging::account_operations_handler ..> ores::iam::repository::account_party_repository : writes associations through
+ores::iam::messaging::account_party_handler ..> ores::iam::service::account_party_service : constructs per request
+ores::iam::messaging::account_type_handler ..> ores::iam::service::account_type_service : constructs per request
+ores::iam::messaging::auth_handler ..> ores::iam::service::account_operations_service : verifies credentials through
+ores::iam::messaging::auth_handler ..> ores::iam::service::account_setup_service : signs accounts up through
+ores::iam::messaging::auth_handler ..> ores::iam::service::authorization_service : reads effective permissions through
+ores::iam::messaging::auth_handler ..> ores::iam::service::service_session_service : serves service login through
+ores::iam::messaging::auth_handler ..> ores::iam::service::cache::party_cache : resolves visible parties through
+ores::iam::messaging::auth_handler ..> ores::iam::repository::auth_event_repository : records the audit trail through
+ores::iam::messaging::auth_handler ..> ores::iam::repository::session_repository : opens and closes sessions through
+ores::iam::messaging::auth_handler ..> ores::iam::repository::account_party_repository : reads the account parties through
+ores::iam::messaging::auth_handler ..> ores::iam::domain::token_settings : reloads token policy from
+ores::iam::messaging::auth_handler ..> ores::iam::repository::read_active_tenant_by_id : resolves the tenant name through
+ores::iam::messaging::auth_handler ..> ores::iam::repository::read_active_tenant_by_hostname : resolves tenant login by hostname through
+ores::iam::messaging::authorization_handler ..> ores::iam::service::authorization_service : constructs per request
+ores::iam::messaging::authorization_handler ..> ores::iam::repository::account_repository : resolves the account through
+ores::iam::messaging::bootstrap_handler ..> ores::iam::service::account_operations_service : creates the admin through
+ores::iam::messaging::bootstrap_handler ..> ores::iam::service::account_party_service : associates the system party through
+ores::iam::messaging::bootstrap_handler ..> ores::iam::service::bootstrap_mode_service : reads the bootstrap flag through
+ores::iam::messaging::bootstrap_handler ..> ores::iam::service::cache::party_cache : warms parties through
+ores::iam::messaging::login_info_handler ..> ores::iam::service::login_info_service : constructs per request
+ores::iam::messaging::permission_handler ..> ores::iam::service::permission_service : constructs per request
+ores::iam::messaging::role_handler ..> ores::iam::service::role_service : constructs per request
+ores::iam::messaging::session_handler ..> ores::iam::service::session_service : constructs per request
+ores::iam::messaging::tenant_handler ..> ores::iam::service::tenant_service : constructs per request
+ores::iam::messaging::tenant_status_handler ..> ores::iam::service::tenant_status_service : constructs per request
+ores::iam::messaging::tenant_type_handler ..> ores::iam::service::tenant_type_service : constructs per request
+ores::iam::messaging::tenant_provisioning_handler ..> ores::iam::service::internal_impersonation_service : impersonates with
+ores::iam::messaging::tenant_provisioning_handler ..> ores::iam::service::internal_request_client : drives the real pipeline through
+
+' Services read and write through their repositories.
+ores::iam::service::account_service ..> ores::iam::repository::account_repository : reads and writes through
+ores::iam::service::account_operations_service ..> ores::iam::repository::account_repository : reads and writes through
+ores::iam::service::account_operations_service ..> ores::iam::repository::login_info_repository : tracks login state through
+ores::iam::service::account_operations_service ..> ores::security::crypto::password_hasher : hashes and verifies with
+ores::iam::service::account_setup_service ..> ores::iam::service::account_operations_service : creates the account with
+ores::iam::service::account_setup_service ..> ores::iam::service::authorization_service : assigns the role with
+ores::iam::service::account_party_service ..> ores::iam::repository::account_party_repository : reads and writes through
+ores::iam::service::account_contact_information_service ..> ores::iam::repository::account_contact_information_repository : reads and writes through
+ores::iam::service::account_type_service ..> ores::iam::repository::account_type_repository : reads and writes through
+ores::iam::service::authorization_service ..> ores::iam::repository::permission_repository : reads and writes through
+ores::iam::service::authorization_service ..> ores::iam::repository::role_repository : reads and writes through
+ores::iam::service::authorization_service ..> ores::iam::repository::account_role_repository : assigns and revokes through
+ores::iam::service::authorization_service ..> ores::iam::repository::role_permission_repository : reads role permissions through
+ores::iam::service::authorization_service ..> ores::eventing::service::event_bus : publishes permission changes on
+ores::iam::service::bootstrap_mode_service ..> ores::iam::repository::account_repository : counts administrators through
+ores::iam::service::bootstrap_mode_service ..> ores::variability::service::system_settings_service : reads the bootstrap flag from
+ores::iam::service::login_info_service ..> ores::iam::repository::login_info_repository : reads and writes through
+ores::iam::service::permission_service ..> ores::iam::repository::permission_repository : reads and writes through
+ores::iam::service::role_service ..> ores::iam::repository::role_repository : reads and writes through
+ores::iam::service::service_session_service ..> ores::iam::repository::session_repository : reads and writes through
+ores::iam::service::service_session_service ..> ores::iam::repository::account_repository : resolves the service account through
+ores::iam::service::session_service ..> ores::iam::repository::session_repository : reads and writes through
+ores::iam::service::signup_service ..> ores::iam::repository::account_repository : creates the account through
+ores::iam::service::signup_service ..> ores::iam::repository::login_info_repository : initialises login tracking through
+ores::iam::service::signup_service ..> ores::iam::service::authorization_service : assigns the Viewer role through
+ores::iam::service::signup_service ..> ores::variability::service::system_settings_service : checks the signup flag with
+ores::iam::service::tenant_service ..> ores::iam::repository::tenant_repository : reads and writes through
+ores::iam::service::tenant_status_service ..> ores::iam::repository::tenant_status_repository : reads and writes through
+ores::iam::service::tenant_type_service ..> ores::iam::repository::tenant_type_repository : reads and writes through
+ores::iam::service::database_name_service ..> ores::database::repository::execute_raw_multi_column_query : issues the naming SQL through
+
+' Injected sibling services held as members.
+ores::iam::service::account_setup_service o-- ores::iam::service::account_operations_service : account_svc_
+ores::iam::service::account_setup_service o-- ores::iam::service::authorization_service : auth_svc_
+ores::iam::service::bootstrap_mode_service o-- ores::iam::service::authorization_service : auth_service_
+ores::iam::service::signup_service o-- ores::iam::service::authorization_service : auth_service_
+ores::iam::service::internal_impersonation_service o-- ores::security::jwt::jwt_authenticator : signer_
+ores::iam::service::internal_request_client o-- ores::nats::service::client : nats_
+ores::iam::service::cache::party_cache o-- ores::nats::service::client : nats_
+ores::iam::domain::token_settings ..> ores::variability::service::system_settings_service : loads the four iam.token keys from
+
+' Repositories persist an entity through a mapper.
+ores::iam::repository::account_repository ..> ores::iam::repository::account_entity : persists
+ores::iam::repository::account_repository ..> ores::iam::repository::account_mapper : maps through
+ores::iam::repository::account_repository ..> ores::utility::domain::precondition : writes under a claim
+ores::iam::repository::account_contact_information_repository ..> ores::iam::repository::account_contact_information_entity : persists
+ores::iam::repository::account_contact_information_repository ..> ores::iam::repository::account_contact_information_mapper : maps through
+ores::iam::repository::account_party_repository ..> ores::iam::repository::account_party_entity : persists
+ores::iam::repository::account_party_repository ..> ores::iam::repository::account_party_mapper : maps through
+ores::iam::repository::account_role_repository ..> ores::iam::repository::account_role_entity : persists
+ores::iam::repository::account_role_repository ..> ores::iam::repository::account_role_mapper : maps through
+ores::iam::repository::account_type_repository ..> ores::iam::repository::account_type_entity : persists
+ores::iam::repository::account_type_repository ..> ores::iam::repository::account_type_mapper : maps through
+ores::iam::repository::auth_event_repository ..> ores::iam::repository::auth_event_entity : inserts
+ores::iam::repository::login_info_repository ..> ores::iam::repository::login_info_entity : persists
+ores::iam::repository::login_info_repository ..> ores::iam::repository::login_info_mapper : maps through
+ores::iam::repository::permission_repository ..> ores::iam::repository::permission_entity : persists
+ores::iam::repository::permission_repository ..> ores::iam::repository::permission_mapper : maps through
+ores::iam::repository::role_repository ..> ores::iam::repository::role_entity : persists
+ores::iam::repository::role_repository ..> ores::iam::repository::role_mapper : maps through
+ores::iam::repository::role_permission_repository ..> ores::iam::repository::role_permission_entity : persists
+ores::iam::repository::role_permission_repository ..> ores::iam::repository::role_permission_mapper : maps through
+ores::iam::repository::session_repository ..> ores::iam::repository::session_entity : persists
+ores::iam::repository::session_repository ..> ores::iam::repository::session_mapper : maps through
+ores::iam::repository::tenant_repository ..> ores::iam::repository::tenant_entity : persists
+ores::iam::repository::tenant_repository ..> ores::iam::repository::tenant_mapper : maps through
+ores::iam::repository::tenant_status_repository ..> ores::iam::repository::tenant_status_entity : persists
+ores::iam::repository::tenant_status_repository ..> ores::iam::repository::tenant_status_mapper : maps through
+ores::iam::repository::tenant_type_repository ..> ores::iam::repository::tenant_type_entity : persists
+ores::iam::repository::tenant_type_repository ..> ores::iam::repository::tenant_type_mapper : maps through
+ores::iam::repository::read_all_active_tenants ..> ores::iam::repository::tenant_repository : unfiltered counterpart of
+
+' The registrar subscribes each handler and composes the registrars.
+ores::iam::messaging::registrar ..> ores::iam::messaging::auth_handler : constructs and subscribes
+ores::iam::messaging::registrar ..> ores::iam::messaging::bootstrap_handler : constructs and subscribes
+ores::iam::messaging::registrar ..> ores::iam::messaging::account_operations_handler : constructs and subscribes
+ores::iam::messaging::registrar ..> ores::iam::messaging::account_party_handler : constructs and subscribes
+ores::iam::messaging::registrar ..> ores::iam::messaging::session_operations_handler : constructs and subscribes
+ores::iam::messaging::registrar ..> ores::iam::messaging::authorization_handler : constructs and subscribes
+ores::iam::messaging::registrar ..> ores::iam::messaging::tenant_provisioning_handler : constructs and subscribes
+ores::iam::messaging::registrar ..> ores::iam::messaging::reset_handler : constructs and subscribes
+ores::iam::messaging::registrar ..> ores::iam::messaging::publish_from_dq_handler : constructs and subscribes
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_account_handlers : composes
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_account_contact_information_handlers : composes
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_account_type_handlers : composes
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_login_info_handlers : composes
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_permission_handlers : composes
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_role_handlers : composes
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_session_handlers : composes
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_tenant_handlers : composes
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_tenant_status_handlers : composes
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_tenant_type_handlers : composes
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_account_history_provider : registers providers through
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_account_contact_information_history_provider : registers providers through
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_account_type_history_provider : registers providers through
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_role_history_provider : registers providers through
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_tenant_history_provider : registers providers through
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_tenant_status_history_provider : registers providers through
+ores::iam::messaging::registrar ..> ores::iam::messaging::register_tenant_type_history_provider : registers providers through
+ores::iam::messaging::registrar ..> ores::history::service::dispatch_registry : registers providers into
+ores::iam::messaging::registrar ..> ores::history::messaging::register_history_handlers : serves history.v1.get through
+ores::iam::messaging::registrar ..> ores::iam::service::cache::party_cache : arms and warms
+ores::iam::messaging::registrar ..> ores::iam::service::cache::warm_and_subscribe_party_cache : warms and subscribes through
+ores::iam::messaging::registrar ..> ores::iam::service::internal_impersonation_service : constructs, fed by the party cache
+ores::iam::messaging::registrar ..> ores::iam::repository::read_all_active_tenants : warms every active tenant through
+
+' Each generated registrar subscribes its own handler.
+ores::iam::messaging::register_account_handlers ..> ores::iam::messaging::account_handler : subscribes
+ores::iam::messaging::register_account_contact_information_handlers ..> ores::iam::messaging::account_contact_information_handler : subscribes
+ores::iam::messaging::register_account_type_handlers ..> ores::iam::messaging::account_type_handler : subscribes
+ores::iam::messaging::register_login_info_handlers ..> ores::iam::messaging::login_info_handler : subscribes
+ores::iam::messaging::register_permission_handlers ..> ores::iam::messaging::permission_handler : subscribes
+ores::iam::messaging::register_role_handlers ..> ores::iam::messaging::role_handler : subscribes
+ores::iam::messaging::register_session_handlers ..> ores::iam::messaging::session_handler : subscribes
+ores::iam::messaging::register_tenant_handlers ..> ores::iam::messaging::tenant_handler : subscribes
+ores::iam::messaging::register_tenant_status_handlers ..> ores::iam::messaging::tenant_status_handler : subscribes
+ores::iam::messaging::register_tenant_type_handlers ..> ores::iam::messaging::tenant_type_handler : subscribes
+
+' History providers read through the entity's service and render with the
+' presentation mapper.
+ores::iam::messaging::register_account_history_provider ..> ores::iam::service::account_service : reads history through
+ores::iam::messaging::register_account_history_provider ..> ores::iam::presentation::render_account_fields : renders with
+ores::iam::messaging::register_account_contact_information_history_provider ..> ores::iam::service::account_contact_information_service : reads history through
+ores::iam::messaging::register_account_contact_information_history_provider ..> ores::iam::presentation::render_account_contact_information_fields : renders with
+ores::iam::messaging::register_account_type_history_provider ..> ores::iam::service::account_type_service : reads history through
+ores::iam::messaging::register_account_type_history_provider ..> ores::iam::presentation::render_account_type_fields : renders with
+ores::iam::messaging::register_role_history_provider ..> ores::iam::service::role_service : reads history through
+ores::iam::messaging::register_role_history_provider ..> ores::iam::presentation::render_role_fields : renders with
+ores::iam::messaging::register_tenant_history_provider ..> ores::iam::service::tenant_service : reads history through
+ores::iam::messaging::register_tenant_history_provider ..> ores::iam::presentation::render_tenant_fields : renders with
+ores::iam::messaging::register_tenant_status_history_provider ..> ores::iam::service::tenant_status_service : reads history through
+ores::iam::messaging::register_tenant_status_history_provider ..> ores::iam::presentation::render_tenant_status_fields : renders with
+ores::iam::messaging::register_tenant_type_history_provider ..> ores::iam::service::tenant_type_service : reads history through
+ores::iam::messaging::register_tenant_type_history_provider ..> ores::iam::presentation::render_tenant_type_fields : renders with
+ores::iam::messaging::register_account_history_provider ..> ores::history::service::build_entity_history_versions : builds versions with
+
+' The party cache registrar.
+ores::iam::service::cache::warm_and_subscribe_party_cache ..> ores::iam::service::cache::party_cache : warms and reloads
+ores::iam::service::cache::warm_and_subscribe_party_cache ..> ores::refdata::messaging::party_event : subscribes to the created, updated and deleted events of
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.iam.core.puml"

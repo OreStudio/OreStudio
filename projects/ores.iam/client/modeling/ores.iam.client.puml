@@ -31,6 +31,113 @@ namespace ores #F2F2F2 {
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
 
+' The automated pass reads a namespace of data types and nothing else. Almost
+' the whole surface of this component is one free function, which the pass
+' cannot see, so its output is an empty namespace and the classes below carry
+' the entire diagram.
+'
+' They use fully-qualified class names rather than a reopened namespace block,
+' because this PlantUML version crashes when a namespace that already holds
+' classes is declared a second time.
+
+class ores::iam::client::make_service_token_provider {
+    {static} +make_service_token_provider(nats : ores::nats::service::client&, username : string, password : string, refresh_margin : chrono::seconds = 120) : ores::nats::service::nats_client::token_provider
+}
+note right of "ores::iam::client::make_service_token_provider"
+The component's only exported symbol and the only declaration in its only
+public header, service_token_provider.hpp. It is a free function, so the
+automated pass draws nothing for it. username is the service account name,
+which is also the database user name, and password is that account's plaintext
+database password.
+end note
+note bottom of "ores::iam::client::make_service_token_provider"
+It returns a token_provider, not a class of its own: a caller injects the
+result into a nats_client, which is how a service account reaches
+IAM-authenticated subjects. refresh_margin defaults to 120 seconds, but the
+provider replaces it after the first login; see the token_state note below.
+end note
+
+class ores::nats::service::nats_client::token_provider {
+    +operator()(force : bool) : string
+}
+note right of "ores::nats::service::nats_client::token_provider"
+An alias, not a class: nats_client declares
+using token_provider = std::function<std::string(bool force)>. Called with
+force = false it returns the cached JWT, refreshing first when the token is
+near expiry; called with force = true it re-authenticates unconditionally. It
+belongs to ores.nats, and this component's only job is to supply one.
+end note
+
+class ores::iam::client::token_state {
+    -nats : ores::nats::service::client&
+    -username : string
+    -password : string
+    -refresh_margin : chrono::seconds
+    -jwt : string
+    -expires_at : chrono::system_clock::time_point
+    -access_lifetime_s : int
+    +authenticate()
+    +refresh()
+    +refresh_if_needed()
+}
+note right of "ores::iam::client::token_state"
+Declared in an anonymous namespace in service_token_provider.cpp, so it is
+internal to that translation unit and appears in no header. It is the state the
+returned callable captures in a shared_ptr, and it carries the behaviour the
+header documents: authenticate() posts iam.v1.auth.service-login and caches the
+JWT with its expiry, refresh() posts iam.v1.auth.refresh carrying the cached
+JWT as an Authorization bearer header, and refresh_if_needed() calls refresh()
+once now is within refresh_margin of expires_at.
+end note
+note bottom of "ores::iam::client::token_state"
+The free function calls authenticate() once before it returns, so the first
+authenticated request pays no login round-trip and a startup failure surfaces
+immediately. authenticate() retries a transient failure with exponential
+backoff from 500 ms to a 30 s cap, which covers the race where IAM has not yet
+subscribed; a credential failure is thrown at once and never retried. A
+successful login also overwrites refresh_margin with one fifth of the
+access_lifetime_s the response reports (that member defaults to 1800), so the
+caller's margin applies only until the first login and the token is thereafter
+renewed at about 80% of its lifetime. A refresh that fails logs a warning and
+falls back to authenticate().
+end note
+
+class ores::iam::messaging::service_login_request <<struct>> {
+    {static} +nats_subject : string_view
+}
+note right of "ores::iam::messaging::service_login_request"
+The subject the provider's first login goes to. The source never spells the
+string: it takes service_login_request::nats_subject, so a rename in the
+protocol model moves this component's target with it. The value is
+"iam.v1.auth.service-login".
+end note
+
+class ores::iam::messaging::refresh_request <<struct>> {
+    {static} +nats_subject : string_view
+}
+note right of "ores::iam::messaging::refresh_request"
+The subject a proactive refresh goes to, taken the same way from
+refresh_request::nats_subject. The value is "iam.v1.auth.refresh".
+end note
+
+class ores::nats::service::client
+note right of "ores::nats::service::client"
+The raw connected NATS client. The header states the lifetime rule in the
+@param nats line: it must outlive the provider. The provider stores a
+reference, not a copy, and uses it for both the login and the refresh request.
+end note
+
+' --- relationships the automated pass cannot infer -------------------------
+
+ores::iam::client::make_service_token_provider ..> ores::nats::service::nats_client::token_provider : builds
+ores::iam::client::make_service_token_provider ..> ores::iam::client::token_state : constructs and captures
+ores::iam::client::make_service_token_provider ..> ores::nats::service::client : takes
+ores::nats::service::nats_client::token_provider ..> ores::nats::service::client : depends on
+ores::nats::service::nats_client::token_provider ..> ores::iam::messaging::service_login_request : logs in on
+ores::iam::client::token_state ..> ores::nats::service::client : holds a reference to
+ores::iam::client::token_state ..> ores::iam::messaging::service_login_request : authenticates on the subject of
+ores::iam::client::token_state ..> ores::iam::messaging::refresh_request : refreshes on the subject of
+
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.iam.client.puml"
 ' End:

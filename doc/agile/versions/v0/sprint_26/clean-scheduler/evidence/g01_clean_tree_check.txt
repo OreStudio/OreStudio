@@ -1,9 +1,18 @@
 Clean-tree drift checks
 =======================
 
-Revision: 0088c1ff9e, the head after the rebase onto main (tree clean)
+Revision: 0088c1ff9e, the head after the rebase onto main (tree clean).
 Every check below was run at that revision, and `git status` was empty after
-each one.
+each one, with one exception that section 3 states: the physical-space
+inventory check was red there, and its one-line repair is committed in the same
+commit as this file.
+
+Two commits came after 0088c1ff9e and both are documentation plus that one
+generated line. `git diff --stat 0088c1ff9e..HEAD` lists five files: this
+evidence set, the task record, and
+`projects/ores.codegen/library/templates/ores.doc.knowledge.org`. No scheduler
+source, test, model or list changed, so these measurements describe HEAD
+(916568586e) as well as 0088c1ff9e.
 
 1. The component's own gate, in its writing mode.
 
@@ -62,14 +71,17 @@ each one.
                                          All component_files.cmake up to date.
     regenerate_physical_space_inventories.py --check
                                          41 inventory table(s) up to date.
-                                         This check arrived red at this revision,
-                                         over one line of the ores.doc.knowledge
-                                         table: commit 822a433087 on main changed
-                                         the ores.doc.knowledge.investigation
+                                         This check was red at 0088c1ff9e, over one
+                                         line of the ores.doc.knowledge table:
+                                         commit 822a433087 on main changed the
+                                         ores.doc.knowledge.investigation
                                          archetype's description without
-                                         regenerating the group that lists it.
-                                         The generated line is refreshed in this
-                                         branch, and the record says why.
+                                         regenerating the group that lists it,
+                                         so the table above is the result after
+                                         the repair, not before it. The generated
+                                         line is refreshed in the commit that
+                                         carries this file, and the record says
+                                         why.
     validate_docs.sh                     OK: all 40 components pass
                                          documentation checks.
     compass.sh --no-deps lint            filetags and generator markers are

@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: A29102C7-8E0D-4950-93E5-231889490923
+:END:
+#+title: compass build fails when only busctl reaches the user manager
+#+description: The build wraps cmake --build in systemd-run --user --scope, but systemd-run uses the plain transport, so a sandbox where only busctl reaches the user manager fails the build outright.
+#+type: capture
+#+level: cross
+#+filetags: :compass:build:sandbox:systemd:tech_debt:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=compass build= wraps the =cmake --build= step in =systemd-run --user --scope=
+whenever =compass_claude._has_user_systemd()= answers yes
+(=projects/ores.compass/src/compass.py=, =cmd_build=). The probe asks
+=systemctl_bus.run(["show-environment"])=, and =systemctl_bus= reaches the user
+manager through =busctl= when =ORES_USE_BUSCTL=1=. =systemd-run= has no busctl
+transport, so a sandbox that needs busctl reports a live user manager to the
+probe and then cannot start the scope. The build stops before it compiles
+anything:
+
+#+begin_example
+$ ./compass.sh build test_ores.testing.tests
+🔨 systemd-run --user --scope -q --collect --unit=build-<env>-a-<pid> --slice=... cmake --build --preset ...
+Failed to connect to user scope bus via local transport: No data available
+❌ Command failed with exit code 1
+#+end_example
+
+* Why
+
+The probe asks the wrong question. "Can a =systemctl= call reach the manager?"
+is not "can =systemd-run= start a scope?", and the two answers differ in exactly
+the sandbox the busctl transport exists for. Every =compass build= and
+=compass build <target>= in such a session fails, and =compass claude= has the
+same shape at =compass_claude.py:69=.
+
+Two fixes are possible. Make the probe test =systemd-run= itself, for instance
+with a trivial =systemd-run --user --scope true=, so a transport that is
+reachable but unusable falls back to the unscoped build the code already
+supports. Or give the build an explicit switch that does not go through the
+probe.
+
+The workaround this session used, recorded because it is not discoverable from
+the failure: =ORES_USE_BUSCTL=0 ./compass.sh build <target>= answers no to the
+probe and runs the build unscoped, with the build lock and the log file intact.
+
+Hit on 2026-09-26 by the =ores.testing= clean-up at trunk =de531da7fc=, in a
+bubblewrap session. The same command worked before the rebase onto that trunk,
+so the scope wrapper arrived with the commits between =f7fc9396b7= and
+=de531da7fc=.
+
+* References
+
+- =projects/ores.compass/src/compass.py= — =cmd_build=, the =systemd-run=
+  wrapper.
+- =projects/ores.compass/src/compass_claude.py= — =_has_user_systemd()=, the
+  probe, and the same wrapper at line 69 for =compass claude=.
+- =projects/ores.compass/src/systemctl_bus.py= — the busctl transport and the
+  =ORES_USE_BUSCTL= switch.
+
+* See also
+
+- [[id:83339FFC-6314-443F-893D-BA053EEC9379][Reach systemd from a sandboxed compass session]] — the same class of gap for =systemctl= and =compass systemd deploy=.

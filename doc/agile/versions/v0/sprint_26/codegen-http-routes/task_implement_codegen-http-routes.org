@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 6356873B-10D7-4AC7-AD63-8FA2F9C1BD78
+:END:
+#+title: Task: Build the HTTP route facet and land ores.assets through it
+#+description: Initial task for: Generate HTTP routes from the models
+#+type: task
+#+level: s1
+#+filetags: :codegen-http-routes:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:39AA071A-E7EC-4684-86F8-1B2CECF9076B][Generate HTTP routes from the models]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.http serves every component through routes generated from that component's models, with one uniform security model, and ores.assets is the first component landed through it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:39AA071A-E7EC-4684-86F8-1B2CECF9076B][Generate HTTP routes from the models]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- A codegen facet generates a route unit per entity, with a header, an implementation and a test, from the entity's model.
+- The generated route speaks the canonical NATS protocol and carries the caller's session, so the service's own permission check governs access.
+- Every route that needs a session is behind one by construction, declared in the model rather than by hand at the call site.
+- The hand-written route file for ores.assets is deleted, and its endpoints still answer.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

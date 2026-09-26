@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 39AA071A-E7EC-4684-86F8-1B2CECF9076B
+:END:
+#+title: Story: Generate HTTP routes from the models
+#+description: Decompose the HTTP gateway the way ores.shell decomposes its command surface: one sub-component per exposed component, each holding generated per-entity route units, so no route is hand-crafted. The gateway stops calling component services in process and speaks the canonical NATS protocol instead, which is what lets one generator serve both surfaces from the same models.
+#+type: story
+#+level: s2
+#+filetags: :codegen:http:clean_standard:sprint_26:v0:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ores.http serves every component through routes generated from that component's models, with one uniform security model, and ores.assets is the first component landed through it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-26                               |
+
+* Acceptance
+
+- A codegen facet generates a route unit per entity, with a header, an implementation and a test, from the entity's model.
+- The generated route speaks the canonical NATS protocol and carries the caller's session, so the service's own permission check governs access.
+- Every route that needs a session is behind one by construction, declared in the model rather than by hand at the call site.
+- The hand-written route file for ores.assets is deleted, and its endpoints still answer.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B22C0343-9FD0-4405-B301-0228CE07DE29][Scaffold story: Generate HTTP routes from the models]] | STARTED | 2026-09-26 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6356873B-10D7-4AC7-AD63-8FA2F9C1BD78][Build the HTTP route facet and land ores.assets through it]] | BACKLOG | | | Initial task for: Generate HTTP routes from the models |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Run every generated assets shell recipe against the live fleet.
+"""Run a component's generated shell recipes against the live fleet.
 
 V04 of the Component Clean Standard asks that every generated shell command
 runs against the live fleet and answers, and that any command which cannot run
 is recorded with its reason.  This script is that check.
 
 The recipes are generated one-liners under
-projects/ores.shell/scripts/library/{images,image_tags,tags}.  Each is replayed
-in its own shell process, behind a sign-in preamble, so one failing recipe
-cannot hide the verdict of the next.
+projects/ores.shell/scripts/library/<group>, one directory per entity.  Each is
+replayed in its own shell process, behind a sign-in preamble, so one failing
+recipe cannot hide the verdict of the next.
 
 Usage:
     1. Bootstrap the local administrator once, in bootstrap mode:
@@ -16,18 +16,23 @@ Usage:
         printf 'bootstrap create-initial-admin admin <password> <email>\n' \
             | ores.shell
 
-    2. Export the same credential and run this script:
+    2. Export the same credential and run this script, naming the recipe groups
+       the component owns:
 
         export V04_PRINCIPAL=admin V04_PASSWORD=<password>
-        projects/ores.codegen/scripts/check_shell_recipes.py
+        projects/ores.codegen/scripts/check_shell_recipes.py system_settings
 
-Outputs .audit/clean-assets/A30_v04_recipes.tsv and a per-recipe raw log
-under .audit/clean-assets/A30_logs/. The .audit tree is not committed, so
-rerun this script to regenerate the evidence.
+    With no group named it replays the assets groups, which is what it did
+    before it took an argument.
+
+Writes a TSV and a per-recipe raw log under --out-dir, which defaults to
+.audit/clean-shell-recipes/. The .audit tree is not committed, so rerun this
+script to regenerate the evidence.
 """
 
 from __future__ import annotations
 
+import argparse
 import os
 import subprocess
 import tempfile
@@ -37,20 +42,24 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 SHELL = REPO / "build/output/linux-clang-debug-make/publish/bin/ores.shell"
 LIBRARY = REPO / "projects/ores.shell/scripts/library"
-GROUP_DIRS = ("images", "image_tags", "tags")
+# The groups the script replays when the caller names none: the component this
+# lever was first written for.
+DEFAULT_GROUPS = ("images", "image_tags", "tags")
 PREFIX = "projects/ores.shell/scripts/library"
-LOG_DIR = REPO / ".audit/clean-assets/A30_logs"
-TSV = REPO / ".audit/clean-assets/A30_v04_recipes.tsv"
+DEFAULT_OUT_DIR = REPO / ".audit/clean-shell-recipes"
 
 # A command that names a verb the shell does not know is a wiring defect.  Any
 # other refusal is the command answering, which is what V04 asks for.
 NOT_WIRED = "Wrong command"
 
 
-def recipe_paths() -> list[Path]:
+def recipe_paths(groups: tuple[str, ...]) -> list[Path]:
     found: list[Path] = []
-    for group in GROUP_DIRS:
-        found.extend(sorted((LIBRARY / group).glob("*.ores")))
+    for group in groups:
+        directory = LIBRARY / group
+        if not directory.is_dir():
+            raise SystemExit(f"no recipe group at {directory}")
+        found.extend(sorted(directory.glob("*.ores")))
     return found
 
 
@@ -87,6 +96,29 @@ def classify(recipe: Path, transcript: str) -> tuple[str, str]:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "groups",
+        nargs="*",
+        default=list(DEFAULT_GROUPS),
+        help="recipe library directories to replay "
+             f"(default: {' '.join(DEFAULT_GROUPS)})",
+    )
+    parser.add_argument(
+        "--out-dir",
+        default=str(DEFAULT_OUT_DIR),
+        help="where the TSV and the per-recipe logs go "
+             f"(default: {DEFAULT_OUT_DIR.relative_to(REPO)})",
+    )
+    args = parser.parse_args()
+
+    out_dir = Path(args.out_dir)
+    if not out_dir.is_absolute():
+        out_dir = REPO / out_dir
+    out_dir = out_dir.resolve()
+    log_dir = out_dir / "logs"
+    tsv = out_dir / "recipes.tsv"
+
     principal = os.environ.get("V04_PRINCIPAL")
     password = os.environ.get("V04_PASSWORD")
     if not principal or not password:
@@ -96,8 +128,8 @@ def main() -> int:
         print(f"shell binary not found: {SHELL}", file=sys.stderr)
         return 2
 
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
-    recipes = recipe_paths()
+    log_dir.mkdir(parents=True, exist_ok=True)
+    recipes = recipe_paths(tuple(args.groups))
     rows: list[tuple[str, str, str, str]] = []
 
     for recipe in recipes:
@@ -123,11 +155,11 @@ def main() -> int:
             os.unlink(script_path)
         status, reason = classify(recipe, transcript)
         rel = f"{PREFIX}/{recipe.parent.name}/{recipe.name}"
-        (LOG_DIR / f"{recipe.name}.log").write_text(transcript)
+        (log_dir / f"{recipe.name}.log").write_text(transcript)
         rows.append((rel, command, status, reason))
         print(f"{status:20} {recipe.name:32} {reason[:90]}")
 
-    with TSV.open("w") as handle:
+    with tsv.open("w") as handle:
         handle.write("recipe\tcommand\tstatus\treason\n")
         for rel, command, status, reason in rows:
             handle.write(f"{rel}\t{command}\t{status}\t{reason}\n")
@@ -136,7 +168,7 @@ def main() -> int:
     for _, _, status, _ in rows:
         tally[status] = tally.get(status, 0) + 1
     print(f"\n{len(rows)} recipes: " + ", ".join(f"{k}={v}" for k, v in sorted(tally.items())))
-    print(f"evidence: {TSV.relative_to(REPO)}")
+    print(f"evidence: {tsv.relative_to(REPO)}")
     return 1 if tally.get("NOT_WIRED") or tally.get("CRASHED") else 0
 
 

@@ -32,7 +32,8 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/uuid/random_generator.hpp>
-#include <unordered_map>
+#include "ores.reporting.core/service/scheduling_plan.hpp"
+#include <map>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <expected>
@@ -99,7 +100,7 @@ report_scheduling_service::build_job_change(const domain::report_definition& def
 
     ores::scheduler::messaging::job_definition_change change;
     change.write.id = job_id;
-    change.write.job_name = "report_definition." + boost::uuids::to_string(def.id);
+    change.write.job_name = scheduler_job_name(def.id);
     change.write.description = "Scheduler job for report: " + def.name;
     change.write.command = "";
     change.write.schedule_expression = *cron;
@@ -363,7 +364,7 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         // than insisting on creating one, is what makes reconciliation converge
         // on the state it finds instead of failing on the job-name index on
         // every start.
-        std::unordered_map<std::string, boost::uuids::uuid> existing_jobs;
+        std::map<std::string, boost::uuids::uuid> existing_jobs;
         try {
             ores::scheduler::messaging::list_job_definitions_request list_req;
             list_req.limit = 1000;
@@ -384,13 +385,11 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         }
 
         for (const auto& def : unscheduled) {
-            const auto job_name = "report_definition." + boost::uuids::to_string(def.id);
-            const auto found = existing_jobs.find(job_name);
-            if (found != existing_jobs.end()) {
+            if (const auto found = existing_job_for(existing_jobs, def.id)) {
                 BOOST_LOG_SEV(lg(), info)
-                    << "Adopting the scheduler's existing job " << found->second
+                    << "Adopting the scheduler's existing job " << *found
                     << " for definition " << def.id;
-                pending.push_back({found->second, &def});
+                pending.push_back({*found, &def});
                 continue;
             }
             const auto job_id = gen_uuid();

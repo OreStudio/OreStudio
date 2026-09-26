@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/reporting/report_operations_operations_commands.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
 #include <sstream>
@@ -56,8 +57,25 @@ TEST_CASE("report_operations_operations_registers_every_declared_command", tags)
 
     report_operations_operations_commands::register_commands(root_menu, session);
 
+    // The menu's completion list is the only public view of its children, so a
+    // command that is missing from it was never registered.
+    const auto completions = root_menu.GetCompletions("report_operations ");
+    for (const auto& verb : {
+             std::string{"report_operations trigger-report-instance"},
+             std::string{"report_operations schedule-report-definitions"},
+             std::string{"report_operations unschedule-report-definitions"},
+             std::string{"report_operations gather-trades"},
+             std::string{"report_operations gather-market-data"},
+             std::string{"report_operations assemble-bundle"},
+             std::string{"report_operations prepare-ore-package"},
+             std::string{"report_operations submit-compute"},
+             std::string{"report_operations collect-compute-results"},
+             std::string{"report_operations finalise-report"},
+             std::string{"report_operations fail-report"},
+         })
+        CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
+
     BOOST_LOG_SEV(lg, debug) << "Registered 11 command(s).";
-    CHECK(true);
 }
 
 TEST_CASE("report_operations_operations_process_trigger_report_instance_requires_a_session", tags) {

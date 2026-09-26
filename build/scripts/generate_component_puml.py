@@ -94,11 +94,15 @@ class TypeInfo:
 # Matches C++ compound namespace declarations: namespace a::b::c { or namespace a { namespace b {
 _NS_COMPOUND_RE = re.compile(r'^\s*namespace\s+([\w:]+)\s*\{')
 
+# An attribute or an ALL_CAPS macro may sit between the keyword and the name,
+# in either order and any number of times: `class [[nodiscard]] ORES_X_EXPORT
+# name` and `class ORES_X_EXPORT [[nodiscard]] name` both occur.
+_MODIFIERS = r'(?:(?:\[\[[^\]]*\]\]|[A-Z][A-Z0-9_]*)\s+)*'
+
 # Matches struct/class/enum at namespace scope
-_STRUCT_RE = re.compile(r'^\s*struct\s+(?:[A-Z][A-Z0-9_]*\s+)?(\w+)\s*(?:final\s*)?\{')
+_STRUCT_RE = re.compile(r'^\s*struct\s+' + _MODIFIERS + r'(\w+)\s*(?:final\s*)?\{')
 _CLASS_RE = re.compile(
-    r'^\s*class\s+'
-    r'(?:[A-Z][A-Z0-9_]*\s+)?'   # optional ALL_CAPS export macro
+    r'^\s*class\s+' + _MODIFIERS +
     r'(\w+)'                       # class name
     r'(?:\s+final)?'               # optional final
     r'(?:\s*:\s*[^{]+)?'           # optional base classes

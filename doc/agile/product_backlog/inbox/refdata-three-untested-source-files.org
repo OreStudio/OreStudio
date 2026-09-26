@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 958D52A1-EDF7-4C8A-BE0F-4B1DB119686E
+:END:
+#+title: ores.refdata has three hand-written source files with no test
+#+description: V08 of the refdata clean-standard pass surveyed the 17 hand-written files under src/. Ten are named by no test; seven are wiring or thin adapters whose behaviour is the service they drive or the live subscriptions the fleet runs. Three carry logic and have nothing: core/src/repository/asset_class_repository.cpp (the joined asset-class read), core/src/service/asset_class_service.cpp, and core/src/service/calendar_adjustment_export_service.cpp. Each needs a test that asserts a literal expected value, in the shape the generated repository and service tests already use against the live database.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:testing:coverage:tech-debt:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

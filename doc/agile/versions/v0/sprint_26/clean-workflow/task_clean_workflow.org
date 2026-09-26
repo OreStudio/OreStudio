@@ -78,7 +78,7 @@ record each item's result in the table below.
 | P05 | Not applicable yet. There is no protocol change to follow until the operation model replaces the hand-written headers; the consumers are then updated in the same piece of work. | — |
 | P06 | Not applicable: the component has no event cache, and B03 found none among its 53 files. | B03 survey. |
 | G01 | Pass. Regeneration is byte-identical and idempotent. The first run wrote 75 files; the second wrote nothing and reported "No drift: regenerated output matches the checked-in tree", exit 0, with the tree untouched. | Two runs of =check_component_drift.py --component workflow-cpp=, the second after committing the first. |
-| G02 | In progress, and it is a build blocker rather than tidiness. First half done: the six superseded core domain and json-io files are deleted, the engine points at the generated =ores.workflow.api/domain= headers, =ores.history.core.lib= is linked because the generated history registrar needs it, and the source list is regenerated. Compiling then exposed a model gap rather than a code one, recorded against M02. | =cmake --build ... --target ores.workflow.core.lib=, error by error. Detail below. |
+| G02 | Done. The superseded hand-written files are deleted and the component builds: =ores.workflow.core.lib= and =ores.workflow.service.lib= both reach "Built target", and the api module is header-only so it has no target of its own. The wave also removed eight custom repository methods, re-expressed as three private engine helpers over the generated API, and added the two link dependencies generation needed. | =cmake --build ... --target ores.workflow.{core,service}.lib=. Detail below. |
 | G03 | Pass in part. The component holds 97 C++ files outside tests where the baseline held 53: 56 carry the generated marker and 41 remain hand-written, against a baseline of 0 and 53. Twelve of the original files are now generated, which is the 12 the baseline predicted would change. | File census over =projects/ores.workflow=, marker =AUTO-GENERATED FILE=. |
 | G06 | Pass for this component. All three modules report "All component_files.cmake up to date", each regenerated through the =ores.cmake.component.files= archetype rather than edited by hand. | =regenerate_cmake_component_files.py --component ores.workflow.{api,core,service}=. =--all= still fails on 24 components, verified pre-existing because =ores.reporting.core= is stale on a component this work never touched. |
 | W01 | Finding: the registrar families exist but are not composed. Generation materialised =workflow_instance_registrar.cpp=, =workflow_step_registrar.cpp=, their two history-provider registrars and the service's two event registrars, and the hand-written aggregate =core/src/messaging/registrar.cpp= references none of them. | The aggregate registrar's include list and =register_handlers= body, against the files generation wrote. Detail below. |
@@ -685,6 +685,34 @@ nothing regenerates them. The engine has to express them with the generated API:
 
 This is the next and last piece of the G02 wave, and it is engine work rather
 than model work, which is why the model sections are empty and can stay so.
+
+** G02 closed
+
+The wave is done and the component builds. Compiling target by target until clean
+reached "Built target" for both =ores.workflow.core.lib= and
+=ores.workflow.service.lib=; the api module is header-only and has no target.
+
+What it took, in the order the compiler gave it up:
+
+- Six superseded core domain and json-io files deleted, clearing the redefinition.
+- =ores.history.core.lib= linked into core, for the generated history registrar.
+- =ores.eventing.core.lib= linked into the service, for the generated event
+  registrars. Both are one defect: generation emitted code whose dependency the
+  CMake never declared.
+- A missing =step_log_json= column added to the model, proven real by the
+  hand-written singular SQL script that carried it.
+- The parent declared on =workflow_step='s =workflow_id=, with =:list_by: true=,
+  which is what makes generation emit the scoped read.
+- Eight custom repository methods re-expressed as three private engine helpers
+  plus two direct generated reads.
+- =find_by_state= has no generated counterpart, so the recovery pass reads the
+  tenant's instances once and splits them in memory. Same result, different cost,
+  and the only site in the wave where behaviour changed rather than being
+  translated.
+
+Eight methods, not five. The first reading of the engine found five of them; the
+compiler then produced =create= on both repositories and =find_by_state= as well.
+That undercount is worth remembering when reading the earlier entries above.
 
 ** W04 the two SQL surfaces disagree
 

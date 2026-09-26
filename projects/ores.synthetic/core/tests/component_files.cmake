@@ -27,6 +27,7 @@ set(files
     "generators_tests.cpp"
     "gmm_component_eventing_integration_tests.cpp"
     "ir_curve_generation_config_eventing_integration_tests.cpp"
+    "ir_curve_generation_config_process_parameter_value_eventing_integration_tests.cpp"
     "ir_curve_template_entry_eventing_integration_tests.cpp"
     "main.cpp"
     "market_data_generation_config_eventing_integration_tests.cpp"

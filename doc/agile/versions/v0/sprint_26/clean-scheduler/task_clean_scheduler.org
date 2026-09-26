@@ -168,15 +168,36 @@ Each of these is a unit of its own, in the order the standard's sections want
 them.
 
 1. *The diagram generator*, an H01 follow-up. The diagram pass itself is done; what remains is the tool. =build/scripts/generate_component_puml.py= cannot regenerate a composite component's module diagrams at all. It resolves =projects/<name>/include/= and writes =projects/<name>/modeling/<name>.puml=, so for =ores.scheduler.core= there is no such directory and it reports "No include/ directory found"; passing the module path instead would write the file to a path built from a name containing a slash. The three scheduler diagrams therefore had to be authored by hand, and they are now hand-owned above the sentinel too. Either the script learns the composite layout or those diagrams lose their automated pass; that is a tooling unit of its own.
-2. *The shell commands* (S01, S02). Add the scheduler part to the =ores.shell=
-   composite, register its commands in the shell's hand-written registry, then
-   enable =ores.cpp.shell-command= in the model and regenerate. The facet is
-   off until then, with that reason stated in the model's =* Physical space=
-   table.
+2. *The shell commands* (S01, S02, and then V04). This unit carries a
+   generator gap, which the survey found by reading the facet rather than by
+   trying it. The facet is =ores.cpp.shell-command=, and its own documentation
+   states that the per-unit files are generated but the aggregator that calls
+   each unit's =register_commands= "needs a component-scoped archetype and a
+   render-time list", and that archetype does not exist yet. So the unit is not
+   only: add =projects/ores.shell/scheduler/= as an adapter part with its four
+   CMakeLists and its overview, add it to the composite's =#+parts:= and its
+   =add_subdirectory= list. It is also: write the aggregator archetype, and
+   regenerate the scheduler part's command units for the two operation models
+   and the =job_definition= entity. Only then can the model enable the facet,
+   which would also close V04, since a generated command is a command to run
+   against the live fleet. The model states the reason for the delay in its
+   =* Physical space= table, so the facet stays off by a recorded decision
+   rather than by omission.
 3. *The =job_instance= entity* (M06, V06). Model the table, regenerate the
    stack, delete the hand-written job-instance entity, mapper and repository,
    and give the execution event the canonical subject its entity traits
    generate. =ores.scheduler= joins =COMPONENTS_UNDER_TEST= in that unit.
+   This unit is larger than it first reads, and the reason is in the table the
+   entity describes. =ores_scheduler_job_instances_tbl= is written for
+   TimescaleDB: its primary key is the composite =(id, triggered_at)=, because
+   a hypertable requires the partition column in every unique index, and =id=
+   is a =bigserial=, not a uuid. The generated stack assumes one uuid primary
+   key, so two generator features are needed before the model can state this
+   table -- an integer surrogate key, and a composite key that a hypertable
+   accepts -- and a third for the read policy, which treats SQL NULL as the
+   system scope and is not a variant the RLS template emits. Until all three
+   exist, hand-writing this one table is the honest placement, and the table's
+   own header already says it is designed for a hypertable.
 4. *The scheduler loop's I/O path* (V08). The loop's two decisions now live in
    =core/src/service/schedule_decision.cpp=, a file with no database, no timer
    and no message bus, and it is tested directly against fixed instants: whether

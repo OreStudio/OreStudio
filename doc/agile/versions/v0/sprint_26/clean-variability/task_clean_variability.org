@@ -87,10 +87,10 @@ record each item's result in the table below.
 | H01 | Accepted exception, with the reason. The three part diagrams were stale, still drawing the superseded hand-written classes, and are refreshed from the code; the shell part gained the diagram it never had, and every rendered image was read rather than merely regenerated. The gap: the automated pass reads data members and not methods, so a class whose content is methods arrives without them, and PlantUML will not attach members declared in the manual section below the sentinel to a class inside a nested namespace — it draws a second, empty namespace instead. Every class is present; the API of the method-only ones is not drawn. The merged precedent has the same shape and an empty manual section. | =projects/ores.variability/{api,core,service}/modeling/*.puml= and their =.png=; =.audit/clean-variability/A3_validate_docs.txt= |
 | H02 | No legacy code remains. The retired feature-flag surface is gone from the models, the shell commands, the recipes and the namespace header; the dead accessors the census found are deleted; the hand-written duplicates of generated artefacts are deleted; and the dead =ores.variability.core= link in =ores.assets=, which no source referenced, is removed. | =.audit/clean-variability/B06_symbol_census.txt=; commit =c965d5bb8a= |
 | H04 | Not applicable, with the reason. The component carries no hand-rolled per-platform shim: it has no platform-conditional code, and the only preprocessor conditions in its sources are include guards. | =grep -rn "#if" projects/ores.variability= |
-| V01 | The whole tree builds, with the component's tests and every consumer. This is the only check that sees every consumer, and it is what found the generator expressions that mixed =std::string= with faker-cxx's =std::string_view=, and the four libraries the generated code needs that the component did not link. One target still fails after the rebase onto main, and it is not this component's: =ores.workflow.core.tests= does not compile on main, because its eventing integration tests include the event publisher and link no eventing library, and because two of its generated symbols are missing. The =feature/clean-workflow= branch in another environment owns that work, so it is recorded rather than fixed here. | =.audit/clean-variability/build_all.log=; =.audit/clean-variability/build_after_rebase.log= |
-| V02 | The codegen suite passes, 591 tests, and the component's four suites pass: api, core, service and the shell unit. The core suite runs the generated eventing integration test, which writes a setting, watches the notify trigger fire, and asserts the event reaches NATS — the end-to-end proof that the event pipeline now works. | =.audit/clean-variability/ctest_variability.log= |
-| V03 | The database recreates from scratch and the schema is correct: the generated primary key =(tenant_id, id, valid_from, valid_to)=, all three triggers, both policies, and the eleven seeded settings under one party. | =.audit/clean-variability/db_recreate.log=; =pg_policies= and =pg_trigger= queries |
-| V04 | Every generated shell recipe runs against the live fleet and answers: ten of ten, =ANSWERED=. The sweep signs in, replays each recipe in its own shell process and classifies the transcript, so a command that names a verb the shell does not know is a wiring defect and anything else is the command answering. The answers are substantive, not merely non-crashing: =system_settings list --limit 1= returns the specification's =result= envelope with =outcome: ok=, one setting with every field populated, and =total: 11=, which is the seeded count. The fleet is 23 of 24 services; the one that failed is =ores.web.service=, which is not this component's. | =.audit/clean-variability/v04/recipes.tsv= and its per-recipe logs; =projects/ores.codegen/scripts/check_shell_recipes.py= |
+| V01 | The whole tree builds, with the component's tests and every consumer. This is the only check that sees every consumer, and it is what found the generator expressions that mixed =std::string= with faker-cxx's =std::string_view=, and the four libraries the generated code needs that the component did not link. | =.audit/clean-variability/build_all.log=; =.audit/clean-variability/build_final.log= |
+| V02 | The codegen suite passes, 649 tests, and the component's four suites pass: api, core, service and the shell unit. The core suite runs the generated eventing integration test, which writes a setting, watches the notify trigger fire, and asserts the event reaches NATS. Re-run after the rebase on a database built from nothing: four of four. | =.audit/clean-variability/ctest_variability_final.log= |
+| V03 | The database recreates from scratch and the schema is correct: the generated primary key =(tenant_id, id, valid_from, valid_to)=, all three triggers, both policies, and the eleven seeded settings under one party. Proven on a database built from nothing, which is also what verified the two review fixes: =set_fn= leaves a closed version 1 and a current version 2 sharing one =id=, and the =SECURITY DEFINER= reader is executable by variability, iam and http and by nobody else. | =compass db recreate -y -k= exit 0; =pg_policies=, =pg_trigger= and =has_function_privilege= queries |
+| V04 | Every generated shell recipe runs against the live fleet and answers: ten of ten, =ANSWERED=. The sweep signs in, replays each recipe in its own shell process and classifies the transcript, so a command that names a verb the shell does not know is a wiring defect and anything else is the command answering. The answers are substantive: =system_settings list --limit 1= returns the specification's =result= envelope with =outcome: ok=, a fully populated setting and =total: 11=, the seeded count. Verified twice, the second time on a database built from nothing with all 23 service units ready. | =.audit/clean-variability/v04/recipes.tsv=; =projects/ores.codegen/scripts/check_shell_recipes.py= |
 | V05 | Every codegen gate is green with the component added: component drift, model drift, protocol twin coverage, handler permissions, populate references and the recipe inventory. The CMake source-list gate is the one exception, red repo-wide on main with 94 stale lists belonging to other components, as recorded under G06. | =projects/ores.codegen/scripts/component_registry.py=; =.audit/clean-variability/A3_*.txt= |
 | V06 | Done. =variability-cpp= is listed in =COMPONENTS_UNDER_TEST=, and the two items it does not pass are recorded as accepted exceptions in the same registry: H01 and V08, each with its reason and who accepted it. The registry was all-or-nothing when this task began, so listing it here first required changing what listing means, which is recorded under "Partial checks" below. | =projects/ores.codegen/scripts/component_registry.py=; =projects/ores.codegen/scripts/check_registry_exceptions.py= |
 | V07 | No vacuous test. The component's suites assert literal values: the api suite compares a rendered table and a JSON round-trip against their expected text, the service suite asserts parsed option values, and the generated eventing test asserts the event's key, action and version. The repository suite the generation superseded was deleted rather than left passing against nothing. | =projects/ores.variability/{api,service,core}/tests/= |
@@ -127,26 +127,28 @@ third until the fleet was brought up, which is what an exception is for: it is
 not a way to skip work, it is a way to keep the gates running while the work
 that cannot be done here is recorded for whoever can do it.
 
-** Two gaps main carries, which this branch does not fix
+** Two gaps main carried, now closed there
 
-The rebase brought 120 commits, and two of them left the tree short of what the
-standard asks, in components this task does not own. Both are recorded rather
-than fixed, because =feature/clean-workflow= is in flight in another environment
-and the work is that task's:
+The rebase onto main brought 120 commits, and two of them left the tree short of
+what the standard asks, in components this task does not own. Both are now fixed
+on main and this branch inherited the fix; they are recorded here because the
+earlier runs of this task measured against them.
 
-- =ores.workflow.core.tests= does not build. Its eventing integration tests
-  include =ores.eventing.core/service/entity_event_publisher.hpp= and its test
-  =CMakeLists.txt= links no eventing library, and two of its generated symbols
-  are missing. CI does not build that target, which is why main looks green.
-- =ores.shell.workflow= has no =modeling/= directory at all, so
-  =validate_docs.sh= fails on it for a missing overview and a missing diagram.
-  Its sibling parts, =ores.shell.analytics= and =ores.shell.variability=, both
-  have one. =validate_docs.sh= is not a CI job, so this is not caught either.
+- =ores.workflow.core.tests= did not build: its eventing integration tests
+  included the event publisher and its test =CMakeLists.txt= linked no eventing
+  library, and two generated symbols were missing. The whole tree now builds
+  with no errors.
+- =ores.shell.workflow= had no =modeling/= directory, so =validate_docs.sh=
+  failed on it for a missing overview and diagram. All 40 components pass now.
 
-With those two set aside the tree builds and the documentation validator is
-green: neither gap names =ores.variability=.
+A third gap in the same component blocked =compass db recreate= outright:
+=workflow_constraints_create.sql= declared a cascading foreign key onto a
+temporal parent, whose only uniqueness over =(tenant_id, id)= is a partial
+index, which PostgreSQL refuses as a foreign key target. The file now records
+why the key was removed. That one mattered beyond the component: no database
+could be built at all, so V03 could not pass for anything.
 
-** Rendering a draft model before it lands
+** Rendering a draft model before it lands** Rendering a draft model before it lands
 
 The drift check's =--dry-run= is the safe way to draft a model, but it throws
 the rendered tree away, so the only thing a reader sees is the list of paths

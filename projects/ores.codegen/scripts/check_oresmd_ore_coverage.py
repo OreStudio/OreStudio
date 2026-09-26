@@ -79,10 +79,6 @@ UNREPRESENTED: dict[str, str] = {
         "representing an open set of inner types, which is a grammar change "
         "rather than an added quote type."
     ),
-    "INDEX_CDS_OPTION": (
-        "Index CDS option log-normal volatility, keyed by index, expiry and "
-        "strike. Needs the volatility surface point."
-    ),
     "RATING": (
         "Rating transition probabilities, keyed by provider, from-rating and "
         "to-rating. Needs a rating asset class whose coordinate is a rating "
@@ -123,7 +119,6 @@ VOL_REPRESENTED: dict[str, str] = {
 # projection work for that asset class.
 VOL_DECLARED_UNWIRED: dict[str, str] = {
     "commodity": "COMMODITY_OPTION has no inverse projection",
-    "credit": "INDEX_CDS_OPTION has no inverse projection",
 }
 
 # Modelled quote types with no projection test, because pinning the key the
@@ -201,6 +196,23 @@ def asset_classes_declaring_vol() -> list[str]:
         if "vol" in names:
             out.append(spec.get("asset_class", ""))
     return sorted(a for a in out if a)
+
+
+def vol_wired_asset_classes() -> set[str]:
+    """Asset classes whose vol field reaches a projection.
+
+    Two shapes. The surface types the projection library dispatches explicitly
+    rather than through a quote-type row (VOL_REPRESENTED), and the quote types a
+    model marks with ``point_semantics: surface``, which carry their own row, their
+    own forward and their own inverse -- INDEX_CDS_OPTION is the second kind.
+    """
+    wired = set(VOL_REPRESENTED.values())
+    model = load_org_oresmd_quote_type_model(ORESMD_MODELING / "model.org")
+    for spec in model.get("oresmd_quote_types") or []:
+        for qt in spec.get("quote_types") or []:
+            if (qt.get("point_semantics") or "").strip() == "surface":
+                wired.add(spec.get("asset_class", ""))
+    return {a for a in wired if a}
 
 
 def tokenize(line: str):
@@ -290,7 +302,7 @@ def coverage_problems() -> list[str]:
     # representation the projection library must implement. Each asset class
     # is either wired or recorded, never both and never neither.
     vol_asset_classes = asset_classes_declaring_vol()
-    wired = set(VOL_REPRESENTED.values())
+    wired = vol_wired_asset_classes()
     for asset_class in vol_asset_classes:
         if asset_class in wired and asset_class in VOL_DECLARED_UNWIRED:
             problems.append(
@@ -345,7 +357,7 @@ def main_with_args(corpus: bool) -> int:
     modelled_types = set(modelled.values()) | set(VOL_REPRESENTED)
     covered = [t for t in declared if t in modelled_types]
     vol_asset_classes = asset_classes_declaring_vol()
-    wired = set(VOL_REPRESENTED.values())
+    wired = vol_wired_asset_classes()
 
     problems = coverage_problems()
 

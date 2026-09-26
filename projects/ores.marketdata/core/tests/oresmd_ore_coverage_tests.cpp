@@ -234,8 +234,7 @@ TEST_CASE("no_series_type_oresmd_cannot_name_has_gone_unrecorded", tags) {
     // nothing. That is the shape-mismatch list in the codegen record, seen from
     // the data rather than from the models.
     const std::set<std::string> recorded{
-        "BOND", "COMMODITY_OPTION", "CPR", "INDEX_CDS_OPTION",
-        "RATING", "SHAPE_PROFILE"};
+        "BOND", "COMMODITY_OPTION", "CPR", "RATING", "SHAPE_PROFILE"};
 
     REQUIRE(types_oresmd_cannot_name() == recorded);
 }
@@ -262,7 +261,8 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
         "CORRELATION", "DISCOUNT", "EQUITY", "EQUITY_DIVIDEND", "EQUITY_FWD",
         "EQUITY_OPTION", "FRA",
         "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
-        "INDEX_CDS_TRANCHE", "MM_FUTURE", "OI_FUTURE", "SEASONALITY", "SWAPTION",
+        "INDEX_CDS_OPTION", "INDEX_CDS_TRANCHE", "MM_FUTURE", "OI_FUTURE", "SEASONALITY",
+        "SWAPTION",
         "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",
         "ZC_INFLATIONSWAP", "ZERO"};
 
@@ -270,7 +270,8 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
         "BMA_SWAP", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
         "CC_FIX_FLOAT_SWAP", "CDS", "CDS_INDEX", "COMMODITY", "DISCOUNT", "EQUITY_DIVIDEND",
         "FRA", "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
-        "INDEX_CDS_TRANCHE", "IR_SWAP", "MM_FUTURE", "OI_FUTURE", "SEASONALITY", "SWAPTION",
+        "INDEX_CDS_OPTION", "INDEX_CDS_TRANCHE", "IR_SWAP", "MM_FUTURE", "OI_FUTURE",
+        "SEASONALITY", "SWAPTION",
         "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",
         "ZC_INFLATIONSWAP", "ZERO"};
 

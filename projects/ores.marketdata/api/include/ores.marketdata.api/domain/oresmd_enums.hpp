@@ -128,12 +128,15 @@ enum class index_family {
 enum class credit_quote_type {
     cds, ///< CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/TENOR, and the seven-segment form carrying the
          ///< restructuring clause between the currency and the tenor (XR14, MR14)
-    hazard_rate,      ///< HAZARD_RATE/RATE/ENTITY/SENIORITY/CCY/TENOR, with the same optional
-                      ///< restructuring clause
-    recovery_rate,    ///< RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY, plus the restructuring clause on
-                      ///< the keys that name one
-    cds_index,        ///< CDS_INDEX/BASE_CORRELATION (index base correlation).
-    index_cds_tranche ///< INDEX_CDS_TRANCHE/BASE_CORRELATION (tranche base correlation).
+    hazard_rate,   ///< HAZARD_RATE/RATE/ENTITY/SENIORITY/CCY/TENOR, with the same optional
+                   ///< restructuring clause
+    recovery_rate, ///< RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY, plus the restructuring clause on
+                   ///< the keys that name one
+    cds_index,     ///< CDS_INDEX/BASE_CORRELATION (index base correlation).
+    index_cds_tranche, ///< INDEX_CDS_TRANCHE/BASE_CORRELATION (tranche base correlation).
+    index_cds_option   ///< INDEX_CDS_OPTION/MODEL/INDEX/TENOR/EXPIRY/STRIKE, plus the four-segment
+                       ///< term-vol form INDEX_CDS_OPTION/MODEL/INDEX/TENOR; the metric segment is
+                       ///< the vol model, not this table's ore_metric
     // rating descoped — RATING/TRANSITION_PROBABILITY needs provider/from_rating/to_rating
     // fields the current credit_market_data_identifier has no equivalent for; tracked for
     // its own task.

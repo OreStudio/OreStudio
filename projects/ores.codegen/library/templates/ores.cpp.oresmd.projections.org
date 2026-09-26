@@ -88,6 +88,7 @@ constexpr std::string_view hazard_rate{"HAZARD_RATE"};
 constexpr std::string_view recovery_rate{"RECOVERY_RATE"};
 constexpr std::string_view cds_index{"CDS_INDEX"};
 constexpr std::string_view index_cds_tranche{"INDEX_CDS_TRANCHE"};
+constexpr std::string_view index_cds_option{"INDEX_CDS_OPTION"};
 constexpr std::string_view zc_inflation_swap{"ZC_INFLATIONSWAP"};
 constexpr std::string_view yy_inflation_swap{"YY_INFLATIONSWAP"};
 constexpr std::string_view zc_inflation_capfloor{"ZC_INFLATIONCAPFLOOR"};
@@ -641,11 +642,34 @@ std::string_view ore_{{asset_class}}_metric({{asset_class}}_quote_type qt) {
 }
 
 std::optional<std::string> quote_key_credit(const {{asset_class}}_market_data_identifier& id) {
-    if (id.type != instrument_type::quote)
-        return std::nullopt;
-
     const auto qt = id.quote_type.value_or(credit_quote_type::cds);
     const auto qm = ore_credit_metric(qt);
+
+    // An index option is a volatility surface, and its metric segment is the vol
+    // model rather than the type's own metric. Two forms: the term vol, which is
+    //  a single number at an index tenor, and the full surface with an expiry and
+    // a strike. Both carry the index in the entity.
+    if (id.type == instrument_type::vol) {
+        if (!id.point || !id.vol)
+            return std::nullopt;
+        const auto parts = split_point(*id.point);
+        const auto model = ore_vol_model(id.vol->model_subtype);
+        if (parts.size() == 1)
+            return std::format(
+                "{}/{}/{}/{}", ore_type(qt), model, id.reference_entity, parts[0]);
+        if (parts.size() == 3)
+            return std::format("{}/{}/{}/{}/{}/{}",
+                               ore_type(qt),
+                               model,
+                               id.reference_entity,
+                               parts[0],
+                               parts[1],
+                               parts[2]);
+        return std::nullopt;
+    }
+
+    if (id.type != instrument_type::quote)
+        return std::nullopt;
 
     if (!id.point)
         return std::nullopt;
@@ -1396,6 +1420,34 @@ from_credit_index(credit_quote_type qt, const std::vector<std::string>& parts) {
 }
 
 std::optional<market_data_identifier>
+from_credit_index_option(credit_quote_type qt, const std::vector<std::string>& parts) {
+    // INDEX_CDS_OPTION/MODEL/INDEX/TENOR/EXPIRY/STRIKE -- no ccy dimension, and
+    // the point carries the index tenor ahead of the surface's own coordinates.
+    // The corpus also writes a four-segment term vol, with the tenor alone and no
+    // expiry or strike: INDEX_CDS_OPTION/MODEL/INDEX/TENOR.
+    if (parts.size() != 4 && parts.size() != 6)
+        return std::nullopt;
+    const auto model = parse_vol_model(parts[1]);
+    if (!model)
+        return std::nullopt;
+    credit_market_data_identifier id;
+    id.reference_entity = parts[2];
+    id.type = instrument_type::vol;
+    id.quote_type = qt;
+    volatility_surface_point v;
+    v.model_subtype = *model;
+    if (parts.size() == 6) {
+        v.expiry = to_upper(parts[4]);
+        v.strike = to_upper(parts[5]);
+        id.point = to_lower(parts[3]) + "," + to_lower(parts[4]) + "," + to_lower(parts[5]);
+    } else {
+        id.point = to_lower(parts[3]);
+    }
+    id.vol = std::move(v);
+    return id;
+}
+
+std::optional<market_data_identifier>
 from_inflation_capfloor(inflation_quote_type qt, const std::vector<std::string>& parts) {
     // ZC_INFLATIONCAPFLOOR/METRIC/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE, and the
     // same shape for the year-on-year family. The metric is the surface: PRICE
@@ -1557,6 +1609,10 @@ inverse_projection(const std::vector<std::string>& parts,
         const auto qt = parse_enum_lower<credit_quote_type>(type);
         return qt ? from_credit_index(*qt, parts) : std::nullopt;
     }
+    if (type == ore_type_spec::index_cds_option) {
+        const auto qt = parse_enum_lower<credit_quote_type>(type);
+        return qt ? from_credit_index_option(*qt, parts) : std::nullopt;
+    }
     if (type == ore_type_spec::zc_inflation_swap)
         return from_inflation_swap(inflation_quote_type::zc_swap, parts);
     if (type == ore_type_spec::yy_inflation_swap)
@@ -1566,11 +1622,12 @@ inverse_projection(const std::vector<std::string>& parts,
     if (type == ore_type_spec::zc_inflation_capfloor)
         return from_inflation_capfloor(inflation_quote_type::zc_capfloor, parts);
     if (type == ore_type_spec::yy_inflation_capfloor)
-        return from_inflation_capfloor(inflation_quote_type::yy_capfloor, parts);    if (type == ore_type_spec::correlation)
+        return from_inflation_capfloor(inflation_quote_type::yy_capfloor, parts);
+    if (type == ore_type_spec::correlation)
         return from_correlation(parts);
-    // No oresmd mapping: BOND, FX_OPTION, CAPFLOOR, INDEX_CDS_OPTION,
-    // EQUITY_OPTION, COMMODITY_OPTION, ZC_INFLATIONCAPFLOOR, YY_INFLATIONCAPFLOOR,
-    // and any type the registry does not know.
+    // No oresmd mapping: BOND, FX_OPTION, CAPFLOOR, EQUITY_OPTION,
+    // COMMODITY_OPTION, ZC_INFLATIONCAPFLOOR, YY_INFLATIONCAPFLOOR, and any type
+    // the registry does not know.
     return std::nullopt;
 }
 

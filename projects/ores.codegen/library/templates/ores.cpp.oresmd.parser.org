@@ -427,6 +427,35 @@ market_data_identifier parse_{{asset_class}}(const boost::urls::url_view& u, con
     if (qp.model && id.type == instrument_type::vol && id.vol)
         id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
 {{/inflation}}
+{{#credit}}
+    // An index CDS option's surface point carries the index tenor ahead of the
+    // expiry and the strike: type=vol&point=5y,2025-02-19,107.5. The corpus also
+    // writes a term vol with the tenor alone and neither of the other two, so the
+    // count decides which form this is.
+    if (qp.point && id.type == instrument_type::vol) {
+        std::vector<std::string> parts;
+        std::stringstream ss(*id.point);
+        std::string part;
+        while (std::getline(ss, part, ','))
+            parts.push_back(part);
+        if (parts.size() != 1 && parts.size() != 3)
+            BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+                "oresmd://credit/... a vol surface point is tenor or "
+                "tenor,expiry,strike, got: '{}'.",
+                *id.point)));
+        volatility_surface_point v;
+        if (parts.size() == 3) {
+            v.expiry = to_upper(parts[1]);
+            v.strike = to_upper(parts[2]);
+            id.point = to_lower(parts[0]) + "," + to_lower(parts[1]) + "," + to_lower(parts[2]);
+        } else {
+            id.point = to_lower(parts[0]);
+        }
+        id.vol = std::move(v);
+    }
+    if (qp.model && id.type == instrument_type::vol && id.vol)
+        id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
+{{/credit}}
     return id;
 }
 

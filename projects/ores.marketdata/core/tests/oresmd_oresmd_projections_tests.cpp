@@ -412,6 +412,20 @@ TEST_CASE("recovery_rate_quote_key_carries_the_restructuring_clause", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "RECOVERY_RATE/RATE/025ADX/SNRFOR/USD/MR14");
 }
 
+TEST_CASE("index_cds_option_vol_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://credit/"
+                          "2i65byeg6?ccy=usd&type=vol&quote=index_cds_option&model=rate_lnvol&"
+                          "point=5y,2025-02-19,107.5");
+    REQUIRE(oresmd_projections::to_quote_key(id) ==
+            "INDEX_CDS_OPTION/RATE_LNVOL/2I65BYEG6/5Y/2025-02-19/107.5");
+}
+
+TEST_CASE("index_cds_option_term_vol_quote_key_matches_the_corpus", tags) {
+    const auto id = parse(
+        "oresmd://credit/cdxig?ccy=usd&type=vol&quote=index_cds_option&model=rate_lnvol&point=1m");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "INDEX_CDS_OPTION/RATE_LNVOL/CDXIG/1M");
+}
+
 TEST_CASE("cds_index_base_correlation_quote_key_no_ccy", tags) {
     const auto id =
         parse("oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1");
@@ -708,6 +722,38 @@ TEST_CASE("from_ore_key_commodity", tags) {
             parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m"));
     REQUIRE(oresmd_projections::from_ore_key("CPR/RATE/WTI/USD/5Y") ==
             parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y"));
+}
+
+TEST_CASE("from_ore_key_credit_index_option_is_a_surface", tags) {
+    // The index CDS option is a volatility surface whose metric segment is the
+    // vol model, and its point carries the index tenor ahead of the expiry and
+    // the strike. Like the other index families its key carries no ccy, so the
+    // inverse cannot recover one and the target is a ccy-less identifier.
+    credit_market_data_identifier option_id;
+    option_id.reference_entity = "2I65BYEG6";
+    option_id.type = instrument_type::vol;
+    option_id.quote_type = credit_quote_type::index_cds_option;
+    option_id.point = "5y,2025-02-19,107.5";
+    volatility_surface_point surface;
+    surface.expiry = "2025-02-19";
+    surface.strike = "107.5";
+    surface.model_subtype = volatility_model_subtype::rate_lnvol;
+    option_id.vol = surface;
+    REQUIRE(oresmd_projections::from_ore_key(
+                "INDEX_CDS_OPTION/RATE_LNVOL/2I65BYEG6/5Y/2025-02-19/107.5") ==
+            market_data_identifier(option_id));
+    // The corpus also writes a term vol: the index tenor alone, with neither an
+    // expiry nor a strike.
+    credit_market_data_identifier term_id;
+    term_id.reference_entity = "CDXIG";
+    term_id.type = instrument_type::vol;
+    term_id.quote_type = credit_quote_type::index_cds_option;
+    term_id.point = "1m";
+    volatility_surface_point term;
+    term.model_subtype = volatility_model_subtype::rate_lnvol;
+    term_id.vol = term;
+    REQUIRE(oresmd_projections::from_ore_key("INDEX_CDS_OPTION/RATE_LNVOL/CDXIG/1M") ==
+            market_data_identifier(term_id));
 }
 
 TEST_CASE("from_ore_key_credit", tags) {

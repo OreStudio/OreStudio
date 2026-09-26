@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,9 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.api/generators/coding_scheme_authority_type_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::dq::generators {
 
@@ -27,14 +36,22 @@ using ores::utility::generation::generation_keys;
 
 domain::coding_scheme_authority_type
 generate_synthetic_coding_scheme_authority_type(utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    [[maybe_unused]] static std::atomic<int> counter{0};
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::coding_scheme_authority_type r;
-    r.version = 1;
-    r.code = std::string(faker::word::noun());
-    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun());
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.name = std::string(faker::word::noun()) + " Authority Type";
     r.description = std::string(faker::lorem::sentence());
     r.modified_by = modified_by;
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

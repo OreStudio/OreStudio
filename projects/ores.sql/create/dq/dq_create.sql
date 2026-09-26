@@ -42,9 +42,9 @@
 \ir ./dq_subject_areas_notify_trigger_create.sql
 
 -- Coding schemes
-\ir ./dq_coding_scheme_authority_type_create.sql
+\ir ./dq_coding_scheme_authority_types_create.sql
 \ir ./dq_coding_scheme_authority_types_notify_trigger_create.sql
-\ir ./dq_coding_scheme_create.sql
+\ir ./dq_coding_schemes_create.sql
 \ir ./dq_coding_schemes_notify_trigger_create.sql
 \ir ./dq_coding_schemes_artefact_create.sql
 

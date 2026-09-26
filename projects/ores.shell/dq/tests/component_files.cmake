@@ -26,6 +26,8 @@ set(files
     "change_reason_category_commands_tests.cpp"
     "change_reason_commands_tests.cpp"
     "code_domain_commands_tests.cpp"
+    "coding_scheme_authority_type_commands_tests.cpp"
+    "coding_scheme_commands_tests.cpp"
     "data_domain_commands_tests.cpp"
     "dataset_bundle_commands_tests.cpp"
     "dataset_bundle_member_commands_tests.cpp"

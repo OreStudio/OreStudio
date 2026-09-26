@@ -50,13 +50,13 @@ TEST_CASE("write_single_coding_scheme_authority_type", tags) {
     database_helper h;
 
     generation_context ctx;
-    coding_scheme_authority_type_repository repo(h.context());
+    coding_scheme_authority_type_repository repo;
     auto authority_type = generate_synthetic_coding_scheme_authority_type(ctx);
-    authority_type.tenant_id = h.tenant_id().to_string();
+    authority_type.tenant_id = h.tenant_id();
     authority_type.code = authority_type.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Coding scheme authority type: " << authority_type;
-    CHECK_NOTHROW(repo.write(authority_type));
+    CHECK_NOTHROW(repo.write(h.context(), authority_type));
 }
 
 TEST_CASE("write_multiple_coding_scheme_authority_types", tags) {
@@ -64,16 +64,16 @@ TEST_CASE("write_multiple_coding_scheme_authority_types", tags) {
 
     database_helper h;
 
-    coding_scheme_authority_type_repository repo(h.context());
+    coding_scheme_authority_type_repository repo;
     generation_context ctx;
     auto authority_types = generate_synthetic_coding_scheme_authority_types(3, ctx);
     for (auto& a : authority_types) {
-        a.tenant_id = h.tenant_id().to_string();
+        a.tenant_id = h.tenant_id();
         a.code = a.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Coding scheme authority types: " << authority_types;
 
-    CHECK_NOTHROW(repo.write(authority_types));
+    CHECK_NOTHROW(repo.write(h.context(), authority_types));
 }
 
 TEST_CASE("read_latest_coding_scheme_authority_types", tags) {
@@ -81,18 +81,18 @@ TEST_CASE("read_latest_coding_scheme_authority_types", tags) {
 
     database_helper h;
 
-    coding_scheme_authority_type_repository repo(h.context());
+    coding_scheme_authority_type_repository repo;
     generation_context ctx;
     auto written_authority_types = generate_synthetic_coding_scheme_authority_types(3, ctx);
     for (auto& a : written_authority_types) {
-        a.tenant_id = h.tenant_id().to_string();
+        a.tenant_id = h.tenant_id();
         a.code = a.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Written authority types: " << written_authority_types;
 
-    repo.write(written_authority_types);
+    repo.write(h.context(), written_authority_types);
 
-    auto read_authority_types = repo.read_latest();
+    auto read_authority_types = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read authority types: " << read_authority_types;
 
     CHECK(!read_authority_types.empty());
@@ -104,21 +104,21 @@ TEST_CASE("read_latest_coding_scheme_authority_type_by_code", tags) {
 
     database_helper h;
 
-    coding_scheme_authority_type_repository repo(h.context());
+    coding_scheme_authority_type_repository repo;
     generation_context ctx;
     auto authority_types = generate_synthetic_coding_scheme_authority_types(3, ctx);
     for (auto& a : authority_types) {
-        a.tenant_id = h.tenant_id().to_string();
+        a.tenant_id = h.tenant_id();
         a.code = a.code + "_" + std::string(faker::string::alphanumeric(8));
     }
 
     const auto target = authority_types.front();
     BOOST_LOG_SEV(lg, debug) << "Write authority types: " << authority_types;
-    repo.write(authority_types);
+    repo.write(h.context(), authority_types);
 
     BOOST_LOG_SEV(lg, debug) << "Target authority type: " << target;
 
-    auto read_authority_types = repo.read_latest(target.code);
+    auto read_authority_types = repo.read_latest(h.context(), target.code);
     BOOST_LOG_SEV(lg, debug) << "Read authority types: " << read_authority_types;
 
     REQUIRE(read_authority_types.size() == 1);

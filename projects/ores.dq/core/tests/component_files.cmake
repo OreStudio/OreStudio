@@ -26,6 +26,8 @@ set(files
     "change_reason_category_eventing_integration_tests.cpp"
     "change_reason_eventing_integration_tests.cpp"
     "code_domain_eventing_integration_tests.cpp"
+    "coding_scheme_authority_type_eventing_integration_tests.cpp"
+    "coding_scheme_eventing_integration_tests.cpp"
     "data_domain_eventing_integration_tests.cpp"
     "generators_tests.cpp"
     "lei_entity_eventing_integration_tests.cpp"

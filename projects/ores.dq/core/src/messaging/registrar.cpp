@@ -22,7 +22,6 @@
 #include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.dq.api/messaging/change_reason_category_protocol.hpp"
 #include "ores.dq.api/messaging/change_reason_protocol.hpp"
-#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq.api/messaging/data_domain_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
@@ -45,9 +44,10 @@
 #include "ores.dq.core/messaging/change_reason_category_registrar.hpp"
 #include "ores.dq.core/messaging/change_reason_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/change_reason_registrar.hpp"
+#include "ores.dq.core/messaging/coding_scheme_authority_type_registrar.hpp"
+#include "ores.dq.core/messaging/coding_scheme_registrar.hpp"
 #include "ores.dq.core/messaging/code_domain_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/code_domain_registrar.hpp"
-#include "ores.dq.core/messaging/coding_scheme_handler.hpp"
 #include "ores.dq.core/messaging/data_domain_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/data_domain_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_handler.hpp"
@@ -287,50 +287,23 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // =========================================================================
-    // Coding Schemes
+    // Coding scheme authority types and coding schemes are on the standard
+    // generated stack; see each entity's own _handler/_registrar pair.
     // =========================================================================
 
-    auto cs = std::make_shared<coding_scheme_handler>(nats, ctx, verifier);
-
-    subs.push_back(nats.queue_subscribe(
-        get_coding_scheme_authority_types_request::nats_subject,
-        queue_group,
-        [cs](ores::nats::message msg) { cs->list_authority_types(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_coding_scheme_authority_type_request::nats_subject,
-        queue_group,
-        [cs](ores::nats::message msg) { cs->save_authority_type(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_coding_scheme_authority_type_request::nats_subject,
-        queue_group,
-        [cs](ores::nats::message msg) { cs->delete_authority_types(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_coding_scheme_authority_type_history_request::nats_subject,
-        queue_group,
-        [cs](ores::nats::message msg) { cs->authority_type_history(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_coding_schemes_request::nats_subject, queue_group, [cs](ores::nats::message msg) {
-            cs->list(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_coding_scheme_request::nats_subject, queue_group, [cs](ores::nats::message msg) {
-            cs->save(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_coding_scheme_request::nats_subject, queue_group, [cs](ores::nats::message msg) {
-            cs->remove(std::move(msg));
-        }));
-
-    subs.push_back(
-        nats.queue_subscribe(get_coding_scheme_history_request::nats_subject,
-                             queue_group,
-                             [cs](ores::nats::message msg) { cs->history(std::move(msg)); }));
+    {
+        auto coding_scheme_authority_type_subs =
+            register_coding_scheme_authority_type_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(coding_scheme_authority_type_subs.begin()),
+                    std::make_move_iterator(coding_scheme_authority_type_subs.end()));
+    }
+    {
+        auto coding_scheme_subs = register_coding_scheme_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(coding_scheme_subs.begin()),
+                    std::make_move_iterator(coding_scheme_subs.end()));
+    }
 
     // =========================================================================
     // LEI Entities, LEI Relationships, Report Definitions, Synthetic FX Spot

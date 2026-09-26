@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,198 +19,179 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_protocol.hpp.mustache
+ * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_TELEMETRY_CORE_MESSAGING_NATS_SAMPLES_PROTOCOL_HPP
-#define ORES_TELEMETRY_CORE_MESSAGING_NATS_SAMPLES_PROTOCOL_HPP
-
-#include <chrono>
-#include <cstdint>
-#include <string>
-#include <string_view>
-#include <vector>
-
-namespace ores::telemetry::messaging {
-
 /**
  * @brief A single point-in-time sample of NATS server-level metrics.
  */
-struct nats_server_sample {
+export interface NatsServerSample {
     /**
      * @brief When this sample was taken.
      */
-    std::chrono::system_clock::time_point sampled_at;
+    sampled_at: string;
     /**
      * @brief Total inbound messages since server start.
      */
-    std::uint64_t in_msgs = 0;
+    in_msgs: number;
     /**
      * @brief Total outbound messages since server start.
      */
-    std::uint64_t out_msgs = 0;
+    out_msgs: number;
     /**
      * @brief Total inbound bytes since server start.
      */
-    std::uint64_t in_bytes = 0;
+    in_bytes: number;
     /**
      * @brief Total outbound bytes since server start.
      */
-    std::uint64_t out_bytes = 0;
+    out_bytes: number;
     /**
      * @brief Current number of client connections.
      */
-    int connections = 0;
+    connections: number;
     /**
      * @brief Server process resident memory in bytes.
      */
-    std::uint64_t mem_bytes = 0;
+    mem_bytes: number;
     /**
      * @brief Number of slow consumers detected since server start.
      */
-    int slow_consumers = 0;
-};
+    slow_consumers: number;
+}
 
 /**
  * @brief A single point-in-time sample of a JetStream stream's metrics.
  */
-struct nats_stream_sample {
+export interface NatsStreamSample {
     /**
      * @brief When this sample was taken.
      */
-    std::chrono::system_clock::time_point sampled_at;
+    sampled_at: string;
     /**
      * @brief JetStream stream name, for example @c ORES_TRADES.
      */
-    std::string stream_name;
+    stream_name: string;
     /**
      * @brief Number of messages currently stored in the stream.
      */
-    std::uint64_t messages = 0;
+    messages: number;
     /**
      * @brief Total bytes currently stored in the stream.
      */
-    std::uint64_t bytes = 0;
+    bytes: number;
     /**
      * @brief Number of active consumers on this stream.
      */
-    int consumer_count = 0;
-};
+    consumer_count: number;
+}
 
 /**
  * @brief Query parameters for retrieving NATS server samples.
  */
-struct nats_server_samples_query {
+export interface NatsServerSamplesQuery {
     /**
      * @brief Start of the time range, inclusive.
      */
-    std::chrono::system_clock::time_point start_time;
+    start_time: string;
     /**
      * @brief End of the time range, exclusive.
      */
-    std::chrono::system_clock::time_point end_time;
+    end_time: string;
     /**
      * @brief Maximum number of results to return.
      */
-    std::uint32_t limit = 1000;
-};
+    limit: number;
+}
 
 /**
  * @brief Query parameters for retrieving NATS stream samples.
  */
-struct nats_stream_samples_query {
+export interface NatsStreamSamplesQuery {
     /**
      * @brief JetStream stream name to query.
      */
-    std::string stream_name;
+    stream_name: string;
     /**
      * @brief Start of the time range, inclusive.
      */
-    std::chrono::system_clock::time_point start_time;
+    start_time: string;
     /**
      * @brief End of the time range, exclusive.
      */
-    std::chrono::system_clock::time_point end_time;
+    end_time: string;
     /**
      * @brief Maximum number of results to return.
      */
-    std::uint32_t limit = 1000;
-};
+    limit: number;
+}
 
 /**
  * @brief Asks for the NATS server samples in a time range.
  */
-struct get_nats_server_samples_request {
-    using response_type = struct get_nats_server_samples_response;
-    static constexpr std::string_view nats_subject = "telemetry.v1.nats.server-samples.list";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
+export interface GetNatsServerSamplesRequest {
     /**
      * @brief The time range and limit the read applies.
      */
-    nats_server_samples_query query;
-};
+    query: NatsServerSamplesQuery;
+}
 
 /**
  * @brief The NATS server samples the query selected.
  */
-struct get_nats_server_samples_response {
+export interface GetNatsServerSamplesResponse {
     /**
      * @brief Whether the samples were read.
      */
-    bool success = false;
+    success: boolean;
     /**
      * @brief Why they were not, when they were not.
      */
-    std::string message;
+    message: string;
     /**
      * @brief The server samples the read returned.
      */
-    std::vector<nats_server_sample> samples;
-};
+    samples: NatsServerSample[];
+}
 
 /**
  * @brief Asks for one stream's samples in a time range.
  */
-struct get_nats_stream_samples_request {
-    using response_type = struct get_nats_stream_samples_response;
-    static constexpr std::string_view nats_subject = "telemetry.v1.nats.stream-samples.list";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
+export interface GetNatsStreamSamplesRequest {
     /**
      * @brief The stream, time range and limit the read applies.
      */
-    nats_stream_samples_query query;
-};
+    query: NatsStreamSamplesQuery;
+}
 
 /**
  * @brief The NATS stream samples the query selected.
  */
-struct get_nats_stream_samples_response {
+export interface GetNatsStreamSamplesResponse {
     /**
      * @brief Whether the samples were read.
      */
-    bool success = false;
+    success: boolean;
     /**
      * @brief Why they were not, when they were not.
      */
-    std::string message;
+    message: string;
     /**
      * @brief The stream samples the read returned.
      */
-    std::vector<nats_stream_sample> samples;
-};
-
+    samples: NatsStreamSample[];
 }
 
-#endif
+export const subjects = {
+    get_nats_server_samples_request: "telemetry.v1.nats.server-samples.list",
+    get_nats_stream_samples_request: "telemetry.v1.nats.stream-samples.list",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    get_nats_server_samples_request: true,
+    get_nats_stream_samples_request: true,
+} as const;

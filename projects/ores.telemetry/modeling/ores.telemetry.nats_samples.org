@@ -1,0 +1,443 @@
+:PROPERTIES:
+:ID: 5B7269B0-E9F1-4985-A3A0-1B7AF9F727BE
+:END:
+#+title: ores.telemetry.nats_samples
+#+description: Codegen operation model for the NATS server and stream sample queries, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: telemetry
+#+subcomponent: core
+#+entity_singular: nats_samples
+#+namespace: ores::telemetry::messaging
+#+brief: NATS server and stream sample query messages.
+#+filetags: :model:operation:telemetry:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The NATS sampling surface: two read-only queries, one over the server
+samples and one over the stream samples.
+
+These are operations rather than entity verbs. Both replies are computed
+from the stored samples rather than addressed by key, so no caller reaches
+one row by primary key.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** nats_server_sample
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A single point-in-time sample of NATS server-level metrics.
+ */
+#+end_src
+
+*** sampled_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When this sample was taken.
+ */
+#+end_src
+
+*** in_msgs
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Total inbound messages since server start.
+ */
+#+end_src
+
+*** out_msgs
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Total outbound messages since server start.
+ */
+#+end_src
+
+*** in_bytes
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Total inbound bytes since server start.
+ */
+#+end_src
+
+*** out_bytes
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Total outbound bytes since server start.
+ */
+#+end_src
+
+*** connections
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Current number of client connections.
+ */
+#+end_src
+
+*** mem_bytes
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Server process resident memory in bytes.
+ */
+#+end_src
+
+*** slow_consumers
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Number of slow consumers detected since server start.
+ */
+#+end_src
+
+** nats_stream_sample
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A single point-in-time sample of a JetStream stream's metrics.
+ */
+#+end_src
+
+*** sampled_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When this sample was taken.
+ */
+#+end_src
+
+*** stream_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief JetStream stream name, for example @c ORES_TRADES.
+ */
+#+end_src
+
+*** messages
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Number of messages currently stored in the stream.
+ */
+#+end_src
+
+*** bytes
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Total bytes currently stored in the stream.
+ */
+#+end_src
+
+*** consumer_count
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Number of active consumers on this stream.
+ */
+#+end_src
+
+** nats_server_samples_query
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Query parameters for retrieving NATS server samples.
+ */
+#+end_src
+
+*** start_time
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Start of the time range, inclusive.
+ */
+#+end_src
+
+*** end_time
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief End of the time range, exclusive.
+ */
+#+end_src
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default:  1000
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Maximum number of results to return.
+ */
+#+end_src
+
+** nats_stream_samples_query
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Query parameters for retrieving NATS stream samples.
+ */
+#+end_src
+
+*** stream_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief JetStream stream name to query.
+ */
+#+end_src
+
+*** start_time
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Start of the time range, inclusive.
+ */
+#+end_src
+
+*** end_time
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief End of the time range, exclusive.
+ */
+#+end_src
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default:  1000
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Maximum number of results to return.
+ */
+#+end_src
+
+** get_nats_server_samples_request
+:PROPERTIES:
+:subject: telemetry.v1.nats.server-samples.list
+:response: get_nats_server_samples_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the NATS server samples in a time range.
+ */
+#+end_src
+
+*** query
+:PROPERTIES:
+:cpp_type: nats_server_samples_query
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The time range and limit the read applies.
+ */
+#+end_src
+
+** get_nats_server_samples_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The NATS server samples the query selected.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the samples were read.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why they were not, when they were not.
+ */
+#+end_src
+
+*** samples
+:PROPERTIES:
+:cpp_type: std::vector<nats_server_sample>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The server samples the read returned.
+ */
+#+end_src
+
+** get_nats_stream_samples_request
+:PROPERTIES:
+:subject: telemetry.v1.nats.stream-samples.list
+:response: get_nats_stream_samples_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for one stream's samples in a time range.
+ */
+#+end_src
+
+*** query
+:PROPERTIES:
+:cpp_type: nats_stream_samples_query
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The stream, time range and limit the read applies.
+ */
+#+end_src
+
+** get_nats_stream_samples_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The NATS stream samples the query selected.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the samples were read.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why they were not, when they were not.
+ */
+#+end_src
+
+*** samples
+:PROPERTIES:
+:cpp_type: std::vector<nats_stream_sample>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The stream samples the read returned.
+ */
+#+end_src
+
+* See also
+
+- [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]] — the part this model generates into.

@@ -1,0 +1,512 @@
+:PROPERTIES:
+:ID: F83BEB1B-FD97-4159-887F-B30AFAF64E0E
+:END:
+#+title: ores.telemetry.logs
+#+description: Codegen operation model for the telemetry log list and the log ingest publish, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: telemetry
+#+subcomponent: core
+#+entity_singular: logs
+#+namespace: ores::telemetry::messaging
+#+brief: telemetry log query and ingest messages.
+#+filetags: :model:operation:telemetry:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The log surface: a filtered read of the stored log entries, and a
+fire-and-forget publish that ingests entries from a wrapper node.
+
+These are operations rather than entity verbs. The list is a filtered read
+over the log store, and the publish arrives from outside the service and is
+stored as it arrives, so neither is a row a caller reaches by primary key.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.telemetry.core/domain/telemetry_source.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** telemetry_log_entry
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A persisted telemetry log entry.
+ */
+#+end_src
+
+*** id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Unique identifier for this log entry.
+ */
+#+end_src
+
+*** timestamp
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When the log was emitted by the source.
+ */
+#+end_src
+
+*** source
+:PROPERTIES:
+:cpp_type: ores::telemetry::domain::telemetry_source
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Source type, client or server.
+ */
+#+end_src
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Name of the source application, for example @c ores.qt.
+ */
+#+end_src
+
+*** session_id
+:PROPERTIES:
+:cpp_type: std::optional<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Session identifier for client logs.
+ */
+#+end_src
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::optional<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Account identifier for authenticated logs.
+ */
+#+end_src
+
+*** level
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Log severity level.
+ */
+#+end_src
+
+*** component
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Logger or component that emitted this log.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The log message.
+ */
+#+end_src
+
+*** tag
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Optional tag for filtering.
+ */
+#+end_src
+
+*** recorded_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Server receipt timestamp.
+ */
+#+end_src
+
+** telemetry_query
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Query parameters for retrieving telemetry logs.
+ *
+ * All filter fields are optional, and multiple filters combine with AND
+ * logic.
+ */
+#+end_src
+
+*** start_time
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Start of the time range, inclusive.
+ */
+#+end_src
+
+*** end_time
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief End of the time range, exclusive.
+ */
+#+end_src
+
+*** source
+:PROPERTIES:
+:cpp_type: std::optional<ores::telemetry::domain::telemetry_source>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Filter by source type, client or server.
+ */
+#+end_src
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Filter by source application name.
+ */
+#+end_src
+
+*** session_id
+:PROPERTIES:
+:cpp_type: std::optional<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Filter by session identifier.
+ */
+#+end_src
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::optional<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Filter by account identifier.
+ */
+#+end_src
+
+*** level
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Filter by log level.
+ */
+#+end_src
+
+*** min_level
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Filter by minimum log level.
+ */
+#+end_src
+
+*** component
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Filter by component name.
+ */
+#+end_src
+
+*** tag
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Filter by tag.
+ */
+#+end_src
+
+*** message_contains
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Search text in the message body.
+ */
+#+end_src
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default:  1000
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Maximum number of results to return.
+ */
+#+end_src
+
+*** offset
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Number of results to skip, for pagination.
+ */
+#+end_src
+
+** get_telemetry_logs_request
+:PROPERTIES:
+:subject: telemetry.v1.logs.list
+:response: get_telemetry_logs_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the log entries a filter selects.
+ */
+#+end_src
+
+*** query
+:PROPERTIES:
+:cpp_type: telemetry_query
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The time range and filters the read applies.
+ */
+#+end_src
+
+** get_telemetry_logs_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The log entries the filter selected.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the entries were read.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why they were not, when they were not.
+ */
+#+end_src
+
+*** entries
+:PROPERTIES:
+:cpp_type: std::vector<telemetry_log_entry>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The entries the read returned.
+ */
+#+end_src
+
+*** total_count
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many entries the filter matches in total.
+ */
+#+end_src
+
+** publish_log_entry_item
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A single log entry for the fire-and-forget publish protocol.
+ *
+ * It uses primitive types only, to avoid rfl serialisation issues with
+ * boost::uuids::uuid and std::chrono::time_point.
+ */
+#+end_src
+
+*** level
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Log severity level.
+ */
+#+end_src
+
+*** timestamp_ms
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When the log was emitted, in milliseconds since the epoch.
+ */
+#+end_src
+
+*** component
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Logger or component that emitted this log.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The log message.
+ */
+#+end_src
+
+** publish_log_entries_request
+:PROPERTIES:
+:subject: telemetry.v1.logs.publish
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Publishes a batch of log entries, fire-and-forget.
+ *
+ * A wrapper node publishes it to ingest engine logs into the telemetry
+ * store. It carries no response, so the publisher does not wait for one.
+ */
+#+end_src
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Name of the source application that emitted the entries.
+ */
+#+end_src
+
+*** tag
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Tag applied to every entry in the batch.
+ */
+#+end_src
+
+*** entries
+:PROPERTIES:
+:cpp_type: std::vector<publish_log_entry_item>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The entries the batch carries.
+ */
+#+end_src
+
+* See also
+
+- [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]] — the part this model generates into.

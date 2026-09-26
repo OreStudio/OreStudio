@@ -83,7 +83,7 @@ record each item's result in the table below.
 | G03  | Pass. Every generated file carries the marker and no hand-written file does. | marker =grep= against the B03 inventory |
 | G04  | Pass. The regenerated output matches the reference shapes; no template defect surfaced. | generated-code review record |
 | G05  | Pass. One generator defect found and fixed at source: =key_finders= deduplicated a legacy finder against the declared key by column alone, so the repository dropped the read the service calls. Fixed in =org_loader.py= with a regression test. | commit bb7d9f5890; =test_org_loader_keys.py= |
-| G06  | Pass. Every component's two file lists regenerate clean. | =regenerate_cmake_component_files.py --all --check= (exit 0) |
+| G06  | Pass for this component. The four analytics parts and the two shell parts this story owns regenerate clean. The gate is scoped per component, the way the platform and fpml passes scoped it; the 133 stale lists =--all --check= still reports on this base belong to the other components' stories. | =regenerate_cmake_component_files.py --component ores.analytics.core --check= (and =api=, =quant=, =service=), =--component ores.shell.analytics --check=, =--component ores.shell.application --check=, each exit 0 |
 | W01  | Pass. The core registrar composes the generated =*_history_provider= family; the service composes the generated event mappings through the new =event_registrar= aggregate. No unwired family remains. | commit a74ebddd1e; =registrar.cpp=, =event_registrar.cpp= |
 | W02  | Pass. Every permission the analytics handlers check is seeded, and the =AnalyticsService= role holds =analytics::*=. | =check_handler_permissions.py=; =iam_roles_populate.sql= |
 | W03  | Pass. | =check_populate_references.py= |
@@ -97,7 +97,7 @@ record each item's result in the table below.
 | V02  | Pass. The codegen suite passes, all five analytics suites pass against the running fleet, and the full suite is 70 of 71. | =pytest projects/ores.codegen/tests= (523 passed); =ctest -R analytics= (5/5); full =ctest= (70/71) |
 | V03  | Pass. The database recreates from scratch, and the Acme Corporation tenant provisions end to end on top of it. | =compass db recreate -y -k= (exit 0); Acme provision script (exit 0, all workflow steps completed) |
 | V04  | Pass with one recorded exception. All 40 generated analytics scripts ran against the live fleet as the Acme tenant admin; 39 answered, one aborted in the client. | live run log; V04 note below |
-| V05  | Pass. component drift, model drift, protocol twin coverage (24 headers, 2 components), handler permissions (2 components, 152 codes), populate references, recipe inventory and the CMake source lists are all clean. | each check script, exit 0 |
+| V05  | Pass. component drift, model drift, protocol twin coverage (24 headers, 2 components), handler permissions (2 components, 152 codes), populate references, recipe inventory and this component's CMake source lists are all clean. | each check script, exit 0 |
 | V06  | Pass. =analytics-cpp= is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= reports no drift. | =component_registry.py=; =check_component_drift.py --all= (exit 0) |
 
 * Notes
@@ -342,6 +342,26 @@ permissions, populate references, recipe inventory and model drift are all
 clean, and the codegen suite passes (523; the count fell with the CLI
 component's tests). The whole-tree build follows the last rebase.
 
+A third rebase followed, onto 89cc8d8acd after PR #2148, the platform
+clean pass. =main= had moved 46 commits and deleted =ores.fpml= outright,
+so the two =ores.fpml= file lists this branch had marked stay deleted.
+That pass also fixed two defects in =generate_component_puml.py= — a
+one-line declaration body left the parser one brace level too deep, and a
+wrapped declaration read as a field — and regenerated no diagram. The
+analytics diagrams were therefore regenerated under the fixed parser:
+=ores.analytics.core= loses the duplicate =+verifier= the old parser
+invented, and =ores.analytics.quant= recovers five one-line enums and
+their structs. Both images were re-rendered, and every class in all five
+analytics diagrams renders as exactly one node, with the section below
+each sentinel byte-identical.
+
+The marker commit was rescoped in the same pass. It had regenerated 143
+file lists across every component to make =--all --check= green, which
+fixed 133 lists that belong to other components' stories — the same lists
+the fpml pass left in place and the platform pass scoped past. It now
+owns only the eight analytics lists and the two =ores.shell.application=
+lists this story wires.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -371,6 +391,7 @@ via its "Verifies task" field.
 | 6 | M04 credits the shell opt-in with producing the table columns; the =Table display= section does that. | task doc | Accepted | Corrected. |
 | 7 | "All five suites pass" rests partly on a =CHECK(true)= smoke test. | =pricing_model_config_commands_tests.cpp= | Declined | The assertion is template-inherited and matches the reference components; the suite's value is that the unit registers and links, which it proves. |
 | 8 | The new inbox capture's =* What= and =* Why= still held the template placeholders. | =codegen-shell-recipe-sentinel-for-optional-columns.org= | Accepted | Filled in from the =#+description= line and the V04 exception, with the evidence and the fix shape. Raised by the GitHub review of PR #2145. |
+| 9 | The branch touched 133 file lists outside =ores.analytics=, and read the CMake gate as a repo-wide one. | the marker commit | Accepted | Rescoped to the eight analytics lists and the two =ores.shell.application= lists this story wires; the other 133 go back to their own components' stories, which is what the fpml pass recorded. G06's evidence is now the per-part run. Raised in review of PR #2145. |
 
 * Result
 

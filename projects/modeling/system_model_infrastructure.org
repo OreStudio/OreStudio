@@ -64,6 +64,26 @@ from the [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] transport layer.
 |---------------+----------------------------------------------+--------------------------|
 | [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] | In-process event bus with PostgreSQL backing | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
 
+** ores.telemetry
+
+Observability — structured logs, service heartbeats, and NATS server and
+stream samples, gathered over the =telemetry.v1.>= subject namespace, stored
+in its own tables, and answered back to whoever queries. Its core part is the
+logging and tracing library every component links against.
+
+| Sub-component            | Role                                             | Dependencies                               |
+|--------------------------+--------------------------------------------------+--------------------------------------------|
+| [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]]     | Logging, tracing and the messaging types every component links | [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]], [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]] |
+| [[id:B73EAF3C-1384-4882-9310-8E9DB594C038][ores.telemetry.database]] | PostgreSQL persistence for the four stored shapes | [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]] |
+| [[id:DF0CAAB9-9DDB-4FEA-82D3-71FAC2177EEF][ores.telemetry.service]]  | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint for the six =telemetry.v1.>= subjects | [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]], [[id:B73EAF3C-1384-4882-9310-8E9DB594C038][ores.telemetry.database]], [[id:9CFAC175-C28F-4C03-9655-1CDC6E8C3EE0][ores.service]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] |
+
+Related documents:
+
+- [[id:A6B7C8D9-E0F1-2345-ABCD-456789012345][ores.telemetry Messaging Reference]] — the six subjects, their messages
+  and who sends what.
+- [[id:16DBA07F-A062-428B-B43A-32905B5988C8][Instrument components with telemetry context]] — the consumer the tracing
+  API waits for.
+
 * See also
 
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the index page with the four-layer architecture overview.

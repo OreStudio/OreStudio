@@ -29,6 +29,16 @@ from dataclasses import dataclass
 # its shell, sql and web derivatives into this branch's diff. main had it
 # listed; that belongs to the refdata work, not here.
 #
+# dq is the next component to join and is deliberately not listed yet. Its
+# regeneration is clean -- check_component_drift.py --component dq reports no
+# drift -- but it cannot pass this list's twin claim: twelve of its protocol
+# headers are hand-written for entities that have no model yet (datasets,
+# coding schemes, publications, the FSM family, dimensions, methodologies,
+# report-definition templates, and the badge mapping projection), so they have
+# no TypeScript twin and none can be generated. Listing dq would fail
+# check_protocol_twin_coverage.py on those twelve. It joins once the remaining
+# entities are modelled.
+#
 # The ores.assets clean-standard task adds assets-cpp on the same terms: the
 # component regenerates byte for byte, every codegen gate passes with it
 # listed, and the whole tree builds with it.

@@ -30,7 +30,7 @@ ores.ore passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 | Parent story | [[id:873B0E5C-BDDE-40DE-9729-F0278D0F8EC2][Clean ores.ore to the component clean standard]] |
 | Now          | Complete. All 42 items pass or are recorded with their reason: P03, W01, S01 and D13 closed by removing the series key shape surface, and V06 registers the component so every gate covers it from now on. Twelve findings are recorded, three of them defects, and two of those are fixed. |
 | Waiting on   | Nothing. The clean standard is complete; every item either passes or is recorded with its reason, and V06 registers the component so the gates cover it permanently. What remains open is not a clean-standard matter: [[id:6EA32258-F1DC-45D2-8913-202E845CD969][what ores.ore should own]] records where the entity and the import saga should live, and the task records two defects -- the import dropping two document kinds it can read, and the empty api and service test suites. |
-| Next         | Bring =ores.marketdata= to a regenerable state, then move the entity in one clean step. Move the shell's export step onto a protocol, which both remaining options need. Register =ore= in =COMPONENTS_UNDER_TEST= once the boundary is settled; every gate already passes with it there. |
+| Next         | Bring =ores.marketdata= to a regenerable state, then move the entity in one clean step. Move the shell's export step onto a protocol, which both remaining options need. Fix the import so it carries the calendar adjustment and conventions documents it can already read. |
 | Last touched | 2026-09-26                               |
 
 - Every checklist item that applies to a component of kind *Entity* passes, with its evidence recorded on the task.

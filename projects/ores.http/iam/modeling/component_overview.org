@@ -79,4 +79,4 @@ project, which is the fractal naming rule in
 - [[id:A8B318BC-8653-4D33-A58C-60793E3596D5][ores.http.server]] -- the process that hosts these routes.
 - [[id:1EBDA080-07F6-496D-AA4A-72899E65641C][ores.cpp.http-route]] -- the facet that emits the units.
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] -- the composite and adapter kinds.
-- [[id:0F1A8E3B-2C4D-4E5F-9A6B-7C8D9E0F1A2B][ores.iam]] -- the domain this part projects.
+- [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] -- the domain this part projects.

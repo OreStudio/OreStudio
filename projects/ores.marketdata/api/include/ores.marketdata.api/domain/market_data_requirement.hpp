@@ -126,6 +126,15 @@ struct correlation_market_data_requirement final {
     bool operator==(const correlation_market_data_requirement&) const = default;
 };
 
+/** @brief A logical, possibly-partial oresmd requirement for a security instrument. */
+struct security_market_data_requirement final {
+    std::optional<std::string> security_id;
+    std::optional<instrument_type> type;
+    std::optional<security_quote_type> quote_type;
+
+    bool operator==(const security_market_data_requirement&) const = default;
+};
+
 /**
  * @brief Tagged union of the seven per-asset-class requirement structs -- see
  * market_data_identifier.hpp for the rationale against a common base class.
@@ -136,7 +145,8 @@ using market_data_requirement = std::variant<fx_market_data_requirement,
                                              credit_market_data_requirement,
                                              commodity_market_data_requirement,
                                              inflation_market_data_requirement,
-                                             correlation_market_data_requirement>;
+                                             correlation_market_data_requirement,
+                                             security_market_data_requirement>;
 
 }
 

@@ -57,11 +57,6 @@ CORPUS = REPO_ROOT / "external/ore/examples"
 # states what the representation would have to become, so the entry can be
 # acted on rather than merely tolerated.
 UNREPRESENTED: dict[str, str] = {
-    "BOND": (
-        "Single-name bond price and yield spread. Needs a bond asset class: "
-        "the identifier carries an instrument id rather than a currency, and "
-        "the key has no currency, tenor or point dimension."
-    ),
     "FIXING": (
         "Index fixings. The key is TYPE/METRIC/INDEX_NAME with no currency "
         "and no point, so it is a different key space from every quote type "

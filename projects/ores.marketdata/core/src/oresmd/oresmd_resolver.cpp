@@ -165,6 +165,17 @@ market_data_identifier resolve_commodity(const commodity_market_data_requirement
     return id;
 }
 
+market_data_identifier resolve_security(const security_market_data_requirement& req,
+                                        const market_data_identifier& defaults) {
+    const auto* d = std::get_if<security_market_data_identifier>(&defaults);
+    security_market_data_identifier id;
+    id.security_id =
+        pick_mandatory_string(req.security_id, d ? d->security_id : std::string{}, "security_id");
+    id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
+    id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
+    return id;
+}
+
 }
 
 namespace ores::marketdata::core {
@@ -189,6 +200,8 @@ oresmd_resolver::resolve(const domain::market_data_requirement& requirement,
                 return resolve_inflation(req, defaults);
             else if constexpr (std::is_same_v<T, correlation_market_data_requirement>)
                 return resolve_correlation(req, defaults);
+            else if constexpr (std::is_same_v<T, security_market_data_requirement>)
+                return resolve_security(req, defaults);
         },
         requirement);
 }

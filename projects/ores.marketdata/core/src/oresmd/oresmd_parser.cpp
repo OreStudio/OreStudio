@@ -572,6 +572,35 @@ market_data_identifier parse_commodity(const boost::urls::url_view& u, const que
     return id;
 }
 
+market_data_identifier parse_security(const boost::urls::url_view& u, const query_params& qp) {
+    reject_if_present("security", "ccy", qp.ccy);
+    reject_if_present("security", "index", qp.index);
+    reject_if_present("security", "tenor", qp.tenor);
+    reject_if_present("security", "second_tenor", qp.second_tenor);
+    reject_if_present("security", "second_ccy", qp.second_ccy);
+    reject_if_present("security", "second_factor", qp.second_factor);
+    reject_if_present("security", "curve_id", qp.curve_id);
+    reject_if_present("security", "settle", qp.settle);
+    reject_if_present("security", "day_count", qp.day_count);
+    reject_if_present("security", "shift", qp.shift);
+    reject_if_present("security", "strip", qp.strip);
+    reject_if_present("security", "role", qp.role);
+    reject_if_present("security", "metric", qp.metric);
+    security_market_data_identifier id;
+    id.security_id = to_upper(first_segment(u));
+    id.type = parse_type(qp);
+    if (qp.quote) {
+        // A quote type names a volatility surface as well as a quote: CAPFLOOR
+        // arrives as type=vol with quote=capfloor. Anything else that carries a
+        // quote key is a genuine input error.
+        if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                "oresmd://security/... 'quote' is only meaningful when type=quote."));
+        id.quote_type = parse_enum<security_quote_type>("quote", *qp.quote);
+    }
+    return id;
+}
+
 void append_if(boost::urls::url& u, std::string_view key, const std::optional<std::string>& v) {
     if (v)
         u.params().append({key, *v});
@@ -652,6 +681,8 @@ market_data_identifier oresmd_parser::parse(const domain::oresmd_uri& uri) {
         return parse_inflation(u, qp);
     if (asset_token == "correlation")
         return parse_correlation(u, qp);
+    if (asset_token == "security")
+        return parse_security(u, qp);
 
     BOOST_THROW_EXCEPTION(
         oresmd_exception(std::format("Unrecognised oresmd asset class: {}", asset_token)));
@@ -766,6 +797,11 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 append_enum_if(u, "quote", id.quote_type);
                 append_if(u, "second_factor", id.second_factor);
                 append_if(u, "point", id.point);
+            } else if constexpr (std::is_same_v<T, security_market_data_identifier>) {
+                u.set_host("security");
+                u.segments().push_back(to_lower(id.security_id));
+                u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
+                append_enum_if(u, "quote", id.quote_type);
             }
         },
         identifier);

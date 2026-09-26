@@ -1102,6 +1102,58 @@ TEST_CASE("round_trip_correlation_surface", tags) {
              oresmd_projections::to_curve_key(original).has_value()));
 }
 
+TEST_CASE("round_trip_security_bond_price", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://security/isin:de000a3h2wp2?type=quote&quote=bond_price"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_security_bond_yield_spread", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://security/security_1?type=quote&quote=bond_yield_spread"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_security_bond_conversion_factor", tags) {
+    const auto original = oresmd_parser::parse(uri(
+        "oresmd://security/security_1_fwdexp_20251220?type=quote&quote=bond_conversion_factor"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_security_recovery_rate", tags) {
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://security/security_1?type=quote&quote=recovery_rate"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
 TEST_CASE("parse_inflation_zc_swap", tags) {
     const auto id =
         oresmd_parser::parse(uri("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"));
@@ -1235,6 +1287,18 @@ TEST_CASE("reject_commodity_uri_with_ir_only_role_field", tags) {
 
 TEST_CASE("reject_commodity_uri_missing_mandatory_ccy", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://commodity/gold?type=quote")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_security_uri_with_ccy", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(
+                          uri("oresmd://security/security_1?ccy=usd&type=quote&quote=bond_price")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_security_uri_with_ir_only_metric", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri(
+                          "oresmd://security/security_1?type=quote&quote=bond_price&metric=price")),
                       oresmd_exception);
 }
 

@@ -83,7 +83,7 @@ struct {{asset_class}}_market_data_identifier final {
  */
 using market_data_identifier = std::variant<
 {{#oresmd_variant_specs}}
-    {{asset_class}}_market_data_identifier{{^last}},{{/last}}
+    {{asset_class}}_market_data_identifier{{^last_spec}},{{/last_spec}}
 {{/oresmd_variant_specs}}
 >;
 

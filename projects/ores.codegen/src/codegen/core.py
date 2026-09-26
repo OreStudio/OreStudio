@@ -1153,17 +1153,23 @@ CURRENCY_DEFAULTS_POOL = [
 ]
 
 
-def _mark_last_item(data_list):
+def _mark_last_item(data_list, key='last'):
     """
-    Mark the last item in a list of dictionaries with a 'last' flag.
+    Mark the last item in a list of dictionaries with a flag.
+
+    The flag name matters: mustache resolves a key missing from an inner section
+    in the enclosing one, so marking an outer list with the same key an inner loop
+    uses silently suppresses that inner loop's separator. The oresmd specs mark
+    their outer lists with 'last_spec' for exactly that reason.
 
     Args:
         data_list (list): List to process
+        key (str): Flag name to set on the final entry
     """
     if isinstance(data_list, list) and data_list:
         # Only add if it's a list of dictionaries
         if isinstance(data_list[-1], dict):
-            data_list[-1]['last'] = True
+            data_list[-1][key] = True
 
 
 def _mark_artefact_natural_keys(owner):
@@ -1934,7 +1940,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # argument lists and must not render a trailing comma).
         if specs:
             specs[0]['first_asset_class'] = True
-            _mark_last_item(specs)
+            _mark_last_item(specs, 'last_spec')
         data['oresmd_quote_types'] = specs
         data['oresmd_quote_type'] = {'first_asset_class': True}
         # Variant-ordered list for the header templates: the hand-crafted
@@ -1948,7 +1954,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             if s.get('variant_order') is None:
                 variant_specs.append(s)
         if variant_specs:
-            _mark_last_item(variant_specs)
+            _mark_last_item(variant_specs, 'last_spec')
             # variant_first: the to_uri()/std::visit branches open with
             # `if constexpr` on the variant-ordered list's first member and
             # `} else if constexpr` on the rest (first_asset_class marks

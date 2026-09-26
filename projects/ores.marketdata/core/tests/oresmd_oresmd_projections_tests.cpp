@@ -526,6 +526,28 @@ TEST_CASE("correlation_pairwise_surface_quote_key_matches_the_corpus", tags) {
             "CORRELATION/RATE/FX-GENERIC-GBP-USD/FX-GENERIC-EUR-USD/1Y/ATM");
 }
 
+TEST_CASE("security_bond_price_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://security/isin:de000a3h2wp2?type=quote&quote=bond_price");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "BOND/PRICE/ISIN:DE000A3H2WP2");
+}
+
+TEST_CASE("security_bond_yield_spread_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://security/security_1?type=quote&quote=bond_yield_spread");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "BOND/YIELD_SPREAD/SECURITY_1");
+}
+
+TEST_CASE("security_bond_conversion_factor_quote_key_matches_the_corpus", tags) {
+    const auto id = parse(
+        "oresmd://security/security_1_fwdexp_20251220?type=quote&quote=bond_conversion_factor");
+    REQUIRE(oresmd_projections::to_quote_key(id) ==
+            "BOND/CONVERSION_FACTOR/SECURITY_1_FWDEXP_20251220");
+}
+
+TEST_CASE("security_recovery_rate_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://security/security_1?type=quote&quote=recovery_rate");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "RECOVERY_RATE/RATE/SECURITY_1");
+}
+
 TEST_CASE("commodity_cpr_quote_key", tags) {
     const auto id = parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CPR/RATE/WTI/USD/5Y");

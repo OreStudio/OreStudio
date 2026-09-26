@@ -79,6 +79,7 @@ constexpr std::string_view recovery_rate{"RECOVERY_RATE"};
 constexpr std::string_view cds_index{"CDS_INDEX"};
 constexpr std::string_view index_cds_tranche{"INDEX_CDS_TRANCHE"};
 constexpr std::string_view index_cds_option{"INDEX_CDS_OPTION"};
+constexpr std::string_view bond{"BOND"};
 constexpr std::string_view zc_inflation_swap{"ZC_INFLATIONSWAP"};
 constexpr std::string_view yy_inflation_swap{"YY_INFLATIONSWAP"};
 constexpr std::string_view zc_inflation_capfloor{"ZC_INFLATIONCAPFLOOR"};
@@ -95,6 +96,7 @@ constexpr std::string_view ratio{"RATIO"};
 constexpr std::string_view yield_spread{"YIELD_SPREAD"};
 constexpr std::string_view credit_spread{"CREDIT_SPREAD"};
 constexpr std::string_view base_correlation{"BASE_CORRELATION"};
+constexpr std::string_view conversion_factor{"CONVERSION_FACTOR"};
 } // namespace ore_metric_spec
 
 namespace ore_vol_spec {
@@ -244,6 +246,8 @@ std::string_view ore_metric(metric m) {
             return ore_metric_spec::ratio;
         case metric::yield_spread:
             return ore_metric_spec::yield_spread;
+        case metric::conversion_factor:
+            return ore_metric_spec::conversion_factor;
     }
     return ore_metric_spec::rate;
 }
@@ -865,6 +869,45 @@ std::optional<std::string> quote_key_correlation(const correlation_market_data_i
         "CORRELATION/RATE/{}/{}/{}/{}", id.factor_pair, *id.second_factor, parts[0], parts[1]);
 }
 
+std::string_view ore_type(security_quote_type qt) {
+    switch (qt) {
+        case security_quote_type::bond_price:
+            return ore_type_spec::bond;
+        case security_quote_type::bond_yield_spread:
+            return ore_type_spec::bond;
+        case security_quote_type::bond_conversion_factor:
+            return ore_type_spec::bond;
+        case security_quote_type::recovery_rate:
+            return ore_type_spec::recovery_rate;
+    }
+    return ore_type_spec::bond;
+}
+
+std::string_view ore_security_metric(security_quote_type qt) {
+    switch (qt) {
+        case security_quote_type::bond_price:
+            return ore_metric_spec::price;
+        case security_quote_type::bond_yield_spread:
+            return ore_metric_spec::yield_spread;
+        case security_quote_type::bond_conversion_factor:
+            return ore_metric_spec::conversion_factor;
+        case security_quote_type::recovery_rate:
+            return ore_metric_spec::rate;
+    }
+    return ore_metric_spec::price;
+}
+
+std::optional<std::string> quote_key_security(const security_market_data_identifier& id) {
+    // The class carries no currency, no tenor and no point: the entity is the
+    // security and the metric is the whole qualifier, so the key is
+    // TYPE/METRIC/SECURITY. ORE writes one metric per type, which is why each
+    // metric is its own quote type here.
+    if (id.type != instrument_type::quote)
+        return std::nullopt;
+    const auto qt = id.quote_type.value_or(security_quote_type::bond_price);
+    return std::format("{}/{}/{}", ore_type(qt), ore_security_metric(qt), id.security_id);
+}
+
 std::optional<std::string> quote_key_commodity(const commodity_market_data_identifier& id) {
     // A vol surface point is the commodity option family, which writes the same
     // three shapes the equity option does with a commodity code where the equity
@@ -1404,6 +1447,19 @@ std::optional<market_data_identifier> from_equity_curve(equity_quote_type qt,
     return id;
 }
 
+std::optional<market_data_identifier> from_security(security_quote_type qt,
+                                                    const std::vector<std::string>& parts) {
+    // BOND/METRIC/SECURITY and RECOVERY_RATE/RATE/SECURITY -- three segments, with
+    // no currency, no tenor and no point. The identifier is the whole key.
+    if (parts.size() != 3 || !metric_is(parts[1], ore_security_metric(qt)))
+        return std::nullopt;
+    security_market_data_identifier id;
+    id.security_id = parts[2];
+    id.type = instrument_type::quote;
+    id.quote_type = qt;
+    return id;
+}
+
 std::optional<market_data_identifier> from_commodity_option(const std::vector<std::string>& parts) {
     // The same three shapes the equity option writes, with a commodity code where
     // the equity has a ticker. Which one this is follows from the segment count,
@@ -1715,8 +1771,26 @@ inverse_projection(const std::vector<std::string>& parts,
         const auto qt = parse_enum_lower<credit_quote_type>(type);
         return qt ? from_credit_curve(*qt, parts) : std::nullopt;
     }
-    if (type == ore_type_spec::recovery_rate)
+    if (type == ore_type_spec::recovery_rate) {
+        // Three segments is a security-level recovery rate, whose entity is the
+        // security; the credit forms name a seniority and a currency as well.
+        if (parts.size() == 3)
+            return from_security(security_quote_type::recovery_rate, parts);
         return from_credit_recovery(parts);
+    }
+    if (type == ore_type_spec::bond) {
+        if (parts.size() != 3)
+            return std::nullopt;
+        // BOND carries the metric in its second segment and nothing else, so the
+        // metric selects the quote type.
+        for (const auto qt : {security_quote_type::bond_price,
+                              security_quote_type::bond_yield_spread,
+                              security_quote_type::bond_conversion_factor}) {
+            if (metric_is(parts[1], ore_security_metric(qt)))
+                return from_security(qt, parts);
+        }
+        return std::nullopt;
+    }
     if (type == ore_type_spec::cds_index || type == ore_type_spec::index_cds_tranche) {
         const auto qt = parse_enum_lower<credit_quote_type>(type);
         return qt ? from_credit_index(*qt, parts) : std::nullopt;
@@ -1780,6 +1854,8 @@ oresmd_projections::to_quote_key(const domain::market_data_identifier& identifie
                 return quote_key_inflation(id);
             else if constexpr (std::is_same_v<T, correlation_market_data_identifier>)
                 return quote_key_correlation(id);
+            else if constexpr (std::is_same_v<T, security_market_data_identifier>)
+                return quote_key_security(id);
         },
         identifier);
 }

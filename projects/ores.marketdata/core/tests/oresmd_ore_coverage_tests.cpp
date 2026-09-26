@@ -234,7 +234,7 @@ TEST_CASE("no_series_type_oresmd_cannot_name_has_gone_unrecorded", tags) {
     // nothing. That is the shape-mismatch list in the codegen record, seen from
     // the data rather than from the models.
     const std::set<std::string> recorded{
-        "BOND", "CPR", "RATING", "SHAPE_PROFILE"};
+        "CPR", "RATING", "SHAPE_PROFILE"};
 
     REQUIRE(types_oresmd_cannot_name() == recorded);
 }
@@ -256,24 +256,24 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
     // because four types name every key and still lose some on the way back;
     // those are in the round-trip gap list above, not here.
     const std::set<std::string> expected_fully_named{
-        "BASIS_SWAP", "BMA_SWAP", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
+        "BASIS_SWAP", "BMA_SWAP", "BOND", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
         "CC_FIX_FLOAT_SWAP", "CDS", "CDS_INDEX", "COMMODITY", "COMMODITY_FWD",
         "COMMODITY_OPTION",
         "CORRELATION", "DISCOUNT", "EQUITY", "EQUITY_DIVIDEND", "EQUITY_FWD",
         "EQUITY_OPTION", "FRA",
         "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
-        "INDEX_CDS_OPTION", "INDEX_CDS_TRANCHE", "MM_FUTURE", "OI_FUTURE", "SEASONALITY",
+        "INDEX_CDS_OPTION", "INDEX_CDS_TRANCHE", "MM_FUTURE", "OI_FUTURE", "RECOVERY_RATE", "SEASONALITY",
         "SWAPTION",
         "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",
         "ZC_INFLATIONSWAP", "ZERO"};
 
     const std::set<std::string> expected_fully_round_tripped{
-        "BASIS_SWAP", "BMA_SWAP", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
+        "BASIS_SWAP", "BMA_SWAP", "BOND", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
         "CC_FIX_FLOAT_SWAP", "CDS", "CDS_INDEX", "COMMODITY", "COMMODITY_OPTION",
         "DISCOUNT", "EQUITY_DIVIDEND",
         "FRA", "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
         "INDEX_CDS_OPTION", "INDEX_CDS_TRANCHE", "IR_SWAP", "MM_FUTURE", "OI_FUTURE",
-        "SEASONALITY", "SWAPTION",
+        "RECOVERY_RATE", "SEASONALITY", "SWAPTION",
         "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",
         "ZC_INFLATIONSWAP", "ZERO"};
 

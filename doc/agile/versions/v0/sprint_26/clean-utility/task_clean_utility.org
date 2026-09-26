@@ -196,6 +196,15 @@ ores.utility clean-up`, whose patch-id moved from `93857360ae` to
 captures main added. The branch was force-pushed with `--force-with-lease`
 as the conflict was the only remedy.
 
+Rebased a second time onto `origin/main` at `f1ff373d30` on 2026-09-26, the
+orgmode clean-up's nine commits, for the same reason. The only conflicting
+file was `doc/agile/versions/v0/sprint_26/sprint.org`: main had marked the
+orgmode row DONE while this branch marks the utility row STARTED, and both
+rows are kept. Fourteen of the fifteen commit patch-ids are unchanged. The
+ninth, `[agile] Record the ores.utility clean-up`, moved from `f479f24f16`
+to `536c68a906`, because the resolved table it commits now carries main's
+orgmode row. Force-pushed with `--force-with-lease` again.
+
 The six sub-trees, with their external callers.
 
 | Sub-tree | Files | Callers outside its own test |

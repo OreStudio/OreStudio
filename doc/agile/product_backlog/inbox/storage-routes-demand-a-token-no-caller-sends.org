@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 15062C8E-3282-4A84-B3BC-40C286388993
+:END:
+#+title: Storage routes demand a token no C++ caller sends
+#+description: The storage HTTP routes call auth_required() and check a permission code per operation, but no first-party C++ caller supplies a token: ores.storage.core http_client and storage_transfer have no Authorization support at all, the shell's storage call sites pass only a base URL, and so do the services. Every shell upload and download and every service-side blob transfer therefore answers 401 -- compute publish-package, compute download-input, compute download-output, ore upload, and the ore service's report-package handler that downloads the trades and market-data blobs and uploads the tarball. The bus interface is unaffected.
+#+type: capture
+#+level: cross
+#+filetags: :storage:http:shell:defect:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

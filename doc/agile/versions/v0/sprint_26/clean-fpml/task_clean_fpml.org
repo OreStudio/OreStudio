@@ -167,7 +167,13 @@ behaviour to walk through. The build and the gates are the evidence.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The misspell check is not clean repo-wide. 10 hits of =EXPLICT=, all in =doc/agile/versions/v0/sprint_25/= pages. | sprint 25 history | no change | Pre-existing and outside this delta. Every file this branch touches is misspell-clean, checked file by file. The hits belong to a separate documentation cleanup. |
+| 2 | The System Model diagram shrank by 19%, from 710 KB to 576 KB, which is more than one removed node suggests. | projects/modeling/ores.png | no change, verified | Rendering the source to SVG shows exactly one component alias and exactly two edges fewer than =origin/main=, with all 31 remaining components intact. The size drop is PNG re-encoding after the relayout, not lost content. |
+| 3 | Removing the two related-document links from the deleted section could orphan the FpML and Coding Schemes knowledge pages. | projects/modeling/system_model_domain.org | no change, verified | Both pages keep six and nine incoming links respectively from other knowledge pages, so neither is orphaned. |
+| 4 | The acceptance item that ores.fpml join =COMPONENTS_UNDER_TEST= reads as unmet. | doc/agile/versions/v0/sprint_26/clean-fpml/task_clean_fpml.org | accepted as an exception | The item cannot be met: the component has no catalogue row, and listing it breaks =check_component_drift.py --all=. The superseding paragraph is in * Acceptance, and V06 records the reason. |
+| 5 | The runbook's step 5a, the local code review, was skipped before the PR was raised. | this task | recorded | This table is that pass, run after the raise instead of before. The build and test evidence did precede the raise. |
+
+The review request =@claude review PR= is on the PR as comment 5841685082. This table is the local pass; the bot's findings arrive as PR comments and get handled as a review round.
 
 * Result
 

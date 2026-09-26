@@ -59,15 +59,15 @@ record each item's result in the table below.
 |------+--------+----------|
 | B01 | pass | Baseline before any edit, on `feature/clean-security` at `230006c221`. Build 0 at 100 percent. `ores.security.tests` passes at 127 assertions in 55 test cases. `regenerate_cmake_component_files.py --component ores.security --check` reports 2 stale files, `src/component_files.cmake` and `tests/component_files.cmake`. No catalogue row, so the drift gate cannot name the component. |
 | B02 | pass | 0 entity, junction, operation and message models. |
-| B03 | pass | 16 production C++ files at the survey, 11 headers and 5 sources, plus 6 files under `tests/`. The component now holds 13 production files, 9 headers and 4 sources, and 5 files under `tests/`, of which 4 are suites and one is `main.cpp`. The consumer census is unchanged by this pass: `jwt_authenticator.hpp` reaches 441 C++ files outside the component, `jwt_claims.hpp` 7, `password_hasher.hpp` 4, `jwt_error.hpp` 2, and the two validators 2 each. |
+| B03 | pass | 16 production C++ files at the survey, 11 headers and 5 sources, plus 6 files under `tests/`. The component now holds 14 production files, 10 headers and 4 sources, and 5 files under `tests/`, of which 4 are suites and one is `main.cpp`. The consumer census is unchanged by this pass: `jwt_authenticator.hpp` reaches 441 C++ files outside the component, `jwt_claims.hpp` 7, `password_hasher.hpp` 4, `jwt_error.hpp` 2, and the two validators 2 each. The root namespace header has no consumer by design; see G08. |
 | B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. |
 | B05 | pass | This story is the only live capture naming the component. |
 | M01 to M05, M07 to M09 | not applicable | No org model. |
 | M06 | not applicable | No entity and no hand-written wire type. The only wire artefacts are the JWTs the component signs, and jwt-cpp owns their shape. |
-| M10 | fixed | `component_overview.org` advertised AES-256-GCM and PBKDF2 for a facet this pass deletes, gave the component no consumer, and carried no record of either policy surface. It is rewritten: the facets match the tree, the consumer census is stated, the scrypt cost policy and the JWT constraints are described, the four findings below are recorded, and `See also` is filled. The `ores.security.hpp` stub that included one facet header and documented three is deleted. |
+| M10 | fixed | `component_overview.org` advertised AES-256-GCM and PBKDF2 for a facet this pass deletes, gave the component no consumer, and carried no record of either policy surface. It is rewritten: the facets match the tree, the consumer census is stated, the scrypt cost policy and the JWT constraints are described, the four findings below are recorded, and `See also` is filled. The root namespace header keeps its role and its claims are corrected in place. |
 | P01 to P06 | not applicable | No entity and no protocol. |
 | G01 | not applicable | No model, so nothing regenerates from one. |
-| G02 | fixed | The dead `crypto/encryption` pair is deleted with its test, the two never-defined `base64` declarations in `password_hasher.hpp` are deleted, and the `ores.security.hpp` stub is deleted. `jwt_error::missing_claims` is *kept* and now has a producer: the survey proposed removing it because nothing returned it, but nothing returned any of the specific codes, because the mapping could not see them. |
+| G02 | fixed | The dead `crypto/encryption` pair is deleted with its test and the two never-defined `base64` declarations in `password_hasher.hpp` are deleted. The root namespace header is *kept*: it is the component's doxygen namespace documentation and the source the diagram conventions read, which G08 of the standard now states explicitly. `jwt_error::missing_claims` is *kept* too, and now has a producer: the survey proposed removing it because nothing returned it, but nothing returned any of the specific codes, because the mapping could not see them. |
 | G03 | fixed | The two `component_files.cmake` files now carry the generated marker. |
 | G04 | not applicable | No generated code. |
 | G05 | fixed | The `generate_component_puml.py` defects are fixed on the two earlier passes; this component picks the fixes up. The refresh drops the deleted types and keeps the manual block. |
@@ -125,11 +125,20 @@ as unreachable, which is a different defect with a different fix.
 |----------+-------+-------+-------------|
 | `crypto/encryption.hpp` and `encryption.cpp` | 2 | 274 | No reference anywhere in the tree. The only AES-256-GCM and PBKDF2 surface the component had, and nothing asked for it. |
 | `tests/crypto_encryption_tests.cpp` | 1 | 158 | The deleted class's only consumer. |
-| `ores.security.hpp` | 1 | 48 | An umbrella with no consumer that included one facet header while documenting three. The overview is the component's documented entry point. |
 | the two `base64` declarations | — | 10 | Declared, never defined, never called. |
 
-Four files and 480 lines left the component, and the suite lost the eight
+Three files and 432 lines left the component, and the suite lost the eight
 cases that covered the deleted class.
+
+`ores.security.hpp` is *not* in this table. The first cut of this pass
+deleted it as a consumer-less stub, and that was wrong: every component
+keeps a namespace documentation header, its content is an empty namespace
+plus the `@brief` doxygen renders, and the diagram conventions read that
+`@brief` when they label the component. The standard's G02 said dead
+headers go and did not exempt them; G08 now says so explicitly, and the
+header is restored with its claims corrected. The same mistake was made on
+the ores.utility pass, where eleven namespace headers were deleted, and is
+corrected there separately.
 
 * Test Scenarios
 
@@ -155,20 +164,22 @@ via its "Verifies task" field.
 | 1 | `validate` and `validate_allow_expired` reported every JWT failure as `invalid_token`; `invalid_signature`, `invalid_issuer`, `invalid_audience` and `missing_claims` had no producer | projects/ores.security/src/jwt/jwt_authenticator.cpp | fixed | Found by writing the tests for the error codes the enum declares: the mapping searched the exception message for words such as "issuer" and "signature", and jwt-cpp's messages do not contain them, so every case fell through to `invalid_token`. Both paths now map from jwt-cpp's `token_verification_error` code and from the signature exception type, and each case has a test. The survey's proposal to delete `missing_claims` would have removed the case rather than noticed that none of them worked. |
 | 2 | `validate_allow_expired` did not check the audience, so it accepted a token minted for another service as long as the signature and issuer matched | projects/ores.security/src/jwt/jwt_authenticator.cpp | fixed | Found by asking why the two validation paths differ: `validate` applies `with_issuer` and `with_audience`, and the allow-expired path applied only `with_issuer`. The refresh path is the one `ores.iam` uses to read an expired token, so the gap was reachable. It applies both now, with a test. |
 | 3 | `get_n_parameter` cached its first answer in a function-local static, so once any test had hashed a password the production cost was unreachable in that process | projects/ores.security/src/crypto/password_hasher.cpp | fixed | Found while trying to pin the stored format: the test could not observe ln=14 because an earlier case had cached the test factor. The flag is read on every call now, and one test pins both costs. This is also what makes the verify floor meaningful, since the floor is the cost the build produces. |
-| 4 | `crypto/encryption` had no consumer anywhere in the tree, and its `verify_password` returned true for empty ciphertext | projects/ores.security/include/ores.security/crypto/encryption.hpp | deleted with its test | The standing rule: no consumer, or a test-only consumer, is dead code. It is 480 lines with its test and the umbrella stub, and the empty-input defect went with it rather than being fixed in code nothing calls. |
+| 4 | `crypto/encryption` had no consumer anywhere in the tree, and its `verify_password` returned true for empty ciphertext | projects/ores.security/include/ores.security/crypto/encryption.hpp | deleted with its test | The standing rule: no consumer, or a test-only consumer, is dead code. It is 432 lines with its test, and the empty-input defect went with it rather than being fixed in code nothing calls. |
+| 5 | The first cut deleted `ores.security.hpp` as a consumer-less stub, which is wrong: every component keeps a namespace documentation header for doxygen | projects/ores.security/include/ores.security/ores.security.hpp | fixed by restoring it | Raised by the maintainer. The header's content is an empty namespace plus the `@brief` doxygen renders, and the diagram conventions read that `@brief` when they label the component, so a consumer census does not apply to it. The original also included one facet header while documenting three, which is why it read as a stub; it is restored without the include, with its claims corrected. The standard's G02 said dead headers go and did not exempt these, so G08 now states the exemption, and the same mistake on the ores.utility pass is corrected separately. |
 
 * Result
 
 ores.security meets the standard for the items that apply to a model-free
-component. All ten work items landed across four `[security]` commits: the
-deletions, the JWT fixes, the hasher fixes, and the overview and diagram.
+component. All ten work items landed across five `[security]` commits: the
+deletions, the JWT fixes, the hasher fixes, the overview and diagram, and
+the restored namespace header.
 
-The component lost four files and 480 lines: an AES-256-GCM and PBKDF2
-surface nothing referenced, its test, an umbrella stub, and two declarations
-that were never defined. It gained the tests the survey asked for and the
-answers to two questions the survey could not settle: the error codes the
-enum declares now have producers, and the refresh path now checks the
-audience the way the strict path does.
+The component lost three files and 432 lines: an AES-256-GCM and PBKDF2
+surface nothing referenced, its test, and two declarations that were never
+defined. It gained the tests the survey asked for and the answers to two
+questions the survey could not settle: the error codes the enum declares now
+have producers, and the refresh path now checks the audience the way the
+strict path does.
 
 Its suite went from 127 assertions in 55 test cases to 149 in 57. Ten cases
 arrived, the eight that covered the deleted class left, and the surviving
@@ -179,3 +190,7 @@ Three things stay as recorded. `nbf` cannot be tested because `create_token`
 never sets it. `crypto/encryption` is gone rather than kept as an unused
 capability, on the standing rule. And the registry gap stands: no catalogue
 row and no models, so V06 is the accepted exception.
+
+One correction to the record's own count: the fifth commit restores the
+namespace header the first commit should not have deleted, so the pass ends
+with five `[security]` commits rather than four.

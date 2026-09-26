@@ -54,15 +54,19 @@ ores.security meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
   listed on the task.
 - Keep the component. It is the repo's only home for hashing, JWTs and the
   OWASP validators.
-- Outcome, 2026-09-26. All ten work items landed. The component lost four
-  files and 480 lines, and its suite went from 127 assertions in 55 test
+- Outcome, 2026-09-26. All ten work items landed. The component lost three
+  files and 432 lines, and its suite went from 127 assertions in 55 test
   cases to 149 in 57. Two defects the survey did not name turned up while
-  writing the tests: the error codes the enum declares had no producer,
-  and the allow-expired path skipped the audience check the strict path
-  applies. Both are fixed with a test per case. `encryption` is deleted
-  rather than kept unused, `nbf` cannot be tested because nothing sets it,
-  and the survey's `missing_claims` proposal was the wrong fix for the real
-  defect.
+  writing the tests: the error codes the enum declares had no producer, and
+  the allow-expired path skipped the audience check the strict path applies.
+  Both are fixed with a test per case. `encryption` is deleted rather than
+  kept unused, `nbf` cannot be tested because nothing sets it, and the
+  survey's `missing_claims` proposal was the wrong fix for the real defect.
+- Correction, 2026-09-26. The first cut deleted `ores.security.hpp` as a
+  consumer-less stub. Every component keeps its namespace documentation
+  header, so it is restored with its claims corrected, and the standard now
+  says so as G08. The same mistake on the `ores.utility` pass, where eleven
+  namespace headers were deleted, is corrected in a follow-up.
 
 * Decisions
 

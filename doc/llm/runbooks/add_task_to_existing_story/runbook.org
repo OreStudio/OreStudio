@@ -21,7 +21,7 @@ content, wire it into the parent story, mark it STARTED, and open a PR.
 - The target story exists in the current sprint (=doc/agile/versions/v0/sprint_NN/<story-slug>/story.org=).
 - You have a task idea: slug, title, description, goal, and acceptance criteria.
 - =compass= and =gh= CLI are installed and authenticated.
-- =SSH_AUTH_SOCK= is exported (see [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][SSH memory]]).
+- The session's SSH agent is used as-is (see [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Do not interfere with SSH session variables]]).
 
 * Steps
 

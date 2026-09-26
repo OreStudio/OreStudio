@@ -86,13 +86,14 @@ source "$VENV_BIN/activate"
 REPO_ROOT=$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || echo "$SCRIPT_DIR")
 cd "$REPO_ROOT"
 
-# --- SSH agent (sandboxed sessions) ---
-# Sandboxed shells do not inherit the user's SSH agent socket, so any git
-# push/fetch spawned by compass (pr create, capture promote, task start)
-# would fail publickey auth. When SSH_AUTH_SOCK is unset or dead, adopt the
-# sole socket in the agent directory: ORES_SSH_AGENT_DIR from .env when set,
-# else ~/.ssh/agent. See
-# doc/llm/memory/set_ssh_auth_sock_for_git_operations.org.
+# --- SSH agent (fallback only) ---
+# A live session names its own SSH agent socket, and compass always uses it.
+# Only when SSH_AUTH_SOCK is unset or is not a socket does compass adopt a
+# fallback, so git push/fetch spawned by compass (pr create, capture
+# promote, task start) still authenticates in a shell that inherited no
+# agent. The fallback is the sole socket in the agent directory:
+# ORES_SSH_AGENT_DIR from .env when set, else ~/.ssh/agent. See
+# doc/llm/memory/do_not_interfere_with_ssh_session_variables.org.
 if [ ! -S "${SSH_AUTH_SOCK:-}" ]; then
     AGENT_DIR=$(grep -s '^ORES_SSH_AGENT_DIR=' "$REPO_ROOT/.env" | head -1 | cut -d= -f2-)
     # Normalise the raw value the way compass.py parses .env: strip CR

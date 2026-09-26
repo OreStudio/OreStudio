@@ -22,8 +22,8 @@ land it via a PR — without disrupting the planned sprint work.
 - The user has described or supplied a failing build, error output, or
   broken test. If neither is available, ask: "Can you paste the build
   output or describe what's failing?"
-- =compass=, =gh=, and =SSH_AUTH_SOCK= are available (see
-  [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Set SSH_AUTH_SOCK for git operations]]).
+- =compass=, =gh=, and the session's SSH agent are available (see
+  [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Do not interfere with SSH session variables]]).
 - Current sprint exists at =doc/agile/versions/v0/sprint_NN/=.
 
 * Steps
@@ -101,7 +101,7 @@ In execution order:
     Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
     #+end_src
 
-11. /Open a PR./ Ensure =SSH_AUTH_SOCK= is set per the [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][SSH memory]],
+11. /Open a PR./ Leave the SSH session variables alone, per the [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][SSH memory]],
     then =compass pr create= — it pushes the branch, builds the body
     (Summary, Changes, Traceability), and records the PR on the task.
     #+begin_src sh :results verbatim

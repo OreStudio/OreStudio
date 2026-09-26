@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: F7E4C41F-AF34-43E5-ADC3-1D837126B3DE
+:END:
+#+title: Do not interfere with SSH session variables
+#+description: Leave SSH_AUTH_SOCK, SSH_AGENT_PID and the other SSH session variables exactly as the session sets them; a forced or stale socket path breaks git authentication.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :llm:memory:feedback:
+#+created: 2026-05-26
+#+updated: 2026-09-26
+
+Do not set, export, override or unset =SSH_AUTH_SOCK=, =SSH_AGENT_PID=,
+or any other SSH session variable. Run =git=, =gh= and =ssh= with the
+environment the session gives you, unchanged.
+
+*Why:* The session already points at an agent that holds the key. A
+hardcoded or stale socket path breaks authentication in a way that reads
+like a permissions problem. After a reboot an old socket file can survive
+with no identities loaded, so =ssh-add -l= against it reports "The agent
+has no identities" and every =git fetch=, =push= or =pull= fails with
+"Please make sure you have the correct access rights". The key is present
+the whole time, in the socket the session already names.
+
+*How to apply:* Do not export =SSH_AUTH_SOCK= before a git command, and do
+not discover a socket by hand from an agent directory. =compass.sh= adopts
+a fallback socket only when =SSH_AUTH_SOCK= is missing or is not a socket,
+so compass commands need no setup and neither does a raw git command in a
+live session. When authentication fails, compare the agent the session
+names with the one the command used, and fix the difference rather than
+forcing another socket. Do not probe =/run/user/*/gnupg/= or any other
+agent directory for a socket.

@@ -1,0 +1,87 @@
+PR 2 acceptance checks
+
+Measured 2026-09-26 on feature/sync-trading-drift, environment
+merry_newton, after the tree was regenerated, the consumers migrated and
+the superseded eventing headers deleted.
+
+Whole-tree build
+----------------
+    cmake --build build/output/linux-clang-debug-make -j 3
+    exit 0, no error lines
+
+Suites
+------
+    ctest --test-dir build/output/linux-clang-debug-make \
+      -R 'ores\.trading\.|ores\.shell\.trading\.|ores\.shell\.application\.|ores\.ore\.' \
+      --output-on-failure -j 4
+
+    100% tests passed, 0 tests failed out of 8
+
+    ores.trading.api.tests          Passed      0.17 s
+    ores.trading.core.tests         Passed     16.86 s
+    ores.trading.service.tests      Passed      0.70 s
+    ores.shell.trading.tests        Passed    310.34 s
+    ores.shell.application.tests    Passed     12.73 s
+    ores.ore.api.tests              Passed      0.69 s
+    ores.ore.core.tests             Passed    513.12 s
+    ores.ore.service.tests          Passed      0.65 s
+
+ores.trading.core.tests is 102 cases. Before the database refresh the
+same suite reported 81 passed and 21 failed, and all 21 were the eventing
+integration tests.
+
+The 21 eventing failures
+------------------------
+They were the stale database, not the generated code. The environment's
+database was restored six hours before HEAD, so its notify functions still
+emitted the legacy payload. The read, before the refresh:
+
+    select count(*) filter (where position('ores_trading' in proname) > 0) ...
+    trading_fns 140 | canonical 57 | legacy 8
+
+The refresh:
+
+    ./compass.sh db recreate -y -k
+
+After it, the same read is canonical for every family the regeneration
+covers. Eight trading notify functions still emit the legacy payload:
+
+    ores_trading_activity_types_notify_fn
+    ores_trading_commodity_instruments_notify_fn
+    ores_trading_composite_instruments_notify_fn
+    ores_trading_composite_legs_notify_fn
+    ores_trading_credit_instruments_notify_fn
+    ores_trading_fpml_event_types_notify_fn
+    ores_trading_scripted_instruments_notify_fn
+    ores_trading_swap_legs_notify_fn
+
+The first six are the families with no model, which PR 3 owns.
+activity_types and fpml_event_types are lookup entities whose models carry
+no notify trigger; their gap is recorded for PR 3 with the others.
+
+Drift
+-----
+    projects/ores.codegen/venv/bin/python \
+      projects/ores.codegen/scripts/check_component_drift.py --component trading-cpp --dry-run
+
+reports no drift, on two consecutive runs, with nothing written.
+
+CMake source lists
+------------------
+    regenerate_cmake_component_files.py --component ores.trading.{api,core,service} --check
+
+All component_files.cmake up to date.
+
+D1
+--
+The nine rates families are served by the generated per-family handlers
+and registrars. instrument_protocol.hpp declares only the four families
+with no model, registrar_rates.cpp calls the nine generated registrars,
+and rates_instrument_handler.hpp is deleted.
+
+Also measured here
+------------------
+- W01: =evidence/pr2_w01_composition_read.txt=
+- The trade key's fixture defect: =evidence/pr2_trade_key_fixture_defect.txt=
+- The consumer migration, trials seven and eight:
+  =evidence/pr2_migration_trial7.txt= and =pr2_shell_migration_trial8.txt=

@@ -1,0 +1,78 @@
+PR 2, the seventh migration trial: the handler migrates clean
+
+Measured 2026-09-26, branch feature/sync-trading-drift, on the tree the
+first regeneration produced.
+
+What the sixth trial left
+-------------------------
+It reached six errors in three groups: four over-rewritten response
+checks for the four families with no model, one enum-to-text conversion
+that did not fire, and one protocol gap that became decision D8.
+
+The enum arm
+------------
+The codemod's expansion tested
+
+    elif "domain::" in types.get(field, "") and "string" not in wire_type:
+
+That is the inverse of the intent. For the one member it had to convert,
+trade_write.product_type, the wire type is std::string, so the test was
+false and no conversion was emitted. The corrected test reads
+
+    elif "domain::" in types.get(field, "") and "string" in wire_type:
+
+and emits ores::trading::domain::to_string(...). The condition now fires
+exactly when a domain member that names an enumeration reaches a wire
+member that is text, which is the shape the generator's reader mirrors.
+
+The run
+-------
+    projects/ores.codegen/venv/bin/python \
+        projects/ores.codegen/scripts/migrate_consumer_to_generated_protocol.py \
+        --write projects/ores.ore/service/src/messaging/ore_import_execute_handler.cpp
+
+    would migrate: .../ore_import_execute_handler.cpp
+    NOTE ...: 81 declaration(s) renamed, 211 field access(es),
+    34 whole-object site(s), 60 response check(s)
+
+The documented post-steps applied on top of it: the nine rates protocol
+includes, the container save, the batch delete, and the four restores.
+
+The four hand edits
+-------------------
+The compiler named four response checks the codemod over-rewrote, one per
+family with no model: credit_instrument, commodity_instrument,
+composite_instrument_data and scripted_instrument. Each is restored to
+the consolidated response's `resp->success`. They are the only hand edits
+in the run.
+
+    cmake --build build/output/linux-clang-debug-make \
+        --target ores.ore.service.lib -j 3
+
+builds clean after them.
+
+D8 applied
+----------
+The handler records the external identifier at the save site:
+
+    result.saved_trade_external_ids.push_back(ext_id);
+
+and the rollback builds one removal per identifier:
+
+    ores::trading::messaging::delete_many_trades_request del_req;
+    for (const auto& saved_id : req.saved_trade_external_ids) {
+        ores::trading::messaging::trade_removal removal;
+        removal.key.external_id = saved_id;
+        del_req.removals.push_back(std::move(removal));
+    }
+
+The field carries a key and not a uuid, so the ores.ore model renames it
+from saved_trade_ids to saved_trade_external_ids, with a comment stating
+which key it holds. Regenerated output:
+
+    projects/ores.codegen/venv/bin/python \
+        projects/ores.codegen/scripts/check_component_drift.py --component ore
+
+The generated C++ and TypeScript follow the model, and the two
+occurrences in the hand-drawn projects/ores.ore/api/modeling/ores.ore.api.puml
+are corrected by hand. No trading model and no trading protocol change.

@@ -41,9 +41,9 @@ already reproduces the tree's semantics.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | PR 1 merged, so the decisions are on the main branch. |
-| Next         | Regenerate, then run migrate_consumer_to_generated_protocol.py over ores.ore's handler and the nine rates shell units; decide how the rollback names a trade now that the wire key is external_id. |
+| Now          | PR 2 is complete: the tree is regenerated, the consumers migrated and the superseded eventing headers deleted. The whole tree builds, eight suites pass and the drift dry run is empty on two runs. |
+| Waiting on   | The PR review. |
+| Next         | Raise PR 2, answer the review, merge, then start PR 3. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -367,6 +367,83 @@ decides is the container save, which must choose between the single-row
 request and the batch one. The handler was reverted again, so the tree
 stays coherent until all four are fixed.
 
+** The seventh trial: the handler migrates, and the rollback key is renamed
+
+The codemod's enum arm tested =("string" not in wire_type)=, which is
+false exactly when the wire member is text, so the conversion never
+fired. The correction inverts the test: a domain member that names an
+enumeration and reaches a wire member that is text converts with
+=ores::trading::domain::to_string=. It is one line in the codemod, and
+it is the defect the fifth trial left open.
+
+The run over the handler reports 81 declarations renamed, 211 field
+accesses, 34 whole-object sites and 60 response checks. The documented
+post-steps then apply: the nine rates includes, the container save as a
+=put_many_trades_request= with one =trade_change= per row, the batch
+delete as a =delete_many_trades_request= with one =trade_removal= per
+row, and the four families with no model restored to the consolidated
+response check the codemod over-rewrote. The four restores are the only
+hand edits, and the compiler named each one.
+=ores.ore.service.lib= then builds clean.
+
+D8 is applied here. The handler records the trade's external identifier
+at the save site, and the rollback addresses the trade by that key.
+Because the field carries an identifier and not a uuid, the ores.ore
+model renames it =saved_trade_external_ids=, and its generated C++ and
+TypeScript and its hand-drawn diagram follow the model. No trading model
+changes.
+
+** The eighth trial: the hand-written shell trades migrate
+
+The shell trading surface is two trees. =ores.shell/trading= holds 22
+generated command units; =ores.shell/application/src/app/commands/trading=
+holds 17 hand-written ones, which are the nine rates families, the four
+families with no model, bond instrument, trade and two aggregators. The
+second tree is what consumes the consolidated protocol and is what this
+trial migrates.
+
+The codemod grew nine rules, each found by building:
+=evidence/pr2_shell_migration_trial8.txt=. Six are mechanical: the
+history verb renames to versions; a response type renames with its
+request wherever it appears, including a =do_auth_request<= template
+argument; the subject literal becomes =std::string(req.nats_subject)=;
+the include list gains the entity's generated protocol and drops the
+consolidated header when no family without a model is named; the row key
+moves under =req.key= or =req.removal.key=, with a uuid key parsed by
+=string_generator=; and the generated list response names its rows,
+=versions= and =total= itself.
+
+Three are structural. A request declared through a dependent type,
+=do_auth_request<typename request_type::response_type>=, is canonical by
+construction, so its response takes the =result= member. Entity tracking
+now follows the declaration in force, so a consolidated declaration
+clears the variable and the four families with no model no longer inherit
+the previous branch's entity; that removes the four hand restores the
+seventh trial needed, and the codemod is now a no-op on a second run.
+And the struct reader joins a declaration that wraps onto the next line.
+
+Two decisions belong to a person:
+
+- The shell add-trade command builds one trade inline. The inline object
+  now has a name, and the codemod expands it into the single-row
+  =put_trade_request=. The batch form is not used, because the command
+  adds one row. This is the second place the container shape needs a
+  choice, and it is the same choice the ORE rollback made in the
+  opposite direction.
+- The registration function mixes two signatures. The generated units
+  take =(root_menu, session)= and the hand-written ones take
+  =(root_menu, session, pagination)=, so =trading_commands.cpp= drops the
+  pagination argument from the 22 generated calls and keeps it on the
+  other 15.
+
+One loss is recorded rather than hidden. Two files,
+=commodity_instrument_commands.cpp= and =scripted_instrument_commands.cpp=,
+carried one added line each before this trial. A =git checkout HEAD --=
+run to clear a bad codemod run overwrote both, and the line is in no
+commit, so its content is lost. Both files compile and the migration
+leaves them unchanged; the lesson is that a worktree with uncommitted
+work is restored from the index, never from HEAD.
+
 
 ** 3. Regenerate
 
@@ -461,3 +538,34 @@ component joins the registry and which are still vacuous.
 |   |                 |      |          |       |
 
 * Result
+
+PR 2 is done. The evidence is =evidence/pr2_acceptance_checks.txt=.
+
+- The tree is regenerated: 1,463 files under ores.trading, 114 SQL
+  scripts, the eventing headers, the shell command units and their
+  recipes, and the TypeScript projection.
+- D1 is applied: the consolidated rates protocol is deleted and the nine
+  families are served by their generated handlers and registrars.
+- The consumers are migrated by
+  =projects/ores.codegen/scripts/migrate_consumer_to_generated_protocol.py=,
+  whose rules and trials are recorded in
+  =evidence/pr2_migration_trial7.txt= and =pr2_shell_migration_trial8.txt=.
+- W01 is closed by reading the composition points, not by trusting the
+  drift gate: twenty-five event mappings were declared and unwired, and
+  the trade family's legacy block was the reason the superseded
+  =trade_changed_event= header stayed alive.
+  =evidence/pr2_w01_composition_read.txt=.
+- A model defect surfaced here and is recorded as defect 17 on the story:
+  the trade's declared key was nullable and its fixture left it empty.
+  =evidence/pr2_trade_key_fixture_defect.txt=.
+- One loss is recorded rather than hidden: a =git checkout HEAD --= run
+  overwrote two one-line edits in the files with no model. They compile
+  and the migration leaves them unchanged, and the loss is written down in
+  =pr2_shell_migration_trial8.txt=.
+
+Gates: the whole tree builds; =ores.trading.api.tests=,
+=ores.trading.core.tests=, =ores.trading.service.tests=,
+=ores.shell.trading.tests=, =ores.shell.application.tests=,
+=ores.ore.api.tests=, =ores.ore.core.tests= and =ores.ore.service.tests=
+pass; the drift check reports no drift on two dry runs; the three CMake
+source lists are up to date.

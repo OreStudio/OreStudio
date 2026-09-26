@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 7C272EB3-585E-418C-840F-676FEB6BC586
+:END:
+#+title: Collapse the ORE import rollback's saved-entity lists into one ordered collection
+#+description: The rollback request carries one string list per entity kind, which a generic ordered list of kind-and-key entries would replace; adding a kind would then change one field instead of four lists, two handlers and a wire name.
+#+type: capture
+#+level: cross
+#+filetags: :trading:ore:protocol:codegen:rollback:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The ORE import rollback request carries one string list per entity kind:
+=saved_currency_iso_codes=, =saved_portfolio_ids=, =saved_book_ids= and
+=saved_trade_external_ids=. Replace them with one ordered collection of
+kind-and-key entries — an enumerated kind beside its keys, or a flat list
+of key-value pairs. Adding a kind would then change one model field
+instead of four lists, two handlers and a wire name, and the order the
+rollback traverses would become explicit in the payload.
+
+* Why
+
+Each list carries a different key type: an ISO code, a uuid, and (since
+PR 2 of the trading clean-up) the trade's external identifier. One
+ordered collection states that order once. The cost is that the rollback
+must still dispatch a different delete request per kind, so a generic bag
+trades a typed field for a stringly kind and moves exhaustiveness from
+the compiler to a switch. That is why the trading clean-up deferred it,
+and it is why the enumerated kind is the better of the two shapes.
+
+* References
+
+- Decision D9 on [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]],
+  which records why the change was deferred out of
+  [[id:14795122-7D5B-442E-9B2A-E7517632F612][Sync the ores.trading tree to its models]].
+- =projects/ores.ore/modeling/ores.ore.ore_import_messages.org= holds the
+  request and the execute result.
+
+* See also
+
+- [[id:80C846D1-4A13-4331-A88C-727D6C3D861C][Finish the eventing payload migration, or read the legacy shape]] —
+  the other protocol shape this work touched.

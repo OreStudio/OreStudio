@@ -83,7 +83,7 @@ using ores::service::service::host_runner_options;
 using ores::service::service::run_host_async;
 using ores::service::service::run_host_sync;
 
-TEST_CASE("sync host run stops at the parse when the parser defers", tags) {
+TEST_CASE("sync host run follows the parse result", tags) {
     std::ostringstream output;
     auto lg(ores::logging::make_logger(test_suite));
     bool ran = false;
@@ -93,15 +93,14 @@ TEST_CASE("sync host run stops at the parse when the parser defers", tags) {
         ++before_logs;
     };
 
+    // A parser that defers: the run stops before the logging lifecycle, so the
+    // early exit is never reached. A runner that ignored the nullopt would
+    // return the 99 below instead of EXIT_SUCCESS.
     const auto code = run_host_sync<deferring_parser>(
         {},
         output,
         output,
         lg,
-        // The early exit is reached only after the logging lifecycle starts, so
-        // a code of 99 here would mean the runner ignored the parse result. The
-        // assertion below is EXIT_SUCCESS, which is what a runner that honours
-        // the deferring parse returns.
         [](const fake_config&) -> std::optional<int> {
             return 99;
         },
@@ -112,8 +111,34 @@ TEST_CASE("sync host run stops at the parse when the parser defers", tags) {
 
     REQUIRE(code == EXIT_SUCCESS);
     REQUIRE_FALSE(ran);
-    // Nothing ran, so the logging lifecycle was never started either.
     REQUIRE(before_logs == 0);
+
+    // The contrast in the same case: a parser that yields a configuration does
+    // enter the lifecycle. Without this half the case passes for a runner that
+    // does nothing at all, which is what item V07 forbids.
+    int accepting_before_logs = 0;
+    int accepting_runs = 0;
+    host_runner_options accepting_opts;
+    accepting_opts.on_before_log = [&accepting_before_logs] {
+        ++accepting_before_logs;
+    };
+
+    const auto accepting_code = run_host_sync<accepting_parser>(
+        {},
+        output,
+        output,
+        lg,
+        [](const fake_config&) -> std::optional<int> {
+            return std::nullopt;
+        },
+        [&accepting_runs](const fake_config&) {
+            ++accepting_runs;
+        },
+        accepting_opts);
+
+    REQUIRE(accepting_code == EXIT_SUCCESS);
+    REQUIRE(accepting_before_logs == 1);
+    REQUIRE(accepting_runs == 1);
 }
 
 TEST_CASE("sync host run returns the early exit code without running the application", tags) {

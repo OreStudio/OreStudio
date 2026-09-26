@@ -39,6 +39,12 @@ export interface CompleteTenantProvisioningResponse {
 // per-party logins, no orchestration logic client-side -- driven by
 // internal actor impersonation through the real handler pipeline, see
 // ores.iam.core/messaging/tenant_provisioning_handler.hpp's provision_acme.
+//
+// The answer takes minutes, not the seconds the transport allows by
+// default: the handler waits up to 1500 seconds on the base bundle it
+// publishes. A caller therefore has to wait longer than the transport's
+// default, or it gives up first and reports a timeout for work that was
+// still running.
 export interface ProvisionAcmeTenantCommand {
 }
 

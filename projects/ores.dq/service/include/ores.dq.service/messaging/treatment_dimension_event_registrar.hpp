@@ -17,13 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_API_MESSAGING_DIMENSION_PROTOCOL_HPP
-#define ORES_DQ_API_MESSAGING_DIMENSION_PROTOCOL_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_event_registrar.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_DQ_SERVICE_MESSAGING_TREATMENT_DIMENSION_EVENT_REGISTRAR_HPP
+#define ORES_DQ_SERVICE_MESSAGING_TREATMENT_DIMENSION_EVENT_REGISTRAR_HPP
 
-// This header is intentionally minimal - dimension protocols are defined
-// in data_organization_protocol.hpp (nature, origin, treatment dimensions).
-// This file exists for backward-compatibility includes.
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+namespace ores::dq::service::messaging {
+
+[[nodiscard]] ores::eventing::service::subscription register_treatment_dimension_event_mapping(
+    ores::eventing::service::postgres_event_source& event_source,
+    ores::eventing::service::event_bus& event_bus,
+    ores::nats::service::client& nats);
+
+} // namespace ores::dq::service::messaging
 
 #endif

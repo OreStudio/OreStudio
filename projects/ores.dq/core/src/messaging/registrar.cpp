@@ -59,13 +59,14 @@
 #include "ores.dq.core/messaging/dataset_bundle_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_dependency_handler.hpp"
 #include "ores.dq.core/messaging/dataset_handler.hpp"
-#include "ores.dq.core/messaging/dimension_handler.hpp"
 #include "ores.dq.core/messaging/fsm_handler.hpp"
 #include "ores.dq.core/messaging/lei_entity_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/lei_entity_registrar.hpp"
 #include "ores.dq.core/messaging/lei_relationship_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/lei_relationship_registrar.hpp"
 #include "ores.dq.core/messaging/nature_dimension_registrar.hpp"
+#include "ores.dq.core/messaging/origin_dimension_registrar.hpp"
+#include "ores.dq.core/messaging/treatment_dimension_registrar.hpp"
 #include "ores.dq.core/messaging/publication_handler.hpp"
 #include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.dq.core/messaging/report_definition_history_provider_registrar.hpp"
@@ -209,57 +210,24 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
 
     // =========================================================================
-    // Dimensions (nature, origin, treatment)
+    // Dimensions are on the standard generated stack; see each entity's own
+    // _handler/_registrar pair. nature_dimension is registered above with the
+    // other generated registrars.
     // =========================================================================
 
-    auto dim = std::make_shared<dimension_handler>(nats, ctx, verifier);
-
     {
-        auto nature_dimension_subs = register_nature_dimension_handlers(nats, ctx, verifier);
+        auto origin_dimension_subs = register_origin_dimension_handlers(nats, ctx, verifier);
         subs.insert(subs.end(),
-                    std::make_move_iterator(nature_dimension_subs.begin()),
-                    std::make_move_iterator(nature_dimension_subs.end()));
+                    std::make_move_iterator(origin_dimension_subs.begin()),
+                    std::make_move_iterator(origin_dimension_subs.end()));
     }
-
-    subs.push_back(nats.queue_subscribe(
-        get_origin_dimensions_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
-            dim->list_origin_dimensions(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_origin_dimension_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
-            dim->save_origin_dimension(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_origin_dimension_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
-            dim->delete_origin_dimensions(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_origin_dimension_history_request::nats_subject,
-        queue_group,
-        [dim](ores::nats::message msg) { dim->origin_dimension_history(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_treatment_dimensions_request::nats_subject,
-        queue_group,
-        [dim](ores::nats::message msg) { dim->list_treatment_dimensions(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_treatment_dimension_request::nats_subject,
-        queue_group,
-        [dim](ores::nats::message msg) { dim->save_treatment_dimension(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_treatment_dimension_request::nats_subject,
-        queue_group,
-        [dim](ores::nats::message msg) { dim->delete_treatment_dimensions(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_treatment_dimension_history_request::nats_subject,
-        queue_group,
-        [dim](ores::nats::message msg) { dim->treatment_dimension_history(std::move(msg)); }));
+    {
+        auto treatment_dimension_subs =
+            register_treatment_dimension_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(treatment_dimension_subs.begin()),
+                    std::make_move_iterator(treatment_dimension_subs.end()));
+    }
 
     // =========================================================================
     // Datasets

@@ -32,6 +32,7 @@ set(files
     "lei_relationship_eventing_integration_tests.cpp"
     "main.cpp"
     "nature_dimension_eventing_integration_tests.cpp"
+    "origin_dimension_eventing_integration_tests.cpp"
     "repository_artefact_type_repository_tests.cpp"
     "repository_catalog_repository_tests.cpp"
     "repository_change_reason_category_repository_tests.cpp"
@@ -47,4 +48,5 @@ set(files
     "repository_origin_dimension_repository_tests.cpp"
     "repository_subject_area_repository_tests.cpp"
     "repository_treatment_dimension_repository_tests.cpp"
+    "treatment_dimension_eventing_integration_tests.cpp"
 )

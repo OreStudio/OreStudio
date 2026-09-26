@@ -38,9 +38,11 @@ set(files
     "messaging/lei_entity_event_registrar.cpp"
     "messaging/lei_relationship_event_registrar.cpp"
     "messaging/nature_dimension_event_registrar.cpp"
+    "messaging/origin_dimension_event_registrar.cpp"
     "messaging/report_definition_event_registrar.cpp"
     "messaging/subject_area_event_registrar.cpp"
     "messaging/synthetic_fx_spot_config_event_registrar.cpp"
+    "messaging/treatment_dimension_event_registrar.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -65,8 +67,10 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/lei_entity_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/lei_relationship_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/nature_dimension_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/origin_dimension_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/report_definition_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/subject_area_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/synthetic_fx_spot_config_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/treatment_dimension_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/ores.dq.service.hpp"
 )

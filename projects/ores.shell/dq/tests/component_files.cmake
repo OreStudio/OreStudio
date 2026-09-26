@@ -32,6 +32,9 @@ set(files
     "lei_entity_commands_tests.cpp"
     "lei_relationship_commands_tests.cpp"
     "main.cpp"
+    "nature_dimension_commands_tests.cpp"
+    "origin_dimension_commands_tests.cpp"
     "report_definition_commands_tests.cpp"
     "synthetic_fx_spot_config_commands_tests.cpp"
+    "treatment_dimension_commands_tests.cpp"
 )

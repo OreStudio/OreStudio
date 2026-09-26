@@ -10,8 +10,11 @@
 #include "ores.shell/app/commands/dq/dataset_bundle_member_commands.hpp"
 #include "ores.shell/app/commands/dq/lei_entity_commands.hpp"
 #include "ores.shell/app/commands/dq/lei_relationship_commands.hpp"
+#include "ores.shell/app/commands/dq/nature_dimension_commands.hpp"
+#include "ores.shell/app/commands/dq/origin_dimension_commands.hpp"
 #include "ores.shell/app/commands/dq/report_definition_commands.hpp"
 #include "ores.shell/app/commands/dq/synthetic_fx_spot_config_commands.hpp"
+#include "ores.shell/app/commands/dq/treatment_dimension_commands.hpp"
 
 namespace ores::shell::app::commands {
 
@@ -28,8 +31,11 @@ void dq_commands::register_commands(cli::Menu& root_menu,
     dataset_bundle_member_commands::register_commands(root_menu, session);
     lei_entity_commands::register_commands(root_menu, session);
     lei_relationship_commands::register_commands(root_menu, session);
+    nature_dimension_commands::register_commands(root_menu, session);
+    origin_dimension_commands::register_commands(root_menu, session);
     report_definition_commands::register_commands(root_menu, session);
     synthetic_fx_spot_config_commands::register_commands(root_menu, session);
+    treatment_dimension_commands::register_commands(root_menu, session);
 }
 
 }

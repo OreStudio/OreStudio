@@ -24,10 +24,21 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace workflow #F2F2F2 {
         namespace eventing #F2F2F2 {
-            class workflow_instance_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +ids : vector<string>
-                +tenant_id : string
+            class workflow_instance_event <<struct>> {
+                +event_id : uuid
+                +key : workflow_instance_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class workflow_step_event <<struct>> {
+                +event_id : uuid
+                +key : workflow_step_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
             }
         }
         namespace messaging #F2F2F2 {
@@ -192,6 +203,120 @@ namespace ores #F2F2F2 {
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass reads data members, so a struct whose content is std::function
+' arrives half empty, a class whose content is methods arrives as an empty box, and
+' a facet of free functions or of message-only headers does not arrive at all.
+'
+' Fully-qualified class names rather than a reopened namespace block, matching the
+' other diagrams in this tree. Redeclaring a class merges its members into the box
+' the automated pass already drew.
+'
+' One correction to the automated region above, recorded here because it is the
+' kind of hand edit a reader should be able to find: the eventing block named
+' workflow_instance_changed_event, a hand-written type B06 deleted, and showed
+' neither of the two generated events that replaced it. It is stale content the
+' generator does not own -- deleting it and regenerating does not bring it back --
+' so the block was corrected in place rather than annotated from here.
+
+class ores::workflow::service::workflow_registry <<hand-written>> {
+    +register_definition(def : workflow_definition)
+    +find(type_name : string) : workflow_definition*
+    +all() : unordered_map<string, workflow_definition>
+}
+
+class ores::workflow::service::workflow_definition <<hand-written>> {
+    +build_steps : function<vector<workflow_step_def>(request_json, tenant_id, correlation_id)>
+}
+
+' A definition carries two functors per step and the automated pass cannot see
+' either, because a std::function has no data member to read. They are what makes
+' a step declarative: the commissioner supplies the payload, the engine supplies
+' the sequencing.
+
+class ores::workflow::service::workflow_step_def <<hand-written>> {
+    +build_command : function<string(request_json, step_results)>
+    +build_compensation : function<string(command_json, result_json)>
+}
+
+class ores::workflow::messaging::to_string <<generated free function>> {
+    +{static} to_string(level : step_log_level) : string
+}
+
+' The two generated entity protocols are a facet of message-only headers rather
+' than a class, so the automated pass has no box to draw for them. Each is
+' represented by the subject surface it declares, which is what a reader needs
+' from this diagram: every verb, its subject, and the fact that the two units
+' spell their subjects differently from the operation conversation below.
+
+class ores::workflow::messaging::workflow_instance_protocol <<generated protocol unit>> {
+    +list : workflow.v1.workflow_instances.list
+    +get : workflow.v1.workflow_instances.get
+    +get_many : workflow.v1.workflow_instances.get_many
+    +put : workflow.v1.workflow_instances.put
+    +put_many : workflow.v1.workflow_instances.put_many
+    +delete : workflow.v1.workflow_instances.delete
+    +delete_many : workflow.v1.workflow_instances.delete_many
+    +versions.list : workflow.v1.workflow_instances_versions.list
+    +versions.get : workflow.v1.workflow_instances_versions.get
+}
+
+class ores::workflow::messaging::workflow_step_protocol <<generated protocol unit>> {
+    +list : workflow.v1.workflow_steps.list
+    +get : workflow.v1.workflow_steps.get
+    +get_many : workflow.v1.workflow_steps.get_many
+    +put : workflow.v1.workflow_steps.put
+    +put_many : workflow.v1.workflow_steps.put_many
+    +delete : workflow.v1.workflow_steps.delete
+    +delete_many : workflow.v1.workflow_steps.delete_many
+    +by_workflow_id : workflow.v1.workflow_steps.list_by_workflow_id
+    +versions.list : workflow.v1.workflow_steps_versions.list
+    +versions.get : workflow.v1.workflow_steps_versions.get
+}
+
+' The five operation messages, which no entity model can express because they are
+' the engine's own conversation rather than an entity verb. P04 records the
+' operation model that would generate them.
+
+class ores::workflow::messaging::provision_parties_request <<hand-written>> {
+    +subject : workflow.v1.parties.provision
+}
+
+class ores::workflow::messaging::start_workflow_message <<hand-written>> {
+    +subject : workflow.v1.start
+}
+
+class ores::workflow::messaging::step_completed_event <<hand-written>> {
+    +subject : workflow.v1.events.step-completed
+}
+
+class ores::workflow::messaging::list_workflow_definitions_request <<hand-written>> {
+    +subject : workflow.v1.definitions.list
+}
+
+class ores::workflow::messaging::get_step_result_request <<hand-written>> {
+    +subject : workflow.v1.steps.get-result
+}
+
+note bottom of "ores::workflow::messaging::step_log_entry"
+The log is why a step needs three outcomes rather than two. A
+step can complete and still have skipped work -- the import
+handler marks itself completed_with_warnings and puts the
+reason here rather than in the error, so a reader that prints
+only the outcome cannot tell a clean run from a lossy one.
+end note
+
+note bottom of "ores::workflow::messaging::workflow_instance_protocol"
+These two units collide by name with the operation
+conversation and not by subject. The hand-written
+workflow_query_protocol.hpp declares its own
+list_workflow_instances_request on
+workflow.v1.instances.list, while this generated unit declares
+one on workflow.v1.workflow_instances.list: two different
+messages under one name in one namespace. Nothing includes
+both today, which is the only reason it compiles. P03's
+duplicate inventory and P04's operation model both land here.
+end note
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.workflow.api.puml"

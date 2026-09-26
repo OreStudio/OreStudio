@@ -151,6 +151,163 @@ namespace ores #F2F2F2 {
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
 
+' The automated pass reads data members, so a class whose content is methods
+' arrives as an empty box and a facet of free functions does not arrive at all.
+' This pass fills those boxes with the API and draws the seams the automated pass
+' cannot see: the composition point, the registry, and the state maps.
+'
+' Fully-qualified class names rather than a reopened namespace block: declaring a
+' namespace a second time creates a second package rather than merging into the
+' first. Redeclaring a class merges its members into the box the automated pass
+' already drew, so a refresh keeps both passes.
+'
+' Stereotypes split the two kinds. <<generated>> is written by the generator from
+' the model; <<hand-written>> is logic the model cannot express, which here is the
+' engine, the handlers and the aggregate registrar.
+
+class ores::workflow::messaging::registrar <<hand-written>> {
+    +{static} register_handlers(nats, ctx, signer, outbound_nats) : vector<subscription>
+}
+
+class ores::workflow::messaging::workflow_handler <<hand-written>> {
+    +provision_parties(msg) : void
+}
+
+class ores::workflow::messaging::workflow_query_handler <<hand-written>> {
+    +list_instances(msg) : void
+    +get_steps(msg) : void
+    +list_definitions(msg) : void
+    +get_step_result(msg) : void
+    -state_name(id : uuid) : string
+}
+
+' Four generated registrars, two per entity: a message registrar that subscribes
+' the entity's CRUD subjects, and a history provider that answers the one generic
+' history subject.
+
+class ores::workflow::messaging::register_workflow_instance_handlers <<generated free function>> {
+    +{static} register_workflow_instance_handlers(nats, ctx, signer) : vector<subscription>
+}
+
+class ores::workflow::messaging::register_workflow_step_handlers <<generated free function>> {
+    +{static} register_workflow_step_handlers(nats, ctx, signer) : vector<subscription>
+}
+
+class ores::workflow::messaging::register_workflow_instance_history_provider <<generated free function>> {
+    +{static} register_workflow_instance_history_provider(registry) : void
+}
+
+class ores::workflow::messaging::register_workflow_step_history_provider <<generated free function>> {
+    +{static} register_workflow_step_history_provider(registry) : void
+}
+
+class ores::workflow::repository::workflow_instance_mapper <<generated>> {
+    +{static} map(entity) : workflow_instance
+    +{static} map(instance) : workflow_instance_entity
+}
+
+class ores::workflow::repository::workflow_instance_repository <<generated>> {
+    +write(ctx, v : workflow_instance)
+    +read_latest(ctx) : vector<workflow_instance>
+    +read_latest(ctx, id : string) : vector<workflow_instance>
+    +read_at_version(ctx, id : string, version : uint32_t) : optional<workflow_instance>
+    +remove(ctx, id : string)
+}
+
+class ores::workflow::repository::workflow_step_mapper <<generated>> {
+    +{static} map(entity) : workflow_step
+    +{static} map(step) : workflow_step_entity
+}
+
+class ores::workflow::repository::workflow_step_repository <<generated>> {
+    +write(ctx, v : workflow_step)
+    +read_latest(ctx, id : string) : vector<workflow_step>
+    +read_latest_by_workflow_id(ctx, workflow_id : string, offset : uint32_t, limit : uint32_t) : vector<workflow_step>
+    +read_at_version(ctx, id : string, version : uint32_t) : optional<workflow_step>
+    +remove(ctx, id : string)
+}
+
+class ores::workflow::service::fsm_state_map <<struct>> {
+    +require(name : string_view) : uuid
+}
+
+class ores::workflow::service::load_fsm_states <<generated free function>> {
+    +{static} load_fsm_states(nats, machine_name : string) : fsm_state_map
+}
+
+class ores::workflow::service::workflow_engine <<hand-written>> {
+    +workflow_engine(nats, ctx, registry, instance_states, step_states)
+    +on_step_completed(msg) : void
+    +on_start_workflow(msg) : void
+    +recover_in_progress() : void
+    -set_instance_state(instance_id : uuid, state_id : uuid, result_json : string, error : string)
+    -set_step_progress(instance_id : uuid, step_index : int)
+    -set_step_state(step_id : uuid, state_id : uuid, response_json : string, error : string, step_log_json : string)
+    -stamp_command_published(step_id : uuid)
+    -publish_command(step, instance_id : uuid, tenant_id : uuid)
+    -publish_status_event(instance_id : uuid, tenant_id : uuid)
+    -dispatch_next_step(instance, last_result_json : string)
+    -begin_compensation(instance, failure_msg : string)
+    -check_compensation_complete(instance)
+}
+
+' Dependencies the automated pass cannot infer: it reads the members but not what
+' they are used for. workflow_registry and workflow_definition are deliberately not
+' drawn here -- they belong to ores.workflow.api, whose own diagram carries them,
+' and a cross-module edge would draw them again as empty boxes.
+
+"ores::workflow::service::workflow_engine" --> "ores::workflow::service::fsm_state_map" : resolves state names
+"ores::workflow::service::workflow_engine" --> "ores::workflow::repository::workflow_instance_repository"
+"ores::workflow::service::workflow_engine" --> "ores::workflow::repository::workflow_step_repository"
+"ores::workflow::messaging::workflow_query_handler" --> "ores::workflow::repository::workflow_instance_repository"
+"ores::workflow::messaging::workflow_query_handler" --> "ores::workflow::repository::workflow_step_repository"
+"ores::workflow::repository::workflow_instance_repository" --> "ores::workflow::repository::workflow_instance_mapper"
+"ores::workflow::repository::workflow_step_repository" --> "ores::workflow::repository::workflow_step_mapper"
+
+' The composition point. register_handlers is the only place a workflow handler is
+' subscribed, and it folds all four generated families.
+
+"ores::workflow::messaging::registrar" ..> "ores::workflow::messaging::register_workflow_instance_handlers" : folds
+"ores::workflow::messaging::registrar" ..> "ores::workflow::messaging::register_workflow_step_handlers" : folds
+"ores::workflow::messaging::registrar" ..> "ores::workflow::messaging::register_workflow_instance_history_provider" : folds
+"ores::workflow::messaging::registrar" ..> "ores::workflow::messaging::register_workflow_step_history_provider" : folds
+"ores::workflow::messaging::registrar" ..> "ores::workflow::service::workflow_engine" : builds, starts recovery
+"ores::workflow::messaging::registrar" ..> "ores::workflow::messaging::workflow_query_handler" : subscribes four queries
+"ores::workflow::messaging::registrar" ..> "ores::workflow::messaging::workflow_handler" : subscribes the provision request
+"ores::workflow::messaging::registrar" ..> "ores::workflow::service::load_fsm_states" : loads once at startup
+
+note bottom of "ores::workflow::messaging::registrar"
+Two families, two shapes. A message registrar subscribes
+its own per-entity subjects and returns its own
+subscriptions. A history provider registers on one shared
+table instead, because a single generic subject serves
+both entities, so the table has to outlive the one
+subscription -- which is why it is a function-local
+static rather than a local.
+end note
+
+note right of "ores::workflow::service::workflow_engine"
+Every state change is persisted before the next command is
+published, so a restart resumes in-flight instances from
+recover_in_progress() rather than losing them. A step is
+addressed by its step_id, which doubles as the idempotency
+key that lets a domain service recognise a re-dispatched
+command and answer with the result it already produced.
+
+The engine resolves a workflow's type through the
+workflow_registry it is handed. That type and its
+workflow_definition belong to ores.workflow.api, so they are
+drawn on that module's diagram rather than repeated here.
+end note
+
+note bottom of "ores::workflow::messaging::workflow_query_handler"
+get_steps returns the step-log projection the shell prints.
+A step can report success and still have skipped work, so
+the log travels beside the status rather than inside the
+error, and a reader that prints only the status cannot tell
+a clean run from a lossy one.
+end note
+
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.workflow.core.puml"
 ' End:

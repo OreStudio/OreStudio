@@ -26,12 +26,12 @@ ores.platform passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C9C01FAC-E281-46DF-9C3C-C718E7B6C003][Clean ores.platform to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. The work is done and verified. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-25                               |
 
 * Acceptance
 
@@ -64,23 +64,23 @@ record each item's result in the table below.
 | B05 | pass | The only live capture naming the component is this story. No in-flight branch touches it. |
 | M01 to M08 | not applicable | No org model, so there is no format to migrate, no profile to bind, no feature namespace, no table, no wire type, no junction, no custom type binding and no model fragment. |
 | M09 | not applicable | No model, so no legacy fragment to find in one. |
-| M10 | fail | `component_overview.org` claims a dependency on `ores.utility` that the build does not have, omits `attributes.hpp`, `unreachable.hpp` and most of the `process` facet, and carries an empty `See also`. |
+| M10 | pass | The overview now states the real dependencies, Boost and reflectcpp rather than ores.utility, lists all five facets, explains why a model-free component has no generated types, links eight related documents, and carries `#+updated: 2026-09-25`. `validate_docs.py` passes. |
 | P01 to P06 | not applicable | No entity and no protocol, so no canonical verb, no owned subject, no registrar, no operation model, no consumer to migrate and no event cache. |
 | G01 | not applicable | No model, so nothing regenerates. |
-| G02 | fail | Dead public headers and symbols remain, and `network_info.cpp` duplicates the MAC enumeration. |
-| G03 | fail | The two `component_files.cmake` files carry no generated marker. |
+| G02 | pass | The dead public API is gone, and the duplicated MAC enumeration has collapsed to one helper. |
+| G03 | pass | The two `component_files.cmake` files are regenerated and carry the generated marker. |
 | G04 | not applicable | No generated code to review against the component's best hand-written code. |
-| G05 | fail | `build/scripts/generate_component_puml.py` loses brace sync on a one-line `enum class`, so a diagram refresh deletes the `time_unit` members and the whole `relative_time_formatter` class. A dry run reproduces it. |
-| G06 | fail | The same two files as G03. |
+| G05 | pass | Two parser defects are fixed at the source, each with a regression test in the codegen suite. A one-line `enum class` no longer desynchronises the brace tracker, and a wrapped parameter list no longer reads as a field. The enum test fails five of six against the unfixed parser and the wrapped-declaration test fails both cases, so both gates are real. |
+| G06 | pass | `regenerate_cmake_component_files.py --component ores.platform --check` reports all source lists up to date, exit 0. |
 | W01 to W04 | not applicable | No entity, registrar, handler, populate script or SQL script. |
 | S01, S02 | not applicable | No entity and no shell unit. |
-| H01 | pass, with findings | `validate_docs.py` passes for the component. The leftover-artefact, naming and platform-placement checks are clean. The diagram item is the G05 defect, so the audit record here is this task. |
-| H02 | fail | Five dead public artefacts, and `network_info.cpp` duplicates the MAC enumeration in about 230 lines that collapse to about 60. |
-| H03 | fail | Five end-of-line comments and six narration comments. |
-| V01 | pending | Whole-tree build, measured after the work. |
-| V02 | fail | Three of nine source files have no test, ten of 88 test cases are vacuous, and `datetime::to_db_string` has no test although 41 external files call it. |
+| H01 | pass | `validate_docs.py` passes for the component. The leftover-artefact, naming and platform-placement checks are clean. The diagram is regenerated from a corrected generator, and its hand-authored net and process facets survive a refresh byte-identically. The audit page now names the facets that survive. |
+| H02 | pass | No dead code and no duplicate implementation remains. The five dead public artefacts are deleted, the MAC enumerators have collapsed to one, and the four `file` members with no consumer are gone. |
+| H03 | pass | The five end-of-line comments are gone or moved above their code, the six narration comments are deleted, and the stale `k_timestamp_format` claim is corrected. |
+| V01 | pass | `./compass.sh build` reaches 100 percent with exit code 0, run after the last source edit. |
+| V02 | pass | `ores.platform.tests` passes at 224 assertions in 102 test cases, up from 201 in 88, with no vacuous case left. Three previously untested source files now have tests. |
 | V03, V04 | not applicable | No entity, no SQL and no generated shell command. |
-| V05 | pending | Every gate, measured after the work. |
+| V05 | pass | Every gate run and green. `regenerate_cmake_component_files.py --component ores.platform --check` reports none stale. `validate_docs.py` reports only the pre-existing `ores.shell.iam` finding. `./compass.sh lint` passes. The codegen suite passes at 530 tests, which is the 522 baseline plus the eight new regression cases. `clang-format --dry-run --Werror` is clean on every changed and added C++ file. |
 | V06 | not applicable | No catalogue row and no models, so the component cannot join `COMPONENTS_UNDER_TEST`. Recorded as the programme gap, not a defect of this component. |
 
 * Notes
@@ -143,6 +143,22 @@ Not this component's work. The other 145 stale `component_files.cmake`
 files are one repo-wide sweep, and the registry gap needs one programme
 decision. Both are recorded on the programme story.
 
+All thirteen items landed. Two more defects surfaced while the work was
+reviewed, and both are fixed here.
+
+- The component-diagram parser had a second defect. A wrapped parameter
+  list leaves a line holding a type, a name and a closing parenthesis, and
+  the member reader took it for a field, so the diagram showed a `format`
+  member that `datetime` does not declare. A candidate field line now
+  needs balanced parentheses of its own, with a regression test.
+- `real_environment_provider` had no `ORES_PLATFORM_EXPORT`, and the
+  library builds with `-fvisibility=hidden`, so the class had no external
+  linkage and no test binary could reach it. Every other exported class in
+  the component carries the macro, so this is a latent defect rather than
+  a test convenience.
+- Four test files were not clang-format clean. They are now, and
+  `clang-format --dry-run --Werror` is clean on every changed file.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -164,6 +180,24 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The refreshed diagram still showed a `format` member that `datetime` never declares, because the parser read a wrapped parameter list as a field | build/scripts/generate_component_puml.py | fixed | A second parser defect. Fixed with a balance guard and a regression test that fails both of its cases against the unfixed parser. |
+| 2 | Four test files were not clang-format clean, and the nightly format job would have rewritten them | projects/ores.platform/tests/net_network_info_tests.cpp, time_datetime_tests.cpp, environment_environment_tests.cpp, process_executable_tests.cpp | fixed | Formatted, and `clang-format --dry-run --Werror` is now clean on every changed and added C++ file. |
+| 3 | `real_environment_provider` had no export macro, so the library gave it no external linkage under `-fvisibility=hidden` and no test binary could reach it | projects/ores.platform/include/ores.platform/environment/real_environment_provider.hpp | fixed, kept | A production fix, not a test convenience. Its siblings all carry the macro, and without it the class is unusable from a consumer on Windows. |
 
 * Result
+
+ores.platform meets the standard for the items that apply to a model-free
+component. Thirteen work items landed across five commits.
+
+The component lost five dead public artefacts, eight `file` members with
+no consumer, and about a hundred lines of duplicated MAC enumeration. It
+gained tests for three source files that had none, a test for
+`to_db_string` that 41 external files depend on, and an assertion count
+that rose from 201 to 224 with no vacuous case left. Two diagram parser
+defects are fixed at their source with regression tests, one of which had
+made a refresh delete correct content, and it reached seven components.
+
+Two items stay out of scope, both programme-level. The other 145 stale
+`component_files.cmake` files are one sweep. The registry cannot admit a
+component with no models, so V06 is the accepted exception and platform
+does not join `COMPONENTS_UNDER_TEST`.

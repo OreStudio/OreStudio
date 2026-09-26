@@ -168,10 +168,6 @@ tangled into the runnable script library
 
 - [[id:04C8F03D-5BB8-58F2-A556-63A54274108F][How do I run the account_contact_informations commands from the shell?]]
 
-* Account History
-
-- [[id:2F99474E-6068-5415-BB56-40DD110CA312][How do I run the account_history commands from the shell?]]
-
 * Account Operations
 
 - [[id:76F232AB-8D75-572F-9309-49288505E73A][How do I run the account_operations commands from the shell?]]

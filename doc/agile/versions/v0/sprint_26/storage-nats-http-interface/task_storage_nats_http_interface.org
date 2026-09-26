@@ -34,11 +34,11 @@ fail closed rather than fall back to allow.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5EA439A5-43AE-4223-9026-6B3D8C91AEEA][Give object storage a NATS and HTTP interface with authentication]] |
-| Now          | Implemented and exercised against the running fleet. Both interfaces serve the same objects and every gate is green; the PR is up for review. |
+| Now          | Nothing. |
 | Waiting on   | The review.                            |
-| Next         | Merge, then close this task.           |
+| Next         | Nothing. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance

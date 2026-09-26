@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :storage-nats-http-interface:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/storage-bucket-protocol
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -33,11 +33,11 @@ storage needs to learn the names for the migration to work.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:5EA439A5-43AE-4223-9026-6B3D8C91AEEA][Give object storage a NATS and HTTP interface with authentication]] |
-| Now          | Not yet started.                       |
-| Waiting on   | The interface task: the api, core and service split and the modelled surface. |
-| Next         | Inventory the consumers and their duplicate machinery. |
+| Now          | The protocol landed and the consumers write it, and the database rebuilds on the repaired DQ seed and staging indexes. |
+| Waiting on   | Nothing. The rest is this task's own work. |
+| Next         | Delete ores.compute.wrapper's duplicate client and archiver, then expose the raw shell surface over the protocol keys. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -88,3 +88,60 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The consumers write the platform protocol, and the database rebuilds on the path
+to it.
+
+**What it delivers**
+
+- One bucket, =ores=, and a key of the form =service/purpose/id[/name]=, stated in
+  [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] and built and parsed
+  by =ores.storage.api/net/object_keys.hpp=. An id may carry dots, so a UUID plus
+  its extension stays one segment; an empty segment, dot, dot dot and a space are
+  refused, and a service never writes under another's segment.
+- compute writes =compute/packages=, =input=, =config= and =output=, with the
+  per-platform bundle keyed by app-version and named by its file, and a batch
+  input key the shell used to hand-build. ore writes
+  =ore/imports/{request_id}.tar.gz= and
+  =ore/packages/{instance_id}/ore_package.tar.gz=. reporting writes
+  =reporting/runs/{instance_id}/trades.msgpack= and =market_data.msgpack=, and the
+  =report-data= literal both components kept is gone. The seeded compute package
+  URIs move with them.
+- The storage component's own fixtures speak the protocol, and the api suite
+  covers the dotted id, the round trip, and the refusals.
+
+**What is left**
+
+- =ores.compute.wrapper= keeps its own HTTP client and archiver, and its download
+  still opens the destination before it reads the status.
+- The raw shell surface -- a bucket, a key and a path -- is not built, so the
+  consumer verbs remain the only way to reach storage from the shell, and the
+  base URL is still plumbed more than one way.
+- A live =compute publish-package= run and an ORE import round trip were not
+  driven. The suites and the seeded URIs are the evidence so far.
+
+**Evidence**
+
+- The storage api, storage core, compute api and compute core suites pass. The ore
+  and shell suites pass except =ores.shell.api.tests=, which fails on a datetime
+  format defect that predates this branch.
+- =check_component_drift.py --all= reports no drift, and the codegen unit suite is
+  706 passed.
+- =compass db recreate= completes, and the seeded package URI reads back as
+  =/api/v1/storage/ores/compute/packages/ORE-1.8.17.0/ORE-1.8.17.0-x64-linux.tar.gz=.
+- Over the bus: put answered 30 bytes, get returned those bytes, and list reported
+  the object under =compute/packages/<id>/ore-1.8.17.0-x64-linux.tar.gz=. Over
+  HTTP: the bus-written object read back byte for byte, PUT answered its sha256,
+  HEAD answered the length with no body, list reported both objects, and an
+  unauthenticated GET answered 401.
+
+**Defects repaired on the way**
+
+The branch also fixes what blocked the database and the generator: five DQ staging
+files with an unterminated licence comment, an artefact template that emitted one
+index per column, an api template that could not build a headers-only part,
+twelve seed helpers that could not seed a row twice against the generated insert
+trigger, and the service variables and IAM rows the storage service's registry
+entry had outgrown.

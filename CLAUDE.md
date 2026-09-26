@@ -21,6 +21,10 @@ produces meaningful output prints its own well-known log file path
 (e.g. `📝 Build output: /tmp/<label>_<target>_build.log`). To watch
 progress, `tail -f`/`tail -n` *that reported file* as a separate,
 standalone command — never by piping the compass invocation itself.
+When a command is chatty and prints no log path of its own — a tangle, a
+regenerate — run it as a background job so the harness collects the
+output. Redirecting it to a temp file to keep it out of the transcript is
+still a redirect, and it throws away the output this rule exists to keep.
 
 **Memory rule:** All project memories live in `doc/llm/memory/` and must
 be created with `compass add memory`. Never write to the Claude Code

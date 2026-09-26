@@ -28,9 +28,9 @@ ores.compute passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:543DE51B-B9D8-4261-9DB1-9B97D4C9F187][Clean ores.compute to the component clean standard]] |
-| Now          | Section 2 is partly worked. The presentation drawers are gone and the models are on the current format. |
+| Now          | Section 2 is settled except M06. Five more model items pass, G03 and G06 pass, and the component has no accepted model-drift exception left. |
 | Waiting on   | Nothing. |
-| Next         | Finish section 2, then work section 3, Protocol. |
+| Next         | M06, which is the modelling of the platform, telemetry and work wire types, then section 3 Protocol. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -65,6 +65,7 @@ record each item's result in the table below.
 | G01  | Pass    | Regeneration is byte-clean and the component builds. =compass build ores.compute.api.lib ores.compute.core.lib ores.compute.service.lib ores.compute.wrapper.lib ores.compute.client.lib= exits 0. =evidence/g01_regeneration_run4.txt=. |
 | G03  | Pass    | 200 files under =projects/ores.compute= carry the generated marker and 69 do not, and the 69 are the hand-written set B03 classified. The argument that every generated file is marked is the empty drift list: the generator writes the marker, so a generated file missing it would always differ from the tree and appear there. |
 | G05  | Pass    | Five generator defects, all in =org_loader.py=, fixed at source with eleven cases in =projects/ores.codegen/tests/test_protocol_name_collisions.py=. Details in Notes. |
+| G06  | Pass    | =regenerate_cmake_component_files.py --component ores.compute.<part> --check= reports every source list up to date, for all five parts and for the shell adapter part. |
 | M02  | Pass    | All seven entity and junction models bind to a profile: six to =uuid-identified-lookup= and the junction to =tenant-scoped-junction=. No model needed a no-match record. |
 | M04  | Pass    | No property sits in a namespace the loader does not read for it. The one that did was =has_change_reason_cache=, moved to the model root for M09, and it is now removed as dead. |
 | M05  | Pass    | Each model describes one table. The junction is modelled as a junction and no joined shape is modelled as an entity. No compute table is current-state, so no model needs the current-state shape. |

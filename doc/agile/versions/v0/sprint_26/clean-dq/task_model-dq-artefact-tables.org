@@ -66,14 +66,61 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 |------+-------+----------|
 | 1. Baseline | DONE | Census and drift captured; see Notes |
 | 2. Liveness census | DONE | 49 tables, 0 deletion candidates; see Step 2 results |
-| 3. Divergent tables | TODO | |
-| 4. Foreign models | TODO | |
-| 5. Derivable tables | TODO | |
+| 3. Divergent tables | DONE | 12 tables, 6 difference classes, 0 defects; see Step 3 results |
+| 4. Foreign models | TODO | Unblocked |
+| 5. Derivable tables | TODO | Unblocked |
 | 6. Shadowed pairs | TODO | |
-| 7. Publication template | TODO | |
+| 7. Publication template | TODO | Needs the Artefact columns section from step 3 |
 | 8. Remaining models | TODO | |
 | 9. Regenerate C++ | TODO | |
 | 10. Eventing headers | TODO | |
+
+* Step 3 results
+
+Run on 2026-09-26. Each of the 12 divergent tables was read against its base table *and* against the publish function that fills the base from it. =refdata_publish_from_dq_create.sql= carries the evidence for most of them.
+
+*The artefact table is the import contract, not a projection of the store.* The projection is right by default and wrong in six specific ways, and every one of the six is deliberate. No divergence is a defect.
+
+| Class | What it means | Columns | Who resolves it |
+|-------+---------------+---------+-----------------|
+| Key rename | The staging table names the entity key after the entity. | =tag_id=, =image_id= versus base =id= | The template |
+| Natural key | The staging table carries a code or a name where the store carries a uuid. | =unit_type_code= versus =unit_type_id=; =account_username= versus =account_id=; =reports_to_username=; =business_unit_code= | The publish function, by joining the referenced table |
+| Secret redaction | Credentials are never staged. | =password_salt=, =service_password_hash=, =totp_secret= | Nothing. They are generated at publish. |
+| Target-state redaction | The publisher supplies the field. | =party_id=, =status=, =workspace_id=, =owner_unit_id=, =default_party_id=, =assigned_by=, =assigned_at=, =version= | The publish function, from =p_params= or the target party |
+| Import-only extra | A field only the import needs. | =holiday_calendar=, =advance_calendar=, =role=, =photo_key=, =key=, =svg_data= | The publish function maps it or drops it |
+| Dataset-supplied | The value belongs to the dataset, not to the row. | =coding_scheme_code=, =source=, =is_editable=, =base_calendar_code= | =ores_dq_datasets_tbl=, or the table default |
+
+The evidence for the two classes that are easy to mistake for defects:
+
+- *Natural key.* =ores_refdata_publish_business_units_from_dq_fn= inserts =unit_type_id= by joining =ores_refdata_business_unit_types_tbl= on =code = m.unit_type_code=. The staging table holds the code, and the publish resolves it.
+- *Dataset-supplied.* =ores_refdata_publish_currencies_from_dq_fn= reads =coding_scheme_code= from =ores_dq_datasets_tbl=, not from the artefact table, and inserts that value. So the staging table has no business carrying the column. The same function shows =party_id= arriving from =p_params= rather than from the row, which is the target-state redaction.
+- *Not a latent break.* =refdata_calendars_tbl.source= and =.is_editable= carry defaults, and =base_calendar_code= and =coding_scheme_code= are nullable, so the publish's shorter column list is sound.
+
+**Decision: the model declares the artefact projection explicitly.**
+
+The clean standard forbids two sources of truth, so the import contract belongs in the entity model that already owns the table. Add a =* Artefact columns= section, the sibling of the =* Artefact indexes= section that already exists:
+
+- *Absent section* means the current projection. The 11 pure-projection tables need no change, and neither does any entity whose staging table mirrors it.
+- *Present section* lists the staging columns in order. Each column carries =:maps_to:= when the publish translates it, naming the base column it becomes, and =:source:= of =row=, =dataset=, =publish= or =default= to record where the value comes from.
+
+The section is what makes the difference reviewable. A reader sees the redaction and the translation in the model rather than only inside a PL/pgSQL body, which is the same objection the publish-pattern plan raised about cross-service writes.
+
+| Table | Differences | Classes |
+|-------+-------------+---------|
+| =accounts= | 4 extra, 6 missing | Secret redaction, target-state redaction, natural key, import-only |
+| =account_contact_informations= | 1 extra, 1 missing | Natural key |
+| =books= | 4 missing | Target-state redaction |
+| =business_units= | 1 extra, 3 missing | Natural key, target-state redaction |
+| =calendars= | 4 missing | Dataset-supplied, target-state redaction |
+| =countries= | 1 missing | Dataset-supplied |
+| =currencies= | 1 extra, 1 missing | Import-only, dataset-supplied |
+| =currency_pair_conventions= | 1 extra | Import-only |
+| =image_tags= | 3 missing | Target-state redaction |
+| =images= | 3 extra, 4 missing | Key rename, import-only |
+| =portfolios= | 4 missing | Target-state redaction |
+| =tags= | 1 extra, 1 missing | Key rename |
+
+*Step 4 and step 5 are unblocked.* Both now reduce to declaring the projection for each entity once, rather than 11 separate special cases.
 
 * Step 2 results
 

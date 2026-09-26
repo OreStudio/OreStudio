@@ -73,6 +73,8 @@ Each archetype projects the base entity onto the staging table:
 - The audit columns and the validity window are dropped: =modified_by=, =performed_by=, =change_reason_code=, =change_commentary=, =valid_from=, =valid_to=.
 - Extra indexes are already expressible, because both archetypes read =artefact_indexes=.
 
+The projection is also where the archetype stops being enough. Reading the 12 divergent tables against their publish functions showed that the staging table is the *import contract*, not a copy of the store: it renames the key, substitutes a natural key for a uuid, redacts secrets and target state, adds fields only the import needs, and leaves dataset-level fields out. Each difference is implemented deliberately in the publish function, and none is a defect. So the model must be able to state the projection, not only inherit it. The task proposes an =* Artefact columns= section, the sibling of the =* Artefact indexes= section, absent meaning the current projection.
+
 One detail makes the pattern work across component boundaries. Codegen forces the =dq_= output prefix for these two archetypes, whatever component owns the model:
 
 #+begin_src python

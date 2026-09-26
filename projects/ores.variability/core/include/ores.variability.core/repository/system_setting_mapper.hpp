@@ -17,25 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_VARIABILITY_REPOSITORY_SYSTEM_SETTING_MAPPER_HPP
-#define ORES_VARIABILITY_REPOSITORY_SYSTEM_SETTING_MAPPER_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_VARIABILITY_CORE_REPOSITORY_SYSTEM_SETTING_MAPPER_HPP
+#define ORES_VARIABILITY_CORE_REPOSITORY_SYSTEM_SETTING_MAPPER_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
+#include "ores.variability.core/export.hpp"
 #include "ores.variability.core/repository/system_setting_entity.hpp"
-#include <vector>
 
 namespace ores::variability::repository {
 
 /**
- * @brief Maps system_setting domain entities to database entities and vice-versa.
+ * @brief Maps system_setting domain entities to data storage layer and vice-versa.
  */
-class system_setting_mapper {
+class ORES_VARIABILITY_CORE_EXPORT system_setting_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.variability.repository.system_setting_mapper";
 
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;

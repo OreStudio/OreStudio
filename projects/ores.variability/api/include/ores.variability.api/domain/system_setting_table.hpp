@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_VARIABILITY_API_DOMAIN_SYSTEM_SETTING_TABLE_HPP
+#define ORES_VARIABILITY_API_DOMAIN_SYSTEM_SETTING_TABLE_HPP
 
--- =============================================================================
--- Drop Row-Level Security Policies for Variability Tables
--- =============================================================================
--- Must be dropped before the corresponding tables are dropped.
+#include "ores.variability.api/domain/system_setting.hpp"
+#include "ores.variability.api/export.hpp"
+#include <string>
+#include <vector>
+
+namespace ores::variability::domain {
+
+/**
+ * @brief Converts system_settings to the table format.
+ */
+ORES_VARIABILITY_API_EXPORT std::string convert_to_table(const std::vector<system_setting>& v);
+
+}
+
+#endif

@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: 2BF221D9-7F09-480E-9DEF-09FB45C760CC
+:END:
+#+title: ores.shell.variability
+#+description: The shell's variability adapter part. Holds the generated command units that project the system settings domain onto the REPL menu.
+#+type: ores.codegen.component
+#+component_kind: adapter
+#+level: cross
+#+filetags: :shell:repl:variability:component:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+name: variability
+#+full_name: ores.shell.variability
+#+brief: Shell system settings command units
+
+* Summary
+
+=ores.shell.variability= is the adapter part that projects the variability
+domain onto the shell's REPL menu. It holds the generated command unit for the
+system settings model, which owns the =variability system-settings= submenu.

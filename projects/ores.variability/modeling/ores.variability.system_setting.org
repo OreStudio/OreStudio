@@ -60,7 +60,7 @@ Dotted setting name, for example =system.bootstrap_mode=. Callers ask for a
 setting by this name, within a tenant and party scope.
 
 #+begin_src cpp :name generator
-std::string("system.") + faker::word::noun()
+std::string("system.") + std::string(faker::word::noun())
 #+end_src
 
 ** party_id
@@ -74,9 +74,10 @@ Party that scopes this setting. Tenant-wide settings use the tenant's system
 party; a party-specific setting uses that party's own id. Together with =name=
 it makes one setting distinguishable from another of the same name.
 
-#+begin_src cpp :name generator
-faker::uuid::uuid()
-#+end_src
+A caller writing a tenant-wide setting states the nil uuid, because it has no
+party to name, and the database resolves the tenant's system party for it
+before the row lands. The column is never null, so the composite unique index
+separates one party's rows from another's.
 
 ** value
 :PROPERTIES:
@@ -116,7 +117,7 @@ std::string("boolean")
 What the setting controls, for an operator reading the list.
 
 #+begin_src cpp :name generator
-std::string("Setting that controls ") + faker::word::noun()
+std::string("Setting that controls ") + std::string(faker::word::noun())
 #+end_src
 
 * SQL

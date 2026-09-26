@@ -18,13 +18,54 @@
  *
  */
 #include "ores.variability.core/service/system_settings_service.hpp"
+
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.variability.api/domain/system_settings.hpp"
-#include <algorithm>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <stdexcept>
+#include <utility>
 
 namespace ores::variability::service {
 
 using namespace ores::logging;
+using ores::database::repository::execute_parameterized_multi_column_query;
+
+namespace {
+
+// The scoped read returns the row's id and party beside its value, because a
+// caller that writes a setting back must name the row it replaces, and the
+// party the database resolved for it is not a value the caller ever stated.
+constexpr auto tenant_scope_sql = "select setting_id, setting_name, setting_party_id, "
+                                  "setting_value, setting_data_type, setting_description "
+                                  "from ores_variability_get_system_settings_fn($1)";
+
+constexpr auto party_scope_sql = "select setting_id, setting_name, setting_party_id, "
+                                 "setting_value, setting_data_type, setting_description "
+                                 "from ores_variability_get_system_settings_fn($1, $2)";
+
+domain::system_setting row_to_setting(const std::vector<std::optional<std::string>>& row) {
+    domain::system_setting s;
+    if (row.size() < 6)
+        return s;
+
+    const boost::uuids::string_generator parse;
+    if (row[0])
+        s.id = parse(*row[0]);
+    if (row[1])
+        s.name = *row[1];
+    if (row[2])
+        s.party_id = parse(*row[2]);
+    if (row[3])
+        s.value = *row[3];
+    if (row[4])
+        s.data_type = *row[4];
+    if (row[5])
+        s.description = *row[5];
+    return s;
+}
+
+} // namespace
 
 system_settings_service::system_settings_service(database::context ctx,
                                                  std::string tenant_id,
@@ -33,86 +74,73 @@ system_settings_service::system_settings_service(database::context ctx,
     , tenant_id_(std::move(tenant_id))
     , party_id_(std::move(party_id)) {}
 
-std::optional<domain::system_setting> system_settings_service::get(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting system setting: " << name;
-
-    auto settings = repo_.read_latest(ctx_, name);
-    if (settings.empty()) {
-        BOOST_LOG_SEV(lg(), debug) << "System setting not found: " << name;
-        return std::nullopt;
+std::vector<domain::system_setting> system_settings_service::get_all() {
+    if (tenant_id_.empty()) {
+        // The variability service's own context: it holds a direct SELECT
+        // grant on the table, so no definer function is needed.
+        return repo_.read_latest(ctx_);
     }
 
-    if (settings.size() > 1) {
-        BOOST_LOG_SEV(lg(), warn) << "Found " << settings.size() << " active settings for name '"
-                                  << name << "', using first.";
-    }
-    return settings.front();
+    BOOST_LOG_SEV(lg(), debug) << "Reading system settings for tenant " << tenant_id_
+                               << " party " << (party_id_.empty() ? "(system)" : party_id_);
+
+    const auto rows = party_id_.empty()
+        ? execute_parameterized_multi_column_query(ctx_,
+                                                   tenant_scope_sql,
+                                                   {tenant_id_},
+                                                   lg(),
+                                                   "Reading system settings for one tenant")
+        : execute_parameterized_multi_column_query(ctx_,
+                                                   party_scope_sql,
+                                                   {tenant_id_, party_id_},
+                                                   lg(),
+                                                   "Reading system settings for one party");
+
+    std::vector<domain::system_setting> settings;
+    settings.reserve(rows.size());
+    for (const auto& row : rows)
+        settings.push_back(row_to_setting(row));
+    return settings;
 }
 
-std::vector<domain::system_setting> system_settings_service::get_all() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting all system settings";
-    return repo_.read_latest(ctx_);
+void system_settings_service::refresh() {
+    BOOST_LOG_SEV(lg(), debug) << "Refreshing the system settings cache";
+    cache_.clear();
+    for (const auto& setting : get_all())
+        cache_[setting.name] = setting.value;
+    BOOST_LOG_SEV(lg(), info) << "System settings cache refreshed. Count: " << cache_.size();
 }
 
 void system_settings_service::save(const domain::system_setting& setting) {
     if (setting.name.empty())
         throw std::invalid_argument("System setting name cannot be empty.");
 
-    BOOST_LOG_SEV(lg(), info) << "Saving system setting: " << setting.name << " = " << setting.value
-                              << " (" << setting.data_type << ")";
+    auto value = setting;
 
-    // Bitemporal update: close existing then write new version. Party-scoped
-    // settings (e.g. onboarding.party) must close only their own party's
-    // row -- RLS isolates by tenant_id alone, so a name-only close would
-    // clobber every other party's row sharing this name in the tenant.
-    if (setting.party_id && !setting.party_id->empty())
-        repo_.remove(ctx_, setting.name, *setting.party_id);
-    else
-        repo_.remove(ctx_, setting.name);
-    repo_.write(ctx_, setting);
-
-    // Update cache
-    cache_[setting.name] = setting.value;
-}
-
-void system_settings_service::remove(const std::string& name) {
-    BOOST_LOG_SEV(lg(), info) << "Removing system setting: " << name;
-    repo_.remove(ctx_, name);
-    cache_.erase(name);
-}
-
-std::vector<domain::system_setting> system_settings_service::get_history(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for system setting: " << name;
-    auto history = repo_.read_all(ctx_, name);
-
-    std::ranges::sort(history, [](const auto& a, const auto& b) { return a.version > b.version; });
-    return history;
-}
-
-void system_settings_service::refresh() {
-    BOOST_LOG_SEV(lg(), debug) << "Refreshing system settings cache from database";
-    cache_.clear();
-
-    if (!tenant_id_.empty() && !party_id_.empty()) {
-        // Per-tenant, per-party path: use SECURITY DEFINER function scoped
-        // to a specific party (e.g. reading onboarding.party for one
-        // party rather than the tenant's system party).
-        cache_ = repo_.read_for_party(ctx_, tenant_id_, party_id_);
-    } else if (!tenant_id_.empty()) {
-        // Per-tenant path: use SECURITY DEFINER function filtered to the
-        // specific tenant (defaults to its system party). Required for
-        // service users with no direct SELECT grant on
-        // ores_variability_system_settings_tbl.
-        cache_ = repo_.read_for_tenant(ctx_, tenant_id_);
-    } else {
-        // Variability service's own context: caller holds a direct SELECT
-        // grant on the table (DDL user or variability service user).
-        auto settings = repo_.read_latest(ctx_);
-        for (auto& s : settings)
-            cache_[s.name] = s.value;
+    // A caller addresses a setting by its name within a scope, and the store
+    // keeps a surrogate id, so the row already carrying this name is read first
+    // and its id taken. A write with a fresh id would collide with the live row
+    // on the composite unique index instead of superseding it.
+    if (value.id.is_nil()) {
+        for (const auto& row : get_all()) {
+            if (row.name != value.name)
+                continue;
+            if (!value.party_id.is_nil() && row.party_id != value.party_id)
+                continue;
+            value.id = row.id;
+            value.version = row.version;
+            value.party_id = row.party_id;
+            break;
+        }
     }
+    if (value.id.is_nil())
+        value.id = boost::uuids::random_generator()();
 
-    BOOST_LOG_SEV(lg(), info) << "System settings cache refreshed. Count: " << cache_.size();
+    BOOST_LOG_SEV(lg(), info) << "Saving system setting: " << value.name << " = " << value.value
+                              << " (" << value.data_type << ") with version " << value.version;
+
+    repo_.write(ctx_, value);
+    cache_[value.name] = value.value;
 }
 
 bool system_settings_service::get_bool(std::string_view name) const {
@@ -152,13 +180,31 @@ std::string system_settings_service::get_string(std::string_view name) const {
     return std::string(domain::get_setting_default(name));
 }
 
-std::string system_settings_service::get_json(std::string_view name) const {
-    return get_string(name);
-}
+void system_settings_service::set_bool_setting(std::string_view name,
+                                               bool value,
+                                               std::string_view modified_by,
+                                               std::string_view change_reason_code,
+                                               std::string_view change_commentary) {
+    const auto& def = domain::get_setting_definition(name);
 
-// -------------------------------------------------------------------------
-// Convenience methods
-// -------------------------------------------------------------------------
+    domain::system_setting s;
+    if (!tenant_id_.empty()) {
+        const auto tenant = utility::uuid::tenant_id::from_string(tenant_id_);
+        if (tenant)
+            s.tenant_id = *tenant;
+    }
+    if (!party_id_.empty())
+        s.party_id = boost::uuids::string_generator()(party_id_);
+    s.name = std::string(name);
+    s.value = value ? "true" : "false";
+    s.data_type = std::string(def.data_type);
+    s.description = std::string(def.description);
+    s.modified_by = std::string(modified_by);
+    s.change_reason_code = std::string(change_reason_code);
+    s.change_commentary = std::string(change_commentary);
+
+    save(s);
+}
 
 bool system_settings_service::is_bootstrap_mode_enabled() const {
     return get_bool("system.bootstrap_mode");
@@ -168,97 +214,45 @@ void system_settings_service::set_bootstrap_mode(bool enabled,
                                                  std::string_view modified_by,
                                                  std::string_view change_reason_code,
                                                  std::string_view change_commentary) {
-    set_bool_setting(
-        "system.bootstrap_mode", enabled, modified_by, change_reason_code, change_commentary);
-}
-
-bool system_settings_service::is_user_signups_enabled() const {
-    return get_bool("system.user_signups");
-}
-
-void system_settings_service::set_user_signups(bool enabled,
-                                               std::string_view modified_by,
-                                               std::string_view change_reason_code,
-                                               std::string_view change_commentary) {
-    set_bool_setting(
-        "system.user_signups", enabled, modified_by, change_reason_code, change_commentary);
-}
-
-bool system_settings_service::is_signup_requires_authorization_enabled() const {
-    return get_bool("system.signup_requires_authorization");
-}
-
-void system_settings_service::set_signup_requires_authorization(
-    bool enabled,
-    std::string_view modified_by,
-    std::string_view change_reason_code,
-    std::string_view change_commentary) {
-    set_bool_setting("system.signup_requires_authorization",
+    set_bool_setting("system.bootstrap_mode",
                      enabled,
                      modified_by,
                      change_reason_code,
                      change_commentary);
 }
 
-bool system_settings_service::is_password_validation_disabled() const {
-    return get_bool("system.disable_password_validation");
+bool system_settings_service::is_user_signups_enabled() const {
+    return get_bool("system.user_signups");
 }
 
-bool system_settings_service::is_onboarding_system_complete() const {
-    return get_bool("onboarding.system");
-}
-
-void system_settings_service::set_onboarding_system_complete(bool complete,
-                                                             std::string_view modified_by,
-                                                             std::string_view change_reason_code,
-                                                             std::string_view change_commentary) {
-    set_bool_setting(
-        "onboarding.system", complete, modified_by, change_reason_code, change_commentary);
-}
-
-bool system_settings_service::is_onboarding_tenant_complete() const {
-    return get_bool("onboarding.tenant");
-}
-
-void system_settings_service::set_onboarding_tenant_complete(bool complete,
-                                                             std::string_view modified_by,
-                                                             std::string_view change_reason_code,
-                                                             std::string_view change_commentary) {
-    set_bool_setting(
-        "onboarding.tenant", complete, modified_by, change_reason_code, change_commentary);
+bool system_settings_service::is_signup_requires_authorization_enabled() const {
+    return get_bool("system.signup_requires_authorization");
 }
 
 bool system_settings_service::is_onboarding_party_complete() const {
     return get_bool("onboarding.party");
 }
 
+void system_settings_service::set_onboarding_tenant_complete(bool complete,
+                                                             std::string_view modified_by,
+                                                             std::string_view change_reason_code,
+                                                             std::string_view change_commentary) {
+    set_bool_setting("onboarding.tenant",
+                     complete,
+                     modified_by,
+                     change_reason_code,
+                     change_commentary);
+}
+
 void system_settings_service::set_onboarding_party_complete(bool complete,
                                                             std::string_view modified_by,
                                                             std::string_view change_reason_code,
                                                             std::string_view change_commentary) {
-    set_bool_setting(
-        "onboarding.party", complete, modified_by, change_reason_code, change_commentary);
-}
-
-void system_settings_service::set_bool_setting(std::string_view name,
-                                               bool value,
-                                               std::string_view modified_by,
-                                               std::string_view change_reason_code,
-                                               std::string_view change_commentary) {
-    const auto& def = domain::get_setting_definition(name);
-
-    domain::system_setting s{.tenant_id = tenant_id_,
-                             .party_id =
-                                 party_id_.empty() ? std::nullopt : std::optional(party_id_),
-                             .name = std::string(name),
-                             .value = value ? "true" : "false",
-                             .data_type = std::string(def.data_type),
-                             .description = std::string(def.description),
-                             .modified_by = std::string(modified_by),
-                             .change_reason_code = std::string(change_reason_code),
-                             .change_commentary = std::string(change_commentary)};
-
-    save(s);
+    set_bool_setting("onboarding.party",
+                     complete,
+                     modified_by,
+                     change_reason_code,
+                     change_commentary);
 }
 
 }

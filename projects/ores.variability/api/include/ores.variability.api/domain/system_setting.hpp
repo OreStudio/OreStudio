@@ -17,21 +17,38 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_VARIABILITY_DOMAIN_SYSTEM_SETTING_HPP
-#define ORES_VARIABILITY_DOMAIN_SYSTEM_SETTING_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_VARIABILITY_API_DOMAIN_SYSTEM_SETTING_HPP
+#define ORES_VARIABILITY_API_DOMAIN_SYSTEM_SETTING_HPP
 
-#include <chrono>
-#include <optional>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <string>
+#include <string_view>
 
 namespace ores::variability::domain {
 
 /**
- * @brief Represents a typed system setting in the domain layer.
+ * @brief A named, typed runtime configuration value.
  *
- * Supports boolean, integer, string, and json value types. System-wide
- * settings use the system tenant; per-tenant
- * settings use the tenant's own tenant_id.
+ * A system setting is a named configuration value the platform reads while it
+ * runs, such as system.bootstrap_mode or onboarding.party. The value is
+ * stored as text and data_type says how to read it, because one table carries
+ * every type rather than one table per type.
+ *
+ * A setting is scoped to a tenant and a party. Tenant-wide settings live under
+ * the tenant's system party, and a party-specific setting such as
+ * onboarding.party lives under that party's own id. The pair is what makes a
+ * setting name unique: the same name may hold different values for two parties
+ * in one tenant, so a caller always reads within a scope.
+ *
+ * The table is bitemporal like every other entity, so a setting's history is
+ * kept and a configuration change is auditable and reversible. The name is the
+ * natural key callers use; id is the surrogate the store keeps for
+ * foreign-key stability.
  */
 struct system_setting final {
     /**
@@ -41,47 +58,61 @@ struct system_setting final {
 
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
-     *
-     * Use the system tenant UUID for system-wide settings.
      */
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Party identifier scoping this setting within the tenant.
-     *
-     * Empty for system-/tenant-wide settings — the database defaults it
-     * to the tenant's system party. Set to a specific party's id for
-     * party-scoped settings (e.g. onboarding.party).
+     * @brief Surrogate identifier for the setting row.
      */
-    std::optional<std::string> party_id;
+    boost::uuids::uuid id;
 
     /**
-     * @brief Name of the setting, serves as the unique identifier.
+     * @brief Dotted setting name, for example system.bootstrap_mode. Callers ask for a setting by
+     * this name, within a tenant and party scope.
      */
     std::string name;
 
     /**
-     * @brief Value stored as text regardless of data_type.
+     * @brief Party that scopes this setting. Tenant-wide settings use the tenant's system party; a
+     * party-specific setting uses that party's own id. Together with name it makes one setting
+     * distinguishable from another of the same name.
+     *
+     * A caller writing a tenant-wide setting states the nil uuid, because it has no party to name,
+     * and the database resolves the tenant's system party for it before the row lands. The column
+     * is never null, so the composite unique index separates one party's rows from another's.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
+     * @brief The setting's value, always stored as text. data_type says how to read it.
      */
     std::string value;
 
     /**
-     * @brief Type of the value: "boolean", "integer", "string", or "json".
+     * @brief How to read value: boolean, integer, string or json. Stored beside the value because
+     * one table carries every type.
      */
     std::string data_type;
 
     /**
-     * @brief Description of what this setting controls.
+     * @brief What the setting controls, for an operator reading the list.
      */
     std::string description;
 
     /**
-     * @brief Username of the person who recorded this version.
+     * @brief Username of the person who last modified this system setting.
      */
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
      * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 
@@ -91,15 +122,38 @@ struct system_setting final {
     std::string change_commentary;
 
     /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
-
-    /**
      * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const system_setting&, const system_setting&) = default;
 };
+
+/**
+ * @brief Dispatch-key identifier for system_setting, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const system_setting&) {
+    return "ores.variability.system_setting";
+}
 
 }
 

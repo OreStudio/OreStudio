@@ -131,7 +131,6 @@ def test_the_derived_message_set_is_the_entity_protocol_keyed_by_both_sides(
         ("widget_owner_removal", None),
         ("widget_owner_lookup", None),
         ("widget_owners_filter", None),
-        ("widget_owner_event", None),
         ("list_widget_owners_request", "widget.v1.widget_owners.list"),
         ("list_widget_owners_response", None),
         ("get_widget_owner_request", "widget.v1.widget_owners.get"),
@@ -237,6 +236,30 @@ def test_the_typescript_twin_emits_the_same_set(tmp_path):
         '"widget.v1.widget_owners.delete_many"',
     ):
         assert subject in protocol
+
+
+def test_a_junction_derives_no_announcement(tmp_path):
+    """An entity's announcement is published by a generated event registrar.
+    No registrar is emitted for a junction, so its announcement would be a
+    wire type no code path reaches and no subject carries."""
+    model = tmp_path / "ores.widget.widget_owner_junction.org"
+    model.write_text(FIXTURE, encoding="utf-8")
+    junction = load_org_junction_model(model)["junction"]
+
+    names = [m["name"] for m in junction_protocol_messages(junction)]
+    assert "widget_owner_event" not in names
+    assert not any(name.endswith("_event") for name in names)
+    # The write records an announcement would carry stay: the writes are real.
+    assert "widget_owner_write" in names
+    assert "widget_owner_key" in names
+
+    for template, name in (
+        ("cpp_protocol.hpp.mustache", "widget_owner_protocol.hpp"),
+        ("ts_protocol.ts.mustache", "widget_owner_protocol.ts"),
+    ):
+        rendered = _render(tmp_path, template, name)
+        assert "widget_owner_event" not in rendered
+        assert "WidgetOwnerEvent" not in rendered
 
 
 def test_a_side_without_list_by_contributes_no_scoped_read(tmp_path):

@@ -27,6 +27,14 @@ CXX_SUFFIXES = (".hpp", ".cpp")
 SUBJECT_LITERAL = re.compile(r'"(compute\.v1\.[^"]*)"')
 NATS_CONSTANT = re.compile(r'nats_subject\s*=\s*"([^"]+)"')
 
+PROJECTS = REPO / "projects"
+CONSUMER_SUFFIXES = (".hpp", ".cpp", ".ts", ".mustache")
+SKIP_DIRS = frozenset(("venv", "node_modules", "__pycache__", "build", "dist"))
+STRUCT = re.compile(r"^struct (\w+) \{(.*?)^\};", re.S | re.M)
+RESPONSE_TYPE = re.compile(r"using response_type = struct (\w+);")
+FIELD_TYPE = re.compile(r"([\w:]+(?:<[\w:<>, ]+>)?)\s+\w+\s*[;=]")
+CARRIER = re.compile(r"^(std::vector|std::optional)<(.+)>$")
+
 
 def models_by_metatype() -> list[tuple[str, str, str]]:
     rows = []
@@ -94,11 +102,67 @@ def subjects() -> tuple[dict[str, list[str]], list[tuple[str, int, str]]]:
     return declared, raw
 
 
+def unserved_records() -> list[tuple[str, str]]:
+    """P03: the declared records no code path reaches.
+
+    A record is served when a caller can reach it. The roots are the requests
+    that state a subject, and every record any file outside the record's own
+    protocol header names -- the eventing registrars, the handlers, the shell
+    and the TypeScript callers. A record a served record carries is served too,
+    transitively. What is left is a wire type nothing reaches.
+    """
+    structs: dict[str, tuple[str, list[str], bool]] = {}
+    for path in sorted(COMPONENT_DIR.rglob("*_protocol.hpp")):
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for name, body in STRUCT.findall(text):
+            fields: list[str] = []
+            for declaration in body.splitlines():
+                declaration = declaration.strip()
+                answered = RESPONSE_TYPE.match(declaration)
+                if answered:
+                    fields.append(answered.group(1))
+                    continue
+                if (not declaration or declaration.startswith(("/", "*", "#", "}"))
+                        or declaration.startswith("static")):
+                    continue
+                carried = FIELD_TYPE.match(declaration)
+                if carried:
+                    fields.append(carried.group(1))
+            structs[name] = (path.name, fields, "nats_subject" in body)
+
+    roots = {name for name, (_, _, on_wire) in structs.items() if on_wire}
+    reference = re.compile(
+        r"\b(" + "|".join(sorted((re.escape(n) for n in structs), key=len, reverse=True)) + r")\b")
+    for path in PROJECTS.rglob("*"):
+        if path.suffix not in CONSUMER_SUFFIXES or not path.is_file():
+            continue
+        if any(part in SKIP_DIRS for part in path.parts):
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for name in set(reference.findall(text)):
+            if path.name != structs[name][0]:
+                roots.add(name)
+
+    seen: set[str] = set()
+    pending = list(roots)
+    while pending:
+        name = pending.pop()
+        if name in seen:
+            continue
+        seen.add(name)
+        for carried in structs.get(name, (None, [], False))[1]:
+            base = CARRIER.sub(r"\2", carried)
+            if base in structs and base not in seen:
+                pending.append(base)
+    return [(structs[name][0], name) for name in sorted(set(structs) - seen)]
+
+
 def main() -> int:
     models = models_by_metatype()
     generated, handwritten = cxx_files()
     msg_generated, msg_handwritten = messaging_headers()
     declared, raw = subjects()
+    unserved = unserved_records()
 
     print(f"# ores.compute clean-standard inventory\n")
 
@@ -132,12 +196,19 @@ def main() -> int:
     for path, number, literal in raw:
         print(f"{path}:{number} {literal}")
 
+    print(f"\n## P03 declared records no code path reaches ({len(unserved)})")
+    for header, name in unserved:
+        print(f"{header} {name}")
+
     empty = [name for name, value in
              (("B02", models), ("B03 cpp", generated + handwritten),
               ("B03 messaging", msg_generated + msg_handwritten), ("B04", declared))
              if not value]
     if empty:
         print(f"\nEMPTY: {', '.join(empty)}", file=sys.stderr)
+        return 1
+    if unserved:
+        print(f"\nUNSERVED: {len(unserved)} record(s) nothing reaches", file=sys.stderr)
         return 1
     return 0
 

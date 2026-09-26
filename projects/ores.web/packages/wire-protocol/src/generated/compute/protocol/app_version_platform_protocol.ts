@@ -60,15 +60,6 @@ export interface AppVersionPlatformsFilter {
     app_version_id: string | null;
 }
 
-export interface AppVersionPlatformEvent {
-    event_id: string;
-    key: AppVersionPlatformKey;
-    action: string;
-    version: number;
-    occurred_at: string;
-    correlation_id: string | null;
-}
-
 export interface ListAppVersionPlatformsRequest {
     offset: number;
     limit: number;

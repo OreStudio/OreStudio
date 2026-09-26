@@ -2899,6 +2899,12 @@ _SCOPE = "ores::utility::domain::scope"
 _WRITE_OPERATION_PREFIXES = ("put_", "put_many_", "delete_", "delete_many_")
 _WRITE_ONLY_RECORD_SUFFIXES = ("_write", "_change", "_removal")
 
+# The announcement record. An entity owns one because an event registrar is
+# emitted for it, which publishes the record on three action subjects. No event
+# registrar is emitted for a junction, so a junction's announcement is a record
+# no code path reaches and no subject carries.
+_ANNOUNCEMENT_RECORD_SUFFIXES = ("_event",)
+
 
 def _column_cpp_type(entity: dict[str, Any], name: str) -> str:
     """One named column's own C++ type, or a string when the model is silent.
@@ -3331,6 +3337,10 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
     """
     entity = junction_entity_shape(junction)
     messages = entity_protocol_messages(entity)
+    # A junction announces nothing, so it drops the entity derivation's
+    # announcement record rather than declaring a wire type nothing serves.
+    messages = [message for message in messages
+                if not message["name"].endswith(_ANNOUNCEMENT_RECORD_SUFFIXES)]
     # ``wire_write_enabled`` folds the repository's read_only together with the
     # client-only switch; the fallback keeps a hand-built junction dict, as the
     # tests use, on the read_only rule.

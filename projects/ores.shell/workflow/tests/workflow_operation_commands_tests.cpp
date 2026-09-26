@@ -19,14 +19,18 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
+#include <sstream>
 #include <string>
 #include <string_view>
+#include <vector>
 
 using ores::nats::service::nats_client;
+using ores::shell::app::command_feedback;
 using ores::shell::app::commands::workflow_operation_commands;
 using namespace ores::logging;
 
@@ -52,4 +56,51 @@ TEST_CASE("workflow_operation_commands_registers_the_wait_verb", tags) {
     CHECK(std::find(completions.begin(),
                     completions.end(),
                     std::string{"workflow wait"}) != completions.end());
+}
+
+TEST_CASE("workflow_operation_commands_start_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    workflow_operation_commands::process_start(
+        out, session, {"identity_workflow", R"({"steps":[{"name":"one"}]})"});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("workflow_operation_commands_start_usage_names_the_instance_id_flag", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    workflow_operation_commands::process_start(out, session, {"identity_workflow"});
+
+    BOOST_LOG_SEV(lg, debug) << "Usage output: " << out.str();
+    CHECK(out.str().find("--instance-id") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("workflow_operation_commands_start_refuses_an_instance_id_that_is_not_a_uuid", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    // Refused before the session is consulted: a value that is not a UUID can
+    // only address a run that will never exist, whatever the caller is signed
+    // in as.
+    command_feedback::reset();
+    workflow_operation_commands::process_start(
+        out, session, {"identity_workflow", R"({"steps":[{"name":"one"}]})", "--instance-id", "one"});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a bad instance id: " << out.str();
+    CHECK(out.str().find("must be a UUID") != std::string::npos);
+    CHECK(command_feedback::failed());
 }

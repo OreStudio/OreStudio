@@ -27,6 +27,7 @@
 #include "ores.workflow.api/messaging/workflow_events.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
 #include <expected>
@@ -100,6 +101,23 @@ void print_step(std::ostream& out,
     print_step_log(out, step);
 }
 
+/**
+ * @brief True when the value parses as a UUID.
+ *
+ * A supplied instance id is how a caller addresses a run it may already have
+ * asked for, so a value that is not a UUID is refused here. Left to the
+ * engine, the start would be accepted and the caller would wait on an id
+ * nothing ever wrote.
+ */
+bool is_uuid(const std::string& value) {
+    try {
+        static_cast<void>(boost::uuids::string_generator()(value));
+        return true;
+    } catch (const std::exception&) {
+        return false;
+    }
+}
+
 }
 
 void workflow_operation_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
@@ -159,7 +177,7 @@ void workflow_operation_commands::register_commands(cli::Menu& root_menu, nats_c
             process_start(std::ref(out), std::ref(session), args);
         },
         "Start a workflow and print the instance id to follow",
-        {"<type> <request_json>"});
+        {"<type> <request_json> [--instance-id <uuid>]"});
 
     root_menu.Insert(std::move(workflow_menu));
 }
@@ -287,8 +305,15 @@ void workflow_operation_commands::process_definitions(std::ostream& out,
 void workflow_operation_commands::process_start(std::ostream& out,
                                                nats_client& session,
                                                const std::vector<std::string>& args) {
-    if (args.size() != 2) {
-        fail(out) << "Usage: workflow start <type> <request_json>" << std::endl;
+    auto parsed = parse_args(args, {{.name = "instance-id", .requires_value = true}});
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    if (parsed->positionals.size() != 2) {
+        fail(out) << "Usage: workflow start <type> <request_json> [--instance-id <uuid>]"
+                  << std::endl;
         fail(out) << "Wrap the request in single quotes. The command line reads a double quote "
                      "as a quote character, so unquoted JSON loses its own."
                   << std::endl;
@@ -298,20 +323,44 @@ void workflow_operation_commands::process_start(std::ostream& out,
         return;
     }
 
+    const auto& type = parsed->positionals[0];
+    const auto& request_json = parsed->positionals[1];
+    const auto& supplied_id = parsed->flag("instance-id");
+
+    // A supplied id is what makes a start repeatable: a script that runs twice
+    // asks for the same run rather than for a second one. Left out, the id is
+    // minted here so the caller can follow it, as the engine would otherwise
+    // keep the one it made to itself.
+    std::string instance_id;
+    if (supplied_id.empty()) {
+        boost::uuids::random_generator rng;
+        instance_id = boost::uuids::to_string(rng());
+    } else if (is_uuid(supplied_id)) {
+        instance_id = supplied_id;
+    } else {
+        fail(out) << "--instance-id must be a UUID: " << supplied_id << std::endl;
+        return;
+    }
+
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to start a workflow." << std::endl;
         return;
     }
 
-    const auto& type = args[0];
-    const auto& request_json = args[1];
+    // With a supplied id the run can be looked for before it is asked for, so a
+    // repeat reports the run that exists instead of dispatching a request the
+    // engine would only have to refuse.
+    if (!supplied_id.empty()) {
+        auto existing = fetch_steps(session, instance_id);
+        if (existing && existing->success) {
+            out << "Workflow instance " << instance_id << " already exists (" << existing->status
+                << "); nothing was started." << std::endl;
+            out << "Follow progress with: workflow wait " << instance_id << std::endl;
+            return;
+        }
+    }
 
     BOOST_LOG_SEV(lg(), info) << "Starting workflow of type: " << type;
-
-    // Generated here so the caller can follow the run: the engine acknowledges
-    // the start rather than answering with the result.
-    boost::uuids::random_generator rng;
-    const auto instance_id = boost::uuids::to_string(rng());
 
     workflow::messaging::start_workflow_message msg;
     msg.type = type;

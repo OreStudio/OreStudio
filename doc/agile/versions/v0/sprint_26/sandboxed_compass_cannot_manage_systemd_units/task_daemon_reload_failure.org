@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: FB024ABF-41F1-41F4-860F-E53D8F577F8A
+:END:
+#+title: Task: Stop a failed daemon-reload passing as a successful deploy
+#+description: Make cmd_deploy print why the daemon-reload failed and return non-zero, instead of reporting success while systemd never reloads.
+#+type: task
+#+level: s1
+#+filetags: :sandboxed_compass_cannot_manage_systemd_units:sprint_26:v0:
+#+owner: marco
+#+branch: feature/systemd-busctl-transport
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:83339FFC-6314-443F-893D-BA053EEC9379][Reach systemd from a sandboxed compass session]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+systemd_generate.cmd_deploy calls systemctl_bus.run with check=False and returns 0 whatever happens, so compass systemd deploy reports success while systemd never reloads the units it just installed. Make the failure visible and make the command fail, so a caller can tell a real deploy from a silent one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:83339FFC-6314-443F-893D-BA053EEC9379][Reach systemd from a sandboxed compass session]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- A failed daemon-reload prints the reason and returns a non-zero exit code.
+- A successful deploy still returns 0 and stays quiet.
+- A test covers the failure path.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

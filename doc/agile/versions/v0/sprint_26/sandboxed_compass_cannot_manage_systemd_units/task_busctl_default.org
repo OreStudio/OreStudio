@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 3252AE89-8071-4E22-819B-8FDF4B4A6A3A
+:END:
+#+title: Task: Default the environment to the busctl transport
+#+description: Write ORES_USE_BUSCTL into the .env that provision and configure generate, default it on, add a --use-busctl / --no-use-busctl pair to both, and give the systemd pillar the flag it lacks.
+#+type: task
+#+level: s1
+#+filetags: :sandboxed_compass_cannot_manage_systemd_units:sprint_26:v0:
+#+owner: marco
+#+branch: feature/systemd-busctl-transport
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:83339FFC-6314-443F-893D-BA053EEC9379][Reach systemd from a sandboxed compass session]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass env provision and compass env configure write ORES_USE_BUSCTL=1 into the generated .env, so a sandboxed session reaches the user manager through busctl without anyone exporting a variable. Both commands accept --use-busctl and --no-use-busctl, so a host where plain systemctl --user works can switch the transport off, and the choice survives a re-configure. The compass systemd pillar accepts --use-busctl too, which it currently rejects.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:83339FFC-6314-443F-893D-BA053EEC9379][Reach systemd from a sandboxed compass session]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- ORES_USE_BUSCTL=1 appears in the .env skeleton that compass env provision writes, and in the .env that compass env configure generates.
+- compass env provision --no-use-busctl writes ORES_USE_BUSCTL=0, and compass env configure --no-use-busctl keeps it off across a re-run.
+- compass systemd generate and deploy accept --use-busctl and route their systemctl calls through the bus.
+- An existing .env that lacks the key still configures, and defaults to on.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

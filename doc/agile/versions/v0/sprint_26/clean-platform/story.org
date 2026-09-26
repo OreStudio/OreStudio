@@ -23,7 +23,7 @@ ores.platform meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Work done 2026-09-25. Thirteen items landed, plus the shared scoped temp types, across seven commits and the tree is verified. |
+| Now           | Work done 2026-09-25. Thirteen items landed, plus the shared scoped temp types, across eight commits and the tree is verified. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
 | Last touched  | 2026-09-25                               |

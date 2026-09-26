@@ -2,7 +2,7 @@
 :ID: CA6A6FA0-0DA7-4FF6-8F66-F51FAF620A94
 :END:
 #+title: Migrate the remaining temp path call sites to the shared scoped temp types
-#+description: Five components still build their own temporary paths across six files, two of the files production code that cleans up by hand; migrate them to ores.platform::filesystem::scoped_temp_file and scoped_temp_directory.
+#+description: Five top-level components still build their own temporary paths across six files, two of the files production code that cleans up by hand; migrate them to ores.platform::filesystem::scoped_temp_file and scoped_temp_directory.
 #+type: capture
 #+level: cross
 #+filetags: :tech_debt:filesystem:testing:cpp:
@@ -15,7 +15,8 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next
 
 The shared temp types land in =ores.platform::filesystem= with the platform
 clean-up: =scoped_temp_file= and =scoped_temp_directory=. Six files
-still build their own temporary paths and should migrate to them.
+across five top-level components still build their own temporary paths and
+should migrate to them.
 
 | Call site | Kind | Today |
 |-----------+------+-------|
@@ -33,7 +34,7 @@ is the duplicate case that B06 and H02 exist for. Cleanup is a per-site
 obligation today, so it holds only where each site remembers it: the
 =storage_transfer.cpp= paths remove their archive on success and in a
 =catch (...)=, while =report_package_handler.cpp= removes its staging
-directory only after the upload, so there a throw between
+directory only after the upload, so a throw there between
 =create_directories= and that =remove_all= leaves the directory behind.
 Every test site repeats a manual =std::filesystem::remove= that a
 destructor should own.

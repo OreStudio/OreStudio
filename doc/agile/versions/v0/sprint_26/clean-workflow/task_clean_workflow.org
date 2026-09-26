@@ -28,9 +28,9 @@ ores.workflow passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]] |
-| Now          | Second increment on =feature/clean-workflow=. S01, S02, W01 and H01 are done; V remains. |
-| Waiting on   | Nothing.                               |
-| Next         | V: whole-tree build, the test fleet, =compass db recreate=, then the PR. |
+| Now          | Second increment on =feature/clean-workflow=, raised as PR #2179. S01, S02, W01, H01 and the documentation gate are done. |
+| Waiting on   | A fleet and a test database, for V02 to V04. |
+| Next         | Bring the fleet up, run =compass db recreate -y -k=, execute the integration suites and a shell command against the live service, then close the task. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -95,7 +95,15 @@ record each item's result in the table below.
 | H03 | Done. The three end-of-line comments moved above their code. | Re-grepped after the fix: no end-of-line comment survives outside the idiomatic =} // namespace= closers and =IWYU pragma:= directives. The sites are =application.cpp= line 78, =workflow_engine.cpp= line 283 and =workflow_handler.cpp= line 99. |
 | H04 | Not applicable, and checked rather than assumed: no per-platform shim survives. | =grep= for =#ifdef _WIN32=, =__APPLE__= and =_MSC_VER= over the component returns nothing. |
 | M09 | Pass. No retired fragment survives in any model. | =grep= over the modeling directories for =qt=, =wt=, =drawer= and =presentation= returns nothing. |
-| M10 | The component model declares its parts. =validate_docs.sh= still to run. | =modeling/component_overview.org= carries =* Summary=, =* Sub-components= and =* Entity modules=. Verification is deferred to H01, which owns the diagram and the docs gate. |
+| M10 | Pass. The component model declares its parts and the documentation gate is green. The gate initially failed on the shell's workflow module rather than on this component: =ores.shell.workflow= had no =modeling= directory, which is the pair of violations H01's docs half owns, and it is fixed there. | =validate_docs.sh= reports all 40 components passing. =modeling/component_overview.org= carries =* Summary=, =* Sub-components= and =* Entity modules=. |
+| V01 | Pass. The whole tree builds, and every consumer of the component links -- including =ores.reporting.service=, which is the executable that reported the undefined streaming operators before the api module was repaired. | Full-tree =cmake --build= with the =linux-clang-debug-make= preset exits 0. |
+| V02 | Partly verified, and the gap is environmental rather than unrecorded. The codegen suite passes. The component's three test binaries build, but the integration tests need =ORES_TEST_DB_USER= and a running fleet, which this worktree does not have, so they are not executed. | =test_shell_recipe_inventory.py= 14 passed; =ores.shell.workflow.tests= 37 cases and 103 assertions passed; =ores.workflow.{api,core,service}.tests= build but exit with "Required environment variable not set: ORES_TEST_DB_USER". |
+| V03 | Not verified. The fleet start was attempted and did not complete: 22 of 23 units became ready, =ores.web.service= did not, and the attempt exited 1 before the database was recreated. That unit is unrelated to this component, and =ores.web= is not built here at all because npm is absent. | =compass services start= exited 1 after 483s with =ores.web.service= the only unit not ready. =compass db recreate= was not run. |
+| V04 | Not verified, for the same reason as V03: with no fleet there is no live surface for the shell commands to answer. The command units are covered by their registration tests instead, which is weaker evidence and recorded as such. | The generated unit tests and =workflow_wait_commands_tests.cpp=. |
+| V05 | Pass for the gates that apply to this component. The two that do not are recorded rather than waived: =check_protocol_twin_coverage.py= covers only the three committed components and cannot see this one (M06), and the tree-wide CMake source-list check fails on 24 other components, verified pre-existing against =ores.reporting.core=. | =check_component_drift.py --component workflow-cpp= reports no drift; =regenerate_shell_recipe_inventory.py --check= is silent; the handler-permission and populate-reference gates pass in CI; =regenerate_cmake_component_files.py= is up to date for all three modules. |
+| V06 | Done, with the half that cannot pass recorded. The component is in =COMPONENTS_UNDER_TEST=. =check_component_drift.py --all= still fails on roughly 24 components, none of them this one, and the control is =ores.reporting.core=, which this work never touched. | =component_registry.py=; the =--all= run and its control. Detail below. |
+| V07 | Not surveyed. Recorded rather than passed. | -- |
+| V08 | Not surveyed. Recorded rather than passed. | -- |
 
 * Notes
 

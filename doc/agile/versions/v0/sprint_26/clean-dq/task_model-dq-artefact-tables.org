@@ -554,7 +554,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| https://github.com/OreStudio/OreStudio/pull/2189 | [dq] Generate the ores.dq artefact tables from the entity models |
 
 * Review
 
@@ -563,3 +563,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Pass 1 is not finished, so this task is not done. What is done is the part the story was built on: artefact tables generate from the same entity model as their base table, the projection is declared in the model, and the handcrafted SQL that no model owned is either gone or has a recorded reason for staying.
+
+The design question is answered affirmatively and the answer is enforced by templates rather than by convention. The census reads 41 generated, 1 derivable, 0 divergent and 7 orphan across 49 artefact tables, and none of the 49 is a deletion candidate — so the component shrank in handcrafted SQL without losing a table.
+
+The remaining work is named: six entities whose canonical output the generator already emits and whose hand-written duplicates must be deleted, the shell unit that must be wired before the change-reason pair can move, one decision about `subject_area`'s composite history identity, and the line that adds dq to =COMPONENTS_UNDER_TEST=. Each is recorded above with the evidence that it is a deletion problem rather than a modelling problem.
+
+Landed as https://github.com/OreStudio/OreStudio/pull/2189.

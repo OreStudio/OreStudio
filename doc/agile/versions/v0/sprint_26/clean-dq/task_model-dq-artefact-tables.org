@@ -69,11 +69,38 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 3. Divergent tables | DONE | 12 tables, 6 difference classes, 0 defects; see Step 3 results |
 | 4. Foreign models | TODO | Unblocked |
 | 5. Derivable tables | TODO | Unblocked |
-| 6. Shadowed pairs | TODO | |
+| 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
 | 7. Publication template | TODO | Needs the Artefact columns section from step 3 |
-| 8. Remaining models | TODO | |
+| 8. Remaining models | TODO | Includes the drop-template marker defect found in step 6 |
 | 9. Regenerate C++ | TODO | |
 | 10. Eventing headers | TODO | |
+| 11. Artefact projection in the model | TODO | The =* Artefact columns= section step 3 specifies |
+
+* Step 6 results
+
+Run on 2026-09-26. The step was named "the two shadowed pairs". The debt register named 49 files, not 2. =projects/ores.sql/utility/validation_ignore.txt= already recorded them as WIRE_001 with the instruction that "each class is cleared by the component drift story that wires the files into its aggregator and removes the entries". That story is this task, so step 6 cleared all 49.
+
+| Group | Files | What was wrong |
+|-------+-------+----------------|
+| Plural-era create residue | 2 | =dq_create.sql= wired the singular =dq_catalog_create.sql= and =dq_subject_area_create.sql=; the generated plurals sat unwired |
+| Plural-era drop residue | 3 | Same inversion on the drop side, for catalogs, subject areas and dataset bundles |
+| Artefact drops | 23 | =dq_drop.sql= never wired them |
+| Population-function drops | 16 | =dq_drop.sql= wired 5 of the 21 on disk |
+| Notify-trigger drops | 5 | The sibling table drop was wired, the trigger drop was not |
+
+What changed:
+
+1. Regenerated =dq_catalogs_create.sql= and =dq_subject_areas_create.sql= with =compass codegen entity generate <entity> --address ores.sql.schema=. Both were stale by one template change, the version-conflict guard in the insert trigger.
+2. Rewired =create/dq/dq_create.sql= and =drop/dq/dq_drop.sql= to the generated plurals.
+3. Deleted the five redundant twins: =dq_catalog_create.sql=, =dq_catalog_drop.sql=, =dq_subject_area_create.sql=, =dq_subject_area_drop.sql=, =dq_dataset_bundle_drop.sql=.
+4. Wired the 44 remaining drops into =drop/dq/dq_drop.sql=, population functions before their staging table.
+5. Removed all 49 WIRE_001 entries and their section comments.
+
+Nothing was lost by the swap. The twins differ only in ways the generated file wins: the generated create carries the version guard and the current description prose, the generated drops are leaner because a table drop already drops its indexes, and the one index whose name differed (=subject_areas_name_uniq_idx= versus =subject_areas_name_domain_name_uniq_idx=) is on identical columns, so the generated name is the one that reflects the compound key.
+
+**Evidence.** =validate_schemas.sh= reports 0 warnings, and it reports them with the 49 entries *deleted* from the ignore file rather than suppressed. That is the proof: an unwired file cannot pass silently, because the check that would name it is live. The artefact census also reports 0 duplicated declarations, down from 2. The component drift fell from 517 files to 513: the four regenerated files (two creates, two notify triggers) no longer drift, and =ores.sql/create= fell from 21 to 17.
+
+**Correction to Finding 3 of the investigation.** That finding said the generated drop scripts were unreachable. The files are generated, but neither drop template emits an =AUTO-GENERATED= marker, so a drop file's provenance cannot be read from its header at all. This is a G03 defect in the two drop archetypes (=sql_schema_domain_entity_drop.mustache= and =sql_schema_notify_trigger_drop.mustache=), and step 8 carries it.
 
 * Step 3 results
 

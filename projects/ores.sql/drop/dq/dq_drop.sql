@@ -55,11 +55,56 @@
 \ir ./dq_currency_pair_conventions_artefact_drop.sql
 \ir ./dq_currency_pairs_artefact_drop.sql
 
+-- FPML artefact families. The staging table goes before the functions that
+-- publish from it, so a failed drop leaves nothing that reads a dead table.
+\ir ./dq_account_types_population_functions_drop.sql
+\ir ./dq_account_types_artefact_drop.sql
+\ir ./dq_asset_classes_population_functions_drop.sql
+\ir ./dq_asset_classes_artefact_drop.sql
+\ir ./dq_asset_measures_population_functions_drop.sql
+\ir ./dq_asset_measures_artefact_drop.sql
+\ir ./dq_benchmark_rates_population_functions_drop.sql
+\ir ./dq_benchmark_rates_artefact_drop.sql
+\ir ./dq_business_centres_population_functions_drop.sql
+\ir ./dq_business_centres_artefact_drop.sql
+\ir ./dq_business_processes_population_functions_drop.sql
+\ir ./dq_business_processes_artefact_drop.sql
+\ir ./dq_cashflow_types_population_functions_drop.sql
+\ir ./dq_cashflow_types_artefact_drop.sql
+\ir ./dq_coding_schemes_population_functions_drop.sql
+\ir ./dq_coding_schemes_artefact_drop.sql
+\ir ./dq_entity_classifications_population_functions_drop.sql
+\ir ./dq_entity_classifications_artefact_drop.sql
+\ir ./dq_local_jurisdictions_population_functions_drop.sql
+\ir ./dq_local_jurisdictions_artefact_drop.sql
+\ir ./dq_party_relationships_population_functions_drop.sql
+\ir ./dq_party_relationships_artefact_drop.sql
+\ir ./dq_party_roles_population_functions_drop.sql
+\ir ./dq_party_roles_artefact_drop.sql
+\ir ./dq_person_roles_population_functions_drop.sql
+\ir ./dq_person_roles_artefact_drop.sql
+\ir ./dq_regulatory_corporate_sectors_population_functions_drop.sql
+\ir ./dq_regulatory_corporate_sectors_artefact_drop.sql
+\ir ./dq_reporting_regimes_population_functions_drop.sql
+\ir ./dq_reporting_regimes_artefact_drop.sql
+\ir ./dq_supervisory_bodies_population_functions_drop.sql
+\ir ./dq_supervisory_bodies_artefact_drop.sql
+
+-- Remaining artefact families
+\ir ./dq_currencies_artefact_drop.sql
+\ir ./dq_image_tags_artefact_drop.sql
+\ir ./dq_images_artefact_drop.sql
+\ir ./dq_lei_bic_artefact_drop.sql
+\ir ./dq_lei_entities_artefact_drop.sql
+\ir ./dq_lei_relationships_artefact_drop.sql
+\ir ./dq_tags_artefact_drop.sql
+
 -- Datasets
 \ir ./dq_datasets_notify_trigger_drop.sql
 \ir ./dq_dataset_drop.sql
 
 -- Artefact Types (after datasets due to FK)
+\ir ./dq_artefact_types_notify_trigger_drop.sql
 \ir ./dq_artefact_types_drop.sql
 
 -- Methodologies
@@ -82,7 +127,7 @@
 
 -- Subject areas
 \ir ./dq_subject_areas_notify_trigger_drop.sql
-\ir ./dq_subject_area_drop.sql
+\ir ./dq_subject_areas_drop.sql
 
 -- Data domains
 \ir ./dq_data_domains_notify_trigger_drop.sql
@@ -90,14 +135,15 @@
 
 -- Dataset bundles (members before bundles)
 \ir ./dq_dataset_bundle_member_drop.sql
-\ir ./dq_dataset_bundle_drop.sql
+\ir ./dq_dataset_bundles_notify_trigger_drop.sql
+\ir ./dq_dataset_bundles_drop.sql
 
 -- Dataset dependencies
 \ir ./dq_dataset_dependency_drop.sql
 
 -- Catalogs
 \ir ./dq_catalogs_notify_trigger_drop.sql
-\ir ./dq_catalog_drop.sql
+\ir ./dq_catalogs_drop.sql
 
 -- Badge system (mappings before definitions, definitions before severities/domains)
 \ir ./dq_badge_mappings_population_functions_drop.sql
@@ -105,12 +151,15 @@
 \ir ./dq_badge_mappings_drop.sql
 \ir ./dq_badge_definitions_population_functions_drop.sql
 \ir ./dq_badge_definitions_artefact_drop.sql
+\ir ./dq_badge_definitions_notify_trigger_drop.sql
 \ir ./dq_badge_definitions_drop.sql
 \ir ./dq_badge_severities_population_functions_drop.sql
 \ir ./dq_badge_severities_artefact_drop.sql
+\ir ./dq_badge_severities_notify_trigger_drop.sql
 \ir ./dq_badge_severities_drop.sql
 \ir ./dq_code_domains_population_functions_drop.sql
 \ir ./dq_code_domains_artefact_drop.sql
+\ir ./dq_code_domains_notify_trigger_drop.sql
 \ir ./dq_code_domains_drop.sql
 
 -- Population functions

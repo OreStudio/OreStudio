@@ -26,7 +26,7 @@
 \ir ./dq_change_reason_functions_create.sql
 
 -- Catalogs and dataset dependencies
-\ir ./dq_catalog_create.sql
+\ir ./dq_catalogs_create.sql
 \ir ./dq_catalogs_notify_trigger_create.sql
 \ir ./dq_dataset_dependency_create.sql
 
@@ -38,7 +38,7 @@
 -- Data domains and subject areas
 \ir ./dq_data_domains_create.sql
 \ir ./dq_data_domains_notify_trigger_create.sql
-\ir ./dq_subject_area_create.sql
+\ir ./dq_subject_areas_create.sql
 \ir ./dq_subject_areas_notify_trigger_create.sql
 
 -- Coding schemes

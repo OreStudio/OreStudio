@@ -139,6 +139,8 @@ In both pairs the generated file is unreachable. =create/dq/dq_create.sql= inclu
 
 The notify trigger for both tables *is* generated and *is* wired. So each entity was migrated part of the way, and the table was left behind. This is the H02 signature: a hand-written duplicate of a generated artefact.
 
+*Resolved on 2026-09-26, in step 6 of the task.* The generated plurals are now wired, the handcrafted twins are deleted, and the debt register behind them was larger than this finding: =validation_ignore.txt= recorded 49 WIRE_001 files for DQ, in five groups. All 49 are cleared and the check passes with no suppression. See the task's Step 6 results. One correction: the drop files *are* generated, but neither drop archetype emits an =AUTO-GENERATED= marker, so a drop file's provenance cannot be read from its header. That is a separate G03 defect.
+
 ** Finding 4: the C++ tree is far out of sync, but it is generated, not handcrafted
 
 The survey classified 651 non-test C++ files:

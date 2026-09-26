@@ -34,6 +34,7 @@ target_link_libraries(${tests_target_name}
         ores.eventing.api.lib
         ores.eventing.core.lib
         ores.nats.lib
+        ores.security.lib
         ores.utility.lib
         ores.testing.lib
         ores.logging.lib

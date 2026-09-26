@@ -42,6 +42,7 @@
 #include "ores.workflow.core/service/workflow_engine.hpp"
 #include <iterator>
 #include <memory>
+#include <optional>
 
 namespace ores::workflow::messaging {
 
@@ -112,8 +113,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     // Create the engine (shared across all engine subscriptions).
     // ----------------------------------------------------------------
+    // The engine verifies the token a start request forwards, so the run is
+    // attributed to the caller who asked for it; the same verifier serves the
+    // query and provision handlers below.
     auto engine = std::make_shared<service::workflow_engine>(
-        nats, ctx, registry, instance_states, step_states);
+        nats, ctx, registry, instance_states, step_states, std::optional{signer});
 
     // ----------------------------------------------------------------
     // Engine subscriptions (durable JetStream — survive service restarts)

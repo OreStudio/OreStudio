@@ -27,6 +27,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
@@ -270,7 +271,8 @@ private:
             .correlation_id = instance_id,
             .instance_id = boost::uuids::to_string(rg())};
         nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
-                         ores::nats::default_wire_codec().encode(swm));
+                         ores::nats::default_wire_codec().encode(swm),
+                         ores::nats::service::forwarded_caller_headers(msg));
     }
 
     ores::nats::service::client& nats_;

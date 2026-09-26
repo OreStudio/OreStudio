@@ -20,6 +20,7 @@
 #include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/request_helpers.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
@@ -38,6 +39,7 @@
 #include <ranges>
 #include <sstream>
 #include <thread>
+#include <unordered_map>
 #include <vector>
 
 namespace ores::shell::app::commands {
@@ -455,8 +457,13 @@ void workflow_operation_commands::process_start(std::ostream& out,
     msg.instance_id = instance_id;
 
     try {
-        session.transport().js_publish(workflow::messaging::start_workflow_message::nats_subject,
-                                       ores::nats::default_wire_codec().encode(msg));
+        // The engine attributes the run to whoever the message names, and the
+        // raw transport carries no headers of its own, so the logged-in user's
+        // token goes with the request.
+        session.transport().js_publish(
+            workflow::messaging::start_workflow_message::nats_subject,
+            ores::nats::default_wire_codec().encode(msg),
+            ores::nats::service::forwarded_caller_headers(session.auth().jwt));
     } catch (const std::exception& e) {
         fail(out) << "Failed to start the workflow: " << e.what() << std::endl;
         return;

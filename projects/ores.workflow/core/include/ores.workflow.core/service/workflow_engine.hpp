@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.workflow.api/domain/workflow_instance.hpp"
 #include "ores.workflow.api/domain/workflow_step.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
@@ -33,6 +34,7 @@
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <memory>
 #include <mutex>
+#include <optional>
 
 namespace ores::workflow::service {
 
@@ -86,12 +88,17 @@ public:
      * @param registry        Registry of all known workflow definitions.
      * @param instance_states Pre-loaded FSM state map for workflow_instance.
      * @param step_states     Pre-loaded FSM state map for workflow_step.
+     * @param verifier        JWT verifier used to read the caller's username
+     *                        from the token a start request forwards. Empty
+     *                        when the service has no key, in which case every
+     *                        record is attributed to the service account.
      */
     workflow_engine(ores::nats::service::client& nats,
                     ores::database::context ctx,
                     std::shared_ptr<const workflow_registry> registry,
                     fsm_state_map instance_states,
-                    fsm_state_map step_states);
+                    fsm_state_map step_states,
+                    std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
     /**
      * @brief Handles a step-completed event from a domain service.
@@ -215,6 +222,7 @@ private:
     std::shared_ptr<const workflow_registry> registry_;
     fsm_state_map instance_states_;
     fsm_state_map step_states_;
+    std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     repository::workflow_instance_repository instance_repo_;
     repository::workflow_step_repository step_repo_;
 

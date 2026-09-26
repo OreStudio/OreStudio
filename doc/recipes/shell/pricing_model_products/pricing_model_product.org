@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-pricing_model_products add <id> <pricing_model_config_id> <pricing_engine_type_code> <model> <engine> <reason> <commentary>
+pricing_model_products add <pricing_model_config_id> <pricing_engine_type_code> <model> <engine> <reason> <commentary>
 #+end_example
 
 It is addressed at =analytics.v1.pricing_model_products.put=.
 
 #+name: pricing_model_products-add
 #+begin_src ores-shell :tangle pricing_model_products-add.ores :exports none
-pricing_model_products add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+pricing_model_products add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=

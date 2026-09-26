@@ -140,7 +140,7 @@ void pricing_model_product_commands::register_commands(cli::Menu& root_menu, nat
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <pricing_model_config_id> <pricing_engine_type_code> <model> <engine> <reason> "
+        "add <pricing_model_config_id> <pricing_engine_type_code> <model> <engine> <reason> "
         "<commentary>");
 
     menu->Insert(
@@ -357,8 +357,8 @@ void pricing_model_product_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 4 + 2) {
+            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -418,7 +418,7 @@ void pricing_model_product_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.pricing_model_config_id,
                    parsed->positionals[next++],
                    "pricing_model_config_id");

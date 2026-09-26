@@ -26,7 +26,7 @@ set(files
     "app/commands/analytics/pricing_model_product_parameter_commands.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/analytics/pricing_engine_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/analytics/pricing_model_config_commands.hpp"

@@ -790,6 +790,25 @@ partial index -- =correlation_id= where it is not null -- needs whichever proper
 expresses a predicate; that is not yet established and is the one detail to check
 before writing the section.
 
+Two things are now established about the mechanism, and one is not.
+
+The generator does own indexes: =org_loader.py= parses an =Indexes= section at
+lines 1395, 1467 and 4750 and puts the result on =de["indexes"]=, which the
+templates consume. So the four expressible indexes have a home in the model.
+
+What is not established is which declaration form this entity type takes. The
+loader has more than one index path -- at least one reads a table and at least one
+reads subsections -- and =ores.compute='s =result.org= uses subsections carrying
+=:columns:= and =:current_only:=. Picking the wrong one would regenerate silently
+wrong SQL, which is the failure this wave has already paid for once.
+
+And the partial index has no mechanism at all. No model anywhere declares a
+predicate, and the codegen has no =:where:= or equivalent. So the =correlation_id=
+index cannot be expressed today, and the honest resolutions are to keep the
+hand-written constraint script for it or to add generator support -- not to drop
+the index, and not to model it as a full index on a nullable column and call it
+equivalent.
+
 Left as a recorded next step rather than half-applied: a model change that is
 regenerated but not verified is how this wave's earlier churn started.
 

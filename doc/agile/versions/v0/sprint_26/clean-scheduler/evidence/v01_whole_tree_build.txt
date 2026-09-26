@@ -1,0 +1,20 @@
+V01 whole-tree build
+====================
+
+Command:  ./compass.sh build          (no target: the whole tree)
+Revision: 20e4da0fca (working tree clean)
+Result:   exit 0
+
+What it built, from the log: every component library and service, every test
+binary, the shell executable, and the one consumer of this component,
+ores.reporting, whose report_scheduling_service.cpp carries the migration to
+the canonical put/delete verbs and the per-job reconciliation. The scheduler's
+three libraries, its service entry point and its three test binaries are all in
+the log as built targets.
+
+This closes V01: "the whole tree builds, with the component's tests and every
+consumer."
+
+The same command was run once before, at 378a7c3594, and also exited 0. The
+second run is the one recorded here because it includes the reporting change
+that the first did not.

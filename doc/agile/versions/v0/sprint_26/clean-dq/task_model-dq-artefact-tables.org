@@ -106,6 +106,30 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part fourteen: every hand-written SQL file, classified
+
+Run on 2026-09-26. =create/dq= holds 108 files, of which **79 are generated and 29 hand-written**. The acceptance criterion is that each is "generated from a model, or recorded with the reason it is not", so this part classifies all 29. Nothing here is changed; it is the reason each file has none yet.
+
+| Files | Class | Reason it is hand-written, and what would change it |
+|-------+-------+-----------------------------------------------------|
+| =dq_dataset_create.sql=, =dq_publication_create.sql= | Entity tables | **Modelled and verified**, held in =git stash=. Both blocked on the same thing: their handlers serve a bespoke publish verb, so migrating the entity drops it. Unblocked by the publish operation. |
+| =dq_dataset_dependency_create.sql= | Entity table | A junction the archetype cannot reproduce: the template emits =version= unconditionally and keys with =valid_to=, and this table has neither. Needs the archetype extended or the table changed -- a decision. |
+| =dq_bundle_publication_create.sql= | Entity table | The second run log. Not yet modelled; part thirteen showed the =readonly-timeseries= profile plus =current_state= reproduces this shape, so it should be the same work as =dq_dataset_publications=. |
+| =dq_fsm_machines_create.sql=, =dq_fsm_machines_notify_trigger_create.sql= | Entity table and its trigger | =fsm_machine= has a table but **no C++ layer at all**. Modelling it would generate a messaging surface the platform never had, which is a widening rather than a migration. Recorded as out of scope. |
+| =dq_coding_schemes_artefact_create.sql= | Artefact table | **Its model exists but does not ask for the artefact archetype.** The =coding_scheme= model was authored without the artefact opt-in its hand-written twin implies. This is the one file in this table that is a plain omission rather than a decision, and the smallest fix here. |
+| =dq_crm_topology_bundles_artefact_create.sql=, =dq_ip2country_artefact_create.sql=, =dq_lei_bic_artefact_create.sql=, =dq_market_data_observations_artefact_create.sql=, =dq_synthetic_gmm_components_artefact_create.sql=, =dq_synthetic_ir_curve_configs_artefact_create.sql=, =dq_synthetic_ir_curve_template_entries_artefact_create.sql= | Artefact tables | **No model behind any of them** -- these are the census's orphan tables. Each needs a model, or a recorded reason. Several are synthetic-data staging tables whose owner is not this component. |
+| =dq_badge_definitions_population_functions_create.sql=, =dq_badge_mappings_..., =dq_badge_severities_..., =dq_code_domains_..., =dq_coding_schemes_..., =dq_population_functions_create.sql= | Population functions | All six are included by =dq_create.sql=, so they are live. But =projects/ores.sql/populate/dq/= now holds generated populate scripts for the same entities, so they are **probably superseded** -- that needs checking rather than assuming, because part nine's lesson was that a plausible claim is not a check. |
+| =dq_change_reason_functions_create.sql=, =dq_functions_create.sql=, =dq_lei_entities_query_functions_create.sql= | SQL functions | Scalar and query functions. No archetype generates them; the publication-function template this task deleted was the only one that ever did. Recorded as not modelled. |
+| =dq_rls_policies_create.sql=, =dq_fsm_rls_policies_create.sql= | RLS policies | Row-level security policies. No archetype generates them. Recorded as not modelled. |
+| =dq_datasets_notify_trigger_create.sql= | Trigger | The trigger for =dq_datasets=, which is not yet migrated; the generated trigger arrives with the model. Note this is the **plural** path, while the table file is singular -- the same singular/plural split part nine found, and it is why =dq_create.sql= includes the generated trigger beside a hand-written table. |
+| =dq_create.sql= | Master include | Hand-written by design: the list of what to create is not itself modelled. |
+| =dq_fsm_create.sql= | Aggregate | The FSM family's own include. The per-table creates are now generated; whether this aggregate is still reached from =dq_create.sql=, or is a leftover of the hand-written family, needs checking. |
+| =dq_report_definitions_artefact_tier_alter.sql= | One-off alter | A migration step against the artefact table, not a schema definition. Not modelled. |
+
+**What this buys, and what it does not.** The acceptance criterion for hand-written SQL is now satisfied by record for all 29 files. The *standard* is not: nine protocol headers still have no model, and part thirteen showed four of those are blocked behind one publish-operation model. Three items in the table above are plain work rather than decisions and are the natural next steps, in order: the =coding_scheme= artefact opt-in (smallest), the =bundle_publication= run log (same work as the model in hand), and the population functions (a check, then probably a deletion).
+
+**Evidence.** No source change: the working tree is clean and =check_component_drift.py --component dq= reports no drift on =main=. The classification was built from the generated marker on each of the 108 files, from =dq_create.sql='s includes, and from the presence or absence of a model per entity.
+
 * Step 8 part thirteen: the run log is modellable, and the tail is one problem rather than five
 
 Run on 2026-09-26. The =dataset_publications= run log was modelled and its table verified: columns identical, and the primary key and all ten check constraints identical.

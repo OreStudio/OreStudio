@@ -79,12 +79,14 @@ record each item's result in the table below.
 
 The drift check's =--dry-run= is the safe way to draft a model, but it throws
 the rendered tree away, so the only thing a reader sees is the list of paths
-that would change. =.audit/clean-variability/render_variability.py= does the
-same render into a directory it keeps. It calls the same =_generate_single= the
-in-place mode uses, so the units are identical, and it writes nothing into the
-repository. The draft's whole output — 40 files across SQL, C++, shell and
-recipes — can then be read line by line before anything lands, which is how the
-write-record defect below was found rather than shipped.
+that would change. =projects/ores.codegen/scripts/render_component_draft.py=
+does the same render into a directory it keeps. It calls the same
+=_generate_single= the in-place mode uses, so the units are identical, and it
+writes nothing into the repository. The draft's whole output — 40 files across
+SQL, C++, shell and recipes — can then be read line by line before anything
+lands, which is how the write-record defect below was found rather than
+shipped. It takes any component's catalogue slug, so the next clean-standard
+task can use it too.
 
 ** What the component is
 

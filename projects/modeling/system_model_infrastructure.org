@@ -64,6 +64,25 @@ from the [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] transport layer.
 |---------------+----------------------------------------------+--------------------------|
 | [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] | In-process event bus with PostgreSQL backing | [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
 
+** ores.storage
+
+The client half of ORE Studio's object storage. It moves files between a local
+disk and an S3-shaped HTTP API that keeps objects under a bucket and a key: it
+owns the =/api/v1/storage/{bucket}/{key}= path shape, a synchronous Beast HTTP
+GET and PUT that stream file bodies rather than buffering them, a libarchive
+=tar.gz= pack and extract, and the atomic and composite transfer helpers the
+domain components call. It holds no bucket names of its own, so each caller
+names its bucket — =ores.compute= its package bucket, =ores.ore= its import and
+report buckets.
+
+| Sub-component | Role                                                                   | Dependencies |
+|---------------+------------------------------------------------------------------------+--------------|
+| [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]]  | Object storage client: bucket keys, HTTP file transfer, tar.gz archives | [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]], [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]] |
+
+Related documents:
+
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — the bucket and key scheme the compute callers read and write.
+
 * See also
 
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the index page with the four-layer architecture overview.

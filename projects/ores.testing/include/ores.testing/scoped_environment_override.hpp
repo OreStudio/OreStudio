@@ -37,6 +37,11 @@ namespace ores::testing {
  * environment. This guard saves real values for every overridden or
  * stripped key, swaps in the fake provider, and syncs the real env.
  * On destruction everything is restored.
+ *
+ * The fake provider answers every read while the guard is alive, so a
+ * key the guard does not carry reads as unset even when the real
+ * environment holds it. List every key the code under test reads, or
+ * that code sees an empty environment.
  */
 class scoped_environment_override final {
 public:

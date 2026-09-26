@@ -342,6 +342,7 @@ via its "Verifies task" field.
 | 5 | The shell group overview gained =analytics= in =#+parts:= but its Part/Role table still listed three parts. | =projects/ores.shell/modeling/component_overview.org= | Accepted | Table now lists every part in build order, and the closing paragraph no longer promises a "later wave" that has arrived. |
 | 6 | M04 credits the shell opt-in with producing the table columns; the =Table display= section does that. | task doc | Accepted | Corrected. |
 | 7 | "All five suites pass" rests partly on a =CHECK(true)= smoke test. | =pricing_model_config_commands_tests.cpp= | Declined | The assertion is template-inherited and matches the reference components; the suite's value is that the unit registers and links, which it proves. |
+| 8 | The new inbox capture's =* What= and =* Why= still held the template placeholders. | =codegen-shell-recipe-sentinel-for-optional-columns.org= | Accepted | Filled in from the =#+description= line and the V04 exception, with the evidence and the fix shape. Raised by the GitHub review of PR #2145. |
 
 * Result
 

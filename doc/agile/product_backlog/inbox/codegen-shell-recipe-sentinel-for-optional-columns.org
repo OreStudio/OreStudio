@@ -13,16 +13,44 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+=_sentinel_value= in =projects/ores.codegen/src/codegen/org_loader.py= returns
+the value a generated recipe script sends for a column. It carries an entry per
+non-optional C++ type and falls back to =__none__= for anything else, and
+=std::optional<...>= has no entry. The shell's absent-value token is ='-'=
+(=ores.shell.api= =command_token.hpp=, =absent_token=), so a generated script
+whose optional column is a uuid sends a token the client cannot parse. The
+client aborts with =Invalid value for <field>: __none__= before the request
+leaves, which defeats the script's purpose: it exists to prove the command is
+registered, the subject has a subscriber and the request decoded.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+Found on 2026-09-26 during the =ores.analytics= clean pass. One of the 40
+generated analytics scripts, =pricing_model_product_parameters put-many=,
+aborts this way because its optional =pricing_model_product_id= is a uuid.
+
+Evidence:
+
+1. =projects/ores.analytics/modeling/ores.analytics.pricing_model_product_parameter.org=
+   declares =pricing_model_product_id= as =std::optional<boost::uuids::uuid>=.
+2. =org_loader._sentinel_value= maps =boost::uuids::uuid= to the zero uuid and
+   has no =std::optional= entry, so the optional column falls through to
+   =__none__=.
+3. =projects/ores.shell/api/include/ores.shell/app/command_token.hpp= reserves
+   ='-'= for an absent optional, so =from_token= throws on =__none__= and the
+   generated unit names the field it rejected.
+
+The fix is one branch in =_sentinel_value=: an optional type maps to ='-'=. It
+is a codegen-round change rather than a per-component one, because iam declares
+seven optional uuid columns, so the fix rewrites iam's committed recipes and its
+script library as well. A regression test belongs in the codegen suite beside
+=test_org_loader_keys.py=.
 
 * References
 
--
+- =projects/ores.codegen/src/codegen/org_loader.py= — =_sentinel_value=
+- =projects/ores.shell/api/include/ores.shell/app/command_token.hpp= — =absent_token=
 
 * See also
 
--
+- [[id:B64C92DE-56F6-40D1-A080-16A6690E40E6][Bring ores.analytics to the clean standard]] — where this was found, and the V04 exception it is recorded as.

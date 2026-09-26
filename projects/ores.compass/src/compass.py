@@ -6488,10 +6488,12 @@ def cmd_site(argv):
     sp.add_argument("--port", type=int, default=0,
                     help="Port to serve on (default: ORES_SITE_PORT from .env, else 51004)")
 
-    sub.add_parser("start", help="Start the site-preview systemd unit "
+    site_start = sub.add_parser("start", help="Start the site-preview systemd unit "
                    "(build first with 'compass build --direct site')")
-    sub.add_parser("stop", help="Stop the site-preview systemd unit")
-    sub.add_parser("status", help="Report the site-preview systemd unit's state")
+    site_stop = sub.add_parser("stop", help="Stop the site-preview systemd unit")
+    site_status = sub.add_parser("status", help="Report the site-preview systemd unit's state")
+    for site_p in (site_start, site_stop, site_status):
+        systemctl_bus.add_busctl_argument(site_p)
 
     sp3 = sub.add_parser("page", help="Publish changed pages to the site "
                          "output, reusing the caches from the last full "
@@ -6521,11 +6523,11 @@ def cmd_site(argv):
     if args.subcmd == "show":
         return _cmd_site_show(args.path, raw=args.raw, width=args.width)
     if args.subcmd == "start":
-        return _cmd_site_start()
+        return _cmd_site_start(getattr(args, "use_busctl", False))
     if args.subcmd == "stop":
-        return _cmd_site_stop()
+        return _cmd_site_stop(getattr(args, "use_busctl", False))
     if args.subcmd == "status":
-        return _cmd_site_status()
+        return _cmd_site_status(getattr(args, "use_busctl", False))
     if args.subcmd != "serve":
         ap.print_help()
         return 1
@@ -6618,7 +6620,7 @@ def _site_generate_and_deploy(env_name, port):
     return unit_name
 
 
-def _cmd_site_start():
+def _cmd_site_start(use_busctl=False):
     """Start the site-preview server as a real systemd --user unit --
     idiomatic in the same sense every other ORE Studio process now is
     (systemctl-tracked via its own cgroup, no PID-file bookkeeping to go
@@ -6628,6 +6630,7 @@ def _cmd_site_start():
     would make the common "just re-serve what's already built" case slow.
     Run `compass build --direct site` first when the content changed."""
     env = _read_env_map()
+    systemctl_bus.adopt_transport_setting(env, use_busctl)
     env_name = env.get("ORES_ENV_NAME", "")
     if not env_name:
         print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
@@ -6648,8 +6651,10 @@ def _cmd_site_start():
     return 0
 
 
-def _cmd_site_stop():
-    env_name = _read_env_map().get("ORES_ENV_NAME", "")
+def _cmd_site_stop(use_busctl=False):
+    env = _read_env_map()
+    systemctl_bus.adopt_transport_setting(env, use_busctl)
+    env_name = env.get("ORES_ENV_NAME", "")
     if not env_name:
         print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
         return 1
@@ -6658,8 +6663,10 @@ def _cmd_site_stop():
     return 0 if result.returncode == 0 else 1
 
 
-def _cmd_site_status():
-    env_name = _read_env_map().get("ORES_ENV_NAME", "")
+def _cmd_site_status(use_busctl=False):
+    env = _read_env_map()
+    systemctl_bus.adopt_transport_setting(env, use_busctl)
+    env_name = env.get("ORES_ENV_NAME", "")
     if not env_name:
         print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
         return 1
@@ -7341,6 +7348,23 @@ def cmd_codegen(argv):
     return cmd_regenerate(args, base_dir)
 
 
+def _adopt_transport_from_env_file(env_file: Path) -> None:
+    """Adopt the checkout's .env transport choice, before any dispatch.
+
+    compass reads .env into a dict and never writes os.environ, so a value
+    that lives only in the file is invisible to systemctl_bus unless it is
+    handed over. Doing it once here covers every command, including the ones
+    with no pillar of their own, instead of only those that parse a
+    --use-busctl flag. A missing file is not an error at this point: only
+    the commands that need .env report it.
+    """
+    if not env_file.is_file():
+        return
+    import compass_db
+    systemctl_bus.adopt_transport_setting(
+        compass_db.load_env(PROJECT_ROOT, env_file))
+
+
 def main():
     # Parse --env / --env-file before command dispatch so sub-commands
     # that read .env see the alternate file.  Pop so the individual
@@ -7355,6 +7379,8 @@ def main():
         _ACTIVE_ENV_FILE = _resolved
     else:
         _resolved = PROJECT_ROOT / ".env"
+
+    _adopt_transport_from_env_file(_resolved)
 
     # `list` and `show` pass every remaining argument straight through to the
     # bundled doc tools (full flag compatibility, including their own --help).

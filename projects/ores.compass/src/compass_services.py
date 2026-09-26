@@ -695,11 +695,7 @@ def cmd_clear_logs(ctx, args):
 def _common(parser):
     parser.add_argument("--preset", default=None,
                         help="CMake preset (default: ORES_PRESET from .env)")
-    parser.add_argument(
-        "--use-busctl", action="store_true",
-        help="Reach the systemd user manager through busctl instead of "
-             "systemctl. Use this inside a sandbox, where the manager "
-             "refuses systemctl's connection.")
+    systemctl_bus.add_busctl_argument(parser)
 
 
 def _service_argument(parser):

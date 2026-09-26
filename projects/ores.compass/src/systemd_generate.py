@@ -1047,20 +1047,6 @@ def cmd_quadlet_deploy(project_root: Path, env: dict, args) -> int:
     return 0
 
 
-def _busctl_argument(parser):
-    """The transport flag every `compass systemd` subcommand accepts.
-
-    Mirrors compass_services' flag of the same name. ORES_USE_BUSCTL in .env
-    supplies the default, so this only forces the transport on for one call.
-    """
-    parser.add_argument(
-        "--use-busctl", action="store_true",
-        help="Reach the systemd user manager through busctl instead of "
-             "systemctl. Use this inside a sandbox, where the manager "
-             "refuses systemctl's connection. ORES_USE_BUSCTL in .env sets "
-             "the default for every compass command.")
-
-
 def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     parser = argparse.ArgumentParser(prog="compass systemd")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -1078,7 +1064,7 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
         "--host", help="SSH host (e.g. from ~/.ssh/config) to deploy to "
         "instead of this machine")
     for sub_parser in (generate_p, deploy_p, quadlet_p, quadlet_deploy_p):
-        _busctl_argument(sub_parser)
+        systemctl_bus.add_busctl_argument(sub_parser)
     args = parser.parse_args(argv)
 
     env = load_env(project_root, env_file)

@@ -55,12 +55,17 @@ _hint_printed = False
 _TRUTHY = ("1", "true", "yes", "on")
 
 
-def _truthy(value) -> bool:
+def _truthy(value: object) -> bool:
     return str(value if value is not None else "").strip().lower() in _TRUTHY
 
 
 def set_use_busctl(enabled: bool) -> None:
-    """Force the busctl transport on or off for this process."""
+    """Set the transport override.
+
+    True forces busctl. False clears a previous force and means no opinion:
+    it does not force plain systemctl, because use_busctl() still consults
+    the environment afterwards.
+    """
     global _use_busctl
     _use_busctl = bool(enabled)
 
@@ -76,6 +81,21 @@ def adopt_transport_setting(env: dict, flag: bool = False) -> None:
     """
     if flag or _truthy(env.get("ORES_USE_BUSCTL")):
         set_use_busctl(True)
+
+
+def add_busctl_argument(parser) -> None:
+    """Declare the transport override on a command's parser.
+
+    One definition for every command that drives systemd, so the flag's
+    spelling and help text cannot drift between pillars. The CLI adopts the
+    .env choice once before dispatch; this only overrides it for one call.
+    """
+    parser.add_argument(
+        "--use-busctl", action="store_true",
+        help="Reach the systemd user manager through busctl instead of "
+             "systemctl. Use this inside a sandbox, where the manager "
+             "refuses systemctl's connection. ORES_USE_BUSCTL in .env sets "
+             "the default for every compass command.")
 
 
 def use_busctl() -> bool:

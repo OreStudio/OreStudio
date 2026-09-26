@@ -355,12 +355,62 @@ the command payload, that one step is built per declared entry, that compensatio
 completes, and that a request which is not a step list builds nothing. The first of
 those fails without the =std::optional= change, which is what it is for.
 
+** The instance id belongs to the caller
+
+=workflow start= takes =--instance-id <uuid>=. Absent, the id is minted as before.
+Supplied, the start becomes repeatable: a second request for an id that already
+exists reports the run and starts nothing.
+
+The reason is not scripting, although a script is what benefits. The engine
+already honoured a caller-supplied id, and =start_workflow_message='s own
+documentation names the case -- ORE's import pre-generates one so it can return
+the id before the engine has processed anything. The shell was the only caller
+that minted an id and kept it to itself. It also gives a run an idempotency key,
+which matters more than the convenience: the start subject is a durable
+JetStream subscription, so a redelivered start must not become a second run.
+
+A repeat is refused in two places because the two answer different questions. The
+shell looks the id up first, so an ordinary repeat is reported rather than
+dispatched. The engine checks before it writes, which covers a repeat that
+arrives before the first one has written its row.
+
+Verified against the live fleet. A caller-chosen id is accepted and dispatched.
+The same id in a later invocation reports instead:
+
+#+begin_example
+Workflow instance aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee already exists (completed);
+nothing was started.
+✓ All 1 step(s) completed.
+#+end_example
+
+The race path -- a brand-new id given twice back to back, so neither request can
+see the other's row -- leaves exactly one run:
+
+#+begin_example
+ live_instances | all_versions | live_steps
+              1 |            1 |          1
+#+end_example
+
+and the engine recorded the refusal as information, not as a failure:
+
+#+begin_example
+Workflow already started; leaving it alone: type=identity_workflow workflow=99999999-...
+#+end_example
+
+The restart that followed redelivered five earlier starts; all five were declined
+the same way. Before this change the same replay met the store's
+create-over-live-row guard, which is a logged failure.
+
+** A test target ctest could not see
+
+=ores.shell.workflow.tests= was built and wired into =run_all_tests= but never
+registered with =add_test=, so =compass test run= and any ctest-based gate skipped
+it. Every sibling shell test directory has the registration; this one, created by
+the clean-up, did not. The new =workflow start= cases could not have been run at
+all without it.
+
 ** What is left
 
-The configurations are designed but not yet named or scripted; each still needs a
-script that asserts its terminal state rather than printing it. The shell cannot
-follow a run it started inside one script, because the instance id is generated
-inside =workflow start= and a script cannot read it back -- either =workflow start=
-should accept a caller-supplied =--instance-id=, or the wait must take the most
-recent instance of a type. Until then a run takes two script invocations.
+The configurations are designed but not yet named or scripted. Each still needs a
+script that asserts its terminal state rather than printing it.
 

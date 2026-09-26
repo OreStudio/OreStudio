@@ -106,6 +106,23 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part twelve: the FSM pair lands, and two mapper defects go with it
+
+Run on 2026-09-26. The FSM migration is merged. =fsm_protocol.hpp=, =fsm_handler.hpp= and =fsm_service.{hpp,cpp}= are deleted, the registrar composes the two generated registrars, both shell units are registered, and both tables regenerate identically to their hand-written originals. **Four of the original twelve headers are now gone** -- =dimension_protocol.hpp=, =data_organization_protocol.hpp=, =coding_scheme_protocol.hpp= and =fsm_protocol.hpp=.
+
+**Two generator defects came out of it, of the same kind.** Both the history field mapper and the SQL mapper rendered a uuid column unconditionally as =boost::uuids::to_string(v.x)=, so a nullable uuid natural key produced code that does not compile. Two things had to change, and the second is the interesting one:
+
+- Both templates gained a nullable arm -- the history mapper renders =v.x ? boost::uuids::to_string(*v.x) : std::string{}=, the SQL mapper guards the assignment with =if (v.x)=.
+- The **loader** now sets the =render_is_*= flags on natural-key and primary-key columns as well as on plain columns. That is why the *columns* loop already handled an optional uuid while the *natural-key* loop did not: the natural-key columns had no flag for the branch to test, so a template-only fix would have changed nothing.
+
+Both are pinned by a new test module, mutation-proven: reverting the loader extension fails both tests and only those. Neither defect is specific to dq -- any modelled entity with a nullable uuid and a history surface hits them, which is why they were fixed at source.
+
+**The recorded mistake did not recur.** Part eleven said that anchoring a registrar block replacement on the payload line leaves the closing =}));= behind, and that the anchor must be the closing line. It happened again in this change, and because it was written down it was recognised and fixed in one step rather than diagnosis. That is the case for recording the shape of a mistake and not just the instance.
+
+**What the remaining five are.** =dataset= is modelled and verified and in =git stash=, waiting on its **publish operation**, which the hand-written handler owns and the generated stack has no equivalent for. The two publication run logs need function defaults, bigints and a non-bitemporal key. =lei_entity_summary_protocol.hpp= and =report_definition_template_protocol.hpp= serve **no table at all**, so they need a projection archetype or a recorded exception. =publish_from_dq_protocol.hpp= is an operation with no subjects of its own. =badge_protocol.hpp= is hand-written by design.
+
+**Evidence.** Codegen suite 709 passing plus the two new tests; =check_component_drift.py --component dq= no drift twice in a row and =--all= no drift; six targets build and link including =ores.shell.exe=; the script tangle produces no change; every other gate passes; CI green on all ten checks.
+
 * Step 8 part eleven: the FSM pair is wired, and one generator defect stops it
 
 Run on 2026-09-26. The FSM migration was carried to the point where it is a complete change apart from one thing, and that thing is a **generator defect**, not a gap in the plan.
@@ -844,6 +861,7 @@ via its "Verifies task" field.
 | https://github.com/OreStudio/OreStudio/pull/2198 | [dq] Model the origin and treatment dimensions, retiring the dimension layer |
 | https://github.com/OreStudio/OreStudio/pull/2200 | [dq] Model methodology, retiring the data organization layer |
 | https://github.com/OreStudio/OreStudio/pull/2203 | [dq] Model the coding scheme pair, retiring its hand-written protocol |
+| https://github.com/OreStudio/OreStudio/pull/2216 | [dq] Model the FSM pair, and fix the mapper templates for an optional uuid |
 
 * Review
 

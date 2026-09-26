@@ -64,8 +64,7 @@ package "external" <<Rectangle>> {
 ' --- part-to-part dependencies
 tsvc --> tcore : domain types, protocol, logging
 tsvc --> tdb : persist and query
-tdb --> tcore : log_record, resource, samples
-tcore ..> tsvc : hybrid exporter forwards log records
+tdb --> tcore : protocol and domain types
 
 ' --- one-way publishes into the component
 wrapper --> s_logs_publish : publish, batches of 200
@@ -82,12 +81,13 @@ tsvc <--> s_stream_samples_list : request in / reply out
 
 ' --- collection and storage
 tsvc ..> nats_monitor : polls /varz and /jsz
-tdb --> postgres : four telemetry tables
+tdb --> postgres : four tables, two stats views
 
 note bottom of s_server_samples_list
-The four request subjects have no in-repo caller. The
-server and stream sample handlers reply with an empty
-samples list and do not call the repository yet.
+The two NATS sample handlers read the repository, so a
+sample query returns stored rows. The wrapper ingests its
+batches, and every service instance, this one included,
+publishes its own heartbeat.
 end note
 
 legend right

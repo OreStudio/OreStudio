@@ -69,6 +69,13 @@ namespace ores #F2F2F2 {
                     +tablename : constexpr static const char*
                     +sampled_at : sqlgen::PrimaryKey<db_timestamp>
                     +tenant_id : sqlgen::PrimaryKey<string>
+                    +in_msgs : int64_t
+                    +out_msgs : int64_t
+                    +in_bytes : int64_t
+                    +out_bytes : int64_t
+                    +connections : int
+                    +mem_bytes : int64_t
+                    +slow_consumers : int
                 }
                 class service_sample_entity <<struct>> {
                     +schema : constexpr static const char*
@@ -84,13 +91,13 @@ namespace ores #F2F2F2 {
                     +sampled_at : sqlgen::PrimaryKey<db_timestamp>
                     +tenant_id : sqlgen::PrimaryKey<string>
                     +stream_name : sqlgen::PrimaryKey<string>
+                    +messages : int64_t
+                    +bytes : int64_t
+                    +consumer_count : int
                 }
                 class telemetry_mapper {
                 }
                 class telemetry_repository {
-                    +limit : uint32_t
-                    +limit : uint32_t
-                    +hours : uint32_t
                 }
             }
         }
@@ -98,6 +105,143 @@ namespace ores #F2F2F2 {
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass draws the six entities, the mapper and the repository,
+' and nothing else. It leaves the mapper and the repository as empty boxes,
+' and it draws no relationship at all. The blocks below give both their API,
+' note the ORM settings the class bodies repeat, and draw the part's own
+' edges plus its dependence on the core part's protocol types.
+
+skinparam classAttributeIconSize 0
+
+class ores::telemetry::database::repository::telemetry_mapper {
+    {static} +to_entity(entry : messaging::telemetry_log_entry, tenant_id : string) : telemetry_entity
+    {static} +to_domain(entity : telemetry_entity) : messaging::telemetry_log_entry
+    {static} +to_domain(entity : telemetry_stats_hourly_entity) : domain::telemetry_stats
+    {static} +to_domain(entity : telemetry_stats_daily_entity) : domain::telemetry_stats
+    {static} +to_entity(sample : messaging::nats_server_sample, tenant_id : string) : nats_server_sample_entity
+    {static} +to_domain(entity : nats_server_sample_entity) : messaging::nats_server_sample
+    {static} +to_entity(sample : messaging::nats_stream_sample, tenant_id : string) : nats_stream_sample_entity
+    {static} +to_domain(entity : nats_stream_sample_entity) : messaging::nats_stream_sample
+    {static} +to_entity(sample : messaging::service_sample) : service_sample_entity
+    {static} +to_domain(entity : service_sample_entity) : messaging::service_sample
+}
+note right of "ores::telemetry::database::repository::telemetry_mapper"
+Stateless: every method is static, and each pair converts one
+protocol payload to its entity and back. The log and NATS
+converters take the tenant id; the service converter does not,
+because a service heartbeat is not tenant-scoped.
+end note
+
+class ores::telemetry::database::repository::telemetry_repository {
+    +sql() : string
+    +create(ctx : context, entry : messaging::telemetry_log_entry) : void
+    +create_batch(ctx : context, batch : domain::telemetry_batch) : size_t
+    +query(ctx : context, q : messaging::telemetry_query) : vector<messaging::telemetry_log_entry>
+    +count(ctx : context, q : messaging::telemetry_query) : uint64_t
+    +read_by_session(ctx : context, session_id : uuid, limit : uint32_t) : vector<messaging::telemetry_log_entry>
+    +read_by_account(ctx : context, account_id : uuid, start : time_point, end : time_point, limit : uint32_t) : vector<messaging::telemetry_log_entry>
+    +read_hourly_stats(ctx : context, q : domain::telemetry_stats_query) : vector<domain::telemetry_stats>
+    +read_daily_stats(ctx : context, q : domain::telemetry_stats_query) : vector<domain::telemetry_stats>
+    +get_summary(ctx : context, hours : uint32_t) : domain::telemetry_summary
+    +count_errors(ctx : context, source_name : string, hours : uint32_t) : uint64_t
+    +delete_old_logs(ctx : context, older_than : time_point) : uint64_t
+    +insert_server_sample(ctx : context, sample : messaging::nats_server_sample) : void
+    +insert_stream_samples(ctx : context, samples : vector<messaging::nats_stream_sample>) : void
+    +query_server_samples(ctx : context, q : messaging::nats_server_samples_query) : vector<messaging::nats_server_sample>
+    +query_stream_samples(ctx : context, q : messaging::nats_stream_samples_query) : vector<messaging::nats_stream_sample>
+    +insert_service_sample(ctx : context, sample : messaging::service_sample) : void
+    +list_service_samples(ctx : context) : vector<messaging::service_sample>
+}
+note right of "ores::telemetry::database::repository::telemetry_repository"
+The component's only database writer and reader. Every method
+takes a database context and runs under a skip_telemetry_guard,
+so the repository's own logging does not re-enter the sink. The
+sample methods are what the two NATS sample handlers and the
+heartbeat handler call; the log methods serve the logs subject.
+end note
+
+class ores::telemetry::database::repository::stream_output <<facet>> {
+    {static} +operator<<(os : ostream&, v : telemetry_entity) : ostream&
+    {static} +operator<<(os : ostream&, v : telemetry_stats_hourly_entity) : ostream&
+    {static} +operator<<(os : ostream&, v : telemetry_stats_daily_entity) : ostream&
+}
+note right of "ores::telemetry::database::repository::stream_output"
+Free functions declared beside the three entities that carry
+one. The two sample entities declare no stream operator.
+end note
+
+' --- the ORM settings the entity bodies repeat
+
+note right of "ores::telemetry::database::repository::telemetry_entity"
+ORM settings:
+- Schema:    public
+- Tablename: ores_telemetry_logs_tbl
+TimescaleDB hypertable partitioned by timestamp; the primary
+key is (id, timestamp).
+end note
+note right of "ores::telemetry::database::repository::telemetry_stats_hourly_entity"
+ORM settings:
+- Schema:    public
+- Tablename: ores_telemetry_stats_hourly_vw
+A continuous aggregate view, not a table.
+end note
+note right of "ores::telemetry::database::repository::telemetry_stats_daily_entity"
+ORM settings:
+- Schema:    public
+- Tablename: ores_telemetry_stats_daily_vw
+A continuous aggregate view with the component breakdown.
+end note
+note right of "ores::telemetry::database::repository::nats_server_sample_entity"
+ORM settings:
+- Schema:    public
+- Tablename: ores_telemetry_nats_server_samples_tbl
+Hypertable; the primary key is (sampled_at, tenant_id).
+end note
+note right of "ores::telemetry::database::repository::nats_stream_sample_entity"
+ORM settings:
+- Schema:    public
+- Tablename: ores_telemetry_nats_stream_samples_tbl
+Hypertable; the primary key is (sampled_at, tenant_id,
+stream_name).
+end note
+note right of "ores::telemetry::database::repository::service_sample_entity"
+ORM settings:
+- Schema:    public
+- Tablename: ores_telemetry_service_samples_tbl
+Hypertable; the primary key is (sampled_at, service_name,
+instance_id), so the table keeps one row per report.
+end note
+
+' --- the core part this part reads and writes
+
+package "ores.telemetry.core" <<Rectangle>> {
+    class "messaging:: payloads" as core_messaging <<library>>
+    class "domain:: batch and stats" as core_domain <<library>>
+    class "log::skip_telemetry_guard" as core_guard <<library>>
+}
+
+' --- relationships the automated pass cannot infer
+
+ores::telemetry::database::repository::telemetry_repository ..> ores::telemetry::database::repository::telemetry_mapper : converts through
+ores::telemetry::database::repository::telemetry_repository ..> ores::telemetry::database::repository::telemetry_entity : log rows
+ores::telemetry::database::repository::telemetry_repository ..> ores::telemetry::database::repository::telemetry_stats_hourly_entity : hourly stats
+ores::telemetry::database::repository::telemetry_repository ..> ores::telemetry::database::repository::telemetry_stats_daily_entity : daily stats
+ores::telemetry::database::repository::telemetry_repository ..> ores::telemetry::database::repository::nats_server_sample_entity : server samples
+ores::telemetry::database::repository::telemetry_repository ..> ores::telemetry::database::repository::nats_stream_sample_entity : stream samples
+ores::telemetry::database::repository::telemetry_repository ..> ores::telemetry::database::repository::service_sample_entity : heartbeats
+ores::telemetry::database::repository::telemetry_repository ..> core_messaging : payloads
+ores::telemetry::database::repository::telemetry_repository ..> core_domain : batch and stats
+ores::telemetry::database::repository::telemetry_repository ..> core_guard : guards every call
+
+ores::telemetry::database::repository::telemetry_mapper ..> ores::telemetry::database::repository::telemetry_entity
+ores::telemetry::database::repository::telemetry_mapper ..> ores::telemetry::database::repository::telemetry_stats_hourly_entity
+ores::telemetry::database::repository::telemetry_mapper ..> ores::telemetry::database::repository::telemetry_stats_daily_entity
+ores::telemetry::database::repository::telemetry_mapper ..> ores::telemetry::database::repository::nats_server_sample_entity
+ores::telemetry::database::repository::telemetry_mapper ..> ores::telemetry::database::repository::nats_stream_sample_entity
+ores::telemetry::database::repository::telemetry_mapper ..> ores::telemetry::database::repository::service_sample_entity
+ores::telemetry::database::repository::telemetry_mapper ..> core_messaging
+ores::telemetry::database::repository::telemetry_mapper ..> core_domain
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.telemetry.database.puml"

@@ -112,3 +112,27 @@ Those four sites are the only known over-rewrite. They are restored by
 hand after the run, which is cheaper and safer than a scope analysis the
 codemod cannot do textually: four lines, identifiable by the response
 type name the compiler reports.
+
+Update, fifth trial (13 errors to 3)
+------------------------------------
+Running the codemod and its documented post-steps, then repairing what
+the compiler named, reaches three errors:
+
+- The optional conversion must not be added where the wire member is a
+  uuid. Twenty-six sites came out as x.value_or("") on a field the write
+  record declares optional; the fix is to read the write record's types,
+  which the codemod does now, and to strip the empty value on the
+  members whose name ends in _id.
+- product_type needs to_string: the domain member is the enumeration and
+  the wire member is text, the mirror of the arm core.py emits for a
+  write.
+- A revert window 60 lines wide caught two modelled families along with
+  the four unmodelled ones, so two equity responses were reverted that
+  should not have been.
+- The batch delete is the same reshape as the batch save:
+  delete_trade_request.ids does not exist, and
+  delete_many_trades_request carries std::vector<trade_removal> removals.
+
+The first three are mechanical. The fourth is the second place a person
+chooses the request: a removal record carries the key and the version it
+expects, so the delete needs the version the old call did not state.

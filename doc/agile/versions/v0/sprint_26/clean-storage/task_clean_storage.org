@@ -52,7 +52,7 @@ record each item's result in the table below.
 4. Generation (G01 to G08).
 5. Wiring and data (W01 to W04).
 6. Shell (S01, S02).
-7. Structure and hygiene (H01 to H04).
+7. Structure and hygiene (H01 to H05).
 8. Verification (V01 to V08), ending with the registry entry.
 
 | Item | Result | Evidence |
@@ -79,6 +79,7 @@ record each item's result in the table below.
 | H02 | Fixed for the component's own duplicates. Three hand-rolled temporary-file constructions and their three hand-rolled clean-up blocks became one =scoped_temp_file= guard per call, and =upload= — which differed from =upload_returning_response= only by discarding the response body — now delegates to it, the way =http_client::put= already delegated to =put_returning_body=. No commented-out code, no dead code and no legacy fragment remains. Two cross-component duplicates stay, recorded rather than fixed: =ores.compute.wrapper= keeps its own archiver and its own Beast client, and that client buffers uploads in memory where this component streams them from disk. | The diff on =storage_transfer.cpp=; [[id:A3D9F559-9665-4E61-9564-2FF29E014541][Unify the codebase's three separate Beast HTTP client implementations]]; [[id:43217FF8-2359-4C99-8E1D-6344E50C47EE][Consolidate the duplicated tarball archivers into one shared utility]] |
 | H03 | Fixed. The transfer header described the old temporary-file scheme in five places: the class comment, the two composite helpers and the two blob helpers, three of them still naming a UUID and two promising removal only after success. All five now describe the guard that owns the file and removes it on the way out, whatever the outcome. No end-of-line comment, no commented-out code and no edit narration remains. The comment on =safe_error_string= stays: it records why the wrapper exists, which is undefined behaviour rather than history. | The comment sweep over =include/= and =src/= |
 | H04 | Passes. The sweep for standard-facility shims finds nothing: no =ORES_NO_UNIQUE_ADDRESS= and no hand-rolled =unreachable()=. The archiver's four =#ifdef _WIN32= blocks are not a shim over a standard facility — libarchive has separate wide-character entry points and a =std::filesystem::path= yields =wchar_t= on Windows — so they are not this item's concern; their placement is the audit's, and it is H01's recorded exception. For scale, the audit's own grep over the tree returns four files outside =ores.platform= carrying a platform macro: this component's archiver, =ores.compute.wrapper='s archiver, =ores.ore.core= and =ores.testing=. A broader macro sweep, which also counts =__GNUC__=, finds six: those four plus =ores.diff/include/ores.diff/export.hpp= and =ores.trading/core/include/ores.trading.core/export.hpp=. | The =grep= sweep for =_WIN32= and for the shims; the audit's platform-placement rule |
+| H05 | Passes. The overview carries the six sections the Component Documentation Guide requires — Summary, Inputs, Outputs, Entry points, Dependencies and See also — filled against the tree rather than as placeholders, and its Diagram section points at the committed =ores.storage.puml= and =ores.storage.png= pair. The component's code changed in this pass and the diagram was refreshed in the same pass, which is what H05 asks for. The component owns no schema, so no ER diagram applies. | The overview; the =puml= and image pair; the render, 3349 by 1455 |
 | Finding: a failed download destroyed the destination | =http_client::get= opened the destination with =file_mode::write= and only then read the response status, so a 404 truncated a file that was already there and left the error body in one that was not. The status is now read with =http::read_header= before the destination is opened. Fixed, and the two cases under V07 are the proof that it was broken. | The fix; =http_client_tests.cpp= |
 | G03 | Fixed. Neither =component_files.cmake= carried the generated marker; both do now, which takes the component off the 147-file staleness list the standard records. The src list also carried a Qt-era comment — "Headers must be listed for AUTOMOC to find Q_OBJECT declarations" — from a template that has since changed; it now says what the template says, that the headers are listed for the install and IDE targets. Every other file in the component is hand-written and carries no marker, which is correct. | =regenerate_cmake_component_files.py --component ores.storage=; the diff |
 | G06 | Passes. =regenerate_cmake_component_files.py --component ores.storage --check= reports every list up to date, and the tests list names the four new suites. The repo-wide staleness the standard records for other components is untouched by this pass. | The check; =tests/component_files.cmake= |
@@ -149,9 +150,9 @@ via its "Verifies task" field.
 
 * Result
 
-The clean standard is complete for a model-free component: of its 48 items, 26
+The clean standard is complete for a model-free component: of its 49 items, 26
 do not apply to a component with no entity, no protocol and no shell unit, and
-each is recorded with its reason; 20 pass or are fixed, with their evidence; and
+each is recorded with its reason; 21 pass or are fixed, with their evidence; and
 two are accepted exceptions — H01's platform placement, which the archiver
 capture already scopes, and V06, the registry gap the standard records for the
 whole infrastructure tier. That second exception is why the story's acceptance

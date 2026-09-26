@@ -72,13 +72,16 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2150][#2150]] | [compass] Default the environment to the busctl transport |
+| [[https://github.com/OreStudio/OreStudio/pull/2153][#2153]] | [compass] Carry the .env transport choice to systemctl_bus |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The independent verification of #2150 found that =ORES_USE_BUSCTL= in =.env= never reached the transport: compass reads =.env= into a dict and never writes =os.environ=, so =use_busctl()= could not see it. The default therefore did nothing, and a sandboxed seat still needed the flag on every call. | =systemd_generate.py=, =compass_services.py= | fixed | Follow-up PR #2153 adds =adopt_transport_setting= and calls it from both pillars after =load_env=. Proved on this worktree: with =ORES_USE_BUSCTL=1= in the real =.env= and no flag, =compass services status= reports =stopped=24 missing=0= where it reported =missing=24= before. |
+| 2 | The same report called the defect a regression, because the unconditional =set_use_busctl(False)= supposedly short-circuits before reading =os.environ=. | =systemctl_bus.py= | dismissed, disproved | =set_use_busctl(False)= does not mask the environment: with =ORES_USE_BUSCTL=1= exported and the override false, =use_busctl()= returns True. The base behaved identically for the =.env= path, so nothing regressed there. The finding's outcome was right and its mechanism was wrong. |
+| 3 | The report noted that 6 of the 15 new cases pass when their subject returns a constant. | tests | accepted | The round-trip =run()= and reload cases are genuine. #2153 replaces the flag-only class with cases that drive =run()= against a real env file, which is the shape that catches this defect. |
 
 * Result
 
@@ -104,3 +107,11 @@ gains version 24. Without it the existing checkouts stay at versions 21 to 23,
 the version check passes, and none of them is told to reconfigure, so the
 default would never reach them and the fix would be inert outside a new
 worktree. Recorded with =compass env version new=.
+
+Correction, 2026-09-26. The independent verification of #2150 found that the
+second and third sentences above described the intent rather than the
+behaviour: =ORES_USE_BUSCTL= in =.env= never reached the transport. compass
+reads =.env= into a dict and never writes =os.environ=, so =use_busctl()= had
+nothing to read. #2153 adds the missing handover, and re-derived on this
+worktree it now holds: with the key in a real =.env= and no flag,
+=compass services status= reports =stopped=24 missing=0=.

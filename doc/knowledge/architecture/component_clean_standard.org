@@ -120,7 +120,7 @@ a typecheck all missed; only a build and a test run found them.
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
-| H01 | All | The component passes the Component Architecture Audit, and its record is written. | Audit record; =validate_docs.sh= |
+| H01 | All | The component passes the Component Architecture Audit, and its record is written. The diagram is authored in two passes, never one. The automated pass reads data members and little else, so a class whose content is methods arrives as an empty box, and a facet of free functions does not arrive at all. The manual pass below the sentinel fills those boxes with the API, draws the relationships the automated pass cannot see, and deletes any edge the code does not support. A diagram of empty boxes is a skeleton, not a diagram. | Audit record; =validate_docs.sh=; the rendered image read, not merely regenerated |
 | H02 | All | No legacy code remains: no Qt or Wt fragment, no dead code, no commented-out code, no hand-written duplicate of a generated artefact. Two hand-written implementations of the same behaviour collapse into one, and the survivor keeps the consumers the pair had. | Review record on the task |
 | H03 | All | Comments follow the project comment rules. | compass-code-review-comments pass |
 | H04 | All | No hand-rolled per-platform shim survives where every supported compiler provides the standard facility. Replace the shim with the standard facility, and delete what existed only to carry it. | Review against the three supported compilers: MSVC, AppleClang, and GCC or Clang |
@@ -178,6 +178,13 @@ standard now holds 47 items. The findings behind the new items:
   one-line =enum class= in a header, which is what the parser reads, so
   the defect reaches all seven. Run the generator's dry run and read its
   diff before accepting a refresh.
+- An automated diagram pass is a skeleton, so the manual pass is not
+  optional polish. The pass reads data members only, which means every
+  interface and every static facade arrives as an empty box, and free
+  functions do not arrive at all. The first =ores.platform= diagram passed
+  a refresh check, a render and a file review, and still showed an
+  =environment_provider= with no methods and a class relationship the code
+  does not have. Read the rendered image before calling a diagram done.
 - The same defect recurs across components. 147 =component_files.cmake=
   files are stale for one reason: the marker template landed in commit
   =3a40c9c57e= and no component regenerated. Where a defect has one cause,

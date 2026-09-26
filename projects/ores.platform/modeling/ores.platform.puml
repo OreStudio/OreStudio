@@ -66,10 +66,121 @@ namespace ores #F2F2F2 {
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
 
-' Free functions cannot be drawn by the automated pass, so the net and process
-' facets are hand-authored. They use fully-qualified class names rather than a
-' reopened namespace block: this PlantUML version crashes when a namespace that
-' already holds classes is declared a second time.
+' The automated pass reads data members and nothing else, so a class whose
+' content is methods arrives as an empty box, and a facet of free functions
+' does not arrive at all. The blocks below fill those boxes and draw the
+' relationships the automated pass cannot see.
+'
+' They use fully-qualified class names rather than a reopened namespace block,
+' because this PlantUML version crashes when a namespace that already holds
+' classes is declared a second time. Redeclaring a class merges its members
+' into the box the automated pass already drew, so a refresh keeps both.
+
+class ores::platform::environment::environment_provider {
+    {abstract} +get(name : string) : optional<string>
+    {abstract} +set(name : string, value : string) : void
+    {abstract} +unset(name : string) : void
+}
+note right of "ores::platform::environment::environment_provider"
+The seam this facet exists for. A caller installs another
+provider, so a test reads and writes an in-memory map
+instead of the real process environment.
+end note
+
+class ores::platform::environment::environment {
+    {static} +get_value(name : string) : optional<string>
+    {static} +get_value_or_default(name : string, default_value : string) : string
+    {static} +get_int_value_or_default(name : string, default_value : int) : int
+    {static} +get_value_or_throw(name : string) : string
+    {static} +set_value(name : string, value : string) : void
+    {static} +unset_value(name : string) : void
+    {static} +provider() : environment_provider&
+    {static} +swap_provider(new_provider : environment_provider*) : environment_provider*
+}
+note right of "ores::platform::environment::environment"
+The facade every caller uses. It holds one provider, and
+swap_provider returns the previous one so a guard can
+restore it.
+end note
+
+class ores::platform::environment::real_environment_provider {
+    +get(name : string) : optional<string>
+    +set(name : string, value : string) : void
+    +unset(name : string) : void
+}
+note right of "ores::platform::environment::real_environment_provider"
+Reads the process environment. It goes through this class
+because std::getenv is deprecated in MSVC's STL and breaks
+the Windows build under -Werror.
+end note
+
+class ores::platform::environment::fake_environment_provider {
+    +get(name : string) : optional<string>
+    +set(name : string, value : string) : void
+    +unset(name : string) : void
+}
+note right of "ores::platform::environment::fake_environment_provider"
+An in-memory map. Scoped guards read values_ to know which
+keys to sync back to the real environment.
+end note
+
+class ores::platform::filesystem::file {
+    {static} +read_content(s : istream&) : string
+    {static} +read_content(p : path) : string
+    {static} +write_content(path : path, content : string) : void
+    {static} +write(path : path, target : Ioable&) : void
+    {static} +remove(files : list<path>&) : void
+}
+note right of "ores::platform::filesystem::file"
+read_content on a path throws file_not_found. The write
+template throws io_error, and carries the stream's message.
+end note
+
+class ores::platform::filesystem::io_error {
+}
+class ores::platform::filesystem::file_not_found {
+}
+note bottom of "ores::platform::filesystem::file_not_found"
+The two exceptions this facet throws. The automated pass
+skips both, because each puts its base-clause list where
+the parser expects an opening brace.
+end note
+
+class ores::platform::time::datetime {
+    {static} +to_iso8601_utc(tp : time_point) : string
+    {static} +from_iso8601_utc(str : string) : time_point
+    {static} +to_db_string(tp : time_point) : string
+    {static} +to_local_display_string(tp : time_point) : string
+    {static} +to_iso8601_date(date : year_month_day) : string
+    {static} +from_iso8601_date(str : string) : year_month_day
+}
+note right of "ores::platform::time::datetime"
+The busiest surface in the component. Time is stored and
+sent as UTC with a Z suffix, and local time is for display
+only. to_db_string is to_iso8601_utc without the suffix.
+end note
+
+class ores::platform::time::time_utils {
+    {static} +gmtime_safe(time : time_t*, result : tm*) : tm*
+    {static} +localtime_safe(time : time_t*, result : tm*) : tm*
+    {static} +timegm_safe(tm : tm*) : time_t
+    {static} +to_time_point_utc(tm : tm) : time_point
+    {static} +to_time_point_local(tm : tm) : time_point
+    {static} +parse_date(s : string_view) : year_month_day
+    {static} +format_date_compact(date : year_month_day) : string
+    {static} +format_date_iso(date : year_month_day) : string
+    {static} +file_time_to_system_clock(ft : file_time_type) : time_point
+}
+note right of "ores::platform::time::time_utils"
+The portable wrappers the rest of the tree calls instead of
+gmtime_r, localtime_r or timegm directly.
+end note
+
+class ores::platform::time::relative_time_formatter {
+    +relative_time_formatter(style : numeric_style)
+    +format(tp : time_point) : string
+    +format(tp : time_point, reference : time_point) : string
+}
 
 class ores::platform::net::network_info {
     {static} +get_hostname() : std::string
@@ -104,7 +215,11 @@ note top of "ores::platform::process::signals"
 The signals a service treats as a graceful shutdown request; the set is narrower on Windows, where SIGQUIT does not exist.
 end note
 
-ores::platform::net ..> ores::platform::time : machine identity uses time conversion
+ores::platform::environment::real_environment_provider ..|> ores::platform::environment::environment_provider
+ores::platform::environment::fake_environment_provider ..|> ores::platform::environment::environment_provider
+ores::platform::environment::environment ..> ores::platform::environment::environment_provider : delegates to
+ores::platform::filesystem::file ..> ores::platform::filesystem::io_error : throws
+ores::platform::filesystem::file ..> ores::platform::filesystem::file_not_found : throws
 ores::platform::process ..> ores::platform::time : build time uses file-time conversion
 
 ' Local Variables:

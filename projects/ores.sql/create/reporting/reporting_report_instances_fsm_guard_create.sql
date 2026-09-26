@@ -137,3 +137,10 @@ before insert or update on "ores_reporting_report_instances_tbl"
 for each row execute function ores_reporting_validate_instance_transition_fn();
 
 revoke execute on function ores_reporting_validate_instance_transition_fn() from public;
+
+-- A trigger function is not callable by a client, so the grant is belt and
+-- braces. It is stated because the revocation above would otherwise be the
+-- only word on the subject, and a later change that made the function callable
+-- would then fail for a reason nobody had written down.
+grant execute on function ores_reporting_validate_instance_transition_fn()
+    to :reporting_service_user;

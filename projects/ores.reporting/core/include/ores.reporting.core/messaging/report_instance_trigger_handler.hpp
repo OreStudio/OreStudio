@@ -98,6 +98,7 @@ public:
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
+        const auto& req_ctx = *req_ctx_expected;
 
         auto req = decode<trigger_report_instance_request>(msg);
         if (!req) {
@@ -107,7 +108,7 @@ public:
 
         trigger_report_instance_response response;
         try {
-            trigger_one(*req, response);
+            trigger_one(req_ctx, *req, response);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(report_instance_trigger_handler_lg(), error)
                 << "Trigger failed: " << e.what();
@@ -125,11 +126,16 @@ private:
      * The response's result starts as ok and is set to failed, with the reason,
      * wherever the trigger cannot proceed.
      */
-    void trigger_one(const trigger_report_instance_request& req,
+    void trigger_one(const ores::database::context& req_ctx,
+                     const trigger_report_instance_request& req,
                      trigger_report_instance_response& response) {
         const auto tenant = boost::uuids::to_string(req.tenant_id);
         const auto definition_id = boost::uuids::to_string(req.report_definition_id);
-        const auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, tenant);
+        // Scoped from the authenticated context, not the base one: the
+        // authenticated context carries the workspace the request resolved
+        // to, and the generated reads filter on it.
+        const auto tenant_ctx =
+            ores::database::service::tenant_context::with_tenant(req_ctx, tenant);
 
         service::report_definition_service def_svc(tenant_ctx);
         const auto def = def_svc.get_definition(req.report_definition_id);
@@ -186,7 +192,10 @@ private:
         inst.output_message = note;
         inst.modified_by = ctx_.service_account();
         inst.performed_by = ctx_.service_account();
-        inst.change_reason_code = "system.scheduler_trigger";
+        // A code the change-reason seed defines. The trigger previously named
+        // "system.scheduler_trigger", which no seed defines, so every insert was
+        // rejected by the validator.
+        inst.change_reason_code = "system.new_record";
         inst.change_commentary = note.empty() ? "Created by report trigger" : note;
 
         // Only an instance that will run states when it started. One that is

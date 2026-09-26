@@ -60,3 +60,10 @@ terminal state, or null when none is in flight. The oldest is returned, so the
 answer is stable while more than one waits.';
 
 revoke execute on function ores_reporting_in_flight_instance_fn(uuid, uuid) from public;
+
+-- PostgreSQL grants EXECUTE to PUBLIC on every new function, so the revoke
+-- above is what makes the restriction real; the grant is what keeps the
+-- reporting service able to ask the question. Without it the trigger fails
+-- with "permission denied for function".
+grant execute on function ores_reporting_in_flight_instance_fn(uuid, uuid)
+    to :reporting_service_user;

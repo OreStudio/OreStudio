@@ -160,8 +160,10 @@ a typecheck all missed; only a build and a test run found them.
 
 A survey of four model-free infrastructure components, =ores.platform=,
 =ores.utility=, =ores.security= and =ores.geo=, run on 2026-09-25 by agents
-that did not write them, added items B06, H04, G07, V07 and V08. The
-standard now holds 49 items. The findings behind the new items:
+that did not write them, added items B06, H04, G07, V07 and V08; the
+=ores.security= pass added G08; and a later codegen pass made the documentation
+requirement explicit as H05. The standard now holds 49 items. The findings
+behind the new items:
 
 - A component can pass every gate and still be unclean. All four passed
   =validate_docs.py=, carried no leftover artefact and broke no naming
@@ -208,6 +210,14 @@ standard now holds 49 items. The findings behind the new items:
   enumerators looked test-only from outside, and each was in fact
   load-bearing through a different production caller, so deleting either
   half would have broken the telemetry trace identifier.
+- A rule that names no exemption deletes what it should keep. G02 said
+  dead headers go, and two passes read that as licence to delete twelve
+  namespace documentation headers: =ores.utility.hpp= with its ten facet
+  headers, and =ores.security.hpp=. Their content is an empty namespace
+  and the =@brief= doxygen renders, and the outermost one is the
+  description the diagram conventions read, so a consumer census reports
+  them as dead when they are the documentation. G08 states the
+  exemption, and the maintainer caught the second deletion.
 - Verify with an agent that did not write the code, and expect it to fail
   the record rather than the patch. The deletion this standard's first
   story performed was sound; what the verifier failed was the record's own

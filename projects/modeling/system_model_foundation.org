@@ -92,13 +92,13 @@ without a restart.
 
 ** ores.geo
 
-IP-to-location geolocation using MaxMind GeoLite2-City stored in PostgreSQL.
-Provides country, city, and coordinate lookups that ores.iam uses to annotate
-login sessions.
+IP-to-country lookup using ip2country ranges stored in PostgreSQL. Answers a
+country code only; city and coordinate data are not available. =ores.http=
+calls it from its login route.
 
 | Sub-component | Role                                     | Dependencies  |
 |---------------+------------------------------------------+---------------|
-| [[id:8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C][ores.geo]]      | IP geolocation via MaxMind GeoLite2-City | [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
+| [[id:8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C][ores.geo]]      | IP-to-country lookup via ip2country | [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
 
 ** ores.sql
 

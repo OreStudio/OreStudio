@@ -28,7 +28,6 @@ namespace ores #F2F2F2 {
                 +country_code : string
             }
             enum geolocation_error {
-                database_not_available
                 address_not_found
                 lookup_failed
                 invalid_address

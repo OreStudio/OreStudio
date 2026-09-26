@@ -278,6 +278,35 @@ each carries its reason in the table.
 | =service/src/main.cpp= | No test. Process entry point |
 | =service/src/messaging/job_definition_event_registrar.cpp= | Generated; the eventing integration test assembles the same chain directly |
 
+* What the rebase onto the current main changed
+
+The branch was rebased twice while it was open, the second time onto 24 newer
+commits. Those commits are other environments' work, and three of them bear on
+this task:
+
+1. *H05 arrived.* The standard gained the documentation item after this
+   checklist was written. The table therefore held 48 rows for a 49-item
+   standard, and the prose in the plan said 48. Both are corrected, the item is
+   worked, and its ER clause is recorded as an open finding. This is the reason
+   the record's plan sentence now reads "held 48 items when this task was
+   planned and holds 49 now".
+2. *=ores.testing= deleted= =run_coroutine_test.hpp= *as unused* -- "no consumer
+   anywhere in the tree, not even its own test", its commit says. That was true
+   of =main= and false of this branch: the three handler tests added here are
+   its consumers, and without it the component's core suite does not compile.
+   The header is restored with those consumers, and =ores.testing='s generated
+   source list carries it again. The deletion's premise was sound when it was
+   written; what changed is that a branch in flight added the user.
+3. *A build failure that did not reproduce.* The first whole-tree build after
+   the rebase failed in the eventing test with twenty errors, the first of them
+   "#include nested too deeply". The same file compiles on its own from the same
+   tree, and the next whole-tree build passed that file. The one difference was
+   that an in-place drift check was regenerating the component's files while the
+   build read them. That is a caution, not a proven cause: the failure is not
+   reproducible with the tree still, and the drift check has a =--dry-run= mode
+   for exactly this reason. The real failure underneath it was the deleted
+   header, which is item 2 and did reproduce.
+
 * Defects the verification pass found in this change
 
 Recorded because they were mine, not the generator's, and because two of the

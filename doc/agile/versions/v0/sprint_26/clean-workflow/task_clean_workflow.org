@@ -63,6 +63,10 @@ record each item's result in the table below.
 | B04 | Deferred to the Protocol section: the component serves no entity protocol yet, and all eight messaging headers are hand-written. | Recorded here; the subject inventory is P02's evidence. |
 | B05 | No open capture and no in-flight branch touches =ores.workflow=. | =doc/agile/product_backlog/inbox= holds no =workflow= capture; =git branch -a= holds no other =workflow= branch. |
 | B06 | One dead symbol group. Everything else is production-consumed, and nothing is test-only. =workflow_instance_changed_event= and its =event_traits= specialisation have no consumer at all: nothing constructs one, publishes one, or subscribes to one. | =git grep= over =projects/=: the only hits are the definition itself, the component's own =.puml=, and its =component_files.cmake=. Table below. |
+| M01 | Pass. No legacy JSON model remains and no =lookup_entity= survives. | =find= for =*.json= under the modeling directories returns nothing; =grep= for =lookup_entity= returns nothing. =check_model_drift.py= reports no model drift for this component. |
+| M02 | Finding: neither entity binds a variability profile, and neither records a no-match with its feature values. | Both =Flags= blocks carry only =schema=, =product=, =component= and =has_tenant_id=. Detail below. |
+| M09 | Pass. No retired fragment survives in any model. | =grep= over the modeling directories for =qt=, =wt=, =drawer= and =presentation= returns nothing. |
+| M10 | The component model declares its parts. =validate_docs.sh= still to run. | =modeling/component_overview.org= carries =* Summary=, =* Sub-components= and =* Entity modules=. Verification is deferred to H01, which owns the diagram and the docs gate. |
 
 * Notes
 
@@ -153,6 +157,28 @@ holding sprint prose rather than C++ that consumes the symbol. The census counts
 consumers, not mentions, so that hit is not one.
 
 Nothing is test-only, so no symbol is deleted for having only a test behind it.
+
+** M02 profile binding
+
+Neither entity carries a =:profile:=. Every other cleaned component binds one in
+the =Flags= block, for example =:profile: uuid-identified-lookup= in
+=ores.compute=, so the omission is a gap rather than a deliberate no-match: a
+no-match has to be recorded with its feature values and its reason, and nothing
+is recorded here.
+
+=workflow_instance= matches *UUID-identified lookup*: UUID surrogate key, tenant
+scope, standard presentation tier, no parent and no workspace. Its =Flags= agree
+with every feature of that profile.
+
+=workflow_step= matches no profile as it stands. It is a UUID-keyed child of
+=workflow_instance= through =workflow_id=, and it declares =has_tenant_id:
+false=, so it is neither *UUID-identified lookup* (which is tenant-scoped and
+parentless) nor *FK-scoped child* (which requires tenant and workspace scope).
+Its scope has to be settled before it can be bound, and the decision is not
+cosmetic: row-level security follows the tenant feature, so a child that carries
+no tenant needs its own RLS story or it is readable across tenants. This is
+recorded as a finding rather than bound to the nearest profile, which M02
+forbids.
 
 * Test Scenarios
 

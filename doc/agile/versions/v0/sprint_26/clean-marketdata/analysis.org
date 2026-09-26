@@ -307,6 +307,35 @@ returns =nullopt=. There is no =type=fixing= in either direction, and no
 =type=curve= either. The fixing key space cannot round-trip through oresmd
 at all today.
 
+** Progress against this baseline
+
+The measurements above are the baseline at =origin/main= =8a16c7a4f0= and
+stay as written. Six of the mis-modelled shapes are fixed:
+
+| Type | Lines | What was wrong | Fixed by |
+|------+-------+----------------+----------|
+| FRA | 2,113 | declared with an index; ORE writes ccy/start/length | no new field |
+| IMM_FRA | 160 | same | no new field |
+| MM | 1,609 | only the indexed form projected; ORE writes the index-less form for 94% of its lines | dispatch on segment count |
+| BASIS_SWAP | 5,994 | declared ccy/index/tenor/point; ORE writes two tenors and no index | =second_tenor= |
+| CC_BASIS_SWAP | 3,824 | declared one currency and one tenor; ORE writes two of each | =second_ccy= |
+| CC_FIX_FLOAT_SWAP | 106 | same | =second_ccy= |
+
+That is 13,806 corpus lines brought in, and the shape record is down from
+11 entries to 6. What remains is CORRELATION, CPR, ZERO, MM_FUTURE,
+OI_FUTURE, and MM's residual (producers spell the index =ESTER= where
+=index_family= says =estr=).
+
+Each of the six needs the identifier grammar extended, and the oresmd
+parser is hand-written per asset class rather than table-driven -- its
+generic branch handles the entity, a currency, the type, the quote type
+and a point, and nothing else -- so a new field is a coordinated change
+across the model, the parser, the URI order and the projections. Two of
+them also need a registry correction first: MM_FUTURE and OI_FUTURE carry
+the same corpus shape but the shape table describes it two different ways,
+with different qualifier depths, so which segments identify the series is
+not yet settled.
+
 ** Grammar holes
 
 The URI layer is not only unwired; it has its own defects. =model= is an

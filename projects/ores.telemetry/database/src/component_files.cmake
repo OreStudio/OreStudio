@@ -28,7 +28,6 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.database/export.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.database/log/database_sink_utils.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.database/ores.telemetry.database.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.database/repository/ores.telemetry.repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.database/repository/telemetry_entity.hpp"

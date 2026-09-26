@@ -429,6 +429,20 @@ TEST_CASE("{{description}}", tags) {
 }
 
 {{/shape_profile_round_trip}}
+{{#rating_round_trip}}
+TEST_CASE("{{description}}", tags) {
+    const auto original = oresmd_parser::parse(uri("{{{uri}}}"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+{{/rating_round_trip}}
 TEST_CASE("parse_inflation_zc_swap", tags) {
     const auto id =
         oresmd_parser::parse(uri("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"));
@@ -482,6 +496,12 @@ TEST_CASE("{{description}}", tags) {
 }
 
 {{/shape_profile_rejection}}
+{{#rating_rejection}}
+TEST_CASE("{{description}}", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("{{{uri}}}")), oresmd_exception);
+}
+
+{{/rating_rejection}}
 TEST_CASE("reject_unrecognised_scheme", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(uri("https://fx/eurusd?type=quote")), oresmd_exception);
 }

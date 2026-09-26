@@ -212,6 +212,18 @@ struct shape_profile_market_data_identifier final {
 };
 
 /**
+ * @brief A fully-resolved oresmd identifier for a rating provider (asset_class=rating).
+ */
+struct rating_market_data_identifier final {
+    std::string provider_id;
+    instrument_type type = instrument_type::quote;
+    std::optional<domain::rating_quote_type> quote_type;
+    std::optional<std::string> point;
+
+    bool operator==(const rating_market_data_identifier&) const = default;
+};
+
+/**
  * @brief Tagged union of the seven per-asset-class identifier structs.
  *
  * Deliberately *not* a common base class with virtual dispatch: the URI's `asset_class`
@@ -228,7 +240,8 @@ using market_data_identifier = std::variant<fx_market_data_identifier,
                                             inflation_market_data_identifier,
                                             correlation_market_data_identifier,
                                             security_market_data_identifier,
-                                            shape_profile_market_data_identifier>;
+                                            shape_profile_market_data_identifier,
+                                            rating_market_data_identifier>;
 
 }
 

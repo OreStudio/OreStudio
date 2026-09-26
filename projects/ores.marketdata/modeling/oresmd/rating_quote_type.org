@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 34cd335b-6a7f-4040-88f0-e3ac366b80a4
+:END:
+#+title: Rating oresmd quote type family
+#+description: Quote types keyed by a rating provider: the transition probability between two rating grades.
+#+type: ores.codegen.oresmd_quote_type
+#+asset_class: rating
+#+validate: inline
+#+authority: rating
+#+component: ores.marketdata
+#+level: s2
+#+filetags: :codegen:oresmd:rating:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+* Quote types
+
+The class carries no currency, no tenor and no metric key: the entity is the
+provider and the point is the pair of rating grades the migration runs between.
+ORE writes the metric as the second segment, so the one metric is its own quote
+type here -- the `metric` query key is one of the IR-only keys every other class
+rejects.
+
+| enum_name | ore_type | ore_constant | ore_metric | point_semantics | qualifier_shape | comment |
+|-----------+----------+--------------+------------+-----------------+-----------------+---------|
+| transition_probability | RATING | rating | TRANSITION_PROBABILITY | composite | no_ccy | RATING/TRANSITION_PROBABILITY/PROVIDER/FROM/TO, and the four-segment form the corpus also writes, which names the provider and no grades. |
+
+* Enum brief
+
+The `quote` query key for rating providers. Rating-only; only meaningful when
+`type=quote`.
+
+* Identifier brief
+
+A fully-resolved oresmd identifier for a rating provider (asset_class=rating).
+
+* Requirement brief
+
+A logical, possibly-partial oresmd requirement for a rating provider.
+
+* Fields
+
+| name | cpp_type | mandatory | query_key | default |
+|------+----------+-----------+-----------+---------|
+| provider_id | std::string | yes | | |
+| type | instrument_type | yes | type | instrument_type::quote |
+| quote_type | std::optional<rating_quote_type> | no | quote | |
+| point | std::optional<std::string> | no | point | |
+
+* Reject keys
+
+| key |
+|-----|
+| ccy |
+| index |
+| tenor |
+| second_tenor |
+| second_ccy |
+| second_factor |
+| curve_id |
+| settle |
+| day_count |
+| shift |
+| strip |
+| role |
+| metric |
+
+* URI order
+
+| key |
+|-----|
+| type |
+| quote |
+| point |
+
+* Test cases
+** Projections
+
+| uri | expected | description |
+|-----+----------+-------------|
+| oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa | RATING/TRANSITION_PROBABILITY/PROVIDER_1/AAA/AA | rating_transition_probability_quote_key_matches_the_corpus |
+| oresmd://rating/provider_1?type=quote&quote=transition_probability&point= | RATING/TRANSITION_PROBABILITY/PROVIDER_1/ | rating_transition_probability_quote_key_without_grades_matches_the_corpus |
+| oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa,1y | nullopt | rating_transition_probability_rejects_the_catalogue_six_segment_shape |
+
+** Round-trip
+
+| uri | description |
+|-----+-------------|
+| oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa | round_trip_rating_transition_probability |
+| oresmd://rating/provider_1?type=quote&quote=transition_probability&point= | round_trip_rating_transition_probability_without_grades |
+
+** Rejection
+
+| uri | description |
+|-----+-------------|
+| oresmd://rating/provider_1?ccy=usd&type=quote&quote=transition_probability&point=aaa,aa | reject_rating_uri_with_ccy |
+| oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa&metric=rate | reject_rating_uri_with_ir_only_metric |

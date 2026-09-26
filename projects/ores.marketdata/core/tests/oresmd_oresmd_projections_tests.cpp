@@ -569,6 +569,25 @@ TEST_CASE("shape_profile_factor_rejects_a_point_that_is_not_a_coordinate", tags)
     REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
 }
 
+TEST_CASE("rating_transition_probability_quote_key_matches_the_corpus", tags) {
+    const auto id =
+        parse("oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa");
+    REQUIRE(oresmd_projections::to_quote_key(id) ==
+            "RATING/TRANSITION_PROBABILITY/PROVIDER_1/AAA/AA");
+}
+
+TEST_CASE("rating_transition_probability_quote_key_without_grades_matches_the_corpus", tags) {
+    const auto id =
+        parse("oresmd://rating/provider_1?type=quote&quote=transition_probability&point=");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "RATING/TRANSITION_PROBABILITY/PROVIDER_1/");
+}
+
+TEST_CASE("rating_transition_probability_rejects_the_catalogue_six_segment_shape", tags) {
+    const auto id =
+        parse("oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa,1y");
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+}
+
 TEST_CASE("commodity_cpr_quote_key", tags) {
     const auto id = parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CPR/RATE/WTI/USD/5Y");

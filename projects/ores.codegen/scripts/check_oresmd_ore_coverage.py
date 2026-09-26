@@ -69,11 +69,6 @@ UNREPRESENTED: dict[str, str] = {
         "representing an open set of inner types, which is a grammar change "
         "rather than an added quote type."
     ),
-    "RATING": (
-        "Rating transition probabilities, keyed by provider, from-rating and "
-        "to-rating. Needs a rating asset class whose coordinate is a rating "
-        "pair, which no existing asset class carries."
-    ),
 }
 
 # Quote types oresmd models whose shape does not match the keys ORE writes.

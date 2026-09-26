@@ -57,13 +57,15 @@ enum class curve_role {
  * implies metric=rate, quote=mm_future implies metric=price).
  */
 enum class metric {
-    rate,              ///< A rate quote (e.g. MM/RATE, FRA/RATE, IR_SWAP/RATE, ZERO/RATE).
-    price,             ///< A price quote (e.g. MM_FUTURE/PRICE, OI_FUTURE/PRICE).
-    basis_spread,      ///< A basis spread quote (e.g. BASIS_SWAP/BASIS_SPREAD).
-    ratio,             ///< A ratio quote (e.g. BMA_SWAP/RATIO).
-    yield_spread,      ///< A yield spread quote (e.g. ZERO/YIELD_SPREAD).
-    conversion_factor, ///< A conversion factor quote (e.g. BOND/CONVERSION_FACTOR).
-    shape_factor       ///< A shape factor quote (e.g. SHAPE_PROFILE/SHAPE_FACTOR).
+    rate,                  ///< A rate quote (e.g. MM/RATE, FRA/RATE, IR_SWAP/RATE, ZERO/RATE).
+    price,                 ///< A price quote (e.g. MM_FUTURE/PRICE, OI_FUTURE/PRICE).
+    basis_spread,          ///< A basis spread quote (e.g. BASIS_SWAP/BASIS_SPREAD).
+    ratio,                 ///< A ratio quote (e.g. BMA_SWAP/RATIO).
+    yield_spread,          ///< A yield spread quote (e.g. ZERO/YIELD_SPREAD).
+    conversion_factor,     ///< A conversion factor quote (e.g. BOND/CONVERSION_FACTOR).
+    shape_factor,          ///< A shape factor quote (e.g. SHAPE_PROFILE/SHAPE_FACTOR).
+    transition_probability ///< A rating transition probability (e.g.
+                           ///< RATING/TRANSITION_PROBABILITY).
 };
 
 /**
@@ -221,6 +223,15 @@ enum class security_quote_type {
 enum class shape_profile_quote_type {
     shape_factor ///< SHAPE_PROFILE/SHAPE_FACTOR/PROFILE/DATE/SECOND/PERIOD, plus the DST flag the
                  ///< corpus writes as a seventh segment.
+};
+
+/**
+ * @brief The `quote` query key for rating providers. Rating-only; only meaningful when
+ * `type=quote`.
+ */
+enum class rating_quote_type {
+    transition_probability ///< RATING/TRANSITION_PROBABILITY/PROVIDER/FROM/TO, and the four-segment
+                           ///< form the corpus also writes, which names the provider and no grades.
 };
 
 /**

@@ -234,7 +234,7 @@ TEST_CASE("no_series_type_oresmd_cannot_name_has_gone_unrecorded", tags) {
     // nothing. That is the shape-mismatch list in the codegen record, seen from
     // the data rather than from the models.
     const std::set<std::string> recorded{
-        "CPR", "RATING"};
+        "CPR"};
 
     REQUIRE(types_oresmd_cannot_name() == recorded);
 }
@@ -262,7 +262,7 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
         "CORRELATION", "DISCOUNT", "EQUITY", "EQUITY_DIVIDEND", "EQUITY_FWD",
         "EQUITY_OPTION", "FRA",
         "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
-        "INDEX_CDS_OPTION", "INDEX_CDS_TRANCHE", "MM_FUTURE", "OI_FUTURE", "RECOVERY_RATE", "SEASONALITY", "SHAPE_PROFILE",
+        "INDEX_CDS_OPTION", "INDEX_CDS_TRANCHE", "MM_FUTURE", "OI_FUTURE", "RATING", "RECOVERY_RATE", "SEASONALITY", "SHAPE_PROFILE",
         "SWAPTION",
         "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",
         "ZC_INFLATIONSWAP", "ZERO"};
@@ -273,7 +273,7 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
         "DISCOUNT", "EQUITY_DIVIDEND",
         "FRA", "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
         "INDEX_CDS_OPTION", "INDEX_CDS_TRANCHE", "IR_SWAP", "MM_FUTURE", "OI_FUTURE",
-        "RECOVERY_RATE", "SEASONALITY", "SHAPE_PROFILE", "SWAPTION",
+        "RATING", "RECOVERY_RATE", "SEASONALITY", "SHAPE_PROFILE", "SWAPTION",
         "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",
         "ZC_INFLATIONSWAP", "ZERO"};
 

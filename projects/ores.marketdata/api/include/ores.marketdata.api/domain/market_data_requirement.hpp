@@ -145,6 +145,16 @@ struct shape_profile_market_data_requirement final {
     bool operator==(const shape_profile_market_data_requirement&) const = default;
 };
 
+/** @brief A logical, possibly-partial oresmd requirement for a rating provider. */
+struct rating_market_data_requirement final {
+    std::optional<std::string> provider_id;
+    std::optional<instrument_type> type;
+    std::optional<rating_quote_type> quote_type;
+    std::optional<std::string> point;
+
+    bool operator==(const rating_market_data_requirement&) const = default;
+};
+
 /**
  * @brief Tagged union of the seven per-asset-class requirement structs -- see
  * market_data_identifier.hpp for the rationale against a common base class.
@@ -157,7 +167,8 @@ using market_data_requirement = std::variant<fx_market_data_requirement,
                                              inflation_market_data_requirement,
                                              correlation_market_data_requirement,
                                              security_market_data_requirement,
-                                             shape_profile_market_data_requirement>;
+                                             shape_profile_market_data_requirement,
+                                             rating_market_data_requirement>;
 
 }
 

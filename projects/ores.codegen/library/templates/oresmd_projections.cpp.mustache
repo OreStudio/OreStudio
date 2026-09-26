@@ -59,6 +59,7 @@ constexpr std::string_view index_cds_tranche{"INDEX_CDS_TRANCHE"};
 constexpr std::string_view index_cds_option{"INDEX_CDS_OPTION"};
 constexpr std::string_view bond{"BOND"};
 constexpr std::string_view shape_profile{"SHAPE_PROFILE"};
+constexpr std::string_view rating{"RATING"};
 constexpr std::string_view zc_inflation_swap{"ZC_INFLATIONSWAP"};
 constexpr std::string_view yy_inflation_swap{"YY_INFLATIONSWAP"};
 constexpr std::string_view zc_inflation_capfloor{"ZC_INFLATIONCAPFLOOR"};
@@ -77,6 +78,7 @@ constexpr std::string_view credit_spread{"CREDIT_SPREAD"};
 constexpr std::string_view base_correlation{"BASE_CORRELATION"};
 constexpr std::string_view conversion_factor{"CONVERSION_FACTOR"};
 constexpr std::string_view shape_factor{"SHAPE_FACTOR"};
+constexpr std::string_view transition_probability{"TRANSITION_PROBABILITY"};
 }  // namespace ore_metric_spec
 
 namespace ore_vol_spec {
@@ -208,6 +210,8 @@ std::string_view ore_metric(metric m) {
             return ore_metric_spec::conversion_factor;
         case metric::shape_factor:
             return ore_metric_spec::shape_factor;
+        case metric::transition_probability:
+            return ore_metric_spec::transition_probability;
     }
     return ore_metric_spec::rate;
 }
@@ -903,6 +907,51 @@ std::optional<std::string> quote_key_shape_profile(const {{asset_class}}_market_
 }
 
 {{/shape_profile_ore}}
+{{#rating_ore}}
+std::string_view ore_type({{asset_class}}_quote_type qt) {
+    switch (qt) {
+{{#quote_types}}
+        case {{asset_class}}_quote_type::{{enum_name}}:
+            return ore_type_spec::{{ore_constant}};
+{{/quote_types}}
+    }
+    return ore_type_spec::{{ore_constant_default}};
+}
+
+std::string_view ore_{{asset_class}}_metric({{asset_class}}_quote_type qt) {
+    switch (qt) {
+{{#metric_groups}}
+{{#names}}
+        case {{asset_class}}_quote_type::{{.}}:
+{{/names}}
+            return ore_metric_spec::{{constant}};
+{{/metric_groups}}
+    }
+    return ore_metric_spec::{{ore_metric_constant_default}};
+}
+
+std::optional<std::string> quote_key_rating(const {{asset_class}}_market_data_identifier& id) {
+    // RATING/TRANSITION_PROBABILITY/PROVIDER/FROM/TO, and the four-segment form
+    // the corpus also writes, which names the provider and no grades. No currency,
+    // no tenor and no metric: the point carries the grades.
+    if (id.type != instrument_type::quote || !id.point)
+        return std::nullopt;
+    const auto qt = id.quote_type.value_or(rating_quote_type::transition_probability);
+    const auto parts = split_point(*id.point);
+    const auto head =
+        std::format("{}/{}/{}", ore_type(qt), ore_{{asset_class}}_metric(qt), id.provider_id);
+    // The degenerate form's point is present but empty, and an empty point splits
+    // to no parts at all; the trailing segment is what says so.
+    if (parts.empty())
+        return head + "/";
+    if (parts.size() == 1)
+        return head + "/" + parts[0];
+    if (parts.size() != 2)
+        return std::nullopt;
+    return std::format("{}/{}/{}", head, parts[0], parts[1]);
+}
+
+{{/rating_ore}}
 {{#commodity_ore}}
 std::optional<std::string> quote_key_commodity(const commodity_market_data_identifier& id) {
     // A vol surface point is the commodity option family, which writes the same
@@ -1448,6 +1497,29 @@ from_equity_curve(equity_quote_type qt, const std::vector<std::string>& parts) {
 }
 
 std::optional<market_data_identifier>
+from_rating(rating_quote_type qt, const std::vector<std::string>& parts) {
+    // RATING/TRANSITION_PROBABILITY/PROVIDER/FROM/TO, and the four-segment form
+    // that names only the provider. No currency and no tenor: the point is the
+    // pair of grades, or the single empty part of the degenerate form.
+    if (parts.size() != 4 && parts.size() != 5)
+        return std::nullopt;
+    if (!metric_is(parts[1], ore_rating_metric(qt)))
+        return std::nullopt;
+    rating_market_data_identifier id;
+    id.provider_id = parts[2];
+    id.type = instrument_type::quote;
+    id.quote_type = qt;
+    std::string point;
+    for (auto i = std::size_t{3}; i < parts.size(); ++i) {
+        if (i > 3)
+            point += ",";
+        point += to_lower(parts[i]);
+    }
+    id.point = std::move(point);
+    return id;
+}
+
+std::optional<market_data_identifier>
 from_shape_profile(shape_profile_quote_type qt, const std::vector<std::string>& parts) {
     // SHAPE_PROFILE/SHAPE_FACTOR/PROFILE/DATE/SECOND/PERIOD, and a seventh segment
     // holding the DST flag. No currency and no tenor: the coordinate is the date,
@@ -1801,6 +1873,8 @@ inverse_projection(const std::vector<std::string>& parts,
             return from_security(security_quote_type::recovery_rate, parts);
         return from_credit_recovery(parts);
     }
+    if (type == ore_type_spec::rating)
+        return from_rating(rating_quote_type::transition_probability, parts);
     if (type == ore_type_spec::shape_profile)
         return from_shape_profile(shape_profile_quote_type::shape_factor, parts);
     if (type == ore_type_spec::bond) {

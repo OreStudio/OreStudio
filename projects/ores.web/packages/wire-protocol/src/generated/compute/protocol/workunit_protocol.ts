@@ -30,7 +30,7 @@ import type { Result } from '../../../utility/protocol.js';
 import type { Scope } from '../../../utility/protocol.js';
 
 export interface WorkunitKey {
-    input_uri: string;
+    id: string;
 }
 
 export interface WorkunitWrite {

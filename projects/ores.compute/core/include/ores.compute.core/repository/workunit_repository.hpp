@@ -103,22 +103,6 @@ public:
     std::vector<domain::workunit> read_latest(context ctx, const std::vector<std::string>& ids);
     /**@}*/
 
-    /**
-     * @brief Reads latest workunits filtered by input_uri.
-     */
-    std::vector<domain::workunit> read_latest_by_input_uri(context ctx,
-                                                           const std::string& input_uri);
-
-    /**
-     * @brief Reads the newest workunits filtered by input_uri, current or not.
-     *
-     * History is addressed by the key the model declares and must stay readable
-     * after a delete, which closes the transaction-time window rather than
-     * removing the row. A latest read cannot resolve a closed row, so this one
-     * ignores the window and takes the newest match.
-     */
-    std::vector<domain::workunit> read_any_by_input_uri(context ctx, const std::string& input_uri);
-
 
     /**
      * @brief Reads all workunits, possibly filtered by primary key.

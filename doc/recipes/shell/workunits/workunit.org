@@ -43,14 +43,14 @@ Reads the one row its key addresses. A key states every identifying column, so a
 The command is shaped like this:
 
 #+begin_example
-workunits get <input_uri>
+workunits get <id>
 #+end_example
 
 It is addressed at =compute.v1.workunits.get=.
 
 #+name: workunits-get
 #+begin_src ores-shell :tangle workunits-get.ores :exports none
-workunits get __none__
+workunits get 00000000-0000-0000-0000-000000000000
 #+end_src
 
 ** =get-many=
@@ -64,14 +64,14 @@ Reads several rows in one request, one key group per row.
 The command is shaped like this:
 
 #+begin_example
-workunits get-many <input_uri>
+workunits get-many <id>
 #+end_example
 
 It is addressed at =compute.v1.workunits.get_many=.
 
 #+name: workunits-get-many
 #+begin_src ores-shell :tangle workunits-get-many.ores :exports none
-workunits get-many __none__
+workunits get-many 00000000-0000-0000-0000-000000000000
 #+end_src
 
 ** =add=
@@ -148,14 +148,14 @@ Removes a row. The change carries a reason and a commentary, which the server re
 The command is shaped like this:
 
 #+begin_example
-workunits delete <input_uri> <reason> <commentary> [--version <n>]
+workunits delete <id> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =compute.v1.workunits.delete=.
 
 #+name: workunits-delete
 #+begin_src ores-shell :tangle workunits-delete.ores :exports none
-workunits delete __none__ system.new_record generated_script
+workunits delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
 #+end_src
 
 ** =delete-many=
@@ -169,14 +169,14 @@ Removes several rows in one request. The change carries a reason and a commentar
 The command is shaped like this:
 
 #+begin_example
-workunits delete-many <input_uri> <reason> <commentary>
+workunits delete-many <id> <reason> <commentary>
 #+end_example
 
 It is addressed at =compute.v1.workunits.delete_many=.
 
 #+name: workunits-delete-many
 #+begin_src ores-shell :tangle workunits-delete-many.ores :exports none
-workunits delete-many __none__ system.new_record generated_script
+workunits delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
 #+end_src
 
 ** =by-batch-id=
@@ -211,14 +211,14 @@ Reads the row's recorded history, newest first.
 The command is shaped like this:
 
 #+begin_example
-workunits versions <input_uri> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+workunits versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
 #+end_example
 
 It is addressed at =compute.v1.workunits_versions.list=.
 
 #+name: workunits-versions
 #+begin_src ores-shell :tangle workunits-versions.ores :exports none
-workunits versions __none__ --limit 1
+workunits versions 00000000-0000-0000-0000-000000000000 --limit 1
 #+end_src
 
 ** =version=
@@ -232,13 +232,13 @@ Reads one recorded version of the row.
 The command is shaped like this:
 
 #+begin_example
-workunits version <input_uri> --version <n>
+workunits version <id> --version <n>
 #+end_example
 
 It is addressed at =compute.v1.workunits_versions.get=.
 
 #+name: workunits-version
 #+begin_src ores-shell :tangle workunits-version.ores :exports none
-workunits version __none__ --version 1
+workunits version 00000000-0000-0000-0000-000000000000 --version 1
 #+end_src
 

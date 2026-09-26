@@ -58,7 +58,7 @@ namespace {
 std::vector<domain::workunit> read_one(repository::workunit_repository& repo,
                                        const ores::database::context& ctx,
                                        const messaging::workunit_key& key) {
-    return repo.read_latest_by_input_uri(ctx, key.input_uri);
+    return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
 /**
@@ -69,7 +69,7 @@ std::vector<domain::workunit> read_one(repository::workunit_repository& repo,
  */
 messaging::workunit_key key_from(const domain::workunit& v) {
     messaging::workunit_key key;
-    key.input_uri = v.input_uri;
+    key.id = v.id;
     return key;
 }
 
@@ -243,14 +243,7 @@ workunit_service::delete_workunit(const messaging::delete_workunit_request& requ
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
-    if (named.empty()) {
-        response.result.outcome = outcome::missing;
-        response.result.code = "not_found";
-        return response;
-    }
-    const auto& row = named.front();
-    switch (repo_.remove(ctx_, boost::uuids::to_string(row.id), expected)) {
+    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.id), expected)) {
         case repository::workunit_repository::remove_status::removed:
             break;
         case repository::workunit_repository::remove_status::missing:
@@ -291,22 +284,10 @@ workunit_service::delete_many_workunits(const messaging::delete_many_workunits_r
     }
     if (request.removals.empty())
         return response;
-    // A removal names its row by the key a caller holds, and the repository
-    // takes the storage key, so the two are joined once here rather than at
-    // each column's conversion. A name that matches no row is skipped: the
-    // batch reports what it removed, and a row that is already gone is not a
-    // failure.
-    std::vector<domain::workunit> resolved;
-    resolved.reserve(request.removals.size());
-    for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
-        if (!named.empty())
-            resolved.push_back(std::move(named.front()));
-    }
     std::vector<std::string> id_keys;
-    id_keys.reserve(resolved.size());
-    for (const auto& row : resolved)
-        id_keys.push_back(boost::uuids::to_string(row.id));
+    id_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        id_keys.push_back(boost::uuids::to_string(removal.key.id));
     repo_.remove(ctx_, id_keys);
     return response;
 }
@@ -327,16 +308,7 @@ workunit_service::list_workunit_versions(const messaging::list_workunit_versions
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    // The versions of the row the caller's key names. The repository reads by
-    // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
-    if (named.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
-        return response;
-    }
-    const auto& row = named.front();
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(row.id));
+    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.id));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -351,16 +323,8 @@ workunit_service::list_workunit_versions(const messaging::list_workunit_versions
 messaging::get_workunit_version_response
 workunit_service::get_workunit_version(const messaging::get_workunit_version_request& request) {
     messaging::get_workunit_version_response response;
-    // The version key nests the entity's own key, which is the declared one.
-    // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.workunit);
-    if (named.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
-        return response;
-    }
-    const auto& row = named.front();
-    auto found = repo_.read_at_version(ctx_, boost::uuids::to_string(row.id), request.key.version);
+    auto found = repo_.read_at_version(
+        ctx_, boost::uuids::to_string(request.key.workunit.id), request.key.version);
     if (!found) {
         response.result.outcome = ores::utility::domain::outcome::missing;
         response.result.code = "not_found";
@@ -458,17 +422,6 @@ std::optional<domain::workunit> workunit_service::get_workunit(const boost::uuid
     return results.front();
 }
 
-std::optional<domain::workunit>
-workunit_service::get_workunit_by_input_uri(const std::string& input_uri) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting workunit by input_uri: " << input_uri;
-    messaging::workunit_key k;
-    k.input_uri = input_uri;
-    auto found = read_one(repo_, ctx_, k);
-    if (found.empty())
-        return std::nullopt;
-    return found.front();
-}
-
 std::vector<domain::workunit> workunit_service::get_workunits(const std::vector<std::string>& ids) {
     return repo_.read_latest(ctx_, ids);
 }
@@ -506,25 +459,9 @@ void workunit_service::delete_workunits(const std::vector<std::string>& ids) {
     repo_.remove(ctx_, ids);
 }
 
-std::vector<domain::workunit> workunit_service::get_workunit_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for workunit. key: " << key;
-    // The caller holds the key the model declares and this reads by the
-    // storage key, so the two are joined here exactly as they are for any
-    // other read. Without this step a provider looks the versions up under a
-    // value the storage key never holds, and reports an entity that has a
-    // history as having none.
-    messaging::workunit_key k;
-    k.input_uri = key;
-    // A delete here closes the transaction-time window and leaves every version
-    // in place, so resolving through a latest read would lose the history at
-    // exactly the moment it is wanted. This takes the newest row carrying the
-    // declared key whether or not it is still current, which for a record that
-    // still exists is the same row the latest read would have returned.
-    const auto found = repo_.read_any_by_input_uri(ctx_, k.input_uri);
-    if (found.empty())
-        return {};
-    const auto& row = found.front();
-    return repo_.read_all(ctx_, boost::uuids::to_string(row.id));
+std::vector<domain::workunit> workunit_service::get_workunit_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for workunit. " << "id: " << id;
+    return repo_.read_all(ctx_, id);
 }
 
 }

@@ -36,7 +36,7 @@
 namespace ores::compute::messaging {
 
 struct workunit_key {
-    std::string input_uri;
+    boost::uuids::uuid id;
 };
 
 struct workunit_write {

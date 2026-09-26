@@ -126,14 +126,14 @@ void workunit_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <input_uri>");
+        "get <id>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <input_uri>");
+        "get-many <id>");
 
     menu->Insert(
         "add",
@@ -164,14 +164,14 @@ void workunit_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <input_uri> <reason> <commentary> [--version <n>]");
+        "delete <id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <input_uri> <reason> <commentary>");
+        "delete-many <id> <reason> <commentary>");
 
     menu->Insert(
         "by-batch-id",
@@ -185,14 +185,14 @@ void workunit_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <input_uri> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <input_uri> --version <n>");
+        "version <id> --version <n>");
 
     root_menu.Insert(std::move(menu));
 }
@@ -274,7 +274,6 @@ void workunit_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.input_uri, parsed->positionals[next++], "input_uri");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -319,7 +318,7 @@ void workunit_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::workunit_key key;
-            read_token(key.input_uri, parsed->positionals[i + 0], "input_uri");
+            read_token(key.id, parsed->positionals[i + 0], "id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -554,7 +553,6 @@ void workunit_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.input_uri, parsed->positionals[next++], "input_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -608,7 +606,7 @@ void workunit_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::workunit_key key;
-            read_token(key.input_uri, parsed->positionals[i * 1 + 0], "input_uri");
+            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
             req.removals.push_back(messaging::workunit_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -715,7 +713,6 @@ void workunit_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.input_uri, parsed->positionals[next++], "input_uri");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -761,7 +758,6 @@ void workunit_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.workunit.input_uri, parsed->positionals[next++], "input_uri");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

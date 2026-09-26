@@ -23,8 +23,12 @@ of 'workunit'. Does not track execution state — that belongs to results.
 :product:   ores
 :component: compute
 :profile:   uuid-identified-lookup
-:key_field: input_uri
 :END:
+
+The workunit's key is its id. An earlier version of this model said
+=:key_field: input_uri=, and that made a multi-job batch impossible: every
+workunit of a batch runs the same input bundle, so the second workunit of
+a batch was refused as an existing row. The end-to-end run found it.
 
 * Columns
 

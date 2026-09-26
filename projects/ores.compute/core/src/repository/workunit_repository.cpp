@@ -138,39 +138,6 @@ std::vector<domain::workunit> workunit_repository::read_latest(context ctx, cons
         "Reading latest workunit by id.");
 }
 
-std::vector<domain::workunit>
-workunit_repository::read_latest_by_input_uri(context ctx, const std::string& input_uri) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest workunit by input_uri: " << input_uri;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<workunit_entity>> |
-        where("tenant_id"_c == tid && "input_uri"_c == input_uri && "valid_to"_c == max.value());
-
-    return execute_read_query<workunit_entity, domain::workunit>(
-        ctx,
-        query,
-        [](const auto& entities) { return workunit_mapper::map(entities); },
-        lg(),
-        "Reading latest workunit by input_uri.");
-}
-
-std::vector<domain::workunit>
-workunit_repository::read_any_by_input_uri(context ctx, const std::string& input_uri) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any workunit by input_uri: " << input_uri;
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<workunit_entity>> |
-                       where("tenant_id"_c == tid && "input_uri"_c == input_uri) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
-
-    return execute_read_query<workunit_entity, domain::workunit>(
-        ctx,
-        query,
-        [](const auto& entities) { return workunit_mapper::map(entities); },
-        lg(),
-        "Reading any workunit by input_uri.");
-}
-
 
 std::vector<domain::workunit> workunit_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all workunit versions. " << "id: " << id;

@@ -154,18 +154,6 @@ public:
     std::optional<domain::workunit> get_workunit(const boost::uuids::uuid& id);
 
     /**
-     * @brief Retrieves a single workunit by the key the model
-     * declares -- the human-readable key a caller holds.
-     *
-     * This is the counterpart of the uuid overload above: the two keys an
-     * entity holds are different keys, and a call site has to say which one it
-     * means.
-     *
-     * @return The workunit if found, std::nullopt otherwise.
-     */
-    std::optional<domain::workunit> get_workunit_by_input_uri(const std::string& input_uri);
-
-    /**
      * @brief Retrieves a batch of workunits by primary key.
      */
     std::vector<domain::workunit> get_workunits(const std::vector<std::string>& ids);
@@ -201,11 +189,9 @@ public:
     /**
      * @brief Retrieves all historical versions of a workunit.
      *
-     * Addressed by the key the model declares, which is the one a caller
-     * holds; the storage key is resolved from it here, the same step every
-     * other read makes.
+     * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::workunit> get_workunit_history(const std::string& key);
+    std::vector<domain::workunit> get_workunit_history(const std::string& id);
 
 private:
     context ctx_;

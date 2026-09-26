@@ -35,11 +35,13 @@ namespace asio = boost::asio;
 http_session::http_session(asio::ip::tcp::socket socket,
                            std::shared_ptr<router> router,
                            std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator,
+                           std::shared_ptr<ores::security::jwt::jwt_authenticator> request_verifier,
                            const http_server_options& options,
                            session_bytes_callback bytes_callback)
     : stream_(std::move(socket))
     , router_(std::move(router))
     , authenticator_(std::move(authenticator))
+    , request_verifier_(std::move(request_verifier))
     , options_(options)
     , bytes_callback_(std::move(bytes_callback)) {
 
@@ -149,8 +151,18 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
             co_return;
         }
 
-        if (authenticator_ && authenticator_->is_configured()) {
-            auto claims_result = authenticator_->validate(*token);
+        const bool prefer_session_verifier =
+            request_verifier_ && request_verifier_->is_configured();
+        auto* effective = prefer_session_verifier ? request_verifier_.get()
+                                                  : authenticator_.get();
+        if (effective != nullptr && effective->is_configured()) {
+            auto claims_result = effective->validate(*token);
+            if (!claims_result && prefer_session_verifier && authenticator_ &&
+                authenticator_->is_configured()) {
+                // The login token the server mints is symmetric; the session
+                // token IAM signs is not. Either one opens a session.
+                claims_result = authenticator_->validate(*token);
+            }
             if (!claims_result) {
                 BOOST_LOG_SEV(lg(), warn)
                     << "Invalid token for " << matched->pattern << " from " << remote_address_

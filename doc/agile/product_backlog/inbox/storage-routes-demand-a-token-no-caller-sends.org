@@ -118,3 +118,18 @@ deliberately that HTTP callers must use an HS256 token and give the shell one.
 Recording it here rather than choosing, because it changes the deployment's
 authentication contract.
 
+* Resolved
+
+The HTTP boundary now verifies the platform's session tokens. =http_server= gained
+=set_request_verifier()= and an RS256-from-file path (the branch that used to log
+=RS256 from file not yet implemented=), and =http_session= tries that verifier
+first, falling back to the symmetric authenticator that only the server's own
+login token needs. The http server application already receives IAM's public key
+from the service runner, so it hands the same verifier to the routes.
+
+Verified live: =compute publish-package ORE 1.8.17.0 x64-linux= uploaded
+=ores/compute/packages/ORE-1.8.17.0/ORE-1.8.17.0-x64-linux.tar.gz= and reported
+its sha256, the row's =package_uri= is that path, a HEAD of the key answers 200,
+and the HS256 login token still answers 200 on the same route, so nothing that
+worked before stopped working. The http api suite passes.
+

@@ -60,6 +60,7 @@ public:
     explicit http_session(boost::asio::ip::tcp::socket socket,
                           std::shared_ptr<router> router,
                           std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator,
+                          std::shared_ptr<ores::security::jwt::jwt_authenticator> request_verifier,
                           const http_server_options& options,
                           session_bytes_callback bytes_callback = nullptr);
 
@@ -94,6 +95,10 @@ private:
     boost::beast::flat_buffer buffer_;
     std::shared_ptr<router> router_;
     std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator_;
+
+    // Verifies the RS256 session tokens IAM issues; tried before the symmetric
+    // authenticator, which only the login token needs.
+    std::shared_ptr<ores::security::jwt::jwt_authenticator> request_verifier_;
     http_server_options options_;
     std::string remote_address_;
     session_bytes_callback bytes_callback_;

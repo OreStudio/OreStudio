@@ -34,12 +34,20 @@ namespace ores #F2F2F2 {
             }
             class geolocation_service {
                 -ctx_ : database::context
+                +lookup(ip : const address&) : expected<geolocation_result, geolocation_error>
+                +lookup(ip_string : const string&) : expected<geolocation_result, geolocation_error>
             }
+            geolocation_service ..> geolocation_result : produces
+            geolocation_service ..> geolocation_error : produces
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+'
+' A capture run replaces everything above the sentinel with class boxes only.
+' The lookup methods and the two dependency arrows above it are hand-authored,
+' so re-add them after running generate_component_puml.py.
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.geo.puml"

@@ -1,72 +1,191 @@
 :PROPERTIES:
 :ID: AC960907-8838-4254-9C45-F5E48FA8840C
 :END:
-#+title: Task: Bring ores.trading to the clean standard
-#+description: Work ores.trading through the Component Clean Standard in order and record each item.
+#+title: Task: Baseline, decisions and evidence for ores.trading
+#+description: Record the B01 to B06 baseline for ores.trading, the consumer census, the open work and the decisions the six PRs obey. No code change.
 #+type: task
 #+level: s1
 #+filetags: :clean-trading:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-trading
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
-#+updated: 2026-09-23
-#+environment:
+#+updated: 2026-09-26
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-ores.trading passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] for a component of kind *Entity*.
+Record the baseline of ores.trading before any edit, so that every later
+difference is attributable to a known cause, and record the decisions
+that bound the six PRs. This is item group B of the
+[[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]
+plus the decision record the story needs. It changes no code.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | The 2026-09-26 investigation is done and the evidence is collected. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | Commit the record and raise PR 1.      |
+| Last touched | 2026-09-26                               |
 
 * Acceptance
 
-- Every checklist item that applies to a component of kind *Entity* passes, with its evidence recorded on the task.
-- Every item that does not apply is recorded as not applicable, with the reason.
-- Every generator defect found is fixed at its source, with a regression test.
-- ores.trading is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
+- =evidence/b01_component_drift_dry_run.txt= holds the 2026-09-26
+  baseline: 1636 changed, 115 created, and the classification of every
+  block by cause.
+- =evidence/b02_b03_b04_survey.md= holds the model metatype census (B02),
+  the hand-written file classification (B03) and the subject and header
+  inventory (B04).
+- =evidence/b05_open_work.txt= holds the open pull requests, the
+  branches and the backlog captures that touch ores.trading.
+- =evidence/b06_consumer_census.txt= and
+  =evidence/b06_external_headers.txt= hold the consumer census.
+- =evidence/v02_trading_tests.txt= holds the measured test state.
+- =evidence/v05_codegen_gates.txt= holds every gate output with its exit
+  code, and states which gates read green only because ores.trading is
+  excluded from their registries.
+- The six decisions D1 to D6 are recorded on the story, each with its
+  reason and its consequence.
+- =compass lint= passes, =validate_docs.sh= passes, and the component
+  drift dry run still reports the same 1751 files.
 
 * Plan
 
-Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order, one entity at a time, and
-record each item's result in the table below.
+** B01, the baseline
 
-1. Baseline and inventory (B01 to B05). Record the baseline before any
-   edit.
-2. Models (M01 to M10).
-3. Protocol (P01 to P06).
-4. Generation (G01 to G06).
-5. Wiring and data (W01 to W04).
-6. Shell (S01, S02).
-7. Structure and hygiene (H01 to H03).
-8. Verification (V01 to V06), ending with the registry entry.
+Run the drift check in dry-run mode only. The in-place form writes 1751
+files over the tree.
 
-| Item | Result | Evidence |
-|------+--------+----------|
-|      |        |          |
+#+begin_src sh
+projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --component trading-cpp --dry-run
+projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_model_drift.py --summary
+#+end_src
+
+The dry run takes about ten minutes. Keep its full output, then
+classify every =would change= block by the first lines of its diff, and
+write the classification plus the =would create= list into the evidence
+file. The categories are the generated-file banner alone, the eventing
+rename, a substantive template change, and the root =CMakeLists.txt=.
+
+** B02, the model census
+
+Run the standard survey script, which is read-only.
+
+#+begin_src sh
+projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/survey_component.py --component trading-cpp
+#+end_src
+
+It reports 65 models in =projects/ores.trading/modeling/=: 57 entity, 6
+field group, 1 module and 1 overview. It also reports the 31 entity
+models that bind a profile and the 26 that do not.
+
+** B03, the hand-written file classification
+
+The same survey splits the 1763 C++ files by the generated marker and
+classifies each hand-written file. The result is 35 generated files and
+1728 hand-written, of which 1593 are generatable, 71 are infrastructure,
+0 are dead by path and 64 are unclassified. Record that the "dead"
+column is a path test and not a consumer census; B06 is the consumer
+census.
+
+** B04, the protocol inventory
+
+The same survey lists the 49 protocol headers, the 249 distinct raw
+=trading.v1.*= subject literals, the finding that 0 of them sit outside
+a protocol header, and the finding that no model declares a subject.
+The =protocol.org= file under =core/modeling/= names four trade
+subjects in prose, which is a reference and not a declaration.
+
+** B05, the open work
+
+#+begin_src sh
+gh pr list --state open --limit 100 --json number,title,headRefName
+git branch -r | grep -i trading
+git worktree list
+#+end_src
+
+Result: no worktree works on ores.trading; the open pull requests are
+clean-marketdata, workflow-identity, clean-iam, clean-variability and
+clean-service; one remote branch touches trading,
+=origin/feature/trading-model-cleanup=, with a single unmerged commit
+from 2026-09-08 that scaffolds the sprint 25 =trading_model_cleanup=
+story. This story supersedes that story, and decision D6 records that
+the branch is left in place because it is not this worktree's branch.
+
+** B06, the consumer census
+
+#+begin_src sh
+grep -rl --include=*.hpp --include=*.cpp '#include "ores.trading' projects/ | sed 's|projects/||; s|/.*||' | sort | uniq -c | sort -rn
+grep -rho '#include "ores\.trading[^"]*"' projects/ --include=*.hpp --include=*.cpp --exclude-dir=ores.trading | sort -u
+#+end_src
+
+Result: 1446 files inside the component, 38 in ores.shell, 17 in
+ores.ore, 1 in ores.reporting, and 0 in ores.web. One hundred and
+twenty distinct headers are consumed outside the component. The full
+symbol-level census belongs to PR 6.
+
+** The decisions
+
+The six decisions are recorded in the story's =* Decisions= section.
+They are D1 the rates wire, D2 the instrument identity, D3 the
+unmodelled families, D4 M07, D5 the sixteen trade model defects, and
+D6 the stale remote branch. D7 records that this PR changes
+documentation and evidence only.
+
+** Items recorded as not applicable here
+
+- M07: the component has no junction metatype. Record the junction-shaped
+  entities so a later reclassification opens the item.
+- P06: the component warms no event cache.
+- H04: the only per-platform code is the standard =_WIN32= export macro.
+- V04 and the rest of the V group belong to PR 6, except V02, which PR 2
+  must turn green.
 
 * Notes
 
-* Test Scenarios
+- The component is the largest in the tree and the only one whose
+  regeneration no gate has ever measured.
+- The sprint 25 release notes and health review 2 (1887CE40) list
+  ores.trading among the drift-free components with "zero-diff
+  regeneration verified". At this head it drifts by 1751 files. That is
+  a documentation defect. Correct it in PR 1 or capture it.
+- The sprint 25 story prose describes a September 8 snapshot of 38 orgs
+  and a hand-evolved, unbound trade entity. At this head there are 65
+  orgs and the trade entity is generated. Do not act on the September
+  prose.
+- Backlog captures that touch this work, read for B05:
+  - [[id:80C846D1-4A13-4331-A88C-727D6C3D861C][Finish the eventing payload migration, or read the legacy shape]]
+    explains the 21 failing tests and the 114 stale triggers.
+  - =inbox/codegen_dx_improvements/task_fix-trading-model-drift.org=.
+  - =inbox/legacy_entity_event_mappings_remain.org=.
+  - =inbox/ctest_hides_catch2_registration_errors.org=.
+  - =inbox/refresh-the-stale-er-diagram.org= and
+    =inbox/regenerate_stale_er_diagram.org=.
+  - =inbox/drift_gate_misses_cross_component_outputs.org=.
+  - =next/refactor_trading_reference_type_boilerplate_into_shared_templates.org=.
+  - =next/fix_trading_trade_party_roles_channel_name.org=.
+  - =next/trade_blotter/story.org=, =next/positions_domain_model.org=,
+    =next/separate_trade_instrument_detail_dialogs.org=.
+- Two claims in the survey output need care. The B03 "dead" column
+  tests paths, not references. The test file lists are complete: all 43
+  core, 13 api and 2 service entries are present in their
+  =component_files.cmake=.
+- Eleven untracked shell library directories remain from the scheduler
+  pass. They are open item 10 of that task. They make an in-place drift
+  check fail for reasons that are not trading's.
+- Re-measure every figure at the head this PR merges into. A cited
+  figure is evidence, so a stale one is a defect.
 
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
+* Test Scenarios
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -76,7 +195,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+|    | Raise the PR with the evidence and the decisions. |
 
 * Review
 

@@ -1,0 +1,193 @@
+:PROPERTIES:
+:ID: 14795122-7D5B-442E-9B2A-E7517632F612
+:END:
+#+title: Task: Sync the ores.trading tree to its models
+#+description: PR 2. Regenerate the modelled component, land the canonical protocol and the canonical notify triggers, delete the hand consolidation and the superseded hand-written twins, and make the tree build and test green.
+#+type: task
+#+level: s1
+#+filetags: :clean-trading:sprint_26:v0:
+#+owner: marco
+#+branch: feature/sync-trading-drift
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the checked-in ores.trading tree equal to what its models
+generate, and make the component build and pass its suites at that
+tree. This is item group G plus the protocol items P01, P02, P03 and
+P05, and the wiring item W01. It changes no model and no data shape: it
+lands work the generator already produces and deletes what the
+generator supersedes.
+
+The measured baseline is 1636 files that would change and 115 that
+would be created. Of the changes, 1434 are the generated-file banner
+alone, 78 are the eventing rename, 123 are substantive template changes
+and 1 is the root =CMakeLists.txt=. A component usually cannot be
+cleaned by landing that much at once, but here it is safe, because 88
+per cent of it is attributable to one cause and the generator already
+reproduces the tree's semantics.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | PR 1 merged, so the decisions are on the main branch. |
+| Next         | Re-measure the baseline at the new head, then regenerate. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- =check_component_drift.py --component trading-cpp --dry-run= reports
+  nothing to change and nothing to create, and a second run reports the
+  same.
+- The whole tree builds, and =ores.trading.api.tests=,
+  =ores.trading.core.tests= and =ores.trading.service.tests= pass.
+- The 21 =*_publishes_nats_changed_event= failures are gone, because the
+  114 trading notify triggers emit the canonical payload.
+- =regenerate_cmake_component_files.py --check= passes for
+  =ores.trading.api=, =ores.trading.core= and =ores.trading.service=.
+- Decision D1 is applied: the nine rates families are served by the
+  generated per-family handlers and registrars, and the hand
+  consolidation is deleted. No subject is registered twice.
+- Every generated file carries the marker, and every hand-written file
+  the generation supersedes is deleted.
+- The consumers in ores.shell, ores.ore and ores.reporting are migrated
+  in the same PR, and nothing is carried for backwards compatibility.
+- W01 is closed by reading the composition points, not by trusting the
+  drift gate.
+
+* Plan
+
+** 1. Re-measure and confirm the cause of every block
+
+Run the dry run and confirm the classification at the new head before
+writing anything.
+
+#+begin_src sh
+projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --component trading-cpp --dry-run
+#+end_src
+
+The classification to expect: banner only, eventing rename, the trigger
+template, and the creates. If a block appears under a cause the PR 1
+baseline does not have, stop and explain it before regenerating.
+
+** 2. Apply D1 before regenerating, not after
+
+The generator emits per-family protocols, handlers and registrars for
+nine rates families: fra, vanilla swap, cap floor, swaption, balance
+guaranteed swap, callable swap, knock out swap, inflation swap and rpa.
+The tree consolidated those nine by hand into =instrument_protocol.hpp=
+plus =rates_instrument_handler.hpp=, registered from
+=registrar_rates.cpp=. Regenerating while the consolidation remains
+would subscribe the same subjects twice.
+
+The work: let the nine per-family files be created, then delete the
+per-family sections of =instrument_protocol.hpp=, delete
+=rates_instrument_handler.hpp= and =registrar_rates.cpp=, and wire the
+generated registrars at the same composition point. The subject names
+do not change, so no consumer changes for this step.
+
+** 3. Regenerate
+
+Run the drift check without =--dry-run=. It writes the tree. Then read
+the diff in the order of its causes, not in file order: the banner
+first, then the eventing rename, then the 114 SQL scripts, then the
+creates.
+
+#+begin_src sh
+projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --component trading-cpp
+#+end_src
+
+If the regeneration reveals a generator defect, fix it at its source
+with a regression test in the codegen suite, then regenerate. Do not
+edit generated output.
+
+** 4. Migrate the consumers
+
+The canonical list verb renames =get_trades_request= to
+=list_trades_request= and =h->list= to =h->list_trades=, and the
+eventing headers rename. Consumers outside the component: 38 files in
+ores.shell, 17 in ores.ore, 1 in ores.reporting. Migrate all of them in
+this PR. Nothing is kept for compatibility.
+
+** 5. Fix the CMake source lists
+
+#+begin_src sh
+projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.trading.api
+projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.trading.core
+projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.trading.service
+#+end_src
+
+** 6. Build and test
+
+Build the whole tree, not only the component, because the canonical
+protocol change reaches ores.shell, ores.ore and ores.reporting. Then
+run the four suites.
+
+#+begin_src sh
+cmake --build build/output/linux-clang-debug-make -j 3
+ctest --test-dir build/output/linux-clang-debug-make -R "ores.trading|ores.shell.trading|ores.ore" --output-on-failure
+#+end_src
+
+** 7. Prove idempotence
+
+Run the dry run twice more and require both runs to report nothing. A
+second run that still changes something is a generator defect.
+
+** 8. Record the items
+
+Update the story's checklist rows for G01, G02, G03, G04, G06, P01,
+P02, P03, P05, W01, V01 and V02. Record which gates were run before the
+component joins the registry and which are still vacuous.
+
+* Notes
+
+- The trap this PR exists for is the double registration described in
+  step 2. It is decision D1 on the story.
+- The eventing work here closes ores.trading's share of
+  [[id:80C846D1-4A13-4331-A88C-727D6C3D861C][Finish the eventing payload migration, or read the legacy shape]].
+  Read that capture before touching the trigger template.
+- The in-place drift check diffs the whole repository. Any untracked
+  file makes it fail for reasons that are not this component's. The
+  eleven untracked shell library directories from the scheduler pass
+  are the known case. Keep the tree still and never run a writing gate
+  while a build reads the tree.
+- The PR is large and mostly mechanical. The review evidence is the
+  cause classification, the build, and the four suites, not a line by
+  line read.
+- Two hand-written generator trees exist in the component,
+  =api/.../generator/= with 25 files and =api/.../generators/= with 38.
+  Do not collapse them here; record them for PR 6.
+- 24 hand-written domain types have no model. Do not model them here;
+  PR 3 owns that.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    | Sync ores.trading to its models |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

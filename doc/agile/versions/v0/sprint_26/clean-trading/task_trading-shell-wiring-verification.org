@@ -1,0 +1,198 @@
+:PROPERTIES:
+:ID: F97FF3C0-EB21-4076-B23C-4AAA77F13BC3
+:END:
+#+title: Task: Shell, wiring, hygiene and verification for ores.trading
+#+description: PR 6. Generate the shell units and recipes, seed the permissions, run the audits and the per-file survey, and enter the component in the registry.
+#+type: task
+#+level: s1
+#+filetags: :clean-trading:sprint_26:v0:
+#+owner: marco
+#+branch: feature/trading-shell-wiring-verification
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close the shell, wiring, hygiene and verification items, and enter
+ores.trading in =COMPONENTS_UNDER_TEST=, which is the last step of the
+[[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]].
+This is item group S, items W02 and W04, items B06 and H01 to H05, and
+the whole V group.
+
+The entry in the registry is a claim that regeneration is byte
+identical, that every protocol header has its twin, and that every
+applicable item passes. Five of the gates read green today only because
+the component is absent from their registries, so this task must state
+which green is real and which became real here.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | PR 5 merged.                           |
+| Next         | Enable the shell facet for every entity, then seed the permissions. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- S01: every entity and junction verb has a generated shell command unit
+  and a test. Twenty-two of fifty-seven entities set
+  =:ores.cpp.shell-command.enabled: true= today. The scheduler pass
+  recorded that the =ores.cpp.shell-command= facet has no
+  component-scoped aggregator archetype, so this needs generator work
+  and not only a regeneration. Every hand-written unit the generation
+  replaces is deleted.
+- S02: every command has a generated literate recipe under
+  =doc/recipes/shell/=, and
+  =regenerate_shell_recipe_inventory.py --check= passes. Twenty-two
+  recipes are wanted and none exist today.
+- W02: the 92 unseeded permission codes are seeded, the roles that need
+  them are granted them, and ores.trading is added to the =REGISTRY= in
+  =check_handler_permissions.py= so the gate stops reading green by
+  exclusion. The component checks 98 codes and 6 are seeded today.
+- W04: the service grants cover every table the service reads, and
+  =compass db recreate -y -k= followed by the fleet start proves it.
+- B06: every public symbol is classified by its consumer, production, test
+  only or none. A test-only consumer counts as dead code and the symbol
+  and its test are deleted. The census covers the 120 headers consumed
+  outside the component.
+- H01: the Component Architecture Audit is run and its record written,
+  and the three diagrams are authored in two passes: the automated pass,
+  then the manual pass below the sentinel, and the rendered image is
+  read rather than only regenerated.
+- H02: no dead code, no commented-out code, no hand-written duplicate of
+  a generated artefact. The two generator trees,
+  =api/.../generator/= with 25 files and =api/.../generators/= with 38,
+  collapse into one. The 24 unmodelled domain types from PR 3 are
+  resolved or explained.
+- H03: the comment rules pass over the component.
+- H05: the component overviews carry the six sections and a current
+  diagram. The stale =ores_schema.puml= ER diagram is a repository-wide
+  sweep with a generator that has no dry run; record it as a named
+  sweep finding rather than a trading fix.
+- V01: the whole tree builds with the component's tests and every
+  consumer.
+- V02: the codegen suite passes and the component's three suites pass
+  with the fleet up.
+- V03: the database recreates from scratch and the fleet starts and
+  serves.
+- V04: every generated shell command runs against the live fleet and
+  answers, and any command that cannot run is recorded with the reason.
+- V05: every codegen gate is green with the component added: component
+  drift, model drift, protocol twin coverage, handler permissions,
+  populate references, recipe inventory and CMake source lists.
+- V06: ores.trading is listed in =COMPONENTS_UNDER_TEST= and
+  =check_component_drift.py --all= passes with it listed.
+- V07: no vacuous test. Every test fails when its subject does nothing.
+  The scheduler pass found that a test which passes on a failed lookup
+  reports confidence it did not earn.
+- V08: every source file has a test that exercises it, or is recorded
+  with the reason it does not. The survey runs over 732 non-test
+  sources against 58 test files, and the list of untouched files is the
+  coverage work item.
+- P04 is decided: =trading.v1.trades.export-to-storage= and
+  =trading.v1.trades.portfolio.export= are hand-written operations with
+  no operation model. Either they become operation models or the item is
+  recorded as not applicable with the reason.
+- M07 is recorded as not applicable, with the junction-shaped entities
+  named so a later reclassification opens it.
+
+* Plan
+
+** 1. Enable the shell facet and generate
+
+Set =:ores.cpp.shell-command.enabled: true= on the entities that should
+have commands, or record the reason an entity has none. Generate the
+units and their tests, then delete the hand-written units the generation
+replaces. If the facet still has no aggregator archetype, build it in
+the codegen library with a regression test.
+
+** 2. Generate the recipes
+
+Generate one recipe per command, regenerate the inventory, and run every
+recipe against the live fleet. Record the run.
+
+** 3. Seed the permissions
+
+Take the 98 codes the handlers check, find the 92 that no populate
+script seeds, seed them, grant them to the roles that need them, and add
+the component to the permissions gate's registry. Then run the gate.
+
+** 4. Run the audits and the surveys
+
+- The Component Architecture Audit, with its record.
+- The two-pass diagrams, reading the rendered image.
+- The B06 consumer census over every public symbol.
+- The H03 comment pass.
+- The V08 per-file coverage survey.
+- The V07 stub test: stub the subject and require the test to fail.
+
+** 5. Recreate, start and run live
+
+#+begin_src sh
+./compass.sh db recreate -y -k
+./compass.sh services start
+ctest --test-dir build/output/linux-clang-debug-make -R "ores.trading" --output-on-failure
+#+end_src
+
+Run every generated shell command against the fleet. Record any command
+that cannot run.
+
+** 6. Enter the registry
+
+Add the component to =COMPONENTS_UNDER_TEST= in
+=projects/ores.codegen/scripts/component_registry.py= and run
+=check_component_drift.py --all=. This is the last step, and it turns
+every vacuous green into a real one.
+
+** 7. Record every item
+
+Fill the story's checklist with the final result per item, the evidence
+file, and the reason for each not-applicable.
+
+* Notes
+
+- The eleven untracked shell library directories from the scheduler pass
+  are that task's open item 10. They are not trading's, but they make an
+  in-place drift check fail. Sweep them or record them as still open
+  before the =--all= run.
+- Five gates read green today because ores.trading is absent from their
+  registries: component drift, handler permissions, protocol twin
+  coverage, recipe inventory and the CMake source lists. Recording that
+  is part of V05.
+- The twin gate cannot be satisfied by trading without TypeScript
+  twins, and the component has no web consumer. Decide whether the
+  protocol twin item applies, and record the reason either way.
+- The scheduler pass learned that a private constructor is an invariant
+  rather than an obstacle, that a cited figure is evidence, and that
+  only a live run finds some defects. Apply all three here.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    | Shell, wiring, hygiene and verification for ores.trading |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,169 @@
+:PROPERTIES:
+:ID: E586441E-B73E-4E8C-917F-50161B05588D
+:END:
+#+title: Task: Finish the bond pilot
+#+description: PR 5. Re-model the bond future against the current ORE schema, add the missing constraints and child tables, fix the delete and add paths, and run the corpus-wide round trip.
+#+type: task
+#+level: s1
+#+filetags: :clean-trading:sprint_26:v0:
+#+owner: marco
+#+branch: feature/finish-bond-pilot
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Finish what the sprint 25 bond pilot left. The pilot proved its claim
+for the bond products and the trade envelope: the zero-loss gate read 0
+lost and 0 unexplained over 1566 documents, and the mapper is a
+hand-written 1694-line =bond_instrument_mapper.cpp= over a hand-written
+container of 241 and 425 lines. The unfinished part was never written
+down as tasks, which is why it is still open.
+
+This task owns the family-level correctness items. PR 4 owns the
+identity keys and the security split, because those touch every family.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | PR 4 merged, so the security keys are stable. |
+| Next         | Re-model the bond future against the current schema. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- =bond_futures= matches the current ORE schema. =instruments.xsd=
+  declares =bondFutureData= with =ContractName=, =ContractNotional=,
+  =LongShort=, =ApplyConversionFactor= and =UseFuturePrice=. The table
+  holds 15 pre-v17 columns today, several of them NOT NULL, and the two
+  v17 members have nowhere to go. The 13 contract terms either move to
+  the shared security entity of PR 4 or are recorded as dropped with the
+  reason.
+- The design's =instrument_underlyings= table is built, or recorded as
+  out of scope with the reason. It was specified and never created.
+- The eight =bondData= elements with no column are resolved: CreditGroup,
+  VolatilityCurveId, PriceQuoteMethod, PriceQuoteBaseValue, PriceType,
+  Payer, CreditRisk and SubType. Each either has a column or a recorded
+  decision.
+- Deleting a bond instrument over the shell removes the header row and
+  the fact rows and the issue it owns, or refuses with a stated reason.
+  Today the delete sends one message and leaves the rest behind.
+- Adding a bond is one transaction. Today it is three saves with no
+  transaction.
+- A stated element whose value equals its type default survives export.
+  The abandoned task =A3DA0BB5= records the case: a bond future states
+  SettlementDirty, FairPrice and ExpiryLag, and the export drops all
+  three. The fix is a presence flag per optional member, which is a
+  modelling and codegen change to =ores.trading.bond_future= rather than
+  a mapper edit.
+- The zero-loss gate reads zero over the whole bond corpus of about 50
+  documents, not over the two that were run live.
+- =check_component_drift.py --component trading-cpp --dry-run= reports
+  nothing, and the suites pass.
+
+* Plan
+
+** 1. Re-model the bond future against the current schema
+
+The synced XSD is the ground truth, and the current table is older than
+it. Model the five declared members, resolve the contract terms against
+PR 4's security entity, and drop the NOT NULL columns ORE does not
+require. Regenerate.
+
+** 2. Decide the underlyings table
+
+Read the design section that specifies it
+(=design_bond_relational_model.org=) and either build it as a shared
+instrument-keyed table or record why the product does not need one. The
+sprint 25 decision log says the mapper's container carries the schedule
+and underlyings whole because no column can hold them, and that the
+shared tables are their destination. That decision is currently
+unimplemented.
+
+** 3. Resolve the eight residue elements
+
+=task F8D78E13= aligned =bond_issue= with ORE and removed what ORE does
+not have. Eight =bondData= elements went the other way: ORE has them and
+we have no column. Decide each against the current XSD, then model it or
+record it.
+
+** 4. Fix the delete and add paths
+
+The delete is in
+=projects/ores.shell/trading/src/app/commands/trading/bond_instrument_commands.cpp=,
+around line 361. It sends one delete for the header. Make the service
+delete the family rows it owns, or refuse and say why. Make the add path
+one transaction in the service layer.
+
+** 5. Add the presence flag
+
+A stated element with a default value cannot be told from an absent one
+today, so the reverse mapper tests the value rather than the presence.
+Model a presence flag per optional member where ORE distinguishes them,
+and prove it with the bond future case from the abandoned task.
+
+** 6. Run the corpus sweep
+
+#+begin_src sh
+python3 scripts/ore_mapper_roundtrip_diff.py
+python3 scripts/ore_schema_column_drift.py
+#+end_src
+
+Extend the round trip to every bond document under
+=external/ore/examples/=, not two of them, and record the count.
+
+** 7. Record
+
+Record the closure of the bond items and update the story's checklist
+rows the work touches.
+
+* Notes
+
+- The pilot's recorded results are in the sprint 25 task bodies. The
+  zero-loss claim is =B753AD00= and the round trip is =D2D32410=. Read
+  both before re-measuring, so a difference is attributable.
+- The design page is stale in three places: it names
+  =ores_trading_schedules_tbl= where the code has =instrument_schedules=,
+  it says the issue holds =maturity_date= and =description= after
+  =F8D78E13= removed both, and its conversion target columns are
+  =underlying_uri= and =weight= where the code has =underlying_id= and
+  =conversion_ratio=. Correct the page or record the differences.
+- Two generated SQL files cite
+  =doc/knowledge/architecture/trading_bond_relational_model.org=, which
+  does not exist. Correct the model that emits the citation.
+- =BondPosition= is the family's uncovered product by evidence: the ORE
+  schema declares no =positionData=, so it has no document to import and
+  no fact table. The suite asserts the absence. Do not add one.
+- The Qt bridge task =3E14AEC0= is moot: the qt tree was deleted at
+  =af67db3062=.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    | Finish the bond pilot |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

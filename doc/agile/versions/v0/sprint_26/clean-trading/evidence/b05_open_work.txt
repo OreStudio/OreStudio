@@ -1,0 +1,72 @@
+$ gh pr list --state open --limit 100 --json number,title,headRefName
+[{"headRefName":"feature/clean-marketdata","number":2185,"title":"[marketdata] Make the models truthful and fix the junction gate"},{"headRefName":"feature/workflow-identity","number":2184,"title":"[workflow] Add the identity workflow and the commands that drive it"},{"headRefName":"feature/clean-iam","number":2180,"title":"[iam] Bring ores.iam to the component clean standard"},{"headRefName":"feature/clean-variability","number":2176,"title":"[variability] Bring ores.variability to the Component Clean Standard"},{"headRefName":"feature/clean-service","number":2175,"title":"[service] Bring ores.service to the component clean standard"}]
+
+$ git branch -r | grep -iE 'trading'
+  origin/feature/trading-model-cleanup
+
+$ git worktree list
+/home/marco/Development/OreStudio/ores.git                  (bare)
+/home/marco/Development/OreStudio/ores_dev_brave_hopper     ae6549b28a [feature/workflow-identity]
+/home/marco/Development/OreStudio/ores_dev_bright_faraday   505db75e47 [feature/clean-variability]
+/home/marco/Development/OreStudio/ores_dev_clever_dijkstra  90e9ae9990 [feature/clean-iam]
+/home/marco/Development/OreStudio/ores_dev_eager_maxwell    e915fb2763 [feature/clean-service]
+/home/marco/Development/OreStudio/ores_dev_festive_dijkstra 806c2d3be2 [feature/model-dq-artefact-tables]
+/home/marco/Development/OreStudio/ores_dev_jolly_knuth      02530ec165 [feature/clean-http]
+/home/marco/Development/OreStudio/ores_dev_merry_newton     8a16c7a4f0 [feature/clean-trading]
+/home/marco/Development/OreStudio/ores_dev_prime_origin     7814624baa [feature/clean-marketdata]
+/home/marco/Development/OreStudio/ores_dev_solid_dirac      11e7fdfbbc [feature/storage-nats-http-interface]
+/home/marco/Development/OreStudio/ores_dev_swift_curie      e4b8a65aa2 [feature/clean-refdata]
+
+$ grep -ril 'trading' doc/agile/product_backlog/inbox/ doc/agile/product_backlog/next/
+doc/agile/product_backlog/inbox/desk_facing_product_type.org
+doc/agile/product_backlog/inbox/eventing-notify-payload-migration-incomplete.org
+doc/agile/product_backlog/inbox/ctest_hides_catch2_registration_errors.org
+doc/agile/product_backlog/inbox/finish_workspaces_feature/scenario_verify_new_trading_instruments_crud.org
+doc/agile/product_backlog/inbox/finish_workspaces_feature/story.org
+doc/agile/product_backlog/inbox/finish_workspaces_feature/task_fix_workspace_inheritance_query.org
+doc/agile/product_backlog/inbox/finish_workspaces_feature/task_audit_workspace_feature_state.org
+doc/agile/product_backlog/inbox/unify_legal_entity_and_model_calculation_agent.org
+doc/agile/product_backlog/inbox/refresh-the-stale-er-diagram.org
+doc/agile/product_backlog/inbox/codegen_dx_improvements/story.org
+doc/agile/product_backlog/inbox/codegen_dx_improvements/task_fix-trading-model-drift.org
+doc/agile/product_backlog/inbox/drift_gate_misses_cross_component_outputs.org
+doc/agile/product_backlog/inbox/legacy_entity_event_mappings_remain.org
+doc/agile/product_backlog/inbox/trade-types-with-no-example-or-test.org
+doc/agile/product_backlog/inbox/priorstates_hft_trading_demo.org
+doc/agile/product_backlog/inbox/codegen_infra_followups_dq/task_migrate-all-entities-to-nested-identity-audit-structs.org
+doc/agile/product_backlog/inbox/codegen_infra_followups_dq/story.org
+doc/agile/product_backlog/inbox/codegen_infra_followups_dq/task_migrate-remaining-lookup-entities-to-domain-entity.org
+doc/agile/product_backlog/inbox/compass_create_story_task_without_branch.org
+doc/agile/product_backlog/inbox/badge_adoption_audit_rollout/task_annotate-audited-entities-with-badges.org
+doc/agile/product_backlog/inbox/badge_adoption_audit_rollout/story.org
+doc/agile/product_backlog/inbox/drift_check_destructive_on_stale_template_branch.org
+doc/agile/product_backlog/inbox/regenerate_stale_er_diagram.org
+doc/agile/product_backlog/inbox/three-services-point-at-the-wrong-storage-port.org
+doc/agile/product_backlog/inbox/codegen-table-enum-columns.org
+doc/agile/product_backlog/next/codegen_messaging_registrars.org
+doc/agile/product_backlog/next/trade_blotter/story.org
+doc/agile/product_backlog/next/fix_component_doc_drift.org
+doc/agile/product_backlog/next/org_explorer_tree_no_double_click.org
+doc/agile/product_backlog/next/calendar-list-pagination-followups/task_fix-legacy-primary-key-heading-models.org
+doc/agile/product_backlog/next/refactor_trading_reference_type_boilerplate_into_shared_templates.org
+doc/agile/product_backlog/next/move_portfolio_qt_crud_to_refdata.org
+doc/agile/product_backlog/next/rate-display-conventions/story.org
+doc/agile/product_backlog/next/rate-display-conventions/task_add-ir-index-convention-and-formatter.org
+doc/agile/product_backlog/next/component-output-paths-dotted-vs-nested.org
+doc/agile/product_backlog/next/separate_trade_instrument_detail_dialogs.org
+doc/agile/product_backlog/next/retire_per_entity_history_dialogs/task_retire-per-entity-history-templates.org
+doc/agile/product_backlog/next/retire_per_entity_history_dialogs/story.org
+doc/agile/product_backlog/next/fx_chart_toast_overlay_zorder.org
+doc/agile/product_backlog/next/fx_market_convention_precision_facet.org
+doc/agile/product_backlog/next/fix_trading_trade_party_roles_channel_name.org
+doc/agile/product_backlog/next/positions_domain_model.org
+doc/agile/product_backlog/next/bulk_fix_generator_version_hardcode.org
+doc/agile/product_backlog/next/commission-remaining-qt-components-codegen.org
+doc/agile/product_backlog/next/windows_wix_installer_break_through_the_v3_size_and_file_count_limits.org
+doc/agile/product_backlog/next/unify-entity-timestamps/task_fix-entity-timestamp-fields.org
+doc/agile/product_backlog/next/implement_book_allowed_currency_product_lists.org
+doc/agile/product_backlog/next/migrate_remaining_lookup_entity_models_key_shape.org
+doc/agile/product_backlog/next/rate-history-endpoint-for-charts.org
+doc/agile/product_backlog/next/wire_service_token_provider.org
+doc/agile/product_backlog/next/add_party_role_scheme_entity.org
+doc/agile/product_backlog/next/trade_key_field_enumerations.org

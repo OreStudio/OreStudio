@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: AD0956F8-B519-4D75-A3CB-86FE70F9E17C
+:END:
+#+title: oresmd option key grammars need ORE's own source, not the corpus
+#+description: The commodity and capfloor option families each carry key grammars that the corpus alone cannot settle, so wiring them means guessing slot meanings. Recorded so the decisions are made deliberately rather than inherited.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two option families cannot be wired from the corpus alone, because their key
+grammars have slots whose meaning the data does not reveal. The vendored ORE
+tree at =external/ore/= carries examples and schemas but no source, so there is
+no grammar to read.
+
+**COMMODITY_OPTION** writes nine segments in two layouts of the same arity, and
+they cannot be the same field order:
+
+| Key | Lines |
+|-----+-------|
+| =COMMODITY_OPTION/RATE_LNVOL/ICE:B/USD/10M/DEL/Fwd/Call/0.10= | 1,728 |
+| =COMMODITY_OPTION/RATE_LNVOL/ICE:B/USD/10M/ATM/AtmDeltaNeutral/DEL/Fwd= | 108 |
+
+Read as expiry/delta-type/premium-type/call-put/strike, the first is coherent
+and the second is nonsense: it would make the delta type ATM, the premium
+AtmDeltaNeutral, the call/put DEL and the strike Fwd. So one of the two orders
+is different, and nothing in the corpus says which. Equity writes the same two
+layouts, so the answer governs both.
+
+Its seven-segment form differs from equity's too: commodity writes
+=.../EXPIRY/ATM/AtmFwd= where equity writes =.../EXPIRY/STRIKE/CALL_PUT=. Same
+arity, different third slot.
+
+**CAPFLOOR** is three sub-shapes under one type, and the middle one belongs to
+inflation rather than rates:
+
+| Key | Lines |
+|-----+-------|
+| =CAPFLOOR/SHIFT/CHF/6M= | 97 |
+| =CAPFLOOR/PRICE/EUHICPXT/10Y/C/0.00= | 18,424 |
+| =CAPFLOOR/RATE_LNVOL/CHF/20Y/6M/0/0/0.025= | 78,269 |
+
+The eight-segment form carries two flag slots that are =0= on 97% of lines and
+=1/1= on the rest, and nothing in the tree says what they flag. The six-segment
+form is keyed by an inflation index where the eight-segment form is keyed by a
+currency, so it is the same ORE type spelling two different instruments.
+
+* Why
+
+oresmd models 32 of the 43 series types the shape table defines. The eleven
+that remain include these two, and both are large: the capfloor eight-segment
+form alone is 78,269 corpus lines, 16% of everything the corpus carries.
+
+Wiring them by choosing a field order and hoping is worse than leaving them
+recorded. A wrong reading bakes a wrong identity into the model, and the
+identity is what every stored series is keyed by; the corpus would then
+round-trip through a grammar ORE does not use. The two equity and FX option
+families that could be read with confidence are wired and tested.
+
+The missing input is ORE's own key grammar. It is in ORE's source, which this
+repository does not vendor, and in ORE's documentation for the market data
+convention. One of the two would settle all three questions.
+
+* References
+
+- =projects/ores.codegen/scripts/check_oresmd_ore_coverage.py= — the record of
+  which ORE types oresmd represents, and the reason each remaining one is not.
+- =projects/ores.sql/populate/ore/ore_series_key_shapes_populate.sql= — the
+  project's own shape table, which agrees with the corpus on every type it
+  states unambiguously.
+- =external/ore/examples/= — the corpus the measurements above come from.
+
+* See also
+
+- [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Story: Clean ores.marketdata to the component clean standard]]

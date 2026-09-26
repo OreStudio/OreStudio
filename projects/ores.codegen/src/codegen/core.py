@@ -2497,6 +2497,29 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     elif cpp_type == 'int':
                         col['default_value'] = '0'
                 col['iter_var'] = iter_var
+                # A quoted default_value reaches C++ verbatim: the templates
+                # render it with a triple-mustache and no escaping, so a model
+                # that writes :default_value: "true" on a bool produces
+                # `bool x = "true";`. That is a string literal decaying to a
+                # pointer, which the compiler accepts as true with no warning,
+                # so it is silent at every gate. A string default is quoted
+                # because it is a string; a scalar one never is. Refuse rather
+                # than strip the quotes, so the model reads the way the C++
+                # does.
+                dtype = str(col.get('cpp_type', ''))
+                dvalue = str(col.get('default_value', ''))
+                if (dtype in ('bool', 'int', 'double', 'float', 'std::int64_t',
+                              'std::uint64_t', 'std::int32_t', 'std::uint32_t')
+                        and len(dvalue) >= 2
+                        and dvalue[0] == '"' and dvalue[-1] == '"'):
+                    raise ValueError(
+                        f"column '{col.get('name')}' is a {dtype} and its "
+                        f":default_value: is quoted ({dvalue}). Codegen renders "
+                        f"the value verbatim, so the generated C++ would read "
+                        f"`{dtype} ... = {dvalue};` -- a string literal "
+                        f"initialising a scalar, which compiles by decay and is "
+                        f"silent. Write the value unquoted, as the scalar it is."
+                    )
                 # A declared SQL-only column is meant to reach no C++ layer,
                 # so it skips every remaining per-column step, the guard
                 # below included. Keep this continue last in the loop body:

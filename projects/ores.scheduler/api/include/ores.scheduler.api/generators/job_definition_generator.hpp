@@ -17,26 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#pragma once
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_SCHEDULER_API_GENERATORS_JOB_DEFINITION_GENERATOR_HPP
+#define ORES_SCHEDULER_API_GENERATORS_JOB_DEFINITION_GENERATOR_HPP
 
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.api/export.hpp"
-#include <boost/uuid/uuid.hpp>
-#include <optional>
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::scheduler::generators {
 
 /**
- * @brief Generate a synthetic job_definition for testing.
- *
- * Produces a valid job_definition with deterministic-but-unique values using
- * faker-cxx. The generated job runs a no-op SQL comment on a daily schedule.
- *
- * @param tenant_id Tenant to assign the generated definition to (nullopt = system job).
- * @param party_id  Party to assign the generated definition to (nullopt = system job).
+ * @brief Generates a synthetic job_definition.
  */
-[[nodiscard]] ORES_SCHEDULER_API_EXPORT domain::job_definition
-generate_synthetic_job_definition(const std::optional<boost::uuids::uuid>& tenant_id = std::nullopt,
-                                  const std::optional<boost::uuids::uuid>& party_id = std::nullopt);
+ORES_SCHEDULER_API_EXPORT domain::job_definition
+generate_synthetic_job_definition(utility::generation::generation_context& ctx);
 
-} // namespace ores::scheduler::generators
+/**
+ * @brief Generates N synthetic job_definitions.
+ */
+ORES_SCHEDULER_API_EXPORT std::vector<domain::job_definition>
+generate_synthetic_job_definitions(std::size_t n, utility::generation::generation_context& ctx);
+
+}
+
+#endif

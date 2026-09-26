@@ -17,83 +17,114 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_HPP
-#define ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_SCHEDULER_API_DOMAIN_JOB_DEFINITION_HPP
+#define ORES_SCHEDULER_API_DOMAIN_JOB_DEFINITION_HPP
 
 #include "ores.scheduler.api/domain/cron_expression.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::scheduler::domain {
 
 /**
- * @brief Persistent plan for an in-process scheduled job.
+ * @brief Persistent plan for a recurring or one-off scheduled job.
  *
- * Represents a single scheduled task managed by the OreStudio in-process
- * scheduler. Tracks the job name, cron expression, SQL command or MQ message
- * payload, and active state.
+ * A job the scheduler fires on a cron expression. The row carries the schedule
+ * (schedule_expression), what to run when it fires, and whether it is active.
+ * action_type selects the behaviour: execute_sql runs the SQL in command,
+ * and nats_publish publishes the subject and body carried in action_payload.
+ *
+ * The table is bi-temporal and audited (see
+ * projects/ores.sql/create/scheduler/scheduler_job_definitions_create.sql): it
+ * carries version, the four audit columns and the valid_from/valid_to pair
+ * with the GIST exclusion and the delete rule, so the model takes the ordinary
+ * audited shape and needs no shape flag.
+ *
+ * tenant_id is nullable. A job may belong to no tenant, because the scheduler
+ * fires system jobs from a NULL-tenant row: the MQ statistics scrape and the
+ * compute stale-result reaper are both such rows. The model binds
+ * uuid-identified-lookup for its UUID surrogate key, its tenant scope and its
+ * standard presentation tier, and states nullable_tenant_id itself, which that
+ * profile leaves to the model.
+ *
+ * job_name is the natural key and is unique within its tenant; id is the
+ * surrogate. Uniqueness is what the component's upsert path relies on: a job that
+ * arrives under an existing name updates that row in place instead of adding a
+ * second one.
+ *
+ * The component's operational views — the global job-instance list and the live
+ * scheduler status — are operations rather than entity verbs, and are modelled
+ * in ores.scheduler.scheduling_operations.
  */
 struct job_definition final {
+    /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
+    int version = 0;
+
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    std::optional<utility::uuid::tenant_id> tenant_id;
+
     /**
      * @brief UUID primary key for the job definition.
      */
     boost::uuids::uuid id;
 
     /**
-     * @brief Tenant identifier for multi-tenancy isolation. Null for system jobs.
-     */
-    std::optional<boost::uuids::uuid> tenant_id;
-
-    /**
-     * @brief Party that owns this job definition. Null for system jobs.
-     */
-    std::optional<boost::uuids::uuid> party_id;
-
-    /**
-     * @brief Unique name for this job.
+     * @brief Unique name for the job within its tenant. The scheduler seed writes
+     * ores.mq.metrics_scrape and the compute seed writes compute.v1.reap.stale_results; both are
+     * system jobs, so both carry a NULL tenant and neither collides with a tenant's own job of the
+     * same name.
      */
     std::string job_name;
 
     /**
-     * @brief Human-readable label for UI.
+     * @brief Optional party scope for this job. NULL for a tenant-scoped job and for a system job.
+     */
+    std::optional<boost::uuids::uuid> party_id;
+
+    /**
+     * @brief Human-readable description of the job.
      */
     std::string description;
 
     /**
-     * @brief SQL command to execute.
+     * @brief SQL command to execute when action_type is execute_sql.
      */
     std::string command;
 
     /**
-     * @brief Validated cron expression.
+     * @brief Cron expression defining the schedule. It is the component's own validated
+     * cron_expression type, so an invalid expression cannot enter the domain.
      */
-    cron_expression schedule_expression;
+    domain::cron_expression schedule_expression;
 
     /**
-     * @brief Type of action to execute on each firing.
-     * "execute_sql"  — run the SQL in the command field.
-     * "nats_publish" — publish a NATS message; action_payload carries subject and body.
+     * @brief Execution mode: execute_sql or nats_publish.
      */
     std::string action_type = "execute_sql";
 
     /**
-     * @brief JSON payload for the action.
-     * For nats_publish:
-     * {"subject":"<nats_subject>","report_definition_id":"<uuid>","tenant_id":"<uuid>"}
+     * @brief Payload for the nats_publish action type. The scheduler seed writes an empty object;
+     * the compute seed writes {"subject":"compute.v1.work.reap"}.
      */
     std::string action_payload = "{}";
 
     /**
-     * @brief False = paused (not scheduled).
+     * @brief Whether the job fires. A paused job keeps its row and its history.
      */
-    bool is_active = false;
-
-    /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
+    bool is_active = true;
 
     /**
      * @brief Username of the person who last modified this job definition.
@@ -119,9 +150,37 @@ struct job_definition final {
 
     /**
      * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const job_definition&, const job_definition&) = default;
 };
+
+/**
+ * @brief Dispatch-key identifier for job_definition, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const job_definition&) {
+    return "ores.scheduler.job_definition";
+}
 
 }
 

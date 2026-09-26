@@ -26,16 +26,20 @@ namespace ores #F2F2F2 {
         namespace domain #F2F2F2 {
             class cron_expression {
                 -expr_ : string
+                +to_string() : const string&
+                +next_occurrence(after) : system_clock::time_point
+                {static} +from_string(expr) : expected<cron_expression, string>
             }
             class job_definition <<struct>> {
                 +id : boost::uuids::uuid
-                +tenant_id : optional<boost::uuids::uuid>
+                +tenant_id : optional<tenant_id>
                 +party_id : optional<boost::uuids::uuid>
                 +job_name : string
                 +description : string
                 +command : string
                 +schedule_expression : cron_expression
                 +action_type : string
+                +action_payload : string
                 +is_active : bool
                 +version : int
                 +modified_by : string
@@ -58,58 +62,130 @@ namespace ores #F2F2F2 {
                 +error_message : string
             }
             enum job_status {
+                starting
+                succeeded
+                failed
             }
         }
         namespace messaging #F2F2F2 {
-            class get_job_definitions_request <<struct>> {
-                +offset : int
-                +limit : int
+            class job_definition_key <<struct>> {
+                +id : boost::uuids::uuid
             }
-            class get_job_definitions_response <<struct>> {
-                +definitions : vector<ores::scheduler::domain::job_definition>
-                +total_available_count : int
+            class job_definition_write <<struct>> {
+                +id : boost::uuids::uuid
+                +job_name : string
+                +description : string
+                +command : string
+                +schedule_expression : domain::cron_expression
+                +action_type : string
+                +action_payload : string
+                +is_active : bool
             }
-            class schedule_job_request <<struct>> {
-                +definition : ores::scheduler::domain::job_definition
-                +change_reason_code : string
-                +change_commentary : string
+            class job_definition_change <<struct>> {
+                +write : job_definition_write
+                +precondition : utility::domain::precondition
             }
-            class schedule_job_response <<struct>> {
-                +success : bool
-                +message : string
+            class job_definition_removal <<struct>> {
+                +key : job_definition_key
+                +precondition : utility::domain::precondition
             }
-            class unschedule_job_request <<struct>> {
-                +job_definition_id : string
-                +change_reason_code : string
-                +change_commentary : string
+            class job_definition_lookup <<struct>> {
+                +key : job_definition_key
+                +job_definition : optional<domain::job_definition>
             }
-            class unschedule_job_response <<struct>> {
-                +success : bool
-                +message : string
+            class job_definition_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : job_definition_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
             }
-            class schedule_jobs_batch_request <<struct>> {
-                +definitions : vector<ores::scheduler::domain::job_definition>
-                +change_reason_code : string
-                +change_commentary : string
+            class job_definition_version_key <<struct>> {
+                +job_definition : job_definition_key
+                +version : uint32_t
             }
-            class schedule_jobs_batch_response <<struct>> {
-                +success : bool
-                +message : string
-                +scheduled_count : int
-                +failed_ids : vector<string>
+            class job_definition_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
             }
-            class get_job_history_request <<struct>> {
-                +job_definition_id : string
-                +limit : int
+            class list_job_definitions_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : utility::domain::order
             }
-            class get_job_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +instances : vector<ores::scheduler::domain::job_instance>
+            class list_job_definitions_response <<struct>> {
+                +result : utility::domain::result
+                +definitions : vector<domain::job_definition>
+                +total : uint64_t
+            }
+            class get_job_definition_request <<struct>> {
+                +key : job_definition_key
+            }
+            class get_job_definition_response <<struct>> {
+                +result : utility::domain::result
+                +job_definition : optional<domain::job_definition>
+            }
+            class get_many_job_definitions_request <<struct>> {
+                +keys : vector<job_definition_key>
+            }
+            class get_many_job_definitions_response <<struct>> {
+                +result : utility::domain::result
+                +entries : vector<job_definition_lookup>
+            }
+            class put_job_definition_request <<struct>> {
+                +change : job_definition_change
+                +intent : utility::domain::change_intent
+            }
+            class put_job_definition_response <<struct>> {
+                +result : utility::domain::result
+                +job_definition : domain::job_definition
+            }
+            class put_many_job_definitions_request <<struct>> {
+                +changes : vector<job_definition_change>
+                +intent : utility::domain::change_intent
+            }
+            class put_many_job_definitions_response <<struct>> {
+                +result : utility::domain::result
+                +definitions : vector<domain::job_definition>
+            }
+            class delete_job_definition_request <<struct>> {
+                +removal : job_definition_removal
+                +intent : utility::domain::change_intent
+            }
+            class delete_job_definition_response <<struct>> {
+                +result : utility::domain::result
+            }
+            class delete_many_job_definitions_request <<struct>> {
+                +removals : vector<job_definition_removal>
+                +intent : utility::domain::change_intent
+            }
+            class delete_many_job_definitions_response <<struct>> {
+                +result : utility::domain::result
+            }
+            class list_job_definition_versions_request <<struct>> {
+                +key : job_definition_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : utility::domain::order
+                +filter : optional<job_definition_versions_filter>
+            }
+            class list_job_definition_versions_response <<struct>> {
+                +result : utility::domain::result
+                +versions : vector<domain::job_definition>
+                +total : uint64_t
+            }
+            class get_job_definition_version_request <<struct>> {
+                +key : job_definition_version_key
+            }
+            class get_job_definition_version_response <<struct>> {
+                +result : utility::domain::result
+                +version : domain::job_definition
             }
             class get_job_instances_request <<struct>> {
-                +offset : int
-                +limit : int
+                +offset : uint32_t
+                +limit : uint32_t
             }
             class job_instance_summary <<struct>> {
                 +id : int64_t
@@ -150,10 +226,97 @@ namespace ores #F2F2F2 {
                 +total_active : int
             }
         }
+        namespace eventing #F2F2F2 {
+            class job_definition_event_traits {
+                +subject_prefix : string_view
+                {static} +from_notification(n) : messaging::job_definition_event
+            }
+        }
+        namespace generators #F2F2F2 {
+            class job_definition_generator {
+                {static} +generate(ctx) : domain::job_definition
+            }
+        }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' ---------------------------------------------------------------------------
+' Relationships. The automated pass reads data members only and draws no edge,
+' because these types hold their neighbour by value.
+' ---------------------------------------------------------------------------
+
+ores::scheduler::messaging::job_definition_key <-- ores::scheduler::messaging::job_definition_removal : key
+ores::scheduler::messaging::job_definition_key <-- ores::scheduler::messaging::job_definition_lookup : key
+ores::scheduler::messaging::job_definition_key <-- ores::scheduler::messaging::job_definition_event : key
+ores::scheduler::messaging::job_definition_key <-- ores::scheduler::messaging::job_definition_version_key : job_definition
+ores::scheduler::messaging::job_definition_key <-- ores::scheduler::messaging::get_job_definition_request : key
+ores::scheduler::messaging::job_definition_key <-- ores::scheduler::messaging::list_job_definition_versions_request : key
+ores::scheduler::messaging::job_definition_version_key <-- ores::scheduler::messaging::get_job_definition_version_request : key
+
+ores::scheduler::messaging::job_definition_write <-- ores::scheduler::messaging::job_definition_change : write
+ores::scheduler::messaging::job_definition_change <-- ores::scheduler::messaging::put_job_definition_request : change
+ores::scheduler::messaging::job_definition_change <-- ores::scheduler::messaging::put_many_job_definitions_request : changes
+ores::scheduler::messaging::job_definition_removal <-- ores::scheduler::messaging::delete_job_definition_request : removal
+ores::scheduler::messaging::job_definition_removal <-- ores::scheduler::messaging::delete_many_job_definitions_request : removals
+ores::scheduler::messaging::job_definition_versions_filter <-- ores::scheduler::messaging::list_job_definition_versions_request : filter
+
+ores::scheduler::messaging::job_definition_lookup <-- ores::scheduler::messaging::get_many_job_definitions_response : entries
+ores::scheduler::messaging::job_instance_summary <-- ores::scheduler::messaging::get_job_instances_response : instances
+ores::scheduler::messaging::job_schedule_status <-- ores::scheduler::messaging::get_scheduler_status_response : jobs
+
+ores::scheduler::domain::cron_expression <.. ores::scheduler::domain::job_definition : schedule_expression
+ores::scheduler::domain::cron_expression <.. ores::scheduler::messaging::job_definition_write : schedule_expression
+ores::scheduler::domain::job_definition <-- ores::scheduler::messaging::list_job_definitions_response : definitions
+ores::scheduler::domain::job_definition <-- ores::scheduler::messaging::put_job_definition_response : job_definition
+ores::scheduler::domain::job_definition <-- ores::scheduler::messaging::put_many_job_definitions_response : definitions
+ores::scheduler::domain::job_definition <-- ores::scheduler::messaging::list_job_definition_versions_response : versions
+ores::scheduler::domain::job_definition <-- ores::scheduler::messaging::get_job_definition_version_response : version
+ores::scheduler::domain::job_definition <-- ores::scheduler::messaging::job_definition_lookup : job_definition
+ores::scheduler::domain::job_definition <-- ores::scheduler::generators::job_definition_generator : generates
+
+' ---------------------------------------------------------------------------
+' Notes. These are the facts a reader of the skeleton cannot recover.
+' ---------------------------------------------------------------------------
+
+note top of cron_expression
+  The component's one custom column type: it wraps a
+  validated string. It carries its own rfl reflector and
+  stream operator, and the model declares it
+  :is_value_type: true, so the repository entity holds
+  the string and the mapper converts through to_string()
+  and from_string().
+end note
+
+note top of job_definition
+  Generated from
+  modeling/ores.scheduler.job_definition.org.
+  tenant_id is optional because a system job carries SQL
+  NULL, which is what nullable_tenant_id selects; the
+  domain member is therefore optional too, and the mapper
+  maps NULL to an empty optional.
+end note
+
+note top of job_instance
+  Hand-written, and the one entity in the component with
+  no model yet. It is read through the two computed views
+  below rather than through the canonical entity verbs.
+end note
+
+note right of job_definition_event_traits
+  Subjects:
+  scheduler.v1.job_definitions_events
+  .created / .updated / .deleted
+end note
+
+note bottom of job_definition_write
+  Everything in this namespace is generated. The deleted
+  hand-written scheduler_protocol.hpp declared the same
+  traffic under the non-canonical subjects .schedule /
+  .unschedule / .schedule-batch, retired in favour of
+  put / delete / put_many.
+end note
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.scheduler.api.puml"

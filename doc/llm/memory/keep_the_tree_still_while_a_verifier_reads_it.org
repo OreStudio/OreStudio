@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: F81693E4-F2B0-4152-9C35-A6C45076DCFF
+:END:
+#+title: Keep the tree still while a verifier reads it
+#+description: An uncommitted edit or a git rm during a verification run makes the verifier attribute your changes to the branch or the tool, and it reports a false finding.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+Do not edit, stage or regenerate anything in the worktree while an independent verifier is verifying it. Pin the revision in the verifier's brief, and leave the tree clean for the whole run.
+
+*Why:* While verifying PR #2169 the verifier ran its in-place drift check after I had changed the model and run git rm on two cron_scheduler files. It saw five drifted files and two deleted hand-written files, concluded that check_component_drift.py silently deletes hand-written source, and published that as its headline failure. Neither was the tool's doing: the drifted files were my uncommitted regeneration and the deletions were my git rm. A correction had to cross with its report, it re-pinned and re-ran, and it withdrew the finding, but the round was spent and the first report was wrong in a way that would have been recorded as a tool defect.
+
+*How to apply:* Before spawning a verifier, commit or stash everything and confirm git status is empty, then tell it the exact revision to pin and require it to re-read git rev-parse HEAD before and after each measurement. Make no edits, no git add, no git rm, and no regeneration until it reports. If it reports tool damage, read git status before believing it: a staged deletion shows as 'D ' in the index and only a git rm or git checkout produces that, while a regenerator that removed a file would leave it unstaged.

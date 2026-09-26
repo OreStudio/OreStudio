@@ -17,16 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.scheduler.core/repository/job_definition_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.database/repository/db_types.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include "ores.scheduler.api/domain/job_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.scheduler.core/repository/job_definition_entity.hpp"
 #include "ores.scheduler.core/repository/job_definition_mapper.hpp"
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/domain/protocol.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::scheduler::repository {
@@ -40,173 +42,256 @@ std::string job_definition_repository::sql() {
     return generate_create_table_sql<job_definition_entity>(lg());
 }
 
+ores::utility::domain::precondition
+job_definition_repository::replace_claim(context ctx, const domain::job_definition& v) {
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
+
+domain::job_definition
+job_definition_repository::apply_claim(context ctx,
+                                       const domain::job_definition& v,
+                                       const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
+
 void job_definition_repository::write(context ctx, const domain::job_definition& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing job definition: " << v.id;
-    execute_write_query(
-        ctx, job_definition_mapper::map(v), lg(), "Writing job definition to database.");
+    write(ctx, v, replace_claim(ctx, v));
 }
 
 void job_definition_repository::write(context ctx, const std::vector<domain::job_definition>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing job definitions. Count: " << v.size();
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void job_definition_repository::write(context ctx,
+                                      const domain::job_definition& v,
+                                      const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing job definition. " << "id: " << v.id;
+    const auto t = apply_claim(ctx, v, claim);
     execute_write_query(
-        ctx, job_definition_mapper::map(v), lg(), "Writing job definitions to database.");
+        ctx, job_definition_mapper::map(t), lg(), "Writing job definition to database.");
 }
 
-namespace {
-
-constexpr std::string_view SELECT_COLS =
-    "SELECT id::text, tenant_id::text, version, party_id::text, "
-    "       job_name, description, command, schedule_expression, "
-    "       action_type, action_payload, is_active, "
-    "       modified_by, performed_by, change_reason_code, change_commentary, "
-    "       valid_from::text, valid_to::text "
-    "FROM ores_scheduler_job_definitions_tbl ";
-
-std::vector<domain::job_definition>
-parse_rows(const std::vector<std::vector<std::optional<std::string>>>& rows) {
-    std::vector<domain::job_definition> result;
-    result.reserve(rows.size());
-    for (const auto& row : rows) {
-        if (row.size() < 17)
-            continue;
-        job_definition_entity entity;
-        if (row[0])
-            entity.id = *row[0];
-        if (row[1])
-            entity.tenant_id = *row[1];
-        if (row[2])
-            entity.version = std::stoi(*row[2]);
-        if (row[3])
-            entity.party_id = *row[3];
-        if (row[4])
-            entity.job_name = *row[4];
-        if (row[5])
-            entity.description = *row[5];
-        if (row[6])
-            entity.command = *row[6];
-        if (row[7])
-            entity.schedule_expression = *row[7];
-        if (row[8])
-            entity.action_type = *row[8];
-        if (row[9])
-            entity.action_payload = *row[9];
-        if (row[10])
-            entity.is_active = database::repository::text_to_bool(row[10]);
-        if (row[11])
-            entity.modified_by = *row[11];
-        if (row[12])
-            entity.performed_by = *row[12];
-        if (row[13])
-            entity.change_reason_code = *row[13];
-        if (row[14])
-            entity.change_commentary = *row[14];
-        if (row[15])
-            entity.valid_from = ores::database::repository::db_timestamp(*row[15]);
-        if (row[16])
-            entity.valid_to = ores::database::repository::db_timestamp(*row[16]);
-        result.push_back(job_definition_mapper::map(entity));
-    }
-    return result;
+void job_definition_repository::write(
+    context ctx,
+    const std::vector<domain::job_definition>& v,
+    const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing job definitions. Count: " << v.size();
+    std::vector<domain::job_definition> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(
+        ctx, job_definition_mapper::map(batch), lg(), "Writing job definitions to database.");
 }
-
-} // anonymous namespace
 
 std::vector<domain::job_definition> job_definition_repository::read_latest(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const std::string sql = std::string(SELECT_COLS) +
-                            "WHERE tenant_id = $1::uuid "
-                            "  AND valid_to = ores_utility_infinity_timestamp_fn() "
-                            "ORDER BY id";
+    const auto query = sqlgen::read<std::vector<job_definition_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
-    const auto rows = execute_parameterized_multi_column_query(
-        ctx, sql, {tid}, lg(), "Reading latest job definitions.");
-    return parse_rows(rows);
+    return execute_read_query<job_definition_entity, domain::job_definition>(
+        ctx,
+        query,
+        [](const auto& entities) { return job_definition_mapper::map(entities); },
+        lg(),
+        "Reading latest job definitions");
 }
 
 std::vector<domain::job_definition> job_definition_repository::read_latest(context ctx,
                                                                            const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest job definition. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest job definition. " << "id: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const std::string sql = std::string(SELECT_COLS) +
-                            "WHERE tenant_id = $1::uuid "
-                            "  AND id = $2::uuid "
-                            "  AND valid_to = ores_utility_infinity_timestamp_fn()";
+    const auto query = sqlgen::read<std::vector<job_definition_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    const auto rows = execute_parameterized_multi_column_query(
-        ctx, sql, {tid, id}, lg(), "Reading latest job definition by id.");
-    return parse_rows(rows);
+    return execute_read_query<job_definition_entity, domain::job_definition>(
+        ctx,
+        query,
+        [](const auto& entities) { return job_definition_mapper::map(entities); },
+        lg(),
+        "Reading latest job definition by id.");
 }
+
 
 std::vector<domain::job_definition> job_definition_repository::read_all(context ctx,
                                                                         const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all job definition versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all job definition versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const std::string sql = std::string(SELECT_COLS) + "WHERE tenant_id = $1::uuid "
-                                                       "  AND id = $2::uuid "
-                                                       "ORDER BY version DESC";
+    const auto query = sqlgen::read<std::vector<job_definition_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    const auto rows = execute_parameterized_multi_column_query(
-        ctx, sql, {tid, id}, lg(), "Reading all job definition versions by id.");
-    return parse_rows(rows);
+    return execute_read_query<job_definition_entity, domain::job_definition>(
+        ctx,
+        query,
+        [](const auto& entities) { return job_definition_mapper::map(entities); },
+        lg(),
+        "Reading all job definition versions by id.");
 }
 
-std::vector<domain::job_definition> job_definition_repository::read_all_active(context ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all active job definitions.";
+std::optional<domain::job_definition> job_definition_repository::read_at_version(
+    context ctx, const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading job definition at version. " << "id: " << id
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<job_definition_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       sqlgen::limit(1);
 
-    // Query all active jobs across all tenants (no tenant filter).
-    const std::string sql = std::string(SELECT_COLS) +
-                            "WHERE is_active = true "
-                            "  AND valid_to = ores_utility_infinity_timestamp_fn() "
-                            "ORDER BY id";
+    const auto entities = execute_read_query<job_definition_entity, domain::job_definition>(
+        ctx,
+        query,
+        [](const auto& entities) { return job_definition_mapper::map(entities); },
+        lg(),
+        "Reading job definition at version.");
 
-    const auto rows =
-        execute_raw_multi_column_query(ctx, sql, lg(), "Reading all active job definitions.");
-
-    const auto result = parse_rows(rows);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieved " << result.size() << " active job definitions.";
-    return result;
-}
-
-std::optional<domain::job_definition>
-job_definition_repository::find_by_name(context ctx, const std::string& job_name) {
-    return find_by_name(ctx, ctx.tenant_id().to_string(), job_name);
-}
-
-std::optional<domain::job_definition> job_definition_repository::find_by_name(
-    context ctx, const std::string& tenant_id, const std::string& job_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding job definition by name: " << job_name
-                               << " for tenant: " << tenant_id;
-    const std::string sql = std::string(SELECT_COLS) +
-                            "WHERE tenant_id = $1::uuid "
-                            "  AND job_name = $2 "
-                            "  AND valid_to = ores_utility_infinity_timestamp_fn()";
-
-    const auto rows = execute_parameterized_multi_column_query(
-        ctx, sql, {tenant_id, job_name}, lg(), "Finding job definition by name.");
-    auto results = parse_rows(rows);
-    if (results.empty())
+    if (entities.empty())
         return std::nullopt;
-    return results.front();
+    return entities.front();
+}
+
+job_definition_repository::remove_status job_definition_repository::remove(
+    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing job definition. " << "id: " << id;
+    const auto current = read_latest(ctx, id);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<job_definition_entity> |
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
+
+    execute_delete_query(ctx, query, lg(), "Removing job definition from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, id).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
 }
 
 void job_definition_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing job definition: " << id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<job_definition_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
-
-    execute_delete_query(ctx, query, lg(), "Removing job definition from database.");
+    static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
-std::optional<domain::job_definition>
-job_definition_repository::find_by_id(context ctx, const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding job definition by UUID: " << id;
-    const auto id_str = boost::uuids::to_string(id);
-    auto results = read_latest(ctx, id_str);
-    if (results.empty())
-        return std::nullopt;
-    return results.front();
+std::vector<domain::job_definition>
+job_definition_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest job definitions with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<job_definition_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<job_definition_entity, domain::job_definition>(
+        ctx,
+        query,
+        [](const auto& entities) { return job_definition_mapper::map(entities); },
+        lg(),
+        "Reading latest job definitions with pagination.");
+}
+
+std::uint32_t job_definition_repository::get_total_definition_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active job definition count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::select_from<job_definition_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active job definition count: " << count;
+    return count;
+}
+
+std::vector<domain::job_definition>
+job_definition_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<job_definition_entity>> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = execute_read_query<job_definition_entity, domain::job_definition>(
+        ctx,
+        query,
+        [](const auto& entities) { return job_definition_mapper::map(entities); },
+        lg(),
+        "Reading latest job definitions by ids.");
+    return result;
+}
+
+void job_definition_repository::remove(context ctx, const std::vector<std::string>& ids) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<job_definition_entity> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing job definitions.");
+}
+
+
+std::vector<domain::job_definition> job_definition_repository::read_all_active(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all active job definitions.";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<job_definition_entity>> |
+                       where("is_active"_c == true && "valid_to"_c == max.value());
+
+    return execute_read_query<job_definition_entity, domain::job_definition>(
+        ctx,
+        query,
+        [](const auto& entities) { return job_definition_mapper::map(entities); },
+        lg(),
+        "Reading all active job definitions.");
 }
 
 }

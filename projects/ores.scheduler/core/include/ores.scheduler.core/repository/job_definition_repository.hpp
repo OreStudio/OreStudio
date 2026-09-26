@@ -17,14 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
-#define ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
+#define ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.core/export.hpp"
-#include <boost/uuid/uuid.hpp>
+#include "ores.utility/domain/protocol.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
@@ -49,45 +56,145 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
+    /**
+     * @brief Writes job definitions to database.
+     *
+     * The plain form replaces the row the caller last read: it states the
+     * version the row carries now, so the store can tell a replace from a
+     * create. A row that moved on since that read is a conflict, never a silent
+     * overwrite.
+     */
+    /**@{*/
     void write(context ctx, const domain::job_definition& v);
     void write(context ctx, const std::vector<domain::job_definition>& v);
+    /**@}*/
 
+    /**
+     * @brief Writes a job definition, honouring the claim it states.
+     *
+     * The claim is the version the caller read (@c must_match_version), that no
+     * current row exists (@c must_not_exist), or neither (@c any, which
+     * replaces the row as it stands). The store decides in the write's own
+     * transaction, so a create that collides with a live row and a write over a
+     * row that moved on are refused by the store rather than by a check a
+     * caller might have forgotten.
+     */
+    void write(context ctx,
+               const domain::job_definition& v,
+               const ores::utility::domain::precondition& claim);
+
+    /**
+     * @brief Writes a set of job definitions, each honouring its own
+     * claim, as one statement.
+     */
+    void write(context ctx,
+               const std::vector<domain::job_definition>& v,
+               const std::vector<ores::utility::domain::precondition>& claims);
+
+    /**
+     * @brief Reads latest job definitions, possibly filtered by primary key.
+     */
+    /**@{*/
     std::vector<domain::job_definition> read_latest(context ctx);
     std::vector<domain::job_definition> read_latest(context ctx, const std::string& id);
+    std::vector<domain::job_definition> read_latest(context ctx,
+                                                    const std::vector<std::string>& ids);
+    /**@}*/
+
+
+    /**
+     * @brief Reads all job definitions, possibly filtered by primary key.
+     */
     std::vector<domain::job_definition> read_all(context ctx, const std::string& id);
 
     /**
-     * @brief Returns all active job definitions regardless of tenant.
+     * @brief Reads a single job definition as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::job_definition>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
+    /**
+     * @brief Reads latest job definitions with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::job_definition>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active job definitions.
+     * @param ctx Repository context with database connection
+     * @return Total number of active job definitions
+     */
+    std::uint32_t get_total_definition_count(context ctx);
+
+    /**
+     * @brief Deletes a job definition by closing its temporal validity.
+     */
+    void remove(context ctx, const std::string& id);
+
+    /**
+     * @brief What a removal did, so a caller reports a conflict as an outcome
+     * rather than catching an exception.
      *
-     * Used by the scheduler_loop to load all jobs it needs to fire.
+     * @c missing means there was no current row to remove, and @c unsupported
+     * means the store cannot answer the version at all -- a current-state
+     * table has no version column, so a versioned removal has no meaning
+     * there.
+     */
+    enum class remove_status { removed, conflicting, missing, unsupported };
+
+    /**
+     * @brief Removes a job definition, refusing a row that moved on.
+     *
+     * A stated version is the version the caller read. The removal is refused
+     * with @c conflicting when the current row carries another, so a caller
+     * that decided on stale state cannot remove a change it never saw. A null
+     * version removes whatever is current, which is what a caller that stated
+     * no version asked for.
+     */
+    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+
+    /**
+     * @brief Deletes job definitions by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& ids);
+
+    /**
+     * @brief Reads every active job definition, across all tenants.
+     *
+     * The scheduler loop fires system jobs as well as tenant ones, so it
+     * cannot read through the tenant-scoped CRUD set.
      */
     std::vector<domain::job_definition> read_all_active(context ctx);
 
-    std::optional<domain::job_definition> find_by_id(context ctx, const boost::uuids::uuid& id);
+private:
+    /**
+     * @brief The claim a replace makes: the version the row carries now, or
+     * that no row exists yet.
+     */
+    ores::utility::domain::precondition replace_claim(context ctx, const domain::job_definition& v);
 
     /**
-     * @brief Returns the current job definition with the given name for the
-     *        context's tenant, or nullopt if none exists.
+     * @brief The object with the claim's version stamped onto it.
      *
-     * Used by save_definition to detect name collisions so an existing job can
-     * be updated in-place (bitemporal version bump) rather than rejected with a
-     * unique-constraint violation.
+     * A claim the store cannot check is refused here rather than ignored.
      */
-    std::optional<domain::job_definition> find_by_name(context ctx, const std::string& job_name);
-
-    /**
-     * @brief Like find_by_name but uses an explicit tenant_id string rather
-     *        than the context's tenant.
-     *
-     * Required when the calling context is the system tenant (e.g. reconciliation
-     * batch) but the job row belongs to a user tenant.
-     */
-    std::optional<domain::job_definition>
-    find_by_name(context ctx, const std::string& tenant_id, const std::string& job_name);
-
-    void remove(context ctx, const std::string& id);
+    domain::job_definition apply_claim(context ctx,
+                                       const domain::job_definition& v,
+                                       const ores::utility::domain::precondition& claim);
 };
 
 }

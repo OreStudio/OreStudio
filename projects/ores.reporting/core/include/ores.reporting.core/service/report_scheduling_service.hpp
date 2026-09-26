@@ -25,7 +25,8 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.core/export.hpp"
-#include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.scheduler.api/domain/cron_expression.hpp"
+#include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <expected>
@@ -102,31 +103,28 @@ public:
 
 private:
     /**
-     * @brief Build and send a schedule_job_request to the scheduler.
+     * @brief Build and send a put_job_definition_request to the scheduler.
      *
      * @param def      The report definition to schedule.
      * @param job_id   Pre-allocated UUID to use as the job's primary key.
-     * @param actor    Username for audit fields on the job definition.
      * @return success or unexpected(error message).
      */
     std::expected<void, std::string> send_schedule_request(const domain::report_definition& def,
-                                                           const boost::uuids::uuid& job_id,
-                                                           const std::string& actor);
+                                                           const boost::uuids::uuid& job_id);
 
     /**
-     * @brief Build a scheduler job_definition for a report definition.
+     * @brief Build a scheduler job change for a report definition.
      *
-     * Used by both schedule_one and the batch reconciliation path.
+     * Used by both schedule_one and the batch reconciliation path. The write
+     * carries the job's own fields; the caller supplies the intent, because
+     * the change reason differs between the two paths.
      *
      * @param def    The report definition.
      * @param job_id Pre-allocated UUID to use as the job's primary key.
-     * @param actor  Username stamped as modified_by on the job definition.
-     * @return A populated job_definition, or nullopt if the cron is invalid.
+     * @return A populated change, or nullopt if the cron is invalid.
      */
-    std::optional<ores::scheduler::domain::job_definition>
-    build_job_definition(const domain::report_definition& def,
-                         const boost::uuids::uuid& job_id,
-                         const std::string& actor);
+    std::optional<ores::scheduler::messaging::job_definition_change>
+    build_job_change(const domain::report_definition& def, const boost::uuids::uuid& job_id);
 
     context ctx_;
     ores::nats::service::nats_client svc_nats_;

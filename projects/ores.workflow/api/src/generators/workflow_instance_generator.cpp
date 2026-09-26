@@ -47,7 +47,8 @@ generate_synthetic_workflow_instance(utility::generation::generation_context& ct
     r.id = ctx.generate_uuid();
     r.type = std::string(faker::word::noun());
     r.state_id = ctx.generate_uuid();
-    r.request_json = std::string(faker::word::noun());
+    r.request_json = std::string("{}");
+    r.result_json = std::string("{}");
     r.created_by = std::string(faker::word::noun());
     r.materialised_steps_json = std::string(faker::word::noun());
     r.modified_by = modified_by;

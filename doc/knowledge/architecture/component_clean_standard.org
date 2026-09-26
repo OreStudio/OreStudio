@@ -144,7 +144,10 @@ a typecheck all missed; only a build and a test run found them.
 
 - A check that writes is a check that damages. Run the drift check with
   =--dry-run= while a model is being drafted: an in-place =--all= run
-  overwrote sixteen hand-written files.
+  overwrote sixteen hand-written files. Never run a writing gate while a
+  build is reading the tree: a whole-tree build failed with "#include nested
+  too deeply" while the in-place drift check regenerated that component's
+  files under it, and the same file compiled once the tree was still.
 - The drift gate cannot see an unwired registrar, and the eventing
   tests register their own mappings. Check W01 by reading the
   composition points.
@@ -212,6 +215,43 @@ standard now holds 49 items. The findings behind the new items:
   the record rather than the patch. The deletion this standard's first
   story performed was sound; what the verifier failed was the record's own
   claims about it.
+
+** What the ores.scheduler pass learned
+
+=ores.scheduler= is the first component of kind *Entity* to run the standard,
+and the first whose model defines one entity while the rest of the component
+stays hand-written. What it added:
+
+- A source that needs a clock, a database and a message bus at once is not
+  untestable; it is welded. Extract the decision into a unit that takes the
+  clock as an argument, test it against fixed instants, and record the I/O that
+  remains. The scheduler loop's two rules -- is this job due, and when is the
+  next minute boundary -- moved into =schedule_decision.cpp=, which holds no
+  timer and opens no connection, and the loop was left with one recorded reason
+  instead of being the coverage gap.
+- A class no test can link is a finding, not an internal detail. The one
+  hand-written repository class without the core export macro was the one class
+  with no test, and its generated siblings all carry that macro. Where a
+  hand-written twin of a generated artefact differs from it, the difference is
+  the defect.
+- A cited figure is evidence, so a stale one is a defect. An evidence file kept
+  the core suite at the count it held before the hand-written cases were added,
+  while the record row beside it carried the current count. Re-measure every
+  number at the head the record names, and re-measure the set together.
+- A private constructor is an invariant, not an obstacle. The cron expression
+  admits no unvalidated instance, so its test enters through =from_string= and
+  asserts the parse, rather than reaching past the guard or befriending it.
+- Model prose is the generated documentation. An instruction to the generator
+  written into a model arrives in the generated header as the entity
+  description, so a model states facts and a task states instructions.
+- A unique index on a nullable tenant does not make NULL one tenant.
+  PostgreSQL treats NULLs as distinct in a unique index unless the index says
+  =nulls not distinct=, so a tenant-scoped natural key still admits duplicate
+  system-scope rows. The =ores.scheduler= pass shipped the index, its own
+  verification passed it, and only a live duplicate insert -- two NULL-tenant
+  rows with the same name, accepted -- and then the reviewer found it. Where a
+  scope value can be NULL, say what NULL means to every constraint that reads
+  it, and prove it against the database rather than the generated text.
 
 * See also
 

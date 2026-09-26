@@ -48,7 +48,9 @@ generate_synthetic_workflow_step(utility::generation::generation_context& ctx) {
     r.workflow_id = ctx.generate_uuid();
     r.name = std::string(faker::word::noun());
     r.state_id = ctx.generate_uuid();
-    r.request_json = std::string(faker::word::noun());
+    r.request_json = std::string("{}");
+    r.response_json = std::string("{}");
+    r.step_log_json = std::string("{}");
     r.command_subject = std::string(faker::word::noun());
     r.command_json = std::string(faker::word::noun());
     r.idempotency_key = std::string(faker::word::noun());

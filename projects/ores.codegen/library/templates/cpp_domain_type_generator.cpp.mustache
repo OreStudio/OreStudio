@@ -30,8 +30,14 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
         std::string(generation_keys::modified_by), "system");
 {{/has_audit_columns}}
 {{#has_tenant_id}}
+{{#nullable_tenant_id}}
+    const auto tid_str = ctx.env().get_or(
+        std::string(generation_keys::tenant_id), std::string(""));
+{{/nullable_tenant_id}}
+{{^nullable_tenant_id}}
     const auto tid_str = ctx.env().get_or(
         std::string(generation_keys::tenant_id), std::string("system"));
+{{/nullable_tenant_id}}
 {{/has_tenant_id}}
 
     domain::{{entity_singular}} r;
@@ -39,8 +45,14 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     r.{{{scaffold_prefix}}}version = 0;
 {{/has_audit_columns}}
 {{#has_tenant_id}}
+{{#nullable_tenant_id}}
+    if (!tid_str.empty())
+        r.{{{scaffold_prefix}}}tenant_id = utility::uuid::tenant_id::from_string(tid_str).value();
+{{/nullable_tenant_id}}
+{{^nullable_tenant_id}}
     r.{{{scaffold_prefix}}}tenant_id = utility::uuid::tenant_id::from_string(tid_str)
         .value_or(utility::uuid::tenant_id::system());
+{{/nullable_tenant_id}}
 {{/has_tenant_id}}
 {{#has_workspace_id}}
     r.{{{scaffold_prefix}}}workspace_id = utility::uuid::live_workspace_id();

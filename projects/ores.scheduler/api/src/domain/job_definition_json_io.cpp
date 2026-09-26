@@ -17,9 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_json_io.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.scheduler.api/domain/job_definition_json_io.hpp"
-#include "ores.scheduler.api/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

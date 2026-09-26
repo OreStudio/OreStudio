@@ -18,14 +18,33 @@
  *
  */
 #include "ores.scheduler.core/messaging/registrar.hpp"
-#include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
-#include "ores.scheduler.core/messaging/job_definition_handler.hpp"
+#include "ores.history.core/messaging/registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.scheduler.api/messaging/scheduling_operations_protocol.hpp"
+#include "ores.scheduler.core/messaging/job_definition_history_provider_registrar.hpp"
+#include "ores.scheduler.core/messaging/job_definition_registrar.hpp"
 #include "ores.scheduler.core/messaging/job_instance_handler.hpp"
 #include "ores.scheduler.core/messaging/scheduler_status_handler.hpp"
 #include <memory>
 #include <optional>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace ores::scheduler::messaging {
+
+namespace {
+
+constexpr std::string_view queue_group = "ores.scheduler.service";
+
+// The registry must outlive the history.v1.get subscription, and
+// register_handlers is only ever called once per service process.
+ores::history::service::dispatch_registry& history_registry() {
+    static ores::history::service::dispatch_registry instance;
+    return instance;
+}
+
+}
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
@@ -33,48 +52,34 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
-    // ----------------------------------------------------------------
-    // Job definitions
-    // ----------------------------------------------------------------
-    auto jdh = std::make_shared<job_definition_handler>(nats, ctx, verifier);
-    subs.push_back(
-        nats.queue_subscribe(get_job_definitions_request::nats_subject,
-                             "ores.scheduler.service",
-                             [jdh](ores::nats::message msg) { jdh->list(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(schedule_job_request::nats_subject,
-                             "ores.scheduler.service",
-                             [jdh](ores::nats::message msg) { jdh->schedule(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        schedule_jobs_batch_request::nats_subject,
-        "ores.scheduler.service",
-        [jdh](ores::nats::message msg) { jdh->schedule_batch(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(unschedule_job_request::nats_subject,
-                             "ores.scheduler.service",
-                             [jdh](ores::nats::message msg) { jdh->unschedule(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(get_job_history_request::nats_subject,
-                             "ores.scheduler.service",
-                             [jdh](ores::nats::message msg) { jdh->history(std::move(msg)); }));
+    // The job-definition entity stack is generated: the CRUD, version and
+    // history verbs come from the entity registrar.
+    for (auto& sub : register_job_definition_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
 
-    // ----------------------------------------------------------------
-    // Job instances
-    // ----------------------------------------------------------------
-    auto jih = std::make_shared<job_instance_handler>(nats, ctx, verifier);
-    subs.push_back(
-        nats.queue_subscribe(get_job_instances_request::nats_subject,
-                             "ores.scheduler.service",
-                             [jih](ores::nats::message msg) { jih->list(std::move(msg)); }));
+    // The two operational views are computed, so their handlers are
+    // hand-written beside the operation model that declares their subjects.
+    {
+        auto jih = std::make_shared<job_instance_handler>(nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            get_job_instances_request::nats_subject, queue_group, [jih](ores::nats::message msg) {
+                jih->list(std::move(msg));
+            }));
 
-    // ----------------------------------------------------------------
-    // Scheduler status (Monitor window)
-    // ----------------------------------------------------------------
-    auto ssh = std::make_shared<scheduler_status_handler>(nats, ctx, verifier);
-    subs.push_back(
-        nats.queue_subscribe(get_scheduler_status_request::nats_subject,
-                             "ores.scheduler.service",
-                             [ssh](ores::nats::message msg) { ssh->status(std::move(msg)); }));
+        auto ssh = std::make_shared<scheduler_status_handler>(nats, ctx, verifier);
+        subs.push_back(
+            nats.queue_subscribe(get_scheduler_status_request::nats_subject,
+                                 queue_group,
+                                 [ssh](ores::nats::message msg) { ssh->status(std::move(msg)); }));
+    }
+
+    // Job definition history comes from the generic history provider.
+    {
+        auto& hist_registry = history_registry();
+        register_job_definition_history_provider(hist_registry);
+        subs.push_back(ores::history::messaging::register_history_handlers(
+            nats, hist_registry, "scheduler", queue_group, ctx, verifier));
+    }
 
     return subs;
 }

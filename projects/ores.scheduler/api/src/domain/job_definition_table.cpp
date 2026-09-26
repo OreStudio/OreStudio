@@ -17,20 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.scheduler.api/domain/job_definition_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
 namespace ores::scheduler::domain {
 
+
 std::string convert_to_table(const std::vector<job_definition>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "ID" << "Job Name" << "Description" << "Schedule" << "Active"
+          << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& jd : v) {
-        table << fort::endr;
+        table << jd.id << jd.job_name << jd.description << jd.schedule_expression
+              << (jd.is_active ? "true" : "false") << jd.modified_by << jd.version << fort::endr;
     }
     return table.to_string();
 }

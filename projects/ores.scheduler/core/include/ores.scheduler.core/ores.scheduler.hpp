@@ -17,19 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#pragma once
+#ifndef ORES_SCHEDULER_HPP
+#define ORES_SCHEDULER_HPP
 
-// Domain types
-#include "ores.scheduler.api/domain/cron_expression.hpp"
-#include "ores.scheduler.api/domain/job_definition.hpp"
-#include "ores.scheduler.api/domain/job_instance.hpp"
-#include "ores.scheduler.api/domain/job_status.hpp"
+/**
+ * @brief Job scheduling for ORE Studio.
+ *
+ * The component fires recurring jobs from cron expressions. A job definition
+ * is persisted configuration: a name, a schedule, an action and an active
+ * flag. The scheduler loop loads every active definition across all tenants
+ * and fires each one, recording a job instance per execution. Two action
+ * types exist: run SQL, or publish a NATS message.
+ *
+ * The job-definition stack -- domain type, protocol, repository, service,
+ * handler, registrars, history provider, generator and SQL schema -- is
+ * generated from the entity model at
+ * projects/ores.scheduler/modeling/ores.scheduler.job_definition.org. The
+ * hand-written code is the infrastructure generation does not reach: the
+ * scheduler loop, the cron evaluator, the action handlers, the messaging
+ * registrar, the service application, and the two computed views -- the job
+ * instance list and the live scheduler status -- which are declared by the
+ * operation model and served by hand-written handlers.
+ *
+ * A job may belong to a tenant or to none. System jobs, such as the MQ
+ * statistics scrape, carry a NULL tenant, which is why the tenant column is
+ * nullable and why the scheduler loop reads across tenants rather than
+ * through the tenant-scoped read set.
+ */
+namespace ores::scheduler {}
 
-// Builder
-#include "ores.scheduler.core/builder/job_definition_builder.hpp"
-
-// Repository
-#include "ores.scheduler.core/repository/job_definition_repository.hpp"
-
-// Service
-#include "ores.scheduler.core/service/cron_scheduler.hpp"
+#endif

@@ -7,8 +7,8 @@
 #+level: s2
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
-#+updated: 2026-09-23
-#+environment:
+#+updated: 2026-09-26
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -17,36 +17,99 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 ores.orgmode meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]: the items marked All pass, each item that does not apply is recorded with its reason, and ores.orgmode joins =COMPONENTS_UNDER_TEST=. Order 4 of 35 in the sprint 26 component clean-up, tier 1 (foundation infrastructure).
 
+The inventory found a hand-written, model-less library rather than a codegen
+component, so the registry entry is the one exception. The item table is on
+the task. This page records the decision.
+
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-26                               |
 
 * Acceptance
 
-- Every checklist item that applies to a component of kind *All* passes, with its evidence recorded on the task.
-- Every item that does not apply is recorded as not applicable, with the reason.
+- Every checklist item that applies to a component of kind *All* passes, or is recorded with the reason it does not apply.
+- Every item that cannot pass is recorded as an exception with its reason.
 - Every generator defect found is fixed at its source, with a regression test.
-- ores.orgmode is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
+- No consumer is left broken. The whole tree builds with the component.
+
+The original acceptance asked that ores.orgmode join
+=COMPONENTS_UNDER_TEST= and that =check_component_drift.py --all= pass with
+it listed. The registry entry is superseded and recorded as the accepted
+exception on the task.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:12699268-7291-4E0C-999B-6269EEBCA00C][Bring ores.orgmode to the clean standard]] | BACKLOG | | | Work ores.orgmode through the Component Clean Standard in order and record each item. |
+| [[id:12699268-7291-4E0C-999B-6269EEBCA00C][Bring ores.orgmode to the clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Work ores.orgmode through the Component Clean Standard in order and record each item. |
 
 * Notes
 
-- Survey on 2026-09-23: 0 entity, junction or operation models; 14 C++ files outside tests, 0 of them generated (0%); 0 messaging headers, 0 of them hand-written.
+- Survey on 2026-09-23: 0 entity, junction or operation models; 14 C++ files
+  outside tests, 0 of them generated (0%); 0 messaging headers, 0 of them
+  hand-written.
+- Consumer census on 2026-09-26: =ores.shell= is the only consumer.
+  =orgmode_commands.cpp= includes =parser.hpp= and =resolver.hpp=, and
+  =ores.shell/application/src/CMakeLists.txt= links =ores.orgmode.lib=. The
+  library itself links only Boost and sqlite3.
 
 * Decisions
 
+- *Keep the component and clean it in place.* It has a consumer, so
+  subtraction is not the answer here, unlike ores.connections. The work is
+  the diagram, the generated build lists and the two documents.
+- *The registry item is the accepted exception.* V06 asks a clean component
+  to join =COMPONENTS_UNDER_TEST=. ores.orgmode is not a codegen component:
+  it has no entity, junction or operation model and no row in
+  =component_catalogue.org=. Adding a row makes the codegen scaffold a flat
+  component and materialise the stub trio, whose template text is "STUB code
+  to be removed"; H02 forbids that dead code. This is the same gap the
+  connections story recorded for the model-less tier-1 components, and
+  orgmode is the second of them to meet it. The task carries the dry-run
+  proof.
+- *The diagram is refreshed through both passes.* The automated capture
+  gives the current types; the hand pass adds the parser entry points, the
+  compositions and the resolver note that the header scan cannot infer.
+  PlantUML resolves a relationship only in the namespace block that declares
+  its classes, so the hand-authored lines sit above the sentinel and a
+  refresh redoes them.
+- *The Foundation layer page gains the component.* It appeared on no System
+  Model layer page, which the audit's registry check treats as a finding.
+
 * Out of scope
 
--
+- The two live backlog captures that name the component.
+  =fix_component_doc_drift.org= lists it in an affected-components snapshot
+  that is stale for orgmode, since =validate_docs.sh= passes for it.
+  =compass_add_component_wrong_type_stamp.org= concerns the scaffold
+  template, not this component. Both belong to a backlog review.
+- Repo-wide CMake source-list drift. Other components'
+  =component_files.cmake= files still lack the generated-file marker. That is
+  each of their own G06 items under this programme; orgmode's own two are
+  fixed here.
+- The codegen's missing model-less flat profile. The gap the registry
+  exception exposes is a programme-level question, and the connections story
+  already records it. Adding the profile is new capability, not a clean-up.
+- =projects/modeling/ores.puml= is a curated foundation diagram that omits
+  orgmode along with =diff=, =nats=, =storage= and =eventing=. Bringing it
+  current is a repo-wide diagram pass, not this component's audit item.
+- =ores.shell.iam= has no =.puml= in its =modeling/=, which
+  =validate_docs.py= reports. That is ores.shell's H01 item.
+
+* Result
+
+ores.orgmode is brought to the Component Clean Standard short of the
+registry entry.
+
+The component is a hand-written simple library, and it stays. The work is
+the generated marker on its two CMake source lists, a diagram that now
+matches its headers, its filetags, and its Foundation layer entry.
+
+Verification and the item-by-item evidence are on the task.

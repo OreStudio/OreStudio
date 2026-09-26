@@ -106,6 +106,27 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part thirteen: the run log is modellable, and the tail is one problem rather than five
+
+Run on 2026-09-26. The =dataset_publications= run log was modelled and its table verified: columns identical, and the primary key and all ten check constraints identical.
+
+**The vocabulary holds up, including the parts part seven doubted.** =readonly-timeseries= with =:current_state: true= gives a read-only surface over a non-bitemporal table -- no transaction-time pair, no GIST exclusion, no version, and no put or delete verbs -- which is exactly what an append-only log wants. And the types and defaults need no new vocabulary at all: the SQL template renders ={{type}}= and =default {{{default}}}= verbatim, so =:type: bigint= gave =bigint= and =:default: gen_random_uuid()= and =:default: current_timestamp= gave the function defaults the hand-written file has. Part seven listed the run logs as needing a vocabulary decision; they need none.
+
+**Two small things did need fixing, and both are template-level.** The primary-key column line rendered ={{type}} not null= with no default, so a key with =default gen_random_uuid()= lost it; both branches of that line now render a declared default. And the model must **not** set =skip_uuid_check=, or the nil-uuid check the table wants disappears -- a suppression flag that reads as a convenience silently removes a constraint.
+
+**Why it cannot land, and why that is the whole tail.** =publication_handler= serves =publish_bundle_request= as well as =list_publications=, and =publish_bundle= is wired into the bundle-publish workflow. =dataset_handler= does the same with =publish_datasets_request=. So neither entity can migrate without dropping a live operation, and the same is true of every remaining table-backed entity: their hand-written handlers **share their class with a bespoke operation verb**.
+
+That reframes the list. It is not five unrelated migration problems:
+
+- =dataset= and =publication= are blocked on the =dataset.publish= and =bundles.publish= operations.
+- =publish_bundle_protocol.hpp= and =publish_from_dq_protocol.hpp= **are** those operations.
+- =lei_entity_summary_protocol.hpp= and =report_definition_template_protocol.hpp= serve no table, so they are projections rather than entities.
+- =badge_protocol.hpp= is hand-written by design.
+
+So **one unit unblocks four of the nine**: an operation model for the publish verbs, which the codegen already supports -- =ores.codegen.operation= renders messages with a =:subject:= and =:response:= from one source and leaves the handler hand-written beside it, which is exactly the shape these verbs need.
+
+**Evidence.** No source change: the run-log model and the primary-key default fix are in =git stash= ("wip: dq publication run-log model..."), the working tree is clean and =check_component_drift.py --component dq= reports no drift on =main=.
+
 * Step 8 part twelve: the FSM pair lands, and two mapper defects go with it
 
 Run on 2026-09-26. The FSM migration is merged. =fsm_protocol.hpp=, =fsm_handler.hpp= and =fsm_service.{hpp,cpp}= are deleted, the registrar composes the two generated registrars, both shell units are registered, and both tables regenerate identically to their hand-written originals. **Four of the original twelve headers are now gone** -- =dimension_protocol.hpp=, =data_organization_protocol.hpp=, =coding_scheme_protocol.hpp= and =fsm_protocol.hpp=.

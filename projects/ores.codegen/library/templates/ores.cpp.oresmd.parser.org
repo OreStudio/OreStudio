@@ -54,6 +54,7 @@ struct query_params final {
     std::optional<std::string> ccy;
     std::optional<std::string> index;
     std::optional<std::string> tenor;
+    std::optional<std::string> second_tenor;
     std::optional<std::string> role;
     std::optional<std::string> type;
     std::optional<std::string> metric;
@@ -70,6 +71,8 @@ struct query_params final {
                 qp.index = p.value;
             else if (p.key == "tenor")
                 qp.tenor = p.value;
+            else if (p.key == "second_tenor")
+                qp.second_tenor = p.value;
             else if (p.key == "role")
                 qp.role = p.value;
             else if (p.key == "type")
@@ -165,6 +168,8 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
         id.index = parse_enum<index_family>("index", *qp.index);
     if (qp.tenor)
         id.tenor = to_lower(*qp.tenor);
+    if (qp.second_tenor)
+        id.second_tenor = to_lower(*qp.second_tenor);
     if (qp.role)
         id.role = parse_enum<curve_role>("role", *qp.role);
     if (qp.metric)

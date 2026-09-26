@@ -261,6 +261,21 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
     const auto point = to_upper(*id.point);
     const auto t = to_upper(*id.tenor);
 
+    // A single-currency basis swap quotes two index tenors against one
+    // currency: the qualifier is first_tenor/second_tenor/ccy, with no index
+    // and no role. Neither tenor is derivable from the other.
+    if (qt == ir_quote_type::basis_swap) {
+        if (!id.second_tenor)
+            return std::nullopt;
+        return std::format("{}/{}/{}/{}/{}/{}",
+                           ore_type(qt),
+                           ore_metric(m),
+                           t,
+                           to_upper(*id.second_tenor),
+                           id.ccy,
+                           point);
+    }
+
     if (qualifier_includes_index(qt)) {
         if (qt == ir_quote_type::ir_swap)
             return std::format("{}/{}/{}/2D/{}/{}", ore_type(qt), ore_metric(m), id.ccy, t, point);
@@ -693,6 +708,26 @@ from_ir_indexed(ir_quote_type qt, const std::vector<std::string>& parts) {
 }
 
 std::optional<market_data_identifier>
+from_ir_basis_swap(const std::vector<std::string>& parts) {
+    // BASIS_SWAP/BASIS_SPREAD/FIRST_TENOR/SECOND_TENOR/CCY/MATURITY -- the two
+    // index tenors come first, then the single currency, then the maturity.
+    if (parts.size() != 6)
+        return std::nullopt;
+    const auto m = parse_metric(parts[1]);
+    if (!m)
+        return std::nullopt;
+    ir_market_data_identifier id;
+    id.type = instrument_type::quote;
+    id.quote_type = ir_quote_type::basis_swap;
+    id.metric = *m;
+    id.tenor = to_lower(parts[2]);
+    id.second_tenor = to_lower(parts[3]);
+    id.ccy = to_upper(parts[4]);
+    id.point = to_lower(parts[5]);
+    return id;
+}
+
+std::optional<market_data_identifier>
 from_ir_no_index(ir_quote_type qt, const std::vector<std::string>& parts) {
     // TYPE/METRIC/CCY/TENOR/POINT — the xccy/BMA families whose qualifier is just
     // ccy/tenor (CC_BASIS_SWAP, CC_FIX_FLOAT_SWAP, BMA_SWAP).
@@ -895,7 +930,9 @@ inverse_projection(const std::vector<std::string>& parts,
         return parts.size() == 6 ? from_ir_indexed(*qt, parts)
                                  : from_ir_no_index(*qt, parts);
     }
-    if (type == ore_type_spec::basis_swap || type == ore_type_spec::zero ||
+    if (type == ore_type_spec::basis_swap)
+        return from_ir_basis_swap(parts);
+    if (type == ore_type_spec::zero ||
         type == ore_type_spec::mm_future || type == ore_type_spec::oi_future) {
         const auto qt = parse_enum_lower<ir_quote_type>(type);
         return qt ? from_ir_indexed(*qt, parts) : std::nullopt;

@@ -51,6 +51,7 @@ A logical, possibly-partial oresmd requirement for a commodity instrument.
 |-----|
 | index |
 | tenor |
+| second_tenor |
 | role |
 | metric |
 

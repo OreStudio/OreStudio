@@ -165,11 +165,11 @@ TEST_CASE("ir_imm_fra_rate_quote_key", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "IMM_FRA/RATE/USD/3M/5Y");
 }
 
-TEST_CASE("ir_basis_swap_spread_quote_key", tags) {
+TEST_CASE("ir_basis_swap_spread_quote_key_matches_the_corpus", tags) {
     const auto id = parse(
         "oresmd://ir/"
-        "eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y");
+        "eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&point=10y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y");
 }
 
 TEST_CASE("ir_cc_basis_swap_spread_quote_key", tags) {
@@ -226,8 +226,8 @@ TEST_CASE("ir_mm_rate_metric_defaulted_from_quote_type", tags) {
 
 TEST_CASE("ir_basis_swap_metric_defaulted_to_basis_spread", tags) {
     const auto id =
-        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&point=5y");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y");
+        parse("oresmd://ir/eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&point=10y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y");
 }
 
 TEST_CASE("ir_mm_future_metric_defaulted_to_price", tags) {
@@ -465,11 +465,11 @@ TEST_CASE("from_ore_key_ir_indexed_families", tags) {
     // shape. This is the form the producers use when they name no index.
     REQUIRE(oresmd_projections::from_ore_key("MM/RATE/USD/2D/3M") ==
             parse("oresmd://ir/usd?tenor=2d&type=quote&quote=mm&metric=rate&point=3m"));
-    REQUIRE(
-        oresmd_projections::from_ore_key("BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y") ==
-        parse(
-            "oresmd://ir/"
-            "eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y"));
+    // A basis swap quotes two index tenors against one currency.
+    REQUIRE(oresmd_projections::from_ore_key("BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y") ==
+            parse("oresmd://ir/"
+                  "eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&"
+                  "point=10y"));
     REQUIRE(
         oresmd_projections::from_ore_key("ZERO/RATE/EUR/EURIBOR/3M/5Y") ==
         parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=rate&point=5y"));

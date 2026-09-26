@@ -332,9 +332,9 @@ TEST_CASE("round_trip_ir_imm_fra_rate", tags) {
 }
 
 TEST_CASE("round_trip_ir_basis_swap_spread", tags) {
-    const auto original = oresmd_parser::parse(
-        uri("oresmd://ir/"
-            "eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y"));
+    const auto original = oresmd_parser::parse(uri(
+        "oresmd://ir/"
+        "eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&point=10y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }

@@ -76,6 +76,7 @@ struct ir_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<index_family> index;
     std::optional<std::string> tenor;
+    std::optional<std::string> second_tenor;
     std::optional<curve_role> role;
     std::optional<domain::metric> metric;
     std::optional<domain::ir_quote_type> quote_type;

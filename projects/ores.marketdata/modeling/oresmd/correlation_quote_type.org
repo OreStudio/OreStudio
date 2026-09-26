@@ -47,6 +47,7 @@ A logical, possibly-partial oresmd requirement for a correlation instrument.
 | ccy |
 | index |
 | tenor |
+| second_tenor |
 | role |
 | metric |
 | point |

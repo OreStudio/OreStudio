@@ -50,6 +50,7 @@ A logical, possibly-partial oresmd requirement for an inflation instrument.
 | ccy |
 | index |
 | tenor |
+| second_tenor |
 | role |
 | metric |
 

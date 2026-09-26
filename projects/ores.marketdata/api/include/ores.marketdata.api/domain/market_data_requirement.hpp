@@ -54,6 +54,7 @@ struct ir_market_data_requirement final {
     std::optional<instrument_type> type;
     std::optional<index_family> index;
     std::optional<std::string> tenor;
+    std::optional<std::string> second_tenor;
     std::optional<curve_role> role;
     std::optional<domain::metric> metric;
     std::optional<domain::ir_quote_type> quote_type;

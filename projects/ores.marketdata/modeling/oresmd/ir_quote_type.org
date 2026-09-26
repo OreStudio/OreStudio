@@ -22,7 +22,7 @@
 | mm                  | MM                | mm                     | RATE            | tenor           | no_index                | two forms: MM/RATE/CCY/SETTLE/TENOR when the producer names no index (94% of the corpus), MM/RATE/CCY/INDEX/SETTLE/TENOR when it does | MM (money market rate). |
 | fra                 | FRA               | fra                    | RATE            | tenor           | no_index                | 5-segment: FRA/RATE/CCY/START_TENOR/LENGTH | FRA (forward rate agreement rate). |
 | imm_fra             | IMM_FRA           | imm_fra                | RATE            | tenor           | no_index                | 5-segment: IMM_FRA/RATE/CCY/IMM_DATE/LENGTH | IMM_FRA (IMM-settled FRA rate). |
-| basis_swap          | BASIS_SWAP        | basis_swap             | BASIS_SPREAD    | tenor           | includes_index          | 6-segment: BASIS_SWAP/BASIS_SPREAD/CCY/INDEX/TENOR/POINT | BASIS_SWAP (single-currency basis swap spread). |
+| basis_swap          | BASIS_SWAP        | basis_swap             | BASIS_SPREAD    | tenor           | two_tenors              | 6-segment: BASIS_SWAP/BASIS_SPREAD/FIRST_TENOR/SECOND_TENOR/CCY/MATURITY | BASIS_SWAP (single-currency basis swap spread). |
 | bma_swap            | BMA_SWAP          | bma_swap               | RATIO           | tenor           | no_index                | 5-segment: BMA_SWAP/RATIO/CCY/TENOR/POINT | BMA_SWAP (Bond Market Association swap ratio). |
 | cc_basis_swap       | CC_BASIS_SWAP     | cc_basis_swap          | BASIS_SPREAD    | tenor           | no_index                | 5-segment: CC_BASIS_SWAP/BASIS_SPREAD/CCY/TENOR/POINT | CC_BASIS_SWAP (cross-currency basis swap spread). |
 | cc_fix_float_swap   | CC_FIX_FLOAT_SWAP | cc_fix_float_swap      | RATE            | tenor           | no_index                | 5-segment: CC_FIX_FLOAT_SWAP/RATE/CCY/TENOR/POINT | CC_FIX_FLOAT_SWAP (cross-currency fix-float swap rate). |
@@ -86,6 +86,7 @@ A logical, possibly-partial oresmd requirement for an interest-rate instrument.
 | type       | instrument_type                 | yes       | type      | instrument_type::quote |
 | index      | std::optional<index_family>     | no        | index     |                        |
 | tenor      | std::optional<std::string>      | no        | tenor     |                        |
+| second_tenor | std::optional<std::string>    | no        | second_tenor |                     |
 | role       | std::optional<curve_role>       | no        | role      |                        |
 | metric     | std::optional<domain::metric>   | no        | metric    |                        |
 | quote_type | std::optional<domain::ir_quote_type> | no    | quote     |                        |
@@ -118,6 +119,7 @@ branch), which no field-table ordering can express.
 |-----|
 | index |
 | tenor |
+| second_tenor |
 | role |
 | type |
 | metric |
@@ -129,7 +131,13 @@ branch), which no field-table ordering can express.
 IR has the most complex qualifier shape variants:
 - =includes_index_2d=: qualifier is CCY/2D/TENOR (ir_swap only — the 2D is settlement lag)
 - =curve_id=: qualifier is CCY/CURVE_ID where CURVE_ID = CCY+TENOR stripped (discount only)
-- =includes_index=: qualifier is CCY/INDEX/TENOR (mm, basis_swap, zero, mm_future, oi_future)
+- =includes_index=: qualifier is CCY/INDEX/TENOR (mm, zero, mm_future, oi_future)
+- =two_tenors=: qualifier is FIRST_TENOR/SECOND_TENOR/CCY (basis_swap only --
+  a single-currency basis swap quotes two index tenors against one currency,
+  so the key carries both tenors and no index and no role. The registry's own
+  shape table calls the pair long_tenor/short_tenor; this model names them by
+  position, because the corpus does not say which of the two is the longer
+  and the registry's labels are not corroborated anywhere else.)
 - =no_index=: qualifier is CCY/START (xccy, BMA, and the fra families — no index
   dimension; FRA's second segment is its start tenor and IMM_FRA's is its IMM date)
 
@@ -150,7 +158,7 @@ IR has the most complex qualifier shape variants:
 | oresmd://ir/usd?tenor=1m&type=quote&quote=fra&metric=rate&point=3m | FRA/RATE/USD/1M/3M | ir_fra_rate_quote_key_matches_the_corpus |
 | oresmd://ir/nok?tenor=1&type=quote&quote=imm_fra&metric=rate&point=2 | IMM_FRA/RATE/NOK/1/2 | ir_imm_fra_rate_quote_key_matches_the_corpus |
 | oresmd://ir/usd?tenor=3m&type=quote&quote=imm_fra&metric=rate&point=5y | IMM_FRA/RATE/USD/3M/5Y | ir_imm_fra_rate_quote_key |
-| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y | BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y | ir_basis_swap_spread_quote_key |
+| oresmd://ir/eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&point=10y | BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y | ir_basis_swap_spread_quote_key_matches_the_corpus |
 | oresmd://ir/eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y | CC_BASIS_SWAP/BASIS_SPREAD/EUR/3M/5Y | ir_cc_basis_swap_spread_quote_key |
 | oresmd://ir/usd?tenor=3m&type=quote&quote=cc_fix_float_swap&metric=rate&point=5y | CC_FIX_FLOAT_SWAP/RATE/USD/3M/5Y | ir_cc_fix_float_swap_rate_quote_key |
 | oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y | BMA_SWAP/RATIO/USD/3M/5Y | ir_bma_swap_ratio_quote_key |
@@ -164,7 +172,7 @@ IR has the most complex qualifier shape variants:
 | uri | expected | description |
 |-----+----------+-------------|
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&point=1m | MM/RATE/EUR/EURIBOR/3M/1M | ir_mm_rate_metric_defaulted_from_quote_type |
-| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&point=5y | BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y | ir_basis_swap_metric_defaulted_to_basis_spread |
+| oresmd://ir/eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&point=10y | BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y | ir_basis_swap_metric_defaulted_to_basis_spread |
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&point=cme | MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME | ir_mm_future_metric_defaulted_to_price |
 
 ** Projections (quote_type required)
@@ -187,7 +195,7 @@ IR has the most complex qualifier shape variants:
 | oresmd://ir/usd?tenor=2d&type=quote&quote=mm&metric=rate&point=3m | round_trip_ir_mm_rate_without_index |
 | oresmd://ir/usd?tenor=1m&type=quote&quote=fra&metric=rate&point=3m | round_trip_ir_fra_rate |
 | oresmd://ir/nok?tenor=1&type=quote&quote=imm_fra&metric=rate&point=2 | round_trip_ir_imm_fra_rate |
-| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y | round_trip_ir_basis_swap_spread |
+| oresmd://ir/eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&point=10y | round_trip_ir_basis_swap_spread |
 | oresmd://ir/eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y | round_trip_ir_cc_basis_swap_no_index |
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme | round_trip_ir_mm_future_price |
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y | round_trip_ir_zero_yield_spread |

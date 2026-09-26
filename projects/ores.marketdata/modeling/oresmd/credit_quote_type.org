@@ -63,6 +63,7 @@ A logical, possibly-partial oresmd requirement for a credit instrument.
 |-----|
 | index |
 | tenor |
+| second_tenor |
 | role |
 | metric |
 

@@ -128,7 +128,6 @@ UNREPRESENTED: dict[str, str] = {
 # and the declaration is wrong. Recorded here so the corpus measurement can
 # name them; the fix is the model.
 SHAPE_MISMATCH: dict[str, str] = {
-    "BASIS_SWAP": "real key is short_tenor/long_tenor/ccy/point, not ccy/index/tenor/point",
     "CC_BASIS_SWAP": "real key is ccy/tenor/ccy/tenor/point, not ccy/tenor/point",
     "CC_FIX_FLOAT_SWAP": "real key is ccy/tenor/ccy/tenor/point, not ccy/tenor/point",
     "CORRELATION": "real key is operand1/operand2/expiry/point, six segments",

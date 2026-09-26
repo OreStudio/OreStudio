@@ -54,6 +54,7 @@ A logical, possibly-partial oresmd requirement for an equity/index instrument.
 |-----|
 | index |
 | tenor |
+| second_tenor |
 | role |
 | metric |
 

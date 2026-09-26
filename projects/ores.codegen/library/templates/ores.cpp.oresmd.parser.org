@@ -56,6 +56,7 @@ struct query_params final {
     std::optional<std::string> tenor;
     std::optional<std::string> second_tenor;
     std::optional<std::string> second_ccy;
+    std::optional<std::string> second_factor;
     std::optional<std::string> shift;
     std::optional<std::string> strip;
     std::optional<std::string> role;
@@ -78,6 +79,8 @@ struct query_params final {
                 qp.second_tenor = p.value;
             else if (p.key == "second_ccy")
                 qp.second_ccy = p.value;
+            else if (p.key == "second_factor")
+                qp.second_factor = p.value;
             else if (p.key == "shift")
                 qp.shift = p.value;
             else if (p.key == "strip")
@@ -319,6 +322,12 @@ market_data_identifier parse_{{asset_class}}(const boost::urls::url_view& u, con
     if (qp.model && id.type == instrument_type::vol && id.vol)
         id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
 {{/fx}}
+{{#correlation}}
+    // A pairwise correlation names a second operand as well as the entity, and
+    // the entity carries the first: the two take fixed positions in the key.
+    if (qp.second_factor)
+        id.second_factor = to_upper(*qp.second_factor);
+{{/correlation}}
 {{#equity}}
     // An equity option's surface point carries up to five coordinates, and the
     // count says which of the three shapes it is: expiry,strike;

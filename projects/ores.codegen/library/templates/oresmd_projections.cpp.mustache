@@ -615,7 +615,19 @@ std::optional<std::string> quote_key_inflation(const {{asset_class}}_market_data
 std::optional<std::string> quote_key_correlation(const {{asset_class}}_market_data_identifier& id) {
     if (id.type != instrument_type::quote)
         return std::nullopt;
-    return std::format("CORRELATION/RATE/{}", id.factor_pair);
+    // A single factor pair is a scalar. A pairwise surface names two operands
+    // and then the expiry and strike, which is where the corpus puts them.
+    if (!id.second_factor)
+        return std::format("CORRELATION/RATE/{}", id.factor_pair);
+    if (!id.point)
+        return std::nullopt;
+    // The point is stored comma-separated, as every compound point here is; the
+    // correlation key spells it with a slash.
+    const auto parts = split_point(*id.point);
+    if (parts.size() != 2)
+        return std::nullopt;
+    return std::format(
+        "CORRELATION/RATE/{}/{}/{}/{}", id.factor_pair, *id.second_factor, parts[0], parts[1]);
 }
 
 {{/correlation_ore}}
@@ -1161,13 +1173,25 @@ std::optional<market_data_identifier> from_inflation_seasonality(const std::vect
 }
 
 std::optional<market_data_identifier> from_correlation(const std::vector<std::string>& parts) {
-    // CORRELATION/RATE/FACTOR_PAIR — scalar, no point.
-    if (parts.size() != 3 || !metric_is(parts[1], ore_metric_spec::rate))
+    // CORRELATION/RATE/FACTOR_PAIR -- a scalar, and
+    // CORRELATION/RATE/OPERAND1/OPERAND2/EXPIRY/STRIKE -- a surface. The two
+    // operands take fixed positions, so the coordinate after them is the point.
+    if (parts.size() < 3 || !metric_is(parts[1], ore_metric_spec::rate))
         return std::nullopt;
     correlation_market_data_identifier id;
     id.factor_pair = to_upper(parts[2]);
     id.type = instrument_type::quote;
     id.quote_type = correlation_quote_type::pairwise;
+    if (parts.size() == 3)
+        return id;
+    if (parts.size() != 6)
+        return std::nullopt;
+    id.second_factor = to_upper(parts[3]);
+    // Every compound point in this library is comma-separated in the
+    // identifier, whatever separator the key spells it with. The forward joins
+    // this one with a slash; storing it slash-joined here would make the two
+    // disagree and the key would not read back.
+    id.point = to_lower(parts[4]) + "," + to_lower(parts[5]);
     return id;
 }
 

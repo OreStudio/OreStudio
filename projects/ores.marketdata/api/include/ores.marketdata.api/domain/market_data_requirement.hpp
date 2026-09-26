@@ -113,7 +113,9 @@ struct inflation_market_data_requirement final {
 struct correlation_market_data_requirement final {
     std::optional<std::string> factor_pair;
     std::optional<instrument_type> type;
+    std::optional<std::string> second_factor;
     std::optional<correlation_quote_type> quote_type;
+    std::optional<std::string> point;
 
     bool operator==(const correlation_market_data_requirement&) const = default;
 };

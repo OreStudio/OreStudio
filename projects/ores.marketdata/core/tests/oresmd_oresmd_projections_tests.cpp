@@ -437,6 +437,14 @@ TEST_CASE("correlation_pairwise_quote_key", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "CORRELATION/RATE/CCY-EUR-USD");
 }
 
+TEST_CASE("correlation_pairwise_surface_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://correlation/"
+                          "fx-generic-gbp-usd?type=quote&quote=pairwise&second_factor=fx-generic-"
+                          "eur-usd&point=1y,atm");
+    REQUIRE(oresmd_projections::to_quote_key(id) ==
+            "CORRELATION/RATE/FX-GENERIC-GBP-USD/FX-GENERIC-EUR-USD/1Y/ATM");
+}
+
 TEST_CASE("commodity_cpr_quote_key", tags) {
     const auto id = parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CPR/RATE/WTI/USD/5Y");

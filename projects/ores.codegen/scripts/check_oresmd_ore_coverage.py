@@ -100,7 +100,6 @@ UNREPRESENTED: dict[str, str] = {
 # and the declaration is wrong. Recorded here so the corpus measurement can
 # name them; the fix is the model.
 SHAPE_MISMATCH: dict[str, str] = {
-    "CORRELATION": "real key is operand1/operand2/expiry/point, six segments",
     "CPR": "real key is CPR/RATE/ISIN:<isin>, with no currency",
     "MM": "the 5-segment form ccy/settle/tenor now projects; the 6-segment form still fails where the producer spells the index ESTER, which index_family calls estr",
     "MM_FUTURE": "real key is ccy/contract-month/exchange:code/tenor",

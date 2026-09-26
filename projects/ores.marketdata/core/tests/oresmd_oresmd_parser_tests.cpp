@@ -545,6 +545,15 @@ TEST_CASE("round_trip_correlation", tags) {
     REQUIRE(original == roundtripped);
 }
 
+TEST_CASE("round_trip_correlation_surface", tags) {
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://correlation/"
+                                 "fx-generic-gbp-usd?type=quote&quote=pairwise&second_factor=fx-"
+                                 "generic-eur-usd&point=1y,atm"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
 TEST_CASE("parse_inflation_zc_swap", tags) {
     const auto id =
         oresmd_parser::parse(uri("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"));

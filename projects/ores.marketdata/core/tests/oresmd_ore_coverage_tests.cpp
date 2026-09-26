@@ -220,14 +220,14 @@ TEST_CASE("no_series_type_oresmd_cannot_name_has_gone_unrecorded", tags) {
     // the measured half of the same claim. It fails when one is closed without
     // the record being updated, and when a change breaks a type that worked.
     //
-    // CORRELATION, CPR and ZERO appear here even though the models declare a
-    // quote type for each: they are modelled in shapes the corpus does not use,
-    // so against real data they name nothing. That is the shape-mismatch list
-    // in the codegen record, seen from the data rather than from the models.
+    // CPR and ZERO appear here even though the models declare a quote type for
+    // each: they are modelled in shapes the corpus does not use, so against
+    // real data they name nothing. That is the shape-mismatch list in the
+    // codegen record, seen from the data rather than from the models.
     const std::set<std::string> recorded{
-        "BOND", "COMMODITY_OPTION", "CORRELATION", "CPR",
-        "INDEX_CDS_OPTION", "MM_FUTURE", "OI_FUTURE", "RATING",
-        "SHAPE_PROFILE", "ZERO"};
+        "BOND", "COMMODITY_OPTION", "CPR", "INDEX_CDS_OPTION",
+        "MM_FUTURE", "OI_FUTURE", "RATING", "SHAPE_PROFILE",
+        "ZERO"};
 
     REQUIRE(types_oresmd_cannot_name() == recorded);
 }
@@ -251,7 +251,8 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
     const std::set<std::string> expected_fully_named{
         "BMA_SWAP", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
         "CC_FIX_FLOAT_SWAP", "CDS_INDEX", "COMMODITY", "COMMODITY_FWD",
-        "EQUITY", "EQUITY_DIVIDEND", "EQUITY_FWD", "EQUITY_OPTION", "FRA",
+        "CORRELATION", "EQUITY", "EQUITY_DIVIDEND", "EQUITY_FWD",
+        "EQUITY_OPTION", "FRA",
         "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
         "INDEX_CDS_TRANCHE", "SEASONALITY", "YY_INFLATIONCAPFLOOR",
         "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR", "ZC_INFLATIONSWAP"};

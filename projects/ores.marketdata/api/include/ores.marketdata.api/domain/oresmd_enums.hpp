@@ -187,7 +187,8 @@ enum class inflation_quote_type {
  * only meaningful when `type=quote`.
  */
 enum class correlation_quote_type {
-    pairwise ///< CORRELATION/RATE (pairwise factor correlation).
+    pairwise ///< CORRELATION/RATE (pairwise factor correlation): one factor pair alone, or two
+             ///< operands with the expiry and strike after them.
 };
 
 /**

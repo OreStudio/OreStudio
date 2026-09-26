@@ -17,7 +17,7 @@
 
 | enum_name | ore_type | ore_metric | point_semantics | qualifier_shape | comment |
 |-----------+----------+------------+-----------------+-----------------+-------------------------------------------------|
-| pairwise | CORRELATION | RATE | scalar | simple | CORRELATION/RATE (pairwise factor correlation). |
+| pairwise | CORRELATION | RATE | surface | pairwise_surface | CORRELATION/RATE (pairwise factor correlation): one factor pair alone, or two operands with the expiry and strike after them. |
 
 * Enum brief
 
@@ -39,6 +39,8 @@ A logical, possibly-partial oresmd requirement for a correlation instrument.
 | factor_pair | std::string | yes | | |
 | type | instrument_type | yes | type | instrument_type::quote |
 | quote_type | std::optional<correlation_quote_type> | no | quote | |
+| second_factor | std::optional<std::string> | no | second_factor | |
+| point | std::optional<std::string> | no | point | |
 
 * Reject keys
 
@@ -53,7 +55,6 @@ A logical, possibly-partial oresmd requirement for a correlation instrument.
 | strip |
 | role |
 | metric |
-| point |
 
 * Test cases
 ** Projections
@@ -61,9 +62,11 @@ A logical, possibly-partial oresmd requirement for a correlation instrument.
 | uri | expected | description |
 |-----+----------+-------------|
 | oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise | CORRELATION/RATE/CCY-EUR-USD | correlation_pairwise_quote_key |
+| oresmd://correlation/fx-generic-gbp-usd?type=quote&quote=pairwise&second_factor=fx-generic-eur-usd&point=1y,atm | CORRELATION/RATE/FX-GENERIC-GBP-USD/FX-GENERIC-EUR-USD/1Y/ATM | correlation_pairwise_surface_quote_key_matches_the_corpus |
 
 ** Round-trip
 
 | uri | description |
 |-----+-------------|
 | oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise | round_trip_correlation |
+| oresmd://correlation/fx-generic-gbp-usd?type=quote&quote=pairwise&second_factor=fx-generic-eur-usd&point=1y,atm | round_trip_correlation_surface |

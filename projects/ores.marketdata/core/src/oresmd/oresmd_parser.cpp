@@ -54,6 +54,7 @@ struct query_params final {
     std::optional<std::string> tenor;
     std::optional<std::string> second_tenor;
     std::optional<std::string> second_ccy;
+    std::optional<std::string> second_factor;
     std::optional<std::string> shift;
     std::optional<std::string> strip;
     std::optional<std::string> role;
@@ -76,6 +77,8 @@ struct query_params final {
                 qp.second_tenor = p.value;
             else if (p.key == "second_ccy")
                 qp.second_ccy = p.value;
+            else if (p.key == "second_factor")
+                qp.second_factor = p.value;
             else if (p.key == "shift")
                 qp.shift = p.value;
             else if (p.key == "strip")
@@ -136,6 +139,7 @@ void validate_fx(const query_params& qp) {
     reject_if_present("fx", "tenor", qp.tenor);
     reject_if_present("fx", "second_tenor", qp.second_tenor);
     reject_if_present("fx", "second_ccy", qp.second_ccy);
+    reject_if_present("fx", "second_factor", qp.second_factor);
     reject_if_present("fx", "shift", qp.shift);
     reject_if_present("fx", "strip", qp.strip);
     reject_if_present("fx", "role", qp.role);
@@ -365,7 +369,6 @@ market_data_identifier parse_correlation(const boost::urls::url_view& u, const q
     reject_if_present("correlation", "strip", qp.strip);
     reject_if_present("correlation", "role", qp.role);
     reject_if_present("correlation", "metric", qp.metric);
-    reject_if_present("correlation", "point", qp.point);
     correlation_market_data_identifier id;
     id.factor_pair = to_upper(first_segment(u));
     id.type = parse_type(qp);
@@ -378,6 +381,12 @@ market_data_identifier parse_correlation(const boost::urls::url_view& u, const q
                 "oresmd://correlation/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<correlation_quote_type>("quote", *qp.quote);
     }
+    if (qp.point)
+        id.point = to_lower(*qp.point);
+    // A pairwise correlation names a second operand as well as the entity, and
+    // the entity carries the first: the two take fixed positions in the key.
+    if (qp.second_factor)
+        id.second_factor = to_upper(*qp.second_factor);
     return id;
 }
 
@@ -388,6 +397,7 @@ market_data_identifier parse_inflation(const boost::urls::url_view& u, const que
     reject_if_present("inflation", "tenor", qp.tenor);
     reject_if_present("inflation", "second_tenor", qp.second_tenor);
     reject_if_present("inflation", "second_ccy", qp.second_ccy);
+    reject_if_present("inflation", "second_factor", qp.second_factor);
     reject_if_present("inflation", "shift", qp.shift);
     reject_if_present("inflation", "strip", qp.strip);
     reject_if_present("inflation", "role", qp.role);
@@ -639,6 +649,8 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.segments().push_back(to_lower(id.factor_pair));
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
+                append_if(u, "second_factor", id.second_factor);
+                append_if(u, "point", id.point);
             }
         },
         identifier);

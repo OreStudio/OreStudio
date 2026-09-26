@@ -61,6 +61,7 @@ per the "Logical vs. physical" section of id:C3E053CA-0D4B-480B-9119-E11530160EC
 | tenor |
 | second_tenor |
 | second_ccy |
+| second_factor |
 | shift |
 | strip |
 | role |

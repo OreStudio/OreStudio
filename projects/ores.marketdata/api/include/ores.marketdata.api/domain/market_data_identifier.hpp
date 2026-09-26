@@ -174,7 +174,9 @@ struct inflation_market_data_identifier final {
 struct correlation_market_data_identifier final {
     std::string factor_pair;
     instrument_type type = instrument_type::quote;
+    std::optional<std::string> second_factor;
     std::optional<domain::correlation_quote_type> quote_type;
+    std::optional<std::string> point;
 
     bool operator==(const correlation_market_data_identifier&) const = default;
 };

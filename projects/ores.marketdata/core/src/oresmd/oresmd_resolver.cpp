@@ -129,6 +129,8 @@ market_data_identifier resolve_correlation(const correlation_market_data_require
         pick_mandatory_string(req.factor_pair, d ? d->factor_pair : std::string{}, "factor_pair");
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
+    id.second_factor = pick_optional(req.second_factor, d ? d->second_factor : std::nullopt);
+    id.point = pick_optional(req.point, d ? d->point : std::nullopt);
     return id;
 }
 

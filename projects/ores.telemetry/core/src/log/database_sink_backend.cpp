@@ -88,7 +88,7 @@ void database_sink_backend::consume(const boost::log::record_view& rec) {
     }
 
     // Create a telemetry log entry from the Boost.Log record
-    domain::telemetry_log_entry entry;
+    messaging::telemetry_log_entry entry;
 
     // Generate a unique ID for this log entry
     static thread_local boost::uuids::random_generator uuid_gen;

@@ -68,7 +68,8 @@ enum class telemetry_source {
         return telemetry_source::client;
     if (s == "server")
         return telemetry_source::server;
-    return telemetry_source::client; // Default fallback
+    // A name the enumeration does not know reads as a client entry.
+    return telemetry_source::client;
 }
 
 }

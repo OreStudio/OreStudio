@@ -17,35 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TELEMETRY_CORE_DOMAIN_NATS_SAMPLES_QUERY_HPP
-#define ORES_TELEMETRY_CORE_DOMAIN_NATS_SAMPLES_QUERY_HPP
-
-#include <chrono>
-#include <cstdint>
-#include <string>
-
-namespace ores::telemetry::domain {
+#ifndef ORES_TELEMETRY_DATABASE_HPP
+#define ORES_TELEMETRY_DATABASE_HPP
 
 /**
- * @brief Query parameters for retrieving NATS server samples.
+ * @brief PostgreSQL persistence for the telemetry records.
+ *
+ * Stores the log entries, the service heartbeats and the NATS server and
+ * stream samples in the component's own tables, and reads them back for the
+ * query handlers.
+ *
+ * Its sub-namespaces:
+ * - @b repository: the entities, mappers and the repository that read and
+ *   write the four tables.
+ * - @b log: the sink that writes a log record straight to the database,
+ *   beside the Boost.Log front end the core part owns.
  */
-struct nats_server_samples_query final {
-    std::chrono::system_clock::time_point start_time;
-    std::chrono::system_clock::time_point end_time;
-    std::uint32_t limit{1000};
-};
-
-/**
- * @brief Query parameters for retrieving NATS stream samples.
- */
-struct nats_stream_samples_query final {
-    /** @brief JetStream stream name to query. */
-    std::string stream_name;
-    std::chrono::system_clock::time_point start_time;
-    std::chrono::system_clock::time_point end_time;
-    std::uint32_t limit{1000};
-};
-
-}
+namespace ores::telemetry::database {}
 
 #endif

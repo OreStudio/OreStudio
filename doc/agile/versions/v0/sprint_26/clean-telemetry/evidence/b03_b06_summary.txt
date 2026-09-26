@@ -1,0 +1,250 @@
+ores.telemetry - B03 hand-written file survey and B06 public-symbol census
+Branch feature/clean-telemetry. Read-only survey; no file under projects/ was changed.
+Generated with rg over projects/ (hpp and cpp only). Tables:
+  b03_handwritten_inventory.tsv  (part, path, kind, verdict, note)
+  b06_symbol_census.tsv          (header, symbol, outside, tests, own, verdict)
+
+======================================================================
+B03 - hand-written C++ files (no generated marker anywhere in the component)
+======================================================================
+
+The generated marker is 'AUTO-GENERATED FILE - DO NOT EDIT MANUALLY', written
+below the licence block (see projects/ores.compute/api/include/ores.compute.api/
+domain/batch.hpp). rg for AUTO-GENERATED over projects/ores.telemetry returns
+nothing, so every file below is hand-written, as the task expected. The verdicts
+are about kind, not about whether a model exists today.
+
+File counts per part:
+  core     62 files   33 generatable   20 infrastructure    9 dead
+  database  9 files    6 generatable    2 infrastructure    1 dead
+  service  18 files    3 generatable   14 infrastructure    1 dead
+  TOTAL    89 files   42 generatable   36 infrastructure   11 dead
+
+Verdict buckets across all 89 files:
+  generatable     42
+  infrastructure  36
+  dead            11
+
+The dead file list (11):
+  core/examples/database_sink_example.cpp
+  core/include/ores.telemetry.core/exporting/file_log_exporter.hpp
+  core/include/ores.telemetry.core/exporting/hybrid_log_exporter.hpp
+  core/include/ores.telemetry.core/exporting/log_exporter.hpp
+  core/include/ores.telemetry.core/exporting/upload_position_tracker.hpp
+  core/include/ores.telemetry.core/log/macros.hpp
+  core/src/exporting/file_log_exporter.cpp
+  core/src/exporting/hybrid_log_exporter.cpp
+  core/src/exporting/upload_position_tracker.cpp
+  database/include/ores.telemetry.database/log/database_sink_utils.hpp
+  service/include/ores.telemetry.service/app/application_exception.hpp
+
+What the 'generatable' bucket means here: the domain headers and their .cpp
+implementations (20 + 6), the two ID generators plus their .cpp (4), the three
+messaging protocol headers (3), the six repository/mapper/entity files (6), the
+NATS handler (1) and the registrar header plus .cpp (2). A model-bearing
+component regenerates exactly these kinds (see ores.compute, where host.hpp,
+host_repository.cpp, host_service.cpp, host_handler.hpp and host_registrar.cpp
+all carry the marker).
+
+What 'infrastructure' means: the export macros (3), the namespace banner headers
+(8: ores.telemetry.hpp, ores.telemetry.domain.hpp, ores.telemetry.exporting.hpp,
+ores.telemetry.generators.hpp, ores.telemetry.log.hpp, log/log.hpp,
+ores.telemetry.service.hpp and the repository facet banner), the Boost.Log sinks,
+guards and lifecycle manager (11 files), the two export-configuration pairs, the
+semantic-conventions constants header, the forwarding-handler helper, and the
+whole service application shell (app/, config/, main.cpp = 14 files). Compute and
+iam keep these hand-written after cleaning, so the generator does not produce them.
+
+======================================================================
+B06 - public symbols declared in include/ headers
+======================================================================
+
+138 symbols. Counting method: for each symbol, rg by word-boundary pattern over
+every .hpp and .cpp under projects/, split three ways:
+  outside = production files outside projects/ores.telemetry, no tests/
+  tests   = any file under a tests/ directory, the component's included
+  own     = non-test files inside projects/ores.telemetry, declaring header excluded
+Verdict: production when a live non-test consumer exists (outside or own);
+test-only when only tests consume it; none when nothing does. Same-named symbols
+in other components were excluded by hand (see below).
+
+Verdict buckets:
+  production  71
+  test-only   30
+  none        37
+
+The exact test-only list (30) - dead code by the standard's rule that a test is
+not a consumer:
+  resource::service_name
+  resource::host_name
+  resource::host_id
+  semconv::link::relationship
+  semconv::link::triggered_by
+  span
+  span::is_session
+  span::is_root
+  span::duration
+  span_context
+  span_context::is_valid
+  span_kind
+  span_link
+  span_status_code
+  telemetry_context
+  telemetry_context::create_root
+  telemetry_context::start_span
+  telemetry_context::start_linked_trace
+  telemetry_context::get_trace_id
+  telemetry_context::get_span_id
+  telemetry_context::resource_ptr
+  telemetry_context::is_valid
+  telemetry_summary
+  span_id_generator
+  trace_id_generator
+  database_sink_backend::set_session_id
+  database_sink_backend::set_account_id
+  make_forwarding_handler
+  telemetry_repository::read_by_session
+  telemetry_repository::get_summary
+
+The exact 'none' list (37) - no consumer at all:
+  semconv::link::follows_from
+  semconv::link::caused_by
+  semconv::session::id
+  semconv::service::name
+  semconv::service::version
+  semconv::service::instance_id
+  semconv::host::name
+  semconv::host::id
+  semconv::process::pid
+  span_context::is_sampled
+  telemetry_batch::clear
+  telemetry_context::get_resource
+  stats_granularity
+  telemetry_stats_query
+  telemetry_stats
+  log_exporter
+  file_log_exporter
+  hybrid_log_exporter
+  send_records_callback
+  upload_position_tracker
+  lifecycle_manager::add_telemetry_sink
+  trace_context_injector
+  TLOG_SEV
+  make_database_handler
+  make_database_handler_with_error_callback
+  telemetry_stats_hourly_entity
+  telemetry_stats_daily_entity
+  telemetry_mapper::to_domain_stats
+  telemetry_repository::sql
+  telemetry_repository::read_by_account
+  telemetry_repository::read_hourly_stats
+  telemetry_repository::read_daily_stats
+  telemetry_repository::count_errors
+  telemetry_repository::delete_old_logs
+  telemetry_repository::query_server_samples
+  telemetry_repository::query_stream_samples
+  application_exception
+
+======================================================================
+What surprised me
+======================================================================
+
+1. The whole file-exporter sub-tree is dead. file_log_exporter,
+   hybrid_log_exporter, their log_exporter interface and upload_position_tracker
+   have no production consumer and no test: 4 headers and 3 .cpp files. The
+   export path that is actually wired is telemetry_sink_backend -> a handler
+   supplied by the caller (ores.testing writes to telemetry_repository::create).
+   The JSON-lines exporters look like the intended durability layer and are
+   never constructed.
+
+2. The whole distributed-tracing API is test-only. telemetry_context, span,
+   span_context, span_kind, span_link, span_status_code and both ID generators
+   are exercised only by core/tests/telemetry_context_tests.cpp,
+   span_id_tests.cpp and trace_id_tests.cpp. No production code calls
+   create_root, start_span or start_linked_trace. span_id and trace_id
+   themselves survive because the log sinks call from_hex/to_hex for correlation.
+
+3. macros.hpp is broken as well as dead. Nothing includes it and no code uses
+   TLOG_SEV, and the macro body names ::ores::logging::trace_context_injector
+   while the struct is declared in ores::telemetry::log, so the macro cannot
+   compile if anyone ever uses it.
+
+4. application_exception is dead. application.cpp includes the header but never
+   throws the class, and no test names it. By contrast the sibling
+   parser_exception is load-bearing in parser.cpp and main.cpp.
+
+5. Half of telemetry_repository's public API has no caller: sql, read_by_account,
+   read_hourly_stats, read_daily_stats, count_errors, delete_old_logs,
+   query_server_samples and query_stream_samples. read_by_session and get_summary
+   are test-only. The hourly/daily stats entities and telemetry_stats follow the
+   read_hourly_stats/read_daily_stats pair into the dead pile. Only create,
+   create_batch, query, count, insert_server_sample, insert_stream_samples,
+   insert_service_sample and list_service_samples are wired.
+
+6. fetch of nats_server_samples_query / nats_stream_samples_query: the query
+   structs are fields of live protocol messages, but the handler
+   nats_server_samples_list ignores the query and replies with an empty sample
+   list, so query_server_samples/query_stream_samples are dead while their
+   parameter types are still part of a served message.
+
+7. database_sink_utils.hpp in the database part is unreachable: no source and no
+   test includes it, so both handler factories are dead. The core part's
+   database_sink_utils.hpp survives only because a test and an unbuilt example
+   use make_forwarding_handler.
+
+8. database/include has no outermost banner header (no ores.telemetry.database.hpp).
+   That is a G08 gap, not a B03 finding, but it is worth a line.
+
+======================================================================
+Method and collision notes
+======================================================================
+
+- Collisions that inflated the raw counts and were filtered by hand: attributes
+  (other components' attribute fields), resource (used as a common noun in many
+  services), span (nats/storage/http 'span'), trace_id/to_string (ubiquitous),
+  lifecycle_manager (ores.logging owns a different class of the same name),
+  application, host, options, parser, parser_exception, registrar (every service
+  component declares these), and application_exception (26 hits, all other
+  components' own exception classes). ores.testing counts as production: it is a
+  library, not a tests/ directory, and it is the component's biggest real consumer.
+
+- Trivial boilerplate was skipped by the standard's own instruction: comparison
+  operators, stream operators, constructors and destructors, and interface
+  overrides (log_exporter::export_record/flush/shutdown, both sink consume()
+  methods). To keep the census bounded, member functions are listed in full only
+  for telemetry_repository (the dead-API hotspot) and for the tracing chain; other
+  classes are represented by the class row, whose verdict already reflects the
+  methods' consumers.
+
+======================================================================
+REVIEW CORRECTIONS, 2026-09-26
+======================================================================
+
+The task checked the survey's verdicts before acting on them, and then
+checked again after the V08 survey read include lines rather than names. One
+of the eleven is not dead, and the survey's own note that the whole census is
+name-based explains why:
+
+- service/include/ores.telemetry.service/app/application_exception.hpp is
+  included by the component's own service/src/app/application.cpp, so it is
+  infrastructure and is kept. Every service part in the tree keeps a file of
+  this name, which is what made the name-based count wrong.
+
+Two verdicts took a second look:
+
+- database/include/ores.telemetry.database/log/database_sink_utils.hpp looked
+  test-only to the first check, because the name matched the header the test
+  and the example include. They both include the CORE header of that name,
+  and nothing includes the database one. It is a dead duplicate, and the task
+  deletes it.
+- core/examples/database_sink_example.cpp looked like documentation by
+  example and was kept at first. The directory has a CMakeLists.txt, but
+  nothing in the tree adds it, so the example was never built, and it is the
+  only examples directory in the repository. It is dead code, and the task
+  deletes the directory.
+
+The other eight are dead as stated: the file-JSONL exporter sub-tree
+(log_exporter.hpp, file_log_exporter.hpp and .cpp, hybrid_log_exporter.hpp
+and .cpp, upload_position_tracker.hpp and .cpp), whose only surviving
+mention is a doxygen example block in log/lifecycle_manager.hpp, and
+log/macros.hpp, whose TLOG_SEV macro is reached from no file.

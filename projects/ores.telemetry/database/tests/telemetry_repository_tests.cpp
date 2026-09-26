@@ -18,12 +18,13 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
-#include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
+#include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <set>
 
 namespace {
 
@@ -33,10 +34,10 @@ const std::string tags("[repository]");
 /**
  * @brief Creates a test telemetry log entry.
  */
-ores::telemetry::domain::telemetry_log_entry make_test_entry() {
+ores::telemetry::messaging::telemetry_log_entry make_test_entry() {
     boost::uuids::random_generator gen;
 
-    ores::telemetry::domain::telemetry_log_entry entry;
+    ores::telemetry::messaging::telemetry_log_entry entry;
     entry.id = gen();
     entry.timestamp = std::chrono::system_clock::now();
     entry.source = ores::telemetry::domain::telemetry_source::client;
@@ -52,9 +53,23 @@ ores::telemetry::domain::telemetry_log_entry make_test_entry() {
     return entry;
 }
 
+/**
+ * @brief Builds a query that selects one tag over a one-hour window.
+ */
+ores::telemetry::messaging::telemetry_query
+make_tag_query(const std::string& tag, const std::chrono::system_clock::time_point& reference) {
+    ores::telemetry::messaging::telemetry_query q;
+    q.start_time = reference - std::chrono::hours(1);
+    q.end_time = reference + std::chrono::hours(1);
+    q.tag = tag;
+    q.limit = 100;
+    return q;
+}
+
 }
 
 using namespace ores::telemetry::domain;
+using namespace ores::telemetry::messaging;
 using namespace ores::telemetry::database::repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
@@ -68,9 +83,18 @@ TEST_CASE("create_single_telemetry_entry", tags) {
     auto entry = make_test_entry();
     BOOST_LOG_SEV(lg, debug) << "Entry ID: " << boost::uuids::to_string(entry.id);
 
-    CHECK_NOTHROW(repo.create(h.context(), entry));
+    repo.create(h.context(), entry);
 
-    BOOST_LOG_SEV(lg, debug) << "Telemetry entry created successfully";
+    const auto results = repo.query(h.context(), make_tag_query("integration-test", entry.timestamp));
+
+    REQUIRE(results.size() == 1);
+    CHECK(results[0].message == "Test log message from integration test");
+    CHECK(results[0].component == "test.component");
+    CHECK(results[0].source_name == "test-application");
+    CHECK(results[0].source == telemetry_source::client);
+    CHECK(results[0].level == "info");
+
+    BOOST_LOG_SEV(lg, debug) << "Telemetry entry created and read back successfully";
 }
 
 TEST_CASE("create_and_query_telemetry_entry", tags) {
@@ -133,7 +157,23 @@ TEST_CASE("create_batch_telemetry_entries", tags) {
     auto count = repo.create_batch(h.context(), batch);
 
     CHECK(count == 5);
-    BOOST_LOG_SEV(lg, debug) << "Batch created successfully with " << count << " entries";
+
+    const auto results =
+        repo.query(h.context(), make_tag_query("batch-test", std::chrono::system_clock::now()));
+
+    REQUIRE(results.size() == 5);
+    std::set<std::string> messages;
+    for (const auto& entry : results) {
+        CHECK(entry.tag == "batch-test");
+        CHECK(entry.source == telemetry_source::server);
+        CHECK(entry.source_name == "batch-test-service");
+        messages.insert(entry.message);
+    }
+    CHECK(messages ==
+          std::set<std::string>{
+              "Batch entry 0", "Batch entry 1", "Batch entry 2", "Batch entry 3", "Batch entry 4"});
+
+    BOOST_LOG_SEV(lg, debug) << "Batch created and read back successfully";
 }
 
 TEST_CASE("read_by_session", tags) {
@@ -149,6 +189,7 @@ TEST_CASE("read_by_session", tags) {
     for (int i = 0; i < 3; ++i) {
         auto entry = make_test_entry();
         entry.session_id = session_id;
+        entry.tag = "session-test";
         entry.message = "Session test message " + std::to_string(i);
         repo.create(h.context(), entry);
     }
@@ -159,14 +200,17 @@ TEST_CASE("read_by_session", tags) {
     auto results = repo.read_by_session(h.context(), session_id);
     BOOST_LOG_SEV(lg, debug) << "Read " << results.size() << " entries";
 
-    CHECK(results.size() >= 3);
+    REQUIRE(results.size() == 3);
 
-    // All results should have our session_id
+    std::set<std::string> messages;
     for (const auto& entry : results) {
-        if (entry.session_id.has_value()) {
-            CHECK(*entry.session_id == session_id);
-        }
+        REQUIRE(entry.session_id.has_value());
+        CHECK(*entry.session_id == session_id);
+        messages.insert(entry.message);
     }
+    CHECK(messages ==
+          std::set<std::string>{
+              "Session test message 0", "Session test message 1", "Session test message 2"});
 }
 
 TEST_CASE("count_telemetry_entries", tags) {
@@ -177,17 +221,18 @@ TEST_CASE("count_telemetry_entries", tags) {
 
     auto entry = make_test_entry();
     entry.tag = "count-test";
+
+    const auto q = make_tag_query("count-test", entry.timestamp);
+    const auto before = repo.count(h.context(), q);
+
     repo.create(h.context(), entry);
 
-    telemetry_query q;
-    q.start_time = entry.timestamp - std::chrono::hours(1);
-    q.end_time = entry.timestamp + std::chrono::hours(1);
-    q.tag = "count-test";
+    const auto after = repo.count(h.context(), q);
+    BOOST_LOG_SEV(lg, debug) << "Count before: " << before << ", after: " << after;
 
-    auto count = repo.count(h.context(), q);
-    BOOST_LOG_SEV(lg, debug) << "Count: " << count;
-
-    CHECK(count >= 1);
+    CHECK(before == 0);
+    CHECK(after == 1);
+    CHECK(after == before + 1);
 }
 
 TEST_CASE("get_telemetry_summary", tags) {
@@ -196,18 +241,23 @@ TEST_CASE("get_telemetry_summary", tags) {
     scoped_database_helper h;
     telemetry_repository repo;
 
+    const auto before = repo.get_summary(h.context(), 24);
+
     // Create entries at different levels
     auto info_entry = make_test_entry();
     info_entry.level = "info";
+    info_entry.tag = "summary-test-info";
     repo.create(h.context(), info_entry);
 
     auto error_entry = make_test_entry();
     error_entry.level = "error";
+    error_entry.tag = "summary-test-error";
     repo.create(h.context(), error_entry);
 
-    auto summary = repo.get_summary(h.context(), 24);
-    BOOST_LOG_SEV(lg, debug) << "Summary: total=" << summary.total_logs
-                             << " errors=" << summary.error_count;
+    const auto after = repo.get_summary(h.context(), 24);
+    BOOST_LOG_SEV(lg, debug) << "Summary delta: total=" << (after.total_logs - before.total_logs)
+                             << " errors=" << (after.error_count - before.error_count);
 
-    CHECK(summary.total_logs >= 2);
+    CHECK(after.total_logs - before.total_logs == 2);
+    CHECK(after.error_count - before.error_count == 1);
 }

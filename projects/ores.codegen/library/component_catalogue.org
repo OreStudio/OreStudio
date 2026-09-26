@@ -34,6 +34,7 @@ separate per-address component entries are needed.
 | dq-cpp | projects/ores.dq/modeling | |
 | iam-cpp | projects/ores.iam/modeling | |
 | scheduler-cpp | projects/ores.scheduler/modeling | |
+| telemetry-cpp | projects/ores.telemetry/modeling | |
 | trading-cpp | projects/ores.trading/modeling | |
 | workflow-cpp | projects/ores.workflow/modeling | |
 | workspace-cpp | projects/ores.workspace/modeling | |

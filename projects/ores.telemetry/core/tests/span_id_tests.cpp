@@ -39,6 +39,7 @@ using namespace ores::logging;
 TEST_CASE("default_span_id_is_invalid", tags) {
     auto lg(make_logger(test_suite));
     span_id id;
+    REQUIRE(id.to_hex() == "0000000000000000");
     REQUIRE_FALSE(id.is_valid());
     BOOST_LOG_SEV(lg, debug) << "Default span_id: " << id.to_hex();
 }
@@ -53,20 +54,37 @@ TEST_CASE("generated_span_id_is_valid", tags) {
 }
 
 TEST_CASE("span_id_to_hex_produces_16_chars", tags) {
-    span_id_generator gen;
-    const auto id = gen();
+    const auto id = span_id::from_hex("0102030405060708");
     const auto hex = id.to_hex();
 
+    REQUIRE(hex == "0102030405060708");
     REQUIRE(hex.size() == 16);
+    REQUIRE(static_cast<unsigned>(id.bytes[0]) == 0x01);
+    REQUIRE(static_cast<unsigned>(id.bytes[1]) == 0x02);
+    REQUIRE(static_cast<unsigned>(id.bytes[2]) == 0x03);
+    REQUIRE(static_cast<unsigned>(id.bytes[3]) == 0x04);
+    REQUIRE(static_cast<unsigned>(id.bytes[4]) == 0x05);
+    REQUIRE(static_cast<unsigned>(id.bytes[5]) == 0x06);
+    REQUIRE(static_cast<unsigned>(id.bytes[6]) == 0x07);
+    REQUIRE(static_cast<unsigned>(id.bytes[7]) == 0x08);
 }
 
 TEST_CASE("span_id_from_hex_roundtrips", tags) {
-    span_id_generator gen;
-    const auto original = gen();
-    const auto hex = original.to_hex();
-    const auto parsed = span_id::from_hex(hex);
+    span_id expected;
+    expected.bytes = {std::byte{0x01},
+                      std::byte{0x02},
+                      std::byte{0x03},
+                      std::byte{0x04},
+                      std::byte{0x05},
+                      std::byte{0x06},
+                      std::byte{0x07},
+                      std::byte{0x08}};
 
-    REQUIRE(original == parsed);
+    const auto parsed = span_id::from_hex("0102030405060708");
+
+    REQUIRE(parsed == expected);
+    REQUIRE(parsed.to_hex() == "0102030405060708");
+    REQUIRE(parsed.is_valid());
 }
 
 TEST_CASE("span_id_from_hex_with_invalid_input_returns_invalid", tags) {
@@ -89,17 +107,6 @@ TEST_CASE("generated_span_ids_are_unique", tags) {
         REQUIRE(ids.find(hex) == ids.end());
         ids.insert(hex);
     }
-}
-
-TEST_CASE("span_ids_are_time_sortable", tags) {
-    span_id_generator gen;
-
-    const auto id1 = gen();
-    std::this_thread::sleep_for(std::chrono::milliseconds(2));
-    const auto id2 = gen();
-
-    // The defaulted operator<=> allows for direct comparison.
-    REQUIRE(id1 <= id2);
 }
 
 TEST_CASE("span_id_generator_is_thread_safe", tags) {

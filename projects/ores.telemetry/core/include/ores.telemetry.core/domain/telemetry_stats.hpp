@@ -23,9 +23,65 @@
 #include "ores.telemetry.core/domain/telemetry_source.hpp"
 #include <chrono>
 #include <cstdint>
+#include <optional>
 #include <string>
 
 namespace ores::telemetry::domain {
+
+/**
+ * @brief Granularity for statistics queries.
+ */
+enum class stats_granularity {
+    /**
+     * @brief Hourly aggregation.
+     */
+    hourly = 0,
+
+    /**
+     * @brief Daily aggregation.
+     */
+    daily = 1
+};
+
+/**
+ * @brief Query parameters for retrieving telemetry statistics.
+ */
+struct telemetry_stats_query final {
+    /**
+     * @brief Start of the time range (inclusive).
+     */
+    std::chrono::system_clock::time_point start_time;
+
+    /**
+     * @brief End of the time range (exclusive).
+     */
+    std::chrono::system_clock::time_point end_time;
+
+    /**
+     * @brief Aggregation granularity.
+     */
+    stats_granularity granularity = stats_granularity::daily;
+
+    /**
+     * @brief Filter by source type.
+     */
+    std::optional<telemetry_source> source;
+
+    /**
+     * @brief Filter by source application name.
+     */
+    std::optional<std::string> source_name;
+
+    /**
+     * @brief Filter by log level.
+     */
+    std::optional<std::string> level;
+
+    /**
+     * @brief Filter by component (daily stats only).
+     */
+    std::optional<std::string> component;
+};
 
 /**
  * @brief Aggregated telemetry statistics for a time period.

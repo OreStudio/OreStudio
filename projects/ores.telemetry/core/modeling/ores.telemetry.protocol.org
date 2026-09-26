@@ -9,11 +9,47 @@
 NATS messaging reference for [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]]. All subjects use the
 =telemetry.v1.>= namespace. See [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for transport details.
 
-* Logs
+Every subject below is declared once, by the model that owns its messages, and
+the protocol header the model generates carries the constant. Nothing in the
+component states a subject as a literal.
 
-| Subject | Description |
-|---------+-------------|
-| =telemetry.v1.logs.list= | Query telemetry log entries with optional time range and filter criteria |
+* Subjects
+
+| Subject | Messages | Direction |
+|---------+----------+-----------|
+| =telemetry.v1.logs.list= | =get_telemetry_logs_request=, =get_telemetry_logs_response= | Served: a caller asks for the log entries a filter selects. |
+| =telemetry.v1.logs.publish= | =publish_log_entries_request= | Ingested: a wrapper node publishes a batch of log entries and waits for no reply. |
+| =telemetry.v1.services.heartbeat= | =service_heartbeat_message= | Ingested: every service publishes that it is alive, and the service timestamps the receipt. |
+| =telemetry.v1.services.list= | =get_service_samples_request=, =get_service_samples_response= | Served: a caller asks for the latest sample of every running instance. |
+| =telemetry.v1.nats.server-samples.list= | =get_nats_server_samples_request=, =get_nats_server_samples_response= | Served: a caller asks for the stored NATS server samples in a time range. |
+| =telemetry.v1.nats.stream-samples.list= | =get_nats_stream_samples_request=, =get_nats_stream_samples_response= | Served: a caller asks for the stored NATS stream samples in a time range. |
+
+* Where each subject is declared
+
+| Model | Subjects |
+|-------+----------|
+| =ores.telemetry.logs.org= | =logs.list=, =logs.publish= |
+| =ores.telemetry.nats_samples.org= | =nats.server-samples.list=, =nats.stream-samples.list= |
+| =ores.telemetry.service_samples.org= | =services.heartbeat=, =services.list= |
+
+The service subscribes all six in =service/src/messaging/registrar.cpp=, on
+the queue group =ores.telemetry.service=.
+
+* Who sends what
+
+- =telemetry.v1.logs.publish= is sent by =ores.compute='s wrapper node.
+- =telemetry.v1.services.heartbeat= is sent by every service that embeds the
+  =ores.service= heartbeat publisher, this component's own service included.
+- The four =list= subjects are served here and sent by whoever queries.
+- The =telemetry.v1.nats.*= samples are sent by nothing: the service polls the
+  NATS HTTP monitoring API and stores what it finds.
+
+* Subject prefix
+
+The environment prefix is applied by =ores.nats=, not by this component, so a
+subject constant here is the unprefixed name. A caller that needs the
+prefixed form asks the client, which is the layering the standard records as
+this component's P02 exception.
 
 * Useful Pages
 

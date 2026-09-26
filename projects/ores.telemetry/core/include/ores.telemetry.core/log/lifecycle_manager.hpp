@@ -87,10 +87,9 @@ public:
      * Example:
      * @code
      * auto resource = domain::resource::from_environment("my-service", "1.0");
-     * auto exporter = std::make_shared<file_log_exporter>("logs/telemetry.jsonl");
      * lifecycle_manager lm(logging_options);
-     * lm.add_telemetry_sink(resource, [exporter](auto rec) {
-     *     exporter->export_record(std::move(rec));
+     * lm.add_telemetry_sink(resource, [](domain::log_record rec) {
+     *     handle_record(std::move(rec));
      * });
      * @endcode
      */
@@ -128,7 +127,7 @@ public:
 private:
     boost::shared_ptr<telemetry_sink_type> telemetry_sink_;
     using database_sink_type = boost::log::sinks::asynchronous_sink<database_sink_backend>;
-    boost::shared_ptr<database_sink_type> database_sink_; // Added for database sink
+    boost::shared_ptr<database_sink_type> database_sink_;
 };
 
 }

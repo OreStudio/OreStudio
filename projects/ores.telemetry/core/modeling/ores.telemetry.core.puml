@@ -35,30 +35,8 @@ namespace ores #F2F2F2 {
                 +attrs : attributes
                 +source_resource : shared_ptr<resource>
             }
-            class nats_server_samples_query <<struct>> {
-                +start_time : chrono::system_clock::time_point
-                +end_time : chrono::system_clock::time_point
-            }
-            class nats_stream_samples_query <<struct>> {
-                +stream_name : string
-                +start_time : chrono::system_clock::time_point
-                +end_time : chrono::system_clock::time_point
-            }
-            class nats_server_sample <<struct>> {
-                +sampled_at : chrono::system_clock::time_point
-            }
-            class nats_stream_sample <<struct>> {
-                +sampled_at : chrono::system_clock::time_point
-                +stream_name : string
-            }
             class resource <<struct>> {
                 +attrs : attributes
-            }
-            class service_sample <<struct>> {
-                +sampled_at : chrono::system_clock::time_point
-                +service_name : string
-                +instance_id : string
-                +version : string
             }
             class span <<struct>> {
                 +context : span_context
@@ -78,6 +56,7 @@ namespace ores #F2F2F2 {
                 +trace_flags : uint8_t
             }
             class span_id <<struct>> {
+                +bytes : array<byte, 8>
             }
             enum span_kind {
                 internal
@@ -98,41 +77,15 @@ namespace ores #F2F2F2 {
             class telemetry_batch <<struct>> {
                 +source : telemetry_source
                 +source_name : string
-                +entries : vector<telemetry_log_entry>
+                +entries : vector<messaging::telemetry_log_entry>
             }
             class telemetry_context {
-                +kind : span_kind
-                +kind : span_kind
                 -ctx_ : span_context
                 -resource_ : shared_ptr<resource>
             }
-            class telemetry_log_entry <<struct>> {
-                +id : boost::uuids::uuid
-                +timestamp : chrono::system_clock::time_point
-                +source : telemetry_source
-                +source_name : string
-                +session_id : optional<boost::uuids::uuid>
-                +account_id : optional<boost::uuids::uuid>
-                +level : string
-                +component : string
-                +message : string
-                +tag : string
-                +recorded_at : chrono::system_clock::time_point
-            }
-            class telemetry_query <<struct>> {
-                +start_time : chrono::system_clock::time_point
-                +end_time : chrono::system_clock::time_point
-                +source : optional<telemetry_source>
-                +source_name : optional<string>
-                +session_id : optional<boost::uuids::uuid>
-                +account_id : optional<boost::uuids::uuid>
-                +level : optional<string>
-                +min_level : optional<string>
-                +component : optional<string>
-                +tag : optional<string>
-                +message_contains : optional<string>
-                +limit : uint32_t
-                +offset : uint32_t
+            enum telemetry_source {
+                client
+                server
             }
             enum stats_granularity {
                 hourly
@@ -146,10 +99,6 @@ namespace ores #F2F2F2 {
                 +source_name : optional<string>
                 +level : optional<string>
                 +component : optional<string>
-            }
-            enum telemetry_source {
-                client
-                server
             }
             class telemetry_stats <<struct>> {
                 +period_start : chrono::system_clock::time_point
@@ -175,31 +124,10 @@ namespace ores #F2F2F2 {
                 +unique_accounts : uint32_t
             }
             class trace_id <<struct>> {
+                +bytes : array<byte, 16>
             }
         }
         namespace exporting #F2F2F2 {
-            class file_log_exporter {
-                -mutex_ : mutex
-                -file_ : ofstream
-                -is_open_ : bool
-            }
-            class hybrid_log_exporter {
-                +send_callback : send_records_callback
-                -file_mutex_ : mutex
-                -file_ : ofstream
-                -file_path_ : filesystem::path
-                -file_position_ : uint64_t
-                -options_ : telemetry_options
-                -send_callback_ : send_records_callback
-                -batch_mutex_ : mutex
-                -pending_batch_ : vector<domain::log_record>
-                -position_tracker_ : upload_position_tracker
-                -flush_thread_ : thread
-                -flush_cv_ : condition_variable
-                -last_flush_time_ : chrono::steady_clock::time_point
-            }
-            class log_exporter {
-            }
             class telemetry_configuration {
             }
             class telemetry_options <<struct>> {
@@ -209,12 +137,7 @@ namespace ores #F2F2F2 {
                 +output_directory : filesystem::path
                 +streaming_enabled : bool
                 +batch_size : uint32_t
-            }
-            class upload_position_tracker {
-                -log_file_path_ : filesystem::path
-                -marker_file_path_ : filesystem::path
-                -mutex_ : mutable mutex
-                -position_ : uint64_t
+                +flush_interval : chrono::seconds
             }
         }
         namespace generators #F2F2F2 {
@@ -232,49 +155,48 @@ namespace ores #F2F2F2 {
         }
         namespace log #F2F2F2 {
             class lifecycle_manager {
-                +source_name : const string&
+                +operator : lifecycle_manager&
                 -telemetry_sink_ : boost::shared_ptr<telemetry_sink_type>
                 -database_sink_ : boost::shared_ptr<database_sink_type>
-            }
-            class trace_context_injector <<struct>> {
-                +ctx : const domain::telemetry_context&
             }
             class skip_telemetry_guard {
             }
         }
         namespace messaging #F2F2F2 {
-            class get_nats_server_samples_request <<struct>> {
-                +query : domain::nats_server_samples_query
-            }
-            class get_nats_server_samples_response <<struct>> {
+            class telemetry_log_entry <<struct>> {
+                +id : boost::uuids::uuid
+                +timestamp : chrono::system_clock::time_point
+                +source_name : string
+                +session_id : optional<boost::uuids::uuid>
+                +account_id : optional<boost::uuids::uuid>
+                +level : string
+                +component : string
                 +message : string
-                +samples : vector<domain::nats_server_sample>
+                +tag : string
+                +recorded_at : chrono::system_clock::time_point
             }
-            class get_nats_stream_samples_request <<struct>> {
-                +query : domain::nats_stream_samples_query
-            }
-            class get_nats_stream_samples_response <<struct>> {
-                +message : string
-                +samples : vector<domain::nats_stream_sample>
-            }
-            class service_heartbeat_message <<struct>> {
-                +service_name : string
-                +instance_id : string
-                +version : string
-            }
-            class get_service_samples_request <<struct>> {
-            }
-            class get_service_samples_response <<struct>> {
-                +message : string
-                +samples : vector<domain::service_sample>
+            class telemetry_query <<struct>> {
+                +start_time : chrono::system_clock::time_point
+                +end_time : chrono::system_clock::time_point
+                +source : optional<ores::telemetry::domain::telemetry_source>
+                +source_name : optional<string>
+                +session_id : optional<boost::uuids::uuid>
+                +account_id : optional<boost::uuids::uuid>
+                +level : optional<string>
+                +min_level : optional<string>
+                +component : optional<string>
+                +tag : optional<string>
+                +message_contains : optional<string>
+                +limit : uint32_t
+                +offset : uint32_t
             }
             class get_telemetry_logs_request <<struct>> {
-                +query : domain::telemetry_query
+                +query : telemetry_query
             }
             class get_telemetry_logs_response <<struct>> {
                 +success : bool
                 +message : string
-                +entries : vector<domain::telemetry_log_entry>
+                +entries : vector<telemetry_log_entry>
                 +total_count : uint64_t
             }
             class publish_log_entry_item <<struct>> {
@@ -288,11 +210,316 @@ namespace ores #F2F2F2 {
                 +tag : string
                 +entries : vector<publish_log_entry_item>
             }
+            class nats_server_sample <<struct>> {
+                +sampled_at : chrono::system_clock::time_point
+                +in_msgs : uint64_t
+                +out_msgs : uint64_t
+                +in_bytes : uint64_t
+                +out_bytes : uint64_t
+                +connections : int
+                +mem_bytes : uint64_t
+                +slow_consumers : int
+            }
+            class nats_stream_sample <<struct>> {
+                +sampled_at : chrono::system_clock::time_point
+                +stream_name : string
+                +messages : uint64_t
+                +bytes : uint64_t
+                +consumer_count : int
+            }
+            class nats_server_samples_query <<struct>> {
+                +start_time : chrono::system_clock::time_point
+                +end_time : chrono::system_clock::time_point
+                +limit : uint32_t
+            }
+            class nats_stream_samples_query <<struct>> {
+                +stream_name : string
+                +start_time : chrono::system_clock::time_point
+                +end_time : chrono::system_clock::time_point
+                +limit : uint32_t
+            }
+            class get_nats_server_samples_request <<struct>> {
+                +query : nats_server_samples_query
+            }
+            class get_nats_server_samples_response <<struct>> {
+                +success : bool
+                +message : string
+                +samples : vector<nats_server_sample>
+            }
+            class get_nats_stream_samples_request <<struct>> {
+                +query : nats_stream_samples_query
+            }
+            class get_nats_stream_samples_response <<struct>> {
+                +success : bool
+                +message : string
+                +samples : vector<nats_stream_sample>
+            }
+            class service_sample <<struct>> {
+                +sampled_at : chrono::system_clock::time_point
+                +service_name : string
+                +instance_id : string
+                +version : string
+            }
+            class service_heartbeat_message <<struct>> {
+                +service_name : string
+                +instance_id : string
+                +version : string
+            }
+            class get_service_samples_request <<struct>> {
+            }
+            class get_service_samples_response <<struct>> {
+                +success : bool
+                +message : string
+                +samples : vector<service_sample>
+            }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass reads data members and little else. It leaves a class
+' whose content is methods as an empty box, it drops the two sink backends
+' because their base clause wraps onto a second line, and it cannot see a
+' free function at all. The blocks below fill those boxes, draw the
+' relationships, and name the free functions. They redeclare fully
+' qualified classes instead of reopening a namespace, because this PlantUML
+' version refuses a namespace that already holds classes; a redeclaration
+' merges its members into the box the automated pass drew.
+
+skinparam classAttributeIconSize 0
+
+' --- domain: trace identity, context and records
+
+class ores::telemetry::domain::telemetry_context {
+    +telemetry_context(ctx : span_context, res : shared_ptr<resource>)
+    {static} +create_root(res : shared_ptr<resource>) : telemetry_context
+    +context() : const span_context&
+    +get_trace_id() : const trace_id&
+    +get_span_id() : const span_id&
+    +get_resource() : const resource&
+    +resource_ptr() : shared_ptr<resource>
+    +start_span(name : string_view, kind : span_kind) : pair<telemetry_context, span>
+    +start_linked_trace(name : string_view, kind : span_kind) : pair<telemetry_context, span>
+    +is_valid() : bool
+}
+note right of "ores::telemetry::domain::telemetry_context"
+Immutable context passed as an explicit parameter, so the
+trace travels through the call chain without ambient state.
+start_span makes a child in the same trace; start_linked_trace
+makes a new trace that links back to this span.
+end note
+
+class ores::telemetry::domain::telemetry_batch {
+    +size() : size_t
+    +empty() : bool
+    +clear() : void
+}
+note right of "ores::telemetry::domain::telemetry_batch"
+Carries messaging::telemetry_log_entry, not the deleted domain
+payload, so the repository and the handlers exchange one type.
+end note
+
+class ores::telemetry::domain::span {
+    +is_session() : bool
+    +is_root() : bool
+    +duration() : optional<nanoseconds>
+}
+
+class ores::telemetry::domain::span_context {
+    +is_valid() : bool
+    +is_sampled() : bool
+}
+
+class ores::telemetry::domain::span_id {
+    +is_valid() : bool
+    +to_hex() : string
+    {static} +from_hex(hex : string_view) : span_id
+}
+
+class ores::telemetry::domain::trace_id {
+    +is_valid() : bool
+    +to_hex() : string
+    {static} +from_hex(hex : string_view) : trace_id
+}
+
+class ores::telemetry::domain::resource {
+    +service_name() : optional<string>
+    +host_name() : optional<string>
+    +host_id() : optional<string>
+    {static} +from_environment(service_name : string_view, service_version : string_view) : resource
+}
+class ores::telemetry::domain::to_string {
+    {static} +to_string(s : telemetry_source) : string_view
+}
+class ores::telemetry::domain::telemetry_source_from_string {
+    {static} +telemetry_source_from_string(s : string_view) : telemetry_source
+}
+class ores::telemetry::domain::semconv <<facet>> {
+    +link.relationship : string_view
+    +session.id : string_view
+    +service.name : string_view
+    +service.version : string_view
+    +service.instance.id : string_view
+    +host.name : string_view
+    +host.id : string_view
+    +process.pid : string_view
+}
+note right of "ores::telemetry::domain::semconv"
+The semantic convention attribute keys, declared as free
+constants in semantic_conventions.hpp. They are the names the
+resource, span and session code reads and writes.
+end note
+
+' --- exporting: how a service turns its configuration into options
+
+class ores::telemetry::exporting::telemetry_configuration {
+    {static} +make_options_description(default_service_name : string, default_service_version : string) : options_description
+    {static} +read_options(vm : variables_map) : optional<telemetry_options>
+}
+note right of "ores::telemetry::exporting::telemetry_configuration"
+The only type left in exporting. It builds the
+boost::program_options entry for the telemetry flags and reads
+them back. The JSON Lines exporters, the upload position
+tracker and the log macros are deleted, so nothing here opens a
+file or forwards a record any more.
+end note
+
+' --- generators: the trace and span identity factories
+
+class ores::telemetry::generators::span_id_generator {
+    +span_id_generator()
+    +operator()() : domain::span_id
+}
+class ores::telemetry::generators::trace_id_generator {
+    +trace_id_generator()
+    +trace_id_generator(machine_id : uint16_t)
+    +operator()() : domain::trace_id
+    +machine_id() : uint16_t
+}
+' --- log: the Boost.Log front end
+
+class ores::telemetry::log::telemetry_sink_backend {
+    +telemetry_sink_backend(res : shared_ptr<domain::resource>, handler : log_record_handler)
+    +consume(rec : record_view) : void
+}
+note right of "ores::telemetry::log::telemetry_sink_backend"
+The sink backend the automated pass dropped: its base clause
+wraps onto a second line, which the parser does not follow. It
+converts each Boost.Log record into a domain::log_record, reads
+the trace_id and span_id attributes for correlation, and skips a
+record marked SkipTelemetry.
+end note
+
+class ores::telemetry::log::database_sink_backend {
+    +database_sink_backend(resource : shared_ptr<domain::resource>, handler : database_log_handler, source_type : string, source_name : string)
+    +consume(rec : record_view) : void
+    +set_session_id(session_id : uuid) : void
+    +set_account_id(account_id : uuid) : void
+}
+note right of "ores::telemetry::log::database_sink_backend"
+The second backend the parser dropped. It converts each record
+into messaging::telemetry_log_entry and hands it to the handler,
+which the database part supplies. The two setters stamp a
+session or account id onto the entries it produces.
+end note
+
+class ores::telemetry::log::lifecycle_manager {
+    +lifecycle_manager(ocfg : optional<logging_options>)
+    +~lifecycle_manager()
+    +add_telemetry_sink(resource : shared_ptr<domain::resource>, handler : telemetry_sink_backend::log_record_handler)
+    +add_database_sink(resource : shared_ptr<domain::resource>, handler : database_log_handler, source_type : string, source_name : string)
+}
+class ores::telemetry::log::skip_telemetry_guard {
+    +skip_telemetry_guard()
+}
+class ores::telemetry::log::should_skip_telemetry {
+    {static} +should_skip_telemetry(rec : record_view) : bool
+}
+class ores::telemetry::log::make_forwarding_handler {
+    {static} +make_forwarding_handler(handler) : database_log_handler
+}
+' --- messaging: the generated protocol types
+
+class ores::telemetry::messaging::telemetry_log_entry {
+    +source : domain::telemetry_source
+}
+note right of "ores::telemetry::messaging::telemetry_log_entry"
+The generated payload. The automated pass dropped its source
+member because the initialiser continues on the next line.
+end note
+
+' The six message types carry static members the automated pass drops:
+' the subject each one is served on, the session requirement, and for a
+' request, its reply type. They are the component's wire contract.
+
+class ores::telemetry::messaging::get_telemetry_logs_request {
+    {static} +nats_subject : "telemetry.v1.logs.list"
+    {static} +requires_session : bool
+    {static} +response_type : get_telemetry_logs_response
+}
+class ores::telemetry::messaging::publish_log_entries_request {
+    {static} +nats_subject : "telemetry.v1.logs.publish"
+    {static} +requires_session : bool
+}
+class ores::telemetry::messaging::get_nats_server_samples_request {
+    {static} +nats_subject : "telemetry.v1.nats.server-samples.list"
+    {static} +requires_session : bool
+    {static} +response_type : get_nats_server_samples_response
+}
+class ores::telemetry::messaging::get_nats_stream_samples_request {
+    {static} +nats_subject : "telemetry.v1.nats.stream-samples.list"
+    {static} +requires_session : bool
+    {static} +response_type : get_nats_stream_samples_response
+}
+class ores::telemetry::messaging::service_heartbeat_message {
+    {static} +nats_subject : "telemetry.v1.services.heartbeat"
+    {static} +requires_session : bool
+}
+class ores::telemetry::messaging::get_service_samples_request {
+    {static} +nats_subject : "telemetry.v1.services.list"
+    {static} +requires_session : bool
+    {static} +response_type : get_service_samples_response
+}
+
+' --- relationships the automated pass cannot infer
+
+ores::telemetry::domain::telemetry_context *-- ores::telemetry::domain::span_context
+ores::telemetry::domain::telemetry_context o-- ores::telemetry::domain::resource : shared
+ores::telemetry::domain::telemetry_context ..> ores::telemetry::domain::span : start_span creates
+ores::telemetry::domain::span *-- ores::telemetry::domain::span_context
+ores::telemetry::domain::span o-- ores::telemetry::domain::span_id : parent
+ores::telemetry::domain::span *-- "0..*" ores::telemetry::domain::span_link
+ores::telemetry::domain::span ..> ores::telemetry::domain::span_kind
+ores::telemetry::domain::span ..> ores::telemetry::domain::span_status_code
+ores::telemetry::domain::span_link *-- ores::telemetry::domain::span_context
+ores::telemetry::domain::span_context *-- ores::telemetry::domain::trace_id
+ores::telemetry::domain::span_context *-- ores::telemetry::domain::span_id
+ores::telemetry::domain::log_record ..> ores::telemetry::domain::trace_id
+ores::telemetry::domain::log_record ..> ores::telemetry::domain::span_id
+ores::telemetry::domain::log_record o-- ores::telemetry::domain::resource : source_resource
+ores::telemetry::domain::telemetry_batch *-- "0..*" ores::telemetry::messaging::telemetry_log_entry
+ores::telemetry::domain::telemetry_stats_query ..> ores::telemetry::domain::telemetry_source
+ores::telemetry::domain::telemetry_stats ..> ores::telemetry::domain::telemetry_source
+ores::telemetry::domain::to_string ..> ores::telemetry::domain::telemetry_source
+ores::telemetry::domain::telemetry_source_from_string ..> ores::telemetry::domain::telemetry_source
+ores::telemetry::messaging::telemetry_log_entry ..> ores::telemetry::domain::telemetry_source
+ores::telemetry::generators::span_id_generator ..> ores::telemetry::domain::span_id : generates
+ores::telemetry::generators::trace_id_generator ..> ores::telemetry::domain::trace_id : generates
+ores::telemetry::log::lifecycle_manager ..> ores::telemetry::log::telemetry_sink_backend : owns
+ores::telemetry::log::lifecycle_manager ..> ores::telemetry::log::database_sink_backend : owns
+ores::telemetry::log::telemetry_sink_backend ..> ores::telemetry::domain::log_record : creates
+ores::telemetry::log::database_sink_backend ..> ores::telemetry::messaging::telemetry_log_entry : creates
+ores::telemetry::log::telemetry_sink_backend ..> ores::telemetry::log::should_skip_telemetry : consults
+ores::telemetry::log::database_sink_backend ..> ores::telemetry::log::should_skip_telemetry : consults
+ores::telemetry::log::lifecycle_manager ..> ores::telemetry::log::skip_telemetry_guard : filters on
+
+' --- request and reply pairs
+
+ores::telemetry::messaging::get_telemetry_logs_request ..> ores::telemetry::messaging::get_telemetry_logs_response : reply
+ores::telemetry::messaging::get_nats_server_samples_request ..> ores::telemetry::messaging::get_nats_server_samples_response : reply
+ores::telemetry::messaging::get_nats_stream_samples_request ..> ores::telemetry::messaging::get_nats_stream_samples_response : reply
+ores::telemetry::messaging::get_service_samples_request ..> ores::telemetry::messaging::get_service_samples_response : reply
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.telemetry.core.puml"

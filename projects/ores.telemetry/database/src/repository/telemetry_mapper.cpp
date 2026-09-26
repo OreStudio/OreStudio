@@ -46,7 +46,7 @@ std::optional<std::chrono::system_clock::time_point> parse_timestamp(const std::
 
 }
 
-telemetry_entity telemetry_mapper::to_entity(const domain::telemetry_log_entry& entry,
+telemetry_entity telemetry_mapper::to_entity(const messaging::telemetry_log_entry& entry,
                                              const std::string& tenant_id) {
     ores::telemetry::log::skip_telemetry_guard guard;
     telemetry_entity r;
@@ -73,9 +73,9 @@ telemetry_entity telemetry_mapper::to_entity(const domain::telemetry_log_entry& 
     return r;
 }
 
-domain::telemetry_log_entry telemetry_mapper::to_domain(const telemetry_entity& entity) {
+messaging::telemetry_log_entry telemetry_mapper::to_domain(const telemetry_entity& entity) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    domain::telemetry_log_entry r;
+    messaging::telemetry_log_entry r;
     using boost::uuids::uuid;
 
     r.id = boost::lexical_cast<uuid>(entity.id.value());
@@ -136,7 +136,7 @@ domain::telemetry_stats telemetry_mapper::to_domain(const telemetry_stats_daily_
     return r;
 }
 
-nats_server_sample_entity telemetry_mapper::to_entity(const domain::nats_server_sample& sample,
+nats_server_sample_entity telemetry_mapper::to_entity(const messaging::nats_server_sample& sample,
                                                       const std::string& tenant_id) {
     nats_server_sample_entity r;
     r.sampled_at = datetime::to_db_string(sample.sampled_at);
@@ -151,8 +151,8 @@ nats_server_sample_entity telemetry_mapper::to_entity(const domain::nats_server_
     return r;
 }
 
-domain::nats_server_sample telemetry_mapper::to_domain(const nats_server_sample_entity& entity) {
-    domain::nats_server_sample r;
+messaging::nats_server_sample telemetry_mapper::to_domain(const nats_server_sample_entity& entity) {
+    messaging::nats_server_sample r;
     r.sampled_at = timestamp_to_timepoint(entity.sampled_at.value());
     r.in_msgs = static_cast<std::uint64_t>(entity.in_msgs);
     r.out_msgs = static_cast<std::uint64_t>(entity.out_msgs);
@@ -164,7 +164,7 @@ domain::nats_server_sample telemetry_mapper::to_domain(const nats_server_sample_
     return r;
 }
 
-nats_stream_sample_entity telemetry_mapper::to_entity(const domain::nats_stream_sample& sample,
+nats_stream_sample_entity telemetry_mapper::to_entity(const messaging::nats_stream_sample& sample,
                                                       const std::string& tenant_id) {
     nats_stream_sample_entity r;
     r.sampled_at = datetime::to_db_string(sample.sampled_at);
@@ -176,8 +176,8 @@ nats_stream_sample_entity telemetry_mapper::to_entity(const domain::nats_stream_
     return r;
 }
 
-domain::nats_stream_sample telemetry_mapper::to_domain(const nats_stream_sample_entity& entity) {
-    domain::nats_stream_sample r;
+messaging::nats_stream_sample telemetry_mapper::to_domain(const nats_stream_sample_entity& entity) {
+    messaging::nats_stream_sample r;
     r.sampled_at = timestamp_to_timepoint(entity.sampled_at.value());
     r.stream_name = entity.stream_name.value();
     r.messages = static_cast<std::uint64_t>(entity.messages);
@@ -186,7 +186,7 @@ domain::nats_stream_sample telemetry_mapper::to_domain(const nats_stream_sample_
     return r;
 }
 
-service_sample_entity telemetry_mapper::to_entity(const domain::service_sample& sample) {
+service_sample_entity telemetry_mapper::to_entity(const messaging::service_sample& sample) {
     service_sample_entity r;
     r.sampled_at = datetime::to_db_string(sample.sampled_at);
     r.service_name = sample.service_name;
@@ -195,8 +195,8 @@ service_sample_entity telemetry_mapper::to_entity(const domain::service_sample& 
     return r;
 }
 
-domain::service_sample telemetry_mapper::to_domain(const service_sample_entity& entity) {
-    domain::service_sample r;
+messaging::service_sample telemetry_mapper::to_domain(const service_sample_entity& entity) {
+    messaging::service_sample r;
     r.sampled_at = timestamp_to_timepoint(entity.sampled_at.value());
     r.service_name = entity.service_name.value();
     r.instance_id = entity.instance_id.value();

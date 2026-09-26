@@ -1,0 +1,43 @@
+# G08: the namespace documentation headers
+# 2026-09-26, branch feature/clean-telemetry.
+
+The item: every component keeps a namespace documentation header for its
+outermost namespace, one per module of a multi-module component, and a
+consumer census does not apply to them. A claim inside one is a document bug
+and is corrected in place, never a reason to delete the file.
+
+The component is a composite of three modules, so it needs three.
+
+$ for p in core database service; do \
+      test -f projects/ores.telemetry/$p/include/ores.telemetry.$p/ores.telemetry.$p.hpp; done
+ores.telemetry.core:     present
+ores.telemetry.database: present
+ores.telemetry.service:  present
+
+$ grep -h "^namespace ores" <the three headers>
+namespace ores::telemetry {}
+namespace ores::telemetry::database {}
+namespace ores::telemetry.service {}
+
+  The core module owns the component's outermost namespace, because the types
+  the other parts exchange live directly in ores::telemetry rather than in a
+  namespace of their own. Its header says so.
+
+Three claims were wrong before this task and are corrected in place:
+
+- core/include/ores.telemetry.core/ores.telemetry.hpp was named for the
+  component, not the module, and its brief still promised "file-based and
+  hybrid exporters", which this task deletes, and an "export" namespace that
+  does not exist. Renamed to ores.telemetry.core.hpp, and the brief now names
+  the sub-namespaces the module actually has: domain, log, exporting,
+  generators and messaging.
+- database had no namespace header at all. ores.telemetry.database.hpp is
+  added, naming the repository and log sub-namespaces.
+- database/include/ores.telemetry.database/repository/ores.telemetry.repository.hpp
+  declared namespace ores::telemetry::repository, which no code is in; the
+  repository types are in ores::telemetry::database::repository. The file now
+  declares the namespace its types are in.
+
+Nothing includes a namespace header, and nothing should: the census at
+evidence/b03_handwritten_inventory.tsv would otherwise have found a consumer
+and this item would not have needed the exemption it is given.

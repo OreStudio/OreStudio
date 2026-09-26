@@ -20,8 +20,8 @@
 #ifndef ORES_TELEMETRY_CORE_DOMAIN_TELEMETRY_BATCH_HPP
 #define ORES_TELEMETRY_CORE_DOMAIN_TELEMETRY_BATCH_HPP
 
-#include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
 #include "ores.telemetry.core/domain/telemetry_source.hpp"
+#include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include <string>
 #include <vector>
 
@@ -51,7 +51,7 @@ struct telemetry_batch final {
     /**
      * @brief The log entries in this batch.
      */
-    std::vector<telemetry_log_entry> entries;
+    std::vector<messaging::telemetry_log_entry> entries;
 
     /**
      * @brief Returns the number of entries in the batch.

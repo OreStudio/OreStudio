@@ -16,16 +16,19 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "repository/telemetry_entity.cpp"
     "repository/telemetry_mapper.cpp"
     "repository/telemetry_repository.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.database/export.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.database/log/database_sink_utils.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.database/ores.telemetry.database.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.database/repository/ores.telemetry.repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.database/repository/telemetry_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.database/repository/telemetry_mapper.hpp"

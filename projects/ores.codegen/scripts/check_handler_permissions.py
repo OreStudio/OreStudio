@@ -36,7 +36,7 @@ POPULATE = (
 # is deliberately separate from the shared component_registry list, which
 # carries catalogue slugs. analytics joined with its clean-standard pass, whose
 # W02 item this check proves; compute and assets joined with theirs.
-REGISTRY = ("refdata", "analytics", "compute", "assets", "storage")
+REGISTRY = ("refdata", "analytics", "compute", "assets", "storage", "reporting")
 
 # has_permission takes the request context first, so the code is the string
 # literal argument. A helper that passes the code through a variable is not

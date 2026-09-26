@@ -17,8 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.core/repository/fsm_transition_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.dq.api/domain/fsm_transition_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -35,42 +41,46 @@ domain::fsm_transition fsm_transition_mapper::map(const fsm_transition_entity& v
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.machine_id = boost::lexical_cast<boost::uuids::uuid>(v.machine_id);
-    r.from_state_id = v.from_state_id.has_value() ?
-                          std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.from_state_id)) :
-                          std::nullopt;
+
+    r.from_state_id = boost::lexical_cast<boost::uuids::uuid>(v.from_state_id);
+
     r.to_state_id = boost::lexical_cast<boost::uuids::uuid>(v.to_state_id);
+
     r.name = v.name;
-    r.guard_function = v.guard_function.value_or("");
+    r.guard_function = v.guard_function;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result name: " << r.name;
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 fsm_transition_entity fsm_transition_mapper::map(const domain::fsm_transition& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v.name;
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     fsm_transition_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.machine_id = boost::uuids::to_string(v.machine_id);
-    r.from_state_id = v.from_state_id.has_value() ?
-                          std::optional(boost::uuids::to_string(*v.from_state_id)) :
-                          std::nullopt;
+
+    if (v.from_state_id) {
+        r.from_state_id = boost::uuids::to_string(*v.from_state_id);
+    }
+
     r.to_state_id = boost::uuids::to_string(v.to_state_id);
+
     r.name = v.name;
-    r.guard_function = v.guard_function.empty() ? std::nullopt : std::optional(v.guard_function);
+    r.guard_function = v.guard_function;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result name: " << r.name;
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

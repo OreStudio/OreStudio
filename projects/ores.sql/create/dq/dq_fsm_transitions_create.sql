@@ -18,11 +18,19 @@
  *
  */
 /**
- * FSM Transitions Table
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
  *
- * Defines valid state-to-state transitions within a machine. Both from_state_id
- * and to_state_id must belong to the same machine. Optionally references a
- * guard function for business rule enforcement.
+ * FSM Transition Table
+ *
+ * A transition between two states of a finite state machine, unique within a
+ * machine for a given pair of states.
+ *
+ * from_state_id is nullable, so a transition may start from anywhere rather
+ * than from a named state. Like machine_id and to_state_id it is a plain uuid
+ * column rather than a declared reference, because the table carries no
+ * constraint and adding one would refuse rows the platform accepts today.
  */
 
 create table if not exists "ores_dq_fsm_transitions_tbl" (
@@ -50,27 +58,24 @@ create table if not exists "ores_dq_fsm_transitions_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn())
 );
 
+-- Composite natural key: unique combination for active records
+create unique index if not exists fsm_transitions_machine_id_from_state_id_to_state_id_uniq_idx
+on "ores_dq_fsm_transitions_tbl" (tenant_id, machine_id, from_state_id, to_state_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists fsm_transitions_version_uniq_idx
 on "ores_dq_fsm_transitions_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
 create unique index if not exists fsm_transitions_id_uniq_idx
 on "ores_dq_fsm_transitions_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Prevent duplicate transitions per machine (same from/to state pair)
-create unique index if not exists fsm_transitions_machine_states_uniq_idx
-on "ores_dq_fsm_transitions_tbl" (tenant_id, machine_id, from_state_id, to_state_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
--- Tenant index for efficient filtering
 create index if not exists fsm_transitions_tenant_idx
 on "ores_dq_fsm_transitions_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Machine index for efficient transition lookups
 create index if not exists fsm_transitions_machine_idx
 on "ores_dq_fsm_transitions_tbl" (tenant_id, machine_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -79,60 +84,12 @@ create or replace function ores_dq_fsm_transitions_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
-    from_machine_id uuid;
-    to_machine_id uuid;
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate machine_id (mandatory soft FK)
-    if not exists (
-        select 1 from ores_dq_fsm_machines_tbl
-        where tenant_id = NEW.tenant_id and id = NEW.machine_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid machine_id: %. No active FSM machine found with this id.',
-            NEW.machine_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate from_state_id (optional soft FK: NULL means initial transition)
-    if NEW.from_state_id is not null then
-        select machine_id into from_machine_id
-        from ores_dq_fsm_states_tbl
-        where tenant_id = NEW.tenant_id and id = NEW.from_state_id
-          and valid_to = ores_utility_infinity_timestamp_fn();
-
-        if not found then
-            raise exception 'Invalid from_state_id: %. No active FSM state found with this id.',
-                NEW.from_state_id
-                using errcode = '23503';
-        end if;
-
-        if from_machine_id <> NEW.machine_id then
-            raise exception 'from_state_id % belongs to machine %, not the declared machine_id %.',
-                NEW.from_state_id, from_machine_id, NEW.machine_id
-                using errcode = '23503';
-        end if;
-    end if;
-
-    -- Validate to_state_id (mandatory soft FK) and retrieve its machine
-    select machine_id into to_machine_id
-    from ores_dq_fsm_states_tbl
-    where tenant_id = NEW.tenant_id and id = NEW.to_state_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
-
-    if not found then
-        raise exception 'Invalid to_state_id: %. No active FSM state found with this id.',
-            NEW.to_state_id
-            using errcode = '23503';
-    end if;
-
-    if to_machine_id <> NEW.machine_id then
-        raise exception 'to_state_id % belongs to machine %, not the declared machine_id %.',
-            NEW.to_state_id, to_machine_id, NEW.machine_id
-            using errcode = '23503';
-    end if;
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
@@ -143,43 +100,55 @@ begin
     for update;
 
     if found then
-        if NEW.version != 0 and NEW.version != current_version then
+        -- The write states what it believes about the row, and the store is
+        -- what decides. Version zero means one thing: no current row exists.
+        -- So a create that collides with a live row is refused here, for every
+        -- client, rather than by a check each client has to remember.
+        if NEW.version = 0 then
+            if not ores_utility_version_replace_allowed_fn() then
+                raise exception
+                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
+                    using errcode = '23505';
+            end if;
+        elsif NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
                 NEW.version, current_version
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_dq_fsm_transitions_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
-
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_dq_fsm_transitions_insert_trg
 before insert on "ores_dq_fsm_transitions_tbl"
 for each row execute function ores_dq_fsm_transitions_insert_fn();
 
 create or replace rule ores_dq_fsm_transitions_delete_rule as
-on delete to "ores_dq_fsm_transitions_tbl" do instead
+on delete to "ores_dq_fsm_transitions_tbl" do instead (
     update "ores_dq_fsm_transitions_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

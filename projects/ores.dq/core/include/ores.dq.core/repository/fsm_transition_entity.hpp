@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_REPOSITORY_FSM_TRANSITION_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_FSM_TRANSITION_ENTITY_HPP
 
@@ -31,7 +36,7 @@ namespace ores::dq::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a FSM transition in the database.
+ * @brief Represents a fsm transition in the database.
  */
 struct fsm_transition_entity {
     constexpr static const char* schema = "public";
@@ -41,8 +46,11 @@ struct fsm_transition_entity {
     std::string tenant_id;
     int version = 0;
     std::string machine_id;
-    std::optional<std::string> from_state_id;
+
+    std::string from_state_id;
+
     std::string to_state_id;
+
     std::string name;
     std::optional<std::string> guard_function;
     std::string modified_by;

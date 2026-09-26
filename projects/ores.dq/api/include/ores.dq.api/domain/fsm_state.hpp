@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_DOMAIN_FSM_STATE_HPP
 #define ORES_DQ_API_DOMAIN_FSM_STATE_HPP
 
@@ -24,14 +29,19 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::dq::domain {
 
 /**
- * @brief A state within a finite state machine.
+ * @brief One state of a finite state machine.
  *
- * States belong to exactly one machine and may be designated as
- * initial (entry point) or terminal (no outgoing transitions).
+ * One state of a finite state machine, scoped to the machine it belongs to and
+ * unique within it by name.
+ *
+ * machine_id is a plain uuid column rather than a declared reference, because
+ * the table carries no constraint and adding one would refuse rows the platform
+ * accepts today.
  */
 struct fsm_state final {
     /**
@@ -50,29 +60,27 @@ struct fsm_state final {
     boost::uuids::uuid id;
 
     /**
-     * @brief UUID of the FSM machine this state belongs to.
+     * @brief The state machine this state belongs to; half of the natural key.
      */
     boost::uuids::uuid machine_id;
 
     /**
-     * @brief Human-readable state name (e.g. "new", "live", "expired").
-     *
-     * Unique within a machine.
+     * @brief Name of the state, unique within its machine.
      */
     std::string name;
 
     /**
-     * @brief Whether this is the initial state of the machine.
+     * @brief Whether this is the machine's initial state.
      */
-    bool is_initial = false;
+    int is_initial = 0;
 
     /**
-     * @brief Whether this is a terminal state (no outgoing transitions).
+     * @brief Whether this is a terminal state.
      */
-    bool is_terminal = false;
+    int is_terminal = 0;
 
     /**
-     * @brief Username of the person who last modified this record.
+     * @brief Username of the person who last modified this fsm state.
      */
     std::string modified_by;
 
@@ -83,6 +91,8 @@ struct fsm_state final {
 
     /**
      * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 
@@ -93,9 +103,37 @@ struct fsm_state final {
 
     /**
      * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const fsm_state&, const fsm_state&) = default;
 };
+
+/**
+ * @brief Dispatch-key identifier for fsm_state, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const fsm_state&) {
+    return "ores.dq.fsm_state";
+}
 
 }
 

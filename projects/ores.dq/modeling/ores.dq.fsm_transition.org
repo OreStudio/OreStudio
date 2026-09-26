@@ -1,0 +1,194 @@
+:PROPERTIES:
+:ID: 0057C557-B1F3-477E-8919-2E7390E8FB51
+:END:
+#+title: ores.dq.fsm_transition
+#+description: Codegen entity model for the dq =fsm_transition= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: A transition between two states of a finite state machine.
+#+entity_singular: fsm_transition
+#+entity_plural: fsm_transitions
+#+entity_title: FSM Transition
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+A transition between two states of a finite state machine, unique within a
+machine for a given pair of states.
+
+=from_state_id= is nullable, so a transition may start from anywhere rather
+than from a named state. Like =machine_id= and =to_state_id= it is a plain uuid
+column rather than a declared reference, because the table carries no
+constraint and adding one would refuse rows the platform accepts today.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:profile:   uuid-surrogate-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this transition.
+
+** machine_id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:natural_key: true
+:END:
+
+The state machine this transition belongs to; part of the natural key.
+
+** from_state_id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  std::optional<boost::uuids::uuid>
+:nullable:  true
+:natural_key: true
+:END:
+
+The state the transition leaves, when it is named.
+
+** to_state_id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:natural_key: true
+:END:
+
+The state the transition enters; part of the natural key.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Name of the transition.
+
+#+begin_src cpp :name generator
+std::string(faker::word::verb()) + "_" + std::string(faker::word::noun())
+#+end_src
+
+** guard_function
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Optional guard the transition is taken behind.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_fsm_transitions_tbl
+:END:
+
+** Indexes
+
+| name    | columns               | unique | current_only | where_extra |
+|---------+-----------------------+--------+--------------+-------------|
+| machine | tenant_id, machine_id | false  | true         |             |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: transition
+:entity_plural_short:   transitions
+:entity_singular_words: fsm transition
+:entity_plural_words:   fsm transitions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: t
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| name        | Name        |
+| guard_function | Guard    |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.dq.api/domain/fsm_transition.hpp
+:domain_class:           dq::domain::fsm_transition
+:protocol_include:       ores.dq.api/messaging/fsm_transition_protocol.hpp
+:collection_name:        transitions
+:key_field:              name
+:has_uuid_primary_key:   true
+:get_request_class:      dq::messaging::list_fsm_transitions_request
+:get_response_class:     dq::messaging::list_fsm_transitions_response
+:get_message_type:       list_fsm_transitions_request
+:save_request_class:     dq::messaging::put_fsm_transition_request
+:save_response_class:    dq::messaging::put_fsm_transition_response
+:save_message_type:      put_fsm_transition_request
+:delete_request_class:   dq::messaging::delete_fsm_transition_request
+:delete_response_class:  dq::messaging::delete_fsm_transition_response
+:delete_message_type:    delete_fsm_transition_request
+:has_change_reason_cache: true
+:has_pagination:         true
+:END:
+
+*** Detail fields
+
+| field          | label     | widget            | type      | is_key | is_required | placeholder          |
+|----------------+-----------+-------------------+-----------+--------+-------------+----------------------|
+| name           | Name      | nameEdit          | line_edit | true   | true        | Enter transition name |
+| guard_function | Guard     | guardFunctionEdit | line_edit |        |             | Enter a guard        |
+
+*** Columns
+
+| enum_name     | field          | header      | type      | width |
+|---------------+----------------+-------------+-----------+-------|
+| Name          | name           | Name        | string    | 200   |
+| GuardFunction | guard_function | Guard       | string    | 250   |
+| ModifiedBy    | modified_by    | Modified By | string    | 120   |
+| RecordedAt    | recorded_at    | Recorded At | timestamp | 150   |
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

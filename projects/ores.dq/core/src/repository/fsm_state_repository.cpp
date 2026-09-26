@@ -17,12 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.core/repository/fsm_state_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.dq.api/domain/fsm_state_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/fsm_state_entity.hpp"
 #include "ores.dq.core/repository/fsm_state_mapper.hpp"
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/domain/protocol.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
@@ -36,99 +42,254 @@ std::string fsm_state_repository::sql() {
     return generate_create_table_sql<fsm_state_entity>(lg());
 }
 
+ores::utility::domain::precondition
+fsm_state_repository::replace_claim(context ctx, const domain::fsm_state& v) {
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
+
+domain::fsm_state fsm_state_repository::apply_claim(
+    context ctx, const domain::fsm_state& v, const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
+
 void fsm_state_repository::write(context ctx, const domain::fsm_state& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing FSM state: " << v.name;
-    execute_write_query(ctx, fsm_state_mapper::map(v), lg(), "Writing FSM state to database.");
+    write(ctx, v, replace_claim(ctx, v));
 }
 
 void fsm_state_repository::write(context ctx, const std::vector<domain::fsm_state>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing FSM states. Count: " << v.size();
-    execute_write_query(ctx, fsm_state_mapper::map(v), lg(), "Writing FSM states to database.");
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void fsm_state_repository::write(context ctx,
+                                 const domain::fsm_state& v,
+                                 const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing fsm state. " << "id: " << v.id;
+    const auto t = apply_claim(ctx, v, claim);
+    execute_write_query(ctx, fsm_state_mapper::map(t), lg(), "Writing fsm state to database.");
+}
+
+void fsm_state_repository::write(context ctx,
+                                 const std::vector<domain::fsm_state>& v,
+                                 const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing fsm states. Count: " << v.size();
+    std::vector<domain::fsm_state> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(ctx, fsm_state_mapper::map(batch), lg(), "Writing fsm states to database.");
 }
 
 std::vector<domain::fsm_state> fsm_state_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("name"_c);
+                       where("valid_to"_c == max.value()) | order_by("id"_c);
 
     return execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
         query,
         [](const auto& entities) { return fsm_state_mapper::map(entities); },
         lg(),
-        "Reading latest FSM states.");
+        "Reading latest fsm states");
+}
+
+std::vector<domain::fsm_state> fsm_state_repository::read_latest(context ctx,
+                                                                 const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm state. " << "id: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
+                       where("id"_c == id && "valid_to"_c == max.value());
+
+    return execute_read_query<fsm_state_entity, domain::fsm_state>(
+        ctx,
+        query,
+        [](const auto& entities) { return fsm_state_mapper::map(entities); },
+        lg(),
+        "Reading latest fsm state by id.");
+}
+
+std::vector<domain::fsm_state> fsm_state_repository::read_latest_by_name(context ctx,
+                                                                         const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm state by name: " << name;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
+                       where("name"_c == name && "valid_to"_c == max.value());
+
+    return execute_read_query<fsm_state_entity, domain::fsm_state>(
+        ctx,
+        query,
+        [](const auto& entities) { return fsm_state_mapper::map(entities); },
+        lg(),
+        "Reading latest fsm state by name.");
+}
+
+std::vector<domain::fsm_state> fsm_state_repository::read_any_by_name(context ctx,
+                                                                      const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any fsm state by name: " << name;
+    const auto query = sqlgen::read<std::vector<fsm_state_entity>> | where("name"_c == name) |
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+
+    return execute_read_query<fsm_state_entity, domain::fsm_state>(
+        ctx,
+        query,
+        [](const auto& entities) { return fsm_state_mapper::map(entities); },
+        lg(),
+        "Reading any fsm state by name.");
+}
+
+
+std::vector<domain::fsm_state> fsm_state_repository::read_all(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all fsm state versions. " << "id: " << id;
+    const auto query = sqlgen::read<std::vector<fsm_state_entity>> | where("id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
+
+    return execute_read_query<fsm_state_entity, domain::fsm_state>(
+        ctx,
+        query,
+        [](const auto& entities) { return fsm_state_mapper::map(entities); },
+        lg(),
+        "Reading all fsm state versions by id.");
+}
+
+std::optional<domain::fsm_state>
+fsm_state_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading fsm state at version. " << "id: " << id
+                               << " version: " << version;
+    const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
+                       where("id"_c == id && "version"_c == version) | sqlgen::limit(1);
+
+    const auto entities = execute_read_query<fsm_state_entity, domain::fsm_state>(
+        ctx,
+        query,
+        [](const auto& entities) { return fsm_state_mapper::map(entities); },
+        lg(),
+        "Reading fsm state at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+fsm_state_repository::remove_status fsm_state_repository::remove(
+    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing fsm state. " << "id: " << id;
+    const auto current = read_latest(ctx, id);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<fsm_state_entity> |
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
+
+    execute_delete_query(ctx, query, lg(), "Removing fsm state from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, id).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void fsm_state_repository::remove(context ctx, const std::string& id) {
+    static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::fsm_state>
-fsm_state_repository::read_latest_by_machine(context ctx, const boost::uuids::uuid& machine_id) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto mid = boost::uuids::to_string(machine_id);
-    const auto query =
-        sqlgen::read<std::vector<fsm_state_entity>> |
-        where("tenant_id"_c == tid && "machine_id"_c == mid && "valid_to"_c == max.value()) |
-        order_by("name"_c);
+fsm_state_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm states with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
+                       where("valid_to"_c == max.value()) | order_by("id"_c) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
         query,
         [](const auto& entities) { return fsm_state_mapper::map(entities); },
         lg(),
-        "Reading latest FSM states by machine.");
+        "Reading latest fsm states with pagination.");
 }
 
-std::optional<domain::fsm_state> fsm_state_repository::find_by_name(
-    context ctx, const boost::uuids::uuid& machine_id, const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding FSM state by name: " << name;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto mid = boost::uuids::to_string(machine_id);
-    const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
-                       where("tenant_id"_c == tid && "machine_id"_c == mid && "name"_c == name &&
-                             "valid_to"_c == max.value());
+std::uint32_t fsm_state_repository::get_total_state_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active fsm state count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    auto results = execute_read_query<fsm_state_entity, domain::fsm_state>(
+    struct count_result {
+        long long count;
+    };
+
+    const auto query = sqlgen::select_from<fsm_state_entity>(sqlgen::count().as<"count">()) |
+                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active fsm state count: " << count;
+    return count;
+}
+
+std::vector<domain::fsm_state>
+fsm_state_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
+                       where("id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
         query,
         [](const auto& entities) { return fsm_state_mapper::map(entities); },
         lg(),
-        "Finding FSM state by name.");
-    if (results.empty())
-        return std::nullopt;
-    return results.front();
+        "Reading latest fsm states by ids.");
+    return result;
 }
 
-std::optional<domain::fsm_state> fsm_state_repository::find_by_id(context ctx,
-                                                                  const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding FSM state by id.";
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+void fsm_state_repository::remove(context ctx, const std::vector<std::string>& ids) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto sid = boost::uuids::to_string(id);
-    const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == sid && "valid_to"_c == max.value());
-
-    auto results = execute_read_query<fsm_state_entity, domain::fsm_state>(
-        ctx,
-        query,
-        [](const auto& entities) { return fsm_state_mapper::map(entities); },
-        lg(),
-        "Finding FSM state by id.");
-    if (results.empty())
-        return std::nullopt;
-    return results.front();
-}
-
-void fsm_state_repository::remove(context ctx, const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing FSM state.";
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto sid = boost::uuids::to_string(id);
     const auto query = sqlgen::delete_from<fsm_state_entity> |
-                       where("tenant_id"_c == tid && "id"_c == sid && "valid_to"_c == max.value());
-
-    execute_delete_query(ctx, query, lg(), "Removing FSM state from database.");
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing fsm states.");
 }
+
 
 }

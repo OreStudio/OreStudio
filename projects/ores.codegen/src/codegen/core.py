@@ -2334,7 +2334,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 for f in domain_entity.get('domain_group_fields', []) or []
             }
             # Add type flags and iterator_var for protocol serialization
-            for col in domain_entity['columns']:
+            for col in (domain_entity['columns']
+                        + list(domain_entity.get('natural_keys') or [])
+                        + list((domain_entity.get('primary_key') or {}).get('columns') or [])):
                 # image_id is rendered into SQL via the has_image_id flag (so it
                 # lands after coding_scheme_code, the canonical column order). It
                 # stays in the column list for C++ generation; the SQL columns

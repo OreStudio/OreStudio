@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_REPOSITORY_FSM_STATE_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_FSM_STATE_ENTITY_HPP
 
@@ -31,7 +36,7 @@ namespace ores::dq::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a FSM state in the database.
+ * @brief Represents a fsm state in the database.
  */
 struct fsm_state_entity {
     constexpr static const char* schema = "public";
@@ -41,7 +46,10 @@ struct fsm_state_entity {
     std::string tenant_id;
     int version = 0;
     std::string machine_id;
+
+
     std::string name;
+
     int is_initial = 0;
     int is_terminal = 0;
     std::string modified_by;

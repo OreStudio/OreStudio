@@ -81,6 +81,10 @@ record each item's result in the table below.
 | G02 | In progress. The generated set exists now, so the hand-written files generation supersedes are identifiable rather than guessed. The 12 repository files the B01 baseline said would change are among those the marker census now counts as generated. | G03's census, against B03's classification. |
 | G03 | Pass in part. The component holds 97 C++ files outside tests where the baseline held 53: 56 carry the generated marker and 41 remain hand-written, against a baseline of 0 and 53. Twelve of the original files are now generated, which is the 12 the baseline predicted would change. | File census over =projects/ores.workflow=, marker =AUTO-GENERATED FILE=. |
 | G06 | Pass for this component. All three modules report "All component_files.cmake up to date", each regenerated through the =ores.cmake.component.files= archetype rather than edited by hand. | =regenerate_cmake_component_files.py --component ores.workflow.{api,core,service}=. =--all= still fails on 24 components, verified pre-existing because =ores.reporting.core= is stale on a component this work never touched. |
+| W01 | Finding: the registrar families exist but are not composed. Generation materialised =workflow_instance_registrar.cpp=, =workflow_step_registrar.cpp=, their two history-provider registrars and the service's two event registrars, and the hand-written aggregate =core/src/messaging/registrar.cpp= references none of them. | The aggregate registrar's include list and =register_handlers= body, against the files generation wrote. Detail below. |
+| W02 | Finding: five permission codes are checked and none is seeded, and three legacy codes are seeded that nothing checks. | The handlers, =workflow_instance_handler.hpp= among them; =iam_permissions_populate.sql=. Detail below. |
+| W03 | Pass. The populate references resolve. | =check_populate_references.py=, which reports "populate references resolve". |
+| W04 | Pending: the SQL reachability and the service grants need =compass db recreate=, which the same environment gap blocks as V01. | To be recorded with V03. |
 | M09 | Pass. No retired fragment survives in any model. | =grep= over the modeling directories for =qt=, =wt=, =drawer= and =presentation= returns nothing. |
 | M10 | The component model declares its parts. =validate_docs.sh= still to run. | =modeling/component_overview.org= carries =* Summary=, =* Sub-components= and =* Entity modules=. Verification is deferred to H01, which owns the diagram and the docs gate. |
 
@@ -401,6 +405,49 @@ The underlying command is plain CMake, so the build is run directly as
 compilation the wrapper would perform, minus the slice, and it is how V01 is
 evidenced here. The compass-level gap is recorded rather than worked around
 silently.
+
+** W01 the uncomposed registrar families
+
+Generation wrote four registrars into =core/src/messaging/= and two into
+=service/src/messaging=: the messaging registrar and the history-provider
+registrar for each entity, and the event registrar for each entity. The
+hand-written aggregate =core/src/messaging/registrar.cpp= still includes the two
+old hand-written handlers and the four commissioners' workflow definitions, and
+composes none of the six new files.
+
+That is the item's exact shape: a family the regeneration materialises has to be
+composed at the composition point, or be recorded with the reason it is
+deliberately unwired. Nothing records a reason here, so it is a finding.
+
+** W02 the permission codes, and a naming mismatch
+
+Five codes are checked and three are seeded, and they do not overlap.
+
+| Checked by a handler | Seeded today |
+|----------------------+--------------|
+| =workflow::workflow_instances:write= | =workflow::instances:write= |
+| =workflow::workflow_instances:delete= | =workflow::instances:delete= |
+| =workflow::workflow_steps:write= | =workflow::instances:read= |
+| =workflow::workflow_steps:delete= | |
+| =workflow::parties:provision= | |
+
+The mismatch is a rename left behind, and the generated side is the correct one.
+=workflow_instance_handler.hpp= is a generated file and takes its code from the
+model's component and plural name. =ores.compute='s seed uses
+=compute::app_versions:write= and =compute::platforms:write=, the same
+=component::plural:verb= form, so the convention is established and the
+=workflow::instances:*= spelling is the legacy of an entity that used to be
+called =instance= rather than =workflow_instance=.
+
+So W02's fix is on the seed side: the three legacy codes go, the five checked
+codes arrive, and the roles that need them are granted. Nothing points the other
+way, and changing the generated side would break the convention that
+=ores.compute= already follows.
+
+=check_handler_permissions.py= reports "handler permissions are seeded (2
+component(s), 160 distinct code(s))", which does not cover =ores.workflow=: the
+component is not in the registry until V06, so this item is where the check
+would catch it and currently cannot.
 
 * Test Scenarios
 

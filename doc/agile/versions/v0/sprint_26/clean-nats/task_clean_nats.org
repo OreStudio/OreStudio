@@ -28,9 +28,9 @@ ores.nats passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:B214CE7D-52DB-4873-AB38-3D6A18B6DB5F][Clean ores.nats to the component clean standard]] |
-| Now          | Baseline and inventory recorded, and the dead public surface the census found is deleted. |
+| Now          | All 47 items are recorded: 21 pass and 26 are not applicable, each with its reason. |
 | Waiting on   | Nothing.                               |
-| Next         | M09, M10, then the generation and hygiene items. |
+| Next         | Record the result, close the task and the story, and raise the PR. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -45,15 +45,19 @@ ores.nats passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean 
 Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order, one entity at a time, and
 record each item's result in the table below.
 
-1. Baseline and inventory (B01 to B05). Record the baseline before any
+The standard holds 47 items. This component is of kind *All*, and it has no
+model and no protocol, so the *All* items are the work and the Protocol and
+Entity items are recorded as not applicable with their reasons.
+
+1. Baseline and inventory (B01 to B06). Record the baseline before any
    edit.
 2. Models (M01 to M10).
 3. Protocol (P01 to P06).
-4. Generation (G01 to G06).
+4. Generation (G01 to G07).
 5. Wiring and data (W01 to W04).
 6. Shell (S01, S02).
-7. Structure and hygiene (H01 to H03).
-8. Verification (V01 to V06), ending with the registry entry.
+7. Structure and hygiene (H01 to H04).
+8. Verification (V01 to V08), ending with the registry entry.
 
 | Item | Result | Evidence |
 |------+--------+----------|
@@ -86,8 +90,11 @@ record each item's result in the table below.
 | V06  | N/A    | The component has no catalogue row and no models, so it cannot join `COMPONENTS_UNDER_TEST`; the gate resolves its members through the codegen catalogue. The same reason ores.database and the four infrastructure components record. |
 | V07  | Pass   | No vacuous test. Every case asserts a literal expected value, and each `REQUIRE_NOTHROW` is followed by an assertion on the value the call produced. Evidence in `evidence/v07_vacuous_tests.txt`. |
 | V08  | Pass   | `evidence/v08_source_files.txt` records all nine sources and the test that covers each; five have none and are the coverage work item. |
+| V01  | Pass   | `./compass.sh build` reaches 100 percent with exit code 0, run after the last source edit, so every consumer of the deleted API still builds. |
+| V02  | Pass   | `ores.nats.tests` passes at 55 assertions in 28 test cases, and the codegen suite passes at 555 tests. The fleet-dependent half of V02 belongs to the components that serve; this one owns no service. |
+| V05  | Pass   | Every gate green, with the pre-existing repo-wide CMake staleness recorded: `check_component_drift.py --all` no drift, model drift clean, protocol twin coverage intact, handler permissions seeded, populate references resolve, recipe inventory checked, and this component's source lists up to date. `regenerate_cmake_component_files.py --all --check` reports 116 stale lists elsewhere, none of them ores.nats. `validate_docs.sh` passes all 40 components. Evidence in `evidence/v05_gates.txt`. |
 
-Items not listed are not yet worked.
+Every item is now recorded.
 
 * Notes
 
@@ -159,3 +166,35 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores.nats= is at the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean
+Standard]] for a component of kind *All*. All 47 items are recorded on this
+task: 21 pass and 26 are not applicable, each with its reason. The
+Protocol and Entity items do not apply because the component has no model
+and no protocol, and V06 does not apply because the registry admits only
+model-bearing catalogue entries, which is the standard's own recorded
+finding.
+
+The work itself came to three things. The **dead public surface** the B06
+census found is deleted: the JetStream read and message API, the three
+domain types behind it, two client verbs and the banner header, 600 lines
+in all, and the four services that take an admin handle still build against
+the one method they call. The **diagram** went from an automated skeleton
+to a diagram with an API, relationships and the free-function facets, and
+the generator defect that had silently dropped two classes is fixed at its
+source with five regression cases. The **overview** now states the real
+wire format: resolved at startup, msgpack by default, not JSON per payload.
+
+Every gate is green for this component: the drift gate passes with the
+component's own source lists up to date, model drift, protocol twin
+coverage, handler permissions, populate references, the recipe inventory
+and the documentation checks all pass, the whole tree builds with every
+consumer, and the component's suite passes at 55 assertions in 28 cases.
+The one gate that is not green repo-wide is the CMake source-list check,
+which reports 116 stale lists in other components; none of them is this
+one, and the clean-compute task recorded that sweep as a codegen-wide
+finding.
+
+What stays open is recorded rather than claimed: nine sources have no test
+and are the coverage work item, the session and workspace headers have no
+producer, and the JWKS exchange bypasses the wire codec. Notes record each.

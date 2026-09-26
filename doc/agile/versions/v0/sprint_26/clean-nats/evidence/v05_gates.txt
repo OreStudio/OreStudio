@@ -1,0 +1,34 @@
+# V05: every codegen gate, run on the committed tree
+# Run 2026-09-26 after the branch's commits, with a clean working tree.
+
+$ check_component_drift.py --all
+No drift: regenerated output matches the checked-in tree. (exit 0)
+
+$ check_component_drift.py --component compute-cpp   # and iam
+No drift. (exit 0)
+
+$ check_model_drift.py
+No model drift: every bound model agrees with its profile (1 known exception(s)).
+
+$ check_protocol_twin_coverage.py
+Protocol twin coverage intact: all 30 generated protocol header(s) in 2 committed component(s) have a TypeScript twin, and no model opts out.
+
+$ check_handler_permissions.py
+handler permissions are seeded (2 component(s), 160 distinct code(s)).
+
+$ check_populate_references.py
+populate references resolve.
+
+$ regenerate_shell_recipe_inventory.py --check
+exit 0.
+
+$ regenerate_cmake_component_files.py --component ores.nats --check
+All component_files.cmake up to date. (exit 0)
+
+$ regenerate_cmake_component_files.py --all --check
+116 source lists are stale, none of them ores.nats. This predates the
+branch and is the codegen-wide finding the clean-compute task recorded:
+the marker template landed and most components have not regenerated since.
+
+$ validate_docs.sh
+OK: all 40 components pass documentation checks. (exit 0)

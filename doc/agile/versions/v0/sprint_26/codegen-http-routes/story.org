@@ -44,6 +44,33 @@ ores.http serves every component through routes generated from that component's 
 
 * Decisions
 
+| # | Decision | Why |
+|---+----------+-----|
+| 1 | A generated route reaches its component over NATS, not in process. | It mirrors the shell, so one generator serves both surfaces from the same models, and the gateway stops linking every component's core library. |
+| 2 | Security is declared once in the model and enforced once, in the service. | The gateway forwards the caller's bearer token by delegation, so the service's own permission check governs the real caller. Shell and HTTP answer to one check, not two, and the gateway does not re-implement authorization. |
+| 3 | A route must state its authentication position, and silence is refused. | =route::requires_auth= defaulted to false, so a route that forgot the call was silently public. Three storage routes were public by omission. =build()= and =add_route()= now throw, naming the method and the pattern. |
+| 4 | An operation states =:http_route: true= to become a route; absence means it is not exposed. | Whole-model opt-in exposed the model's entire declared surface, including two public endpoints that never existed: =bootstrap/provision-tenant= and =auth/service-login=. Refusal is the right default for a gateway. |
+| 5 | Generated paths are namespaced by component, and the resulting URL changes are accepted. | The models state a NATS subject, not an HTTP path. Measured before deciding: no in-repo client calls the iam or refdata REST paths, because the web UI reaches the backend over NATS. |
+
+* Work units
+
+| Unit | Commit | What it decided and proved |
+|------+--------+----------------------------|
+| Scaffold | =9f22d14dfe= | The story, its acceptance points and its two tasks. |
+| The facet and assets | =2fb572bc6e= | A codegen facet projects an entity model onto a route unit. Assets' three entities generate 29 routes and compile. The verb-to-route mapping: a put becomes two routes because the claim is the whole difference and the method carries it. |
+| Wiring and security | =0dd86ddc07= | The generated routes replace the hand-written ones and the gateway reports 29 generated endpoints live. A route can no longer be public by omission, and a gate proves it in CI. |
+| Refdata | =b2af226191= | =risk_routes= was a misnomer for the refdata currency group; it is deleted, not renamed. Second component landed. |
+| Operations and iam | =721bd92d2d= | The operation archetype, and iam's 62 routes across eleven units. Recorded the two findings that followed: the URL changes, and blanket exposure. |
+| Exposure and the storage client | =41981304b2= | Per-message exposure, so 19 operations are served and 9 are not. The storage client requires its caller's token, and every in-repo caller follows. |
+
 * Out of scope
 
--
+Recorded rather than done, each with its reason:
+
+- =storage= keeps its three routes hand-written. They are file operations on ={bucket}/{key}=, not entity CRUD, so there is no entity to generate from.
+- =variability= keeps its one route hand-written. It has no models, and its clean-standard task is in flight in another worktree.
+- The whole tree build. It fails on a pre-existing break in =ores.workflow=: =ores.workflow.api.lib= is declared an INTERFACE library so its generated sources never compile, and =ores.shell.workflow.tests= has no Catch2 main. That component has an open PR.
+- The trade and market series export handlers carry the reporting service's token, not the end user's, because the reporting service calls them without delegation. Authorization there is service-level; propagating the caller needs a reporting-side change.
+- The compute wrapper has its own HTTP client and holds no JWT, so its storage transfers still receive 401. No credential exists to give it.
+- A trailing ={key}= GET shadows the versions path beneath it, so =/roles/{name}= hides =/roles/{name}/versions=. Assets has the same shape with images. Pre-existing and worth its own fix.
+- =journey_sign_up.org= still names =POST /api/v1/auth/signup=, which now answers 404. It is a journey document, not a client.

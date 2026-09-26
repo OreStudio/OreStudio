@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: D563D0DF-DB6B-59A7-B2FC-C22624A2DBE6
+:END:
+#+title: How do I run the ir_curve_template_entries commands from the shell?
+#+description: Every command the ir_curve_template_entries submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:ir_curve_template_entries:
+
+This file documents the ir_curve_template_entries resource at the shell, one section per command. Every command is a subcommand of =ir_curve_template_entries=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: C2C2AA17-6B7D-58EA-A70D-3ADF77024065
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_template_entries list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_template_entries.list=.
+
+#+name: ir_curve_template_entries-list
+#+begin_src ores-shell :tangle ir_curve_template_entries-list.ores :exports none
+ir_curve_template_entries list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: C4FA7EFB-6978-5E58-B7D8-79D856AF2E5D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_template_entries get <id>
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_template_entries.get=.
+
+#+name: ir_curve_template_entries-get
+#+begin_src ores-shell :tangle ir_curve_template_entries-get.ores :exports none
+ir_curve_template_entries get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 983CA516-40D7-55CF-B202-41D095CD90F0
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_template_entries get-many <id>
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_template_entries.get_many=.
+
+#+name: ir_curve_template_entries-get-many
+#+begin_src ores-shell :tangle ir_curve_template_entries-get-many.ores :exports none
+ir_curve_template_entries get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 520729D9-6BDD-5D34-979E-1695665D77AF
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_template_entries add <ir_curve_config_id> <sequence_index> <start_tenor_code> <end_tenor_code> <instrument_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_template_entries.put=.
+
+#+name: ir_curve_template_entries-add
+#+begin_src ores-shell :tangle ir_curve_template_entries-add.ores :exports none
+ir_curve_template_entries add 00000000-0000-0000-0000-000000000000 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 18A514B4-BA85-529B-BF29-FDB12E2FD73A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_template_entries set <id> <ir_curve_config_id> <sequence_index> <start_tenor_code> <end_tenor_code> <instrument_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_template_entries.put=.
+
+#+name: ir_curve_template_entries-set
+#+begin_src ores-shell :tangle ir_curve_template_entries-set.ores :exports none
+ir_curve_template_entries set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 62DBCA19-1A89-5796-82E7-D0847CA08745
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_template_entries put-many --count <n> <id> <ir_curve_config_id> <sequence_index> <start_tenor_code> <end_tenor_code> <instrument_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_template_entries.put_many=.
+
+#+name: ir_curve_template_entries-put-many
+#+begin_src ores-shell :tangle ir_curve_template_entries-put-many.ores :exports none
+ir_curve_template_entries put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: A5E4198C-769F-51E1-8C0E-79E4FC45B228
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_template_entries delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_template_entries.delete=.
+
+#+name: ir_curve_template_entries-delete
+#+begin_src ores-shell :tangle ir_curve_template_entries-delete.ores :exports none
+ir_curve_template_entries delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: A71BAF7D-354C-596F-8B87-652194A00521
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_template_entries delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_template_entries.delete_many=.
+
+#+name: ir_curve_template_entries-delete-many
+#+begin_src ores-shell :tangle ir_curve_template_entries-delete-many.ores :exports none
+ir_curve_template_entries delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 3229247F-4806-510F-929E-9A25D8FAA2E4
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_template_entries versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_template_entries_versions.list=.
+
+#+name: ir_curve_template_entries-versions
+#+begin_src ores-shell :tangle ir_curve_template_entries-versions.ores :exports none
+ir_curve_template_entries versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 35AC93EC-FB95-50F5-87EA-25680104F29F
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_template_entries version <id> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.ir_curve_template_entries_versions.get=.
+
+#+name: ir_curve_template_entries-version
+#+begin_src ores-shell :tangle ir_curve_template_entries-version.ores :exports none
+ir_curve_template_entries version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

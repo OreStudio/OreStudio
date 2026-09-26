@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_tests.mustache
+# To modify, update the template and regenerate.
 set(files
     "catalog_generator_service_tests.cpp"
     "folder_eventing_integration_tests.cpp"
@@ -24,6 +27,7 @@ set(files
     "generators_tests.cpp"
     "gmm_component_eventing_integration_tests.cpp"
     "ir_curve_generation_config_eventing_integration_tests.cpp"
+    "ir_curve_generation_config_process_parameter_value_eventing_integration_tests.cpp"
     "ir_curve_template_entry_eventing_integration_tests.cpp"
     "main.cpp"
     "market_data_generation_config_eventing_integration_tests.cpp"

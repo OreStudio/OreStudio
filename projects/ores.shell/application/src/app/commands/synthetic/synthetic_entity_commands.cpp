@@ -33,20 +33,21 @@ namespace ores::shell::app::commands {
 using namespace logging;
 
 void synthetic_entity_commands::register_commands(cli::Menu& root_menu,
-                                                  ores::nats::service::nats_client& session,
-                                                  pagination_context& pagination) {
+                                                  ores::nats::service::nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Registering synthetic entity command surface.";
-    folder_commands::register_commands(root_menu, session, pagination);
-    fx_spot_generation_config_commands::register_commands(root_menu, session, pagination);
-    gmm_component_commands::register_commands(root_menu, session, pagination);
-    ir_curve_generation_config_commands::register_commands(root_menu, session, pagination);
-    ir_curve_template_entry_commands::register_commands(root_menu, session, pagination);
-    ir_curve_generation_config_process_parameter_value_commands::register_commands(
-        root_menu, session, pagination);
-    market_data_generation_config_commands::register_commands(root_menu, session, pagination);
-    yield_curve_process_type_commands::register_commands(root_menu, session, pagination);
-    yield_curve_process_parameter_definition_commands::register_commands(
-        root_menu, session, pagination);
+
+    // Every unit is generated, so a verb the model gains or loses needs no edit
+    // here.
+    folder_commands::register_commands(root_menu, session);
+    fx_spot_generation_config_commands::register_commands(root_menu, session);
+    gmm_component_commands::register_commands(root_menu, session);
+    ir_curve_generation_config_commands::register_commands(root_menu, session);
+    ir_curve_template_entry_commands::register_commands(root_menu, session);
+    ir_curve_generation_config_process_parameter_value_commands::register_commands(root_menu,
+                                                                                    session);
+    market_data_generation_config_commands::register_commands(root_menu, session);
+    yield_curve_process_type_commands::register_commands(root_menu, session);
+    yield_curve_process_parameter_definition_commands::register_commands(root_menu, session);
 }
 
 }

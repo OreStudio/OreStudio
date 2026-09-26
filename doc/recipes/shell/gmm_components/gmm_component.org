@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 3B6DB73B-AC95-57E1-86D3-4DA97A63367F
+:END:
+#+title: How do I run the gmm_components commands from the shell?
+#+description: Every command the gmm_components submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:gmm_components:
+
+This file documents the gmm_components resource at the shell, one section per command. Every command is a subcommand of =gmm_components=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 08302EB9-6E7D-5586-ADB3-1E34766CF274
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+gmm_components list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.gmm_components.list=.
+
+#+name: gmm_components-list
+#+begin_src ores-shell :tangle gmm_components-list.ores :exports none
+gmm_components list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: F0785639-24D7-5C62-A7BE-B515540022E2
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+gmm_components get <id>
+#+end_example
+
+It is addressed at =synthetic.v1.gmm_components.get=.
+
+#+name: gmm_components-get
+#+begin_src ores-shell :tangle gmm_components-get.ores :exports none
+gmm_components get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: FAD518E5-099A-57D9-A641-E4CAD6F6FEED
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+gmm_components get-many <id>
+#+end_example
+
+It is addressed at =synthetic.v1.gmm_components.get_many=.
+
+#+name: gmm_components-get-many
+#+begin_src ores-shell :tangle gmm_components-get-many.ores :exports none
+gmm_components get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 2368C2D6-0219-5F28-A1E0-E593C977C46B
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+gmm_components add <fx_spot_config_id> <component_index> <description> <mean> <stdev> <weight> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.gmm_components.put=.
+
+#+name: gmm_components-add
+#+begin_src ores-shell :tangle gmm_components-add.ores :exports none
+gmm_components add 00000000-0000-0000-0000-000000000000 0 __none__ 0 0 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: BEC41F11-0CA4-5F47-B520-91B0F1A43B98
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+gmm_components set <id> <fx_spot_config_id> <component_index> <description> <mean> <stdev> <weight> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.gmm_components.put=.
+
+#+name: gmm_components-set
+#+begin_src ores-shell :tangle gmm_components-set.ores :exports none
+gmm_components set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ 0 0 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 599EB0ED-89E0-58F0-BFBF-8540E13BF79A
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+gmm_components put-many --count <n> <id> <fx_spot_config_id> <component_index> <description> <mean> <stdev> <weight> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.gmm_components.put_many=.
+
+#+name: gmm_components-put-many
+#+begin_src ores-shell :tangle gmm_components-put-many.ores :exports none
+gmm_components put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ 0 0 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 850393CA-EE2D-5CC2-9567-3C569A364A74
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+gmm_components delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.gmm_components.delete=.
+
+#+name: gmm_components-delete
+#+begin_src ores-shell :tangle gmm_components-delete.ores :exports none
+gmm_components delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: F7FAE857-8534-5137-BC82-6253255AC457
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+gmm_components delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.gmm_components.delete_many=.
+
+#+name: gmm_components-delete-many
+#+begin_src ores-shell :tangle gmm_components-delete-many.ores :exports none
+gmm_components delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 1B23CC9F-2FB1-55F1-B286-A2BB2EAE6234
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+gmm_components versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.gmm_components_versions.list=.
+
+#+name: gmm_components-versions
+#+begin_src ores-shell :tangle gmm_components-versions.ores :exports none
+gmm_components versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 26506758-F1B7-57D0-80FE-3FE3F3C2537D
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+gmm_components version <id> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.gmm_components_versions.get=.
+
+#+name: gmm_components-version
+#+begin_src ores-shell :tangle gmm_components-version.ores :exports none
+gmm_components version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

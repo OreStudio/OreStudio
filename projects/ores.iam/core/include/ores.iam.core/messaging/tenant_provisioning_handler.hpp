@@ -810,14 +810,14 @@ private:
 
         std::optional<boost::uuids::uuid> config_id;
         {
-            synthetic::messaging::get_market_data_generation_configs_request req;
+            synthetic::messaging::list_market_data_generation_configs_request req;
             req.limit = 1000;
             auto resp = client.request(req);
-            if (!resp.success) {
+            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
                     << "start_synthetic_theme_feeds: list market_data_generation_configs "
                        "failed: "
-                    << resp.message;
+                    << resp.result.message;
                 return false;
             }
             for (auto& c : resp.market_data_generation_configs)
@@ -835,12 +835,12 @@ private:
 
         std::optional<boost::uuids::uuid> folder_id;
         {
-            synthetic::messaging::get_folders_request req;
+            synthetic::messaging::list_folders_request req;
             req.limit = 1000;
             auto resp = client.request(req);
-            if (!resp.success) {
+            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "start_synthetic_theme_feeds: list folders failed: " << resp.message;
+                    << "start_synthetic_theme_feeds: list folders failed: " << resp.result.message;
                 return false;
             }
             for (auto& f : resp.folders)
@@ -928,14 +928,14 @@ private:
 
         std::optional<boost::uuids::uuid> config_id;
         {
-            synthetic::messaging::get_market_data_generation_configs_request req;
+            synthetic::messaging::list_market_data_generation_configs_request req;
             req.limit = 1000;
             auto resp = resolve_client.request(req);
-            if (!resp.success) {
+            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
                     << "create_theme_feed_bindings: list market_data_generation_configs "
                        "failed: "
-                    << resp.message;
+                    << resp.result.message;
                 return false;
             }
             for (auto& c : resp.market_data_generation_configs)
@@ -953,13 +953,13 @@ private:
 
         std::vector<std::pair<std::string, std::string>> sources; // (source_name, ore_key)
         {
-            synthetic::messaging::get_fx_spot_generation_configs_request req;
+            synthetic::messaging::list_fx_spot_generation_configs_request req;
             req.limit = 1000;
             auto resp = resolve_client.request(req);
-            if (!resp.success) {
+            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
                     << "create_theme_feed_bindings: list fx_spot_generation_configs failed: "
-                    << resp.message;
+                    << resp.result.message;
                 return false;
             }
             for (auto& c : resp.fx_spot_generation_configs)

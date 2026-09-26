@@ -24,17 +24,331 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace synthetic #F2F2F2 {
         namespace messaging #F2F2F2 {
+            class folder_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class fx_spot_generation_config_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class gmm_component_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class ir_curve_generation_config_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class ir_curve_generation_config_process_parameter_value_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class ir_curve_template_entry_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class market_data_generation_config_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
             class organisation_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
+            class publish_from_dq_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+            }
             class registrar {
-                +verifier : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class yield_curve_process_parameter_definition_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class yield_curve_process_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+        }
+        namespace repository #F2F2F2 {
+            class folder_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +parent_id : optional<string>
+                +name : string
+                +kind : string
+                +collection_id : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class folder_mapper {
+            }
+            class folder_repository {
+                +remove_status : enum class
+            }
+            class fx_spot_generation_config_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +config_id : string
+                +base_currency_code : string
+                +quote_currency_code : string
+                +source_name : string
+                +ore_key : string
+                +price_source : string
+                +gmm_initial_price : double
+                +ticks_per_hour : int
+                +process_type : string
+                +enabled : bool
+                +auto_start : bool
+                +vintage_source : string
+                +vintage_date : string
+                +folder_id : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class fx_spot_generation_config_mapper {
+            }
+            class fx_spot_generation_config_repository {
+                +remove_status : enum class
+            }
+            class gmm_component_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +fx_spot_config_id : string
+                +component_index : int
+                +description : string
+                +mean : double
+                +stdev : double
+                +weight : double
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class gmm_component_mapper {
+            }
+            class gmm_component_repository {
+                +remove_status : enum class
+            }
+            class ir_curve_generation_config_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +config_id : string
+                +currency_code : string
+                +index_family : string
+                +tenor : string
+                +role : string
+                +process_type : string
+                +ticks_per_hour : int
+                +enabled : bool
+                +auto_start : bool
+                +price_source : string
+                +vintage_source : string
+                +vintage_date : string
+                +description : optional<string>
+                +fixed_leg_payment_frequency_code : string
+                +source_name : string
+                +folder_id : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class ir_curve_generation_config_mapper {
+            }
+            class ir_curve_generation_config_process_parameter_value_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +config_id : string
+                +parameter_definition_id : string
+                +parameter_value : double
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class ir_curve_generation_config_process_parameter_value_mapper {
+            }
+            class ir_curve_generation_config_process_parameter_value_repository {
+                +remove_status : enum class
+            }
+            class ir_curve_generation_config_repository {
+                +remove_status : enum class
+            }
+            class ir_curve_template_entry_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +ir_curve_config_id : string
+                +sequence_index : int
+                +start_tenor_code : string
+                +end_tenor_code : string
+                +instrument_code : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class ir_curve_template_entry_mapper {
+            }
+            class ir_curve_template_entry_repository {
+                +remove_status : enum class
+            }
+            class market_data_generation_config_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : optional<string>
+                +scope : string
+                +binding_mode : string
+                +name : string
+                +description : string
+                +enabled : bool
+                +dataset_id : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class market_data_generation_config_mapper {
+            }
+            class market_data_generation_config_repository {
+                +remove_status : enum class
+            }
+            class yield_curve_process_parameter_definition_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +process_type_code : string
+                +parameter_name : string
+                +display_name : string
+                +symbol : optional<string>
+                +short_label : string
+                +description : string
+                +data_type : string
+                +default_value : double
+                +min_value : optional<double>
+                +max_value : optional<double>
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class yield_curve_process_parameter_definition_mapper {
+            }
+            class yield_curve_process_parameter_definition_repository {
+                +remove_status : enum class
+            }
+            class yield_curve_process_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class yield_curve_process_type_mapper {
+            }
+            class yield_curve_process_type_repository {
+                +remove_status : enum class
             }
         }
         namespace service #F2F2F2 {
             class catalog_generator_service {
+            }
+            class folder_service {
+                -ctx_ : context
+                -repo_ : repository::folder_repository
+            }
+            class fx_spot_generation_config_service {
+                -ctx_ : context
+                -repo_ : repository::fx_spot_generation_config_repository
+            }
+            class gmm_component_service {
+                -ctx_ : context
+                -repo_ : repository::gmm_component_repository
+            }
+            class ir_curve_generation_config_process_parameter_value_service {
+                -ctx_ : context
+                -repo_ : repository::ir_curve_generation_config_process_parameter_value_repository
+            }
+            class ir_curve_generation_config_service {
+                -ctx_ : context
+                -repo_ : repository::ir_curve_generation_config_repository
+            }
+            class ir_curve_template_entry_service {
+                -ctx_ : context
+                -repo_ : repository::ir_curve_template_entry_repository
+            }
+            class market_data_generation_config_service {
+                -ctx_ : context
+                -repo_ : repository::market_data_generation_config_repository
             }
             class organisation_generator_service {
             }
@@ -53,11 +367,706 @@ namespace ores #F2F2F2 {
             class organisation_publisher_service {
                 -ctx_ : database::context
             }
+            class yield_curve_process_parameter_definition_service {
+                -ctx_ : context
+                -repo_ : repository::yield_curve_process_parameter_definition_repository
+            }
+            class yield_curve_process_type_service {
+                -ctx_ : context
+                -repo_ : repository::yield_curve_process_type_repository
+            }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass reads data members and little else, so a repository, a
+' service, a handler, a mapper and a registrar all arrive as empty boxes. The
+' blocks below fill those boxes and draw the relationships the automated pass
+' cannot see.
+'
+' They use fully-qualified class names rather than a reopened namespace block,
+' because this PlantUML version crashes when a namespace that already holds
+' classes is declared a second time. Redeclaring a class merges its members
+' into the box the automated pass already drew, so a refresh keeps both.
+'
+' Nine entity families share one shape. folder is the reference instance and
+' is stated in full; the other eight are stated once and their repositories
+' named the same way, because their contracts are identical apart from the
+' domain type they carry.
+
+class ores::synthetic::repository::folder_repository {
+    +folder_repository()
+    +sql() : string
+    +write(ctx, v : folder)
+    +write(ctx, v : vector<folder>)
+    +write(ctx, v : folder, claim : precondition)
+    +write(ctx, v : vector<folder>, claims : vector<precondition>)
+    +read_latest(ctx) : vector<folder>
+    +read_latest(ctx, id : string) : vector<folder>
+    +read_latest(ctx, ids : vector<string>) : vector<folder>
+    +read_latest(ctx, offset : uint32_t, limit : uint32_t) : vector<folder>
+    +read_all(ctx, id : string) : vector<folder>
+    +read_at_version(ctx, id : string, version : uint32_t) : optional<folder>
+    +get_total_folder_count(ctx) : uint32_t
+    +remove(ctx, id : string)
+    +remove(ctx, id : string, version : optional<uint32_t>) : remove_status
+    +remove(ctx, ids : vector<string>)
+    +get_hierarchy(ctx, root_id : uuid, from_root : bool) : vector<hierarchy_flat_row>
+    -replace_claim(ctx, v : folder) : precondition
+    -apply_claim(ctx, v : folder, claim : precondition) : folder
+}
+note right of "ores::synthetic::repository::folder_repository"
+The claim is what makes a write safe: replace_claim states
+the version the caller read (must_match_version), or that
+no row exists (must_not_exist), and the store decides in
+the write's own transaction. A row that moved on is a
+conflict, never a silent overwrite. remove(id, version)
+applies the same rule, and answers removed, conflicting,
+missing or unsupported so the caller reports an outcome
+instead of catching an exception.
+end note
+note bottom of "ores::synthetic::repository::folder_repository"
+get_hierarchy is the one method folder has and no other
+entity does: it walks the self-referencing parent_id tree
+and returns flat rows for ores.utility's build_tree.
+end note
+
+' The other eight repositories, each with the same contract as folder's:
+' sql, the four write forms with their claim, the read_latest / read_all /
+' read_at_version / count / remove family.
+
+class ores::synthetic::repository::fx_spot_generation_config_repository {
+    +sql() : string
+    +write(ctx, v : fx_spot_generation_config, claim : precondition)
+    +read_latest(ctx, offset : uint32_t, limit : uint32_t)
+    +read_at_version(ctx, id : string, version : uint32_t)
+    +get_total_fx_spot_generation_config_count(ctx) : uint32_t
+    +remove(ctx, id : string, version : optional<uint32_t>) : remove_status
+}
+
+class ores::synthetic::repository::gmm_component_repository {
+    +sql() : string
+    +write(ctx, v : gmm_component, claim : precondition)
+    +read_latest(ctx, offset : uint32_t, limit : uint32_t)
+    +read_at_version(ctx, id : string, version : uint32_t)
+    +get_total_gmm_component_count(ctx) : uint32_t
+    +remove(ctx, id : string, version : optional<uint32_t>) : remove_status
+}
+
+class ores::synthetic::repository::ir_curve_generation_config_repository {
+    +sql() : string
+    +write(ctx, v : ir_curve_generation_config, claim : precondition)
+    +read_latest(ctx, offset : uint32_t, limit : uint32_t)
+    +read_at_version(ctx, id : string, version : uint32_t)
+    +get_total_ir_curve_generation_config_count(ctx) : uint32_t
+    +remove(ctx, id : string, version : optional<uint32_t>) : remove_status
+}
+
+class ores::synthetic::repository::ir_curve_generation_config_process_parameter_value_repository {
+    +sql() : string
+    +write(ctx, v : ir_curve_generation_config_process_parameter_value, claim : precondition)
+    +read_latest(ctx, offset : uint32_t, limit : uint32_t)
+    +read_at_version(ctx, id : string, version : uint32_t)
+    +get_total_process_parameter_value_count(ctx) : uint32_t
+    +remove(ctx, id : string, version : optional<uint32_t>) : remove_status
+}
+
+class ores::synthetic::repository::ir_curve_template_entry_repository {
+    +sql() : string
+    +write(ctx, v : ir_curve_template_entry, claim : precondition)
+    +read_latest(ctx, offset : uint32_t, limit : uint32_t)
+    +read_at_version(ctx, id : string, version : uint32_t)
+    +get_total_ir_curve_template_entry_count(ctx) : uint32_t
+    +remove(ctx, id : string, version : optional<uint32_t>) : remove_status
+}
+
+class ores::synthetic::repository::market_data_generation_config_repository {
+    +sql() : string
+    +write(ctx, v : market_data_generation_config, claim : precondition)
+    +read_latest(ctx, offset : uint32_t, limit : uint32_t)
+    +read_at_version(ctx, id : string, version : uint32_t)
+    +get_total_market_data_generation_config_count(ctx) : uint32_t
+    +remove(ctx, id : string, version : optional<uint32_t>) : remove_status
+}
+
+class ores::synthetic::repository::yield_curve_process_parameter_definition_repository {
+    +sql() : string
+    +write(ctx, v : yield_curve_process_parameter_definition, claim : precondition)
+    +read_latest_by_parameter_name(ctx, parameter_name : string)
+    +read_any_by_parameter_name(ctx, parameter_name : string)
+    +read_at_version(ctx, id : string, version : uint32_t)
+    +get_total_parameter_definition_count(ctx) : uint32_t
+    +remove(ctx, id : string, version : optional<uint32_t>) : remove_status
+}
+note right of "ores::synthetic::repository::yield_curve_process_parameter_definition_repository"
+The only read that looks past the latest window. A delete
+closes the transaction-time window rather than removing the
+row, so read_any_by_parameter_name ignores the window and
+takes the newest match, which is how history stays
+readable after a delete.
+end note
+
+class ores::synthetic::repository::yield_curve_process_type_repository {
+    +sql() : string
+    +write(ctx, v : yield_curve_process_type, claim : precondition)
+    +read_latest(ctx, codes : vector<string>)
+    +read_at_version(ctx, code : string, version : uint32_t)
+    +get_total_process_type_count(ctx) : uint32_t
+    +remove(ctx, code : string, version : optional<uint32_t>) : remove_status
+}
+note bottom of "ores::synthetic::repository::yield_curve_process_type_repository"
+yield_curve_process_type is keyed by its code, not by a
+generated uuid, so its reads and removals take a code.
+end note
+
+' The per-entity mappers. The automated pass draws each box and nothing
+' inside it, because every method is a static overload of map().
+' Redeclared once with the four overloads that are the shared shape.
+
+class ores::synthetic::repository::folder_mapper {
+    {static} +map(v : folder_entity) : folder
+    {static} +map(v : folder) : folder_entity
+    {static} +map(v : vector<folder_entity>) : vector<folder>
+    {static} +map(v : vector<folder>) : vector<folder_entity>
+}
+
+class ores::synthetic::repository::fx_spot_generation_config_mapper {
+    {static} +map(v : fx_spot_generation_config_entity) : fx_spot_generation_config
+    {static} +map(v : fx_spot_generation_config) : fx_spot_generation_config_entity
+}
+
+class ores::synthetic::repository::gmm_component_mapper {
+    {static} +map(v : gmm_component_entity) : gmm_component
+    {static} +map(v : gmm_component) : gmm_component_entity
+}
+
+class ores::synthetic::repository::ir_curve_generation_config_mapper {
+    {static} +map(v : ir_curve_generation_config_entity) : ir_curve_generation_config
+    {static} +map(v : ir_curve_generation_config) : ir_curve_generation_config_entity
+}
+
+class ores::synthetic::repository::ir_curve_generation_config_process_parameter_value_mapper {
+    {static} +map(v : ir_curve_generation_config_process_parameter_value_entity) : ir_curve_generation_config_process_parameter_value
+    {static} +map(v : ir_curve_generation_config_process_parameter_value) : ir_curve_generation_config_process_parameter_value_entity
+}
+
+class ores::synthetic::repository::ir_curve_template_entry_mapper {
+    {static} +map(v : ir_curve_template_entry_entity) : ir_curve_template_entry
+    {static} +map(v : ir_curve_template_entry) : ir_curve_template_entry_entity
+}
+
+class ores::synthetic::repository::market_data_generation_config_mapper {
+    {static} +map(v : market_data_generation_config_entity) : market_data_generation_config
+    {static} +map(v : market_data_generation_config) : market_data_generation_config_entity
+}
+
+class ores::synthetic::repository::yield_curve_process_parameter_definition_mapper {
+    {static} +map(v : yield_curve_process_parameter_definition_entity) : yield_curve_process_parameter_definition
+    {static} +map(v : yield_curve_process_parameter_definition) : yield_curve_process_parameter_definition_entity
+}
+
+class ores::synthetic::repository::yield_curve_process_type_mapper {
+    {static} +map(v : yield_curve_process_type_entity) : yield_curve_process_type
+    {static} +map(v : yield_curve_process_type) : yield_curve_process_type_entity
+}
+
+note top of "ores::synthetic::repository::folder_mapper"
+Every mapper exists for the same reason: sqlgen reads and
+writes the *_entity struct, while the protocol and the
+services speak the domain type. The mapper is the only place
+the two meet, so a column rename touches the entity, the
+mapper and the migration -- never a service or a handler.
+end note
+
+' The CRUD services. folder_service is the reference instance and is stated
+' in full, because its body carries the behaviour the others inherit: the
+' read-one helper that resolves a key record, the prepare_change precondition
+' check, and the refusal of a batch removal that states a version.
+
+class ores::synthetic::service::folder_service {
+    +folder_service(ctx : ores::database::context)
+    +list_folders(request : list_folders_request) : list_folders_response
+    +list_folders(offset : uint32_t, limit : uint32_t) : vector<folder>
+    +count_folders() : uint32_t
+    +get_folder(request : get_folder_request) : get_folder_response
+    +get_folder(id : uuid) : optional<folder>
+    +get_folders(ids : vector<string>) : vector<folder>
+    +get_many_folders(request : get_many_folders_request) : get_many_folders_response
+    +put_folder(request : put_folder_request) : put_folder_response
+    +put_many_folders(request : put_many_folders_request) : put_many_folders_response
+    +save_folder(folder : folder)
+    +save_folders(folders : vector<folder>)
+    +delete_folder(request : delete_folder_request) : delete_folder_response
+    +delete_folder(id : uuid)
+    +delete_folders(ids : vector<string>)
+    +delete_many_folders(request : delete_many_folders_request) : delete_many_folders_response
+    +list_folder_versions(request : list_folder_versions_request) : list_folder_versions_response
+    +get_folder_version(request : get_folder_version_request) : get_folder_version_response
+    +get_folder_at_version(id : uuid, version : uint32_t) : optional<folder>
+    +get_folder_history(id : string) : vector<folder>
+    +get_hierarchy(root_id : uuid, from_root : bool) : vector<hierarchy_node>
+    -prepare_change(change : folder_change, intent : change_intent, out : folder&) : result
+}
+note right of "ores::synthetic::service::folder_service"
+Every service method takes either the protocol request or a
+plain value, so a handler never touches a repository. A
+service answers with an outcome -- missing, conflict,
+invalid, denied -- inside the response; it throws only when
+the store itself fails, and the handler reports that
+separately.
+end note
+note bottom of "ores::synthetic::service::folder_service"
+get_hierarchy is the one place the component turns the
+repository's flat rows into a tree, via ores.utility's
+build_tree.
+end note
+
+class ores::synthetic::service::fx_spot_generation_config_service {
+    +fx_spot_generation_config_service(ctx : context)
+    +list_fx_spot_generation_configs(offset : uint32_t, limit : uint32_t)
+    +count_fx_spot_generation_configs() : uint32_t
+    +get_fx_spot_generation_config(id : uuid) : optional<fx_spot_generation_config>
+    +get_fx_spot_generation_configs(ids : vector<string>)
+    +get_fx_spot_generation_config_at_version(id : uuid, version : uint32_t)
+    +save_fx_spot_generation_config(v : fx_spot_generation_config)
+    +save_fx_spot_generation_configs(v : vector<fx_spot_generation_config>)
+    +delete_fx_spot_generation_config(id : uuid)
+    +delete_fx_spot_generation_configs(ids : vector<string>)
+    +get_fx_spot_generation_config_history(id : string)
+    +list_fx_spot_generation_config_versions(request : list_fx_spot_generation_config_versions_request)
+}
+
+class ores::synthetic::service::gmm_component_service {
+    +gmm_component_service(ctx : context)
+    +list_gmm_components(offset : uint32_t, limit : uint32_t)
+    +count_gmm_components() : uint32_t
+    +get_gmm_component(id : uuid) : optional<gmm_component>
+    +get_gmm_components(ids : vector<string>)
+    +get_gmm_component_at_version(id : uuid, version : uint32_t)
+    +save_gmm_component(v : gmm_component)
+    +save_gmm_components(v : vector<gmm_component>)
+    +delete_gmm_component(id : uuid)
+    +delete_gmm_components(ids : vector<string>)
+    +get_gmm_component_history(id : string)
+}
+
+class ores::synthetic::service::ir_curve_generation_config_service {
+    +ir_curve_generation_config_service(ctx : context)
+    +list_ir_curve_generation_configs(offset : uint32_t, limit : uint32_t)
+    +count_ir_curve_generation_configs() : uint32_t
+    +get_ir_curve_generation_config(id : uuid) : optional<ir_curve_generation_config>
+    +get_ir_curve_generation_configs(ids : vector<string>)
+    +get_ir_curve_generation_config_at_version(id : uuid, version : uint32_t)
+    +save_ir_curve_generation_config(v : ir_curve_generation_config)
+    +save_ir_curve_generation_configs(v : vector<ir_curve_generation_config>)
+    +delete_ir_curve_generation_config(id : uuid)
+    +delete_ir_curve_generation_configs(ids : vector<string>)
+    +get_ir_curve_generation_config_history(id : string)
+}
+
+class ores::synthetic::service::ir_curve_generation_config_process_parameter_value_service {
+    +ir_curve_generation_config_process_parameter_value_service(ctx : context)
+    +list_process_parameter_values(offset : uint32_t, limit : uint32_t)
+    +count_process_parameter_values() : uint32_t
+    +get_process_parameter_value(id : uuid) : optional<ir_curve_generation_config_process_parameter_value>
+    +get_process_parameter_values(ids : vector<string>)
+    +get_process_parameter_value_at_version(id : uuid, version : uint32_t)
+    +save_process_parameter_value(v : ir_curve_generation_config_process_parameter_value)
+    +save_process_parameter_values(v : vector<ir_curve_generation_config_process_parameter_value>)
+    +delete_process_parameter_value(id : uuid)
+    +delete_process_parameter_values(ids : vector<string>)
+    +get_process_parameter_value_history(id : string)
+}
+
+class ores::synthetic::service::ir_curve_template_entry_service {
+    +ir_curve_template_entry_service(ctx : context)
+    +list_ir_curve_template_entries(offset : uint32_t, limit : uint32_t)
+    +count_ir_curve_template_entries() : uint32_t
+    +get_ir_curve_template_entry(id : uuid) : optional<ir_curve_template_entry>
+    +get_ir_curve_template_entries(ids : vector<string>)
+    +get_ir_curve_template_entry_at_version(id : uuid, version : uint32_t)
+    +save_ir_curve_template_entry(v : ir_curve_template_entry)
+    +save_ir_curve_template_entries(v : vector<ir_curve_template_entry>)
+    +delete_ir_curve_template_entry(id : uuid)
+    +delete_ir_curve_template_entries(ids : vector<string>)
+    +get_ir_curve_template_entry_history(id : string)
+}
+
+class ores::synthetic::service::market_data_generation_config_service {
+    +market_data_generation_config_service(ctx : context)
+    +list_market_data_generation_configs(offset : uint32_t, limit : uint32_t)
+    +count_market_data_generation_configs() : uint32_t
+    +get_market_data_generation_config(id : uuid) : optional<market_data_generation_config>
+    +get_market_data_generation_configs(ids : vector<string>)
+    +get_market_data_generation_config_at_version(id : uuid, version : uint32_t)
+    +save_market_data_generation_config(v : market_data_generation_config)
+    +save_market_data_generation_configs(v : vector<market_data_generation_config>)
+    +delete_market_data_generation_config(id : uuid)
+    +delete_market_data_generation_configs(ids : vector<string>)
+    +get_market_data_generation_config_history(id : string)
+}
+
+class ores::synthetic::service::yield_curve_process_parameter_definition_service {
+    +yield_curve_process_parameter_definition_service(ctx : context)
+    +list_parameter_definitions(offset : uint32_t, limit : uint32_t)
+    +count_parameter_definitions() : uint32_t
+    +get_parameter_definition(id : uuid) : optional<yield_curve_process_parameter_definition>
+    +get_parameter_definition_by_parameter_name(parameter_name : string)
+    +get_parameter_definitions(ids : vector<string>)
+    +get_parameter_definition_at_version(id : uuid, version : uint32_t)
+    +save_parameter_definition(v : yield_curve_process_parameter_definition)
+    +save_parameter_definitions(v : vector<yield_curve_process_parameter_definition>)
+    +delete_parameter_definition(id : uuid)
+    +delete_parameter_definitions(ids : vector<string>)
+    +get_parameter_definition_history(key : string)
+}
+
+class ores::synthetic::service::yield_curve_process_type_service {
+    +yield_curve_process_type_service(ctx : context)
+    +list_process_types(offset : uint32_t, limit : uint32_t)
+    +count_process_types() : uint32_t
+    +get_process_type(code : string) : optional<yield_curve_process_type>
+    +get_process_types(codes : vector<string>)
+    +get_process_type_at_version(code : string, version : uint32_t)
+    +save_process_type(v : yield_curve_process_type)
+    +save_process_types(v : vector<yield_curve_process_type>)
+    +delete_process_type(code : string)
+    +delete_process_types(codes : vector<string>)
+    +get_process_type_history(code : string)
+}
+note top of "ores::synthetic::service::yield_curve_process_type_service"
+Keyed by code, not uuid: the service and its repository
+both address a process type by the code the model declares.
+end note
+
+' The NATS handlers. Each is a thin adapter: prove the request, check the
+' permission the operation needs, decode the canonical request, call the
+' service, reply. The automated pass draws the box (and the private
+' nats_/ctx_/verifier_ members) and none of the methods, because every one
+' of them takes a message and returns void.
+
+class ores::synthetic::messaging::folder_handler {
+    +list_folders(msg : nats::message)
+    +get_folder(msg : nats::message)
+    +get_many_folders(msg : nats::message)
+    +put_folder(msg : nats::message)
+    +put_many_folders(msg : nats::message)
+    +delete_folder(msg : nats::message)
+    +delete_many_folders(msg : nats::message)
+    +list_folder_versions(msg : nats::message)
+    +get_folder_version(msg : nats::message)
+}
+note right of "ores::synthetic::messaging::folder_handler"
+The adapter decides nothing. It proves the request, checks
+the permission a write needs (synthetic::folders:write, or
+:delete), decodes, calls the service and replies with what
+the service filled -- so the outcome a caller reads is the
+service's answer and the two cannot disagree.
+end note
+
+class ores::synthetic::messaging::fx_spot_generation_config_handler {
+    +list_fx_spot_generation_configs(msg : nats::message)
+    +get_fx_spot_generation_config(msg : nats::message)
+    +get_many_fx_spot_generation_configs(msg : nats::message)
+    +put_fx_spot_generation_config(msg : nats::message)
+    +put_many_fx_spot_generation_configs(msg : nats::message)
+    +delete_fx_spot_generation_config(msg : nats::message)
+    +delete_many_fx_spot_generation_configs(msg : nats::message)
+    +list_fx_spot_generation_config_versions(msg : nats::message)
+    +get_fx_spot_generation_config_version(msg : nats::message)
+}
+
+class ores::synthetic::messaging::gmm_component_handler {
+    +list_gmm_components(msg : nats::message)
+    +get_gmm_component(msg : nats::message)
+    +get_many_gmm_components(msg : nats::message)
+    +put_gmm_component(msg : nats::message)
+    +put_many_gmm_components(msg : nats::message)
+    +delete_gmm_component(msg : nats::message)
+    +delete_many_gmm_components(msg : nats::message)
+    +list_gmm_component_versions(msg : nats::message)
+    +get_gmm_component_version(msg : nats::message)
+}
+
+class ores::synthetic::messaging::ir_curve_generation_config_handler {
+    +list_ir_curve_generation_configs(msg : nats::message)
+    +get_ir_curve_generation_config(msg : nats::message)
+    +get_many_ir_curve_generation_configs(msg : nats::message)
+    +put_ir_curve_generation_config(msg : nats::message)
+    +put_many_ir_curve_generation_configs(msg : nats::message)
+    +delete_ir_curve_generation_config(msg : nats::message)
+    +delete_many_ir_curve_generation_configs(msg : nats::message)
+    +list_ir_curve_generation_config_versions(msg : nats::message)
+    +get_ir_curve_generation_config_version(msg : nats::message)
+}
+
+class ores::synthetic::messaging::ir_curve_generation_config_process_parameter_value_handler {
+    +list_ir_curve_generation_config_process_parameter_values(msg : nats::message)
+    +get_ir_curve_generation_config_process_parameter_value(msg : nats::message)
+    +get_many_ir_curve_generation_config_process_parameter_values(msg : nats::message)
+    +put_ir_curve_generation_config_process_parameter_value(msg : nats::message)
+    +put_many_ir_curve_generation_config_process_parameter_values(msg : nats::message)
+    +delete_ir_curve_generation_config_process_parameter_value(msg : nats::message)
+    +delete_many_ir_curve_generation_config_process_parameter_values(msg : nats::message)
+    +list_ir_curve_generation_config_process_parameter_value_versions(msg : nats::message)
+    +get_ir_curve_generation_config_process_parameter_value_version(msg : nats::message)
+}
+
+class ores::synthetic::messaging::ir_curve_template_entry_handler {
+    +list_ir_curve_template_entries(msg : nats::message)
+    +get_ir_curve_template_entry(msg : nats::message)
+    +get_many_ir_curve_template_entries(msg : nats::message)
+    +put_ir_curve_template_entry(msg : nats::message)
+    +put_many_ir_curve_template_entries(msg : nats::message)
+    +delete_ir_curve_template_entry(msg : nats::message)
+    +delete_many_ir_curve_template_entries(msg : nats::message)
+    +list_ir_curve_template_entry_versions(msg : nats::message)
+    +get_ir_curve_template_entry_version(msg : nats::message)
+}
+
+class ores::synthetic::messaging::market_data_generation_config_handler {
+    +list_market_data_generation_configs(msg : nats::message)
+    +get_market_data_generation_config(msg : nats::message)
+    +get_many_market_data_generation_configs(msg : nats::message)
+    +put_market_data_generation_config(msg : nats::message)
+    +put_many_market_data_generation_configs(msg : nats::message)
+    +delete_market_data_generation_config(msg : nats::message)
+    +delete_many_market_data_generation_configs(msg : nats::message)
+    +list_market_data_generation_config_versions(msg : nats::message)
+    +get_market_data_generation_config_version(msg : nats::message)
+}
+
+class ores::synthetic::messaging::yield_curve_process_parameter_definition_handler {
+    +list_yield_curve_process_parameter_definitions(msg : nats::message)
+    +get_yield_curve_process_parameter_definition(msg : nats::message)
+    +get_many_yield_curve_process_parameter_definitions(msg : nats::message)
+    +put_yield_curve_process_parameter_definition(msg : nats::message)
+    +put_many_yield_curve_process_parameter_definitions(msg : nats::message)
+    +delete_yield_curve_process_parameter_definition(msg : nats::message)
+    +delete_many_yield_curve_process_parameter_definitions(msg : nats::message)
+    +list_yield_curve_process_parameter_definition_versions(msg : nats::message)
+    +get_yield_curve_process_parameter_definition_version(msg : nats::message)
+}
+
+class ores::synthetic::messaging::yield_curve_process_type_handler {
+    +list_yield_curve_process_types(msg : nats::message)
+    +get_yield_curve_process_type(msg : nats::message)
+    +get_many_yield_curve_process_types(msg : nats::message)
+    +put_yield_curve_process_type(msg : nats::message)
+    +put_many_yield_curve_process_types(msg : nats::message)
+    +delete_yield_curve_process_type(msg : nats::message)
+    +delete_many_yield_curve_process_types(msg : nats::message)
+    +list_yield_curve_process_type_versions(msg : nats::message)
+    +get_yield_curve_process_type_version(msg : nats::message)
+}
+
+class ores::synthetic::messaging::organisation_handler {
+    +generate(msg : nats::message)
+}
+note right of "ores::synthetic::messaging::organisation_handler"
+The only handler in the component that composes two
+services in one request: it generates an organisation and
+then persists it, under synthetic::organisations:write.
+end note
+
+class ores::synthetic::messaging::publish_from_dq_handler {
+    +publish_from_dq_handler(nats : nats::client&, ctx : database::context)
+    +handle(msg : nats::message)
+}
+note right of "ores::synthetic::messaging::publish_from_dq_handler"
+The one handler with no verifier_ member: it serves the
+synthetic.v1.theme.publish-from-dq workflow step and calls
+the SECURITY DEFINER SQL functions, which read the DQ
+artefact tables and write the ores_synthetic_* tables. The
+workflow engine, not a user, drives it.
+end note
+
+' The registrars. The automated pass draws one class registrar and no
+' free function, so every per-entity registrar arrives invisible; they are
+' redeclared here with the subject set or provider key each one owns.
+
+class ores::synthetic::messaging::registrar {
+    {static} +register_handlers(nats : nats::client&, ctx : database::context, verifier : optional<jwt_authenticator>) : vector<subscription>
+}
+note right of "ores::synthetic::messaging::registrar"
+The component's one entry point. It composes every
+sub-registrar, wires the two hand-wired subjects
+(generate_organisation_request and
+synthetic.v1.theme.publish-from-dq), builds one
+function-local static dispatch_registry, registers the nine
+history providers into it, and finally registers the
+generic history.v1.get subscription against it. All
+subscriptions share the queue group ores.synthetic.service.
+end note
+
+class ores::synthetic::messaging::register_folder_handlers {
+    {static} +register_folder_handlers(nats, ctx, verifier) : vector<subscription>
+}
+note top of "ores::synthetic::messaging::register_folder_handlers"
+Free function, one per entity. Each subscribes the nine
+subjects of its entity -- list, get, get_many, put, put_many,
+delete, delete_many, and the two version subjects -- to the
+matching handler method, on the ores.synthetic.service queue.
+The other eight carry the same contract and are named
+register_<entity>_handlers.
+end note
+
+class ores::synthetic::messaging::register_folder_history_provider {
+    {static} +register_folder_history_provider(registry : dispatch_registry&)
+}
+note bottom of "ores::synthetic::messaging::register_folder_history_provider"
+Free function, one per entity. It registers the provider key
+"ores.synthetic.folder" with the dispatch registry: the
+provider reads the entity's history through its service and
+renders it with that entity's presentation mapper. The other
+eight are named register_<entity>_history_provider and their
+keys follow the same ores.synthetic.<entity> form.
+end note
+
+' The presentation mappers. Free functions, one per entity, that the history
+' providers call: they turn a domain object into the ordered field list the
+' diff renders, in a fixed field order, with no runtime reflection.
+
+class ores::synthetic::presentation::render_folder_fields {
+    {static} +render_folder_fields(v : folder) : vector<diff::domain::field_value>
+}
+note top of "ores::synthetic::presentation::render_folder_fields"
+One free function per entity, named render_<entity>_fields
+and living in its own header. Each states its field order in
+code, so a field added to the domain type shows up in a
+history diff only when the mapper is updated -- the compiler
+is the only check, and that is deliberate: reflection would
+make the diff order an accident of the type's layout.
+end note
+
+' The hand-written services and generators that predate the nine entity
+' families.
+
+class ores::synthetic::service::catalog_generator_service {
+    +generate(options : generation_options) : synthetic_catalog
+    +generate() : synthetic_catalog
+}
+note right of "ores::synthetic::service::catalog_generator_service"
+Builds a coherent DQ catalog in memory: accounts, catalogs,
+domains, subject areas and datasets reference each other, and
+the same seed reproduces the same catalog. It writes nothing.
+It also does not call the generators facet below -- it builds
+its entities itself, so the two are independent.
+end note
+
+class ores::synthetic::service::organisation_generator_service {
+    +generate(options : organisation_generation_options) : generated_organisation
+    +generate() : generated_organisation
+}
+note right of "ores::synthetic::service::organisation_generator_service"
+Generates a whole organisation in memory -- parties,
+counterparties, portfolios, books, business units, contacts
+and identifiers in FK order. Its private helpers read the
+country-specific name tables in src/data/ and draw their
+randomness from ores.utility's generation_context, so the
+same seed reproduces the same organisation.
+end note
+
+class ores::synthetic::service::organisation_publisher_service {
+    +organisation_publisher_service(ctx : database::context)
+    +publish(org : generated_organisation) : generate_organisation_result
+}
+note right of "ores::synthetic::service::organisation_publisher_service"
+The only service in the component that writes through
+another component's repositories: it persists the generated
+organisation with ores.refdata's party, counterparty,
+portfolio, book, business unit and contact mappers, in FK
+order, and returns the per-entity counts. The synthetic
+repositories below are not involved.
+end note
+
+class ores::synthetic::generators::generate_synthetic_catalog {
+    {static} +generate_synthetic_catalog(ctx : generation_context&) : dq::domain::catalog
+    {static} +generate_synthetic_catalogs(n : size_t, ctx : generation_context&) : vector<dq::domain::catalog>
+}
+note top of "ores::synthetic::generators::generate_synthetic_catalog"
+Free functions, three headers. They are the component's
+oldest generation surface and its least connected: no
+production source in the tree calls them, only the component's
+own tests, and the catalog_generator_service above does not
+use them either. They are drawn so the reader sees them, not
+because anything depends on them.
+end note
+
+class ores::synthetic::generators::generate_synthetic_account {
+    {static} +generate_synthetic_account(ctx : generation_context&) : iam::domain::account
+    {static} +generate_synthetic_accounts(n : size_t, ctx : generation_context&) : vector<iam::domain::account>
+}
+
+class ores::synthetic::generators::generate_synthetic_dataset {
+    {static} +generate_synthetic_dataset(ctx : generation_context&) : dq::domain::dataset
+    {static} +generate_synthetic_datasets(n : size_t, ctx : generation_context&) : vector<dq::domain::dataset>
+}
+
+' Relationships the automated pass cannot infer. One line per entity family
+' would be nine times the same sentence, so the reference family is drawn
+' and the pattern stated once.
+
+ores::synthetic::messaging::folder_handler ..> ores::synthetic::service::folder_service : constructs per request
+
+ores::synthetic::service::folder_service ..> ores::synthetic::repository::folder_repository : reads and writes through
+ores::synthetic::repository::folder_repository ..> ores::synthetic::repository::folder_entity : persists
+ores::synthetic::repository::folder_repository ..> ores::synthetic::repository::folder_mapper : maps through
+ores::synthetic::repository::folder_repository ..> ores::utility::domain::precondition : writes under a claim
+ores::synthetic::service::folder_service ..> ores::utility::domain::result : answers with
+ores::synthetic::service::folder_service ..> ores::utility::domain::build_tree : builds the tree with
+
+' The other eight families repeat the handler -> service -> repository ->
+' mapper -> entity chain exactly, with no extra edge, so the chain is not
+' drawn nine times over. What follows is the one place they differ.
+
+ores::synthetic::service::fx_spot_generation_config_service ..> ores::synthetic::repository::fx_spot_generation_config_repository : reads and writes through
+ores::synthetic::service::gmm_component_service ..> ores::synthetic::repository::gmm_component_repository : reads and writes through
+ores::synthetic::service::ir_curve_generation_config_service ..> ores::synthetic::repository::ir_curve_generation_config_repository : reads and writes through
+ores::synthetic::service::ir_curve_generation_config_process_parameter_value_service ..> ores::synthetic::repository::ir_curve_generation_config_process_parameter_value_repository : reads and writes through
+ores::synthetic::service::ir_curve_template_entry_service ..> ores::synthetic::repository::ir_curve_template_entry_repository : reads and writes through
+ores::synthetic::service::market_data_generation_config_service ..> ores::synthetic::repository::market_data_generation_config_repository : reads and writes through
+ores::synthetic::service::yield_curve_process_parameter_definition_service ..> ores::synthetic::repository::yield_curve_process_parameter_definition_repository : reads and writes through
+ores::synthetic::service::yield_curve_process_type_service ..> ores::synthetic::repository::yield_curve_process_type_repository : reads and writes through
+
+ores::synthetic::service::ir_curve_generation_config_process_parameter_value_service ..> ores::synthetic::service::yield_curve_process_parameter_definition_service : values key to definitions
+note right of "ores::synthetic::service::ir_curve_generation_config_process_parameter_value_service"
+The only cross-family edge inside the nine: a parameter
+value row carries a parameter_definition_id and no name, so
+a reader that wants the parameter's name needs the
+definition family too. The service layer does not resolve
+it -- the feed control plane does, joining the two families
+by id (see ores.synthetic.service).
+end note
+ores::synthetic::messaging::organisation_handler ..> ores::synthetic::service::organisation_generator_service : generates with
+ores::synthetic::messaging::organisation_handler ..> ores::synthetic::service::organisation_publisher_service : persists with
+ores::synthetic::service::organisation_publisher_service ..> ores::synthetic::service::generate_organisation_result : returns
+
+ores::synthetic::messaging::registrar ..> ores::synthetic::messaging::register_folder_handlers : composes
+ores::synthetic::messaging::registrar ..> ores::synthetic::messaging::folder_handler : subscribes
+ores::synthetic::messaging::registrar ..> ores::synthetic::messaging::publish_from_dq_handler : subscribes
+ores::synthetic::messaging::registrar ..> ores::synthetic::messaging::organisation_handler : subscribes
+ores::synthetic::messaging::registrar ..> ores::synthetic::messaging::register_folder_history_provider : composes
+ores::synthetic::messaging::registrar ..> ores::history::service::dispatch_registry : registers providers into
+
+' The two free-function registrars resolve to a service and a mapper, one
+' entity apart. Drawn for folder as the reference instance; the other eight
+' are the same edge with the matching names.
+ores::synthetic::messaging::register_folder_history_provider ..> ores::synthetic::service::folder_service : reads history through
+ores::synthetic::messaging::register_folder_history_provider ..> ores::synthetic::presentation::render_folder_fields : renders with
+ores::synthetic::messaging::register_folder_handlers ..> ores::synthetic::messaging::folder_handler : subscribes
+
+ores::synthetic::service::catalog_generator_service ..> ores::utility::generation::generation_context : draws randomness from
+
+note bottom of "ores::synthetic::messaging::registrar"
+An edge the automated pass draws that the code does not
+support: none. It reads data members only, so it draws no
+edge at all in this component. Every relationship above is
+hand-drawn, and every one is taken from a call in the
+component's own sources.
+end note
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.synthetic.core.puml"

@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_generation_config_process_parameter_value_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_process_parameter_value_repository.hpp"
 #include <chrono>
@@ -67,6 +68,51 @@ public:
     explicit ir_curve_generation_config_process_parameter_value_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_ir_curve_generation_config_process_parameter_values_response
+    list_ir_curve_generation_config_process_parameter_values(
+        const messaging::list_ir_curve_generation_config_process_parameter_values_request& request);
+    messaging::get_ir_curve_generation_config_process_parameter_value_response
+    get_ir_curve_generation_config_process_parameter_value(
+        const messaging::get_ir_curve_generation_config_process_parameter_value_request& request);
+    messaging::get_many_ir_curve_generation_config_process_parameter_values_response
+    get_many_ir_curve_generation_config_process_parameter_values(
+        const messaging::get_many_ir_curve_generation_config_process_parameter_values_request&
+            request);
+    messaging::put_ir_curve_generation_config_process_parameter_value_response
+    put_ir_curve_generation_config_process_parameter_value(
+        const messaging::put_ir_curve_generation_config_process_parameter_value_request& request);
+    messaging::put_many_ir_curve_generation_config_process_parameter_values_response
+    put_many_ir_curve_generation_config_process_parameter_values(
+        const messaging::put_many_ir_curve_generation_config_process_parameter_values_request&
+            request);
+    messaging::delete_ir_curve_generation_config_process_parameter_value_response
+    delete_ir_curve_generation_config_process_parameter_value(
+        const messaging::delete_ir_curve_generation_config_process_parameter_value_request&
+            request);
+    messaging::delete_many_ir_curve_generation_config_process_parameter_values_response
+    delete_many_ir_curve_generation_config_process_parameter_values(
+        const messaging::delete_many_ir_curve_generation_config_process_parameter_values_request&
+            request);
+    messaging::list_ir_curve_generation_config_process_parameter_value_versions_response
+    list_ir_curve_generation_config_process_parameter_value_versions(
+        const messaging::list_ir_curve_generation_config_process_parameter_value_versions_request&
+            request);
+    messaging::get_ir_curve_generation_config_process_parameter_value_version_response
+    get_ir_curve_generation_config_process_parameter_value_version(
+        const messaging::get_ir_curve_generation_config_process_parameter_value_version_request&
+            request);
+    /**@}*/
+
+    /**
      * @brief Lists IR curve generation config process parameter values with pagination support.
      *
      * @param offset Number of records to skip.
@@ -93,17 +139,27 @@ public:
      * std::nullopt otherwise.
      */
     std::optional<domain::ir_curve_generation_config_process_parameter_value>
-    get_process_parameter_value_at_version(const std::string& id, std::uint32_t version);
+    get_process_parameter_value_at_version(const boost::uuids::uuid& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single IR curve generation config process parameter value by its primary
      * key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The IR curve generation config process parameter value if found, std::nullopt
      * otherwise.
      */
     std::optional<domain::ir_curve_generation_config_process_parameter_value>
-    get_process_parameter_value(const std::string& id);
+    get_process_parameter_value(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a batch of IR curve generation config process parameter values by primary
+     * key.
+     */
+    std::vector<domain::ir_curve_generation_config_process_parameter_value>
+    get_process_parameter_values(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a IR curve generation config process parameter value (creates or updates).
@@ -131,7 +187,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_process_parameter_value(const std::string& id);
+    void delete_process_parameter_value(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes IR curve generation config process parameter values by their primary keys.
@@ -141,6 +197,8 @@ public:
     /**
      * @brief Retrieves all historical versions of a IR curve generation config process parameter
      * value.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::ir_curve_generation_config_process_parameter_value>
     get_process_parameter_value_history(const std::string& id);
@@ -148,6 +206,24 @@ public:
 private:
     context ctx_;
     repository::ir_curve_generation_config_process_parameter_value_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(
+        const messaging::ir_curve_generation_config_process_parameter_value_change& change,
+        const ores::utility::domain::change_intent& intent,
+        domain::ir_curve_generation_config_process_parameter_value& out);
 };
 
 }

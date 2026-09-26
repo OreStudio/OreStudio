@@ -179,10 +179,26 @@ def main() -> int:
                     )
 
         for part in part_dirs(component_dir):
+            owner = f"{component_dir.name}.{part.name}"
             modeling_dir = part / "modeling"
             if not modeling_dir.is_dir():
+                # A part with no modeling/ directory at all used to be skipped,
+                # so a part scaffolded without one passed the gate in silence.
+                # Only a real C++ part is judged: a part carries both an
+                # include/ and a src/ tree, which leaves out the tests, the
+                # docs and the bundled virtualenvs.
+                if (part / "include").is_dir() and (part / "src").is_dir():
+                    violations.append((
+                        MISSING_OVERVIEW,
+                        owner,
+                        f"{owner}: modeling/component_overview.org not found",
+                    ))
+                    violations.append((
+                        MISSING_PUML,
+                        owner,
+                        f"{owner}: no .puml diagram in modeling/",
+                    ))
                 continue
-            owner = f"{component_dir.name}.{part.name}"
             if not (modeling_dir / "component_overview.org").exists():
                 violations.append((
                     MISSING_OVERVIEW,

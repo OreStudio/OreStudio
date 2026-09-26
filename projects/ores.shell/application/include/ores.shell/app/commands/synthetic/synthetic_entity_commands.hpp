@@ -22,7 +22,6 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.shell/app/pagination_context.hpp"
 
 namespace cli {
 
@@ -33,8 +32,11 @@ class Menu;
 namespace ores::shell::app::commands {
 
 /**
- * @brief Registers the per-entity CRUD command units for the synthetic
- * entities.
+ * @brief Registers every generated synthetic entity command unit.
+ *
+ * The units themselves are generated, one per entity, and live in the
+ * ores.shell.synthetic part. This aggregator is the one name repl.cpp calls,
+ * so adding an entity changes the part and this file, not the REPL.
  */
 class synthetic_entity_commands {
 private:
@@ -52,8 +54,7 @@ public:
      * @brief Register every synthetic entity's commands.
      */
     static void register_commands(cli::Menu& root_menu,
-                                  ores::nats::service::nats_client& session,
-                                  pagination_context& pagination);
+                                  ores::nats::service::nats_client& session);
 };
 
 } // namespace ores::shell::app::commands

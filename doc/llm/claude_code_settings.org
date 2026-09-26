@@ -357,9 +357,9 @@ above (=close=, =revert=, =lock=).
 
 These commands require =dangerouslyDisableSandbox: true= because =gh=
 authenticates via the OS keyring, which is not accessible inside the
-sandbox. Raw =git= push/fetch operations need
-=SSH_AUTH_SOCK= exported first (see
-[[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Set SSH_AUTH_SOCK for git operations]]); =gh= uses its own token, not
+sandbox. Raw =git= push/fetch operations use
+the session's SSH agent as-is (see
+[[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Do not interfere with SSH session variables]]); =gh= uses its own token, not
 the SSH agent.
 
 Common invocations:

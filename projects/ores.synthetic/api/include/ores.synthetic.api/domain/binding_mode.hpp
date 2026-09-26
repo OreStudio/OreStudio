@@ -61,6 +61,16 @@ inline std::ostream& operator<<(std::ostream& s, binding_mode m) {
     return std::nullopt;
 }
 
+/**
+ * @brief Parse a binding mode from a shell command token.
+ *
+ * The shell command-token reader finds this overload by argument-dependent
+ * lookup, so the shell header needs no include of this one.
+ */
+[[nodiscard]] inline std::optional<binding_mode> parse_token(std::string_view sv, binding_mode) {
+    return binding_mode_from_string(sv);
+}
+
 }
 
 #endif

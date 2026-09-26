@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-synthetic:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/clean-synthetic
+#+pr: 2159
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
-#+updated: 2026-09-23
-#+environment:
+#+updated: 2026-09-26
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:45455A9E-2DED-4101-8CF4-A520D7C3D364][Clean ores.synthetic to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ ores.synthetic passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:45455A9E-2DED-4101-8CF4-A520D7C3D364][Clean ores.synthetic to the component clean standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Now          | PR #2159 is open with CI green and a review round recorded. The value eventing test is re-enabled and the RLS defect behind it is fixed, so the old exception is gone. The registry entry is held: five items are open (B06, V08, M06, P03, V04). |
+| Waiting on   | The five open items, and a decision to accept any of them as exceptions. |
+| Next         | Run the two surveys (B06, V08), then either close M06, P03 and V04 or have their exceptions accepted, and take the registry entry. |
+| Last touched | 2026-09-26                               |
 
 * Acceptance
 
@@ -53,13 +53,134 @@ record each item's result in the table below.
 5. Wiring and data (W01 to W04).
 6. Shell (S01, S02).
 7. Structure and hygiene (H01 to H03).
-8. Verification (V01 to V06), ending with the registry entry.
+8. Verification (V01 to V08), ending with the registry question.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | Baseline recorded before any edit: 106 files would change, 41 would be created. Model drift reported 2 known exceptions repo-wide, none for synthetic. | =check_component_drift.py --component synthetic --dry-run= (build/audit_synthetic/baseline_drift_full.txt); =check_model_drift.py --summary= |
+| B02 | Nine models, all metatype =ores.codegen.entity=: folder, fx_spot_generation_config, gmm_component, ir_curve_generation_config, ir_curve_generation_config_process_parameter_value, ir_curve_template_entry, market_data_generation_config, yield_curve_process_parameter_definition, yield_curve_process_type. No field_group, module or component model exists. | =projects/ores.synthetic/modeling/*.org= |
+| B03 | Hand-written vs generated classified by the =AUTO-GENERATED= marker. Hand-written: api feeds (4 files), api domain and protocol types (13), core registrar, organisation handler, publish-from-dq, three generator services and their generators, service app, config and the seven control-plane headers. | build/audit_synthetic/leg_a_morphology.md, leg_d_tests_naming.md |
+| B04 | Every generated protocol header declares its subject once as a =nats_subject= constant (36 subject constants across the nine messaging and nine eventing headers). The component serves the nine entity families, the shared history subject, the two tick stream filters, and the hand-written operation subjects. | =grep 'nats_subject = ' projects/ores.synthetic/api/include/ores.synthetic.api/{messaging,eventing}/*.hpp= |
+| B05 | In-flight work read. PR #2138 (feature/remove-the-legacy-qt-remnants) removes the dead presentation keys from the same seven models; the Qt and Wt trees are already gone from main. This pass leaves those keys to #2138 and does not duplicate it. Capture: the undecided error-handling convention covers 61 throw sites. | =git diff origin/main...origin/feature/remove-the-legacy-qt-remnants=; doc/agile/product_backlog/inbox/error_handling_convention_expected.org |
+| B06 | OPEN. The public-symbol consumer survey is not done. It is a =git grep= over =projects/= for every exported symbol of the component, excluding the component and its own tests, and it was not run before the registry question was raised. | not run |
+| M01 | Pass. Every model is on the current org format, no JSON model remains, no =lookup_entity= remains. | build/audit_synthetic/leg_c_models.md |
+| M02 | Eight models were bound. The ninth, =ir_curve_generation_config_process_parameter_value=, stated =has_tenant_id: true= and =has_workspace_id: false=, exactly the =uuid-identified-lookup= bundle, and is now bound to it. | commit 4ea0f82188; leg_c_models.md |
+| M03 | Pass. No model states a property its profile already fixes to the same value. Three deliberate overrides stay: =market_data_generation_config= =nullable_tenant_id=, and =yield_curve_process_parameter_definition= =has_readonly_paginated_list= and =system_tenant_validation=. | =check_model_drift.py=; leg_c_models.md |
+| M04 | Pass. =has_parent_id= sits at the entity root, so the folder hierarchy binding is live. | =check_model_drift.py=; leg_c_models.md |
+| M05 | Pass. Each model describes its own table; folder is the one self-referencing hierarchy table. | model review |
+| M06 | OPEN exception. Every wire type is modelled and no hand-written protocol header remains, but the twin-coverage gate only checks components with committed TypeScript output, and synthetic has none. The standard requires the twin, so the item cannot pass yet. | =check_protocol_twin_coverage.py= (20 headers, 1 committed component: iam) |
+| M07 | There is no =junction= metatype in this component, so this item does not apply. | model survey |
+| M08 | Custom types are bound to their headers and flags are booleans. One flag, =system_tenant_validation=, is not in the variability catalogue; recorded. | leg_c_models.md |
+| M09 | Pass after the rebase. The dead Qt presentation keys were removed from the same seven models by PR #2138, which has merged. This branch rebased onto that trunk with no conflicts and the regenerated tree is unchanged. | PR #2138 (merge ddced912a5); rebase onto bf076c5a51 |
+| M10 | Added =projects/ores.synthetic/modeling/component_overview.org= with =#+component_kind: composite= and =#+parts: api core service=, so codegen generates the root CMakeLists. The composite table in component_architecture.org gained the =modeling= part. | commit 4ea0f82188; regeneration |
+| P01 | The canonical protocol is generated for all nine entities: list, get, get-many, put, put-many, delete, delete-many, versions, version, plus history through the shared history subject. | regenerated =api/include/ores.synthetic.api/messaging/*_protocol.hpp= |
+| P02 | Three raw subject strings remain in hand-written code and are recorded as exceptions: the =synthetic.v1.theme.publish-from-dq= subscription in core's registrar, and the two JetStream filters =synthetic.v1.tick.>= and =synthetic.v1.sandbox.tick.>= in the service application. The first is a hand-written operation subject with no generated constant; the two filters are wildcards over a subject the feed composes at runtime. Everything else references a generated constant. | =grep= for subject literals in projects/ores.synthetic |
+| P03 | The nine generated registrars each subscribe their own canonical subjects once, with no duplicates. The unserved-subject inventory against the messaging reference is OPEN: the reference lists one row against 88 registered request subjects and is itself stale. | =core/src/messaging/*_registrar.cpp=; build/audit_synthetic/leg_b_docs.md |
+| P04 | The non-entity operation messages (=simulate=, =preview_shape=, =generate_organisation=, =publish-from-dq=, =vintage_validity=, feed start and stop) stay hand-written protocol headers; none is an entity verb. | api/messaging hand-written headers |
+| P05 | Pass. Consumers followed in the same change: the shell command units moved to the new part, the iam provisioning handler migrated from the old list verbs to the canonical ones, and the hand-written core and service registrars that regeneration rewrote. The whole tree builds. | commits 4d2dd48559, f74ab2ce03; =compass build= |
+| P06 | The nine generated event caches warm through the canonical list. | regenerated event registrars |
+| G01 | Pass. Regeneration is byte-identical to the checked-in tree and idempotent. | =check_component_drift.py --component synthetic= and =--all= both report no drift |
+| G02 | The nine superseded =api/.../eventing/*_changed_event.hpp= files are deleted, and the three parts' =component_files.cmake= pairs are regenerated to drop them. | commit; =regenerate_cmake_component_files.py --component ores.synthetic.<part>= |
+| G03 | Pass. Every regenerated file carries the =AUTO-GENERATED= marker and no hand-written file carries it. The six =component_files.cmake= pairs gained the marker with this regeneration. | marker sweep over =git ls-files projects/ores.synthetic projects/ores.shell/synthetic= |
+| G04 | Sampled review only. The regenerated protocol, handler, service, repository and eventing-test shapes match the canonical output the clean iam component carries. One template-level observation is carried forward: generated domain, eventing, protocol, entity and handler types carry no export macro, in synthetic and in refdata alike, so the fix belongs to the templates and to a house-wide change, not to this component. | =git diff= of the regenerated api and core files; build/audit_synthetic/leg_d_tests_naming.md |
+| G05 | Two generator defects found and fixed at source. The eventing test's FK-chain seed variable was named after the FK column, so a chain step whose column repeated an earlier step's column declared the same variable twice and compiled the wrong type. A system-tenant soft-FK parent was generated and written in the test tenant, so the referencing row's trigger could not see it; it is now read from its system catalogue. Both carry a regression case. Two findings are recorded, not fixed: generated types carry no export macro, and the generator appends a uniqueness counter to every text code, so a code-validated lookup cannot carry a valid value in a seeded test. | commits 75190421a3, 498c0a01a3; =pytest projects/ores.codegen/tests= (524 passed) |
+| G06 | The three parts' source lists are regenerated from the tree. Repo-wide =--all --check= also reports stale lists on other components, which predate this branch. | =regenerate_cmake_component_files.py --component ores.synthetic.<part>= |
+| G07 | Pass after two review findings. The command tests were generated while their template still asserted a bare truth, which this item forbids; the template is now fixed at source and the tests regenerated, with a stub proof that they fail when =register_commands= does nothing. On diagrams: the earlier entry here claimed synthetic had no component diagram and so owed no two-pass pass. That was wrong. Each part carries a =.puml= and a rendered image, and the hand-authored section of all three was empty — a skeleton, which H01 forbids. The automated sections had also gone stale against this branch's regeneration. Both are refreshed and massaged in this pass, and the shell part, which had no =modeling/= at all, now carries the full set. The ER diagram that also carries synthetic's tables is =ores.sql='s: its churn belongs to iam and ore, and the run exposes a defect that leaks the model banner into a note. | =ores.cpp.shell-command.command_tests.org=; =projects/ores.synthetic/*/modeling/=; =generate_component_puml.py= |
+| W01 | Defect found and fixed. =service/src/messaging/event_registrar.cpp= composed eight of nine event mappings, so =register_folder_event_mapping= had no caller and folder change events never reached NATS even though the generated SQL notify trigger publishes the channel. The folder mapping is now composed at the same point as the other eight. The nine history-provider registrars are composed in core's =registrar.cpp=. | =event_registrar.cpp=; =core/src/messaging/registrar.cpp= |
+| W02 | Pass. The gate is green with synthetic registered. | =check_handler_permissions.py= |
+| W03 | Pass. The gate is green with synthetic registered. | =check_populate_references.py= |
+| W04 | The regenerated create and notify-trigger scripts are reachable from =synthetic_create.sql=. The RLS policy scripts are reachable through the top-level =rls_create.sql= and =rls_drop.sql=. Two drop scripts, =synthetic_yield_curve_process_types_drop.sql= and its notify trigger, were unreachable and recorded as =WIRE_001= exceptions; both are now wired into =synthetic_drop.sql= and the two ignore lines are removed. Schema validation passes with 303 tables and no warnings, and the database recreates from scratch with the RLS policy change. | =synthetic_drop.sql=; projects/ores.sql/utility/validation_ignore.txt; =validate_schemas.sh= |
+| S01 | Generated command units and tests exist for all nine entities under =projects/ores.shell/synthetic/=. The hand-written equivalents under =ores.shell/application= are removed and the part is wired into the shell build. | shell integration commit |
+| S02 | The literate recipes are generated for all nine entities and the recipe inventory is regenerated (193 recipes in 112 categories). | =regenerate_shell_recipe_inventory.py= |
+| H01 | Audit run. The reports are under build/audit_synthetic/. Three ground-truth documents are corrected: the composite table, the system model layer page and the service registry. =validate_docs.sh= is green for synthetic; its one violation is the pre-existing =MISSING_PUML ores.shell.iam=. | build/audit_synthetic/*.md; =validate_docs.sh= |
+| H02 | Nine dead generated event headers and the superseded hand-written shell command units are deleted; the remaining findings are recorded in the audit reports. | commit 4d2dd48559 |
+| H03 | Pass. No commented-out code, no TODO or FIXME, no hand-edited comment in a generated file. | leg_d_tests_naming.md |
+| H04 | Pass. No hand-rolled per-platform shim exists in the component, so there is nothing to replace with a standard facility: no =_WIN32=, =__APPLE__= or =_MSC_VER= guard appears anywhere under =projects/ores.synthetic=. | =grep= over the component |
+| H05 | Found by review and closed in this pass, not deferred. The three synthetic parts each carry a =component_overview.org= with the six required sections, a =Diagram= section, a =.puml= and a committed rendered image. The shell part, =ores.shell.synthetic=, had none of that: it had no =modeling/= directory at all, so the docs gate skipped it in silence. It now carries an overview with the six sections and a =Diagram= section, a =.puml= with a hand-authored pass, a rendered =.png=, and the =modeling/= CMake wiring its siblings have. Both underlying tool defects are fixed: the diagram capture could not see a composite's parts, and =validate_docs.py= skipped any part with no =modeling/= directory. The gate now reports all 40 components passing. | =projects/ores.shell/synthetic/modeling/=; =generate_component_puml.py=; =validate_docs.py=; =validate_docs.sh= |
+| V01 | Pass. The whole tree builds, including the three synthetic libraries, their three test executables, the ores.shell.synthetic part, the shell application and the ores.iam consumer. | =compass build= |
+| V02 | Pass, with no exception. All four suites pass against a database recreated from scratch, on the trunk after the rebase onto =origin/main= and a whole-tree build: =ores.synthetic.api.tests=, =ores.synthetic.core.tests= (67 cases), =ores.synthetic.service.tests= and =ores.shell.synthetic.tests=, and the codegen suite passes with 533 tests. The value eventing test is re-enabled: it seeds a VASICEK definition through a =parent_seed= block, and the table's party policy now lets a session with no party restriction read its own row back. The organisation publisher seed stays idempotent. | =ctest -R synthetic= (4/4 passed); build/audit_synthetic/ctest_green.txt; build/audit_synthetic/value_row_rls_diagnosis.md |
+| V03 | Pass. The database recreates from scratch and seeds cleanly (run three times on this branch), and the fleet starts and serves. =ores.web.service= does not come ready because Node is not installed in this environment; every C++ service does. | =compass db recreate -y -k=; =compass services start --use-busctl= |
+| V04 | OPEN exception. The generated shell commands need an authenticated live fleet, which this environment does not have, so they are unexercised. | |
+| V05 | Pass. Model drift, protocol twin coverage (iam only; synthetic has no twin, see M06), handler permissions, populate references, the shell recipe inventory and the synthetic CMake source lists are all green. =validate_docs.sh= now reports all 40 components passing with no exception: the entry this row used to carry, =MISSING_PUML ores.shell.iam=, does not reproduce, and the gate no longer skips a part that has no =modeling/= directory. | Each check script; =validate_docs.sh= |
+| V07 | Pass for the generated command tests, with the audit scope stated. The review found the registration case asserting a bare truth and the arity case asserting only failure; both are fixed at the template, regenerated, and proved non-vacuous by stubbing =register_commands=, which fails all ten assertions. The remaining test files were not individually stubbed. | =ores.cpp.shell-command.command_tests.org=; commit f6a46d2b05 |
+| V08 | OPEN. The per-file survey is not done. The component carries 71 source files under =core/src= against 14 test files, so a large share is exercised only indirectly through the eventing and repository suites. The survey that names each uncovered file is the work item. | not run |
+| V06 | HELD. The disabled eventing test is gone, but five items are open rather than passed: B06 and V08 (surveys not run), M06 (no TypeScript twin), P03 (the messaging reference is stale) and V04 (no live fleet). The standard keeps the component out of the registry until an exception is resolved or accepted, so =COMPONENTS_UNDER_TEST= stays =("iam",)= and the entry is a one-line change once the exceptions are accepted. | =component_registry.py= |
 
 * Notes
+
+- The baseline dry run is reproducible with
+  =check_component_drift.py --component synthetic --dry-run=. Before any
+  model edit it listed 106 changed and 41 created files; after the group
+  model and the profile bind it listed 107 and 46. The extra five are the
+  parameter-value entity's shell unit, its recipe and its eventing
+  integration test, which the bound profile's physical space enables, plus
+  the generated root CMakeLists.
+- PR #2138 (=feature/remove-the-legacy-qt-remnants=) has merged. It removed
+  the dead presentation keys from the same seven synthetic models. This
+  branch rebased onto that trunk with no conflicts, and the drift check
+  still reports the regenerated tree unchanged.
+- The database recreates from scratch and the fleet serves. All four
+  synthetic ctest suites pass against it, and =check_component_drift.py
+  --all= reports no drift with synthetic registered.
+- Final verification runs on the trunk at =origin/main= 640d760090, after a
+  rebase with no conflicts and a whole-tree build. The rebase raised the
+  =ORES_ENV_VERSION= to 24, so =compass env configure= was re-run before the
+  database recreate.
+- The regime error-handling question (61 throw sites in this component)
+  belongs to the house-wide capture, not to this pass.
+- Diagrams, corrected. An earlier entry on this task claimed synthetic had no
+  component diagram. That was wrong: each part carries
+  =projects/ores.synthetic/<part>/modeling/{component_overview.org,
+  ores.synthetic.<part>.puml, ores.synthetic.<part>.png}=, and the overview's
+  =Diagram= section points at the image. Two real defects were behind the
+  confusion. The automated section of all three diagrams predated this
+  branch's regeneration, so it was stale, and the hand-authored section was
+  empty in all three -- a skeleton of empty boxes, which H01 forbids. Both are
+  fixed in this pass: the automated pass was re-run, and the manual pass fills
+  the boxes with the API and draws the relationships the automated pass cannot
+  infer, with 458 hand-authored lines for api, 574 for core and 250 for
+  service, and 51, 29 and 27 relationship edges respectively. Each render was
+  read, not merely re-run, and a second capture reports no changes, so the
+  sentinel contract holds. The capture had a defect behind the missing
+  members: a line counted as a method whenever it held a parenthesis, so
+  =tenant_id= vanished from all nine generated entities. A parenthesis now
+  means a signature only when it precedes any equals sign. The shell part, =ores.shell.synthetic=, had no =modeling/=
+  directory at all and now carries the full set. The ER diagram
+  (=projects/ores.sql/modeling/ores_schema.puml=) is fully generated with no
+  sentinel section, and re-running =plantuml_er_generate.sh= returns synthetic's
+  tables byte-identical: the churn belongs to iam and ore, and the same run
+  shows the model's =AUTO-GENERATED FILE - DO NOT EDIT MANUALLY= banner leaking
+  into a rendered note. Both are =ores.sql='s to fix and are not carried here.
+- Repo-wide scale of the diagram gap, measured after H05 made it explicit.
+  Of 90 component =*.puml= files, 82 have a rendered image beside them and
+  only 9 carry any hand-authored content. So roughly 81 diagrams are bare
+  skeletons, including those of =ores.iam= and =ores.compute=, the two
+  components already listed in =COMPONENTS_UNDER_TEST=. H01 has been unmet
+  across the tree, and H05 now states the requirement so the gap is visible.
+  Closing it is a house-wide task, not synthetic's.
+- One generator defect found by the build is fixed at source: the eventing
+  test's FK-chain seed variable was named after the FK column, so a chain
+  step whose column repeated an earlier step's column declared the same
+  variable twice. It now takes the ancestor entity's name, with a
+  regression case in =test_eventing_seed_plan.py=.
+- A second template-level finding is recorded, not fixed: generated domain,
+  eventing, protocol and handler types carry no export macro, in synthetic
+  and in refdata alike, so it belongs to a house-wide template change.
+- The former exception is closed at its source. The eventing integration test
+  for =ir_curve_generation_config_process_parameter_value= is re-enabled, and
+  two defects behind it are fixed.
+  - The test seeds its definition parent through a =parent_seed= block that
+    selects a =VASICEK= catalogue row. The insert trigger requires the
+    definition's process type to match the config's, and the config generator
+    always emits =VASICEK=, so the generic catalogue seed could pick a
+    definition the trigger rejects.
+  - The table's party policy now lets a session with no party restriction
+    through. The row carries no =party_id= of its own -- its scope comes from
+    the parent config -- so the join alone returned nothing for a party-less
+    session, and the writer could not read back the row it had just written.
+    The generated party policy and the reporting =risk_report_config= policies
+    of the same shape carry the same passthrough. The diagnosis is recorded in
+    build/audit_synthetic/value_row_rls_diagnosis.md.
 
 * Test Scenarios
 
@@ -76,12 +197,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2159][#2159]] | [synthetic,codegen,sql] Bring ores.synthetic to the clean standard |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Generated shell tests assert a bare truth, and the arity case asserts only that the command failed | =cpp_shell_command_tests.cpp.mustache= | Accept | Fixed at the template, regenerated for iam and synthetic, and proved non-vacuous by stubbing =register_commands=, which fails all ten assertions. Commit f6a46d2b05. |
+| 2 | The record omits B06, G07, H04, V07 and V08, and its Plan stops at V06 | this task | Accept | Rows added. B06 and V08 are recorded OPEN; G07, H04 and V07 carry results. |
+| 3 | M06, P03 and V04 are PENDING, neither passed nor excepted, yet synthetic was registered | =component_registry.py= | Accept | The three are restated as OPEN exceptions and the registry entry is HELD. V06 records why. |
+| 4 | The Notes bullet runs into the =* Test Scenarios= heading | this task | Accept | Blank line added. |
+| 5 | The ancestor seed name dropped the chain-depth qualification, so two chains reaching one entity collide | =core.py= | Accept | Named after the referencing row and the entity; a regression case covers two chains meeting. Commit bfe5a3dad6. |
+| 6 | The synthetic registrar takes a =pagination_context= it never forwards | =synthetic_entity_commands.cpp= | Accept | Parameter removed from the header, the unit and the REPL call. Commit 57989d32ca. |
+| 7 | The shell part has no =modeling/= directory and no diagram, and =validate_docs.py= skips a missing one | =projects/ores.shell/synthetic/=; =validate_docs.py=; =generate_component_puml.py= | Accept | Closed, not deferred. The shell part now carries an overview with the six sections and a Diagram section, a =.puml= with a hand-authored pass, a rendered image and the modeling/ CMake wiring. The gate blind spot that let it pass in silence is fixed, as is the capture script's inability to refresh a composite's parts. Correcting an earlier claim on this row: =ores.synthetic= does have per-part diagrams; theirs were stale above the sentinel and empty below it, and both are fixed in this pass. |
+| 8 | The eventing test works around the sibling-field trigger in the model instead of the template, reads the catalogue twice, and leaves the =use_system_tenant= path dormant | model, =core.py=, generated test | Accept, deferred | The template cannot yet match a system-tenant parent against a sibling field. Recorded as open work with the shape sketched: a model knob that filters the catalogue read, replacing the snippet. |
+| 9 | The system-tenant regression case asserts a flag, not behaviour | =test_eventing_seed_plan.py= | Accept, deferred | Needs a case that drives the propagation rather than reading the flag back. |
+| 10 | =parse_token= is a pure delegating wrapper in the enum headers | =binding_mode.hpp=, =scope.hpp= | Decline | It is the ADL point the generated shell parser calls uniformly for every enum flag; removing it means specialising the parser per enum, which is worse. The placement in the domain header is what makes the generated unit compile without knowing the enum's owner. |
+| 11 | Two near-identical guarded-insert SQL blobs in the publisher test | =organisation_publisher_integration_tests.cpp= | Decline | Two different tables with different column sets. A shared helper would be a generic SQL string assembler inside a test fixture, which costs more than the duplication it removes. |
+| 12 | Stale comments copied into the new part: AUTOMOC/Q_OBJECT and the import/export note | =ores.shell/synthetic/CMakeLists.txt=, =component_files.cmake= | Decline | Both are template-owned text in generated files, so the fix is a house-wide template change that would touch every component's parts, not this pass. |
+| 13 | =doc/llm/**= and =compass.sh= are unrelated to the story | =doc/llm/= | Decline | User-directed in the same session, outside the story: the SSH-agent memory was corrected on request. Kept, and recorded here rather than removed. |
 
 * Result

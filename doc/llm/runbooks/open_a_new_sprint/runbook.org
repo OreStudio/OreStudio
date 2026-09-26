@@ -20,7 +20,7 @@ Close the current sprint, generate release notes, scaffold a new sprint folder, 
 - Current sprint's stories are =DONE=, =ABANDONED=, or about
   to be carried to the product backlog (PR 1 below).
 - You are on =main= with a clean working tree.
-- =SSH_AUTH_SOCK= is exported (see [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][SSH memory]]).
+- The session's SSH agent is used as-is (see [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Do not interfere with SSH session variables]]).
 
 * Steps
 

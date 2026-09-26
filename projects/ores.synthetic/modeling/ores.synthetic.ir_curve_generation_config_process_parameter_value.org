@@ -40,9 +40,16 @@ rows via the normal codegen repositories.
 :schema:    public
 :product:   ores
 :component: synthetic
-:has_tenant_id:    true
-:has_workspace_id: false
+:profile:   uuid-identified-lookup
 :END:
+
+The generated eventing integration test seeds its =parameter_definition_id=
+parent from the system-tenant catalogue through a =parent_seed= block below.
+The insert trigger cross-checks the referenced config's =process_type=
+against the referenced definition's =process_type_code=, and the config
+generator always emits =VASICEK=, so the seeded catalogue row must be a
+VASICEK definition. The generic seeding reads the catalogue without that
+filter.
 
 * Columns
 
@@ -150,6 +157,29 @@ inserting tenant rows. The default tenant-scoped check
 =ores_utility_system_tenant_id_fn()= instead, matching the
 =process_type= validation trigger on the same table. =config_id= above
 keeps the default resolution: the config row is a genuine tenant row.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.synthetic.core/repository/yield_curve_process_parameter_definition_repository.hpp"
+#include <algorithm>
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        // The insert trigger requires the definition's process type to
+        // match the config's, and the config generator always emits
+        // VASICEK, so the seeded catalogue row must be a VASICEK
+        // definition.
+        ores::synthetic::repository::yield_curve_process_parameter_definition_repository
+            definition_repo;
+        const auto definitions = definition_repo.read_latest(
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        const auto match = std::find_if(
+            definitions.begin(), definitions.end(),
+            [](const auto& d) { return d.process_type_code == "VASICEK"; });
+        REQUIRE(match != definitions.end());
+        v.parameter_definition_id = match->id;
+    }
+#+end_src
 
 * Insert trigger
 ** Validations

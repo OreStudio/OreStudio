@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "domain/curve_template_validation.cpp"
     "domain/folder_json_io.cpp"
@@ -107,15 +110,15 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/yield_curve_process_type_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/yield_curve_process_type_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/yield_curve_process_type_table_io.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/folder_changed_event.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/fx_spot_generation_config_changed_event.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/gmm_component_changed_event.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/ir_curve_generation_config_changed_event.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/ir_curve_generation_config_process_parameter_value_changed_event.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/ir_curve_template_entry_changed_event.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/market_data_generation_config_changed_event.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/yield_curve_process_parameter_definition_changed_event.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/yield_curve_process_type_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/folder_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/fx_spot_generation_config_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/gmm_component_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/ir_curve_generation_config_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/ir_curve_generation_config_process_parameter_value_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/ir_curve_template_entry_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/market_data_generation_config_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/yield_curve_process_parameter_definition_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/yield_curve_process_type_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/feed_factory.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/fx_spot_feed.hpp"

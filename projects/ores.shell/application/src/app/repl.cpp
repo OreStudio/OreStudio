@@ -119,7 +119,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     workunit_commands::register_commands(*root, session_);
     marketdata_commands::register_commands(*root, session_);
     synthetic_commands::register_commands(*root, session_);
-    synthetic_entity_commands::register_commands(*root, session_, pagination_);
+    synthetic_entity_commands::register_commands(*root, session_);
     reports_commands::register_commands(*root, session_);
     provision_commands::register_commands(*root, session_);
 

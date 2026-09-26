@@ -14,6 +14,7 @@ Thumbs.db
 
 # build directory
 build/output
+build/audit_synthetic
 build/docker-stage
 # scratch downloads and comparisons from the compute end-to-end runbook
 build/e2e

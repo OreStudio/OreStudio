@@ -1,0 +1,206 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.shell.synthetic Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace shell #F2F2F2 {
+        namespace app #F2F2F2 {
+            namespace commands #F2F2F2 {
+                class folder_commands {
+                }
+                class fx_spot_generation_config_commands {
+                }
+                class gmm_component_commands {
+                }
+                class ir_curve_generation_config_commands {
+                }
+                class ir_curve_generation_config_process_parameter_value_commands {
+                }
+                class ir_curve_template_entry_commands {
+                }
+                class market_data_generation_config_commands {
+                }
+                class yield_curve_process_parameter_definition_commands {
+                }
+                class yield_curve_process_type_commands {
+                }
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass reads data members, so these nine units arrive as empty
+' boxes: each is a facade of static functions and carries no state. The
+' declarations below add the API. Every unit answers the same ten verbs, which
+' is what makes the surface uniform across the component -- the verbs come from
+' the entity protocol the model derives, so a unit cannot answer a verb its
+' entity does not declare.
+
+class ores::shell::app::commands::folder_commands {
+    {static} +register_commands(root_menu : Menu&, session : nats_client&)
+    {static} +process_list(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_add(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_set(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_put_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_versions(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_version(out : ostream&, session : nats_client&, args : vector<string>)
+}
+
+class ores::shell::app::commands::fx_spot_generation_config_commands {
+    {static} +register_commands(root_menu : Menu&, session : nats_client&)
+    {static} +process_list(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_add(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_set(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_put_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_versions(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_version(out : ostream&, session : nats_client&, args : vector<string>)
+}
+
+class ores::shell::app::commands::gmm_component_commands {
+    {static} +register_commands(root_menu : Menu&, session : nats_client&)
+    {static} +process_list(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_add(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_set(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_put_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_versions(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_version(out : ostream&, session : nats_client&, args : vector<string>)
+}
+
+class ores::shell::app::commands::ir_curve_generation_config_commands {
+    {static} +register_commands(root_menu : Menu&, session : nats_client&)
+    {static} +process_list(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_add(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_set(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_put_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_versions(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_version(out : ostream&, session : nats_client&, args : vector<string>)
+}
+
+class ores::shell::app::commands::ir_curve_generation_config_process_parameter_value_commands {
+    {static} +register_commands(root_menu : Menu&, session : nats_client&)
+    {static} +process_list(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_add(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_set(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_put_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_versions(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_version(out : ostream&, session : nats_client&, args : vector<string>)
+}
+
+class ores::shell::app::commands::ir_curve_template_entry_commands {
+    {static} +register_commands(root_menu : Menu&, session : nats_client&)
+    {static} +process_list(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_add(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_set(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_put_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_versions(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_version(out : ostream&, session : nats_client&, args : vector<string>)
+}
+
+class ores::shell::app::commands::market_data_generation_config_commands {
+    {static} +register_commands(root_menu : Menu&, session : nats_client&)
+    {static} +process_list(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_add(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_set(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_put_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_versions(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_version(out : ostream&, session : nats_client&, args : vector<string>)
+}
+
+class ores::shell::app::commands::yield_curve_process_parameter_definition_commands {
+    {static} +register_commands(root_menu : Menu&, session : nats_client&)
+    {static} +process_list(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_add(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_set(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_put_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_versions(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_version(out : ostream&, session : nats_client&, args : vector<string>)
+}
+
+class ores::shell::app::commands::yield_curve_process_type_commands {
+    {static} +register_commands(root_menu : Menu&, session : nats_client&)
+    {static} +process_list(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_get_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_add(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_set(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_put_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_delete_many(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_versions(out : ostream&, session : nats_client&, args : vector<string>)
+    {static} +process_version(out : ostream&, session : nats_client&, args : vector<string>)
+}
+
+note top of "ores::shell::app::commands::folder_commands"
+Registration is not done by the units. =synthetic_entity_commands=, in the
+=ores.shell.application= part, is the one name the REPL calls: it walks the
+nine units and installs each below its own root menu. Adding an entity
+therefore changes the generated part and never the REPL.
+end note
+
+ores::shell::app::commands::folder_commands ..> ores::synthetic::messaging::list_folders_request : sends
+ores::shell::app::commands::fx_spot_generation_config_commands ..> ores::synthetic::messaging::list_fx_spot_generation_configs_request : sends
+ores::shell::app::commands::gmm_component_commands ..> ores::synthetic::messaging::list_gmm_components_request : sends
+ores::shell::app::commands::ir_curve_generation_config_commands ..> ores::synthetic::messaging::list_ir_curve_generation_configs_request : sends
+ores::shell::app::commands::ir_curve_template_entry_commands ..> ores::synthetic::messaging::list_ir_curve_template_entries_request : sends
+ores::shell::app::commands::ir_curve_generation_config_process_parameter_value_commands ..> ores::synthetic::messaging::list_ir_curve_generation_config_process_parameter_values_request : sends
+ores::shell::app::commands::market_data_generation_config_commands ..> ores::synthetic::messaging::list_market_data_generation_configs_request : sends
+ores::shell::app::commands::yield_curve_process_parameter_definition_commands ..> ores::synthetic::messaging::list_yield_curve_process_parameter_definitions_request : sends
+ores::shell::app::commands::yield_curve_process_type_commands ..> ores::synthetic::messaging::list_yield_curve_process_types_request : sends
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.shell.synthetic.puml"
+' End:
+@enduml

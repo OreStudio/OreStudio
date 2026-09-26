@@ -27,7 +27,7 @@ when to use it, and where to find it.
 | [[id:6054CC20-5F41-482F-A587-759512577B1D][Skills]]       | Unit of work        | Playbook an LLM loads        | "System Architect" — read model, understand layers        |
 | [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][Systems]]    | Role                | Priming context for a session| "S2 Orchestrator" — coordinates across S1 agents           |
 | [[id:2D83251F-0E24-4B97-B736-08F710316634][Settings]]     | Permissions         | Sandbox and tool allow-list  | [[proj:.claude/settings.json][=.claude/settings.json=]] — what the LLM can execute         |
-| [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Memory]]       | Durable fact        | One fact per file            | "Set SSH_AUTH_SOCK before git push"                       |
+| [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Memory]]       | Durable fact        | One fact per file            | "Leave SSH session variables alone"                       |
 
 * How they fit together
 

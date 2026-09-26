@@ -243,7 +243,6 @@
 :env_key:     SYNTHETIC_SERVICE
 :iam_role:    SyntheticService
 :description: Synthetic
-:role:        tooling
 :email:       synthetic_service@system.ores
 :replicas:    1
 :enabled:     true

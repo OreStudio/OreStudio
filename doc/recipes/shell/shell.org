@@ -551,3 +551,39 @@ tangled into the runnable script library
 * Platforms
 
 - [[id:B07AA915-541C-55EB-BBC1-9DEA5AB1421F][How do I run the platforms commands from the shell?]]
+
+* Folders
+
+- [[id:0FD93EEC-FBDC-530D-98F9-8110C71E102B][How do I run the folders commands from the shell?]]
+
+* Fx Spot Generation Configs
+
+- [[id:52D1FAB5-962E-55C3-BEFA-8ABED7B64DBA][How do I run the fx_spot_generation_configs commands from the shell?]]
+
+* Gmm Components
+
+- [[id:3B6DB73B-AC95-57E1-86D3-4DA97A63367F][How do I run the gmm_components commands from the shell?]]
+
+* Ir Curve Generation Config Process Parameter Values
+
+- [[id:698E250D-ECFD-5C03-A58C-CB77E01C6CFD][How do I run the ir_curve_generation_config_process_parameter_values commands from the shell?]]
+
+* Ir Curve Generation Configs
+
+- [[id:07DE2EE3-CC35-544C-88EF-043916371139][How do I run the ir_curve_generation_configs commands from the shell?]]
+
+* Ir Curve Template Entries
+
+- [[id:D563D0DF-DB6B-59A7-B2FC-C22624A2DBE6][How do I run the ir_curve_template_entries commands from the shell?]]
+
+* Market Data Generation Configs
+
+- [[id:DF7F76E9-26FF-5D2F-A6D4-1A2969704124][How do I run the market_data_generation_configs commands from the shell?]]
+
+* Yield Curve Process Parameter Definitions
+
+- [[id:6657CEBD-B7F6-5626-BF3D-8A277B46E591][How do I run the yield_curve_process_parameter_definitions commands from the shell?]]
+
+* Yield Curve Process Types
+
+- [[id:6E3169FA-98CD-5ACC-B24A-F2403BFEB51A][How do I run the yield_curve_process_types commands from the shell?]]

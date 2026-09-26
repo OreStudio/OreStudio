@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: DF7F76E9-26FF-5D2F-A6D4-1A2969704124
+:END:
+#+title: How do I run the market_data_generation_configs commands from the shell?
+#+description: Every command the market_data_generation_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:market_data_generation_configs:
+
+This file documents the market_data_generation_configs resource at the shell, one section per command. Every command is a subcommand of =market_data_generation_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1303E4C8-68E8-5446-9271-75A52396E088
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_generation_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_generation_configs.list=.
+
+#+name: market_data_generation_configs-list
+#+begin_src ores-shell :tangle market_data_generation_configs-list.ores :exports none
+market_data_generation_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 00CD3A7C-4CD7-5D06-9C11-155F45E88EB4
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_generation_configs get <id>
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_generation_configs.get=.
+
+#+name: market_data_generation_configs-get
+#+begin_src ores-shell :tangle market_data_generation_configs-get.ores :exports none
+market_data_generation_configs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 1E9A80F1-7F66-5FD0-ACC4-9EEF7FDFE099
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_generation_configs get-many <id>
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_generation_configs.get_many=.
+
+#+name: market_data_generation_configs-get-many
+#+begin_src ores-shell :tangle market_data_generation_configs-get-many.ores :exports none
+market_data_generation_configs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B7801E11-4D47-5069-8A41-1381E6E79178
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_generation_configs add <scope> <binding_mode> <name> <description> <enabled> <dataset_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_generation_configs.put=.
+
+#+name: market_data_generation_configs-add
+#+begin_src ores-shell :tangle market_data_generation_configs-add.ores :exports none
+market_data_generation_configs add __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: B72B5AB6-2106-5659-89D0-024F0F1698EF
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_generation_configs set <id> <scope> <binding_mode> <name> <description> <enabled> <dataset_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_generation_configs.put=.
+
+#+name: market_data_generation_configs-set
+#+begin_src ores-shell :tangle market_data_generation_configs-set.ores :exports none
+market_data_generation_configs set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: A7AFC53A-2291-5B54-ACBD-AD12B30DACC9
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_generation_configs put-many --count <n> <id> <scope> <binding_mode> <name> <description> <enabled> <dataset_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_generation_configs.put_many=.
+
+#+name: market_data_generation_configs-put-many
+#+begin_src ores-shell :tangle market_data_generation_configs-put-many.ores :exports none
+market_data_generation_configs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 964E8522-FA6C-532B-A4DA-C2DAB2482EA7
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_generation_configs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_generation_configs.delete=.
+
+#+name: market_data_generation_configs-delete
+#+begin_src ores-shell :tangle market_data_generation_configs-delete.ores :exports none
+market_data_generation_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: AB078730-4E2F-52D4-8EE8-20D4C97E1821
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_generation_configs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_generation_configs.delete_many=.
+
+#+name: market_data_generation_configs-delete-many
+#+begin_src ores-shell :tangle market_data_generation_configs-delete-many.ores :exports none
+market_data_generation_configs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 1275213D-DE12-53FE-B444-D63E2876DDF0
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_generation_configs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_generation_configs_versions.list=.
+
+#+name: market_data_generation_configs-versions
+#+begin_src ores-shell :tangle market_data_generation_configs-versions.ores :exports none
+market_data_generation_configs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 15DD9211-ECFA-5BA1-AE83-7C2761750A02
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_generation_configs version <id> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.market_data_generation_configs_versions.get=.
+
+#+name: market_data_generation_configs-version
+#+begin_src ores-shell :tangle market_data_generation_configs-version.ores :exports none
+market_data_generation_configs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

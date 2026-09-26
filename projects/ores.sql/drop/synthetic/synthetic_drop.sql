@@ -23,6 +23,8 @@
 \ir ./synthetic_ir_curve_generation_config_process_parameter_values_drop.sql
 \ir ./synthetic_yield_curve_process_parameter_definitions_notify_trigger_drop.sql
 \ir ./synthetic_yield_curve_process_parameter_definitions_drop.sql
+\ir ./synthetic_yield_curve_process_types_notify_trigger_drop.sql
+\ir ./synthetic_yield_curve_process_types_drop.sql
 \ir ./synthetic_ir_curve_template_entries_notify_trigger_drop.sql
 \ir ./synthetic_ir_curve_template_entries_drop.sql
 \ir ./synthetic_ir_curve_generation_configs_notify_trigger_drop.sql

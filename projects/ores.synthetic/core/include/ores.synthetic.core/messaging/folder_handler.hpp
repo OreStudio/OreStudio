@@ -64,7 +64,16 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves synthetic.v1.folders.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_folders(ores::nats::message msg) {
         BOOST_LOG_SEV(folder_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -72,28 +81,122 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::folder_service svc(req_ctx);
-        get_folders_response resp;
-        if (auto req = decode<get_folders_request>(msg)) {
-            try {
-                resp.folders = svc.list_folders(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_folders());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
+        auto req = decode<list_folders_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(folder_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(folder_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        service::folder_service svc(req_ctx);
+        try {
+            auto response = svc.list_folders(*req);
+            BOOST_LOG_SEV(folder_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            list_folders_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves synthetic.v1.folders.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_folder(ores::nats::message msg) {
+        BOOST_LOG_SEV(folder_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_folder_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(folder_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::folder_service svc(req_ctx);
+        try {
+            auto response = svc.get_folder(*req);
+            BOOST_LOG_SEV(folder_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_folder_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves synthetic.v1.folders.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_folders(ores::nats::message msg) {
+        BOOST_LOG_SEV(folder_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_folders_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(folder_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::folder_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_folders(*req);
+            BOOST_LOG_SEV(folder_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_many_folders_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves synthetic.v1.folders.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_folder(ores::nats::message msg) {
         BOOST_LOG_SEV(folder_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -105,23 +208,40 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::folder_service svc(req_ctx);
-        if (auto req = decode<save_folder_request>(msg)) {
-            try {
-                svc.save_folder(req->data);
-                BOOST_LOG_SEV(folder_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, save_folder_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_folder_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_folder_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(folder_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::folder_service svc(req_ctx);
+        try {
+            auto response = svc.put_folder(*req);
+            BOOST_LOG_SEV(folder_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            put_folder_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves synthetic.v1.folders.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_folders(ores::nats::message msg) {
         BOOST_LOG_SEV(folder_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -129,26 +249,44 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::folder_service svc(req_ctx);
-        if (auto req = decode<get_folder_history_request>(msg)) {
-            try {
-                auto hist = svc.get_folder_history(req->id);
-                BOOST_LOG_SEV(folder_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_folder_history_response{.history = std::move(hist), .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
-                reply(
-                    nats_, msg, get_folder_history_response{.success = false, .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "synthetic::folders:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_folders_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(folder_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::folder_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_folders(*req);
+            BOOST_LOG_SEV(folder_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            put_many_folders_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves synthetic.v1.folders.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_folder(ores::nats::message msg) {
         BOOST_LOG_SEV(folder_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -160,23 +298,40 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::folder_service svc(req_ctx);
-        if (auto req = decode<delete_folder_request>(msg)) {
-            try {
-                svc.delete_folders(req->ids);
-                BOOST_LOG_SEV(folder_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, delete_folder_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_folder_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_folder_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(folder_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::folder_service svc(req_ctx);
+        try {
+            auto response = svc.delete_folder(*req);
+            BOOST_LOG_SEV(folder_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            delete_folder_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void hierarchy(ores::nats::message msg) {
+    /**
+     * @brief Serves synthetic.v1.folders.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_folders(ores::nats::message msg) {
         BOOST_LOG_SEV(folder_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -184,24 +339,113 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::folder_service svc(req_ctx);
-        if (auto req = decode<get_folder_hierarchy_request>(msg)) {
-            try {
-                boost::uuids::string_generator gen;
-                auto roots = svc.get_hierarchy(gen(req->root_id), req->from_root);
-                BOOST_LOG_SEV(folder_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_folder_hierarchy_response{.success = true, .roots = std::move(roots)});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      get_folder_hierarchy_response{.success = false, .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "synthetic::folders:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_folders_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(folder_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::folder_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_folders(*req);
+            BOOST_LOG_SEV(folder_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            delete_many_folders_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves synthetic.v1.folders_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_folder_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(folder_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_folder_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(folder_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::folder_service svc(req_ctx);
+        try {
+            auto response = svc.list_folder_versions(*req);
+            BOOST_LOG_SEV(folder_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            list_folder_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves synthetic.v1.folders_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_folder_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(folder_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_folder_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(folder_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::folder_service svc(req_ctx);
+        try {
+            auto response = svc.get_folder_version(*req);
+            BOOST_LOG_SEV(folder_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_folder_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

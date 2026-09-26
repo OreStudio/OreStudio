@@ -42,4 +42,11 @@ Usage: imported by the check scripts, never run.
 # component that is not yet regenerable stays out for the reason refdata does:
 # an un-regenerated component's whole backlog rides along with any model
 # change to it.
+#
+# synthetic is not listed yet: its regeneration is byte-identical and
+# idempotent and all four of its test suites pass, but five checklist items are
+# open (B06 and V08, the two surveys; M06, no TypeScript twin; P03, the
+# messaging reference is stale; V04, no live fleet). The standard keeps a
+# component out until every item passes or its exceptions are accepted, so add
+# it once they are.
 COMPONENTS_UNDER_TEST = ("iam", "compute-cpp", "ore")

@@ -23,4 +23,4 @@ user confirmed this is a known sandbox limitation (2026-05-28).
 
 *How to apply:* Set =dangerouslyDisableSandbox: true= on every =git add= and
 =git commit= call. This is a standing authorisation — no confirmation needed.
-See also [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Set SSH_AUTH_SOCK for git operations]] for the separate push/fetch issue.
+See also [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Do not interfere with SSH session variables]] for the separate push/fetch issue.

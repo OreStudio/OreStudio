@@ -28,7 +28,7 @@ otherwise-avoidable CI cycle.
 - A task exists in the current sprint with =#+type: task=, =State: BACKLOG=.
 - The task's story is =STARTED= in the sprint.
 - You are on =main= or can create a fresh feature branch.
-- =gh= CLI is authenticated; =SSH_AUTH_SOCK= is exported (see [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][SSH memory]]).
+- =gh= CLI is authenticated; the session's SSH agent is used as-is (see [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Do not interfere with SSH session variables]]).
 
 * Steps
 

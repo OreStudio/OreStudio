@@ -23,10 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.synthetic.service/messaging/gmm_component_event_registrar.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
-#include "ores.synthetic.api/eventing/gmm_component_changed_event.hpp"
+#include "ores.synthetic.api/eventing/gmm_component_event.hpp"
+#include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 
 namespace ores::synthetic::service::messaging {
 
@@ -38,19 +39,19 @@ namespace ev = ores::eventing;
 register_gmm_component_event_mapping(ev::service::postgres_event_source& event_source,
                                      ev::service::event_bus& event_bus,
                                      ores::nats::service::client& nats) {
-    ev::service::registrar::register_mapping<synthetic::eventing::gmm_component_changed_event>(
-        event_source, "ores.synthetic.gmm_component", "ores_synthetic_gmm_components");
+    // The trigger publishes on the table's own channel, and the mapping turns
+    // what it says into this entity's event.
+    event_source.register_entity_event_mapping<synthetic::messaging::gmm_component_event>(
+        "ores_synthetic_gmm_components");
 
-    return event_bus.subscribe<synthetic::eventing::gmm_component_changed_event>(
-        [&nats](const synthetic::eventing::gmm_component_changed_event& e) {
+    return event_bus.subscribe<synthetic::messaging::gmm_component_event>(
+        [&nats](const synthetic::messaging::gmm_component_event& e) {
+            // One payload is addressed by three subjects, so the subject is
+            // the collection's prefix and the action the event reports.
             ev::service::publish_entity_event(
                 nats,
-                std::string(ev::domain::event_traits<
-                            synthetic::eventing::gmm_component_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.synthetic.gmm_component",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.gmm_component_ids,
-                                                .tenant_id = e.tenant_id});
+                ev::domain::event_subject<synthetic::messaging::gmm_component_event>(e.action),
+                e);
         });
 }
 

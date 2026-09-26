@@ -139,14 +139,14 @@ TEST_CASE("write_workunit_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto app_version_id_parent = ores::compute::generators::generate_synthetic_app_version(ctx);
     app_version_id_parent.change_reason_code = "system.test";
-    auto app_id_parent = ores::compute::generators::generate_synthetic_app(ctx);
-    app_id_parent.change_reason_code = "system.test";
+    auto app_version_id_parent_app_parent = ores::compute::generators::generate_synthetic_app(ctx);
+    app_version_id_parent_app_parent.change_reason_code = "system.test";
     // Seed the active app row ores_compute_apps_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.
-    ores::compute::repository::app_repository app_id_parent_repo;
-    app_id_parent_repo.write(party_ctx, app_id_parent);
-    app_version_id_parent.app_id = app_id_parent.id;
+    ores::compute::repository::app_repository app_version_id_parent_app_parent_repo;
+    app_version_id_parent_app_parent_repo.write(party_ctx, app_version_id_parent_app_parent);
+    app_version_id_parent.app_id = app_version_id_parent_app_parent.id;
     ores::compute::repository::app_version_repository app_version_id_repo;
     app_version_id_repo.write(party_ctx, app_version_id_parent);
     v.app_version_id = app_version_id_parent.id;

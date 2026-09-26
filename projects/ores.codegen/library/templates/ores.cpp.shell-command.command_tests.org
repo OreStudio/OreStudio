@@ -16,9 +16,11 @@ The test file for one entity's shell command unit. Every case stops at a
 guard or at the transport boundary, so the file needs no server and no
 database. It links against Catch2 and the part's own library.
 
-Each case pins one thing the unit promises. The pagination callback is
-registered under the menu name. The add verb refuses a signed-out session
-before it reads a token. It reports the arity it expects. It names the
+Each case pins one thing the unit promises. Every derived verb appears in
+the menu's completion list, which is the only public view of the menu's
+children. The add verb refuses a signed-out session
+before it reads a token. It reports the arity it expects and the count it
+was given. It names the
 field when a token will not convert. It refuses a session whose account
 has no default party when a column reads the acting party. The delete and
 history verbs each refuse a signed-out session. A valid token vector
@@ -69,6 +71,7 @@ The full template source. Edit here and re-tangle with
 #include "ores.shell/app/commands/{{component}}/{{entity_singular}}_commands.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
+#include <algorithm>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -110,8 +113,18 @@ TEST_CASE("{{entity_singular}}_commands_registers_every_derived_verb", tags) {
 
     {{entity_singular}}_commands::register_commands(root_menu, session);
 
+    // The menu's completion list is the only public view of its children, so
+    // a verb that is missing from it was never registered.
+    const auto completions = root_menu.GetCompletions("{{entity_plural}} ");
+    for (const auto& verb : {
+{{#shell.commands}}
+             std::string{"{{entity_plural}} {{command}}"},
+{{/shell.commands}}
+         })
+        CHECK(std::find(completions.begin(), completions.end(), verb) !=
+              completions.end());
+
     BOOST_LOG_SEV(lg, debug) << "Registered {{shell.command_count}} command(s).";
-    CHECK(true);
 }
 {{#shell.commands}}
 
@@ -144,6 +157,12 @@ TEST_CASE("{{entity_singular}}_commands_process_{{identifier}}_reports_the_expec
     {{entity_singular}}_commands::process_{{identifier}}(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 {{/exact_count}}

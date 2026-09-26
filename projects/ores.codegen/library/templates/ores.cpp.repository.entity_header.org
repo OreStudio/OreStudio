@@ -91,6 +91,9 @@ struct {{entity_singular}}_entity {
 {{#is_required_inet}}
     std::string {{name}};
 {{/is_required_inet}}
+{{#is_base64}}
+    std::string {{name}};
+{{/is_base64}}
 {{#is_nullable_string}}
     std::optional<std::string> {{name}};
 {{/is_nullable_string}}
@@ -178,9 +181,12 @@ struct {{name_singular}}_entity {
 {{#is_date}}
     std::string {{name}};
 {{/is_date}}
-{{^is_uuid}}{{^is_optional_uuid}}{{^is_optional_timestamp}}{{^is_required_timestamp}}{{^is_date}}
+{{#is_base64}}
+    std::string {{name}};
+{{/is_base64}}
+{{^is_uuid}}{{^is_optional_uuid}}{{^is_optional_timestamp}}{{^is_required_timestamp}}{{^is_date}}{{^is_base64}}
     {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
-{{/is_date}}{{/is_required_timestamp}}{{/is_optional_timestamp}}{{/is_optional_uuid}}{{/is_uuid}}
+{{/is_base64}}{{/is_date}}{{/is_required_timestamp}}{{/is_optional_timestamp}}{{/is_optional_uuid}}{{/is_uuid}}
 {{/columns}}
     std::string modified_by;
     std::string performed_by;

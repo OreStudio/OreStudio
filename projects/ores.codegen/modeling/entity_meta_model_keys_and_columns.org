@@ -8,7 +8,7 @@
 #+filetags: :codegen:meta_model:org_mode:literate:
 #+startup: inlineimages
 #+created: 2026-07-17
-#+updated: 2026-09-22
+#+updated: 2026-09-26
 
 This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub. It is
 the one segment that does not map to a single facet — a column
@@ -203,6 +203,7 @@ A container for the entity's remaining column sub-headings. Each
 | =:type:=        | yes      | SQL type.                                          |
 | =:cpp_type:=    | yes      | C++ type.                                          |
 | =:nullable:=    | no       | =true= for nullable columns; default =false=.      |
+| =:base64:=      | no       | =true= for a column whose =text= database column holds the base64 spelling of a byte vector, while the domain member is the raw =std::vector<std::uint8_t>=. |
 
 Each column's body is split into a *description* (first paragraph —
 becomes the field's doc-comment) and an optional *detail* (second
@@ -210,6 +211,62 @@ paragraph onward — extra context for a human reader, not emitted
 into generated code). A column may also carry a =generator= babel
 block: a C++ expression producing a synthetic value for that field,
 used by the [[id:C78B8646-350D-4BEA-8D9D-49F4F5DCA55E][C++ Generator]] facet.
+
+** Base64 columns: =base64=
+
+A column that holds binary data stores it base64-encoded in a =text=
+column, because the schema keeps no binary column type. =:base64: true=
+states both halves of that: the entity member is the base64 =std::string=
+the column stores, and the domain member is the raw
+=std::vector<std::uint8_t>= the caller works with. The mapper performs the
+base64 hop in both directions.
+
+The property is explicit rather than derived from =:type:=, because a
+=text= column that already holds text is indistinguishable from this one
+by type alone — only the model knows which spelling the bytes are in. It
+follows the [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] conversion pattern a required timestamp
+already uses, with base64 in place of the datetime conversion.
+
+The synthetic generator writes a non-empty byte sequence for such a
+column, since no faker expression applies to a byte vector.
+
+#+begin_src org
+,** payload
+,:PROPERTIES:
+,:type:     text
+,:cpp_type: std::vector<std::uint8_t>
+,:base64:   true
+,:nullable: false
+,:END:
+
+Raw image bytes, stored base64-encoded.
+#+end_src
+
+Generates, in the domain struct:
+
+#+begin_src cpp
+struct image {
+    // ...
+    std::vector<std::uint8_t> payload;
+    // ...
+};
+#+end_src
+
+And, in the sqlgen entity and mapper:
+
+#+begin_src cpp
+struct image_entity {
+    // ...
+    std::string payload;
+    // ...
+};
+
+// map(const image_entity&): decode the column into the bytes.
+r.payload = utility::converter::base64_converter::convert(v.payload);
+
+// map(const domain::image&): encode the bytes into the column.
+r.payload = utility::converter::base64_converter::convert(v.payload);
+#+end_src
 
 Example of =book='s =name= column:
 

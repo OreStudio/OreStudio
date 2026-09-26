@@ -25,6 +25,7 @@
 #include "ores.assets.core/repository/image_mapper.hpp"
 #include "ores.assets.api/domain/image_json_io.hpp" // IWYU pragma: keep.
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.utility/convert/base64_converter.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -45,7 +46,7 @@ domain::image image_mapper::map(const image_entity& v) {
 
     r.description = v.description;
     r.mime_type = v.mime_type;
-    r.data = v.data;
+    r.data = utility::converter::base64_converter::convert(v.data);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -68,7 +69,7 @@ image_entity image_mapper::map(const domain::image& v) {
 
     r.description = v.description;
     r.mime_type = v.mime_type;
-    r.data = v.data;
+    r.data = utility::converter::base64_converter::convert(v.data);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

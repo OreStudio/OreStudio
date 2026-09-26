@@ -116,6 +116,29 @@ TEST_CASE("read_latest_image_by_id", tags) {
     CHECK(read_images[0].data == img.data);
 }
 
+TEST_CASE("write_and_read_image_preserves_every_byte", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto img = generate_synthetic_image(ctx);
+    // Bytes chosen so the base64 hop must carry a zero byte, a high byte and a
+    // length whose encoding needs padding. A text-only or lossy mapper
+    // corrupts one of them, and the read below catches it: the bytes that come
+    // back are equal to the bytes that went in.
+    img.data = std::vector<std::uint8_t>{0x00, 0xFF, 0x10, 0x80, 0x01, 0xFE, 0x7F};
+    BOOST_LOG_SEV(lg, debug) << "Image: " << img;
+
+    image_repository repo;
+    repo.write(h.context(), img);
+
+    auto read_images = repo.read_latest(h.context(), boost::uuids::to_string(img.id));
+    BOOST_LOG_SEV(lg, debug) << "Read images: " << read_images;
+
+    REQUIRE(read_images.size() == 1);
+    CHECK(read_images[0].data == img.data);
+}
+
 TEST_CASE("read_latest_image_by_code", tags) {
     auto lg(make_logger(test_suite));
 

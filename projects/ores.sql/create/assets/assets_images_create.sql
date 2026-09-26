@@ -24,11 +24,12 @@
  *
  * Image Table
  *
- * An image is a named SVG document the platform renders, such as a currency
- * flag or a commodity icon. The document is stored as text, which is the
- * canonical spelling of the column: the payload is SVG markup, not an opaque
- * binary blob. Images carry tags through the image_tag junction, and an
- * image arrives either by upload or from the data-quality publish path.
+ * An image is a named document the platform renders, such as a currency flag
+ * or a commodity icon. The bytes are format-agnostic: an SVG document, a
+ * JPEG, or any other media type mime_type names. The database stores them
+ * base64-encoded in a text column, and the domain type carries the raw
+ * bytes. Images carry tags through the image_tag junction, and an image
+ * arrives either by upload or from the data-quality publish path.
  */
 
 create table if not exists "ores_assets_images_tbl" (

@@ -44,6 +44,9 @@ The full template source. Edit here and re-tangle with
 {{#has_inet_columns}}
 #include <boost/asio/ip/address.hpp>
 {{/has_inet_columns}}
+{{#has_base64_columns}}
+#include "ores.utility/convert/base64_converter.hpp"
+{{/has_base64_columns}}
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
 
@@ -140,6 +143,9 @@ domain::{{entity_singular}}
 {{#is_required_inet}}
     r.{{{group_prefix}}}{{name}} = boost::asio::ip::make_address(v.{{name}});
 {{/is_required_inet}}
+{{#is_base64}}
+    r.{{{group_prefix}}}{{name}} = utility::converter::base64_converter::convert(v.{{name}});
+{{/is_base64}}
 {{^render_is_enum}}
 {{#is_nullable_string}}
 {{#render_is_optional_string}}
@@ -266,6 +272,9 @@ domain::{{entity_singular}}
 {{#is_required_inet}}
     r.{{name}} = v.{{{group_prefix}}}{{name}}.to_string();
 {{/is_required_inet}}
+{{#is_base64}}
+    r.{{name}} = utility::converter::base64_converter::convert(v.{{{group_prefix}}}{{name}});
+{{/is_base64}}
 {{^render_is_enum}}
 {{#is_nullable_string}}
 {{#render_is_optional_string}}
@@ -386,9 +395,12 @@ domain::{{name_singular}}
 {{#is_date}}
     r.{{name}} = ores::platform::time::datetime::from_iso8601_date(v.{{name}});
 {{/is_date}}
-{{^is_required_timestamp}}{{^is_date}}
+{{#is_base64}}
+    r.{{name}} = utility::converter::base64_converter::convert(v.{{name}});
+{{/is_base64}}
+{{^is_required_timestamp}}{{^is_date}}{{^is_base64}}
     r.{{name}} = v.{{name}};
-{{/is_date}}{{/is_required_timestamp}}
+{{/is_base64}}{{/is_date}}{{/is_required_timestamp}}
 {{/columns}}
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -438,9 +450,12 @@ domain::{{name_singular}}
 {{#is_date}}
     r.{{name}} = ores::platform::time::datetime::to_iso8601_date(v.{{name}});
 {{/is_date}}
-{{^is_required_timestamp}}{{^is_date}}
+{{#is_base64}}
+    r.{{name}} = utility::converter::base64_converter::convert(v.{{name}});
+{{/is_base64}}
+{{^is_required_timestamp}}{{^is_date}}{{^is_base64}}
     r.{{name}} = v.{{name}};
-{{/is_date}}{{/is_required_timestamp}}
+{{/is_base64}}{{/is_date}}{{/is_required_timestamp}}
 {{/columns}}
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

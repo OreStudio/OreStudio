@@ -31,6 +31,10 @@ The full template source. Edit here and re-tangle with
 #include <atomic>
 #include <string>
 #include <unordered_set>
+{{#has_base64_columns}}
+#include <cstdint>
+#include <vector>
+{{/has_base64_columns}}
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 {{#has_tenant_id}}
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -207,6 +211,9 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     r.{{{group_prefix}}}{{name}} = std::string(faker::word::noun());
 {{/requires_unique_suffix}}
 {{/is_plain_string}}
+{{#is_base64}}
+    r.{{{group_prefix}}}{{name}} = std::vector<std::uint8_t>{'<', 's', 'v', 'g', '/', '>'};
+{{/is_base64}}
 {{/generator_expr}}
 {{/sql_only}}
 {{/columns}}

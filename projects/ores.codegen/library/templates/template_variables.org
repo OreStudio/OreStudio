@@ -114,6 +114,7 @@ Variables available inside ={{#columns}}=…={{/columns}}= and
 | =is_optional_uuid=      | Optional UUID specialisation.                     | =true=                     |
 | =is_nullable_string=    | Nullable string (maps to SQL NULL).               | =true=                     |
 | =is_nullable_int=       | Nullable integer.                                 | =true=                     |
+| =is_base64=     | True for a =:base64: true= column: the domain member is =std::vector<std::uint8_t>= and the row member is its base64 =std::string=. | =true= |
 | =is_computed=   | True if the value is computed (not stored directly).      | =true=                     |
 | =is_unique=     | True if the column has a unique constraint.               | =true=                     |
 | =is_key=        | True if the column participates in natural key lookup.    | =true=                     |
@@ -138,6 +139,7 @@ Top-level boolean sections that enable/disable template blocks.
 | =has_batch_read=  | Repository exposes a batch read method.                   |
 | =has_batch_remove=| Repository exposes a batch remove method.                 |
 | =has_uuid_columns=| At least one column has a UUID type.                      |
+| =has_base64_columns=| At least one column declares =:base64: true=, so the entity has a base64 hop to convert. |
 | =has_uuid_left_or_right= | Junction has UUID on left or right FK.           |
 | =current_only=    | Repository only queries current (non-historical) rows.    |
 | =use_no_tenant=   | Queries skip tenant isolation.                            |

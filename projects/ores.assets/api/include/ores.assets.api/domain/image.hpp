@@ -26,19 +26,22 @@
 #define ORES_ASSETS_API_DOMAIN_IMAGE_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <cstdint>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace ores::assets::domain {
 
 /**
- * @brief An SVG image published to the platform.
+ * @brief An image published to the platform.
  *
- * An image is a named SVG document the platform renders, such as a currency
- * flag or a commodity icon. The document is stored as text, which is the
- * canonical spelling of the column: the payload is SVG markup, not an opaque
- * binary blob. Images carry tags through the image_tag junction, and an
- * image arrives either by upload or from the data-quality publish path.
+ * An image is a named document the platform renders, such as a currency flag
+ * or a commodity icon. The bytes are format-agnostic: an SVG document, a
+ * JPEG, or any other media type mime_type names. The database stores them
+ * base64-encoded in a text column, and the domain type carries the raw
+ * bytes. Images carry tags through the image_tag junction, and an image
+ * arrives either by upload or from the data-quality publish path.
  */
 struct image final {
     /**
@@ -71,17 +74,19 @@ struct image final {
     std::string description;
 
     /**
-     * @brief Media type of the stored document. Every image in the platform is SVG, so the default
-     * is the only value in practice. The generator block restates it because the generator template
-     * only honours default_value when a column also declares a generator, and otherwise invents a
-     * random word.
+     * @brief Media type of the image data, for example image/svg+xml or image/jpeg. SVG is the
+     * default because most published images are SVG, but an image may carry any media type. The
+     * generator block restates the default because the generator template only honours
+     * default_value when a column also declares a generator, and otherwise invents a random word.
      */
     std::string mime_type = "image/svg+xml";
 
     /**
-     * @brief The SVG document itself.
+     * @brief Raw image bytes: SVG markup as UTF-8 bytes, or a binary format such as JPEG. The
+     * database column is text and holds the bytes base64-encoded; the domain member is the raw byte
+     * vector, and the mapper performs the base64 hop in both directions.
      */
-    std::string data;
+    std::vector<std::uint8_t> data;
 
     /**
      * @brief Username of the person who last modified this asset image.

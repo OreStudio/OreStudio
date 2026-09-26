@@ -29,6 +29,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.utility/convert/base64_converter.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -89,6 +90,8 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
             }
         }
         target.push_back(current);
+    } else if constexpr (std::is_same_v<T, std::vector<std::uint8_t>>) {
+        target = ores::utility::converter::base64_converter::convert(raw);
     } else {
         target = ores::shell::app::from_token<T>(raw, name);
     }

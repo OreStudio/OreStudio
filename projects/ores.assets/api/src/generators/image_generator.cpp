@@ -26,9 +26,11 @@
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
+#include <cstdint>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 namespace ores::assets::generators {
 
@@ -49,7 +51,7 @@ domain::image generate_synthetic_image(utility::generation::generation_context& 
     r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.description = std::string(faker::word::noun()) + " image";
     r.mime_type = std::string("image/svg+xml");
-    r.data = std::string(faker::word::noun());
+    r.data = std::vector<std::uint8_t>{'<', 's', 'v', 'g', '/', '>'};
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

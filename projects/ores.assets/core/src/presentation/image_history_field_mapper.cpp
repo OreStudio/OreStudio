@@ -37,7 +37,6 @@ std::vector<ores::diff::domain::field_value> render_image_fields(const domain::i
     fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Mime Type", .value = v.mime_type});
-    fields.push_back({.name = "Data", .value = v.data});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

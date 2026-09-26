@@ -37,7 +37,7 @@ export interface ImageWrite {
     code: string;
     description: string;
     mime_type: string;
-    data: string;
+    data: number[];
 }
 
 export interface ImageChange {

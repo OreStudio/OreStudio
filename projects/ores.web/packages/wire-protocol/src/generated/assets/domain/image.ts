@@ -37,7 +37,7 @@ export interface Image {
     code: string;
     description: string;
     mime_type: string;
-    data: string;
+    data: number[];
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

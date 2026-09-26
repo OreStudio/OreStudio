@@ -44,7 +44,7 @@ struct image_write {
     std::string code;
     std::string description;
     std::string mime_type;
-    std::string data;
+    std::vector<std::uint8_t> data;
 };
 
 struct image_change {

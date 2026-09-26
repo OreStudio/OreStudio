@@ -114,35 +114,41 @@ to it.
 
 **What is left**
 
-- No caller sends a token. =ores.storage.core= has no =Authorization= support, so
-  every shell upload and download and every service-side blob transfer answers
-  401 while the bus interface works. This is the blocker for the round trips
-  below; the capture
-  [[id:15062C8E-3282-4A84-B3BC-40C286388993][Storage routes demand a token no C++
-  caller sends]] holds the reproducer and the fix.
+- Three service handlers still build a transfer with no token, so their HTTP calls
+  answer 401: =ores.ore/service/src/messaging/report_package_handler.cpp:81=,
+  =ores.trading/core/include/ores.trading.core/messaging/trade_handler.hpp:365= and
+  =ores.marketdata/core/include/ores.marketdata.core/messaging/market_series_handler.hpp:214=.
+  Each needs the service's bearer threaded in the way the import handler got it:
+  =nats_client::token()= on the service path. Everything else that moves bytes
+  carries one -- the shell's four sites, the compute publisher, and the import
+  handler.
 - The raw shell surface -- a bucket, a key and a path -- is not built, so the
   consumer verbs remain the only way to reach storage from the shell.
-- =ores.compute.wrapper= already links the component and uses its client and
-  archiver; no wrapper-local copies remain, and the base URL is plumbed one way
-  to =ORES_HTTP_PORT=, the port the server listens on.
-- A live =compute publish-package= run and an ORE import round trip still have not
-  completed, for the token reason above. The suites and the seeded URIs are the
-  evidence so far.
+- Two input-shape findings, neither about storage: an imported ORE tree whose book
+  has no portfolio above it needs =--parent-portfolio-name=, and the MinimalSetup
+  example has 20 swaptions refused by
+  =ores_trading_swaption_instruments_tbl_long_short_check=.
 
 **Evidence**
 
-- The storage api, storage core, compute api and compute core suites pass. The ore
-  and shell suites pass except =ores.shell.api.tests=, which fails on a datetime
-  format defect that predates this branch.
+- Live, with the protocol keys and the new token chain:
+  =compute publish-package ORE 1.8.17.0 x64-linux= uploaded
+  =ores/compute/packages/ORE-1.8.17.0/ORE-1.8.17.0-x64-linux.tar.gz= and reported
+  its sha256; the row's =package_uri= is that path and a HEAD answers 200.
+  =ore upload external/ore/examples/MinimalSetup= reported
+  =ores/ore/imports/<request_id>.tar.gz= and a HEAD answers 200. =ore import= then
+  completed (completed_with_warnings) and saved 20 trades, having downloaded the
+  tarball with the service's own token and permission.
+- The authentication work that made those work: the HTTP boundary verifies the
+  platform's RS256 session tokens (with the symmetric authenticator kept for the
+  login token), =nats_client::token()= gives the service path a bearer,
+  ReportingService, ComputeService, OreService and MarketdataService hold
+  =storage::objects:read= and =write= (1008 role-permission assignments when the
+  seed was reapplied), and =ore upload= captures the session.
+- Suites: storage api and core, compute api and core, http api, ore api, core and
+  service, shell storage and application.
 - =check_component_drift.py --all= reports no drift, and the codegen unit suite is
   706 passed.
-- =compass db recreate= completes, and the seeded package URI reads back as
-  =/api/v1/storage/ores/compute/packages/ORE-1.8.17.0/ORE-1.8.17.0-x64-linux.tar.gz=.
-- Over the bus: put answered 30 bytes, get returned those bytes, and list reported
-  the object under =compute/packages/<id>/ore-1.8.17.0-x64-linux.tar.gz=. Over
-  HTTP: the bus-written object read back byte for byte, PUT answered its sha256,
-  HEAD answered the length with no body, list reported both objects, and an
-  unauthenticated GET answered 401.
 
 **Defects repaired on the way**
 

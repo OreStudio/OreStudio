@@ -52,13 +52,11 @@
  * declared as message fields on session_view in
  * ores.iam.session_messages.
  *
- * The entity's CRUD handler and sub-registrar are switched off below: the
- * hand-written session_handler already owns the iam.v1.sessions.*
- * subjects that ores.iam.session_messages declares, and the generated
- * session_handler.hpp would overwrite it. The generated
- * session_protocol.hpp is suppressed by the same one-owner gate that
- * the operation model already satisfies; only the competing handler is
- * switched off here.
+ * The entity's canonical CRUD subjects are generated: session_registrar
+ * owns list/get/get-many/put/put-many/delete on iam.v1.sessions.*. The
+ * operation models declare a different set under the same prefix --
+ * iam.v1.sessions.active and iam.v1.sessions.samples -- so the two
+ * coexist rather than compete, and no handler is suppressed here.
  */
 
 create table if not exists "ores_iam_sessions_tbl" (

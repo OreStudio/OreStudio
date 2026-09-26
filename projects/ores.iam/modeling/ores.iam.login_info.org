@@ -93,7 +93,7 @@ Count of consecutive failed login attempts since the last success.
 
 ** locked
 :PROPERTIES:
-:type:          integer
+:type:          boolean
 :cpp_type:      bool
 :nullable:      false
 :default_value: false
@@ -116,7 +116,7 @@ ctx.past_timepoint()
 
 ** online
 :PROPERTIES:
-:type:          integer
+:type:          boolean
 :cpp_type:      bool
 :nullable:      false
 :default_value: false
@@ -126,10 +126,10 @@ Flag indicating whether the account is currently logged in.
 
 ** password_reset_required
 :PROPERTIES:
-:type:          integer
+:type:          boolean
 :cpp_type:      bool
 :nullable:      false
-:default:       0
+:default:       false
 :default_value: false
 :END:
 
@@ -152,7 +152,7 @@ a new one.
 |------------+------------+--------+--------------+-------------|
 | tenant     | tenant_id  | false  | false        |             |
 | account_id | account_id | false  | false        |             |
-| locked     | locked     | false  | false        | locked = 0  |
+| locked     | locked     | false  | false        | locked = false |
 
 * Foreign keys
 

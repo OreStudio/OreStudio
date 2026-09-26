@@ -33,18 +33,19 @@ member, so the member is not modelled and the generated =role.hpp=
 replaces it; the join itself stays in the hand-written authorization
 layer.
 
-The entity's CRUD handler and sub-registrar are switched off below: the
-hand-written =role_handler= already owns the =iam.v1.roles.*= subjects for
-the authorization protocol, and the generated =role_handler.hpp= would
-overwrite it. The generated =role_protocol.hpp= still declares the entity
-CRUD messages; only the competing handler is suppressed.
+The entity's canonical CRUD subjects are generated: =role_registrar= owns
+=list/get/get-many/put/put-many/delete= on =iam.v1.roles.*=. The
+authorization operation model declares a different set under the same
+prefix -- =iam.v1.roles.assign=, =.revoke=, =.by-account=,
+=.permissions= and =.suggest-commands= -- so the two coexist rather than
+compete, and no handler is suppressed here.
 
 * Flags
 :PROPERTIES:
 :schema:        public
 :product:       ores
 :component:     iam
-:has_tenant_id: true
+:profile:       uuid-identified-lookup
 :END:
 
 * Natural keys

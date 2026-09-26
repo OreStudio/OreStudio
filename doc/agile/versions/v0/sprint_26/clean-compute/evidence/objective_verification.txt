@@ -1,0 +1,33 @@
+# ores.compute, the objective's verification
+
+## ores.compute listed in COMPONENTS_UNDER_TEST
+37:COMPONENTS_UNDER_TEST = ("iam", "compute-cpp")
+
+## check_component_drift.py --all
+INFO Regeneration complete.
+No drift: regenerated output matches the checked-in tree.
+
+## validate_schemas.sh
+Views parsed: 0
+Warnings: 0
+
+=== Validation Passed ===
+
+## codegen suite
+539 passed in 9.86s
+
+## model drift
+No model drift: every bound model agrees with its profile (1 known exception(s)).
+## protocol twin coverage
+Protocol twin coverage intact: all 30 generated protocol header(s) in 2 committed component(s) have a TypeScript twin, and no model opts out.
+## handler permissions
+handler permissions are seeded (2 component(s), 160 distinct code(s)).
+## populate references
+populate references resolve.
+
+## the four compute suites and the shell compute suite, against the live fleet
+ores.compute.api.tests  All tests passed (165 assertions in 54 test cases)
+ores.compute.core.tests  All tests passed (60 assertions in 10 test cases)
+ores.compute.service.tests  All tests passed (26 assertions in 10 test cases)
+ores.compute.wrapper.tests  All tests passed (20 assertions in 5 test cases)
+ores.shell.compute.tests All tests passed (219 assertions in 138 test cases)

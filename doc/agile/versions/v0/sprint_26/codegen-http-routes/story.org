@@ -23,10 +23,51 @@ ores.http serves every component through routes generated from that component's 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | The facet, three components landed, and the full tree builds. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Review and raise the pull request.     |
 | Last touched  | 2026-09-26                               |
+
+* Result
+
+The gateway's routes generate from the models. A codegen facet,
+=ores.cpp.http-route=, projects an entity or an operation model onto a
+route unit with a header, an implementation and a test. Three components
+are landed, each in its own part beside the hand-written aggregator, and
+each with its hand-written route file deleted rather than kept in
+parallel: =ores.http.assets= (image, tag, image_tag), =ores.http.refdata=
+(currency) and =ores.http.iam= (account, role, permission, session,
+login_info, and nineteen operations). The gateway registers 109 endpoints.
+
+The gateway is a protocol gateway. A generated route builds the canonical
+request, sends it over NATS and maps the reply to an HTTP response, so it
+depends on the target's wire protocol and not on its service library. The
+server stopped linking three component libraries.
+
+Security is one declaration and one enforcement point. The route forwards
+the caller's bearer token by delegation, so the service's own permission
+check governs the real caller, and it states its authentication position
+from the model. A route that states neither position cannot be built or
+registered, and a gate fails the build if any registered route is silent.
+The storage routes were public by omission and are now authenticated.
+
+Verification, on base =24f0896773=:
+
+- =ORES_USE_BUSCTL=0 ./compass.sh build= exits 0 for the whole tree, 100%,
+  which this branch could not do until main repaired the workflow
+  component it was blocked on.
+- =ctest -R 'http|storage'= is 8 of 8.
+- =pytest projects/ores.codegen/tests= is 757 passed.
+- =check_component_drift.py --all --dry-run= reports no drift.
+- =check_route_auth_declarations.py= passes, and handler permissions,
+  model drift, protocol twin coverage, populate references and the shell
+  recipe inventory are all green.
+- =validate_docs.sh= reports all 40 components pass.
+- Live: a generated entity route answers 401 without a token, a generated
+  public operation answers 200, an unexposed operation answers 404, and an
+  unknown path answers 404.
+
+Two failures remain and neither is this branch's: =regenerate_cmake_component_files.py --all --check= reports stale lists in other components (main has more, this branch fixes two and introduces none), and =ores.iam.core.tests= fails against a restored database whose stored function predates the SQL fix, while the tree's SQL is correct.
 
 * Acceptance
 

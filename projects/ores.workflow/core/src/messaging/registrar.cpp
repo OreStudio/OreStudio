@@ -135,7 +135,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         nats, ctx, signer, instance_states, step_states, registry);
 
     subs.push_back(nats.queue_subscribe(
-        list_workflow_instances_request::nats_subject, qg, [qh](ores::nats::message msg) {
+        list_workflow_instance_summaries_request::nats_subject, qg, [qh](ores::nats::message msg) {
             qh->list_instances(std::move(msg));
         }));
 

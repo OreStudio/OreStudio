@@ -1,0 +1,36 @@
+# V08: every source file has a test that exercises it, or is recorded with
+# the reason it does not
+# Run 2026-09-26. A source file is hand-written when its first 25 lines
+# carry no codegen marker; the generated half is the codegen's contract and
+# is covered by the generated eventing cases. The test column names the
+# test file that includes the unit's header, or the live run that exercises
+# the unit where no test exists.
+
+source                                                           test                               reason it has none
+client/src/client/package_publisher.cpp                          none                               exercised by the end-to-end run: it uploaded the ORE package
+core/src/messaging/registrar.cpp                                 none                               composition point; the handlers it wires are covered by the generated eventing cases
+core/src/messaging/report_submit_handler.cpp                     none                               message handler; exercised by the end-to-end run's result submission
+core/src/repository/compute_telemetry_repository.cpp             none                               exercised by the fleet run: node samples landed in the table
+service/src/app/application.cpp                                  none                               process wiring; exercised by the fleet run
+service/src/app/batch_workflow_bridge.cpp                        none                               GAP: no test, and the review found a tenant-scoped removal defect here; recorded as a capture
+service/src/app/compute_grid_poller.cpp                          none                               polling loop; exercised by the fleet run
+service/src/app/host.cpp                                         none                               host loop; exercised by the fleet run, which registered five hosts
+service/src/app/workunit_dispatcher.cpp                          none                               exercised by the end-to-end run: 15 workunits became 15 results
+service/src/config/options.cpp                                   config_parser_tests.cpp            exercised through the parser, which asserts the parsed options
+service/src/config/parser.cpp                                    config_parser_tests.cpp            covered: valid, missing and malformed configurations
+service/src/main.cpp                                             none                               process entry point; exercised by the fleet run
+wrapper/src/app/application.cpp                                  none                               process wiring; exercised by the end-to-end run
+wrapper/src/app/host.cpp                                         none                               heartbeat loop; exercised by the end-to-end run, which registered five hosts
+wrapper/src/app/log_publisher.cpp                                none                               exercised by the end-to-end run: the job log reached storage
+wrapper/src/config/options.cpp                                   none                               wrapper's own options; the config test covers the service's copy
+wrapper/src/config/parser.cpp                                    none                               wrapper's own parser, larger than the service's; exercised by the end-to-end run
+wrapper/src/filesystem/archiver.cpp                              filesystem_archiver_tests.cpp      covered: pack then extract round-trip
+wrapper/src/main.cpp                                             none                               process entry point; exercised by the end-to-end run
+wrapper/src/net/http_client.cpp                                  none                               exercised by the end-to-end run's package and input downloads
+
+## The one gap
+
+batch_workflow_bridge.cpp has no test. A tenant-scoped removal in it was
+wrong -- the success path removed the link as the service's own tenant
+instead of the link's -- and no test saw it. The defect is fixed; the
+missing test is recorded as a capture rather than claimed here.

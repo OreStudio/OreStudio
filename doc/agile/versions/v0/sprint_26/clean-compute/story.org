@@ -21,12 +21,13 @@ ores.compute meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
+| Now           | Nothing.                             |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-26                               |
+| End           | 2026-09-26                               |
 
 * Acceptance
 
@@ -39,13 +40,30 @@ ores.compute meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:74AED0CF-573B-4179-8C75-A9572EE49B2B][Bring ores.compute to the clean standard]] | STARTED | 2026-09-23 | | Work ores.compute through the Component Clean Standard in order and record each item. |
+| [[id:74AED0CF-573B-4179-8C75-A9572EE49B2B][Bring ores.compute to the clean standard]] | DONE | 2026-09-23 | 2026-09-26 | Work ores.compute through the Component Clean Standard in order and record each item. |
 
 * Notes
 
 - Survey on 2026-09-23: 7 entity, junction or operation models; 258 C++ files outside tests, 189 of them generated (73%); 42 messaging headers, 9 of them hand-written.
 
 * Decisions
+
+- *Reshape the model where the standard demands it, rather than exempt the
+  component.* The platform entity, the two telemetry tables as
+  current-state hypertables, and the work surface and telemetry protocol
+  as operation models all exist because an item could not pass without
+  them. The task records each, and the per-item decisions are in
+  =clean-compute/decisions.tsv=.
+- *Fix a generator at its source, then refresh.* Nine generator defects
+  were fixed with seventeen cases; the two still open in the tooling are
+  recorded against G07 with the artefacts they hold back.
+- *The five items the standard gained on 2026-09-25 apply to every
+  component.* B06, G07, H04, V07 and V08 came from the infrastructure
+  survey, and this task runs them like the rest.
+- *A component is not clean until it runs.* Every gate passed while the
+  event pipeline dropped every notification and the grid dispatched
+  nothing. Bringing the grid up and running the sample job end to end is
+  part of this story's acceptance, not an extra.
 
 * Out of scope
 

@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: F2FCB7EA-8F6E-45A1-A853-88D2CFD71BA1
+:END:
+#+title: A current-state remove reports removed for a delete that matched nothing
+#+description: execute_delete_query discards the affected-row count, so a generated current-state repository returns remove_status::removed although the tenant-scoped DELETE matched no rows; the audit-column path reads the row back and does not have this hole.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:database:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A generated repository's =remove()= answers with a =remove_status=. For an
+entity with audit columns the template reads the row back after the DELETE
+and answers =conflicting= when it is still there. A current-state entity
+has no audit columns, so the read-back is skipped and the function answers
+=removed= whatever the DELETE did. =execute_delete_query= is the reason it
+cannot know: it discards the affected-row count, so a DELETE that matched
+nothing is indistinguishable from one that removed the row.
+
+The hole is reachable whenever the DELETE's predicate and the caller's
+belief about the row disagree — the compute workflow bridge did exactly
+that by passing the wrong tenant, and the =removed= answer hid it. Make
+=execute_delete_query= return the affected-row count, and have the
+current-state template answer =missing= when the count is zero. The
+audit-column path needs no change; it already reads the row back.
+
+* Why
+
+=removed= is a claim about the database, and the caller acts on it: the
+bridge treats =removed= as "the link is gone, do not fire again". A false
+=removed= turns an idempotency guard into a loop. Reporting the count is
+one line in a helper every generated repository already calls, so the fix
+is cheaper than each caller guessing.
+
+* References
+
+- =projects/ores.database/include/ores.database/repository/bitemporal_operations.hpp= —
+  =execute_delete_query=, which returns void today.
+- =projects/ores.codegen/library/templates/cpp_domain_type_repository.cpp.mustache= —
+  the =has_audit_columns= read-back and the current-state path beside it.
+- =projects/ores.compute/service/src/app/batch_workflow_bridge.cpp= — the
+  caller the wrong answer misled.
+
+* See also
+
+- [[id:C70600A2-817B-4FE3-8D7D-09F2A2327484][Paginate the compute list requests]] — another generated-read follow-up.

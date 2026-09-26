@@ -26,11 +26,11 @@ ores.compute passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:543DE51B-B9D8-4261-9DB1-9B97D4C9F187][Clean ores.compute to the component clean standard]] |
-| Now          | Every applicable item passes. The component is at the standard. |
-| Waiting on   | Nothing. The two decisions this task raised are recorded and taken. |
-| Next         | Raise the PR, after a rebase onto the current =origin/main=. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -45,15 +45,21 @@ ores.compute passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order, one entity at a time, and
 record each item's result in the table below.
 
-1. Baseline and inventory (B01 to B05). Record the baseline before any
+The standard grew five items while this task ran: the survey of four
+model-free infrastructure components on 2026-09-25 added B06, G07, H04,
+V07 and V08, so the standard now holds 47. All five apply to any
+component, so this task runs them too and records the result like the
+rest.
+
+1. Baseline and inventory (B01 to B06). Record the baseline before any
    edit.
 2. Models (M01 to M10).
 3. Protocol (P01 to P06).
-4. Generation (G01 to G06).
+4. Generation (G01 to G07).
 5. Wiring and data (W01 to W04).
 6. Shell (S01, S02).
-7. Structure and hygiene (H01 to H03).
-8. Verification (V01 to V06), ending with the registry entry.
+7. Structure and hygiene (H01 to H04).
+8. Verification (V01 to V08), ending with the registry entry.
 
 | Item | Result  | Evidence |
 |------+---------+----------|
@@ -62,12 +68,14 @@ record each item's result in the table below.
 | B03  | Pass    | Re-surveyed after the workflow batch link: 322 C++ files outside tests, 270 generated and 52 hand-written, against 258, 189 and 69 at the baseline. Messaging headers 45, with 5 hand-written, all five live handlers and the registrar composition point. Each of the 52 is classified below as infrastructure or dead, and none is generatable. Evidence in =evidence/b02_b03_b04_inventory_after_workflow_link.txt=. |
 | B04  | Pass    | Same file: 80 subjects across ten protocol headers, and no raw subject literal is left in hand-written code. The four that built a =compute.v1.work.assignments.= subject at runtime now build it from the generated constant. |
 | B05  | Pass    | Nothing blocks the work. PR #2138 merged, so the branch rebased onto =origin/main= at =5de59e3fb8= and picked up its M09 chrome removal. No other in-flight branch touches =projects/ores.compute=. |
+| B06  | Pass    | =evidence/b06_consumer_census.txt=: every hand-written public header that declares a symbol has a production consumer, and none is reached only from a test. The two headers with no consumer declare no symbol. |
 | G01  | Pass    | Regeneration is byte-clean and idempotent, and the component builds. =check_component_drift.py --component compute-cpp= reports no drift, and it reported no drift on the two runs before it as well. =evidence/g01_regeneration_run8.txt=. |
 | G02  | Pass    | Every file the generation supersedes is generated now, at the path it was hand-written at: the three protocol headers, the platform stack, the telemetry and work protocols, the two telemetry tables with their entities, mappers and repositories, and the workflow batch link. The 52 files left hand-written are the component's infrastructure, and the classification below says of each why generation does not supersede it. |
 | G03  | Pass    | 225 files under =projects/ores.compute= carry the generated marker and 60 do not, and the 60 are the hand-written set B03 classified. The argument that every generated file is marked is the empty drift list: the generator writes the marker, so a generated file missing it would always differ from the tree and appear there. =evidence/b02_b03_b04_inventory_after_work.txt=. |
 | G04  | Pass    | The generated output was read against the hand-written code it replaced, facet by facet, over the platform model and the two operation models. Two defects came out of it and are fixed in the templates: a response member that collided with an entity named =result=, and TypeScript domain imports that collided with the public types. Details in Notes. |
 | G05  | Pass    | Nine generator defects, fixed at source with seventeen new cases: five in =org_loader.py= (the version-facet suffix, the response payload member, the stated verb on a facet message, the TypeScript domain alias, and the declared key field), the junction announcement, the put arity that counted a minted id, the replace that minted one, and the table renderer's row variable. Two generator gaps were features rather than defects and carry cases too: the hypertable retention policy and the newest read. Details in Notes. |
 | G06  | Pass    | =regenerate_cmake_component_files.py --component ores.compute.<part> --check= reports every source list up to date, for all five parts and for the shell adapter part. |
+| G07  | Pass    | =evidence/g07_generator_defects.txt=: two generator defects are open, and no artefact behind either was refreshed. The =puml= generator resolves only =projects/<name>/include/<name>/=, so the shell compute diagram reports no include directory and stays hand-maintained; =entity_meta_model_cpp_qt.org= still emits the Qt chrome M09 removed. Every other artefact was refreshed only after its defect was fixed, which G05 records. |
 | M02  | Pass    | Eight of the nine models bind to a profile: six to =uuid-identified-lookup=, the junction to =tenant-scoped-junction= and the two telemetry tables to =readonly-timeseries=. The workflow batch link is a recorded no-match: none of the thirteen profiles describes a tenant-scoped current-state entity with no audit tail, and the closest, =tenant-scoped-junction=, is defined for a junction's two-sided link. Its features are stated in the model and its reason is in Notes. |
 | M04  | Pass    | No property sits in a namespace the loader does not read for it. The one that did was =has_change_reason_cache=, moved to the model root for M09, and it is now removed as dead. |
 | M05  | Pass    | Each model describes one table. The junction is modelled as a junction and no joined shape is modelled as an entity. No compute table is current-state, so no model needs the current-state shape. |
@@ -81,9 +89,11 @@ record each item's result in the table below.
 | V01  | Pass    | =compass build= over the whole tree exits 0, with the component's tests and every consumer. |
 | V02  | Pass    | The codegen suite passes 536 cases. All four compute suites pass against the live fleet: api 165 assertions in 54 cases, core 60 in 10, service 26 in 10, wrapper 20 in 5. One defect came out of it, the platform table's select-only RLS policy, and is fixed. Evidence in =evidence/v02_test_suites.txt=. |
 | V03  | Pass    | The database recreates from scratch, the fleet starts and serves, and a session works. =compass db recreate -y -k= exits 0 and the recreated platform table carries the generated notify trigger. The bootstrap commands were persisting nothing, which is fixed: an account and a tenant now exist and a login succeeds. Evidence in =evidence/v03_v04_fleet.txt= and =evidence/v04_shell_commands.txt=. |
-| V04  | Pass    | All 57 generated compute shell commands ran against the live fleet and answered, with no failure: the eight menus' reads, the seeded reads, and a full add, get, versions, set and delete cycle for each of the seven entities and the junction. Three defects came out of the run and are fixed at source. Evidence in =evidence/v04_shell_commands.txt=. |
+| V04  | Pass    | All 56 generated compute shell commands ran against the live fleet and answered, with no failure: the eight menus' reads, the seeded reads, and a full add, get, versions, set and delete cycle for each of the seven entities and the junction. Three defects came out of the run and are fixed at source. Evidence in =evidence/v04_shell_commands.txt=. |
 | V05  | Pass    | Every gate is green with the component under test: component drift, model drift, protocol twin coverage, handler permissions, populate references, recipe inventory and the CMake source lists, with the exceptions each gate already carries elsewhere. Evidence in =evidence/v05_gates_with_compute_listed.txt= and =evidence/v06_registry_all.txt=. |
 | V06  | Pass    | =COMPONENTS_UNDER_TEST= in =projects/ores.codegen/scripts/component_registry.py= lists =compute-cpp=, and =check_component_drift.py --all= passes over the list. Evidence in =evidence/v06_registry_all.txt=. |
+| V07  | Pass    | =evidence/v07_vacuous_tests.txt=: every test asserts a literal expected value. Each non-empty, truthiness or non-throw assertion sits beside such an assertion in the same case, so a subject that did nothing fails it. |
+| V08  | Pass    | =evidence/v08_source_files_without_a_test.txt=: all twenty hand-written =src/= files, each with the test that covers it or the reason it has none. One gap is recorded: =batch_workflow_bridge.cpp= has no test, and the review found a tenant-scoped removal defect there. |
 | P05  | Pass    | Every consumer follows the protocol: the shell application and, before main deleted the component, the CLI. Nothing is carried for backwards compatibility. |
 | P01  | Pass    | Every audited entity speaks list, get, put and delete, and carries the versions facet for the history and point-in-time reads: =compute.v1.<plural>_versions.list= and =.get=. The junction carries neither, and no junction in the codebase does, iam's included. That is a codegen-level decision, recorded as a finding rather than fixed here. |
 | P02  | Pass    | No raw subject literal is left in hand-written code. The last four built a =compute.v1.work.assignments.= subject at runtime, and =work_assignment_event::nats_subject= now carries it. Evidence in =evidence/b02_b03_b04_inventory_after_work.txt=. |
@@ -99,8 +109,10 @@ record each item's result in the table below.
 | H01  | Pass    | The Component Architecture Audit ran against =projects/ores.compute=. Shape and part catalogue pass, every directory at depth 3 is signed off, no never-tracked file and no empty directory exists, the facade dirs mirror, and =validate_docs.sh= passes all 41 components. Its two real findings are fixed: the stale =service= and =wrapper= part diagrams are refreshed and re-rendered. The missing root =.puml= is not a finding, because a composite root's =modeling/= is the group index the validator exempts. Details in Notes. |
 | H02  | Pass    | No Qt or Wt code, no commented-out code and no dead code remain. The one hand-written duplicate of a generated artefact is deleted: =wrapper/src/app/log_publisher.hpp=, a redirect header that nothing included. Details in Notes. |
 | H03  | Pass    | A comment-rule review of the whole component found 65 violations, and all 65 are fixed: 27 restatements and edit-history narrations in sources, tests and models, 21 end-of-line comments, and the retired-technology names in model prose, which regeneration carries into the generated headers and SQL. The one template-level violation, the =AUTOMOC= comment in the generated =component_files.cmake=, is fixed in its org source too, so compute carries none. The remaining stale copies live in 22 other components and are recorded as a codegen-wide finding. Details in Notes. |
+| H04  | Pass    | =evidence/h04_platform_shims.txt=: the only platform branches are four =#ifdef _WIN32= calls into libarchive's wide-character API, which the standard library does not replace. No hand-rolled =unreachable()=, no =no_unique_address= macro, no compiler-detection header. |
 
-Items not listed are not yet worked. Sections 2 to 8 are open.
+Every applicable item is recorded above: 46 pass and one (P06) does not
+apply. The five items the standard gained on 2026-09-25 are among them.
 
 The H01 and H03 work is a review, so the method and the findings are worth
 more than the verdict.
@@ -646,11 +658,59 @@ unit the model later generated, are registered in the repl and linked into
 =A hand-written compute command family sat beside them=, listing apps, app
 versions, platforms, hosts, batches, workunits and results, publishing a
 package and downloading bundles. The generated units supersede the list
-verbs, so those commands are deleted and the hand-written file keeps only
-what no entity verb covers: publishing a package, dispatching a batch, and
-downloading a job's input or a result's output. Those four are
-orchestrations over several entities rather than one entity's verb, which
-is why no unit carries them.
+verbs, so those commands are deleted and the hand-written file keeps the
+five verbs no entity model covers: publish a package, dispatch a batch,
+watch the grid, and download a job's input or a result's output. Each
+orchestrates several entities rather than one, which is why no unit
+carries it. The hand-written =list-platforms= verb went as well, once the
+platform model generated a menu that streams the same table.
+
+** The review round
+
+An independent review of the branch ran before the PR, on the standards
+axis and the spec axis. It found six things worth acting on, and all six
+are fixed.
+
+- *The bridge removed a link as the wrong tenant.*
+  =batch_workflow_bridge= read every tenant's pending links as the system
+  tenant, then removed the finished link as the system tenant too. The
+  generated removal is tenant-scoped, so that DELETE matched nothing while
+  returning =removed=: the link survived and the bridge republished
+  =step_completed_event= on every poll. The stale-link path two lines above
+  already used the link's own tenant; the success path now does too, and it
+  reads the returned status and warns when the removal did not happen.
+  G02's note recorded the intent correctly all along; the code did not
+  follow it everywhere.
+- *The platform event mapping was never registered.* The platform model
+  generated a registrar, and the application wired the other six but not
+  that one, so a platform change reached the in-process bus and never NATS.
+  W01 claimed the pipeline was complete; it was not. The registrar is
+  registered with its siblings now.
+- *The platform policy let a tenant delete a system row.* The policy was
+  widened to =for all= so a tenant could insert its own platform row, but a
+  single =for all= policy uses one =using= clause for select, update and
+  delete, so it also allowed deleting or re-tenanting the seeded system
+  rows. It is now one policy per command: reads see the system rows, and
+  every write is the tenant's own.
+- *Five of the standard's items were unrecorded.* The standard gained B06,
+  G07, H04, V07 and V08 on 2026-09-25, after the Plan table was written.
+  All five apply to any component, so all five were run and recorded, with
+  evidence. The table now carries 47 items: 46 pass, one N/A.
+- *Two records contradicted the code.* The registry comment still called
+  G02 the one item compute does not close, and V04 counted 57 commands
+  where the evidence has 56. Both are corrected.
+- *Comment and dead-code findings.* The bridge and application carried
+  history narration, =application.cpp= included seven headers it no longer
+  used, =postgres_event_source= kept an unreachable =on_entity_change=,
+  =validation_ignore.txt= kept a dangling comment block, and three
+  documents named things the tree does not have (=save_app_request=,
+  =ir-swap=, and a claim that a missing package logs nothing). All are
+  fixed.
+
+The review also confirmed the parts that matter: the runbook's command
+signatures match the shell, the seed's SHA256 equals the vendored
+tarball's, the CSV row and column counts match the Academy example, and
+=COMPONENTS_UNDER_TEST= carries =compute-cpp= with the drift gate clean.
 
 * Test Scenarios
 
@@ -673,6 +733,47 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The bridge removes the finished link with the service's own tenant, so the tenant-scoped DELETE matches nothing and the link is republished every poll. | =projects/ores.compute/service/src/app/batch_workflow_bridge.cpp= | Accept | Fixed: the removal uses the link's tenant, and it reads the returned status and warns when the row survived. |
+| 2 | The generated platform event registrar has no caller, so platform changes never reach NATS while W01 claims the pipeline is complete. | =projects/ores.compute/service/src/app/application.cpp= | Accept | Fixed: registered with the other six, and its subscription is released with them. |
+| 3 | The platform policy is =for all=, so a tenant can delete or re-tenant the seeded system rows. | =projects/ores.sql/create/compute/compute_rls_policies_create.sql= | Accept | Fixed: one policy per command. Reads see the system rows, and insert, update and delete are the tenant's own. |
+| 4 | Five standard items (B06, G07, H04, V07, V08) are absent from the Plan table, Notes and evidence. | =doc/agile/versions/v0/sprint_26/clean-compute/task_clean_compute.org= | Accept | Fixed: all five run and recorded, with evidence. The table now holds 47 items. |
+| 5 | The registry comment calls G02 the one item compute does not close, contradicting the G02 row and its note. | =projects/ores.codegen/scripts/component_registry.py= | Accept | Fixed: the comment records what stays hand-written instead. |
+| 6 | V04 says 57 commands ran; the evidence has 56. | =doc/agile/versions/v0/sprint_26/clean-compute/task_clean_compute.org= | Accept | Fixed: 56. |
+| 7 | The platform diagram omits =platform_commands=, and the shell component overview narrates its own history and claims the hand-written family was replaced. | =projects/ores.shell/compute/modeling/= | Accept | Fixed: the class and its relation are added, and the overview states what the generated part covers and what the =compute= menu keeps. |
+| 8 | History narration and dead code: comments in =application.cpp= and the bridge, seven unused includes, the unreachable =on_entity_change=, a dangling comment block, and three documents naming symbols the tree does not have. | several | Accept | Fixed. |
+| 9 | The batch workflow bridge has no test; the tenant defect above is what the lack let through. | =projects/ores.compute/service/src/app/batch_workflow_bridge.cpp= | Accept | Deferred: recorded as a capture, and listed as the one V08 gap. |
+| 10 | The shell script library does not carry the generated entity recipes' scripts. | =projects/ores.shell/scripts/library/= | Accept | Pre-existing and codegen-wide (793 scripts): recorded as a capture rather than pulled into this branch. |
+| 11 | The eventing listener change is outside the compute component, so it reads as scope creep against the task's goal. | =projects/ores.eventing/core/src/service/postgres_event_source.cpp= | Accept, kept | The change is what makes the grid dispatch at all: the trigger publishes the canonical notification and the listener dropped it. The conversion keeps the 118 registrations that still use the older mapping working, and the migration that deletes the older API is captured. |
 
 * Result
+
+=ores.compute= is at the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean
+Standard]]. All 47 items are recorded on this task: 46 pass and P06 does
+not apply, because the component keeps no warmed event cache. Every
+generator defect found on the way is fixed at its source with a case, and
+the two defects still open in the tooling are recorded with the artefacts
+they hold back rather than papered over.
+
+The component is listed in =COMPONENTS_UNDER_TEST= as =compute-cpp=, and
+=check_component_drift.py --all= reports no drift with it under test. The
+build and the suites are clean.
+
+The task also brought the grid up and ran it end to end, which the
+clean-standard items alone would not have done: the ORE engine package
+published to storage with the SHA256 its platform row states, the vendored
+=TA002_IR_Swap= sample dispatched through the seeded 1.8.17.0 app version,
+15 jobs drained with 15 successes, and the downloaded output matching the
+Academy example's =ExpectedOutput= on every shared column. The procedure is
+=doc/llm/runbooks/run_compute_end_to_end_job/runbook.org=, and the run's
+output is =evidence/e2e_grid_run.txt=.
+
+The review round before the PR found a real defect the gates could not: the
+workflow bridge removed its link as the wrong tenant, so a finished batch
+republished its completion event forever. It is fixed, with the platform
+registrar and the platform policy's write scope. Notes record the round.
+
+What stays open is recorded as captures rather than claimed here: the
+bridge has no test, the shell script library is missing the generated
+entity recipes' scripts, 118 registrations still use the older event
+mapping, and a current-state repository reports =removed= for a delete that
+matched no rows.

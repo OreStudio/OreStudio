@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 9C11A981-EAA8-4AE2-AAEA-7FEE01982CE4
+:END:
+#+title: ores.storage.core
+#+description: The implementation both storage interfaces call: the synchronous HTTP client, the tar.gz archiver, and the atomic and composite transfer helpers.
+#+type: ores.codegen.component
+#+component_kind: core
+#+level: cross
+#+filetags: :storage:core:component:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+name: storage.core
+#+full_name: ores.storage.core
+#+brief: Object storage implementation.
+
+* Summary
+
+=ores.storage.core= is where the bytes actually move. =net/http_client= is the
+synchronous Beast GET, PUT and DELETE that streams file bodies rather than
+buffering them; =filesystem/archiver= packs and extracts =tar.gz= trees through
+libarchive; and =net/storage_transfer= composes the two into the atomic and
+composite operations the callers use. =messaging/= holds the handler that
+answers the operation set on NATS.
+
+Every operation is synchronous and blocking, and the callers run them on
+background threads. The composite helpers stage through a temporary file under
+the system temporary directory.
+
+* Inputs
+
+- A local directory or file to pack, upload or download.
+- A storage endpoint: the HTTP base URL, a bucket name and an object key.
+- A =tar.gz= archive to extract.
+- An in-memory blob to upload, and the compressed bytes to decode on the way back.
+
+* Outputs
+
+- Files written to a local path, or objects written to the remote bucket.
+- Extracted directory trees.
+- The server's response body, for the uploads that read a server-computed
+  checksum out of it.
+- Decompressed blobs in memory.
+
+* Entry points
+
+- =include/ores.storage.core/net/storage_transfer.hpp= — the composite helpers the callers use.
+- =include/ores.storage.core/net/http_client.hpp= — the GET, PUT and DELETE primitive.
+- =include/ores.storage.core/filesystem/archiver.hpp= — =tar.gz= pack and extract.
+- =include/ores.storage.core/messaging/= — the NATS handler.
+
+* Dependencies
+
+- [[id:8778E5E5-2123-4E40-A16D-B13B16D1B7AD][ores.storage.api]] — the path helpers and protocol it serves.
+- =ores.utility= — gzip, for the in-memory blob transfers.
+- =ores.platform= — the scoped temporary file the composite helpers stage through.
+- LibArchive — the =tar.gz= pack and extract.
+- Boost.Beast and Boost.Asio — the HTTP client.
+
+* See also
+
+- [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]] — the component group overview.
+- [[id:288678EF-EB55-4F89-9005-7B3532671C91][ores.storage.service]] — the service that answers the operation set.

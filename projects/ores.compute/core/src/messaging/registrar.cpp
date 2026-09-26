@@ -39,7 +39,7 @@
 #include "ores.compute.core/messaging/telemetry_handler.hpp"
 #include "ores.compute.core/messaging/work_handler.hpp"
 #include "ores.compute.core/messaging/workunit_registrar.hpp"
-#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
+#include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include <memory>
 #include <optional>
 

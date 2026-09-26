@@ -98,7 +98,9 @@ TEST_CASE("concurrency_policy_insertion_operator", tags) {
     os << sut;
     const std::string json_output = os.str();
 
-    CHECK(!json_output.empty());
+    // A serialiser that emitted nothing useful would satisfy a non-empty
+    // check; the field name is the literal the format promises.
+    CHECK(json_output.find("\"code\"") != std::string::npos);
     CHECK(json_output.find("queue") != std::string::npos);
 }
 
@@ -118,9 +120,12 @@ TEST_CASE("create_concurrency_policy_with_faker", tags) {
     sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Concurrency policy: " << sut;
 
+    // The fixture's own fields say only that faker works. The component's
+    // behaviour is its rendered form, so assert on that.
+    std::ostringstream os;
+    os << sut;
+    CHECK(os.str().find(sut.code) != std::string::npos);
     CHECK(sut.version >= 1);
-    CHECK(!sut.code.empty());
-    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new");
 }
 
@@ -132,7 +137,11 @@ TEST_CASE("create_multiple_random_concurrency_policies", tags) {
     for (const auto& [code, name, order] : policies) {
         auto sut = make_concurrency_policy(code, name, order);
         BOOST_LOG_SEV(lg, info) << "Concurrency policy: " << sut;
-        CHECK(!sut.code.empty());
+        // The expected values are the inputs, so assert them rather than that
+        // something non-empty came back.
+        CHECK(sut.code == code);
+        CHECK(sut.name == name);
+        CHECK(sut.display_order == order);
         CHECK(sut.version == 1);
     }
 }
@@ -145,7 +154,8 @@ TEST_CASE("concurrency_policy_convert_single_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
-    CHECK(!table.empty());
+    // The row's own code is the literal the table must show.
+    CHECK(table.find(items.front().code) != std::string::npos);
     CHECK(table.find("fail") != std::string::npos);
 }
 
@@ -161,7 +171,8 @@ TEST_CASE("concurrency_policy_convert_multiple_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
-    CHECK(!table.empty());
+    // The row's own natural key is the literal the table must show.
+    CHECK(table.find(items.front().code) != std::string::npos);
     CHECK(table.find("skip") != std::string::npos);
     CHECK(table.find("queue") != std::string::npos);
     CHECK(table.find("fail") != std::string::npos);
@@ -175,7 +186,9 @@ TEST_CASE("concurrency_policy_convert_empty_vector_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
-    CHECK(!table.empty()); // Table should still have headers
+    // No rows, and the headers must survive anyway: the column title is
+    // the literal the rendered table has to carry.
+    CHECK(table.find("Code") != std::string::npos);
 }
 
 TEST_CASE("concurrency_policy_table_with_faker_data", tags) {
@@ -201,7 +214,8 @@ TEST_CASE("concurrency_policy_table_with_faker_data", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
-    CHECK(!table.empty());
+    // The row's own code is the literal the table must show.
+    CHECK(table.find(items.front().code) != std::string::npos);
     for (const auto& item : items)
         CHECK(table.find(item.code) != std::string::npos);
 }

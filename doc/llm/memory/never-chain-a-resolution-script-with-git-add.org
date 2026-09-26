@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 67214B70-359E-426F-BCCE-AAA3DBC879CD
+:END:
+#+title: Never chain a conflict resolution script with git add
+#+description: A resolution script that fails still leaves the chained git add and git rebase --continue running, which committed conflict markers into history.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+Run conflict resolution and git add as one guarded sequence, never as separate chained statements, because a failing script still leaves the following git add and git rebase --continue to run and stages the markers.
+
+*Why:* This happened twice while rebasing a 22-commit branch onto main. The first time it committed a file containing conflict markers; it was caught only by grepping the committed content, and the rebase had to be aborted and redone. The second time the same mistake left a commit whose message and diff disagreed. git rerere silently replayed earlier resolutions, which made the state harder to reason about, not easier.
+
+*How to apply:* Put set -euo pipefail at the top of the bash call, then verify before staging: test that a grep for the marker prefix over the file counts zero, and only then git add it and continue the rebase -- joined with && so a failure stops the chain. Check that the path is real: a missing app/ segment makes git add fail with a pathspec error that reads as though the file were gone. After the rebase finishes, grep the commits rather than the working tree, because a bad commit the tree no longer shows is exactly the one that reaches the pull request.

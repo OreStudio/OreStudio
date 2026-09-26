@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_tests.mustache
+# To modify, update the template and regenerate.
 set(files
     "concurrency_policy_eventing_integration_tests.cpp"
     "main.cpp"
@@ -24,4 +27,7 @@ set(files
     "report_type_eventing_integration_tests.cpp"
     "repository_report_definition_repository_tests.cpp"
     "repository_report_type_repository_tests.cpp"
+    "service_execution_storage_plan_tests.cpp"
+    "service_publish_subject_plan_tests.cpp"
+    "service_scheduling_plan_tests.cpp"
 )

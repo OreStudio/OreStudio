@@ -146,6 +146,17 @@ private:
                         const std::string& error,
                         const std::string& step_log_json = {});
 
+    /**
+     * @brief Stamps the audit fields the workflow tables require.
+     *
+     * Both tables require modified_by and validate it against the accounts
+     * table, and the engine writes them server-side with no end user behind the
+     * write. It records the service account, which is what it already records
+     * as created_by. Without this the insert is refused and no workflow starts.
+     */
+    void stamp_audit(domain::workflow_instance& instance) const;
+    void stamp_audit(domain::workflow_step& step) const;
+
     /** @brief Stamps a step as having published its command. */
     void stamp_command_published(const boost::uuids::uuid& step_id);
 

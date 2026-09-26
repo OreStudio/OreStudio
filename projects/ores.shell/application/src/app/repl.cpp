@@ -46,6 +46,11 @@
 #include "ores.shell/app/commands/provision_commands.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
 #include "ores.shell/app/commands/refdata/refdata_commands.hpp"
+#include "ores.shell/app/commands/reporting/concurrency_policy_commands.hpp"
+#include "ores.shell/app/commands/reporting/report_definition_commands.hpp"
+#include "ores.shell/app/commands/reporting/report_instance_commands.hpp"
+#include "ores.shell/app/commands/reporting/report_operations_operations_commands.hpp"
+#include "ores.shell/app/commands/reporting/report_type_commands.hpp"
 #include "ores.shell/app/commands/reports_commands.hpp"
 #include "ores.shell/app/commands/script_commands.hpp"
 #include "ores.shell/app/commands/scheduler_commands.hpp"
@@ -107,6 +112,11 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     storage_commands::register_commands(*root, session_);
     accounts_commands::register_commands(*root, session_, pagination_);
     system_setting_commands::register_commands(*root, session_);
+    concurrency_policy_commands::register_commands(*root, session_);
+    report_definition_commands::register_commands(*root, session_);
+    report_instance_commands::register_commands(*root, session_);
+    report_type_commands::register_commands(*root, session_);
+    report_operations_operations_commands::register_commands(*root, session_);
     subscription_commands::register_commands(*root, session_);
     rbac_commands::register_commands(*root, session_, pagination_);
     tenants_commands::register_commands(*root, session_, pagination_);

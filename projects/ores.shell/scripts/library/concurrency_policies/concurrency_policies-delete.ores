@@ -1,0 +1,6 @@
+# =delete=
+#
+# GENERATED from doc/recipes/shell/concurrency_policies/concurrency_policy.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+concurrency_policies delete __none__ system.new_record generated_script

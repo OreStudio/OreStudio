@@ -66,6 +66,7 @@ target_link_libraries(${lib_target_name}
         ores.shell.compute.lib
         ores.shell.analytics.lib
         ores.shell.workflow.lib
+        ores.shell.reporting.lib
         ores.shell.variability.lib
         ores.shell.storage.lib
         ores.trading.api.lib

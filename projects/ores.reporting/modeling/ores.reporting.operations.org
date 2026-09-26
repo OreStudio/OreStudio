@@ -1,0 +1,608 @@
+:PROPERTIES:
+:ores.cpp.shell-command.enabled: true
+:ID: beeec4a7-537c-4d14-afd2-446012b81eed
+:END:
+#+title: ores.reporting.operations
+#+description: Codegen operation model for the reporting component's domain operations: messages that are not entity verbs and so do not belong in the common resource grammar.
+#+type: ores.codegen.operation
+#+component: reporting
+#+subcomponent: api
+#+entity_singular: report_operations
+#+namespace: ores::reporting::messaging
+#+brief: The reporting component's domain operations.
+#+filetags: :model:operation:reporting:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The reporting component's domain operations, as the
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] § "Domain operations" defines for
+entities.
+
+=trigger_report_instance= starts one execution of a report definition. It is
+not a write of one entity: it creates a =report_instance=, applies the
+definition's concurrency policy, and dispatches the report execution workflow.
+It is also not a user action. The scheduler sends it when a job fires, so the
+caller is a service rather than a person, and the message names the tenant the
+definition belongs to rather than deriving it from the caller's own privilege.
+
+The acting identity is still the caller's. The scheduler presents its own
+service account, and the permission check reads that account's roles.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** trigger_report_instance_request
+:PROPERTIES:
+:subject: reporting.v1.ops.trigger_report_instance
+:response: trigger_report_instance_response
+:END:
+
+*** report_definition_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The report definition to run.
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The tenant that owns the definition. It is stated rather than derived because
+the scheduler runs as one service account in one tenant, while definitions
+belong to the tenants that scheduled them. The handler scopes the definition
+lookup to this tenant, and the caller's permission check decides whether the
+caller may act in it.
+
+*** job_instance_id
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+The scheduler's job instance that caused this trigger, copied to the report
+instance's =trigger_run_id=. Zero when a caller triggers a report by hand.
+
+** trigger_report_instance_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+Outcome of the operation, in the same shape every entity operation answers
+with, so a caller reads one result convention across the component.
+
+** schedule_report_definitions_request
+:PROPERTIES:
+:subject: reporting.v1.report-definitions.schedule
+:response: schedule_report_definitions_response
+:END:
+
+*** ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The report definitions to schedule. Each gets a scheduler job, so it fires
+without anyone asking again.
+
+** schedule_report_definitions_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** scheduled_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** failed_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** unschedule_report_definitions_request
+:PROPERTIES:
+:subject: reporting.v1.report-definitions.unschedule
+:response: unschedule_report_definitions_response
+:END:
+
+*** ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The report definitions to stop firing.
+
+** unschedule_report_definitions_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** unscheduled_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** failed_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** publish_report_definitions_from_dq_request
+:PROPERTIES:
+:subject: reporting.v1.report-definitions.publish-from-dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes a DQ-cleared report definitions bundle.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply, so it states a subject and no response. Its body is the DQ artefact
+ * the server-side function knows how to expand, which is why it declares no
+ * fields. It is declared here, and referenced rather than spelled out, because
+ * the SQL function name the handler derives from it depends on the spelling.
+ */
+#+end_src
+
+** gather_trades_request
+:PROPERTIES:
+:subject: reporting.v1.report.gather-trades
+:response: gather_trades_result
+:END:
+
+Step 0: gather trades from the trading service.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+
+** gather_trades_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** trade_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** gather_market_data_request
+:PROPERTIES:
+:subject: reporting.v1.report.gather-market-data
+:response: gather_market_data_result
+:END:
+
+Step 1: gather market data series.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+
+** gather_market_data_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** series_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** assemble_bundle_request
+:PROPERTIES:
+:subject: reporting.v1.report.assemble-bundle
+:response: assemble_bundle_result
+:END:
+
+Step 2: assemble and persist the report input bundle.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** trades_storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** market_data_storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** trade_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** series_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+
+** assemble_bundle_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** bundle_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** prepare_ore_package_request
+:PROPERTIES:
+:subject: ore.v1.report.prepare-package
+:response: prepare_ore_package_result
+:END:
+
+Step 3: ORE mapping and tarball packaging. Served by ores.ore.service.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** bundle_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** trades_storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** market_data_storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+
+** prepare_ore_package_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tarball_uris
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** submit_compute_request
+:PROPERTIES:
+:subject: compute.v1.report.submit
+:response: submit_compute_result
+:END:
+
+Step 4: submit tarballs to the compute grid. Served by ores.compute.service.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tarball_uris
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+
+** submit_compute_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** batch_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** collect_compute_results_request
+:PROPERTIES:
+:subject: reporting.v1.report.collect-compute-results
+:response: collect_compute_results_result
+:END:
+
+Step 5: collect and persist compute results.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** batch_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+
+** collect_compute_results_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** finalise_report_request
+:PROPERTIES:
+:subject: reporting.v1.report.finalise
+:response: finalise_report_result
+:END:
+
+Final step: mark the report instance as completed.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+
+** finalise_report_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** fail_report_request
+:PROPERTIES:
+:subject: reporting.v1.report.fail
+:response: fail_report_result
+:END:
+
+Compensation: mark the report instance as failed.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+
+** fail_report_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** report_execution_request
+
+The payload the workflow engine stores as =workflow_instance.request_json= and
+hands to every step builder. It states no subject, because it is not a bus
+message: it is serialised into the start message's =request_json=, never sent
+on a subject of its own.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+* See also
+
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the operation rules this model follows.
+- [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] — the work this model belongs to.

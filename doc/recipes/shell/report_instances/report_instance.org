@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: D3BF8572-BC25-53F3-80CA-8CB254DA5946
+:END:
+#+title: How do I run the report_instances commands from the shell?
+#+description: Every command the report_instances submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:report_instances:
+
+This file documents the report_instances resource at the shell, one section per command. Every command is a subcommand of =report_instances=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 7AF30F5C-7ABC-5878-9740-DE9E95603C11
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_instances list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.report_instances.list=.
+
+#+name: report_instances-list
+#+begin_src ores-shell :tangle report_instances-list.ores :exports none
+report_instances list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 85B96321-39C2-58B6-B781-F58B5CD2CFB5
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_instances get <name>
+#+end_example
+
+It is addressed at =reporting.v1.report_instances.get=.
+
+#+name: report_instances-get
+#+begin_src ores-shell :tangle report_instances-get.ores :exports none
+report_instances get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 4848007F-EB6A-517A-A29F-272C5B600634
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_instances get-many <name>
+#+end_example
+
+It is addressed at =reporting.v1.report_instances.get_many=.
+
+#+name: report_instances-get-many
+#+begin_src ores-shell :tangle report_instances-get-many.ores :exports none
+report_instances get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: CBD91A85-3E14-5327-AD17-454884DC8960
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_instances add <name> <description> <definition_id> <fsm_state_id> <trigger_run_id> <output_message> <started_at> <completed_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.report_instances.put=.
+
+#+name: report_instances-add
+#+begin_src ores-shell :tangle report_instances-add.ores :exports none
+report_instances add __none__ __none__ 00000000-0000-0000-0000-000000000000 __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 19735EFA-BB7D-578E-BF29-C5EFF169EE8D
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_instances set <id> <name> <description> <definition_id> <fsm_state_id> <trigger_run_id> <output_message> <started_at> <completed_at> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.report_instances.put=.
+
+#+name: report_instances-set
+#+begin_src ores-shell :tangle report_instances-set.ores :exports none
+report_instances set 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 71EF41BB-2747-5E94-8DB6-3CE7C095E46F
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_instances put-many --count <n> <id> <name> <description> <definition_id> <fsm_state_id> <trigger_run_id> <output_message> <started_at> <completed_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.report_instances.put_many=.
+
+#+name: report_instances-put-many
+#+begin_src ores-shell :tangle report_instances-put-many.ores :exports none
+report_instances put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 902AC9A3-663C-5565-9540-1D7A51272095
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_instances delete <name> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.report_instances.delete=.
+
+#+name: report_instances-delete
+#+begin_src ores-shell :tangle report_instances-delete.ores :exports none
+report_instances delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: EDF38BB8-E2B3-5E27-9F71-2E87FDA8B024
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_instances delete-many <name> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.report_instances.delete_many=.
+
+#+name: report_instances-delete-many
+#+begin_src ores-shell :tangle report_instances-delete-many.ores :exports none
+report_instances delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 0ED2E603-AA48-513D-B63F-09558B7CB97C
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_instances versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.report_instances_versions.list=.
+
+#+name: report_instances-versions
+#+begin_src ores-shell :tangle report_instances-versions.ores :exports none
+report_instances versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 437BB8E8-953B-5D8F-AA93-7DD1B5211B93
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_instances version <name> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.report_instances_versions.get=.
+
+#+name: report_instances-version
+#+begin_src ores-shell :tangle report_instances-version.ores :exports none
+report_instances version __none__ --version 1
+#+end_src
+

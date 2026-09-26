@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "messaging/concurrency_policy_history_provider_registrar.cpp"
     "messaging/concurrency_policy_registrar.cpp"
@@ -49,13 +52,16 @@ set(files
     "repository/risk_report_config_mapper.cpp"
     "repository/risk_report_config_repository.cpp"
     "service/concurrency_policy_service.cpp"
+    "service/execution_storage_plan.cpp"
+    "service/publish_subject_plan.cpp"
     "service/report_definition_service.cpp"
     "service/report_instance_service.cpp"
     "service/report_scheduling_service.cpp"
     "service/report_type_service.cpp"
+    "service/scheduling_plan.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/messaging/concurrency_policy_handler.hpp"
@@ -99,8 +105,11 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/repository/risk_report_config_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/repository/risk_report_config_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/concurrency_policy_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/execution_storage_plan.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/publish_subject_plan.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/report_definition_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/report_instance_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/report_scheduling_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/report_type_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/scheduling_plan.hpp"
 )

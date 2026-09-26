@@ -24,10 +24,11 @@
 #include "ores.compute.core/repository/workflow_batch_link_repository.hpp"
 #include "ores.compute.core/service/batch_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
+#include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include <boost/uuid/uuid_generators.hpp>
@@ -96,6 +97,26 @@ void report_submit_handler::submit(ores::nats::message msg) {
 
         BOOST_LOG_SEV(lg(), info) << "Created compute batch: " << batch_id;
 
+        // ── Resolve the application version ───────────────────────────
+        // A workunit must name one and the table refuses a nil value. The
+        // report configuration does not state which version to run yet, so the
+        // tenant's newest is used; a field on the config would make the choice
+        // explicit rather than implied.
+        const auto app_version_rows = ores::database::repository::execute_parameterized_string_query(
+            tenant_ctx,
+            "SELECT id::text FROM ores_compute_app_versions_tbl "
+            "WHERE tenant_id = $1::uuid AND valid_to = ores_utility_infinity_timestamp_fn() "
+            "ORDER BY version DESC LIMIT 1",
+            {req.tenant_id},
+            lg(),
+            "Resolving the application version for a report workunit");
+        if (app_version_rows.empty() || app_version_rows.front().empty()) {
+            wf->fail("submit_compute: no application version is configured for this tenant");
+            return;
+        }
+        boost::uuids::string_generator app_version_sg;
+        const auto app_version_uuid = app_version_sg(app_version_rows.front());
+
         // ── Create workunits and publish assignments ───────────────────
         service::workunit_service wu_svc(tenant_ctx);
         std::vector<std::string> workunit_ids;
@@ -107,8 +128,7 @@ void report_submit_handler::submit(ores::nats::message msg) {
             domain::workunit wu;
             wu.id = wu_uuid;
             wu.batch_id = batch_uuid;
-            // No ORE app version is assigned to this workunit yet.
-            wu.app_version_id = {};
+            wu.app_version_id = app_version_uuid;
             wu.input_uri = tarball_uri;
             wu.priority = 1;
             wu.target_redundancy = 1;

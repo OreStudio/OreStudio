@@ -23,10 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.service/messaging/report_definition_event_registrar.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
-#include "ores.reporting.api/eventing/report_definition_changed_event.hpp"
+#include "ores.reporting.api/eventing/report_definition_event.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 
 namespace ores::reporting::service::messaging {
 
@@ -38,19 +39,19 @@ namespace ev = ores::eventing;
 register_report_definition_event_mapping(ev::service::postgres_event_source& event_source,
                                          ev::service::event_bus& event_bus,
                                          ores::nats::service::client& nats) {
-    ev::service::registrar::register_mapping<reporting::eventing::report_definition_changed_event>(
-        event_source, "ores.reporting.report_definition", "ores_reporting_report_definitions");
+    // The trigger publishes on the table's own channel, and the mapping turns
+    // what it says into this entity's event.
+    event_source.register_entity_event_mapping<reporting::messaging::report_definition_event>(
+        "ores_reporting_report_definitions");
 
-    return event_bus.subscribe<reporting::eventing::report_definition_changed_event>(
-        [&nats](const reporting::eventing::report_definition_changed_event& e) {
+    return event_bus.subscribe<reporting::messaging::report_definition_event>(
+        [&nats](const reporting::messaging::report_definition_event& e) {
+            // One payload is addressed by three subjects, so the subject is
+            // the collection's prefix and the action the event reports.
             ev::service::publish_entity_event(
                 nats,
-                std::string(ev::domain::event_traits<
-                            reporting::eventing::report_definition_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.reporting.report_definition",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.definition_ids,
-                                                .tenant_id = e.tenant_id});
+                ev::domain::event_subject<reporting::messaging::report_definition_event>(e.action),
+                e);
         });
 }
 

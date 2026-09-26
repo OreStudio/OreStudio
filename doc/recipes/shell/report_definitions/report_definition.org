@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 2780B6E3-0EBE-5518-9134-B6EA0294A5C9
+:ID: 8F7DD182-B1ED-5933-B377-9C0066D96489
 :END:
 #+title: How do I run the report_definitions commands from the shell?
 #+description: Every command the report_definitions submenu answers, with the script each one exports into the shell's script library.
@@ -13,7 +13,7 @@ This file documents the report_definitions resource at the shell, one section pe
 
 ** =list=
 :PROPERTIES:
-:ID: BCD12877-16E1-52B2-A55F-15D5C0B0F55F
+:ID: 7FC4E62B-129F-515F-931C-E4D94222C602
 :END:
 
 Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
@@ -25,7 +25,7 @@ The command is shaped like this:
 report_definitions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
 #+end_example
 
-It is addressed at =dq.v1.report_definitions.list=.
+It is addressed at =reporting.v1.report_definitions.list=.
 
 #+name: report_definitions-list
 #+begin_src ores-shell :tangle report_definitions-list.ores :exports none
@@ -34,7 +34,7 @@ report_definitions list --limit 1
 
 ** =get=
 :PROPERTIES:
-:ID: 52904275-B0D3-5618-9A99-ACA7297E0B6A
+:ID: BCCC4310-B08E-5973-B103-08801A7CE429
 :END:
 
 Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
@@ -43,19 +43,19 @@ Reads the one row its key addresses. A key states every identifying column, so a
 The command is shaped like this:
 
 #+begin_example
-report_definitions get <id>
+report_definitions get <name>
 #+end_example
 
-It is addressed at =dq.v1.report_definitions.get=.
+It is addressed at =reporting.v1.report_definitions.get=.
 
 #+name: report_definitions-get
 #+begin_src ores-shell :tangle report_definitions-get.ores :exports none
-report_definitions get 00000000-0000-0000-0000-000000000000
+report_definitions get __none__
 #+end_src
 
 ** =get-many=
 :PROPERTIES:
-:ID: B31586DA-B194-58DE-91CA-8CA9C5998935
+:ID: 9C52F7B0-D28A-5699-A9E2-962C4FAD1E63
 :END:
 
 Reads several rows in one request, one key group per row.
@@ -64,19 +64,19 @@ Reads several rows in one request, one key group per row.
 The command is shaped like this:
 
 #+begin_example
-report_definitions get-many <id>
+report_definitions get-many <name>
 #+end_example
 
-It is addressed at =dq.v1.report_definitions.get_many=.
+It is addressed at =reporting.v1.report_definitions.get_many=.
 
 #+name: report_definitions-get-many
 #+begin_src ores-shell :tangle report_definitions-get-many.ores :exports none
-report_definitions get-many 00000000-0000-0000-0000-000000000000
+report_definitions get-many __none__
 #+end_src
 
 ** =add=
 :PROPERTIES:
-:ID: 6B560D87-46BA-543D-A19D-9460A8495D69
+:ID: 3CB53D9B-C351-5090-83EA-A9BDF357567F
 :END:
 
 Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
@@ -85,19 +85,19 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-report_definitions add <name> <description> <report_type> <schedule_expression> <concurrency_policy> <display_order> <reason> <commentary>
+report_definitions add <name> <description> <report_type> <fsm_state_id> <schedule_expression> <concurrency_policy> <scheduler_job_id> <reason> <commentary>
 #+end_example
 
-It is addressed at =dq.v1.report_definitions.put=.
+It is addressed at =reporting.v1.report_definitions.put=.
 
 #+name: report_definitions-add
 #+begin_src ores-shell :tangle report_definitions-add.ores :exports none
-report_definitions add __none__ - __none__ __none__ __none__ 0 system.new_record generated_script
+report_definitions add __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
 :PROPERTIES:
-:ID: 0890517F-1FED-5CEA-B798-6B673049F568
+:ID: D9113757-C69F-566E-8FA9-197388DF2F7E
 :END:
 
 Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
@@ -106,19 +106,19 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-report_definitions set <id> <name> <description> <report_type> <schedule_expression> <concurrency_policy> <display_order> <reason> <commentary> [--version <n>]
+report_definitions set <id> <name> <description> <report_type> <fsm_state_id> <schedule_expression> <concurrency_policy> <scheduler_job_id> <reason> <commentary> [--version <n>]
 #+end_example
 
-It is addressed at =dq.v1.report_definitions.put=.
+It is addressed at =reporting.v1.report_definitions.put=.
 
 #+name: report_definitions-set
 #+begin_src ores-shell :tangle report_definitions-set.ores :exports none
-report_definitions set 00000000-0000-0000-0000-000000000000 __none__ - __none__ __none__ __none__ 0 system.new_record generated_script
+report_definitions set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
 :PROPERTIES:
-:ID: 39B500D3-CCB5-5178-B366-1AF05BE28563
+:ID: 09912669-C38D-563A-9B33-BEBAC22289DE
 :END:
 
 Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
@@ -127,19 +127,19 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-report_definitions put-many --count <n> <id> <name> <description> <report_type> <schedule_expression> <concurrency_policy> <display_order> <reason> <commentary>
+report_definitions put-many --count <n> <id> <name> <description> <report_type> <fsm_state_id> <schedule_expression> <concurrency_policy> <scheduler_job_id> <reason> <commentary>
 #+end_example
 
-It is addressed at =dq.v1.report_definitions.put_many=.
+It is addressed at =reporting.v1.report_definitions.put_many=.
 
 #+name: report_definitions-put-many
 #+begin_src ores-shell :tangle report_definitions-put-many.ores :exports none
-report_definitions put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ - __none__ __none__ __none__ 0 system.new_record generated_script
+report_definitions put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=
 :PROPERTIES:
-:ID: 688175EA-C950-5621-BA6C-968DDF30BF0E
+:ID: 0305F8FB-3428-5A68-ACFD-C376C3285573
 :END:
 
 Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
@@ -148,19 +148,19 @@ Removes a row. The change carries a reason and a commentary, which the server re
 The command is shaped like this:
 
 #+begin_example
-report_definitions delete <id> <reason> <commentary> [--version <n>]
+report_definitions delete <name> <reason> <commentary> [--version <n>]
 #+end_example
 
-It is addressed at =dq.v1.report_definitions.delete=.
+It is addressed at =reporting.v1.report_definitions.delete=.
 
 #+name: report_definitions-delete
 #+begin_src ores-shell :tangle report_definitions-delete.ores :exports none
-report_definitions delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+report_definitions delete __none__ system.new_record generated_script
 #+end_src
 
 ** =delete-many=
 :PROPERTIES:
-:ID: DA0046ED-A5C2-5F47-AC3A-3EABEAE2DC9B
+:ID: A9531CF1-607A-5848-818A-66D6659B00E2
 :END:
 
 Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
@@ -169,19 +169,19 @@ Removes several rows in one request. The change carries a reason and a commentar
 The command is shaped like this:
 
 #+begin_example
-report_definitions delete-many <id> <reason> <commentary>
+report_definitions delete-many <name> <reason> <commentary>
 #+end_example
 
-It is addressed at =dq.v1.report_definitions.delete_many=.
+It is addressed at =reporting.v1.report_definitions.delete_many=.
 
 #+name: report_definitions-delete-many
 #+begin_src ores-shell :tangle report_definitions-delete-many.ores :exports none
-report_definitions delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+report_definitions delete-many __none__ system.new_record generated_script
 #+end_src
 
 ** =versions=
 :PROPERTIES:
-:ID: CAF4B74E-820D-5244-87C5-E3488010B8D1
+:ID: 73C541D1-5CA0-5CD0-A0F3-BE75767324A3
 :END:
 
 Reads the row's recorded history, newest first.
@@ -190,19 +190,19 @@ Reads the row's recorded history, newest first.
 The command is shaped like this:
 
 #+begin_example
-report_definitions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+report_definitions versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
 #+end_example
 
-It is addressed at =dq.v1.report_definitions_versions.list=.
+It is addressed at =reporting.v1.report_definitions_versions.list=.
 
 #+name: report_definitions-versions
 #+begin_src ores-shell :tangle report_definitions-versions.ores :exports none
-report_definitions versions 00000000-0000-0000-0000-000000000000 --limit 1
+report_definitions versions __none__ --limit 1
 #+end_src
 
 ** =version=
 :PROPERTIES:
-:ID: F8C1B393-B633-5DD6-B795-F6EB0F9D1D44
+:ID: E511D359-F01D-5A1A-9CF5-F054D251D4FB
 :END:
 
 Reads one recorded version of the row.
@@ -211,13 +211,13 @@ Reads one recorded version of the row.
 The command is shaped like this:
 
 #+begin_example
-report_definitions version <id> --version <n>
+report_definitions version <name> --version <n>
 #+end_example
 
-It is addressed at =dq.v1.report_definitions_versions.get=.
+It is addressed at =reporting.v1.report_definitions_versions.get=.
 
 #+name: report_definitions-version
 #+begin_src ores-shell :tangle report_definitions-version.ores :exports none
-report_definitions version 00000000-0000-0000-0000-000000000000 --version 1
+report_definitions version __none__ --version 1
 #+end_src
 

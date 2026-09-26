@@ -44,10 +44,8 @@ namespace {
 const std::string_view test_suite("ores.shell.iam.tests");
 const std::string tags("[commands]");
 
-// One token per positional argument the command takes, in declaration order.
-std::vector<std::string> tokens(const std::size_t count) {
-    return std::vector<std::string>(count, std::string{"sample"});
-}
+// One token per positional argument the command takes, in declaration order,
+// spelled for the type the command parses it with.
 
 }
 
@@ -83,7 +81,8 @@ TEST_CASE("bootstrap_operations_process_bootstrap_status_reaches_the_transport",
     std::ostringstream out;
 
     command_feedback::reset();
-    bootstrap_operations_commands::process_bootstrap_status(out, session, tokens(0));
+    bootstrap_operations_commands::process_bootstrap_status(
+        out, session, std::vector<std::string>{});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -121,7 +120,13 @@ TEST_CASE("bootstrap_operations_process_create_initial_admin_reaches_the_transpo
     std::ostringstream out;
 
     command_feedback::reset();
-    bootstrap_operations_commands::process_create_initial_admin(out, session, tokens(3));
+    bootstrap_operations_commands::process_create_initial_admin(out,
+                                                                session,
+                                                                std::vector<std::string>{
+                                                                    "sample",
+                                                                    "sample",
+                                                                    "sample",
+                                                                });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -159,7 +164,18 @@ TEST_CASE("bootstrap_operations_process_provision_tenant_reaches_the_transport",
     std::ostringstream out;
 
     command_feedback::reset();
-    bootstrap_operations_commands::process_provision_tenant(out, session, tokens(8));
+    bootstrap_operations_commands::process_provision_tenant(out,
+                                                            session,
+                                                            std::vector<std::string>{
+                                                                "sample",
+                                                                "sample",
+                                                                "sample",
+                                                                "sample",
+                                                                "sample",
+                                                                "sample",
+                                                                "sample",
+                                                                "sample",
+                                                            });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

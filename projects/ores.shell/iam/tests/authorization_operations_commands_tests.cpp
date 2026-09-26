@@ -44,10 +44,8 @@ namespace {
 const std::string_view test_suite("ores.shell.iam.tests");
 const std::string tags("[commands]");
 
-// One token per positional argument the command takes, in declaration order.
-std::vector<std::string> tokens(const std::size_t count) {
-    return std::vector<std::string>(count, std::string{"sample"});
-}
+// One token per positional argument the command takes, in declaration order,
+// spelled for the type the command parses it with.
 
 }
 
@@ -84,7 +82,12 @@ TEST_CASE("authorization_operations_process_assign_role_requires_a_session", tag
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_assign_role(out, session, tokens(2));
+    authorization_operations_commands::process_assign_role(out,
+                                                           session,
+                                                           std::vector<std::string>{
+                                                               "sample",
+                                                               "sample",
+                                                           });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -120,7 +123,12 @@ TEST_CASE("authorization_operations_process_assign_role_reaches_the_transport", 
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_assign_role(out, session, tokens(2));
+    authorization_operations_commands::process_assign_role(out,
+                                                           session,
+                                                           std::vector<std::string>{
+                                                               "sample",
+                                                               "sample",
+                                                           });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -136,7 +144,12 @@ TEST_CASE("authorization_operations_process_assign_role_by_name_requires_a_sessi
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_assign_role_by_name(out, session, tokens(2));
+    authorization_operations_commands::process_assign_role_by_name(out,
+                                                                   session,
+                                                                   std::vector<std::string>{
+                                                                       "sample",
+                                                                       "sample",
+                                                                   });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -172,7 +185,12 @@ TEST_CASE("authorization_operations_process_assign_role_by_name_reaches_the_tran
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_assign_role_by_name(out, session, tokens(2));
+    authorization_operations_commands::process_assign_role_by_name(out,
+                                                                   session,
+                                                                   std::vector<std::string>{
+                                                                       "sample",
+                                                                       "sample",
+                                                                   });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -188,7 +206,12 @@ TEST_CASE("authorization_operations_process_revoke_role_requires_a_session", tag
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_revoke_role(out, session, tokens(2));
+    authorization_operations_commands::process_revoke_role(out,
+                                                           session,
+                                                           std::vector<std::string>{
+                                                               "sample",
+                                                               "sample",
+                                                           });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -224,7 +247,12 @@ TEST_CASE("authorization_operations_process_revoke_role_reaches_the_transport", 
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_revoke_role(out, session, tokens(2));
+    authorization_operations_commands::process_revoke_role(out,
+                                                           session,
+                                                           std::vector<std::string>{
+                                                               "sample",
+                                                               "sample",
+                                                           });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -240,7 +268,12 @@ TEST_CASE("authorization_operations_process_revoke_role_by_name_requires_a_sessi
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_revoke_role_by_name(out, session, tokens(2));
+    authorization_operations_commands::process_revoke_role_by_name(out,
+                                                                   session,
+                                                                   std::vector<std::string>{
+                                                                       "sample",
+                                                                       "sample",
+                                                                   });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -276,7 +309,12 @@ TEST_CASE("authorization_operations_process_revoke_role_by_name_reaches_the_tran
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_revoke_role_by_name(out, session, tokens(2));
+    authorization_operations_commands::process_revoke_role_by_name(out,
+                                                                   session,
+                                                                   std::vector<std::string>{
+                                                                       "sample",
+                                                                       "sample",
+                                                                   });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -292,7 +330,11 @@ TEST_CASE("authorization_operations_process_get_account_roles_requires_a_session
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_get_account_roles(out, session, tokens(1));
+    authorization_operations_commands::process_get_account_roles(out,
+                                                                 session,
+                                                                 std::vector<std::string>{
+                                                                     "sample",
+                                                                 });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -328,7 +370,11 @@ TEST_CASE("authorization_operations_process_get_account_roles_reaches_the_transp
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_get_account_roles(out, session, tokens(1));
+    authorization_operations_commands::process_get_account_roles(out,
+                                                                 session,
+                                                                 std::vector<std::string>{
+                                                                     "sample",
+                                                                 });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -344,7 +390,11 @@ TEST_CASE("authorization_operations_process_get_account_permissions_requires_a_s
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_get_account_permissions(out, session, tokens(1));
+    authorization_operations_commands::process_get_account_permissions(out,
+                                                                       session,
+                                                                       std::vector<std::string>{
+                                                                           "sample",
+                                                                       });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -381,7 +431,11 @@ TEST_CASE("authorization_operations_process_get_account_permissions_reaches_the_
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_get_account_permissions(out, session, tokens(1));
+    authorization_operations_commands::process_get_account_permissions(out,
+                                                                       session,
+                                                                       std::vector<std::string>{
+                                                                           "sample",
+                                                                       });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -397,7 +451,11 @@ TEST_CASE("authorization_operations_process_get_role_permissions_requires_a_sess
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_get_role_permissions(out, session, tokens(1));
+    authorization_operations_commands::process_get_role_permissions(out,
+                                                                    session,
+                                                                    std::vector<std::string>{
+                                                                        "sample",
+                                                                    });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -434,7 +492,11 @@ TEST_CASE("authorization_operations_process_get_role_permissions_reaches_the_tra
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_get_role_permissions(out, session, tokens(1));
+    authorization_operations_commands::process_get_role_permissions(out,
+                                                                    session,
+                                                                    std::vector<std::string>{
+                                                                        "sample",
+                                                                    });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -450,7 +512,13 @@ TEST_CASE("authorization_operations_process_suggest_role_commands_requires_a_ses
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_suggest_role_commands(out, session, tokens(3));
+    authorization_operations_commands::process_suggest_role_commands(out,
+                                                                     session,
+                                                                     std::vector<std::string>{
+                                                                         "sample",
+                                                                         "sample",
+                                                                         "sample",
+                                                                     });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -487,7 +555,13 @@ TEST_CASE("authorization_operations_process_suggest_role_commands_reaches_the_tr
     std::ostringstream out;
 
     command_feedback::reset();
-    authorization_operations_commands::process_suggest_role_commands(out, session, tokens(3));
+    authorization_operations_commands::process_suggest_role_commands(out,
+                                                                     session,
+                                                                     std::vector<std::string>{
+                                                                         "sample",
+                                                                         "sample",
+                                                                         "sample",
+                                                                     });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

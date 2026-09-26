@@ -137,7 +137,9 @@ TEST_CASE("report_definition_insertion_operator", tags) {
     os << sut;
     const std::string json_output = os.str();
 
-    CHECK(!json_output.empty());
+    // A serialiser that emitted nothing useful would satisfy a non-empty
+    // check; the field name is the literal the format promises.
+    CHECK(json_output.find("\"name\"") != std::string::npos);
     CHECK(json_output.find("Monthly Summary") != std::string::npos);
 }
 
@@ -160,9 +162,12 @@ TEST_CASE("create_report_definition_with_faker", tags) {
     sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Report definition: " << sut;
 
+    // The fixture's own fields say only that faker works. The component's
+    // behaviour is its rendered form, so assert on that.
+    std::ostringstream os;
+    os << sut;
+    CHECK(os.str().find(sut.name) != std::string::npos);
     CHECK(sut.version >= 1);
-    CHECK(!sut.id.is_nil());
-    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new");
 }
 
@@ -187,7 +192,8 @@ TEST_CASE("report_definition_convert_single_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
-    CHECK(!table.empty());
+    // The row's own code is the literal the table must show.
+    CHECK(table.find(items.front().name) != std::string::npos);
 }
 
 TEST_CASE("report_definition_convert_multiple_to_table", tags) {
@@ -201,7 +207,8 @@ TEST_CASE("report_definition_convert_multiple_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
-    CHECK(!table.empty());
+    // The row's own natural key is the literal the table must show.
+    CHECK(table.find(items.front().name) != std::string::npos);
 }
 
 TEST_CASE("report_definition_convert_empty_vector_to_table", tags) {
@@ -212,7 +219,9 @@ TEST_CASE("report_definition_convert_empty_vector_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
-    CHECK(!table.empty()); // Table should still have headers
+    // No rows, and the headers must survive anyway: the column title is
+    // the literal the rendered table has to carry.
+    CHECK(table.find("ID") != std::string::npos);
 }
 
 TEST_CASE("report_definition_table_with_faker_data", tags) {
@@ -241,5 +250,6 @@ TEST_CASE("report_definition_table_with_faker_data", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
-    CHECK(!table.empty());
+    // The row's own code is the literal the table must show.
+    CHECK(table.find(items.front().name) != std::string::npos);
 }

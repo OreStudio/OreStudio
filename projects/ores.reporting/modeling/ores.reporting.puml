@@ -1,0 +1,35 @@
+@startuml
+
+title ores.reporting Component
+
+set namespaceSeparator ::
+
+package "ores.reporting" #F2F2F2 {
+    component "ores.reporting.api" as api
+    component "ores.reporting.core" as core
+    component "ores.reporting.service" as service
+}
+
+package "ores.shell.reporting" #F2F2F2 {
+    component "shell reporting command units" as shell_reporting
+}
+
+database "ores.dq" as dq
+component "ores.workflow" as workflow
+component "ores.scheduler" as scheduler
+component "ores.trading" as trading
+component "ores.marketdata" as marketdata
+component "ores.storage" as storage
+
+core --> api
+service --> core
+shell_reporting ..> api : requests
+
+api ..> dq : FSM states and transitions
+core ..> scheduler : job definitions
+api ..> workflow : report_execution_workflow
+core ..> trading : export trades
+core ..> marketdata : export market data
+core ..> storage : buckets and keys
+
+@enduml

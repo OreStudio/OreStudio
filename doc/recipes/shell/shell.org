@@ -609,6 +609,26 @@ tangled into the runnable script library
 
 - [[id:1AE52616-1E2F-5164-9765-76457B907EF3][How do I run the system_settings commands from the shell?]]
 
+* Concurrency Policies
+
+- [[id:AEB1BB00-0503-5BB2-9A2F-9AAC8A9C929E][How do I run the concurrency_policies commands from the shell?]]
+
+* Report Definitions
+
+- [[id:8F7DD182-B1ED-5933-B377-9C0066D96489][How do I run the report_definitions commands from the shell?]]
+
+* Report Instances
+
+- [[id:D3BF8572-BC25-53F3-80CA-8CB254DA5946][How do I run the report_instances commands from the shell?]]
+
+* Report Operations
+
+- [[id:C6D0B07C-5C48-5AC1-8053-2D0B36A2D3CD][How do I run the report_operations commands from the shell?]]
+
+* Report Types
+
+- [[id:189AF09C-4D20-5F21-A7BD-D0254585EC6C][How do I run the report_types commands from the shell?]]
+
 * Artefact Types
 
 - [[id:91845E51-131E-5C5A-89A3-1261457C1A17][How do I run the artefact_types commands from the shell?]]
@@ -644,10 +664,6 @@ tangled into the runnable script library
 * Lei Relationships
 
 - [[id:1874CC7F-A727-5FFD-A98E-5FE54754EB1E][How do I run the lei_relationships commands from the shell?]]
-
-* Report Definitions
-
-- [[id:2780B6E3-0EBE-5518-9134-B6EA0294A5C9][How do I run the report_definitions commands from the shell?]]
 
 * Synthetic Fx Spot Configs
 

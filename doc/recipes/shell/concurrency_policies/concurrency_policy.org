@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: AEB1BB00-0503-5BB2-9A2F-9AAC8A9C929E
+:END:
+#+title: How do I run the concurrency_policies commands from the shell?
+#+description: Every command the concurrency_policies submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:concurrency_policies:
+
+This file documents the concurrency_policies resource at the shell, one section per command. Every command is a subcommand of =concurrency_policies=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D1232B8A-73ED-5DB3-B139-4A716264C84A
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+concurrency_policies list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.concurrency_policies.list=.
+
+#+name: concurrency_policies-list
+#+begin_src ores-shell :tangle concurrency_policies-list.ores :exports none
+concurrency_policies list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: CCA68163-B03D-5F1E-A176-504554B00A8A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+concurrency_policies get <code>
+#+end_example
+
+It is addressed at =reporting.v1.concurrency_policies.get=.
+
+#+name: concurrency_policies-get
+#+begin_src ores-shell :tangle concurrency_policies-get.ores :exports none
+concurrency_policies get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 73B63034-2E00-52E4-B87D-EC18CDC65780
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+concurrency_policies get-many <code>
+#+end_example
+
+It is addressed at =reporting.v1.concurrency_policies.get_many=.
+
+#+name: concurrency_policies-get-many
+#+begin_src ores-shell :tangle concurrency_policies-get-many.ores :exports none
+concurrency_policies get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 6B564035-F44C-5FD9-9C7A-17DD6E1B5D63
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+concurrency_policies add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.concurrency_policies.put=.
+
+#+name: concurrency_policies-add
+#+begin_src ores-shell :tangle concurrency_policies-add.ores :exports none
+concurrency_policies add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: A22A32F2-36FC-5E11-9437-043200946C54
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+concurrency_policies set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.concurrency_policies.put=.
+
+#+name: concurrency_policies-set
+#+begin_src ores-shell :tangle concurrency_policies-set.ores :exports none
+concurrency_policies set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 260128E1-3C05-5BC3-9315-987C5E94AB30
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+concurrency_policies put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.concurrency_policies.put_many=.
+
+#+name: concurrency_policies-put-many
+#+begin_src ores-shell :tangle concurrency_policies-put-many.ores :exports none
+concurrency_policies put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: BB13C210-240C-5C5F-B841-19B0535507EE
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+concurrency_policies delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.concurrency_policies.delete=.
+
+#+name: concurrency_policies-delete
+#+begin_src ores-shell :tangle concurrency_policies-delete.ores :exports none
+concurrency_policies delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: AEF0FAC8-FE8E-538F-AE01-441A2EFA1408
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+concurrency_policies delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.concurrency_policies.delete_many=.
+
+#+name: concurrency_policies-delete-many
+#+begin_src ores-shell :tangle concurrency_policies-delete-many.ores :exports none
+concurrency_policies delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 6DBBB70C-2AC4-53EE-9C98-1A7E33874B17
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+concurrency_policies versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.concurrency_policies_versions.list=.
+
+#+name: concurrency_policies-versions
+#+begin_src ores-shell :tangle concurrency_policies-versions.ores :exports none
+concurrency_policies versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: B32C0BB0-79AC-5A20-8DD5-954176F88A16
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+concurrency_policies version <code> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.concurrency_policies_versions.get=.
+
+#+name: concurrency_policies-version
+#+begin_src ores-shell :tangle concurrency_policies-version.ores :exports none
+concurrency_policies version __none__ --version 1
+#+end_src
+

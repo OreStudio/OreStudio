@@ -241,11 +241,11 @@ std::nullopt
 
 *** Detail fields
 
-| field          | label       | widget          | type      | is_key | is_required | placeholder                    |
+| field          | label       | type      | is_key | is_required | placeholder                    |
 |----------------+-------------+-----------------+-----------+--------+-------------+--------------------------------|
-| name           | Name        | nameEdit        | line_edit | true   | true        | Report instance name           |
-| description    | Description | descriptionEdit | text_edit |        |             | Description                    |
-| output_message | Output      | outputEdit      | text_edit |        |             | Execution log or error message |
+| name           | Name        | line_edit | true   | true        | Report instance name           |
+| description    | Description | text_edit |        |             | Description                    |
+| output_message | Output      | text_edit |        |             | Execution log or error message |
 
 *** Columns
 

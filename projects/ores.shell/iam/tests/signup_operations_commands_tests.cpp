@@ -44,10 +44,8 @@ namespace {
 const std::string_view test_suite("ores.shell.iam.tests");
 const std::string tags("[commands]");
 
-// One token per positional argument the command takes, in declaration order.
-std::vector<std::string> tokens(const std::size_t count) {
-    return std::vector<std::string>(count, std::string{"sample"});
-}
+// One token per positional argument the command takes, in declaration order,
+// spelled for the type the command parses it with.
 
 }
 
@@ -99,7 +97,13 @@ TEST_CASE("signup_operations_process_signup_reaches_the_transport", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    signup_operations_commands::process_signup(out, session, tokens(3));
+    signup_operations_commands::process_signup(out,
+                                               session,
+                                               std::vector<std::string>{
+                                                   "sample",
+                                                   "sample",
+                                                   "sample",
+                                               });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

@@ -15,12 +15,16 @@ import sys
 from pathlib import Path
 
 import pytest
+import uuid
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.org_loader import (  # noqa: E402
+    _SHELL_TOKEN_LITERALS,
+    _SHELL_TOKEN_TYPES,
     _reject_silent_shell_gap,
+    _shell_field,
     entity_protocol_messages,
     load_org_operation_model,
     parse_declared_messages,
@@ -160,6 +164,43 @@ class TestHowFieldsArrive:
                      [_field("v", cpp_type)]),
         ])
         assert commands[0]["unsupported"] == []
+
+
+class TestTokenLiterals:
+    """A generated test's token must be one the command can parse.
+
+    The failure these pin: every positional was handed the same string, so a
+    uuid or a number threw inside from_token before the command reached the
+    transport, and the test asserted a failure the command never produced.
+    """
+
+    @pytest.mark.parametrize("cpp_type,expected", [
+        ("std::string", "sample"),
+        ("bool", "true"),
+        ("int", "1"),
+        ("std::int64_t", "1"),
+        ("std::uint32_t", "1"),
+        ("double", "1.0"),
+        ("boost::uuids::uuid", "00000000-0000-0000-0000-000000000001"),
+    ])
+    def test_the_literal_is_spelled_for_the_type(self, cpp_type, expected):
+        assert _shell_field(_field("v", cpp_type))["token_literal"] == expected
+
+    def test_a_list_field_is_filled_from_one_comma_separated_token(self):
+        assert _shell_field(_field("v", "std::vector<std::string>"))["token_literal"] == "sample"
+
+    def test_every_type_a_token_can_fill_has_a_literal(self):
+        # The structural guarantee: the fallback is never reached for a type
+        # the facet claims a token can fill, because reaching it is the defect.
+        missing = sorted(_SHELL_TOKEN_TYPES - set(_SHELL_TOKEN_LITERALS))
+        assert missing == []
+
+    def test_the_uuid_literal_is_one_a_command_accepts(self):
+        literal = _shell_field(_field("v", "boost::uuids::uuid"))["token_literal"]
+        assert str(uuid.UUID(literal)) == literal
+
+    def test_a_type_outside_the_table_keeps_the_string_spelling(self):
+        assert _shell_field(_field("v", "std::chrono::year_month_day"))["token_literal"] == "sample"
 
 
 class TestAuthentication:

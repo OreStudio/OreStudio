@@ -1,0 +1,407 @@
+:PROPERTIES:
+:ID: 92B0C404-B477-4284-942D-FC9C4A8CD807
+:END:
+#+title: Task: Make the scheduler-triggered report execution correct
+#+description: Determine how much of the report instance FSM and the report execution workflow is actually implemented, and make the scheduler-to-report trigger path work end to end.
+#+type: task
+#+level: s1
+#+filetags: :clean-reporting:sprint_26:v0:
+#+owner: marco
+#+branch: feature/clean-reporting
+#+pr: 2212
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A schedule fires, the reporting service creates a report instance in the correct state, the report execution workflow runs to completion, and the instance reaches a terminal state with an accurate output_message. Every FSM state and transition the model seeds is either implemented or recorded as unimplemented with its reason.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- A scheduled report definition fires, and a =report_instance= row appears in the state the concurrency policy demands.
+- The report execution workflow runs to completion, and the instance reaches =completed= with an accurate =output_message=.
+- Every failure path answers the caller, or records why it cannot.
+- Every one of the seven seeded FSM states is either written by code or recorded as unimplemented with its reason.
+- A test fails when the trigger path breaks.
+
+* Analysis
+
+The section below is the answer to "how much of the report FSM is
+implemented". Every claim carries its evidence. The live experiment is
+reproducible from the steps in the last subsection.
+
+** The headline: a schedule never creates a report instance
+
+The scheduler-to-report path is dead. Proven live on 2026-09-26, not
+merely read:
+
+1. A =report_definition= and a scheduler job were inserted, the job
+   publishing =reporting.v1.report-instances.trigger= every minute.
+2. The scheduler fired and reported success —
+   =Firing job: reporting.v1.fsm-live-probe= then
+   =NATS publish action succeeded= then =Job succeeded=.
+3. The reporting service logged
+   =Handling ...reporting.v1.report-instances.trigger= and then nothing.
+4. =select count(*) from ores_reporting_report_instances_tbl= returned 0.
+
+The cause is one missing header. ~ores.scheduler~ publishes the trigger
+with ~client::publish~ and no headers
+(=nats_publish_action_handler.cpp:79=). ~make_request_context~ takes the
+~!verifier~ early return only when no verifier exists, and the reporting
+service always builds one from the IAM JWKS key
+(=domain_service_runner_impl.hpp:94=, =request_context.cpp:133=). So the
+trigger is rejected ~unauthorized~.
+
+The rejection is then thrown away. ~error_reply~ returns immediately when
+the message has no reply subject (=handler_helpers.hpp:220-224=), and a
+fire-and-forget ~publish~ has none. The scheduler therefore records the
+job as =succeeded=. Nothing anywhere reports the failure.
+
+Three further defects sit on the same path, all currently unreachable
+because the auth check runs first:
+
+| # | Defect | Evidence |
+|---+--------+----------|
+| 1 | The concurrency check asks "does any instance exist in this tenant", not "does an instance of this definition run". =list_instances(0,1)= filters tenant, workspace and current version only. | =report_instance_trigger_handler.hpp:99=, =report_instance_repository.cpp:164= |
+| 2 | A =queued= instance never runs: nothing performs =queued -> pending=. | no writer of =pending= outside the trigger |
+| 3 | =started_at= is stamped on =skipped=, =queued= and =failed= instances, which never started. | =report_instance_trigger_handler.hpp:127= |
+
+** The FSM: seven states seeded, five written, one enforced by nothing
+
+The machine =report_instance_lifecycle= seeds 7 states and 7 transitions
+(=dq_fsm_report_instance_lifecycle_populate.sql=).
+
+| State | Written by | Reachable in practice |
+|-------+------------+-----------------------|
+| pending | trigger | no — the trigger is rejected |
+| queued | trigger (policy =queue=) | no, and no promotion to =pending= exists |
+| running | =gather_trades= step | no — needs a dispatched workflow |
+| completed | =finalise= step | no |
+| failed | trigger, =mark_instance_failed=, =fail= handler | no |
+| cancelled | nothing | dead state |
+| skipped | trigger (policy =skip=) | no |
+
+Two conclusions follow.
+
+- *The transitions table is enforced by nothing.*
+  =ores_dq_fsm_transitions_tbl= is seeded for this machine and read by no
+  code. A caller assigns =inst->fsm_state_id= directly
+  (=report_execution_handler.cpp:96,175,380=), and the generated CRUD
+  handler accepts any state a client sends. The only consumer of the FSM
+  tables is =get_fsm_states_request=, which returns names and UUIDs. So
+  an illegal transition is unrepresentable in the tables and
+  unconstrained in the code.
+- *The granular states the design proposes do not exist.*
+  =2026-04-05-report-execution.org= lists 11 states
+  (=gathering_inputs=, =preparing_package=, =submitted_to_compute=,
+  =computing=, =processing_results=). None is in the SQL. The
+  implementation plan deferred them deliberately, on the argument that
+  =workflow_step= already gives per-step visibility, and narrowed the
+  instance FSM to =pending -> running -> completed/failed=. That is a
+  decision, not an omission, and this task keeps it unless the decision
+  is revisited.
+
+** The engine: the pipeline is far more complete than its plan claims
+
+=2026-04-06-report-execution-workflow-implementation.org= marks phases
+3.8 to 3.11 =DEFERRED=. The code says otherwise.
+
+| Step | Owner | State |
+|------+-------+-------|
+| gather_trades | ores.reporting | implemented |
+| gather_market_data | ores.reporting | implemented |
+| assemble_bundle | ores.reporting | implemented |
+| prepare_ore_package | ores.ore.service | implemented (download, tar, upload) |
+| submit_compute | ores.compute | implemented, completes asynchronously |
+| collect_compute_results | ores.reporting | stub — pass-through |
+| finalise | ores.reporting | implemented |
+
+The definition is registered, not orphaned:
+=ores.workflow/core/src/messaging/registrar.cpp:106= calls
+=register_report_execution_workflow=, and that registrar is reached from
+the workflow service's own =application.cpp=. Every command subject has
+a subscriber.
+
+Step 4 is the interesting one. =submit_compute= deliberately does not
+complete its own step. It creates a batch and its workunits, dispatches
+the work assignments, writes a =workflow_batch_link=, and returns
+(=report_submit_handler.cpp:133-143=). ~ores.compute~'s
+=batch_workflow_bridge= publishes =step_completed_event= when the batch
+closes. The async wait therefore lives outside the engine, which has no
+=wait_for_event= primitive and no step timeout. If that bridge does not
+run, the report hangs in =in_progress= forever and nothing notices.
+
+** Defects in the engine as the report workflow uses it
+
+| # | Defect | Evidence |
+|---+--------+----------|
+| 1 | No step timeout. A missing or dead bridge hangs a report indefinitely. | engine has no timeout; see above |
+| 2 | The failing step is never compensated, and step 0 failing dispatches no =fail_report= at all. The instance is still marked failed only because =gather_trades= calls =mark_instance_failed= itself. | =workflow_engine.cpp:276=; =report_execution_handler.cpp:145,160,191= |
+| 3 | =completed_with_warnings= steps are never compensated. | =workflow_engine.cpp:276= |
+| 4 | Every step shares one compensation subject, so N completed steps publish N identical =fail_report= commands. Idempotent, but noisy, and the engine does not dedup. | =report_execution_workflow.hpp:71,108,145,198,253,298,343= |
+| 5 | The workflow notifies nobody of completion; the report is finalised by its own last step instead. | engine publishes =workflow_instance_changed= only |
+| 6 | No test names any workflow type. The definition, its command builders and its compensation are untested. | tree-wide grep |
+
+** Other findings on the path
+
+- =gather_market_data= exports every series for the tenant; nothing
+  filters by trade type or date. The plan records this as a future
+  enhancement.
+- The definition lifecycle FSM has the same shape of gap:
+  =ores_reporting_initial_definition_state_fn()= has no caller, so
+  =fsm_state_id= is left NULL on a new definition, and =reconcile()=
+  schedules every definition with no =scheduler_job_id= — including
+  ones that should be archived.
+- The trigger uses ~publish~, not ~js_publish~, so a trigger fired while
+  the reporting service is down is lost with no record.
+- One scheduler firing produced two =Handling= lines 103 ms apart in the
+  reporting log. The cause is not yet established. It matters, because a
+  doubled trigger would double-create instances once the auth check
+  passes. Verify before the fix lands.
+
+** How to reproduce the live experiment
+
+1. Insert a =report_definition= in the system tenant with
+   =concurrency_policy='fail'= and =schedule_expression='* * * * *'=,
+   using ~admin~ as =modified_by~ (the insert function validates it).
+2. Insert a scheduler job with =action_type='nats_publish'= and
+   =action_payload={"subject":"reporting.v1.report-instances.trigger",
+   "report_definition_id":"<id>","tenant_id":"<tenant>"}=.
+3. =compass services restart ores.scheduler.service= so the loop reloads
+   jobs.
+4. Raise =ORES_SERVICE_LOG_LEVEL= to =debug= and restart
+   =ores.reporting.service= to see the =Handling= line.
+5. Wait for a minute boundary. Read the scheduler log, the reporting log,
+   and =ores_reporting_report_instances_tbl=.
+
+* Progress
+
+| Unit | State | Evidence |
+|------+-------+----------|
+| Test report fixture | Landed. Five definitions covering the happy path, the three concurrency policies and a config with no scope. Idempotent; a second run creates nothing. | =reporting_test_report_populate.sql= |
+| Component regenerated | Landed. 54 files brought up to date and 20 materialised. | =check_component_drift.py --component reporting= |
+| Trigger as an operation | Landed. The generated protocol retires the hand-written message, and the shell gains =report_operations trigger-report-instance <report_definition_id> <tenant_id> [--job_instance_id <v>]=. | =report_operations_protocol.hpp= |
+| FSM transitions enforced | Landed and proven against the live database. Six checks, including two refusals. | =reporting_report_instances_fsm_guard_create.sql= |
+| In-flight query | Landed. An instance is in flight while its state is not terminal, read from the machine rather than from a list of names. | =reporting_in_flight_instance_fn_create.sql= |
+| Scheduler identity | Landed. The scheduler builds a service token and sends a report trigger as an authenticated request, so a refusal fails the job. | =nats_publish_action_handler.cpp= |
+| Handler rewrite | Landed. The tenant comes from the request, the concurrency check reads the in-flight query, an unknown policy is refused, =started_at= is set only when the instance will run, and every path answers. | =report_instance_trigger_handler.hpp= |
+
+Still open on this task:
+
+- =queued= to =pending= promotion. The transition exists and the guard enforces it, but nothing performs it, so a queued instance waits forever. It belongs where an instance reaches a terminal state.
+- =cancelled= is written by no code.
+- The trigger's concurrency check and the instance insert are not one transaction, so two simultaneous triggers can both see nothing in flight.
+- The generated CRUD path can still write =fsm_state_id=, though the guard now refuses what the machine forbids.
+
+* Live verification
+
+Run through the shell against the fleet on 2026-09-26, with the fixture
+definition =FSM Happy Path=:
+
+#+begin_example
+report_operations trigger-report-instance 7ddbb72b-... ffffffff-...
+  -> {"result":{"outcome":"ok","code":"triggered",
+       "message":"Report instance c7779c02-... created."}}
+#+end_example
+
+The instance row exists in state =pending=, and the reporting log records both
+the save and "dispatched its workflow". The workflow service records
+=Start-workflow request received: type=report_execution_workflow=.
+
+The run also exposed three defects that only a live run could find, each fixed
+in the same commit: the handler scoped its context from the base context and so
+lost the workspace, which made every definition look missing; the in-flight
+query was revoked from PUBLIC and granted to nobody, so the trigger failed with
+"permission denied"; and the change-reason code was an unseeded literal, so the
+insert was rejected by the validator.
+
+What remains is the step the run stopped at: the instance does not leave
+=pending=. The engine accepts the start and the reporting service never logs
+=gather_trades=, so the next diagnostic is whether the engine published the
+step-0 command and to which subject.
+
+* The chain the live run exposed
+
+Driving the trigger from the shell one defect at a time reached a definite
+answer to the second half of the objective, and the answer is that the report
+service does its part correctly and the chain broke behind it. In order:
+
+| # | Where | Defect | State |
+|---+-------+--------+-------|
+| 1 | ores.scheduler | Published the trigger with no identity, so the reporting service rejected it unauthorized and the job was recorded as succeeded. | Fixed |
+| 2 | ores.reporting | The handler scoped its context from the base context and lost the workspace, so every definition looked missing. | Fixed |
+| 3 | ores.reporting | The in-flight query was revoked from PUBLIC and granted to nobody. | Fixed |
+| 4 | ores.reporting | The change reason code was an unseeded literal. | Fixed |
+| 5 | ores.workflow | No workflow instance has ever been created in this environment: both workflow tables require =modified_by=, validate it, and the engine set only =created_by=. Every start failed, so no step was ever dispatched. | Fixed |
+| 6 | ores.reporting | The instance took the definition's name and names are unique per tenant, so a second run of one definition was refused. | Fixed |
+| 7 | ores.reporting | The definition lookup alternates between finding the fixture definition and reporting it missing, from one request to the next, in one process. The lookup filters on =workspace_id = ctx.workspace_id()= and the party policy scopes by =app.visible_party_ids=; the fixture's party is ACME UK while the =admin= session's party is the System Party. Next diagnostic: read =context::with_tenant= and the pool's session-variable reset to see whether a pooled connection can carry a stale =app.visible_party_ids= from another request. | Open |
+
+The concurrency policy was observed working: with a stale =pending= instance in
+flight, the next trigger against the =fail= policy created its instance already
+=failed= rather than dispatching it, which is what the seed says it should do.
+
+* The chain now walks
+
+After defects 1 to 6 were fixed, one more surfaced and then the FSM moved.
+
+| # | Where | Defect | State |
+|---+-------+--------+-------|
+| 7 | ores.reporting | The fixture was owned by an arbitrary business party, so a session scoped to another party could not see the definition it was meant to trigger. The fixture is now owned by the tenant's system party, which every session can see. | Fixed |
+| 8 | ores.reporting | =ores_reporting_resolve_book_ids_for_config_fn= compared =valid_to= against the literal ='infinity'=, while every generated table stores =ores_utility_infinity_timestamp_fn()=, which is =9999-12-31 23:59:59+00=. It therefore resolved no scope for any config, and every report failed with "no books or portfolios in scope". | Fixed |
+| 9 | environment | The trading service performs =export_trades_to_storage=, and it has no HTTP base URL: only =ORES_ORE_SERVICE_HTTP_BASE_URL= is defined, the trading unit passes no =--http-base-url=, and its parser declares the option. The upload therefore cannot connect, so no report can gather trades. | Already captured, outside this component: [[id:3F9C2D47-5A18-4E6B-B0C4-8D2F6A1E9B73][Three services default their storage base URL to a port the server does not use]]. ores.trading, ores.marketdata and ores.reporting all default the flag to port 8080 and their units pass no override. |
+
+Observed end to end after defect 8, through the shell:
+
+#+begin_example
+trigger  -> outcome ok, code triggered, instance 6423515a-... created
+instance -> pending, then running, then failed
+message  -> export_trades_to_storage failed: connect: Connection refused
+#+end_example
+
+So =pending -> running -> failed= now runs, the guard accepts each transition,
+and the failure is a real one carried into =output_message=. The remaining
+blocker is defect 9.
+
+* Plan
+
+1. Seed a test report in the component, so the FSM is testable in any
+   environment. A definition, its =risk_report_config= and its book scope.
+2. Make the trigger an operation and give it an identity, per the
+   decisions below.
+3. Enforce the seeded transitions, so an illegal state change fails.
+4. Walk the FSM from ores.shell and keep that walk as the test.
+5. Correct the two plan documents, whose status tables no longer describe
+   the code.
+
+* Decisions
+
+** The trigger is a service-to-service operation, not an entity verb
+
+Authentication here has two layers, and the defect lives on the second.
+
+- *Transport* is mTLS. =build/config/nats-<label>.conf= sets =verify: true=
+  with the environment CA, so every client presents a certificate, one per
+  service. There are no subject ACLs. Being able to publish to a subject
+  means being a process in this environment.
+- *Message identity* is the JWT bearer. It carries the tenant, the party
+  scope and the roles, and those are what row-level security and
+  =has_permission= read.
+
+So the scheduler is not refused entry to the bus. Its message arrives and
+names no principal, and the handler demands one.
+
+Three kinds of subject already exist:
+
+| Kind | Shape | Context |
+|------+-------+---------|
+| Entity verbs | ={component}.v1.{resource}.{verb}= | Built from the bearer |
+| Operations | ={component}.v1.ops.{operation}= | Built from the bearer; the tenant comes from the token, and an acted-on *party* is carried in the message |
+| Control plane | =workflow.v1.start=, =workflow.v1.events.step-completed= | No context; the engine trusts the bus |
+
+=trigger= is not a canonical entity verb, so P01 and P04 place it in the
+second row. It is also a scheduler-to-reporting call, and every other
+service-to-service call in the tree authenticates with the caller's own
+service token: =make_service_token_provider= logs in at
+=iam.v1.auth.service-login=, caches the bearer, refreshes it, and
+=authenticated_request= attaches it. Reporting already calls trading,
+marketdata and the scheduler that way.
+
+The fix therefore has four parts, and they are not alternatives:
+
+1. *Modelling.* The trigger becomes an operation model under
+   =reporting.v1.ops.=, and its message generates from the model. The
+   hand-written protocol header goes, as P04 requires. Variability's
+   =ores.variability.operations.org= is the worked example.
+2. *Identity.* The scheduler publishes with its own service account.
+   =ores_<env>_scheduler_service= already exists, so this follows the
+   existing service-call pattern and gives the audit trail a name.
+3. *Tenancy.* The message carries the acted-on =tenant_id=, because one
+   service account lives in one tenant while report definitions are
+   per-tenant. This is the precedent =complete_party_onboarding= set for
+   the party: the acting identity is the caller's, the acted-on identity
+   is carried.
+4. *Failure.* The scheduler sends the trigger as a request, so a reply
+   subject exists and =error_reply= stops being discarded. A rejected
+   trigger then marks the job failed instead of succeeded.
+
+** The seeded transitions are enforced
+
+An instance state change goes through a checked transition against
+=ores_dq_fsm_transitions_tbl=, so an illegal transition fails loudly. Today
+=inst->fsm_state_id= is assigned directly and no code reads the table.
+
+** A seeded test report makes the FSM testable
+
+The component carries a test report — a definition, its
+=risk_report_config= and its book scope — so that an environment, freshly
+created, can walk the FSM from ores.shell. The fixture is deterministic: a
+book with no trades exports an empty list and succeeds
+(=trade_handler.hpp:364-371=), so the happy path needs no trade data.
+
+The fixture covers the happy path =pending -> running -> completed=; a
+configuration with no book scope, which =gather_trades= rejects and which
+drives =-> failed=; and the three concurrency policies, exercised by
+triggering one definition twice.
+
+* Notes
+
+- Baseline (B01) for the parent task: =check_component_drift.py
+  --component reporting --dry-run= reports 54 files that would change and
+  20 that would be created — 74 in total. Saved at
+  =.audit/reporting/B01-drift-dryrun.txt=.
+- ores.reporting is not in =COMPONENTS_UNDER_TEST=, so no codegen gate
+  covers it today.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2212][#2212]] | [reporting] Bring ores.reporting to the Component Clean Standard |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Delivered. The report instance FSM is implemented, enforced, and proven.
+
+Ten defects stood between a scheduled trigger and a completed report. Nine were outside ores.reporting: the scheduler published with no identity and the rejection was discarded; the workflow engine set no =modified_by=, so **no workflow instance had ever been created**; the storage server's bucket allow-list omitted =report-data=; ores.ore moved a base URL out from under the package handler with a =std::move=; ores.compute assigned a nil application version; and the environment carried stale notify triggers and no market-data base URL. Reporting's own code needed three fixes, and none of them was why the pipeline could not run.
+
+Proof: a report triggered from the shell runs the seven-step workflow to =completed=, with the instance travelling =pending=, =running=, =completed= through the database guard. Witnessed twice -- once on the database as it had drifted, once on one built from nothing.
+
+The review of PR #2212 raised three findings, all fixed: the scheduler paths saved a null FSM state silently after the job had been created or deleted; compensation overwrote the true failure reason with an unrelated step's; and the concurrency policy codes were inline literals.
+
+Not delivered. The eight execution-step shell commands cannot answer outside a workflow, because the handlers return in silence when the workflow headers are absent -- diagnosed, and the fix is a shared handler contract rather than this component's.
+
+One caveat on the environment. The completed walk depended on two =ORES_*_SERVICE_HTTP_BASE_URL= variables added to =.env= by hand, which is why the durable fix belongs in the environment profile and not in that file.

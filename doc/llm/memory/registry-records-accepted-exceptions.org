@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: E22B9A3C-DF20-4EC3-8BEC-C193E1560745
+:END:
+#+title: The component registry records accepted exceptions
+#+description: A clean-standard component can be listed while carrying checklist items it does not pass, each recorded with its reason and the person who accepted it.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+A component can be listed in COMPONENTS_UNDER_TEST while carrying checklist items it does not pass, so long as each is recorded in ACCEPTED_EXCEPTIONS with its reason and who accepted it.
+
+*Why:* The registry was all or nothing: a component with one item that cannot be verified where the work is done was checked by nothing at all, which is worse than the gap it was excluded for. The standard said the component stays out until the exception is resolved or accepted, and there was nowhere to record an acceptance, so the only way to obey it was to wait.
+
+*How to apply:* When a clean-standard task ends with an item it cannot pass, add an AcceptedException to ACCEPTED_EXCEPTIONS in projects/ores.codegen/scripts/component_registry.py rather than leaving the component out or omitting the item. check_registry_exceptions.py reads the standard's own item list and refuses an exception naming an undefined item, stating no reason, naming nobody or carrying no date; it runs as its own job in codegen-drift.yml. Do not forge accepted_by: the reviewer's name is what makes the record mean something.

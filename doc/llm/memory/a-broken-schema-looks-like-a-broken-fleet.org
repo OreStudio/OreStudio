@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 2D8FB072-D55F-4C46-8610-2602BF56DA8D
+:END:
+#+title: A broken schema looks like a broken fleet
+#+description: compass services start can report units that never become ready when the fault is the database schema, not the services.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+When compass services start reports units that never become ready, read the service log before blaming the service: a schema that failed to build makes every service that touches it unhealthy, and the units are the symptom.
+
+*Why:* ores.variability was recorded as V04-blocked for two runs because 23 units never became ready and ores.web.service failed outright. The real cause was ores.workflow declaring a foreign key onto a temporal parent, whose only uniqueness over (tenant_id, id) is a partial index that PostgreSQL refuses as a foreign key target -- so compass db recreate could not finish and no service had a working schema. Once main removed the key, all 23 units came up in four seconds.
+
+*How to apply:* After compass services start times out, read build/output/<preset>/publish/log/<service>.0.log. A service that logged Service ready and registered its subscriptions is healthy and the fleet orchestration is what failed. Then run compass db recreate -y -k and read its exit code before recording anything as blocked: the recreate is also what proves the SQL, and it is the only check that finds a seed function inserting without a row id.

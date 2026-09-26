@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "domain/concurrency_policy_json_io.cpp"
     "domain/concurrency_policy_table.cpp"
@@ -40,7 +43,7 @@ set(files
     "generators/risk_report_config_generator.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/concurrency_policy.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/concurrency_policy_json_io.hpp"
@@ -65,9 +68,13 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/risk_report_config_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/risk_report_config_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/concurrency_policy_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/concurrency_policy_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/report_definition_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/report_definition_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/report_instance_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/report_instance_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/report_type_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/report_type_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/generators/concurrency_policy_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/generators/report_definition_generator.hpp"
@@ -76,9 +83,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/generators/risk_report_config_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/report_definition_protocol.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/report_execution_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/report_instance_protocol.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/report_scheduling_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/report_operations_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/report_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/workflow/report_execution_workflow.hpp"
 )

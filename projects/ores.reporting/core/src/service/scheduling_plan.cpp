@@ -17,30 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_SERVICE_APP_APPLICATION_EXCEPTION_HPP
-#define ORES_REPORTING_SERVICE_APP_APPLICATION_EXCEPTION_HPP
+#include "ores.reporting.core/service/scheduling_plan.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
-#include <boost/exception/info.hpp>
-#include <string>
+namespace ores::reporting::service {
 
-namespace ores::reporting::service::app {
-
-/**
- * @brief A fatal error has occurred whilst the application was running.
- */
-class application_exception : public virtual std::exception, public virtual boost::exception {
-public:
-    explicit application_exception(std::string_view message = "")
-        : message_(message) {}
-
-    [[nodiscard]] const char* what() const noexcept override {
-        return message_.c_str();
-    }
-
-private:
-    std::string message_;
-};
-
+std::string scheduler_job_name(const boost::uuids::uuid& definition_id) {
+    return "report_definition." + boost::uuids::to_string(definition_id);
 }
 
-#endif
+std::optional<boost::uuids::uuid>
+existing_job_for(const std::map<std::string, boost::uuids::uuid>& jobs_by_name,
+                 const boost::uuids::uuid& definition_id) {
+    const auto found = jobs_by_name.find(scheduler_job_name(definition_id));
+    if (found == jobs_by_name.end())
+        return std::nullopt;
+    return found->second;
+}
+
+}

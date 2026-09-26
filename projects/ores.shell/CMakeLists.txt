@@ -22,6 +22,7 @@
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/api)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/trading)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/iam)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/reporting)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/refdata)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/dq)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/analytics)

@@ -155,4 +155,4 @@ def accepted_exceptions(component: str) -> tuple[AcceptedException, ...]:
     return ACCEPTED_EXCEPTIONS.get(component, ())
 
 
-COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "ore", "telemetry-cpp", "workflow-cpp", "variability-cpp")
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "ore", "reporting", "telemetry-cpp", "workflow-cpp", "variability-cpp")

@@ -43,7 +43,9 @@
 \ir ./reporting_risk_report_config_portfolios_create.sql
 \ir ./reporting_risk_report_config_books_create.sql
 \ir ./reporting_report_instances_create.sql
+\ir ./reporting_report_instances_fsm_guard_create.sql
 \ir ./reporting_report_instances_notify_trigger_create.sql
 \ir ./reporting_report_input_bundles_create.sql
+\ir ./reporting_in_flight_instance_fn_create.sql
 \ir ./reporting_resolve_book_ids_fn_create.sql
 \ir ./reporting_publish_from_dq_create.sql

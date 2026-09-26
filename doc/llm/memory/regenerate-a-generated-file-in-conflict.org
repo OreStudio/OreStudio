@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 9558728D-1044-4AC2-BBB6-0F71C437B89F
+:END:
+#+title: Regenerate a generated file that is in conflict
+#+description: The shell recipe inventory is generated; when it conflicts during a rebase, take either side and regenerate it rather than merging it by hand.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+A generated file in conflict is resolved by taking either side and re-running its generator, never by editing the conflict by hand, because a hand-merged generated file is wrong in ways no gate compares against.
+
+*Why:* The shell recipe inventory (doc/recipes/shell/shell.org) conflicted on three separate rebases of the same branch, and git could not even parse the hunks on one of them. Taking the upstream side and running regenerate_shell_recipe_inventory.py produced the correct file every time, and the inventory gate confirmed it. A capture already exists on main recording the same defect: shell-recipe-inventory-ships-conflict-markers.
+
+*How to apply:* Check out either side, run the generator, verify no conflict markers remain, then stage. The generators are projects/ores.codegen/scripts/regenerate_shell_recipe_inventory.py for the recipe index, regenerate_cmake_component_files.py --component <full-name> for the component source lists, and render_component_draft.py or check_component_drift.py for generated code. The same rule applies to a component_files.cmake: regenerating beats merging, and the component's #+full_name: is what the script takes, not the directory.

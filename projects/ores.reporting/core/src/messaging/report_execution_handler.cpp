@@ -23,8 +23,9 @@
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
+#include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
+#include "ores.reporting.core/service/execution_storage_plan.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
@@ -71,19 +72,6 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
 
 } // namespace
 
-namespace {
-
-constexpr std::string_view report_data_bucket = "report-data";
-
-std::string trades_storage_key(const std::string& instance_id) {
-    return instance_id + "/trades.msgpack";
-}
-
-std::string market_data_storage_key(const std::string& instance_id) {
-    return instance_id + "/market_data.msgpack";
-}
-
-} // namespace
 
 void report_execution_handler::mark_instance_failed(const std::string& tenant_id,
                                                     const std::string& instance_id,
@@ -91,8 +79,18 @@ void report_execution_handler::mark_instance_failed(const std::string& tenant_id
     try {
         auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, tenant_id);
         service::report_instance_service inst_svc(tenant_ctx);
-        auto inst = inst_svc.get_instance(instance_id);
+        boost::uuids::string_generator sg;
+        auto inst = inst_svc.get_instance(sg(instance_id));
         if (inst) {
+            // The engine compensates every completed step and every step's
+            // compensation is this same fail_report subject, so this runs once
+            // per completed step, each carrying that step's own generic
+            // message. The failure that actually happened is the first one:
+            // the first writer wins and the rest are no-ops, rather than the
+            // last one overwriting the true reason with an unrelated step's.
+            if (inst->fsm_state_id &&
+                *inst->fsm_state_id == instance_states_.require("failed"))
+                return;
             inst->fsm_state_id = instance_states_.require("failed");
             inst->completed_at = std::chrono::system_clock::now();
             inst->output_message = error_message;
@@ -167,7 +165,8 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
 
         // ── Update instance state to running ─────────────────────────
         service::report_instance_service inst_svc(tenant_ctx);
-        auto inst = inst_svc.get_instance(req.report_instance_id);
+        boost::uuids::string_generator sg;
+        auto inst = inst_svc.get_instance(sg(req.report_instance_id));
         if (!inst) {
             wf->fail("Report instance not found: " + req.report_instance_id);
             return;
@@ -176,10 +175,10 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         inst_svc.save_instance(*inst);
 
         // ── Ask trading service to export trades to storage ──────────
-        const auto key = trades_storage_key(req.report_instance_id);
+        const auto key = service::trades_storage_key(req.report_instance_id);
         ores::trading::messaging::export_trades_to_storage_request exp_req;
         exp_req.book_ids = book_ids;
-        exp_req.storage_bucket = std::string(report_data_bucket);
+        exp_req.storage_bucket = std::string(service::report_data_bucket);
         exp_req.storage_key = key;
 
         std::string err;
@@ -231,9 +230,9 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
 
     try {
         // Ask marketdata service to export all series to storage.
-        const auto key = market_data_storage_key(req.report_instance_id);
+        const auto key = service::market_data_storage_key(req.report_instance_id);
         ores::marketdata::messaging::export_market_data_to_storage_request md_req;
-        md_req.storage_bucket = std::string(report_data_bucket);
+        md_req.storage_bucket = std::string(service::report_data_bucket);
         md_req.storage_key = key;
 
         std::string err;
@@ -371,7 +370,8 @@ void report_execution_handler::finalise(ores::nats::message msg) {
         auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, req.tenant_id);
 
         service::report_instance_service inst_svc(tenant_ctx);
-        auto inst = inst_svc.get_instance(req.report_instance_id);
+        boost::uuids::string_generator sg;
+        auto inst = inst_svc.get_instance(sg(req.report_instance_id));
         if (!inst) {
             wf->fail("Report instance not found: " + req.report_instance_id);
             return;

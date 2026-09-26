@@ -44,10 +44,8 @@ namespace {
 const std::string_view test_suite("ores.shell.iam.tests");
 const std::string tags("[commands]");
 
-// One token per positional argument the command takes, in declaration order.
-std::vector<std::string> tokens(const std::size_t count) {
-    return std::vector<std::string>(count, std::string{"sample"});
-}
+// One token per positional argument the command takes, in declaration order,
+// spelled for the type the command parses it with.
 
 }
 
@@ -80,7 +78,7 @@ TEST_CASE("tenant_provisioning_operations_process_complete_tenant_provisioning_r
 
     command_feedback::reset();
     tenant_provisioning_operations_commands::process_complete_tenant_provisioning(
-        out, session, tokens(0));
+        out, session, std::vector<std::string>{});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -101,7 +99,7 @@ TEST_CASE(
 
     command_feedback::reset();
     tenant_provisioning_operations_commands::process_complete_tenant_provisioning(
-        out, session, tokens(0));
+        out, session, std::vector<std::string>{});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -117,7 +115,8 @@ TEST_CASE("tenant_provisioning_operations_process_provision_acme_tenant_requires
     std::ostringstream out;
 
     command_feedback::reset();
-    tenant_provisioning_operations_commands::process_provision_acme_tenant(out, session, tokens(0));
+    tenant_provisioning_operations_commands::process_provision_acme_tenant(
+        out, session, std::vector<std::string>{});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -136,7 +135,8 @@ TEST_CASE("tenant_provisioning_operations_process_provision_acme_tenant_reaches_
     std::ostringstream out;
 
     command_feedback::reset();
-    tenant_provisioning_operations_commands::process_provision_acme_tenant(out, session, tokens(0));
+    tenant_provisioning_operations_commands::process_provision_acme_tenant(
+        out, session, std::vector<std::string>{});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

@@ -21,3 +21,4 @@
 drop function if exists ores_reporting_initial_definition_state_fn();
 drop function if exists ores_reporting_active_definition_state_fn();
 drop function if exists ores_reporting_suspended_definition_state_fn();
+drop function if exists ores_reporting_in_flight_instance_fn(uuid, uuid);

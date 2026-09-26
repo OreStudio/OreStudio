@@ -1,0 +1,38 @@
+@startuml
+
+title ores.shell.reporting Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace shell #F2F2F2 {
+        namespace app #F2F2F2 {
+            namespace commands #F2F2F2 {
+                namespace reporting #F2F2F2 {
+                    class concurrency_policy_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
+                    }
+                    class report_definition_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
+                    }
+                    class report_instance_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
+                    }
+                    class report_operations_operations_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
+                        {static} +process_trigger_report_instance(out, session, args)
+                    }
+                    class report_type_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+ores.shell.api ..> ores.shell.reporting : request helpers
+ores.reporting.api ..> ores.shell.reporting : domain, messaging
+
+@enduml

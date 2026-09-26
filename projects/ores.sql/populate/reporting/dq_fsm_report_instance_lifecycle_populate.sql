@@ -23,9 +23,9 @@
  *
  * Seeds the report instance lifecycle state machine with:
  *   1 machine  : report_instance_lifecycle
- *   7 states   : pending (initial), queued, running,
- *                completed/failed/cancelled/skipped (all terminal)
- *   7 transitions covering all legal instance lifecycle paths
+ *   7 states   : pending, queued, skipped and failed are initial;
+ *                completed, failed, cancelled and skipped are terminal
+ *   8 transitions covering all legal instance lifecycle paths
  *
  * The initial state when an instance is created depends on the parent
  * definition's concurrency_policy and whether another instance is already
@@ -34,6 +34,11 @@
  *   - Running + policy = queue     -> queued
  *   - Running + policy = skip      -> skipped (terminal, written directly)
  *   - Running + policy = fail      -> failed  (terminal, written directly)
+ *
+ * The last two are why skipped and failed are initial states as well as
+ * terminal ones: the policy records the trigger as an instance that never
+ * started, rather than discarding it. A state that is initial and terminal
+ * has no outgoing transition, which is what the trigger enforces.
  *
  * This script is idempotent: it skips insertion if the machine already exists.
  */
@@ -111,8 +116,12 @@ begin
         (v_state_completed, v_sys_tenant, 0,
          v_machine_id, 'completed', 0, 1,
          current_user, 'system.initial_load', 'Seed report_instance_lifecycle state: completed'),
+        -- failed: terminal initial state under the fail concurrency policy, and
+        -- the state a report reaches when execution fails. The fail policy runs
+        -- the trigger against an instance that already runs, so the new
+        -- instance is recorded as failed without ever starting.
         (v_state_failed, v_sys_tenant, 0,
-         v_machine_id, 'failed', 0, 1,
+         v_machine_id, 'failed', 1, 1,
          current_user, 'system.initial_load', 'Seed report_instance_lifecycle state: failed'),
         (v_state_cancelled, v_sys_tenant, 0,
          v_machine_id, 'cancelled', 0, 1,
@@ -125,7 +134,7 @@ begin
     raise debug 'Created 7 report_instance_lifecycle states.';
 
     -- -------------------------------------------------------------------------
-    -- Transitions (7 total)
+    -- Transitions (8 total)
     -- -------------------------------------------------------------------------
     insert into ores_dq_fsm_transitions_tbl (
         id, tenant_id, version,
@@ -148,6 +157,11 @@ begin
         (gen_random_uuid(), v_sys_tenant, 0,
          v_machine_id, v_state_pending, v_state_cancelled, 'Cancel', null,
          current_user, 'system.initial_load', 'pending -> cancelled'),
+        -- pending -> failed (a configuration error is found before execution
+        -- begins: no book scope, or a missing risk_report_config)
+        (gen_random_uuid(), v_sys_tenant, 0,
+         v_machine_id, v_state_pending, v_state_failed, 'Fail', null,
+         current_user, 'system.initial_load', 'pending -> failed'),
         -- running -> completed (execution finished successfully)
         (gen_random_uuid(), v_sys_tenant, 0,
          v_machine_id, v_state_running, v_state_completed, 'Complete', null,
@@ -161,6 +175,6 @@ begin
          v_machine_id, v_state_running, v_state_cancelled, 'Cancel', null,
          current_user, 'system.initial_load', 'running -> cancelled');
 
-    raise debug 'Created 7 report_instance_lifecycle transitions.';
+    raise debug 'Created 8 report_instance_lifecycle transitions.';
 end;
 $$;

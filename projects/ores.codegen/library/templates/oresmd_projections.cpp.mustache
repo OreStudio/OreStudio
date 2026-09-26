@@ -165,12 +165,19 @@ std::string_view ore_metric(metric m) {
 }
 
 // Whether this ir_quote_type includes the index in the qualifier (as opposed to just
-// ccy/tenor for xccy/BMA types).
+// ccy/tenor for the xccy/BMA/fra families).
+//
+// FRA and IMM_FRA are here because ORE writes them as ccy/start/length: the
+// second qualifier segment is the start tenor or the IMM date, not an index.
+// See the shape table in ores_series_key_shapes_populate.sql, which states the
+// same for every type.
 bool qualifier_includes_index(ir_quote_type qt) {
     switch (qt) {
         case ir_quote_type::cc_basis_swap:
         case ir_quote_type::cc_fix_float_swap:
         case ir_quote_type::bma_swap:
+        case ir_quote_type::fra:
+        case ir_quote_type::imm_fra:
             return false;
         default:
             return true;
@@ -231,12 +238,21 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
                                id.ccy,
                                curve_id(id.ccy, *id.tenor),
                                point);
-        if (!id.index)
-            return std::nullopt;
-        const auto idx = to_upper(std::string(magic_enum::enum_name(*id.index)));
-        return std::format("{}/{}/{}/{}/{}/{}", ore_type(qt), ore_metric(m), id.ccy, idx, t, point);
+        if (!id.index) {
+            // MM is the one indexed family ORE writes both ways: ccy/settle/tenor
+            // when the producer names no index (94% of the corpus), and
+            // ccy/index/settle/tenor when it does. Every other indexed family
+            // requires the index, so only MM reaches the short form below.
+            if (qt != ir_quote_type::mm)
+                return std::nullopt;
+        } else {
+            const auto idx = to_upper(std::string(magic_enum::enum_name(*id.index)));
+            return std::format("{}/{}/{}/{}/{}/{}",
+                               ore_type(qt), ore_metric(m), id.ccy, idx, t, point);
+        }
     }
-    // No-index types: CC_BASIS_SWAP, CC_FIX_FLOAT_SWAP, BMA_SWAP
+    // No-index types: CC_BASIS_SWAP, CC_FIX_FLOAT_SWAP, BMA_SWAP, FRA, IMM_FRA,
+    // and MM when its producer names no index.
     return std::format("{}/{}/{}/{}/{}", ore_type(qt), ore_metric(m), id.ccy, t, point);
 }
 
@@ -837,15 +853,26 @@ inverse_projection(const std::vector<std::string>& parts,
         return from_ir_discount(parts);
     if (type == ore_type_spec::swaption)
         return from_ir_swaption(parts);
-    if (type == ore_type_spec::mm || type == ore_type_spec::fra ||
-        type == ore_type_spec::imm_fra || type == ore_type_spec::basis_swap ||
-        type == ore_type_spec::zero || type == ore_type_spec::mm_future ||
-        type == ore_type_spec::oi_future) {
+    if (type == ore_type_spec::mm) {
+        // MM is written both ways in the corpus, so the segment count decides
+        // which shape this key is: ccy/index/settle/tenor or ccy/settle/tenor.
+        const auto qt = parse_enum_lower<ir_quote_type>(type);
+        if (!qt)
+            return std::nullopt;
+        return parts.size() == 6 ? from_ir_indexed(*qt, parts)
+                                 : from_ir_no_index(*qt, parts);
+    }
+    if (type == ore_type_spec::basis_swap || type == ore_type_spec::zero ||
+        type == ore_type_spec::mm_future || type == ore_type_spec::oi_future) {
         const auto qt = parse_enum_lower<ir_quote_type>(type);
         return qt ? from_ir_indexed(*qt, parts) : std::nullopt;
     }
+    // FRA and IMM_FRA carry no index: ORE writes ccy/start/length, where the
+    // start is a tenor or an IMM date. The registry's shape table states the
+    // same, and the corpus agrees with it.
     if (type == ore_type_spec::cc_basis_swap || type == ore_type_spec::cc_fix_float_swap ||
-        type == ore_type_spec::bma_swap) {
+        type == ore_type_spec::bma_swap || type == ore_type_spec::fra ||
+        type == ore_type_spec::imm_fra) {
         const auto qt = parse_enum_lower<ir_quote_type>(type);
         return qt ? from_ir_no_index(*qt, parts) : std::nullopt;
     }

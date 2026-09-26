@@ -140,16 +140,29 @@ TEST_CASE("ir_mm_rate_quote_key", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "MM/RATE/EUR/EURIBOR/3M/1M");
 }
 
+TEST_CASE("ir_mm_rate_quote_key_without_index_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://ir/usd?tenor=2d&type=quote&quote=mm&metric=rate&point=3m");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "MM/RATE/USD/2D/3M");
+}
+
 TEST_CASE("ir_fra_rate_quote_key", tags) {
-    const auto id =
-        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=fra&metric=rate&point=6m");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "FRA/RATE/EUR/EURIBOR/3M/6M");
+    const auto id = parse("oresmd://ir/eur?tenor=3m&type=quote&quote=fra&metric=rate&point=6m");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "FRA/RATE/EUR/3M/6M");
+}
+
+TEST_CASE("ir_fra_rate_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://ir/usd?tenor=1m&type=quote&quote=fra&metric=rate&point=3m");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "FRA/RATE/USD/1M/3M");
+}
+
+TEST_CASE("ir_imm_fra_rate_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://ir/nok?tenor=1&type=quote&quote=imm_fra&metric=rate&point=2");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "IMM_FRA/RATE/NOK/1/2");
 }
 
 TEST_CASE("ir_imm_fra_rate_quote_key", tags) {
-    const auto id =
-        parse("oresmd://ir/usd?index=libor&tenor=3m&type=quote&quote=imm_fra&metric=rate&point=5y");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "IMM_FRA/RATE/USD/LIBOR/3M/5Y");
+    const auto id = parse("oresmd://ir/usd?tenor=3m&type=quote&quote=imm_fra&metric=rate&point=5y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "IMM_FRA/RATE/USD/3M/5Y");
 }
 
 TEST_CASE("ir_basis_swap_spread_quote_key", tags) {
@@ -448,13 +461,10 @@ TEST_CASE("from_ore_key_ir_indexed_families", tags) {
     REQUIRE(
         oresmd_projections::from_ore_key("MM/RATE/EUR/EURIBOR/3M/1M") ==
         parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m"));
-    REQUIRE(
-        oresmd_projections::from_ore_key("FRA/RATE/EUR/EURIBOR/3M/6M") ==
-        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=fra&metric=rate&point=6m"));
-    REQUIRE(
-        oresmd_projections::from_ore_key("IMM_FRA/RATE/USD/LIBOR/3M/5Y") ==
-        parse(
-            "oresmd://ir/usd?index=libor&tenor=3m&type=quote&quote=imm_fra&metric=rate&point=5y"));
+    // MM is written both ways in the corpus, so the segment count decides the
+    // shape. This is the form the producers use when they name no index.
+    REQUIRE(oresmd_projections::from_ore_key("MM/RATE/USD/2D/3M") ==
+            parse("oresmd://ir/usd?tenor=2d&type=quote&quote=mm&metric=rate&point=3m"));
     REQUIRE(
         oresmd_projections::from_ore_key("BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y") ==
         parse(
@@ -480,6 +490,12 @@ TEST_CASE("from_ore_key_ir_no_index_families", tags) {
         parse("oresmd://ir/usd?tenor=3m&type=quote&quote=cc_fix_float_swap&metric=rate&point=5y"));
     REQUIRE(oresmd_projections::from_ore_key("BMA_SWAP/RATIO/USD/3M/5Y") ==
             parse("oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y"));
+    // FRA and IMM_FRA carry no index: ORE writes ccy/start/length, and the
+    // registry's shape table states the same. Both corpus shapes are pinned.
+    REQUIRE(oresmd_projections::from_ore_key("FRA/RATE/USD/1M/3M") ==
+            parse("oresmd://ir/usd?tenor=1m&type=quote&quote=fra&metric=rate&point=3m"));
+    REQUIRE(oresmd_projections::from_ore_key("IMM_FRA/RATE/NOK/1/2") ==
+            parse("oresmd://ir/nok?tenor=1&type=quote&quote=imm_fra&metric=rate&point=2"));
 }
 
 TEST_CASE("from_ore_key_ir_swaption_builds_the_vol_struct", tags) {

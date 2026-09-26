@@ -303,6 +303,27 @@ TEST_CASE("round_trip_ir_mm_rate", tags) {
     REQUIRE(original == roundtripped);
 }
 
+TEST_CASE("round_trip_ir_mm_rate_without_index", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/usd?tenor=2d&type=quote&quote=mm&metric=rate&point=3m"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_fra_rate", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/usd?tenor=1m&type=quote&quote=fra&metric=rate&point=3m"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_imm_fra_rate", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/nok?tenor=1&type=quote&quote=imm_fra&metric=rate&point=2"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
 TEST_CASE("round_trip_ir_basis_swap_spread", tags) {
     const auto original = oresmd_parser::parse(
         uri("oresmd://ir/"

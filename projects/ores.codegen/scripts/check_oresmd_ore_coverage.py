@@ -133,9 +133,7 @@ SHAPE_MISMATCH: dict[str, str] = {
     "CC_FIX_FLOAT_SWAP": "real key is ccy/tenor/ccy/tenor/point, not ccy/tenor/point",
     "CORRELATION": "real key is operand1/operand2/expiry/point, six segments",
     "CPR": "real key is CPR/RATE/ISIN:<isin>, with no currency",
-    "FRA": "real key is ccy/tenor/tenor, with no index",
-    "IMM_FRA": "real key is ccy/month-number/month-number, with no index",
-    "MM": "real key is ccy/[index/]settle/tenor; the model has no settle dimension",
+    "MM": "the 5-segment form ccy/settle/tenor now projects; the 6-segment form still fails where the producer spells the index ESTER, which index_family calls estr",
     "MM_FUTURE": "real key is ccy/contract-month/exchange:code/tenor",
     "OI_FUTURE": "real key is ccy/contract-month/exchange:code/tenor",
     "ZERO": "real key is ccy/index/day-count/point",
@@ -265,6 +263,17 @@ def coverage_problems() -> list[str]:
             why = ("it is now modelled" if t in modelled_types
                    else "it is not an ORE series type")
             problems.append(f"{t}: UNREPRESENTED entry is stale because {why}")
+
+    # The shape verdict is a human judgement -- a key either matches the
+    # corpus or it does not, and no set comparison decides that. What the
+    # check can do is refuse an entry for a type that is not modelled at
+    # all, which is a coverage gap wearing the wrong record.
+    for t in SHAPE_MISMATCH:
+        if t not in modelled_types:
+            problems.append(
+                f"{t}: SHAPE_MISMATCH entry for a type oresmd does not model; "
+                f"it belongs in UNREPRESENTED"
+            )
 
     # A model that declares a volatility surface field promises a
     # representation the projection library must implement. Each asset class

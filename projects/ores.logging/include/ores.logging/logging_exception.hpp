@@ -21,8 +21,10 @@
 #define ORES_LOGGING_LOGGING_EXCEPTION_HPP
 
 #include "ores.logging/export.hpp"
-#include <boost/exception/info.hpp>
+#include <boost/exception/exception.hpp>
+#include <exception>
 #include <string>
+#include <string_view>
 
 namespace ores::logging {
 

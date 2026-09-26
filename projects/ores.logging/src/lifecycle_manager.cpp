@@ -146,27 +146,17 @@ lifecycle_manager::make_console_sink(const boost_severity severity, std::string 
 }
 
 lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg) {
-    /*
-     * If no configuration is supplied, logging is to be disabled.
-     */
     auto& core(*boost::log::core::get());
     if (!ocfg) {
         core.set_logging_enabled(false);
         return;
     }
 
-    /*
-     * A configuration was supplied. Ensure it is valid.
-     */
     const auto& cfg(*ocfg);
     logging_options_validator::validate(cfg);
     core.set_logging_enabled(true);
 
-    /*
-     * Use the configuration to setup the logging infrastructure for both
-     * console and file, if enabled. We don't have to worry about making sure
-     * that at least one is enabled - that is the validator's job.
-     */
+    // The validator guarantees at least one sink is enabled.
     const auto sl(to_boost_severity(cfg.severity));
     if (cfg.output_to_console) {
         console_sink_ = make_console_sink(sl, cfg.tag);
@@ -183,9 +173,6 @@ lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg) {
     if (cfg.replica_index)
         BOOST_LOG_SEV(lg(), ores::logging::info) << "Replica index: " << *cfg.replica_index;
 
-    /*
-     * Finally, add the timestamp attributes.
-     */
     const std::string time_stamp_attr("TimeStamp");
     core.add_global_attribute(time_stamp_attr, boost::log::attributes::local_clock());
 }

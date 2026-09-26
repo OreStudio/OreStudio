@@ -28,6 +28,7 @@
 #include "ores.assets.core/repository/image_tag_mapper.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <cstddef>
 #include <optional>

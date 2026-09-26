@@ -67,6 +67,13 @@ TEST_CASE("logging_read_options_returns_value_when_enabled", tags) {
     auto opts = logging_configuration::read_options(vm);
 
     REQUIRE(opts.has_value());
+    REQUIRE(opts->filename == "test.log");
+    REQUIRE(opts->severity == "info");
+    REQUIRE(opts->output_directory == "log");
+    REQUIRE_FALSE(opts->output_to_console);
+    REQUIRE_FALSE(opts->include_pid);
+    REQUIRE_FALSE(opts->replica_index.has_value());
+    REQUIRE(opts->tag.empty());
 }
 
 TEST_CASE("logging_read_options_uses_default_filename", tags) {

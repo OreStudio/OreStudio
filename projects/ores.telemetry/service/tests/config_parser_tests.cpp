@@ -132,8 +132,15 @@ TEST_CASE("parse_help_returns_empty", tags) {
     std::ostringstream info, err;
     const auto result = parser{}.parse(args, info, err);
 
-    CHECK_FALSE(result.has_value());
-    CHECK_FALSE(info.str().empty());
+    REQUIRE_FALSE(result.has_value());
+
+    const auto printed = info.str();
+    REQUIRE(printed.rfind("Telemetry and metrics streaming service\n\n"
+                          "Usage: ores.telemetry.service [options]\n\n",
+                          0) == 0);
+    CHECK(printed.find("--nats-monitor-url") != std::string::npos);
+    CHECK(printed.find("--nats-monitor-interval") != std::string::npos);
+    CHECK(err.str().empty());
 }
 
 TEST_CASE("parse_version_returns_empty", tags) {
@@ -143,8 +150,14 @@ TEST_CASE("parse_version_returns_empty", tags) {
     std::ostringstream info, err;
     const auto result = parser{}.parse(args, info, err);
 
-    CHECK_FALSE(result.has_value());
-    CHECK_FALSE(info.str().empty());
+    REQUIRE_FALSE(result.has_value());
+
+    const auto printed = info.str();
+    REQUIRE(printed.rfind("ores.telemetry.service v", 0) == 0);
+    CHECK(printed.find("License GPLv3: GNU GPL version 3 or later") != std::string::npos);
+    CHECK(printed.find("There is NO WARRANTY, to the extent permitted by law.") !=
+          std::string::npos);
+    CHECK(err.str().empty());
 }
 
 TEST_CASE("parse_unknown_option_throws", tags) {

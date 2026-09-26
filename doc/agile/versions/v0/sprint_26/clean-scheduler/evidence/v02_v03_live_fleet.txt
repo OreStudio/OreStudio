@@ -1,0 +1,79 @@
+V02 and V03 against a live environment
+=====================================
+
+V03, the database and the fleet
+-------------------------------
+
+    ./compass.sh env configure --preset linux-clang-debug-make -y
+        Regenerated .env (it was version 23; the tree wants 24).
+
+    ./compass.sh db recreate -y -k
+        exit 0. The whole schema was created from scratch and every populate
+        script ran. The scheduler's generated SQL is part of it: the create
+        script, the version/insert trigger, the notify trigger and the event
+        channel.
+
+    ./compass.sh services start
+        exit 1, and the failure is environmental, not this change: NATS came
+        up and 22 of 23 units reported ready. The one that did not is
+        ores.web.service, which cannot build because npm is absent (the
+        configure step warns "npm was not found, so the ores.web TypeScript
+        component will not be built").
+
+Checked against the live database, not a diff:
+
+    select column_name, data_type, is_nullable
+      from information_schema.columns
+     where table_name = 'ores_scheduler_job_definitions_tbl'
+       and column_name in ('tenant_id', 'job_name', 'is_active');
+      -> is_active  boolean  NO
+         job_name   text     NO
+         tenant_id  uuid     YES
+
+    select indexdef from pg_indexes
+     where tablename = 'ores_scheduler_job_definitions_tbl'
+       and indexname like '%job_name%';
+      -> CREATE UNIQUE INDEX job_definitions_job_name_uniq_idx ON
+         public.ores_scheduler_job_definitions_tbl USING btree
+         (tenant_id, job_name)
+         WHERE (valid_to = ores_utility_infinity_timestamp_fn())
+
+    select tgname from pg_trigger
+     where tgrelid = 'ores_scheduler_job_definitions_tbl'::regclass
+       and not tgisinternal;
+      -> ores_scheduler_job_definitions_insert_trg
+         ores_scheduler_job_definitions_notify_trg
+
+So the nullable tenant, the tenant-scoped natural key and both triggers are
+what the database holds, not merely what the model renders.
+
+V02, the suites with the fleet up
+---------------------------------
+
+    codegen suite                         608 passed, 0 failed
+    ores.scheduler.api.tests              All tests passed (33 assertions in 6 test cases)
+    ores.scheduler.service.tests          All tests passed (26 assertions in 10 test cases)
+    ores.scheduler.core.tests             All tests passed (7 assertions in 1 test case)
+
+The core suite is the generated eventing integration test, and it now passes:
+it writes a job definition through the repository, waits for the row's
+pg_notify to reach the event bus and be published on NATS, then asserts the
+history provider returns two versions, that the version's commentary is the one
+the test wrote, that a deleted definition is gone, and that its history count
+matches the versions it saw. Before this round it failed at the NATS connect
+because the fleet was down, and, once the fleet was up, at the insert.
+
+The defect the live run found
+-----------------------------
+
+With the fleet up the test reached the insert and PostgreSQL refused it:
+"invalid input syntax for type json, Token "CD" is invalid". The generated
+sample value for the jsonb column action_payload was a faker word. Codegen now
+fills an empty object for a jsonb column that states no generator expression,
+in one place, so every template site that falls back to a faker word picks it
+up. Regression test: test_jsonb_sample_value.py. Fix and measurement are in
+commit 575e7d592c.
+
+No build, gate or diff could have found this: the SQL was valid, the model was
+valid, the C++ compiled, and the drift gates compared generated text with
+generated text. Only executing the chain against a real database did.

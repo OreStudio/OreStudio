@@ -28,9 +28,9 @@ ores.compute passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:543DE51B-B9D8-4261-9DB1-9B97D4C9F187][Clean ores.compute to the component clean standard]] |
-| Now          | The component regenerates byte-identically, the whole tree builds, and the shell's compute commands are generated. |
+| Now          | Section 2 is partly worked. The presentation drawers are gone and the models are on the current format. |
 | Waiting on   | Nothing. |
-| Next         | Work section 2, Models, and section 3, Protocol. |
+| Next         | Finish section 2, then work section 3, Protocol. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -64,7 +64,9 @@ record each item's result in the table below.
 | B05  | Pass    | Nothing blocks the work. PR #2138 merged, so the branch rebased onto =origin/main= at =5de59e3fb8= and picked up its M09 chrome removal. No other in-flight branch touches =projects/ores.compute=. |
 | G01  | Pass    | Regeneration is byte-clean and the component builds. =compass build ores.compute.api.lib ores.compute.core.lib ores.compute.service.lib ores.compute.wrapper.lib ores.compute.client.lib= exits 0. =evidence/g01_regeneration_run4.txt=. |
 | G05  | Pass    | Five generator defects, all in =org_loader.py=, fixed at source with eleven cases in =projects/ores.codegen/tests/test_protocol_name_collisions.py=. Details in Notes. |
-| M09  | Partial | The five codegen defects are fixed, and =result= no longer declares the audit column =modified_by= as its key. The presentation drawer remains in all six entity models. |
+| M01  | Pass    | No JSON model remains under =projects/ores.compute=, and no model declares =lookup_entity=. Every entity is on the current org format. |
+| M03  | Pass    | =check_model_drift.py= reports no model drift. One accepted exception is compute's own: =result= states =has_change_reason_cache: false= against its profile, deliberately, because the grid writes results and no human edit flow exists. The model documents it. |
+| M09  | Pass    | No Qt or Wt presentation drawer or property remains in a compute model. The drawer's Qt list-window columns and its retired-type class names are gone. =grep -l "^\*\* Presentation" projects/ores.compute/modeling/*.org= returns nothing, against 109 files elsewhere. |
 | V01  | Pass    | =compass build= over the whole tree exits 0, with the component's tests and every consumer. |
 | V05  | Partial | Every gate is green with the component under test: component drift, model drift, protocol twin coverage, handler permissions, populate references, recipe inventory and the CMake source lists. The registry entry V06 is not made yet. |
 | P05  | Pass    | Both consumers follow the protocol: the shell application and the CLI. Nothing is carried for backwards compatibility. |
@@ -74,6 +76,30 @@ record each item's result in the table below.
 Items not listed are not yet worked. Sections 2 to 8 are open.
 
 * Notes
+
+** The presentation drawer, M09
+
+Two properties in the drawer were load-bearing and could not be deleted
+with it. =key_field= is the entity's declared key on the wire, read by
+=declared_key_field= and driving the protocol key record. It now sits on
+the model root, and the loader reads the root first and falls back to the
+drawer, so a model can drop the drawer without losing its key.
+=has_change_reason_cache: false= on =result= is a deliberate override the
+model documents; it moved to the root too and the model-drift gate still
+counts it as the same accepted exception.
+
+The test that settled it. Removing the drawer alone changed eleven files,
+all through the key. Removing it with =key_field= on the root changes
+none: the regeneration is byte-identical, so the drawer was inert once its
+two properties were rehomed.
+
+One gap remains outside this component.
+=projects/ores.codegen/modeling/entity_meta_model_cpp_qt.org= is the
+meta-model a new entity is scaffolded from, and it still writes
+=window_title=, =settings_group=, =icon= and =item_var= into the drawer it
+emits. A model scaffolded from it today would reintroduce exactly what M09
+removes. That file is codegen's own model, so it belongs to a tooling
+change, not to this story.
 
 ** Regeneration, G01 and G05
 

@@ -53,7 +53,11 @@ TEST_CASE("write_single_currency", tags) {
     BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
 
     currency_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), currency));
+    repo.write(h.context(), currency);
+
+    const auto read_currencies = repo.read_latest(h.context(), currency.iso_code);
+    REQUIRE(read_currencies.size() == 1);
+    CHECK(read_currencies[0].name == currency.name);
 }
 
 TEST_CASE("write_multiple_currencies", tags) {
@@ -65,7 +69,16 @@ TEST_CASE("write_multiple_currencies", tags) {
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
     currency_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), currencies));
+    repo.write(h.context(), currencies);
+
+    const auto read_currencies = repo.read_latest(h.context());
+    for (const auto& written : currencies) {
+        const auto it = std::ranges::find_if(read_currencies, [&](const currency& c) {
+            return c.iso_code == written.iso_code;
+        });
+        REQUIRE(it != read_currencies.end());
+        CHECK(it->name == written.name);
+    }
 }
 
 TEST_CASE("read_latest_currencies", tags) {
@@ -83,12 +96,12 @@ TEST_CASE("read_latest_currencies", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     // Verify all written currencies can be found (other tests may have added more)
-    CHECK(read_currencies.size() >= written_currencies.size());
     for (const auto& written : written_currencies) {
-        auto it = std::ranges::find_if(read_currencies, [&written](const currency& c) {
+        const auto it = std::ranges::find_if(read_currencies, [&written](const currency& c) {
             return c.iso_code == written.iso_code;
         });
-        CHECK(it != read_currencies.end());
+        REQUIRE(it != read_currencies.end());
+        CHECK(it->name == written.name);
     }
 }
 
@@ -129,8 +142,13 @@ TEST_CASE("read_all_currencies", tags) {
     auto read_currencies = repo.read_all(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
-    CHECK(!read_currencies.empty());
-    CHECK(read_currencies.size() >= written_currencies.size());
+    for (const auto& written : written_currencies) {
+        const auto it = std::ranges::find_if(read_currencies, [&written](const currency& c) {
+            return c.iso_code == written.iso_code;
+        });
+        REQUIRE(it != read_currencies.end());
+        CHECK(it->name == written.name);
+    }
 }
 
 TEST_CASE("read_all_currencies_multiple_versions", tags) {
@@ -185,7 +203,13 @@ TEST_CASE("read_nonexistent_iso_code", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     currency_repository repo;
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    const auto keeper = generate_synthetic_currency(ctx);
+    repo.write(h.context(), keeper);
 
     const std::string nonexistent_iso = "XXX";
     BOOST_LOG_SEV(lg, debug) << "Non-existent ISO code: " << nonexistent_iso;
@@ -193,7 +217,14 @@ TEST_CASE("read_nonexistent_iso_code", tags) {
     auto read_currencies = repo.read_latest(h.context(), nonexistent_iso);
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
-    CHECK(read_currencies.size() == 0);
+    const auto answered_with_another_key = std::ranges::any_of(
+        read_currencies, [&](const currency& c) { return c.iso_code == nonexistent_iso; });
+    CHECK_FALSE(answered_with_another_key);
+
+    // The same read does answer for the key that was written.
+    const auto keeper_rows = repo.read_latest(h.context(), keeper.iso_code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].name == keeper.name);
 }
 
 TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {

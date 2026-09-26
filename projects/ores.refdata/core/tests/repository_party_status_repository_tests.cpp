@@ -26,6 +26,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -51,7 +52,11 @@ TEST_CASE("write_single_party_status", tags) {
     BOOST_LOG_SEV(lg, debug) << "Party status: " << ps;
 
     party_status_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), ps));
+    repo.write(h.context(), ps);
+
+    const auto read_party_statuses = repo.read_latest(h.context(), ps.code);
+    REQUIRE(read_party_statuses.size() == 1);
+    CHECK(read_party_statuses[0].name == ps.name);
 }
 
 TEST_CASE("write_multiple_party_statuses", tags) {
@@ -66,7 +71,16 @@ TEST_CASE("write_multiple_party_statuses", tags) {
     BOOST_LOG_SEV(lg, debug) << "Party statuses: " << party_statuses;
 
     party_status_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), party_statuses));
+    repo.write(h.context(), party_statuses);
+
+    const auto read_party_statuses = repo.read_latest(h.context());
+    for (const auto& written : party_statuses) {
+        const auto it = std::ranges::find_if(read_party_statuses, [&](const party_status& ps) {
+            return ps.code == written.code;
+        });
+        REQUIRE(it != read_party_statuses.end());
+        CHECK(it->name == written.name);
+    }
 }
 
 TEST_CASE("read_latest_party_statuses", tags) {
@@ -86,7 +100,13 @@ TEST_CASE("read_latest_party_statuses", tags) {
     auto read_party_statuses = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read party statuses: " << read_party_statuses;
 
-    CHECK(read_party_statuses.size() >= written_party_statuses.size());
+    for (const auto& written : written_party_statuses) {
+        const auto it = std::ranges::find_if(read_party_statuses, [&](const party_status& ps) {
+            return ps.code == written.code;
+        });
+        REQUIRE(it != read_party_statuses.end());
+        CHECK(it->name == written.name);
+    }
 }
 
 TEST_CASE("read_latest_party_status_by_code", tags) {
@@ -117,7 +137,14 @@ TEST_CASE("read_nonexistent_party_status_code", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     party_status_repository repo;
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    auto keeper = generate_synthetic_party_status(ctx);
+    keeper.change_reason_code = "system.test";
+    repo.write(h.context(), keeper);
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
@@ -125,5 +152,12 @@ TEST_CASE("read_nonexistent_party_status_code", tags) {
     auto read_party_statuses = repo.read_latest(h.context(), nonexistent_code);
     BOOST_LOG_SEV(lg, debug) << "Read party statuses: " << read_party_statuses;
 
-    CHECK(read_party_statuses.size() == 0);
+    const auto answered_with_another_key = std::ranges::any_of(
+        read_party_statuses, [&](const party_status& ps) { return ps.code == nonexistent_code; });
+    CHECK_FALSE(answered_with_another_key);
+
+    // The same read does answer for the key that was written.
+    const auto keeper_rows = repo.read_latest(h.context(), keeper.code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].name == keeper.name);
 }

@@ -57,7 +57,11 @@ TEST_CASE("write_single_party", tags) {
     p.parent_party_id = parent_id;
     BOOST_LOG_SEV(lg, debug) << "Party: " << p;
 
-    CHECK_NOTHROW(repo.write(h.context(), p));
+    repo.write(h.context(), p);
+
+    const auto read_parties = repo.read_latest(h.context(), boost::uuids::to_string(p.id));
+    REQUIRE(read_parties.size() == 1);
+    CHECK(read_parties[0].full_name == p.full_name);
 }
 
 TEST_CASE("write_multiple_parties", tags) {
@@ -75,7 +79,16 @@ TEST_CASE("write_multiple_parties", tags) {
     }
     BOOST_LOG_SEV(lg, debug) << "Parties: " << parties;
 
-    CHECK_NOTHROW(repo.write(h.context(), parties));
+    repo.write(h.context(), parties);
+
+    const auto read_parties = repo.read_latest(h.context());
+    for (const auto& written : parties) {
+        const auto it = std::ranges::find_if(read_parties, [&](const party& p) {
+            return p.id == written.id;
+        });
+        REQUIRE(it != read_parties.end());
+        CHECK(it->full_name == written.full_name);
+    }
 }
 
 TEST_CASE("read_latest_parties", tags) {
@@ -98,7 +111,13 @@ TEST_CASE("read_latest_parties", tags) {
     auto read_parties = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read parties: " << read_parties;
 
-    CHECK(read_parties.size() >= written_parties.size());
+    for (const auto& written : written_parties) {
+        const auto it = std::ranges::find_if(read_parties, [&written](const party& p) {
+            return p.id == written.id;
+        });
+        REQUIRE(it != read_parties.end());
+        CHECK(it->full_name == written.full_name);
+    }
 }
 
 TEST_CASE("read_latest_party_by_id", tags) {
@@ -132,7 +151,16 @@ TEST_CASE("read_nonexistent_party_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     party_repository repo;
+    const auto parent_id = repo.read_system_party(h.context(), h.tenant_id().to_string()).at(0).id;
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    auto keeper = generate_synthetic_party(ctx);
+    keeper.change_reason_code = "system.test";
+    keeper.parent_party_id = parent_id;
+    repo.write(h.context(), keeper);
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
@@ -140,7 +168,14 @@ TEST_CASE("read_nonexistent_party_id", tags) {
     auto read_parties = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read parties: " << read_parties;
 
-    CHECK(read_parties.size() == 0);
+    const auto answered_with_another_key = std::ranges::any_of(
+        read_parties, [&](const party& p) { return p.id == nonexistent_id; });
+    CHECK_FALSE(answered_with_another_key);
+
+    // The same read does answer for the key that was written.
+    const auto keeper_rows = repo.read_latest(h.context(), boost::uuids::to_string(keeper.id));
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].full_name == keeper.full_name);
 }
 
 TEST_CASE("get_hierarchy_returns_subtree_rooted_at_given_party", tags) {

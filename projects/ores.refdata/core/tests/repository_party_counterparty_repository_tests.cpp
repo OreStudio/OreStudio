@@ -30,6 +30,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -92,7 +93,11 @@ TEST_CASE("write_single_party_counterparty", tags) {
 
     auto pc = make_party_counterparty(h, party_id, cp.id);
     BOOST_LOG_SEV(lg, debug) << "Party counterparty: " << pc;
-    CHECK_NOTHROW(repo.write(pc));
+    repo.write(pc);
+
+    const auto read_pcs = repo.read_latest(pc.party_id, pc.counterparty_id);
+    REQUIRE(read_pcs.size() == 1);
+    CHECK(read_pcs[0].change_commentary == pc.change_commentary);
 }
 
 TEST_CASE("write_multiple_party_counterparties", tags) {
@@ -117,7 +122,17 @@ TEST_CASE("write_multiple_party_counterparties", tags) {
     }
 
     BOOST_LOG_SEV(lg, debug) << "Party counterparties: " << pcs;
-    CHECK_NOTHROW(repo.write(pcs));
+    repo.write(pcs);
+
+    const auto read_pcs = repo.read_latest();
+    for (const auto& written : pcs) {
+        const auto it = std::ranges::find_if(read_pcs, [&](const party_counterparty& r) {
+            return r.party_id == written.party_id &&
+                   r.counterparty_id == written.counterparty_id;
+        });
+        REQUIRE(it != read_pcs.end());
+        CHECK(it->change_commentary == written.change_commentary);
+    }
 }
 
 TEST_CASE("read_latest_party_counterparties_by_party", tags) {
@@ -195,22 +210,59 @@ TEST_CASE("remove_party_counterparty", tags) {
     cp.change_reason_code = "system.test";
     cp_repo.write(h.context(), cp);
 
-    auto pc = make_party_counterparty(h, system_party_id, cp.id);
-    repo.write(pc);
+    auto keeper_cp = generate_synthetic_counterparty(ctx);
+    keeper_cp.change_reason_code = "system.test";
+    cp_repo.write(h.context(), keeper_cp);
 
-    CHECK_NOTHROW(repo.remove(system_party_id, cp.id));
+    auto pc = make_party_counterparty(h, system_party_id, cp.id);
+    auto keeper = make_party_counterparty(h, system_party_id, keeper_cp.id);
+    repo.write(pc);
+    repo.write(keeper);
+
+    repo.remove(system_party_id, cp.id);
 
     auto read_pcs = repo.read_latest_by_counterparty(cp.id);
     CHECK(read_pcs.empty());
+
+    // The removal took only the row it named.
+    const auto keeper_rows = repo.read_latest_by_counterparty(keeper.counterparty_id);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].change_commentary == keeper.change_commentary);
 }
 
 TEST_CASE("read_nonexistent_party_counterparty", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    party_repository party_repo;
+    counterparty_repository cp_repo;
     party_counterparty_repository repo(h.context());
+
+    const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
+
+    auto cp = generate_synthetic_counterparty(ctx);
+    cp.change_reason_code = "system.test";
+    cp_repo.write(h.context(), cp);
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    const auto keeper = make_party_counterparty(h, system_party_id, cp.id);
+    repo.write(keeper);
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     auto read_pcs = repo.read_latest_by_party(nonexistent_id);
-    CHECK(read_pcs.empty());
+
+    const auto answered_with_another_key = std::ranges::any_of(
+        read_pcs, [&](const party_counterparty& r) { return r.party_id == nonexistent_id; });
+    CHECK_FALSE(answered_with_another_key);
+
+    // The same read does answer for the party that was written.
+    const auto keeper_rows = repo.read_latest_by_party(keeper.party_id);
+    const auto keeper_it = std::ranges::find_if(keeper_rows, [&](const party_counterparty& r) {
+        return r.counterparty_id == keeper.counterparty_id;
+    });
+    REQUIRE(keeper_it != keeper_rows.end());
+    CHECK(keeper_it->change_commentary == keeper.change_commentary);
 }

@@ -23,6 +23,7 @@
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <set>
@@ -60,6 +61,15 @@ TEST_CASE("generate_multiple_currencies", tags) {
     BOOST_LOG_SEV(lg, debug) << "Generated currencies: " << currencies;
 
     CHECK(currencies.size() == 3);
+
+    std::set<std::string> codes;
+    for (const auto& c : currencies) {
+        codes.insert(c.iso_code);
+        CHECK(c.rounding_type == "Closest");
+        CHECK(c.fractions_per_unit == 100);
+        CHECK(c.rounding_precision == 2);
+    }
+    CHECK(codes.size() == currencies.size());
 }
 
 TEST_CASE("generate_unique_currencies", tags) {
@@ -73,10 +83,13 @@ TEST_CASE("generate_unique_currencies", tags) {
 
     // Verify all iso_codes are unique
     std::set<std::string> codes;
-    for (const auto& c : currencies)
+    for (const auto& c : currencies) {
         codes.insert(c.iso_code);
+        CHECK(c.rounding_type == "Closest");
+        CHECK(c.fractions_per_unit == 100);
+    }
 
-    CHECK(codes.size() == 3);
+    CHECK(codes.size() == currencies.size());
 }
 
 TEST_CASE("generate_unicode_currencies", tags) {
@@ -108,6 +121,20 @@ TEST_CASE("generate_fictional_currencies_returns_all_when_no_count", tags) {
     BOOST_LOG_SEV(lg, debug) << "Generated fictional currencies: " << currencies;
 
     CHECK(currencies.size() == 50);
+
+    const auto first = std::ranges::find_if(currencies, [](const auto& c) {
+        return c.iso_code == "XAE";
+    });
+    REQUIRE(first != currencies.end());
+    CHECK(first->name == "Aerilonian Dollar");
+    CHECK(first->numeric_code == "10001");
+
+    const auto last = std::ranges::find_if(currencies, [](const auto& c) {
+        return c.iso_code == "XZE";
+    });
+    REQUIRE(last != currencies.end());
+    CHECK(last->name == "Zephyrian Zephyr");
+    CHECK(last->numeric_code == "10050");
 }
 
 TEST_CASE("generate_fictional_currencies_returns_requested_count", tags) {
@@ -117,7 +144,11 @@ TEST_CASE("generate_fictional_currencies_returns_requested_count", tags) {
     auto currencies = generate_fictional_currencies(5, ctx);
     BOOST_LOG_SEV(lg, debug) << "Generated 5 fictional currencies: " << currencies;
 
-    CHECK(currencies.size() == 5);
+    REQUIRE(currencies.size() == 5);
+    CHECK(currencies[0].iso_code == "XAE");
+    CHECK(currencies[0].name == "Aerilonian Dollar");
+    CHECK(currencies[4].iso_code == "XCA");
+    CHECK(currencies[4].name == "Calandrian Crown");
 }
 
 TEST_CASE("generate_fictional_currencies_returns_all_when_count_exceeds_available", tags) {
@@ -128,6 +159,13 @@ TEST_CASE("generate_fictional_currencies_returns_all_when_count_exceeds_availabl
     BOOST_LOG_SEV(lg, debug) << "Generated fictional currencies with large count: " << currencies;
 
     CHECK(currencies.size() == 50);
+
+    const auto last = std::ranges::find_if(currencies, [](const auto& c) {
+        return c.iso_code == "XZE";
+    });
+    REQUIRE(last != currencies.end());
+    CHECK(last->name == "Zephyrian Zephyr");
+    CHECK(last->numeric_code == "10050");
 }
 
 TEST_CASE("generate_fictional_currencies_has_unique_iso_codes", tags) {
@@ -140,7 +178,9 @@ TEST_CASE("generate_fictional_currencies_has_unique_iso_codes", tags) {
     for (const auto& c : currencies)
         codes.insert(c.iso_code);
 
-    CHECK(codes.size() == 50);
+    CHECK(codes.size() == currencies.size());
+    CHECK(codes.count("XAE") == 1); // Aerilonian Dollar
+    CHECK(codes.count("XZE") == 1); // Zephyrian Zephyr
 }
 
 TEST_CASE("generate_fictional_currencies_has_unique_numeric_codes", tags) {
@@ -153,7 +193,9 @@ TEST_CASE("generate_fictional_currencies_has_unique_numeric_codes", tags) {
     for (const auto& c : currencies)
         codes.insert(c.numeric_code);
 
-    CHECK(codes.size() == 50);
+    CHECK(codes.size() == currencies.size());
+    CHECK(codes.count("10001") == 1);
+    CHECK(codes.count("10050") == 1);
 }
 
 TEST_CASE("generate_fictional_currencies_has_expected_first_currency", tags) {

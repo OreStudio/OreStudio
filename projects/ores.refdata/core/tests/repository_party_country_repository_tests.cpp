@@ -30,6 +30,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -87,9 +88,11 @@ TEST_CASE("write_single_party_country", tags) {
 
     party_repository party_repo;
     country_repository cty_repo;
-    party_country_repository repo(h.context());
 
     const auto party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
+    h.set_party(party_id);
+    party_country_repository repo(h.context());
+
     auto gctx = ores::testing::make_generation_context(h);
     auto all = generate_fictional_countries(total_slots, gctx);
     cty_repo.write(h.context(), {all[0]});
@@ -97,7 +100,13 @@ TEST_CASE("write_single_party_country", tags) {
 
     auto pc = make_party_country(h, party_id, alpha2_code);
     BOOST_LOG_SEV(lg, debug) << "Party country: " << pc;
-    CHECK_NOTHROW(repo.write(pc));
+    repo.write(pc);
+
+    const auto read_pcs = repo.read_latest(pc.party_id, pc.country_alpha2_code);
+    REQUIRE(read_pcs.size() == 1);
+    CHECK(read_pcs[0].party_id == pc.party_id);
+    CHECK(read_pcs[0].country_alpha2_code == pc.country_alpha2_code);
+    CHECK(read_pcs[0].change_commentary == pc.change_commentary);
 }
 
 TEST_CASE("write_multiple_party_countries", tags) {
@@ -107,9 +116,10 @@ TEST_CASE("write_multiple_party_countries", tags) {
 
     party_repository party_repo;
     country_repository cty_repo;
-    party_country_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
+    h.set_party(system_party_id);
+    party_country_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
     auto all = generate_fictional_countries(total_slots, gctx);
@@ -122,7 +132,17 @@ TEST_CASE("write_multiple_party_countries", tags) {
     }
 
     BOOST_LOG_SEV(lg, debug) << "Party countries: " << pcs;
-    CHECK_NOTHROW(repo.write(pcs));
+    repo.write(pcs);
+
+    const auto read_pcs = repo.read_latest_by_party(system_party_id);
+    for (const auto& written : pcs) {
+        const auto it = std::ranges::find_if(read_pcs, [&](const party_country& r) {
+            return r.party_id == written.party_id &&
+                   r.country_alpha2_code == written.country_alpha2_code;
+        });
+        REQUIRE(it != read_pcs.end());
+        CHECK(it->change_commentary == written.change_commentary);
+    }
 }
 
 TEST_CASE("read_latest_party_countries_by_party", tags) {
@@ -193,30 +213,67 @@ TEST_CASE("remove_party_country", tags) {
 
     party_repository party_repo;
     country_repository cty_repo;
-    party_country_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
+    h.set_party(system_party_id);
+    party_country_repository repo(h.context());
+
     auto gctx = ores::testing::make_generation_context(h);
     auto all = generate_fictional_countries(total_slots, gctx);
-    cty_repo.write(h.context(), {all[5]});
+    cty_repo.write(h.context(), {all[5], all[6]});
     const auto& alpha2_code = all[5].alpha2_code;
 
     auto pc = make_party_country(h, system_party_id, alpha2_code);
     repo.write(pc);
+    const auto keeper = make_party_country(h, system_party_id, all[6].alpha2_code);
+    repo.write(keeper);
 
-    CHECK_NOTHROW(repo.remove(system_party_id, alpha2_code));
+    repo.remove(system_party_id, alpha2_code);
 
-    auto read_pcs = repo.read_latest_by_country(alpha2_code);
-    CHECK(read_pcs.empty());
+    const auto removed_rows = repo.read_latest_by_country(alpha2_code);
+    const auto removed_still_present = std::ranges::any_of(
+        removed_rows, [&](const party_country& r) { return r.party_id == system_party_id; });
+    CHECK_FALSE(removed_still_present);
+
+    const auto keeper_rows = repo.read_latest_by_country(keeper.country_alpha2_code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].party_id == keeper.party_id);
+    CHECK(keeper_rows[0].change_commentary == keeper.change_commentary);
 }
 
 TEST_CASE("read_nonexistent_party_country", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+
+    party_repository party_repo;
+    country_repository cty_repo;
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
+    h.set_party(system_party_id);
     party_country_repository repo(h.context());
 
+    auto gctx = ores::testing::make_generation_context(h);
+    auto all = generate_fictional_countries(total_slots, gctx);
+    cty_repo.write(h.context(), {all[7]});
+    const auto keeper = make_party_country(h, system_party_id, all[7].alpha2_code);
+    repo.write(keeper);
+
     const auto nonexistent_id = boost::uuids::random_generator()();
-    auto read_pcs = repo.read_latest_by_party(nonexistent_id);
-    CHECK(read_pcs.empty());
+    BOOST_LOG_SEV(lg, debug) << "Non-existent party ID: " << nonexistent_id;
+
+    auto read_pcs = repo.read_latest(nonexistent_id, keeper.country_alpha2_code);
+    BOOST_LOG_SEV(lg, debug) << "Read party countries: " << read_pcs;
+
+    const auto answered_with_another_key = std::ranges::any_of(
+        read_pcs, [&](const party_country& r) { return r.party_id == nonexistent_id; });
+    CHECK_FALSE(answered_with_another_key);
+
+    // The same read does answer for the key pair that was written.
+    const auto keeper_rows = repo.read_latest(keeper.party_id, keeper.country_alpha2_code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].country_alpha2_code == keeper.country_alpha2_code);
+    CHECK(keeper_rows[0].change_commentary == keeper.change_commentary);
 }

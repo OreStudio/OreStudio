@@ -23,6 +23,7 @@
 #include "ores.refdata.api/generators/country_generator.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <set>
 
@@ -45,6 +46,20 @@ TEST_CASE("generate_fictional_countries_returns_all_when_no_count", tags) {
     BOOST_LOG_SEV(lg, debug) << "Generated fictional countries: " << countries;
 
     CHECK(countries.size() == 50);
+
+    const auto first = std::ranges::find_if(countries, [](const auto& c) {
+        return c.alpha2_code == "AL";
+    });
+    REQUIRE(first != countries.end());
+    CHECK(first->name == "Aerilon");
+    CHECK(first->official_name == "Republic of Aerilon");
+
+    const auto last = std::ranges::find_if(countries, [](const auto& c) {
+        return c.alpha2_code == "ZE";
+    });
+    REQUIRE(last != countries.end());
+    CHECK(last->name == "Zephyria");
+    CHECK(last->numeric_code == "10050");
 }
 
 TEST_CASE("generate_fictional_countries_returns_requested_count", tags) {
@@ -54,7 +69,11 @@ TEST_CASE("generate_fictional_countries_returns_requested_count", tags) {
     auto countries = generate_fictional_countries(5, ctx);
     BOOST_LOG_SEV(lg, debug) << "Generated 5 fictional countries: " << countries;
 
-    CHECK(countries.size() == 5);
+    REQUIRE(countries.size() == 5);
+    CHECK(countries[0].alpha2_code == "AL");
+    CHECK(countries[0].name == "Aerilon");
+    CHECK(countries[4].alpha2_code == "CA");
+    CHECK(countries[4].name == "Calandria");
 }
 
 TEST_CASE("generate_fictional_countries_returns_all_when_count_exceeds_available", tags) {
@@ -65,6 +84,13 @@ TEST_CASE("generate_fictional_countries_returns_all_when_count_exceeds_available
     BOOST_LOG_SEV(lg, debug) << "Generated fictional countries with large count: " << countries;
 
     CHECK(countries.size() == 50);
+
+    const auto last = std::ranges::find_if(countries, [](const auto& c) {
+        return c.alpha2_code == "ZE";
+    });
+    REQUIRE(last != countries.end());
+    CHECK(last->name == "Zephyria");
+    CHECK(last->official_name == "Empire of Zephyria");
 }
 
 TEST_CASE("generate_fictional_countries_has_unique_alpha2_codes", tags) {
@@ -77,7 +103,9 @@ TEST_CASE("generate_fictional_countries_has_unique_alpha2_codes", tags) {
     for (const auto& c : countries)
         codes.insert(c.alpha2_code);
 
-    CHECK(codes.size() == 50);
+    CHECK(codes.size() == countries.size());
+    CHECK(codes.count("AL") == 1); // Aerilon
+    CHECK(codes.count("ZE") == 1); // Zephyria
 }
 
 TEST_CASE("generate_fictional_countries_has_expected_first_country", tags) {

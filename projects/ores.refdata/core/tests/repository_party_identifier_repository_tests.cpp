@@ -28,6 +28,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -62,6 +63,7 @@ TEST_CASE("write_single_party_identifier", tags) {
         }
     }
     party_repo.write(h.context(), party);
+    h.set_party(party.id);
 
     auto pi = generate_synthetic_party_identifier(ctx);
     pi.change_reason_code = "system.test";
@@ -69,7 +71,13 @@ TEST_CASE("write_single_party_identifier", tags) {
     BOOST_LOG_SEV(lg, debug) << "Party identifier: " << pi;
 
     party_identifier_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), pi));
+    repo.write(h.context(), pi);
+
+    const auto read_pis = repo.read_latest(h.context(), boost::uuids::to_string(pi.id));
+    REQUIRE(read_pis.size() == 1);
+    CHECK(read_pis[0].id == pi.id);
+    CHECK(read_pis[0].id_scheme == pi.id_scheme);
+    CHECK(read_pis[0].id_value == pi.id_value);
 }
 
 TEST_CASE("write_multiple_party_identifiers", tags) {
@@ -88,6 +96,7 @@ TEST_CASE("write_multiple_party_identifiers", tags) {
         }
     }
     party_repo.write(h.context(), party);
+    h.set_party(party.id);
 
     auto party_identifiers = generate_synthetic_party_identifiers(3, ctx);
     for (auto& pi : party_identifiers) {
@@ -97,7 +106,17 @@ TEST_CASE("write_multiple_party_identifiers", tags) {
     BOOST_LOG_SEV(lg, debug) << "Party identifiers: " << party_identifiers;
 
     party_identifier_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), party_identifiers));
+    repo.write(h.context(), party_identifiers);
+
+    const auto read_pis = repo.read_latest(h.context());
+    for (const auto& written : party_identifiers) {
+        const auto it = std::ranges::find_if(read_pis, [&](const party_identifier& p) {
+            return p.id == written.id;
+        });
+        REQUIRE(it != read_pis.end());
+        CHECK(it->id_scheme == written.id_scheme);
+        CHECK(it->id_value == written.id_value);
+    }
 }
 
 TEST_CASE("read_latest_party_identifiers", tags) {
@@ -131,7 +150,14 @@ TEST_CASE("read_latest_party_identifiers", tags) {
     auto read_party_identifiers = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read party identifiers: " << read_party_identifiers;
 
-    CHECK(read_party_identifiers.size() >= written_party_identifiers.size());
+    for (const auto& written : written_party_identifiers) {
+        const auto it = std::ranges::find_if(
+            read_party_identifiers,
+            [&](const party_identifier& p) { return p.id == written.id; });
+        REQUIRE(it != read_party_identifiers.end());
+        CHECK(it->id_scheme == written.id_scheme);
+        CHECK(it->id_value == written.id_value);
+    }
 }
 
 TEST_CASE("read_latest_party_identifier_by_id", tags) {
@@ -176,7 +202,27 @@ TEST_CASE("read_nonexistent_party_identifier_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    party_repository party_repo;
+    auto party = generate_synthetic_party(ctx);
+    party.change_reason_code = "system.test";
+    auto existing = party_repo.read_latest(h.context());
+    for (const auto& e : existing) {
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
+    }
+    party_repo.write(h.context(), party);
+    h.set_party(party.id);
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
     party_identifier_repository repo;
+    auto keeper = generate_synthetic_party_identifier(ctx);
+    keeper.change_reason_code = "system.test";
+    keeper.party_id = party.id;
+    repo.write(h.context(), keeper);
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
@@ -185,7 +231,17 @@ TEST_CASE("read_nonexistent_party_identifier_id", tags) {
         repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read party identifiers: " << read_party_identifiers;
 
-    CHECK(read_party_identifiers.size() == 0);
+    const auto answered_with_another_key = std::ranges::any_of(
+        read_party_identifiers,
+        [&](const party_identifier& p) { return p.id == nonexistent_id; });
+    CHECK_FALSE(answered_with_another_key);
+
+    // The same read does answer for the ID that was written.
+    const auto keeper_rows = repo.read_latest(h.context(), boost::uuids::to_string(keeper.id));
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].id == keeper.id);
+    CHECK(keeper_rows[0].id_scheme == keeper.id_scheme);
+    CHECK(keeper_rows[0].id_value == keeper.id_value);
 }
 
 TEST_CASE("as_of_composition_reflects_party_version_history", tags) {

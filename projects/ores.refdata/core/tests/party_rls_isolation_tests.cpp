@@ -31,6 +31,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <algorithm>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -147,7 +148,12 @@ TEST_CASE("system_party_sees_all_assignments", tags) {
     // System party should see all parties via visible party set
     auto visible = compute_visible_parties(ctx, tid, system_party_id);
     BOOST_LOG_SEV(lg, debug) << "System party visible set size: " << visible.size();
-    REQUIRE(visible.size() >= 3); // system + A + B at minimum
+    const auto is_visible = [&visible](const boost::uuids::uuid& id) {
+        return std::ranges::any_of(visible, [&id](const boost::uuids::uuid& v) { return v == id; });
+    };
+    CHECK(is_visible(system_party_id));
+    CHECK(is_visible(party_a.id));
+    CHECK(is_visible(party_b.id));
 
     // Create a system-party-scoped context
     auto sys_ctx = ctx.with_party(tid, system_party_id, visible, "");
@@ -155,7 +161,43 @@ TEST_CASE("system_party_sees_all_assignments", tags) {
 
     auto all = sys_repo.read_latest();
     BOOST_LOG_SEV(lg, debug) << "System party sees " << all.size() << " assignments";
-    CHECK(all.size() >= 4); // cp1->A, cp2->B, cp3->A, cp3->B
+
+    // Each assignment the test wrote comes back by content.
+    const auto find_assignment = [&all](const boost::uuids::uuid& party_id,
+                                        const boost::uuids::uuid& counterparty_id) {
+        return std::ranges::find_if(all, [&](const party_counterparty& pc) {
+            return pc.party_id == party_id && pc.counterparty_id == counterparty_id;
+        });
+    };
+    const auto a_cp1 = find_assignment(party_a.id, cp1.id);
+    REQUIRE(a_cp1 != all.end());
+    CHECK(a_cp1->change_reason_code == "system.test");
+
+    const auto b_cp2 = find_assignment(party_b.id, cp2.id);
+    REQUIRE(b_cp2 != all.end());
+    CHECK(b_cp2->change_reason_code == "system.test");
+
+    const auto a_cp3 = find_assignment(party_a.id, cp3.id);
+    REQUIRE(a_cp3 != all.end());
+    CHECK(a_cp3->change_reason_code == "system.test");
+
+    const auto b_cp3 = find_assignment(party_b.id, cp3.id);
+    REQUIRE(b_cp3 != all.end());
+    CHECK(b_cp3->change_reason_code == "system.test");
+
+    // The read answers for this tenant only, and every party it answers for is
+    // one the system party can see. The test shares the store with the rest of
+    // the suite, so the read is expected to carry other parties' assignments --
+    // what it must never carry is one outside the visible set.
+    const auto out_of_scope = std::ranges::find_if(all, [&](const party_counterparty& pc) {
+        return !is_visible(pc.party_id);
+    });
+    CHECK(out_of_scope == all.end());
+
+    const auto tid_str = tid.to_string();
+    const auto has_foreign_tenant_row = std::ranges::any_of(
+        all, [&](const party_counterparty& pc) { return pc.tenant_id != tid_str; });
+    CHECK_FALSE(has_foreign_tenant_row);
 }
 
 TEST_CASE("party_a_sees_only_own_assignments", tags) {

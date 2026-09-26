@@ -28,6 +28,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -62,6 +63,7 @@ TEST_CASE("write_single_party_contact_information", tags) {
         }
     }
     party_repo.write(h.context(), party);
+    h.set_party(party.id);
 
     auto pci = generate_synthetic_party_contact_information(ctx);
     pci.change_reason_code = "system.test";
@@ -69,7 +71,12 @@ TEST_CASE("write_single_party_contact_information", tags) {
     BOOST_LOG_SEV(lg, debug) << "Party contact information: " << pci;
 
     party_contact_information_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), pci));
+    repo.write(h.context(), pci);
+
+    const auto read_party_contact_informations =
+        repo.read_latest(h.context(), boost::uuids::to_string(pci.id));
+    REQUIRE(read_party_contact_informations.size() == 1);
+    CHECK(read_party_contact_informations[0].city == pci.city);
 }
 
 TEST_CASE("write_multiple_party_contact_informations", tags) {
@@ -88,6 +95,7 @@ TEST_CASE("write_multiple_party_contact_informations", tags) {
         }
     }
     party_repo.write(h.context(), party);
+    h.set_party(party.id);
 
     auto party_contact_informations = generate_synthetic_party_contact_informations(3, ctx);
     for (auto& pci : party_contact_informations) {
@@ -97,7 +105,16 @@ TEST_CASE("write_multiple_party_contact_informations", tags) {
     BOOST_LOG_SEV(lg, debug) << "Party contact informations: " << party_contact_informations;
 
     party_contact_information_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), party_contact_informations));
+    repo.write(h.context(), party_contact_informations);
+
+    const auto read_party_contact_informations = repo.read_latest(h.context());
+    for (const auto& written : party_contact_informations) {
+        const auto it = std::ranges::find_if(
+            read_party_contact_informations,
+            [&](const party_contact_information& pci) { return pci.id == written.id; });
+        REQUIRE(it != read_party_contact_informations.end());
+        CHECK(it->city == written.city);
+    }
 }
 
 TEST_CASE("read_latest_party_contact_informations", tags) {
@@ -133,7 +150,13 @@ TEST_CASE("read_latest_party_contact_informations", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read party contact informations: "
                              << read_party_contact_informations;
 
-    CHECK(read_party_contact_informations.size() >= written_party_contact_informations.size());
+    for (const auto& written : written_party_contact_informations) {
+        const auto it = std::ranges::find_if(
+            read_party_contact_informations,
+            [&](const party_contact_information& pci) { return pci.id == written.id; });
+        REQUIRE(it != read_party_contact_informations.end());
+        CHECK(it->city == written.city);
+    }
 }
 
 TEST_CASE("read_latest_party_contact_information_by_id", tags) {
@@ -180,7 +203,28 @@ TEST_CASE("read_nonexistent_party_contact_information_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    party_repository party_repo;
+    auto party = generate_synthetic_party(ctx);
+    party.change_reason_code = "system.test";
+    auto existing = party_repo.read_latest(h.context());
+    for (const auto& e : existing) {
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
+    }
+    party_repo.write(h.context(), party);
+    h.set_party(party.id);
+
     party_contact_information_repository repo;
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    auto keeper = generate_synthetic_party_contact_information(ctx);
+    keeper.change_reason_code = "system.test";
+    keeper.party_id = party.id;
+    repo.write(h.context(), keeper);
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
@@ -190,5 +234,14 @@ TEST_CASE("read_nonexistent_party_contact_information_id", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read party contact informations: "
                              << read_party_contact_informations;
 
-    CHECK(read_party_contact_informations.size() == 0);
+    const auto answered_with_another_key = std::ranges::any_of(
+        read_party_contact_informations, [&](const party_contact_information& pci) {
+            return pci.id == nonexistent_id;
+        });
+    CHECK_FALSE(answered_with_another_key);
+
+    // The same read does answer for the ID that was written.
+    const auto keeper_rows = repo.read_latest(h.context(), boost::uuids::to_string(keeper.id));
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].city == keeper.city);
 }

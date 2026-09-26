@@ -26,6 +26,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -52,7 +53,12 @@ TEST_CASE("write_single_business_unit_type", tags) {
     BOOST_LOG_SEV(lg, debug) << "Business unit type: " << ut;
 
     business_unit_type_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), ut));
+    repo.write(h.context(), ut);
+
+    const auto id_str = boost::uuids::to_string(ut.id);
+    const auto rows = repo.read_latest(h.context(), id_str);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows[0].name == ut.name);
 }
 
 TEST_CASE("write_multiple_business_unit_types", tags) {
@@ -67,7 +73,16 @@ TEST_CASE("write_multiple_business_unit_types", tags) {
     BOOST_LOG_SEV(lg, debug) << "Business unit types: " << unit_types;
 
     business_unit_type_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), unit_types));
+    repo.write(h.context(), unit_types);
+
+    const auto rows = repo.read_latest(h.context());
+    for (const auto& written : unit_types) {
+        const auto it = std::ranges::find_if(rows, [&](const business_unit_type& t) {
+            return t.id == written.id;
+        });
+        REQUIRE(it != rows.end());
+        CHECK(it->name == written.name);
+    }
 }
 
 TEST_CASE("read_latest_business_unit_types", tags) {
@@ -87,7 +102,13 @@ TEST_CASE("read_latest_business_unit_types", tags) {
     auto read_types = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read business unit types: " << read_types;
 
-    CHECK(read_types.size() >= written_types.size());
+    for (const auto& expected : written_types) {
+        const auto it = std::ranges::find_if(read_types, [&](const business_unit_type& t) {
+            return t.id == expected.id;
+        });
+        REQUIRE(it != read_types.end());
+        CHECK(it->name == expected.name);
+    }
 }
 
 TEST_CASE("read_latest_business_unit_type_by_id", tags) {
@@ -122,6 +143,7 @@ TEST_CASE("read_all_business_unit_type_versions", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto ut = generate_synthetic_business_unit_type(ctx);
     ut.change_reason_code = "system.test";
+    const auto original_name = ut.name;
     BOOST_LOG_SEV(lg, debug) << "Business unit type: " << ut;
 
     business_unit_type_repository repo;
@@ -134,7 +156,17 @@ TEST_CASE("read_all_business_unit_type_versions", tags) {
     auto all_versions = repo.read_all(h.context(), id_str);
     BOOST_LOG_SEV(lg, debug) << "All versions: " << all_versions;
 
-    CHECK(all_versions.size() >= 2);
+    const auto v1 = std::ranges::find_if(all_versions, [](const business_unit_type& t) {
+        return t.version == 1;
+    });
+    REQUIRE(v1 != all_versions.end());
+    CHECK(v1->name == original_name);
+
+    const auto v2 = std::ranges::find_if(all_versions, [](const business_unit_type& t) {
+        return t.version == 2;
+    });
+    REQUIRE(v2 != all_versions.end());
+    CHECK(v2->name == original_name + " v2");
 }
 
 TEST_CASE("remove_business_unit_type", tags) {
@@ -144,20 +176,33 @@ TEST_CASE("remove_business_unit_type", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto ut = generate_synthetic_business_unit_type(ctx);
     ut.change_reason_code = "system.test";
+    auto keeper = generate_synthetic_business_unit_type(ctx);
+    keeper.change_reason_code = "system.test";
     BOOST_LOG_SEV(lg, debug) << "Business unit type: " << ut;
 
     business_unit_type_repository repo;
     repo.write(h.context(), ut);
+    repo.write(h.context(), keeper);
 
     const auto id_str = boost::uuids::to_string(ut.id);
     auto before_remove = repo.read_latest(h.context(), id_str);
     REQUIRE(before_remove.size() == 1);
+    CHECK(before_remove[0].name == ut.name);
 
-    CHECK_NOTHROW(repo.remove(h.context(), id_str));
+    repo.remove(h.context(), id_str);
 
     auto after_remove = repo.read_latest(h.context(), id_str);
     BOOST_LOG_SEV(lg, debug) << "After remove: " << after_remove;
-    CHECK(after_remove.empty());
+
+    // The removed row is gone from the read, and the same read still answers
+    // for the row that was not removed.
+    const auto removed_still_present = std::ranges::any_of(
+        after_remove, [&](const business_unit_type& t) { return t.id == ut.id; });
+    CHECK_FALSE(removed_still_present);
+
+    const auto keeper_rows = repo.read_latest(h.context(), boost::uuids::to_string(keeper.id));
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].name == keeper.name);
 }
 
 TEST_CASE("remove_multiple_business_unit_types", tags) {
@@ -170,20 +215,34 @@ TEST_CASE("remove_multiple_business_unit_types", tags) {
         ut.change_reason_code = "system.test";
     }
 
+    auto keeper = generate_synthetic_business_unit_type(ctx);
+    keeper.change_reason_code = "system.test";
+
     business_unit_type_repository repo;
     repo.write(h.context(), unit_types);
+    repo.write(h.context(), keeper);
 
     std::vector<std::string> ids;
     for (const auto& ut : unit_types) {
         ids.push_back(boost::uuids::to_string(ut.id));
     }
 
-    CHECK_NOTHROW(repo.remove(h.context(), ids));
+    repo.remove(h.context(), ids);
 
+    // Each removed row is gone from the read.
     for (const auto& id_str : ids) {
         auto after_remove = repo.read_latest(h.context(), id_str);
-        CHECK(after_remove.empty());
+        const auto removed_still_present = std::ranges::any_of(
+            after_remove, [&](const business_unit_type& t) {
+                return boost::uuids::to_string(t.id) == id_str;
+            });
+        CHECK_FALSE(removed_still_present);
     }
+
+    // The row that was not removed is still returned by the same read.
+    const auto keeper_rows = repo.read_latest(h.context(), boost::uuids::to_string(keeper.id));
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].name == keeper.name);
 }
 
 TEST_CASE("read_latest_business_unit_types_paginated", tags) {
@@ -202,7 +261,15 @@ TEST_CASE("read_latest_business_unit_types_paginated", tags) {
     auto page = repo.read_latest(h.context(), 0, 2);
     BOOST_LOG_SEV(lg, debug) << "Paginated business unit types: " << page;
 
-    CHECK(page.size() == 2);
+    // The page is the front of the full read: it returns the same rows, in the
+    // same key order, and each one carries the content the full read reports.
+    const auto all = repo.read_latest(h.context());
+    REQUIRE(all.size() > 2);
+    REQUIRE(page.size() == 2);
+    CHECK(page[0].id == all[0].id);
+    CHECK(page[0].name == all[0].name);
+    CHECK(page[1].id == all[1].id);
+    CHECK(page[1].name == all[1].name);
 }
 
 TEST_CASE("get_total_business_unit_type_count", tags) {

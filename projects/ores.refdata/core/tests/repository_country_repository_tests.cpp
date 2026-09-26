@@ -49,12 +49,16 @@ TEST_CASE("write_single_country", tags) {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto countries = generate_fictional_countries(1, ctx);
-    REQUIRE(!countries.empty());
+    REQUIRE(countries.size() == 1);
     auto cntry = countries[0];
     BOOST_LOG_SEV(lg, debug) << "Country: " << cntry;
 
     country_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), cntry));
+    repo.write(h.context(), cntry);
+
+    const auto read_countries = repo.read_latest(h.context(), cntry.alpha2_code);
+    REQUIRE(read_countries.size() == 1);
+    CHECK(read_countries[0].name == cntry.name);
 }
 
 TEST_CASE("write_multiple_countries", tags) {
@@ -66,7 +70,16 @@ TEST_CASE("write_multiple_countries", tags) {
     BOOST_LOG_SEV(lg, debug) << "Countries: " << countries;
 
     country_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), countries));
+    repo.write(h.context(), countries);
+
+    const auto read_countries = repo.read_latest(h.context());
+    for (const auto& written : countries) {
+        const auto it = std::ranges::find_if(read_countries, [&](const country& c) {
+            return c.alpha2_code == written.alpha2_code;
+        });
+        REQUIRE(it != read_countries.end());
+        CHECK(it->name == written.name);
+    }
 }
 
 TEST_CASE("read_latest_countries", tags) {
@@ -83,7 +96,13 @@ TEST_CASE("read_latest_countries", tags) {
     auto read_countries = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read countries: " << read_countries;
 
-    CHECK(read_countries.size() >= written_countries.size());
+    for (const auto& written : written_countries) {
+        const auto it = std::ranges::find_if(read_countries, [&written](const country& c) {
+            return c.alpha2_code == written.alpha2_code;
+        });
+        REQUIRE(it != read_countries.end());
+        CHECK(it->name == written.name);
+    }
 }
 
 TEST_CASE("read_latest_country_by_alpha2_code", tags) {
@@ -115,7 +134,13 @@ TEST_CASE("read_nonexistent_alpha2_code", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     country_repository repo;
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    const auto keeper = generate_synthetic_country(ctx);
+    repo.write(h.context(), keeper);
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent alpha2 code: " << nonexistent_code;
@@ -123,7 +148,14 @@ TEST_CASE("read_nonexistent_alpha2_code", tags) {
     auto read_countries = repo.read_latest(h.context(), nonexistent_code);
     BOOST_LOG_SEV(lg, debug) << "Read countries: " << read_countries;
 
-    CHECK(read_countries.size() == 0);
+    const auto answered_with_another_key = std::ranges::any_of(
+        read_countries, [&](const country& c) { return c.alpha2_code == nonexistent_code; });
+    CHECK_FALSE(answered_with_another_key);
+
+    // The same read does answer for the key that was written.
+    const auto keeper_rows = repo.read_latest(h.context(), keeper.alpha2_code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].name == keeper.name);
 }
 
 TEST_CASE("read_country_versions_by_code", tags) {

@@ -31,6 +31,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 using namespace ores::logging;
@@ -98,7 +99,12 @@ TEST_CASE("write_single_currency_calendar", tags) {
 
     auto cc = make_currency_calendar(h, currencies[0].iso_code, calendars[0].code);
     BOOST_LOG_SEV(lg, debug) << "Currency calendar: " << cc;
-    CHECK_NOTHROW(repo.write(cc));
+    repo.write(cc);
+
+    const auto read_ccs = repo.read_latest(cc.currency_iso_code, cc.calendar_code);
+    REQUIRE(read_ccs.size() == 1);
+    CHECK(read_ccs[0].currency_iso_code == cc.currency_iso_code);
+    CHECK(read_ccs[0].change_commentary == cc.change_commentary);
 }
 
 TEST_CASE("write_multiple_currency_calendars", tags) {
@@ -124,7 +130,17 @@ TEST_CASE("write_multiple_currency_calendars", tags) {
     }
 
     BOOST_LOG_SEV(lg, debug) << "Currency calendars: " << ccs;
-    CHECK_NOTHROW(repo.write(ccs));
+    repo.write(ccs);
+
+    const auto read_ccs = repo.read_latest();
+    for (const auto& written : ccs) {
+        const auto it = std::ranges::find_if(read_ccs, [&](const currency_calendar& r) {
+            return r.currency_iso_code == written.currency_iso_code &&
+                   r.calendar_code == written.calendar_code;
+        });
+        REQUIRE(it != read_ccs.end());
+        CHECK(it->change_commentary == written.change_commentary);
+    }
 }
 
 TEST_CASE("read_latest_currency_calendars_by_currency", tags) {
@@ -200,15 +216,27 @@ TEST_CASE("remove_currency_calendar", tags) {
     auto currencies = generate_fictional_currencies(total_slots, gctx);
     auto calendars = generate_synthetic_calendars(total_slots, gctx);
     ccy_repo.write(h.context(), {currencies[5]});
-    cal_repo.write(h.context(), {calendars[5]});
+    cal_repo.write(h.context(), {calendars[5], calendars[7]});
 
     auto cc = make_currency_calendar(h, currencies[5].iso_code, calendars[5].code);
     repo.write(cc);
 
-    CHECK_NOTHROW(repo.remove(currencies[5].iso_code, calendars[5].code));
+    // A second link stays behind, so the removal is proven and not a read that
+    // answers nothing.
+    auto keeper = make_currency_calendar(h, currencies[5].iso_code, calendars[7].code);
+    repo.write(keeper);
 
-    auto read_ccs = repo.read_latest_by_calendar(calendars[5].code);
-    CHECK(read_ccs.empty());
+    repo.remove(currencies[5].iso_code, calendars[5].code);
+
+    const auto removed_rows = repo.read_latest(cc.currency_iso_code, cc.calendar_code);
+    const auto answered_with_removed_key = std::ranges::any_of(
+        removed_rows,
+        [&](const currency_calendar& r) { return r.calendar_code == cc.calendar_code; });
+    CHECK_FALSE(answered_with_removed_key);
+
+    const auto keeper_rows = repo.read_latest(keeper.currency_iso_code, keeper.calendar_code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].calendar_code == keeper.calendar_code);
 }
 
 TEST_CASE("remove_by_currency_currency_calendar", tags) {
@@ -224,24 +252,61 @@ TEST_CASE("remove_by_currency_currency_calendar", tags) {
     write_zz_country_sentinel(h, gctx);
     auto currencies = generate_fictional_currencies(total_slots, gctx);
     auto calendars = generate_synthetic_calendars(total_slots, gctx);
-    ccy_repo.write(h.context(), {currencies[6]});
-    cal_repo.write(h.context(), {calendars[6]});
+    ccy_repo.write(h.context(), {currencies[6], currencies[7]});
+    cal_repo.write(h.context(), {calendars[6], calendars[8]});
 
     auto cc = make_currency_calendar(h, currencies[6].iso_code, calendars[6].code);
     repo.write(cc);
 
-    CHECK_NOTHROW(repo.remove_by_currency(currencies[6].iso_code));
+    // A second currency's link stays behind, so the removal is proven and not
+    // a read that answers nothing.
+    auto keeper = make_currency_calendar(h, currencies[7].iso_code, calendars[8].code);
+    repo.write(keeper);
 
-    auto read_ccs = repo.read_latest_by_currency(currencies[6].iso_code);
-    CHECK(read_ccs.empty());
+    repo.remove_by_currency(currencies[6].iso_code);
+
+    const auto remaining = repo.read_latest_by_currency(currencies[6].iso_code);
+    const auto answered_with_removed_currency = std::ranges::any_of(
+        remaining, [&](const currency_calendar& r) {
+            return r.currency_iso_code == currencies[6].iso_code;
+        });
+    CHECK_FALSE(answered_with_removed_currency);
+
+    const auto keeper_rows = repo.read_latest_by_currency(keeper.currency_iso_code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].calendar_code == keeper.calendar_code);
 }
 
 TEST_CASE("read_nonexistent_currency_calendar", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+
+    currency_repository ccy_repo;
+    calendar_repository cal_repo;
     currency_calendar_repository repo(h.context());
 
+    auto gctx = ores::testing::make_generation_context(h);
+    write_zz_country_sentinel(h, gctx);
+    auto currencies = generate_fictional_currencies(total_slots, gctx);
+    auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    ccy_repo.write(h.context(), {currencies[8]});
+    cal_repo.write(h.context(), {calendars[9]});
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    const auto keeper = make_currency_calendar(h, currencies[8].iso_code, calendars[9].code);
+    repo.write(keeper);
+
     auto read_ccs = repo.read_latest_by_currency("ZZZ");
-    CHECK(read_ccs.empty());
+    BOOST_LOG_SEV(lg, debug) << "Read currency calendars: " << read_ccs;
+
+    const auto answered_with_nonexistent_key = std::ranges::any_of(
+        read_ccs, [&](const currency_calendar& r) { return r.currency_iso_code == "ZZZ"; });
+    CHECK_FALSE(answered_with_nonexistent_key);
+
+    // The same read does answer for the currency that was written.
+    const auto keeper_rows = repo.read_latest_by_currency(keeper.currency_iso_code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].calendar_code == keeper.calendar_code);
 }

@@ -53,7 +53,11 @@ TEST_CASE("write_single_regulatory_book_type", tags) {
     BOOST_LOG_SEV(lg, debug) << "Regulatory book type: " << rbt;
 
     regulatory_book_type_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), rbt));
+    repo.write(h.context(), rbt);
+
+    const auto read_regulatory_book_types = repo.read_latest(h.context(), rbt.code);
+    REQUIRE(read_regulatory_book_types.size() == 1);
+    CHECK(read_regulatory_book_types[0].name == rbt.name);
 }
 
 TEST_CASE("write_multiple_regulatory_book_types", tags) {
@@ -68,7 +72,17 @@ TEST_CASE("write_multiple_regulatory_book_types", tags) {
     BOOST_LOG_SEV(lg, debug) << "Regulatory book types: " << regulatory_book_types;
 
     regulatory_book_type_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), regulatory_book_types));
+    repo.write(h.context(), regulatory_book_types);
+
+    const auto read_regulatory_book_types = repo.read_latest(h.context());
+    for (const auto& written : regulatory_book_types) {
+        const auto it =
+            std::ranges::find_if(read_regulatory_book_types, [&](const regulatory_book_type& rbt) {
+                return rbt.code == written.code;
+            });
+        REQUIRE(it != read_regulatory_book_types.end());
+        CHECK(it->name == written.name);
+    }
 }
 
 TEST_CASE("read_latest_regulatory_book_types", tags) {
@@ -88,7 +102,14 @@ TEST_CASE("read_latest_regulatory_book_types", tags) {
     auto read_regulatory_book_types = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read regulatory book types: " << read_regulatory_book_types;
 
-    CHECK(read_regulatory_book_types.size() >= written_regulatory_book_types.size());
+    for (const auto& written : written_regulatory_book_types) {
+        const auto it =
+            std::ranges::find_if(read_regulatory_book_types, [&](const regulatory_book_type& rbt) {
+                return rbt.code == written.code;
+            });
+        REQUIRE(it != read_regulatory_book_types.end());
+        CHECK(it->name == written.name);
+    }
 }
 
 TEST_CASE("read_latest_regulatory_book_type_by_code", tags) {
@@ -119,7 +140,14 @@ TEST_CASE("read_nonexistent_regulatory_book_type_code", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     regulatory_book_type_repository repo;
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    auto keeper = generate_synthetic_regulatory_book_type(ctx);
+    keeper.change_reason_code = "system.test";
+    repo.write(h.context(), keeper);
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
@@ -127,7 +155,17 @@ TEST_CASE("read_nonexistent_regulatory_book_type_code", tags) {
     auto read_regulatory_book_types = repo.read_latest(h.context(), nonexistent_code);
     BOOST_LOG_SEV(lg, debug) << "Read regulatory book types: " << read_regulatory_book_types;
 
-    CHECK(read_regulatory_book_types.size() == 0);
+    const auto answered_with_another_key =
+        std::ranges::any_of(read_regulatory_book_types,
+                            [&](const regulatory_book_type& rbt) {
+                                return rbt.code == nonexistent_code;
+                            });
+    CHECK_FALSE(answered_with_another_key);
+
+    // The same read does answer for the key that was written.
+    const auto keeper_rows = repo.read_latest(h.context(), keeper.code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].name == keeper.name);
 }
 
 TEST_CASE("read_regulatory_book_types_versions_by_key", tags) {

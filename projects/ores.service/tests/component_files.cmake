@@ -16,6 +16,16 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_tests.mustache
+# To modify, update the template and regenerate.
 set(files
+    "exit_codes_tests.cpp"
+    "handler_helpers_tests.cpp"
+    "host_runner_tests.cpp"
     "main.cpp"
+    "request_context_tests.cpp"
+    "standard_service_options_tests.cpp"
+    "systemd_notify_tests.cpp"
+    "workflow_helpers_tests.cpp"
 )

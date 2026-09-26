@@ -34,7 +34,7 @@
 namespace ores::security::crypto {
 
 using namespace ores::logging;
-using ores::utility::converter::base64_converter;
+using ores::utility::convert::base64_converter;
 using ores::platform::environment::environment;
 
 std::uint64_t password_hasher::get_n_parameter() {

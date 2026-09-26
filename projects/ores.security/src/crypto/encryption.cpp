@@ -26,7 +26,7 @@
 
 namespace ores::security::crypto {
 
-using ores::utility::converter::base64_converter;
+using ores::utility::convert::base64_converter;
 
 std::vector<unsigned char> encryption::derive_key(const std::string& password,
                                                   const std::vector<unsigned char>& salt) {

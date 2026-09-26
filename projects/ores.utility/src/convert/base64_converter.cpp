@@ -26,7 +26,7 @@
 #include <openssl/rand.h>
 #include <stdexcept>
 
-namespace ores::utility::converter {
+namespace ores::utility::convert {
 
 std::string base64_converter::convert(const std::vector<unsigned char>& data) {
     BIO *bio = nullptr, *b64 = nullptr;

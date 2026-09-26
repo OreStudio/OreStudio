@@ -38,7 +38,7 @@ generate_tree(std::size_t total_count, std::size_t max_depth, generation_engine&
 
     // Track which nodes are at each depth level (by index into nodes vector).
     std::vector<std::vector<std::size_t>> nodes_at_depth;
-    nodes_at_depth.push_back({0}); // depth 0: root
+    nodes_at_depth.push_back({0});
 
     std::size_t remaining = total_count - 1;
 

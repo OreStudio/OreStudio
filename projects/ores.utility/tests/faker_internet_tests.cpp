@@ -124,7 +124,8 @@ TEST_CASE("internet_ipv4_octets_in_range", tags) {
     std::smatch matches;
 
     REQUIRE(std::regex_match(ip_str, matches, octet_regex));
-    REQUIRE(matches.size() == 5); // Full match + 4 octets
+    // A full match plus one capture group per octet.
+    REQUIRE(matches.size() == 5);
 
     for (size_t i = 1; i <= 4; ++i) {
         int octet = std::stoi(matches[i].str());

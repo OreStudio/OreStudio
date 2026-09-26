@@ -20,6 +20,10 @@
 #include "ores.utility/generation/generation_engine.hpp"
 #include "ores.utility/generation/tree_builder.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <cstddef>
+#include <cstdint>
+#include <set>
+#include <vector>
 
 namespace {
 
@@ -98,19 +102,44 @@ TEST_CASE("max_depth_respected", tags) {
     }
 }
 
-TEST_CASE("reproducible_with_same_seed", tags) {
-    generation_engine engine1(42);
-    auto nodes1 = generate_tree(10, 3, engine1);
+TEST_CASE("tree_shape_is_fixed_for_a_seed", tags) {
+    generation_engine engine(42);
+    const auto nodes = generate_tree(6, 3, engine);
 
-    generation_engine engine2(42);
-    auto nodes2 = generate_tree(10, 3, engine2);
+    REQUIRE(nodes.size() == 6);
 
-    REQUIRE(nodes1.size() == nodes2.size());
-    for (std::size_t i = 0; i < nodes1.size(); ++i) {
-        CHECK(nodes1[i].index == nodes2[i].index);
-        CHECK(nodes1[i].depth == nodes2[i].depth);
-        CHECK(nodes1[i].parent_index == nodes2[i].parent_index);
+    const std::vector<std::size_t> expected_depths{0, 1, 1, 1, 2, 2};
+
+    // The root has no parent, and six is out of range for a six-node tree,
+    // so a failure prints both sides as numbers.
+    constexpr std::size_t no_parent = 6;
+    const std::vector<std::size_t> expected_parents{no_parent, 0, 0, 0, 1, 2};
+
+    for (std::size_t i = 0; i < nodes.size(); ++i) {
+        const auto parent = nodes[i].parent_index.value_or(no_parent);
+        CHECK(nodes[i].index == i);
+        CHECK(nodes[i].depth == expected_depths[i]);
+        CHECK(parent == expected_parents[i]);
     }
+}
+
+TEST_CASE("the_seed_selects_the_shape", tags) {
+    std::set<std::vector<std::size_t>> shapes;
+
+    for (std::uint64_t seed = 0; seed < 10; ++seed) {
+        generation_engine engine(seed);
+        const auto nodes = generate_tree(20, 4, engine);
+
+        std::vector<std::size_t> depths;
+        depths.reserve(nodes.size());
+        for (const auto& node : nodes)
+            depths.push_back(node.depth);
+
+        shapes.insert(std::move(depths));
+    }
+
+    // A tree that ignored the engine would produce one shape for every seed.
+    CHECK(shapes.size() > 1);
 }
 
 TEST_CASE("all_nodes_have_valid_parent_references", tags) {

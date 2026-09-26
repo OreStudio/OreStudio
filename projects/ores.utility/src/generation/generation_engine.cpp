@@ -56,9 +56,10 @@ boost::uuids::uuid generation_engine::generate_uuid() {
     std::uniform_int_distribution<uint64_t> dist;
     uint64_t random_bits = dist(engine_);
 
-    uuid.data[6] = static_cast<uint8_t>(0x70 | ((random_bits >> 56) & 0x0F)); // Version 7
+    // RFC 9562: the version nibble is 7 and the variant bits are 0b10.
+    uuid.data[6] = static_cast<uint8_t>(0x70 | ((random_bits >> 56) & 0x0F));
     uuid.data[7] = static_cast<uint8_t>((random_bits >> 48) & 0xFF);
-    uuid.data[8] = static_cast<uint8_t>(0x80 | ((random_bits >> 40) & 0x3F)); // Variant
+    uuid.data[8] = static_cast<uint8_t>(0x80 | ((random_bits >> 40) & 0x3F));
     uuid.data[9] = static_cast<uint8_t>((random_bits >> 32) & 0xFF);
     uuid.data[10] = static_cast<uint8_t>((random_bits >> 24) & 0xFF);
     uuid.data[11] = static_cast<uint8_t>((random_bits >> 16) & 0xFF);

@@ -1066,7 +1066,7 @@ private:
         img.description = *rows.front()[0];
         img.mime_type = *rows.front()[1];
         const auto& base64_data = *rows.front()[2];
-        img.data = ores::utility::converter::base64_converter::convert(base64_data);
+        img.data = ores::utility::convert::base64_converter::convert(base64_data);
         img.modified_by = username;
         img.performed_by = username;
         img.change_reason_code = "system.external_data_import";

@@ -90,7 +90,7 @@ record each item's result in the table below.
 | W04 | not applicable | The component owns no SQL script. |
 | S01 | not applicable | No entity or junction, so no shell command unit. |
 | S02 | not applicable | No command, so no recipe and no destructive flag. |
-| H01 | pass | The Component Architecture Audit ran and its record is this task. Shape: a simple component, matching the signed-off folder catalogue (=CMakeLists.txt=, =include/=, =src/=, =tests/=, =modeling/=). No leftover artefact, no platform-specific code, tests present and green, names snake_case and matching their types. The Foundation layer page already carried the component, and the component catalogue treats it as a tool-free simple component. Findings fixed: the component had no test suite at all, the diagram was missing =logging_exception=, the =See also= was empty, and the =Dependencies= list was incomplete. Complexity measure from =lizard= over =include/= and =src/=: 461 NLOC, 21 functions, average cyclomatic complexity 3.3, 0 warnings; top file =boost_severity.cpp= (average 6.3) and top function =to_boost_severity= (CCN 7). Recorded finding: the diagram capture cannot parse a class whose base clause wraps onto a second line, and it strips the values of an unscoped enum. A bare refresh of =.puml= therefore loses =logging_exception= and the =boost_severity= values, so the hand-authored part is redone after each capture, as the ores.orgmode pass does. |
+| H01 | pass | The Component Architecture Audit ran and its record is this task. Shape: a simple component, matching the signed-off folder catalogue (=CMakeLists.txt=, =include/=, =src/=, =tests/=, =modeling/=). No leftover artefact, no platform-specific code, tests present and green, names snake_case and matching their types. The Foundation layer page already carried the component, and the component catalogue treats it as a tool-free simple component. Findings fixed: the component had no test suite at all, the diagram was missing =logging_exception= and the =make_logger= entry point, the =See also= was empty, and the =Dependencies= list was incomplete. Complexity measure from =lizard= over =include/= and =src/=: 461 NLOC, 21 functions, average cyclomatic complexity 3.3, 0 warnings; top file =boost_severity.cpp= (average 6.3) and top function =to_boost_severity= (CCN 7). Recorded finding: the diagram capture cannot parse a class whose base clause wraps onto a second line, and it strips the values of an unscoped enum. The enum values and =logging_exception= therefore sit above the sentinel and are redone after each capture, while the entry-point note sits below it and survives. |
 | H02 | pass | No legacy code remains: no Qt or Wt fragment, no dead code, no commented-out code, no hand-written duplicate of a generated artefact. Fixed in this pass: the retired Qt comment in the generated source list, a false PUBLIC =Boost::process= link that =ores.compute.wrapper= was resolving through, an unused =<boost/filesystem/operations.hpp>= include, an unused =<memory>= include, and the constructor comments that restated the code beside them. |
 | H03 | pass | Comments reviewed against the project comment rules. Removed: four block comments in the =lifecycle_manager= constructor that restated the code beside them, two in the validator, and =scoped_attribute='s "// Non-copyable" and "// Movable". Left in place: the =make_console_sink= =auto_flush= note, which names a non-obvious symptom and which this change did not touch, the validator's output-directory rationale, and the Doxygen blocks on the public API. Two Doxygen blocks that lied were fixed: =read_options= documented two parameters it does not take, and =make_file_sink= claimed "path is non-const by ref by design" while it takes the path by value. =logging_exception.hpp= gained the =<string_view>= and =<boost/exception/exception.hpp>= it uses. |
 | V01 | pass | =compass build= over the whole tree reached 100% with exit code 0. The first run failed at 87% on an underlinked consumer that this change exposed; the same build proved the fix. See * Notes. |
@@ -146,9 +146,10 @@ record each item's result in the table below.
   linkage. The file-name decoration that adds the replica index and the
   process ID is therefore untested, and exercising it writes real rotating
   log files.
-- The diagram is refreshed with =build/scripts/generate_component_puml.py
-  --project ores.logging= and then cleaned up by hand. The capture has two
-  defects, and both are recorded rather than fixed here.
+- The diagram was refreshed in the audit's two passes. The automated pass is
+  =build/scripts/generate_component_puml.py --project ores.logging=, and the
+  manual pass follows it. The capture has two defects, and both are recorded
+  rather than fixed here.
   - It drops the members of an enum whose body sits on the declaration
     line. =enum boost_severity { trace, debug, info, warn, error }= is one
     line, so the parser consumes the declaration and never reads the
@@ -157,13 +158,16 @@ record each item's result in the table below.
     =logging_exception= derives from =std::exception= and
     =boost::exception=, and the =_CLASS_RE= pattern needs the opening brace
     on the declaration line.
-  =logging_exception= is drawn by hand inside the namespace block, which
-  sits above the sentinel and is rewritten by the next capture. Placing it
-  below the sentinel was tried and rejected. PlantUML then renders a second
-  =ores::logging= box holding that class alone, because a relationship
-  resolves only inside the namespace block that holds the other classes. So
-  the hand edit is redone after each capture, and the two defects above are
-  recorded here rather than fixed.
+  The manual pass restores both and adds the =make_logger= entry point as a
+  note. The enum values and =logging_exception= must sit inside the
+  namespace block above the sentinel, so the next capture drops them again.
+  Placing =logging_exception= below the sentinel was tried and rejected.
+  PlantUML then renders a second =ores::logging= box holding that class
+  alone, because a relationship resolves only inside the namespace block
+  that holds the other classes. The entry-point note does sit below the
+  sentinel, and a re-run of the capture proved it survives. The note
+  persists and the two repairs above the sentinel are redone after each
+  capture.
   The first defect is already recorded as a shared finding by the platform
   survey, which reaches the seven components holding a one-line enum class.
   This pass does not fix the parser for two reasons. The architecture audit
@@ -206,6 +210,7 @@ The local review ran on the change before the PR, per the [[id:2EA7FF1B-CC23-427
 | 10 | =--log-level fatal= is unreachable through the CLI although =severity_level::fatal= exists. | =projects/ores.logging/src/logging_configuration.cpp= | Declined | The help text agrees with the rejection, so the gap reads as intentional. Recorded in * Notes. |
 | 11 | =misspell-fixer= over the changed paths. | all changed paths | Accepted | Reports "nothing to replace", exit 0. The repo-wide run exits 1 from its prefilter list, the known benign status recorded in sprint 25. |
 | 12 | The checklist pass over the delta. | all changed files | Accepted | GPL headers and mode lines present on every new file; snake_case names and file-to-class match; include order follows =.clang-format=; no platform-specific code; Doxygen on the public API; no hardcoded secrets; no new error handling. |
+| 13 | The diagram had not been through the audit's two passes. It was hand-edited after a dry run of the capture, so the automated pass never wrote the file. The diagram also omitted =make_logger=, the component's factory entry point. | =projects/ores.logging/modeling/ores.logging.puml= | Accepted | The capture was run in write mode, then the manual pass restored what it drops and added the factory as a note below the sentinel. A second capture run proved the note survives and the two above-sentinel repairs do not. The rendered image was checked against the types the headers declare. |
 
 * Result
 

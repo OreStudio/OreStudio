@@ -23,9 +23,9 @@ ores.variability meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Baseline and inventory recorded on the task. The wire key and the in-process surface are decided. |
-| Waiting on    | Nothing for the scaffold; the two domain operations and the never-published event carry recommendations only. |
-| Next          | Scaffold the catalogue entry and the composite root model. |
+| Now           | The component is generated and every consumer migrated; the tree builds, the tests pass, the database recreates, and variance is green. |
+| Waiting on    | V04 only: the shell recipes need a live fleet, and the fleet cannot be brought up in this environment. |
+| Next          | Raise the pull request. |
 | Last touched  | 2026-09-26                               |
 
 * Acceptance

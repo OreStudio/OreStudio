@@ -26,22 +26,24 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] |
-| Now          | Not yet started.                       |
+| Now          | Closed unstarted. The method is kept and covered instead. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-09-26                               |
 
-* Acceptance
+* Result
 
--
+Closed unstarted. The premise was wrong. The directory-level round trip
+is the only way to drive the whole import and export pipeline over the
+real ORE corpus in one pass, and round-trip coverage that reads
+=external/ore/examples= is wanted. Retiring it would have removed that
+capability rather than replaced it.
 
-* Plan
-
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The work moves to [[id:5864A5C1-0F16-45BA-9F5B-26727E148127][Cover the ORE directory round trip with a test over external/ore data]],
+which gives the method a caller and a fidelity assertion instead of
+deleting it.
 
 * Notes
 

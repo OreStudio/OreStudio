@@ -46,10 +46,6 @@
  * - IAM: User authentication, authorization, and session management
  * - Depends on: Foundation, Infrastructure
  *
- * **Client Layer** (`ores.client`)
- * - Deprecated REPL client (functionality moved to ores.comms)
- * - Depends on: Foundation, Infrastructure, Domain
- *
  * **Application Layer** (`ores.shell`, `ores.web`, `ores.comms.service`)
  * - Shell: Scripted NATS shell
  * - Web: the browser client in =ores.web=

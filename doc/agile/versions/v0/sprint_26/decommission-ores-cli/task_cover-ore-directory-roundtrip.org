@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 5864A5C1-0F16-45BA-9F5B-26727E148127
+:END:
+#+title: Task: Cover the ORE directory round trip with a test over external/ore data
+#+description: Task for: Decommission ores.cli
+#+type: task
+#+level: s1
+#+filetags: :decommission-ores-cli:sprint_26:v0:
+#+owner: marco
+#+branch: feature/finish-mop-up-ores-cli
+#+pr: 2144
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give ores::ore::xml::exporter::roundtrip a caller and a fidelity assertion. The method walks a directory of ORE XML, round-trips every supported document through the import to export pipeline, and mirrors the outputs under a second directory. It lost its only caller when ores.cli retired, and round-trip coverage that reads external/ore/examples is wanted, so the method is kept and tested rather than deleted.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- A Catch2 test in ores.ore.core.tests drives exporter::roundtrip over a directory under external/ore/examples and asserts the accounting invariant, that every written document keeps its root element, and that the mapped trade count survives the round trip.
+- The test fails if the walk skips a supported document, writes a document of the wrong kind, or drops trades.
+- ores.ore.core.tests builds and the new test passes.
+
+* Plan
+
+Add one test file to =ores.ore.core.tests= that drives
+=exporter::roundtrip= over two directories under =external/ore/examples=
+and asserts the walk's own contract, then wire it into the target's
+generated file list.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2144][#2144]] | [ore] Cover the ORE directory round trip and clear the mop-up residue |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done on 2026-09-26 on branch =feature/finish-mop-up-ores-cli=.
+
+Added =projects/ores.ore/core/tests/xml_exporter_directory_roundtrip_tests.cpp=
+and listed it in the target's =component_files.cmake=. Two cases:
+
+- /Products/Example_Trades/ walks 132 portfolio documents. The test
+  asserts the accounting invariant, that every written document reads
+  back as a portfolio, and that every mapped trade reaches an output.
+- /Input/ walks a mixed directory. The test asserts the classification
+  counters for currencies, calendars and conventions, and that the
+  unsupported documents move the skip counter.
+
+Verified: =ores.ore.core.tests "[xml]"= passes, 10057 assertions in 353
+test cases, the two new ones included.
+
+** The defect it found
+
+Seventeen of the 132 documents are exported without a required child
+element, so they cannot be read back, and the 17 trades they carry are
+lost. The walk reports success for all of them. The affected products
+are Commodity, Credit, FX worst-of and Exotic, and the missing elements
+are =LegData=, =Quantity=, =InitialPrice=, =BarrierData=, =RangeBound=
+and =StrikePrice=.
+
+The test names the 17 documents and asserts the set for equality, so a
+new failure fails the suite and a fix has to shrink the list. The defect
+is tracked as capture 67277DBB-5ABD-4C36-934B-E97144E8910B, which carries
+the per-document table and the reproduce command.

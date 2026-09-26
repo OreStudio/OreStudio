@@ -2,7 +2,7 @@
 :ID: F64A3ABD-766C-4122-8542-5CFF550BF0E4
 :END:
 #+title: Load org-babel and systematically test all recipe types in u…
-#+description: Load org-babel and systematically test all recipe types in use: SQL, CLI, shell, and HTTP. Verify each type executes correctly with the current .env settings.
+#+description: Load org-babel and systematically test all recipe types in use: SQL, shell, and HTTP. Verify each type executes correctly with the current .env settings.
 #+type: capture
 #+level: cross
 #+filetags: :capture:

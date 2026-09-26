@@ -28,7 +28,5 @@ Acceptance criteria:
 The two CLI acceptance items this capture once carried died with
 =ores.cli= on 2026-09-23, so they were removed here.
 
-Scope: =ores.trading.core= only. The Qt UI layer (Controllers,
-MdiWindows, DetailDialogs, HistoryDialogs, ClientModels) follows the same
-per-type pattern as all other entity types in =ores.qt= and is out of scope for
-this story.
+Scope: =ores.trading.core= only. The presentation layer that once followed the
+same per-type pattern was removed, so nothing else is in scope.

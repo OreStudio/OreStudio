@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 67277DBB-5ABD-4C36-934B-E97144E8910B
+:END:
+#+title: ORE export drops required elements from 17 example documents
+#+description: The directory round trip over external/ore/examples/Products/Example_Trades writes all 132 documents but 17 of them do not re-read: the export drops a required child element (LegData, Quantity, InitialPrice, BarrierData, RangeBound or StrikePrice). The affected products are Commodity, Credit, FX worst-of and Exotic. A test now catches this; this capture tracks the fix.
+#+type: capture
+#+level: cross
+#+filetags: :ore:xml:fidelity:bug:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The import to export round trip over
+=external/ore/examples/Products/Example_Trades= is lossy for 17 of the
+132 documents. The walk writes all 132 and reports no skips, but the
+exported document is missing a child element the schema requires, so it
+cannot be read back. One trade per affected document is lost.
+
+The failures are not scattered. They cluster in the Commodity, Credit,
+FX worst-of and Exotic product mappers, and each one drops a different
+required element:
+
+| Document | Missing element | Line |
+|----------+-----------------+------|
+| =Commodity_APO_Strip_NYMEX_CSX.xml= | =Quantity= | 27 |
+| =Commodity_Basis_Swap_NYMEX_CL.xml= | =Quantity= | 38 |
+| =Commodity_Option_Strip_NYMEX_NG.xml= | =Quantity= | 27 |
+| =Commodity_Swap_LME_AL_AVG_ALT.xml= | =Quantity= | 38 |
+| =Commodity_Swap_NYMEX_A7Q.xml= | =Quantity= | 38 |
+| =Commodity_Swaption_NYMEX_NG.xml= | =Quantity= | 26 |
+| =Credit_RiskParticipationAgreement_on_CallableSwap.xml= | =LegData= | 18 |
+| =Credit_RiskParticipationAgreement_on_Vanilla_Swap.xml= | =LegData= | 18 |
+| =Exotic_EquityAccumulator_single_name.xml= | =RangeBound= | 31 |
+| =Exotic_EquityTaRF.xml= | =BarrierData= | 30 |
+| =Exotic_EquityWorstOfBasketSwap.xml= | =InitialPrice= | 26 |
+| =Exotic_FXWorstOfBasketSwap.xml= | =InitialPrice= | 26 |
+| =Exotic_FxAccumulator.xml= | =RangeBound= | 31 |
+| =Exotic_KnockOutSwap.xml= | =LegData= | 20 |
+| =Exotic_PerformanceOption_01_COM.xml= | =StrikePrice= | 27 |
+| =Exotic_PerformanceOption_01_FX.xml= | =StrikePrice= | 35 |
+| =FX_WorstOfBasketSwap.xml= | =InitialPrice= | 26 |
+
+Run of 2026-09-26 over the 132 documents:
+
+| Measure | Value |
+|---------+-------|
+| XML files walked | 132 |
+| Skipped | 0 |
+| Written | 132 |
+| Trades mapped | 182 |
+| Trades passthrough | 0 |
+| Outputs that re-read | 115 |
+| Trades recovered | 165 |
+
+* Why
+
+A round trip that silently drops a required element is worse than one
+that refuses the document: the walk reports success and writes a file
+that no longer satisfies the schema. Nothing caught this before, because
+the per-document suites assert field fidelity for the products they
+name, and the CLI-era checker compared document trees without
+re-reading them through the domain loader.
+
+The gap is now visible. The test that found it,
+=xml_exporter_directory_roundtrip_tests.cpp=, records these 17 names and
+fails if the set changes in either direction, so a new regression fails
+and a fix has to shrink the list.
+
+* Reproduce
+
+#+begin_src sh
+./build/output/linux-clang-debug-make/publish/bin/ores.ore.core.tests "[exporter][external]"
+#+end_src
+
+* References
+
+- =projects/ores.ore/core/tests/xml_exporter_directory_roundtrip_tests.cpp=, the test that found it.
+- =projects/ores.ore/core/src/xml/exporter.cpp=, the directory walk and the export it calls.
+- =projects/ores.ore/core/src/domain/=, the per-product mappers that build the exported document.
+- =external/ore/examples/Products/Example_Trades/=, the corpus.
+
+* See also
+
+- [[id:5864A5C1-0F16-45BA-9F5B-26727E148127][Cover the ORE directory round trip with a test over external/ore data]] — the task that added the test.

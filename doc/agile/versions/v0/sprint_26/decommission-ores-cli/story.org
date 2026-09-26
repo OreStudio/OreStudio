@@ -24,11 +24,11 @@ supported command surface.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | PR #2140 is merged on trunk. The mop-up task is clearing the backlog references the merge left. One follow-up task remains. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Finish the mop-up and the orphaned round-trip task, then close the story. |
+| Next          | Nothing. The mop-up PR covers the last two tasks. |
 | Last touched  | 2026-09-26                               |
 
 * Acceptance
@@ -46,8 +46,10 @@ supported command surface.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:22EDB3D2-10F7-4FBB-960B-2AD6AD9945D5][Delete the ores.cli component and its round-trip chain]] | DONE | 2026-09-23 | 2026-09-23 | Task for: Decommission ores.cli |
-| [[id:BC0854B0-E6FD-4935-B326-7FDC654A80CB][Retire the orphaned ORE directory round-trip export]] | BACKLOG | | | ores::ore::xml::exporter::roundtrip lost its only caller when ores.cli was deleted. The directory-level round-trip has no test coverage and no consumer. Decide whether to delete the method and its options model or keep it as library API. |
+| [[id:BC0854B0-E6FD-4935-B326-7FDC654A80CB][Retire the orphaned ORE directory round-trip export]] | ABANDONED | | 2026-09-26 | Closed unstarted. The method is kept and covered by a test over external/ore data; round-trip coverage over the real corpus is wanted, so retiring it would have removed the capability. |
 | [[id:1D5FFEA8-BAE4-4122-8A8D-30058906A5C4][Mop up the CLI references the decommission left]] | DONE | 2026-09-26 | 2026-09-26 | Task for: Decommission ores.cli |
+| [[id:5864A5C1-0F16-45BA-9F5B-26727E148127][Cover the ORE directory round trip with a test over external/ore data]] | DONE | 2026-09-26 | 2026-09-26 | Task for: Decommission ores.cli |
+| [[id:7CE59EC7-E623-4D17-8DBC-D21F0999F383][Clear the dead command-line and removed-component references]] | DONE | | 2026-09-26 | Task for: Decommission ores.cli |
 
 * Decisions
 
@@ -77,9 +79,18 @@ supported command surface.
   Its justification is now historical.
 - *Drop bulk file import and export to the database.* It was the one
   capability with no replacement, and no automated path called it.
+- *Keep the ORE directory round trip and test it, rather than retire it.*
+  The follow-up task assumed the method was dead once the CLI went. It is
+  the only way to drive the whole import to export pipeline over the real
+  corpus in one pass, and round-trip coverage over external/ore is
+  wanted. The test now covers the walk, and it found that 17 of the 132
+  example documents are exported without a required child element and
+  cannot be read back. That defect is tracked as its own capture.
 
 * Out of scope
 
-- The orphaned `ores::ore::xml::exporter::roundtrip`, tracked as a
-  follow-up task below.
 - Collapsing `ores.service::run_host_sync`, which now has one caller.
+- The Qt and Wt backlog residue. Those trees were removed by a separate
+  change, and the sweep across roughly a hundred live captures belongs to
+  that work rather than here. Only the lines this story touched were
+  corrected.

@@ -43,15 +43,20 @@ namespace ores #F2F2F2 {
 
 ' The automated pass reads data members and nothing else, so all four classes
 ' arrive as empty boxes: three are static-method surfaces and the fourth holds
-' one string. The blocks below fill those boxes and draw the composition the
-' transfer helper performs.
+' one string. The blocks below fill those boxes, give them the colours the
+' conventions table asks for, and draw the composition the transfer helper
+' performs.
 '
 ' They use fully-qualified class names rather than a reopened namespace block,
 ' because this PlantUML version crashes when a namespace that already holds
 ' classes is declared a second time. Redeclaring a class merges its members
 ' into the box the automated pass already drew, so a refresh keeps both.
+'
+' The test classes follow the conventions' test-suite section. No other
+' component carries them yet, because no other manual pass has reached that
+' section; the suite is new here, and the diagram is where its coverage shows.
 
-class ores::storage::net::storage_paths <<struct>> {
+class ores::storage::net::storage_paths <<struct>> #F7E5FF {
     {static} +prefix : string_view
     {static} +make_object_path(bucket : string_view, key : string_view) : string
     {static} +make_object_url(base_url : string_view, bucket : string_view, key : string_view) : string
@@ -63,7 +68,7 @@ component the domain libraries call directly: ores.compute
 and ores.ore build their own bucket keys with it.
 end note
 
-class ores::storage::net::http_client {
+class ores::storage::net::http_client #ECECEC {
     {static} +get(url : string, dest : path) : void
     {static} +put(url : string, src : path) : void
     {static} +put_returning_body(url : string, src : path) : string
@@ -76,7 +81,7 @@ never sits in memory. get reads the status line before it
 touches the destination file.
 end note
 
-class ores::storage::filesystem::archiver {
+class ores::storage::filesystem::archiver #ECECEC {
     {static} +pack(src_dir : path, dest_archive : path) : void
     {static} +extract(archive : path, dest_dir : path) : void
 }
@@ -87,7 +92,7 @@ entry points are used, because a std::filesystem::path
 yields wchar_t there.
 end note
 
-class ores::storage::net::storage_transfer {
+class ores::storage::net::storage_transfer #ECECEC {
     +storage_transfer(http_base_url : string)
     +pack(src_dir : path, dest_archive : path) : void
     +unpack(archive : path, dest_dir : path) : void
@@ -101,15 +106,72 @@ class ores::storage::net::storage_transfer {
 }
 note right of "ores::storage::net::storage_transfer"
 The surface the callers use. The first four methods are
-the atomic operations; the rest compose them, and the two
-blob methods gzip through ores.utility on the way past.
-Every method logs at debug with bucket, key, bytes and
-duration.
+the atomic operations; the rest compose them, staging
+through ores.platform's scoped temp file, and the two blob
+methods gzip through ores.utility on the way past. Every
+method logs at debug with bucket, key, bytes and duration.
 end note
+
+' The suites are stacked rather than left in the row the layout engine picks,
+' so the diagram stays inside the 2:1 to 3:1 ratio the conventions ask for.
+
+together {
+    class ores::storage::tests::storage_paths_tests <<test suite>> #C5E1A5 {
+        +make_object_path_uses_the_storage_api_prefix() : void
+        +make_object_url_prepends_the_base_url() : void
+        +prefix_matches_the_storage_api_path() : void
+        +key_with_slashes_survives_unchanged() : void
+    }
+    note bottom of "ores::storage::tests::storage_paths_tests"
+    The path shape, asserted as exact strings.
+    end note
+
+    ores::storage::tests::storage_paths_tests -[hidden]down- ores::storage::tests::archiver_tests
+
+    class ores::storage::tests::archiver_tests <<test suite>> #C5E1A5 {
+        +pack_and_extract_round_trips_a_directory_tree() : void
+        +pack_of_a_missing_source_directory_throws() : void
+        +extract_of_a_file_that_is_not_an_archive_throws() : void
+    }
+    note bottom of "ores::storage::tests::archiver_tests"
+    A real tree in and out, with the two failures that matter.
+    end note
+
+    ores::storage::tests::archiver_tests -[hidden]down- ores::storage::tests::http_client_tests
+
+    class ores::storage::tests::http_client_tests <<test suite>> #C5E1A5 {
+        +get_writes_the_exact_server_body_to_the_destination() : void
+        +put_delivers_the_exact_source_file_bytes() : void
+        +put_returning_body_returns_the_exact_configured_response() : void
+        +get_of_a_not_found_resource_throws_and_creates_no_file() : void
+        +get_of_a_not_found_resource_leaves_an_existing_file_untouched() : void
+    }
+    note bottom of "ores::storage::tests::http_client_tests"
+    Against a loopback Beast server. The last two are the cases
+    that fail when get() opens its destination before the status.
+    end note
+
+    ores::storage::tests::http_client_tests -[hidden]down- ores::storage::tests::storage_transfer_tests
+
+    class ores::storage::tests::storage_transfer_tests <<test suite>> #C5E1A5 {
+        +upload_puts_the_file_bytes_to_the_object_path() : void
+        +download_writes_the_exact_server_bytes() : void
+        +upload_returning_response_returns_the_exact_server_body() : void
+        +pack_and_upload_then_fetch_and_unpack_reproduces_the_tree() : void
+        +upload_blob_then_download_blob_round_trips_arbitrary_bytes() : void
+    }
+    note bottom of "ores::storage::tests::storage_transfer_tests"
+    The composite helpers end to end, including the gzip path.
+    end note
+}
 
 ores::storage::net::storage_transfer ..> ores::storage::filesystem::archiver : packs and unpacks
 ores::storage::net::storage_transfer ..> ores::storage::net::http_client : uploads and downloads
 ores::storage::net::storage_transfer ..> ores::storage::net::storage_paths : builds the object URL
+ores::storage::tests::storage_paths_tests ..> ores::storage::net::storage_paths : tests
+ores::storage::tests::archiver_tests ..> ores::storage::filesystem::archiver : tests
+ores::storage::tests::http_client_tests ..> ores::storage::net::http_client : tests
+ores::storage::tests::storage_transfer_tests ..> ores::storage::net::storage_transfer : tests
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.storage.puml"

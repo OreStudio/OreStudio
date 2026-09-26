@@ -17,10 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_TELEMETRY_CORE_MESSAGING_SERVICE_SAMPLES_PROTOCOL_HPP
 #define ORES_TELEMETRY_CORE_MESSAGING_SERVICE_SAMPLES_PROTOCOL_HPP
 
-#include "ores.telemetry.core/domain/service_sample.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -28,47 +33,91 @@
 namespace ores::telemetry::messaging {
 
 /**
- * @brief Fire-and-forget heartbeat published by every domain service.
- *
- * Each service embeds a heartbeat_publisher that fires every 15 seconds
- * and publishes this message to telemetry.v1.services.heartbeat.
- * The telemetry service subscribes, timestamps the receipt, and persists
- * a service_sample row to ores_telemetry_service_samples_tbl.
- *
- * There is no response type — this is a one-way publish, not a request.
+ * @brief The latest heartbeat recorded for one running service instance.
  */
-struct service_heartbeat_message {
-    static constexpr std::string_view nats_subject = "telemetry.v1.services.heartbeat";
-
-    /** @brief Canonical service name (e.g. "ores.compute.service"). */
-    std::string service_name;
-
+struct service_sample {
     /**
-     * @brief Per-process UUID, generated once at service startup.
-     *
-     * Allows distinguishing multiple instances of the same service.
+     * @brief When the service last reported.
+     */
+    std::chrono::system_clock::time_point sampled_at;
+    /**
+     * @brief Canonical service name, for example @c ores.compute.service.
+     */
+    std::string service_name;
+    /**
+     * @brief Per-process identifier, so two instances of one service are told
+     * apart.
      */
     std::string instance_id;
-
-    /** @brief Service version string (e.g. "1.0"). */
+    /**
+     * @brief Version the instance reports.
+     */
     std::string version;
 };
 
 /**
- * @brief Request the latest heartbeat per (service_name, instance_id).
+ * @brief One service instance reporting that it is alive.
  *
- * Returns one service_sample per running instance, ordered arbitrarily.
- * The client determines RAG status from the sampled_at timestamp.
+ * The service publishes it on a timer, and the telemetry service timestamps
+ * the receipt and stores it. It carries no response, so the publisher does
+ * not wait for one.
+ */
+struct service_heartbeat_message {
+    static constexpr std::string_view nats_subject = "telemetry.v1.services.heartbeat";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief Canonical service name, for example @c ores.compute.service.
+     */
+    std::string service_name;
+    /**
+     * @brief Per-process identifier, generated once at startup.
+     */
+    std::string instance_id;
+    /**
+     * @brief Version the instance reports.
+     */
+    std::string version;
+};
+
+/**
+ * @brief Asks for the latest sample of every running instance.
+ *
+ * It carries no fields: the reply covers every service the caller may see.
  */
 struct get_service_samples_request {
     using response_type = struct get_service_samples_response;
     static constexpr std::string_view nats_subject = "telemetry.v1.services.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
 };
 
+/**
+ * @brief The latest sample of every running instance.
+ */
 struct get_service_samples_response {
-    bool success{false};
+    /**
+     * @brief Whether the samples were read.
+     */
+    bool success = false;
+    /**
+     * @brief Why they were not, when they were not.
+     */
     std::string message;
-    std::vector<domain::service_sample> samples;
+    /**
+     * @brief One sample per running instance, in no particular order.
+     */
+    std::vector<service_sample> samples;
 };
 
 }

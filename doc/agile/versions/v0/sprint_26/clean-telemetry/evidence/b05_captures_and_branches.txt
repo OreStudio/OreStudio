@@ -1,0 +1,35 @@
+# B05: the component's open captures and in-flight branches
+# 2026-09-26, baseline.
+
+$ git ls-remote --heads origin | grep -i telemetry
+(no branch)
+
+$ git log --oneline -3 --all -- projects/ores.telemetry
+e82f0299bf [assets] Scope the branch back to the component
+95d1e4dfd2 [codegen] Add the generated marker to the CMake source lists
+af67db3062 [build] Remove the ores.qt and ores.wt trees
+
+  No branch in flight on origin matches the component. The three commits
+  above are history on main, not open work.
+
+Captures that name the component, from the triaged product backlog:
+
+- [[id:E510A1A8-F82D-441C-BCA2-B69C1D1722D1][Generate messaging registrars via codegen]]
+  (`next/codegen_messaging_registrars.org`) — the 20 hand-written per-component
+  NATS messaging registrars are boilerplate. This component has one, and it
+  stays hand-written: generating registrars is a codegen change wider than
+  this task, and the standard does not ask for it.
+- [[id:5019671D-92AE-49C8-829C-CDC1558613D2][Component overview models are
+  unloadable (bare #+type, missing names)]]
+  (`next/normalise-component-overview-models.org`) — the three overviews of
+  this component already declare the prefixed `#+type: ores.codegen.component`
+  and name themselves, so the capture does not reach them.
+- [[id:16DBA07F-A062-428B-B43A-32905B5988C8][Instrument components with
+  telemetry context]] (`next/instrument_components_with_telemetry_context.org`)
+  — instrument other components with telemetry context. It changes the
+  callers, not this component's own surface.
+- `next/nats_based_health_for_all_services_http_wt_and_compute_wrapper.org` —
+  consumes the service heartbeat this component serves. It would add a
+  consumer, not change the subject.
+
+No capture asks for a change that collides with this task.

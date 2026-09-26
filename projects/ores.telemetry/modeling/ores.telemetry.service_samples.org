@@ -1,0 +1,198 @@
+:PROPERTIES:
+:ID: 34CDC835-C72C-44F1-A0E2-B163014E0D74
+:END:
+#+title: ores.telemetry.service_samples
+#+description: Codegen operation model for the service heartbeat and the service sample query, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: telemetry
+#+subcomponent: core
+#+entity_singular: service_samples
+#+namespace: ores::telemetry::messaging
+#+brief: service heartbeat and sample query messages.
+#+filetags: :model:operation:telemetry:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The service liveness surface: one heartbeat every service publishes, and one
+request/reply that lists the latest sample per running instance.
+
+These are operations rather than entity verbs. A heartbeat arrives from
+outside the service and is stored as it arrives, and the list is read from
+the newest sample of every instance rather than addressed by key, so neither
+is a row a caller reaches by primary key.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** service_sample
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The latest heartbeat recorded for one running service instance.
+ */
+#+end_src
+
+*** sampled_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When the service last reported.
+ */
+#+end_src
+
+*** service_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Canonical service name, for example @c ores.compute.service.
+ */
+#+end_src
+
+*** instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Per-process identifier, so two instances of one service are told
+ * apart.
+ */
+#+end_src
+
+*** version
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Version the instance reports.
+ */
+#+end_src
+
+** service_heartbeat_message
+:PROPERTIES:
+:subject: telemetry.v1.services.heartbeat
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One service instance reporting that it is alive.
+ *
+ * The service publishes it on a timer, and the telemetry service timestamps
+ * the receipt and stores it. It carries no response, so the publisher does
+ * not wait for one.
+ */
+#+end_src
+
+*** service_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Canonical service name, for example @c ores.compute.service.
+ */
+#+end_src
+
+*** instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Per-process identifier, generated once at startup.
+ */
+#+end_src
+
+*** version
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Version the instance reports.
+ */
+#+end_src
+
+** get_service_samples_request
+:PROPERTIES:
+:subject: telemetry.v1.services.list
+:response: get_service_samples_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the latest sample of every running instance.
+ *
+ * It carries no fields: the reply covers every service the caller may see.
+ */
+#+end_src
+
+** get_service_samples_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The latest sample of every running instance.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the samples were read.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why they were not, when they were not.
+ */
+#+end_src
+
+*** samples
+:PROPERTIES:
+:cpp_type: std::vector<service_sample>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One sample per running instance, in no particular order.
+ */
+#+end_src
+
+* See also
+
+- [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]] — the part this model generates into.

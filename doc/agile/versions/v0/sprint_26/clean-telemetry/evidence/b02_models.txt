@@ -1,0 +1,37 @@
+# B02: every model file classified by metatype
+# 2026-09-26, baseline.
+
+$ find projects/ores.telemetry -path "*modeling*" -type f | sort
+projects/ores.telemetry/core/modeling/CMakeLists.txt
+projects/ores.telemetry/core/modeling/component_overview.org
+projects/ores.telemetry/core/modeling/ores.telemetry.core.png
+projects/ores.telemetry/core/modeling/ores.telemetry.core.puml
+projects/ores.telemetry/core/modeling/ores.telemetry.protocol.org
+projects/ores.telemetry/database/modeling/CMakeLists.txt
+projects/ores.telemetry/database/modeling/component_overview.org
+projects/ores.telemetry/database/modeling/ores.telemetry.database.png
+projects/ores.telemetry/database/modeling/ores.telemetry.database.puml
+projects/ores.telemetry/service/modeling/CMakeLists.txt
+projects/ores.telemetry/service/modeling/component_overview.org
+projects/ores.telemetry/service/modeling/ores.telemetry.service.png
+projects/ores.telemetry/service/modeling/ores.telemetry.service.puml
+
+| Metatype | Count | Files |
+|----------+-------+-------|
+| component | 3 | the three part overviews, each `#+type: ores.codegen.component`, each naming its part with `#+name: telemetry.<part>` |
+| entity, junction, operation, message, field group, module | 0 | none |
+| prose, not a model | 1 | `core/modeling/ores.telemetry.protocol.org` — a NATS messaging reference. It declares no `#+type:` at all, so the loader does not read it as a model. |
+
+Two structural facts the rest of the task turns on:
+
+1. **There is no root model.** Every other composite keeps its models and its
+   root `component_overview.org` in `projects/ores.<component>/modeling/`, and
+   sets `#+subcomponent:` on each model to route the output into a part. This
+   component has no `projects/ores.telemetry/modeling/` directory at all: only
+   the three part directories. M10 and H05 both ask for the component's own
+   overview, and the catalogue's `modeling_dir` needs a directory to point at,
+   so the task creates one.
+
+2. **The messaging reference is prose, and it is thin.** It documents one of
+   the six subjects the component owns (`telemetry.v1.logs.list`) and links to
+   the component overview. It is not a model and nothing generates from it.

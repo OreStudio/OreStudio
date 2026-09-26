@@ -1,0 +1,47 @@
+# B01: the baseline, recorded before any edit
+# 2026-09-26, on origin/main at fb73fbd53b, branch feature/clean-telemetry.
+
+ores.telemetry is a composite of three parts:
+
+  projects/ores.telemetry/core      70 C++ files
+  projects/ores.telemetry/database  12 C++ files
+  projects/ores.telemetry/service   20 C++ files
+
+$ check_component_drift.py --component telemetry
+ERROR Unknown component: 'telemetry'. Known components: analytics-cpp,
+assets-cpp, compute-cpp, controller-cpp, dq, dq-cpp, history, iam, iam-cpp,
+marketdata, ore, refdata, reporting, scheduler-cpp, shell, synthetic, trade,
+trading-cpp, workflow-cpp, workspace-cpp
+exit 1
+
+  The component has no row in component_catalogue.org, so the codegen cannot
+  name it. The same starting point ores.nats had.
+
+$ check_model_drift.py
+No model drift: every bound model agrees with its profile (1 known exception(s)).
+exit 0
+
+  The one exception is the reporting model recorded in KNOWN_MODEL_DRIFT.
+
+$ regenerate_cmake_component_files.py --component ores.telemetry.core --check
+stale: projects/ores.telemetry/core/src/component_files.cmake
+stale: projects/ores.telemetry/core/tests/component_files.cmake
+
+$ regenerate_cmake_component_files.py --component ores.telemetry.database --check
+stale: projects/ores.telemetry/database/src/component_files.cmake
+stale: projects/ores.telemetry/database/tests/component_files.cmake
+
+$ regenerate_cmake_component_files.py --component ores.telemetry.service --check
+stale: projects/ores.telemetry/service/src/component_files.cmake
+stale: projects/ores.telemetry/service/tests/component_files.cmake
+
+  The source lists exist and are out of date, in all three parts. This
+  component already routes source discovery through component_files.cmake,
+  which ores.nats did not at its own baseline.
+
+$ COMPONENTS_UNDER_TEST
+("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "ore", "workflow-cpp")
+
+  telemetry is absent. V06 asks for it to be added, and the component will
+  have models by the end of this task, so the registry's model-bearing
+  admission is not the obstacle it was for ores.nats.

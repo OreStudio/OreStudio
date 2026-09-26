@@ -1,0 +1,57 @@
+PR 2, the enum write field the service template cannot convert
+
+Measured 2026-09-26 on feature/sync-trading-drift. One error is left in
+the core library.
+
+$ cmake --build build/output/linux-clang-debug-make --target ores.trading.core.lib -j 3
+
+trade_service.cpp:92:43: error: assigning to 'domain::product_type' from
+incompatible type 'const std::string'
+    v.classification.product_type = write.product_type;
+
+The model states both sides of the mismatch
+-------------------------------------------
+projects/ores.trading/modeling/ores.trading.trade.org:
+
+    ** product_type
+    :PROPERTIES:
+    :type:     product_type_t
+    :cpp_type: std::string
+    :is_enum:  true
+    :nullable: true
+    :END:
+
+    ORE product type discriminator.
+
+    The column is text in the database and an enumeration in the domain
+    struct, so the generated sample states the enumerator: the generator
+    builds the struct, not the row.
+
+The column is text; the domain member is the enum, because the field
+group that carries it declares domain::product_type. The wire field is
+text, so the protocol is right and the domain is right; only the
+conversion between them is missing.
+
+The fix
+-------
+cpp_service.cpp.mustache's to_domain assigns every write field
+straight across:
+
+    v.{{domain_member}} = write.{{name}};
+
+It needs an arm for a write field whose column states :is_enum: true:
+parse the text with the domain type's own from_string helper rather than
+assign it. The domain header already provides one:
+
+    product_type.hpp:111
+    [[nodiscard]] inline std::optional<product_type>
+    product_type_from_string(std::string_view sv) {
+
+The helper returns an optional, so the generated arm states what an
+unrecognised value means rather than dereferencing it blindly: the
+enumerator the model gives as the sample, or the column's default.
+One arm serves both to_domain functions, the entity's and the
+junction's.
+
+The same pattern recurs for every enum column in every component, so
+the arm is worth a regression test in the codegen suite.

@@ -265,6 +265,26 @@ the JSON I/O, the generator and the history-difference payloads. Expect
 the build to name them one at a time; each is the same prefix or the
 same text conversion.
 
+** The enum write field
+
+With the prefixes and the key text in place the services compile, and
+one error is left: =to_domain= assigns a text wire field to the domain's
+enum member.
+
+    v.classification.product_type = write.product_type;
+
+The model states both sides. The column is text (=:cpp_type:
+std::string=, =:type: product_type_t=) and the field group that carries
+it declares =domain::product_type=, so the domain is an enumeration
+while the wire is text. The conversion between them is what is missing,
+and the domain header already provides it as
+=product_type_from_string=. Evidence:
+=evidence/pr2_generator_defect_enum_write.txt=.
+
+The fix is an arm in both =to_domain= functions for a write field whose
+column states =:is_enum: true=, with a regression test, because every
+enum column in every component needs the same arm.
+
 
 ** 3. Regenerate
 

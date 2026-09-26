@@ -119,7 +119,7 @@ domain::{{entity_singular}}
     r.{{{group_prefix}}}{{name}} = boost::asio::ip::make_address(v.{{name}});
 {{/is_required_inet}}
 {{#is_base64}}
-    r.{{{group_prefix}}}{{name}} = utility::converter::base64_converter::convert(v.{{name}});
+    r.{{{group_prefix}}}{{name}} = utility::convert::base64_converter::convert(v.{{name}});
 {{/is_base64}}
 {{^render_is_enum}}
 {{#is_nullable_string}}
@@ -248,7 +248,7 @@ domain::{{entity_singular}}
     r.{{name}} = v.{{{group_prefix}}}{{name}}.to_string();
 {{/is_required_inet}}
 {{#is_base64}}
-    r.{{name}} = utility::converter::base64_converter::convert(v.{{{group_prefix}}}{{name}});
+    r.{{name}} = utility::convert::base64_converter::convert(v.{{{group_prefix}}}{{name}});
 {{/is_base64}}
 {{^render_is_enum}}
 {{#is_nullable_string}}
@@ -371,7 +371,7 @@ domain::{{name_singular}}
     r.{{name}} = ores::platform::time::datetime::from_iso8601_date(v.{{name}});
 {{/is_date}}
 {{#is_base64}}
-    r.{{name}} = utility::converter::base64_converter::convert(v.{{name}});
+    r.{{name}} = utility::convert::base64_converter::convert(v.{{name}});
 {{/is_base64}}
 {{^is_required_timestamp}}{{^is_date}}{{^is_base64}}
     r.{{name}} = v.{{name}};
@@ -426,7 +426,7 @@ domain::{{name_singular}}
     r.{{name}} = ores::platform::time::datetime::to_iso8601_date(v.{{name}});
 {{/is_date}}
 {{#is_base64}}
-    r.{{name}} = utility::converter::base64_converter::convert(v.{{name}});
+    r.{{name}} = utility::convert::base64_converter::convert(v.{{name}});
 {{/is_base64}}
 {{^is_required_timestamp}}{{^is_date}}{{^is_base64}}
     r.{{name}} = v.{{name}};

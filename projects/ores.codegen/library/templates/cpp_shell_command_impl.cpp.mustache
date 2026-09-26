@@ -74,7 +74,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
         target.push_back(current);
 {{#has_base64_columns}}
     } else if constexpr (std::is_same_v<T, std::vector<std::uint8_t>>) {
-        target = ores::utility::converter::base64_converter::convert(raw);
+        target = ores::utility::convert::base64_converter::convert(raw);
 {{/has_base64_columns}}
     } else {
         target = ores::shell::app::from_token<T>(raw, name);

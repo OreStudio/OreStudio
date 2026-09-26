@@ -43,7 +43,7 @@ set(files
     "service/tag_service.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_handler.hpp"

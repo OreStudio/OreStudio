@@ -262,10 +262,10 @@ struct image_entity {
 };
 
 // map(const image_entity&): decode the column into the bytes.
-r.payload = utility::converter::base64_converter::convert(v.payload);
+r.payload = utility::convert::base64_converter::convert(v.payload);
 
 // map(const domain::image&): encode the bytes into the column.
-r.payload = utility::converter::base64_converter::convert(v.payload);
+r.payload = utility::convert::base64_converter::convert(v.payload);
 #+end_src
 
 Example of =book='s =name= column:

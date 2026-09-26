@@ -91,7 +91,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
         }
         target.push_back(current);
     } else if constexpr (std::is_same_v<T, std::vector<std::uint8_t>>) {
-        target = ores::utility::converter::base64_converter::convert(raw);
+        target = ores::utility::convert::base64_converter::convert(raw);
     } else {
         target = ores::shell::app::from_token<T>(raw, name);
     }
@@ -143,7 +143,7 @@ void image_commands::register_commands(cli::Menu& root_menu, nats_client& sessio
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <code> <description> <mime_type> <data> <reason> <commentary>");
+        "add <code> <description> <mime_type> <data> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -352,8 +352,8 @@ void image_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 4 + 2) {
+            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -409,7 +409,7 @@ void image_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.code, parsed->positionals[next++], "code");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
         read_token(req.change.write.mime_type, parsed->positionals[next++], "mime_type");

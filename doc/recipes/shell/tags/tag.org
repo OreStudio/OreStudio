@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-tags add <id> <name> <description> <reason> <commentary>
+tags add <name> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =assets.v1.tags.put=.
 
 #+name: tags-add
 #+begin_src ores-shell :tangle tags-add.ores :exports none
-tags add 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+tags add __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=

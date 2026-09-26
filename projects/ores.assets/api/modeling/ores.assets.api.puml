@@ -130,7 +130,6 @@ namespace ores #F2F2F2 {
             ores::assets::messaging::image_tag_write -[hidden]down- ores::assets::messaging::image_tag_change
             ores::assets::messaging::image_tag_change -[hidden]down- ores::assets::messaging::image_tag_removal
             ores::assets::messaging::image_tag_lookup -[hidden]down- ores::assets::messaging::image_tags_filter
-            ores::assets::messaging::image_tags_filter -[hidden]down- ores::assets::messaging::image_tag_event
             ores::assets::messaging::list_image_tags_request -[hidden]down- ores::assets::messaging::list_image_tags_response
             ores::assets::messaging::list_image_tags_response -[hidden]down- ores::assets::messaging::get_image_tag_request
             ores::assets::messaging::get_image_tag_response -[hidden]down- ores::assets::messaging::get_many_image_tags_request
@@ -467,23 +466,6 @@ namespace ores #F2F2F2 {
             note top of image_tags_filter
             Optional filters that narrow an image-tag query.
             optional<boost::uuids::uuid> image_id // id of the tagged image
-            end note
-            class image_tag_event <<message>> #E1F5FF {
-                {field} +event_id : boost::uuids::uuid
-                {field} +key : image_tag_key
-                {field} +action : string
-                {field} +version : uint32_t
-                {field} +occurred_at : chrono::system_clock::time_point
-                {field} +correlation_id : optional<string>
-            }
-            note top of image_tag_event
-            Change event announcing an image-tag create or delete.
-            boost::uuids::uuid event_id // unique id of the event
-            image_tag_key key // identifies the record
-            string action // created, updated or deleted
-            uint32_t version // optimistic-locking version
-            chrono::system_clock::time_point occurred_at // when the change happened
-            optional<string> correlation_id // caller-supplied correlation id, when present
             end note
             class list_image_tags_request <<message>> #E1F5FF {
                 {field} +offset : uint32_t
@@ -946,7 +928,6 @@ ores::assets::messaging::image_tag_change *-- ores::assets::messaging::image_tag
 ores::assets::messaging::image_tag_removal *-- ores::assets::messaging::image_tag_key
 ores::assets::messaging::image_tag_lookup *-- ores::assets::messaging::image_tag_key
 ores::assets::messaging::image_tag_lookup o-- ores::assets::domain::image_tag
-ores::assets::messaging::image_tag_event *-- ores::assets::messaging::image_tag_key
 ores::assets::messaging::list_image_tags_request o-- ores::assets::messaging::image_tags_filter
 ores::assets::messaging::list_image_tags_response o-- ores::assets::domain::image_tag
 ores::assets::messaging::get_image_tag_request *-- ores::assets::messaging::image_tag_key

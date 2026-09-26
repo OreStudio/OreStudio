@@ -60,15 +60,6 @@ export interface ImageTagsFilter {
     image_id: string | null;
 }
 
-export interface ImageTagEvent {
-    event_id: string;
-    key: ImageTagKey;
-    action: string;
-    version: number;
-    occurred_at: string;
-    correlation_id: string | null;
-}
-
 export interface ListImageTagsRequest {
     offset: number;
     limit: number;

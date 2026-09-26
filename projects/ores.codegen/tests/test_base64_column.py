@@ -146,7 +146,7 @@ def test_the_mapper_converts_a_base64_column_in_both_directions(tmp_path):
     """Decode on read, encode on write, with the header the conversion needs."""
     mapper = _render_mapper(tmp_path, BASE64_COLUMN + PLAIN_COLUMN)
     conversion = (
-        "r.payload = utility::converter::base64_converter::convert(v.payload);")
+        "r.payload = utility::convert::base64_converter::convert(v.payload);")
     assert mapper.count(conversion) == 2
     assert '#include "ores.utility/convert/base64_converter.hpp"' in mapper
 

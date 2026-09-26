@@ -29,7 +29,7 @@ set(files
     "messaging/tag_event_registrar.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.service/app/application.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.service/app/application_exception.hpp"

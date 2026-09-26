@@ -1069,7 +1069,7 @@ private:
         // The template function returns the column as stored: base64 text.
         // The write record carries raw bytes, so decode that hop here.
         req.change.write.data =
-            ores::utility::converter::base64_converter::convert(*rows.front()[2]);
+            ores::utility::convert::base64_converter::convert(*rows.front()[2]);
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
         req.intent.reason_code = "system.external_data_import";
         req.intent.commentary = "Copied from system-tenant template: " + key;

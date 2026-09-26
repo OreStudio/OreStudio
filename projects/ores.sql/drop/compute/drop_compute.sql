@@ -22,11 +22,8 @@
 -- Drop Compute Grid Tables
 -- =============================================================================
 
-\ir ./compute_node_samples_notify_trigger_drop.sql
 \ir ./compute_node_samples_drop.sql
-\ir ./compute_grid_samples_notify_trigger_drop.sql
 \ir ./compute_grid_samples_drop.sql
-\ir ./compute_workflow_batch_links_notify_trigger_drop.sql
 \ir ./compute_workflow_batch_links_drop.sql
 \ir ./compute_results_notify_trigger_drop.sql
 \ir ./compute_results_drop.sql

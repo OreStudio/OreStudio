@@ -262,14 +262,21 @@ neither owns the table nor bypasses row-level security:
   set app.current_tenant_id = '<the system tenant>';
   select count(*) from ores_compute_workflow_batch_links_tbl;  -- 1
 
-Two findings are left for their own task rather than fixed here. The
-generated SQL emits a notify trigger for every entity, including the three
-tables whose event surface is switched off: the trigger publishes an event
-no registrar serves. And the schema validator did not see the hand-written
-link table at all, because its =CREATE TABLE= was spelled in the
-hand-written style; the generated file is spelled in the parsed style, so
-the table is now checked. A create file the parser cannot read is silently
-unchecked, which is worth its own look.
+One finding came out of this and is fixed. The generator emits a notify
+trigger for every entity, and the trigger is the database end of the event
+pipeline: it publishes onto a channel that an event registrar serves. The
+three tables whose event surface the physical space switches off had no
+registrar, so each carried a trigger that published an event nothing
+served. =ores.sql.schema.notify_trigger= is a physical-space archetype, so
+the three models switch it and its drop counterpart off. No template
+changed and no other component is touched.
+
+One finding is left for its own task, and it is in the tooling rather than
+the generator. The schema validator did not see the hand-written link
+table at all, because its =CREATE TABLE= was spelled in the hand-written
+style; the generated file is spelled in the parsed style, so the table is
+checked now. A create file the parser cannot read is silently unchecked,
+which is worth its own look.
 
 ** A login could never find a bootstrap account
 

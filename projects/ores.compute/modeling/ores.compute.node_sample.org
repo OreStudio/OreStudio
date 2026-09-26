@@ -189,6 +189,8 @@ SQL schema are generated.
 | ores.cpp.presentation               | false   |
 | ores.cpp.eventing-integration-test  | false   |
 | ores.cpp.shell                      | false   |
+| ores.sql.schema.notify_trigger      | false   |
+| ores.sql.schema.notify_trigger_drop | false   |
 | ores.ts.protocol                    | false   |
 | ores.ts.domain                      | false   |
 

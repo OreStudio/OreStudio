@@ -521,6 +521,26 @@ def cmd_generate(project_root: Path, env: dict, args) -> int:
     return 0
 
 
+def _reload_systemd() -> int:
+    """Reload the user manager after installing units.
+
+    Returns 0 when the manager reloaded, 1 when it did not. A failed reload
+    used to pass silently: the units landed on disk, systemd never read them,
+    and the command still exited 0, so an undeployed fleet looked deployed.
+    """
+    result = systemctl_bus.run(["--user", "daemon-reload"], check=False)
+    if result.returncode == 0:
+        return 0
+    print("error: systemd did not reload, so the units just installed are "
+          "not loaded.", file=sys.stderr)
+    for stream in (result.stderr, result.stdout):
+        if stream:
+            print(stream.rstrip(), file=sys.stderr)
+    if not systemctl_bus.use_busctl():
+        print(systemctl_bus.sandbox_hint(), file=sys.stderr)
+    return 1
+
+
 def cmd_deploy(project_root: Path, env: dict, args) -> int:
     """Sync generated units into ~/.config/systemd/user/, reloading only if
     something actually changed (same pattern as compass_claude.py's
@@ -581,7 +601,8 @@ def cmd_deploy(project_root: Path, env: dict, args) -> int:
             added.append(name)
 
     if added or updated or removed:
-        systemctl_bus.run(["--user", "daemon-reload"], check=False)
+        if _reload_systemd() != 0:
+            return 1
 
     print(f"Added: {len(added)}, updated: {len(updated)}, "
           f"removed: {len(removed)}")
@@ -1010,7 +1031,8 @@ def cmd_quadlet_deploy(project_root: Path, env: dict, args) -> int:
             removed.append(dest.name)
 
     if added or updated or removed:
-        systemctl_bus.run(["--user", "daemon-reload"], check=False)
+        if _reload_systemd() != 0:
+            return 1
 
     print(f"Added: {len(added)}, updated: {len(updated)}, "
           f"removed: {len(removed)}")

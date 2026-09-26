@@ -344,26 +344,27 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         if (unscheduled.empty())
             continue;
 
-        // Build a batch request for this tenant's unscheduled definitions.
+        // Schedule each definition with its own put request. The canonical
+        // put_many is all-or-nothing: the generated service stops at the first
+        // change it cannot prepare, so batching would let one bad row block
+        // every job for the tenant -- which the retired scheduler
+        // schedule-batch subject did not do, because it saved each definition
+        // in its own transaction and reported the failures by id.
         struct pending_entry {
             boost::uuids::uuid job_id;
             const domain::report_definition* def;
         };
         std::vector<pending_entry> pending;
-        ores::scheduler::messaging::put_many_job_definitions_request batch_req;
-        batch_req.intent = {.reason_code =
-                                std::string(ores::service::messaging::change_reasons::new_record),
-                            .commentary = "Startup reconciliation by reporting service"};
 
         for (const auto& def : unscheduled) {
             const auto job_id = gen_uuid();
-            auto change = build_job_change(def, job_id);
-            if (!change) {
-                // Invalid cron — warning already logged in build_job_change.
+            auto sent = send_schedule_request(def, job_id);
+            if (!sent) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Scheduler refused job for definition " << def.id << ": " << sent.error();
                 ++total_failed;
                 continue;
             }
-            batch_req.changes.push_back(std::move(*change));
             pending.push_back({job_id, &def});
         }
 
@@ -373,39 +374,8 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             continue;
         }
 
-        // Send the batch request to the scheduler.
-        BOOST_LOG_SEV(lg(), debug) << "Sending batch of " << pending.size()
-                                   << " job(s) to scheduler for tenant: " << tenant_id_str;
-        const auto& codec = ores::nats::default_wire_codec();
-
-        try {
-            const auto reply_msg = svc_nats_.authenticated_request(
-                ores::scheduler::messaging::put_many_job_definitions_request::nats_subject,
-                codec.encode(batch_req));
-
-            auto resp = codec.decode<ores::scheduler::messaging::put_many_job_definitions_response>(
-                reply_msg.data);
-            if (!resp) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to parse batch schedule response for tenant "
-                                           << tenant_id_str << "; skipping.";
-                total_failed += static_cast<int>(pending.size());
-                continue;
-            }
-            if (resp->result.outcome != ores::utility::domain::outcome::ok) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Scheduler rejected the batch for tenant " << tenant_id_str << ": "
-                    << resp->result.message << "; skipping all " << pending.size() << " job(s).";
-                total_failed += static_cast<int>(pending.size());
-                continue;
-            }
-            BOOST_LOG_SEV(lg(), debug) << "Scheduler accepted " << pending.size()
-                                       << " job(s) for tenant: " << tenant_id_str;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Batch schedule NATS call failed for tenant "
-                                       << tenant_id_str << ": " << e.what();
-            total_failed += static_cast<int>(pending.size());
-            continue;
-        }
+        BOOST_LOG_SEV(lg(), debug)
+            << "Scheduler accepted " << pending.size() << " job(s) for tenant: " << tenant_id_str;
 
         // Resolve "active" state once per tenant batch (avoids repeated DB calls).
         const auto active_state =

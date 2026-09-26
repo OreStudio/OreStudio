@@ -124,7 +124,7 @@ struct job_definition final {
     /**
      * @brief Whether the job fires. A paused job keeps its row and its history.
      */
-    bool is_active = "true";
+    bool is_active = true;
 
     /**
      * @brief Username of the person who last modified this job definition.

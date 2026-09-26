@@ -17,9 +17,20 @@ Clean-tree drift checks, run after commit b217ab8c0f
 
     check_component_drift.py --all --dry-run
 
-    ... compute-cpp at every address ...
+    Checking component 'iam' at address 'ores.cmake' (dry run, no writes)...
+    Checking component 'iam' at address 'ores.cpp' (dry run, no writes)...
+    Checking component 'iam' at address 'ores.doc' (dry run, no writes)...
+    Checking component 'iam' at address 'ores.plantuml' (dry run, no writes)...
+    Checking component 'iam' at address 'ores.shell' (dry run, no writes)...
+    Checking component 'iam' at address 'ores.sql' (dry run, no writes)...
+    Checking component 'compute-cpp' at the same six addresses...
     No drift: generated output matches the checked-in tree.
     exit 0
+
+The component's own gate lists the same six addresses:
+ores.cmake, ores.cpp, ores.doc, ores.plantuml, ores.shell, ores.sql. The
+baseline file (b01_component_drift_dry_run.txt) shows all six, so the two are
+comparable.
 
 The second check is the one that matters for the template changes. The three
 generator fixes are gated on model properties that only the scheduler entity
@@ -30,8 +41,10 @@ output is untouched.
 
 The codegen suite: 571 passed, 0 failed
 (=projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q=),
-against 563 before this work added the eight cases across the three
-regression tests named in g01_regeneration.txt.
+against 563 before this work added 15 cases across the three regression tests
+named in g01_regeneration.txt (7 in test_nullable_tenant_optional.py,
+4 in test_nullable_tenant_natural_key_index.py, 4 in
+test_value_type_column.py).
 
 The component's own suites, from the committed tree:
 

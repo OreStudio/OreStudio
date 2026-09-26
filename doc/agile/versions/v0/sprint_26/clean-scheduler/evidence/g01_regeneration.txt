@@ -17,12 +17,12 @@ What the regeneration created, none of which existed before:
     projects/ores.scheduler/api/include/ores.scheduler.api/messaging/job_definition_protocol.hpp
     projects/ores.scheduler/api/include/ores.scheduler.api/messaging/scheduling_operations_protocol.hpp
     projects/ores.scheduler/core/include/ores.scheduler.core/messaging/job_definition_history_provider_registrar.hpp
+    projects/ores.scheduler/core/tests/job_definition_eventing_integration_tests.cpp
     projects/ores.scheduler/core/include/ores.scheduler.core/messaging/job_definition_registrar.hpp
     projects/ores.scheduler/core/include/ores.scheduler.core/presentation/job_definition_history_field_mapper.hpp
     projects/ores.scheduler/core/src/messaging/job_definition_history_provider_registrar.cpp
     projects/ores.scheduler/core/src/messaging/job_definition_registrar.cpp
     projects/ores.scheduler/core/src/presentation/job_definition_history_field_mapper.cpp
-    projects/ores.scheduler/core/tests/job_definition_eventing_integration_tests.cpp
     projects/ores.scheduler/service/include/ores.scheduler.service/messaging/job_definition_event_registrar.hpp
     projects/ores.scheduler/service/src/messaging/job_definition_event_registrar.cpp
 

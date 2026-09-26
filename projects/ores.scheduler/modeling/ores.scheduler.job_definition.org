@@ -144,7 +144,7 @@ object; the compute seed writes ={"subject":"compute.v1.work.reap"}=.
 :cpp_type:      bool
 :nullable:      false
 :default:       true
-:default_value: "true"
+:default_value: true
 :END:
 
 Whether the job fires. A paused job keeps its row and its history.

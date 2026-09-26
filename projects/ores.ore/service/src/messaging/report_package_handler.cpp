@@ -45,9 +45,11 @@ std::string tarball_storage_key(const std::string& instance_id) {
 } // namespace
 
 report_package_handler::report_package_handler(ores::nats::service::client& nats,
-                                               std::string http_base_url)
+                                               std::string http_base_url,
+                                               ores::nats::service::nats_client service_nats)
     : nats_(nats)
-    , http_base_url_(std::move(http_base_url)) {}
+    , http_base_url_(std::move(http_base_url))
+    , service_nats_(std::move(service_nats)) {}
 
 void report_package_handler::prepare_package(ores::nats::message msg) {
     auto wf = workflow_step_context::from_message(nats_, msg);
@@ -75,7 +77,8 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             return;
         }
 
-        ores::storage::net::storage_transfer transfer(http_base_url_);
+        ores::storage::net::storage_transfer transfer(http_base_url_,
+                                                      service_nats_.bearer_token());
 
         // ── Create a staging directory ────────────────────────────────
         const auto stage_dir = std::filesystem::temp_directory_path() /

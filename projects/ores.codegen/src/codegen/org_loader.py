@@ -3619,6 +3619,20 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
                     "'true', 'yes' and '1'"
                 )
             entry["destructive"] = True
+        # Whether the message is exposed over HTTP. A declared operation is
+        # addressed by NATS callers unless it says otherwise, so the default is
+        # the absence of the property: a model that opted into the HTTP facet
+        # still exposes only the messages it names, and a change that adds an
+        # operation cannot widen the gateway by accident.
+        http_route = str(props.get("http_route", "")).strip().lower()
+        if http_route:
+            if http_route not in ("true", "yes", "1"):
+                raise ValueError(
+                    f"message {node.title} states :http_route: "
+                    f"{props['http_route']!r}; the values that mean yes are "
+                    "'true', 'yes' and '1'"
+                )
+            entry["http_route"] = True
         comment = node.src_blocks.get("comment")
         if comment:
             entry["comment"] = comment
@@ -3967,6 +3981,10 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
             "response_type": response,
             "subject": subject,
             "public": public,
+            # Whether the message states that it is exposed over HTTP. The
+            # projection carries the fact so the HTTP facet can read it; the
+            # shell facet ignores it, because a command is a NATS caller.
+            "http_route": bool(message.get("http_route")),
             # Whether replaying the command destroys the environment it runs
             # in. The model states it, because the shape does not: a reset and
             # a status read are both a bare command name.
@@ -4648,9 +4666,15 @@ def operation_http_route_plan(operation: dict[str, Any]) -> dict[str, Any]:
 
     An entity projects the verbs it derives; an operation model declares the
     messages it answers, so its routes are one per addressable declared
-    message -- the same set the shell projects into commands. A message with
-    no subject is a payload struct and a message with no response answers
-    with nothing to carry, so neither becomes a route.
+    message -- the same set the shell projects into commands -- that also
+    states ``:http_route: true``. The exposure is a per-message decision
+    because an operation model states one protocol for two surfaces: a message
+    a NATS caller alone answers is not thereby an HTTP endpoint, and exposing
+    every addressable message would publish operations the gateway never
+    served. A message that states no exposure is not exposed, so a new
+    operation cannot widen the gateway without saying so. A message with no
+    subject is a payload struct and a message with no response answers with
+    nothing to carry, so neither becomes a route.
 
     The route addresses the operation by the subject the protocol already
     states, transliterated into a path: ``iam.v1.accounts.lock`` becomes
@@ -4666,6 +4690,8 @@ def operation_http_route_plan(operation: dict[str, Any]) -> dict[str, Any]:
     """
     routes: list[dict[str, Any]] = []
     for command in operation.get("shell_commands") or []:
+        if not command.get("http_route"):
+            continue
         subject = command.get("subject", "")
         segments = subject.split(".")
         if len(segments) < 3 or not _SUBJECT_VERSION_RE.match(segments[1]):

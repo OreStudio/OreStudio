@@ -124,30 +124,6 @@ boost::asio::awaitable<http_response> login_routes::handle_logout(const http_req
     }
 }
 
-boost::asio::awaitable<http_response> login_routes::handle_refresh(const http_request& req,
-                                                                   nats_client& session) {
-    using request_type = messaging::refresh_request;
-    try {
-        co_return co_await forward(req, session, request_type{});
-    } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
-    }
-}
-
-boost::asio::awaitable<http_response> login_routes::handle_service_login(const http_request& req,
-                                                                         nats_client& session) {
-    using request_type = messaging::service_login_request;
-    try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
-        if (!parsed) {
-            co_return http_response::bad_request("Invalid request body");
-        }
-        co_return co_await forward(req, session, *parsed);
-    } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
-    }
-}
-
 void login_routes::register_routes(std::shared_ptr<ores::http::net::router> router,
                                    std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                    nats_client& session) {
@@ -177,32 +153,7 @@ void login_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
     router->add_route(logout_route.build());
     registry->register_route(logout_route.build());
 
-    auto refresh_route =
-        router->post("/api/v1/iam/auth/refresh")
-            .summary("Refresh")
-            .description("Forwards to the iam.v1.auth.refresh operation.")
-            .tags({"iam"})
-            .auth_required()
-            .body<messaging::refresh_request>()
-            .response<messaging::refresh_response>()
-            .handler([&session](const http_request& req) { return handle_refresh(req, session); });
-    router->add_route(refresh_route.build());
-    registry->register_route(refresh_route.build());
-
-    auto service_login_route =
-        router->post("/api/v1/iam/auth/service-login")
-            .summary("Service login")
-            .description("Forwards to the iam.v1.auth.service-login operation.")
-            .tags({"iam"})
-            .auth_optional()
-            .body<messaging::service_login_request>()
-            .response<messaging::service_login_response>()
-            .handler(
-                [&session](const http_request& req) { return handle_service_login(req, session); });
-    router->add_route(service_login_route.build());
-    registry->register_route(service_login_route.build());
-
-    BOOST_LOG_SEV(lg(), info) << "login routes registered: " << 4 << " endpoint(s)";
+    BOOST_LOG_SEV(lg(), info) << "login routes registered: " << 2 << " endpoint(s)";
 }
 
 }

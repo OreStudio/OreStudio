@@ -16,13 +16,15 @@ The test file for one operation model's HTTP route unit. Every case stops at
 the router, so the file needs no server, no NATS connection and no database.
 It links against Catch2 and the part's own library.
 
-Each case pins one thing the unit promises. Every declared message that carries
-a subject and a response appears in the router's route list, which is the only
-public view of what the unit registered. The count matches the projection, so a
-route that stopped being registered fails rather than passing as a smaller set.
-Each route carries the authentication flag its own message states, so a route
-that needs a session cannot be registered without one and a route the model
-declares public is not made unreachable.
+Each case pins one thing the unit promises. Every declared message the model
+exposes -- one that carries a subject, a response and an =:http_route: true= --
+appears in the router's route list, which is the only public view of what the
+unit registered. The count matches the projection, so a route that stopped
+being registered fails rather than passing as a smaller set, and a message the
+model never exposed is absent by the same count. Each route carries the
+authentication flag its own message states, so a route that needs a session
+cannot be registered without one and a route the model declares public is not
+made unreachable.
 
 * Mustache incantations
 

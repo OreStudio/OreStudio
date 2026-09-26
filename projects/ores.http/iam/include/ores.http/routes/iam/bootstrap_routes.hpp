@@ -38,13 +38,13 @@
 namespace ores::http::routes::iam {
 
 /**
- * @brief Every operation bootstrap declares, as one HTTP route each.
+ * @brief Every operation bootstrap declares and exposes, as one HTTP route each.
  *
  * The unit is the model's own declared protocol addressed over HTTP, so a
- * message the model gains appears as a route without an edit here and a
- * message it loses takes its route with it. A route is a POST whose body is
- * the canonical request, because a declared operation states no verb and the
- * request is the whole of what it sends.
+ * message the model exposes appears as a route without an edit here and a
+ * message it stops exposing -- or loses -- takes its route with it. A route
+ * is a POST whose body is the canonical request, because a declared operation
+ * states no verb and the request is the whole of what it sends.
  *
  * The unit authorises nobody. The service's generated handler owns the
  * operation's permission, and the caller's own token travels with every
@@ -85,13 +85,6 @@ public:
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_create_initial_admin(const ores::http::domain::http_request& req,
                                 ores::nats::service::nats_client& session);
-
-    /**
-     * @brief POST /api/v1/iam/bootstrap/provision-tenant — Provision tenant.
-     */
-    static boost::asio::awaitable<ores::http::domain::http_response>
-    handle_provision_tenant(const ores::http::domain::http_request& req,
-                            ores::nats::service::nats_client& session);
 };
 
 }

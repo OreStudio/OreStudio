@@ -52,6 +52,7 @@ The login protocol messages.
 :subject: iam.v1.auth.login
 :auth: none
 :response: login_response
+:http_route: true
 :END:
 
 *** principal
@@ -200,6 +201,7 @@ The login protocol messages.
 :PROPERTIES:
 :subject: iam.v1.auth.logout
 :response: logout_response
+:http_route: true
 :END:
 
 ** logout_response

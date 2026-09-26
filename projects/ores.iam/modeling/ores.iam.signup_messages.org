@@ -30,6 +30,7 @@ The signup protocol messages.
 :subject: iam.v1.auth.signup
 :auth: none
 :response: signup_response
+:http_route: true
 :END:
 
 *** principal

@@ -199,49 +199,6 @@ account_operations_routes::handle_update_my_email(const http_request& req, nats_
 }
 
 boost::asio::awaitable<http_response>
-account_operations_routes::handle_set_my_default_party(const http_request& req,
-                                                       nats_client& session) {
-    using request_type = messaging::set_my_default_party_request;
-    try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
-        if (!parsed) {
-            co_return http_response::bad_request("Invalid request body");
-        }
-        co_return co_await forward(req, session, *parsed);
-    } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
-    }
-}
-
-boost::asio::awaitable<http_response>
-account_operations_routes::handle_select_party(const http_request& req, nats_client& session) {
-    using request_type = messaging::select_party_request;
-    try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
-        if (!parsed) {
-            co_return http_response::bad_request("Invalid request body");
-        }
-        co_return co_await forward(req, session, *parsed);
-    } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
-    }
-}
-
-boost::asio::awaitable<http_response>
-account_operations_routes::handle_switch_party(const http_request& req, nats_client& session) {
-    using request_type = messaging::switch_party_request;
-    try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
-        if (!parsed) {
-            co_return http_response::bad_request("Invalid request body");
-        }
-        co_return co_await forward(req, session, *parsed);
-    } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
-    }
-}
-
-boost::asio::awaitable<http_response>
 account_operations_routes::handle_change_password(const http_request& req, nats_client& session) {
     using request_type = messaging::change_password_request_typed;
     try {
@@ -357,46 +314,6 @@ void account_operations_routes::register_routes(
     router->add_route(update_my_email_route.build());
     registry->register_route(update_my_email_route.build());
 
-    auto set_my_default_party_route =
-        router->post("/api/v1/iam/accounts/set-default-party")
-            .summary("Set my default party")
-            .description("Forwards to the iam.v1.accounts.set-default-party operation.")
-            .tags({"iam"})
-            .auth_required()
-            .body<messaging::set_my_default_party_request>()
-            .response<messaging::set_my_default_party_response>()
-            .handler([&session](const http_request& req) {
-                return handle_set_my_default_party(req, session);
-            });
-    router->add_route(set_my_default_party_route.build());
-    registry->register_route(set_my_default_party_route.build());
-
-    auto select_party_route =
-        router->post("/api/v1/iam/accounts/select-party")
-            .summary("Select party")
-            .description("Forwards to the iam.v1.accounts.select-party operation.")
-            .tags({"iam"})
-            .auth_required()
-            .body<messaging::select_party_request>()
-            .response<messaging::select_party_response>()
-            .handler(
-                [&session](const http_request& req) { return handle_select_party(req, session); });
-    router->add_route(select_party_route.build());
-    registry->register_route(select_party_route.build());
-
-    auto switch_party_route =
-        router->post("/api/v1/iam/accounts/switch-party")
-            .summary("Switch party")
-            .description("Forwards to the iam.v1.accounts.switch-party operation.")
-            .tags({"iam"})
-            .auth_required()
-            .body<messaging::switch_party_request>()
-            .response<messaging::select_party_response>()
-            .handler(
-                [&session](const http_request& req) { return handle_switch_party(req, session); });
-    router->add_route(switch_party_route.build());
-    registry->register_route(switch_party_route.build());
-
     auto change_password_route =
         router->post("/api/v1/iam/accounts/change-password")
             .summary("Change password")
@@ -411,7 +328,7 @@ void account_operations_routes::register_routes(
     router->add_route(change_password_route.build());
     registry->register_route(change_password_route.build());
 
-    BOOST_LOG_SEV(lg(), info) << "account_operations routes registered: " << 11 << " endpoint(s)";
+    BOOST_LOG_SEV(lg(), info) << "account_operations routes registered: " << 8 << " endpoint(s)";
 }
 
 }

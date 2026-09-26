@@ -152,6 +152,19 @@ public:
      */
     [[nodiscard]] const login_info& auth() const;
 
+    /**
+     * @brief Return a token that authenticates this client's next request.
+     *
+     * The interactive path returns the stored login token; the service path
+     * asks its provider, which owns acquisition and proactive refresh. A
+     * caller that speaks HTTP to a service which authenticates -- the storage
+     * API -- carries this token the same way an authenticated NATS request
+     * does, so the credential appears in exactly one place.
+     *
+     * @throws std::runtime_error if the client holds no credential.
+     */
+    [[nodiscard]] std::string bearer_token();
+
     // -- Service path --
 
     /**

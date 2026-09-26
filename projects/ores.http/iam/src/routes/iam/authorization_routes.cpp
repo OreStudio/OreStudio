@@ -115,36 +115,8 @@ authorization_routes::handle_assign_role(const http_request& req, nats_client& s
 }
 
 boost::asio::awaitable<http_response>
-authorization_routes::handle_assign_role_by_name(const http_request& req, nats_client& session) {
-    using request_type = messaging::assign_role_by_name_request;
-    try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
-        if (!parsed) {
-            co_return http_response::bad_request("Invalid request body");
-        }
-        co_return co_await forward(req, session, *parsed);
-    } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
-    }
-}
-
-boost::asio::awaitable<http_response>
 authorization_routes::handle_revoke_role(const http_request& req, nats_client& session) {
     using request_type = messaging::revoke_role_request;
-    try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
-        if (!parsed) {
-            co_return http_response::bad_request("Invalid request body");
-        }
-        co_return co_await forward(req, session, *parsed);
-    } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
-    }
-}
-
-boost::asio::awaitable<http_response>
-authorization_routes::handle_revoke_role_by_name(const http_request& req, nats_client& session) {
-    using request_type = messaging::revoke_role_by_name_request;
     try {
         const auto parsed = rfl::json::read<request_type>(req.body);
         if (!parsed) {
@@ -199,20 +171,6 @@ authorization_routes::handle_get_role_permissions(const http_request& req, nats_
     }
 }
 
-boost::asio::awaitable<http_response>
-authorization_routes::handle_suggest_role_commands(const http_request& req, nats_client& session) {
-    using request_type = messaging::suggest_role_commands_request;
-    try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
-        if (!parsed) {
-            co_return http_response::bad_request("Invalid request body");
-        }
-        co_return co_await forward(req, session, *parsed);
-    } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
-    }
-}
-
 void authorization_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
@@ -232,20 +190,6 @@ void authorization_routes::register_routes(
     router->add_route(assign_role_route.build());
     registry->register_route(assign_role_route.build());
 
-    auto assign_role_by_name_route =
-        router->post("/api/v1/iam/roles/assign-by-name")
-            .summary("Assign role by name")
-            .description("Forwards to the iam.v1.roles.assign-by-name operation.")
-            .tags({"iam"})
-            .auth_required()
-            .body<messaging::assign_role_by_name_request>()
-            .response<messaging::assign_role_by_name_response>()
-            .handler([&session](const http_request& req) {
-                return handle_assign_role_by_name(req, session);
-            });
-    router->add_route(assign_role_by_name_route.build());
-    registry->register_route(assign_role_by_name_route.build());
-
     auto revoke_role_route = router->post("/api/v1/iam/roles/revoke")
                                  .summary("Revoke role")
                                  .description("Forwards to the iam.v1.roles.revoke operation.")
@@ -258,20 +202,6 @@ void authorization_routes::register_routes(
                                  });
     router->add_route(revoke_role_route.build());
     registry->register_route(revoke_role_route.build());
-
-    auto revoke_role_by_name_route =
-        router->post("/api/v1/iam/roles/revoke-by-name")
-            .summary("Revoke role by name")
-            .description("Forwards to the iam.v1.roles.revoke-by-name operation.")
-            .tags({"iam"})
-            .auth_required()
-            .body<messaging::revoke_role_by_name_request>()
-            .response<messaging::revoke_role_by_name_response>()
-            .handler([&session](const http_request& req) {
-                return handle_revoke_role_by_name(req, session);
-            });
-    router->add_route(revoke_role_by_name_route.build());
-    registry->register_route(revoke_role_by_name_route.build());
 
     auto get_account_roles_route =
         router->post("/api/v1/iam/roles/by-account")
@@ -315,21 +245,7 @@ void authorization_routes::register_routes(
     router->add_route(get_role_permissions_route.build());
     registry->register_route(get_role_permissions_route.build());
 
-    auto suggest_role_commands_route =
-        router->post("/api/v1/iam/roles/suggest-commands")
-            .summary("Suggest role commands")
-            .description("Forwards to the iam.v1.roles.suggest-commands operation.")
-            .tags({"iam"})
-            .auth_required()
-            .body<messaging::suggest_role_commands_request>()
-            .response<messaging::suggest_role_commands_response>()
-            .handler([&session](const http_request& req) {
-                return handle_suggest_role_commands(req, session);
-            });
-    router->add_route(suggest_role_commands_route.build());
-    registry->register_route(suggest_role_commands_route.build());
-
-    BOOST_LOG_SEV(lg(), info) << "authorization routes registered: " << 8 << " endpoint(s)";
+    BOOST_LOG_SEV(lg(), info) << "authorization routes registered: " << 5 << " endpoint(s)";
 }
 
 }

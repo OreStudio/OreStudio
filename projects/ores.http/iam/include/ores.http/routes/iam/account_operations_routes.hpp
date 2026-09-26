@@ -38,13 +38,13 @@
 namespace ores::http::routes::iam {
 
 /**
- * @brief Every operation account_operations declares, as one HTTP route each.
+ * @brief Every operation account_operations declares and exposes, as one HTTP route each.
  *
  * The unit is the model's own declared protocol addressed over HTTP, so a
- * message the model gains appears as a route without an edit here and a
- * message it loses takes its route with it. A route is a POST whose body is
- * the canonical request, because a declared operation states no verb and the
- * request is the whole of what it sends.
+ * message the model exposes appears as a route without an edit here and a
+ * message it stops exposing -- or loses -- takes its route with it. A route
+ * is a POST whose body is the canonical request, because a declared operation
+ * states no verb and the request is the whole of what it sends.
  *
  * The unit authorises nobody. The service's generated handler owns the
  * operation's permission, and the caller's own token travels with every
@@ -120,27 +120,6 @@ public:
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_update_my_email(const ores::http::domain::http_request& req,
                            ores::nats::service::nats_client& session);
-
-    /**
-     * @brief POST /api/v1/iam/accounts/set-default-party — Set my default party.
-     */
-    static boost::asio::awaitable<ores::http::domain::http_response>
-    handle_set_my_default_party(const ores::http::domain::http_request& req,
-                                ores::nats::service::nats_client& session);
-
-    /**
-     * @brief POST /api/v1/iam/accounts/select-party — Select party.
-     */
-    static boost::asio::awaitable<ores::http::domain::http_response>
-    handle_select_party(const ores::http::domain::http_request& req,
-                        ores::nats::service::nats_client& session);
-
-    /**
-     * @brief POST /api/v1/iam/accounts/switch-party — Switch party.
-     */
-    static boost::asio::awaitable<ores::http::domain::http_response>
-    handle_switch_party(const ores::http::domain::http_request& req,
-                        ores::nats::service::nats_client& session);
 
     /**
      * @brief POST /api/v1/iam/accounts/change-password — Change password.

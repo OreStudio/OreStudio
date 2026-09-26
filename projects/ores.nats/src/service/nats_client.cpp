@@ -73,6 +73,14 @@ const nats_client::login_info& nats_client::auth() const {
     return *auth_;
 }
 
+std::string nats_client::bearer_token() {
+    if (token_provider_)
+        return token_provider_(false);
+    if (auth_)
+        return auth_->jwt;
+    throw std::runtime_error("Not authenticated");
+}
+
 client& nats_client::active_client() const {
     if (owned_client_)
         return *owned_client_;

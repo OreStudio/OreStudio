@@ -32,6 +32,7 @@ The authorization protocol messages.
 :PROPERTIES:
 :subject: iam.v1.roles.assign
 :response: assign_role_response
+:http_route: true
 :END:
 
 *** account_id
@@ -90,6 +91,7 @@ The authorization protocol messages.
 :PROPERTIES:
 :subject: iam.v1.roles.revoke
 :response: revoke_role_response
+:http_route: true
 :END:
 
 *** account_id
@@ -148,6 +150,7 @@ The authorization protocol messages.
 :PROPERTIES:
 :subject: iam.v1.roles.by-account
 :response: get_account_roles_response
+:http_route: true
 :END:
 
 *** account_id
@@ -166,6 +169,7 @@ The authorization protocol messages.
 :PROPERTIES:
 :subject: iam.v1.roles.permissions-by-account
 :response: get_account_permissions_response
+:http_route: true
 :END:
 
 *** account_id
@@ -184,6 +188,7 @@ The authorization protocol messages.
 :PROPERTIES:
 :subject: iam.v1.roles.permissions
 :response: get_role_permissions_response
+:http_route: true
 :END:
 
 *** role_id

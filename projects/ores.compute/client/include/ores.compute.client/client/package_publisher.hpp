@@ -58,7 +58,14 @@ struct package_publish_result {
  */
 class ORES_COMPUTE_CLIENT_EXPORT package_publisher {
 public:
-    explicit package_publisher(std::string http_base_url);
+    /**
+     * @brief Constructs a publisher against the storage HTTP API.
+     *
+     * @param http_base_url  Base URL of the storage HTTP API.
+     * @param bearer_token   The calling session's bearer token, which every
+     *                       upload carries. The storage routes authenticate.
+     */
+    package_publisher(std::string http_base_url, std::string bearer_token);
 
     /**
      * @brief Uploads @p local_file to

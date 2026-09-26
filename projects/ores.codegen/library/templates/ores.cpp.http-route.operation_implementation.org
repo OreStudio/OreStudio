@@ -14,8 +14,13 @@
 
 The route table and the handler bodies behind the declarations of the sibling
 =ores.cpp.http-route.operation_header= archetype. One handler per declared
-message, plus the registration that puts each route on the router and the
-OpenAPI registry.
+message the model exposes, plus the registration that puts each route on the
+router and the OpenAPI registry.
+
+Exposure is decided before this template runs: the projection keeps only the
+messages that state =:http_route: true=, so the route set here is the model's
+own declared HTTP surface and a message left unexposed is simply absent from
+=application.http_route.routes=.
 
 * Mustache incantations
 

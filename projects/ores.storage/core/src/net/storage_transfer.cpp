@@ -44,8 +44,9 @@ inline static std::string_view logger_name = "ores.storage.net.storage_transfer"
 
 }
 
-storage_transfer::storage_transfer(std::string http_base_url)
-    : http_base_url_(std::move(http_base_url)) {}
+storage_transfer::storage_transfer(std::string http_base_url, std::string bearer_token)
+    : http_base_url_(std::move(http_base_url))
+    , bearer_token_(std::move(bearer_token)) {}
 
 void storage_transfer::pack(const fs::path& src_dir, const fs::path& dest_archive) {
     BOOST_LOG_SEV(lg(), debug) << "Packing directory: " << src_dir.string() << " -> "
@@ -88,7 +89,7 @@ std::string storage_transfer::upload_returning_response(const std::string& bucke
     BOOST_LOG_SEV(lg(), debug) << "Uploading: bucket=" << bucket << " key=" << key
                                << " bytes=" << bytes;
     const auto t0 = std::chrono::steady_clock::now();
-    const auto body = http_client::put_returning_body(url, src_file);
+    const auto body = http_client::put_returning_body(url, src_file, bearer_token_);
     const auto ms =
         std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t0)
             .count();
@@ -103,7 +104,7 @@ void storage_transfer::download(const std::string& bucket,
     const auto url = storage_paths::make_object_url(http_base_url_, bucket, key);
     BOOST_LOG_SEV(lg(), debug) << "Downloading: bucket=" << bucket << " key=" << key;
     const auto t0 = std::chrono::steady_clock::now();
-    http_client::get(url, dest_file);
+    http_client::get(url, dest_file, bearer_token_);
     const auto ms =
         std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t0)
             .count();

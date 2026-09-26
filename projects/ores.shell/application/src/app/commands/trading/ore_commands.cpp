@@ -75,7 +75,7 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
 
     ore_menu->Insert(
         "upload",
-        [](std::ostream& out, std::vector<std::string> args) {
+        [&session](std::ostream& out, std::vector<std::string> args) {
             auto parsed = parse_args(args, {{.name = "request-id", .requires_value = true}});
             if (!parsed) {
                 fail(out) << parsed.error() << std::endl;
@@ -85,7 +85,9 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                 fail(out) << "Usage: ore upload <src_dir> [--request-id <uuid>]" << std::endl;
                 return;
             }
-            process_upload(std::ref(out), parsed->positionals.front(), parsed->flag("request-id"));
+            process_upload(
+                std::ref(out), std::ref(session), parsed->positionals.front(),
+                parsed->flag("request-id"));
         },
         "Pack a directory of ORE documents and upload it to the ore-imports bucket",
         {"src_dir [--request-id <uuid>]"});
@@ -170,8 +172,13 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
 }
 
 void ore_commands::process_upload(std::ostream& out,
+                                  nats_client& session,
                                   const std::string& src_dir,
                                   const std::string& request_id) {
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
     const std::filesystem::path source(src_dir);
     std::error_code ec;
     if (!std::filesystem::is_directory(source, ec)) {
@@ -188,7 +195,8 @@ void ore_commands::process_upload(std::ostream& out,
     BOOST_LOG_SEV(lg(), info) << "Uploading " << src_dir << " to " << bucket << "/" << key;
 
     try {
-        ores::storage::net::storage_transfer transfer(default_http_base_url());
+        ores::storage::net::storage_transfer transfer(default_http_base_url(),
+                                                       session.bearer_token());
         transfer.pack_and_upload(source, bucket, key);
     } catch (const std::exception& e) {
         fail(out) << "Upload failed: " << e.what() << std::endl;

@@ -6,10 +6,11 @@ Run::
 
 An operation model states its whole protocol rather than deriving a verb set,
 so the HTTP route unit renders one route per declared message that carries a
-subject and a response. These cases pin the addressing (the path is the
-subject transliterated), what a route carries, and the security rule: the
-message's own ``:auth:`` property decides the position, and a model that never
-opted in renders nothing at all.
+subject, a response and its own exposure. These cases pin the addressing (the
+path is the subject transliterated), what a route carries, the security rule
+(the message's own ``:auth:`` property decides the position) and the exposure
+rule (a message states ``:http_route: true`` or renders no route), because a
+declared protocol holds operations meant for NATS callers alone.
 """
 import sys
 from pathlib import Path
@@ -20,12 +21,17 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.generate import resolve_targets  # noqa: E402
-from codegen.org_loader import operation_http_route_plan  # noqa: E402
+from codegen.org_loader import (  # noqa: E402
+    load_org_operation_model,
+    operation_http_route_plan,
+)
 
 CODEGEN_BASE = REPO_ROOT / "projects" / "ores.codegen"
 TEMPLATES = CODEGEN_BASE / "library" / "templates"
 IAM_MODELING = REPO_ROOT / "projects" / "ores.iam" / "modeling"
 ACCOUNT_MESSAGES = IAM_MODELING / "ores.iam.account_messages.org"
+BOOTSTRAP_MESSAGES = IAM_MODELING / "ores.iam.bootstrap_messages.org"
+LOGIN_MESSAGES = IAM_MODELING / "ores.iam.login_messages.org"
 
 ROUTE_OUTPUTS = [
     "projects/ores.http/iam/include/ores.http/routes/iam/account_operations_routes.hpp",
@@ -41,8 +47,12 @@ OPERATION_PAGES = (
 
 
 def _command(name, subject, response="demo_response", public=False,
-             fields=("value",)):
-    """A shell-projected declared message, shaped the way the loader hands it."""
+             expose=True, fields=("value",)):
+    """A shell-projected declared message, shaped the way the loader hands it.
+
+    ``expose`` is the message's own ``:http_route:`` decision; the loader
+    carries it on the projected command as ``http_route``.
+    """
     positionals = [{"name": field, "cpp_type": "std::string"} for field in fields]
     return {
         "command": name.replace("_", "-").replace("-request", ""),
@@ -51,6 +61,7 @@ def _command(name, subject, response="demo_response", public=False,
         "response_type": response,
         "subject": subject,
         "public": public,
+        "http_route": expose,
         "positionals": positionals,
         "flags": [],
         "positional_count": len(positionals),
@@ -157,6 +168,86 @@ class TestTheSecurityRule:
                          model)
         assert "get_bearer_token()" in text
         assert "with_delegation(" in text
+
+
+class TestTheExposureRule:
+    """A message states its own HTTP exposure; the default is not exposed."""
+
+    def test_a_message_without_the_exposure_property_renders_no_route(self):
+        plan = _plan([_command("lock_widget_request", "demo.v1.widgets.lock",
+                               expose=False)])
+        assert plan["routes"] == []
+        assert plan["route_count"] == 0
+
+    def test_a_message_with_the_exposure_property_renders_a_route(self):
+        plan = _plan([_command("lock_widget_request", "demo.v1.widgets.lock",
+                               expose=True)])
+        assert [(r["method"], r["pattern"]) for r in plan["routes"]] == [
+            ("post", "/api/v1/demo/widgets/lock"),
+        ]
+
+    def test_only_the_exposed_message_of_a_model_becomes_a_route(self):
+        plan = _plan([
+            _command("lock_widget_request", "demo.v1.widgets.lock", expose=True),
+            _command("unlock_widget_request", "demo.v1.widgets.unlock", expose=False),
+        ])
+        assert [r["pattern"] for r in plan["routes"]] == [
+            "/api/v1/demo/widgets/lock",
+        ]
+
+    def test_the_unit_of_a_model_with_no_exposed_message_registers_nothing(self):
+        model = _model([_command("lock_widget_request", "demo.v1.widgets.lock",
+                                 expose=False)])
+        text = _rendered("cpp_http_route_operation_implementation.cpp.mustache",
+                         model)
+        assert "add_route" not in text
+        assert "routes registered: " in text
+
+    def test_the_default_is_read_from_the_loader_not_the_helper(self, tmp_path):
+        # The production default, read from the loader rather than from a
+        # hand-built dict: with every :http_route: removed, a model that opted
+        # into the facet still exposes nothing.
+        text = LOGIN_MESSAGES.read_text(encoding="utf-8")
+        assert ":http_route: true" in text
+        stripped = text.replace(":http_route: true\n", "")
+        model = tmp_path / "ores.iam.login_messages.org"
+        model.write_text(stripped, encoding="utf-8")
+
+        operation = load_org_operation_model(model)["operation"]
+        assert operation_http_route_plan(operation)["routes"] == []
+
+    def test_a_value_that_is_not_yes_is_refused(self, tmp_path):
+        # The property is a yes-or-nothing flag: a spelling that means
+        # something else is an error rather than a silent "not exposed".
+        text = LOGIN_MESSAGES.read_text(encoding="utf-8")
+        model = tmp_path / "ores.iam.login_messages.org"
+        model.write_text(text.replace(":http_route: true\n", ":http_route: maybe\n"),
+                         encoding="utf-8")
+        try:
+            load_org_operation_model(model)
+        except ValueError as exc:
+            assert "http_route" in str(exc)
+        else:
+            raise AssertionError("an unknown :http_route: value was not refused")
+
+    def test_the_iam_service_login_and_tenant_provisioning_stay_unexposed(self):
+        # The two operations the gateway must not serve: neither was an HTTP
+        # endpoint before the routes were generated.
+        for path, forbidden in (
+            (BOOTSTRAP_MESSAGES, "/api/v1/iam/bootstrap/provision-tenant"),
+            (LOGIN_MESSAGES, "/api/v1/iam/auth/service-login"),
+        ):
+            operation = load_org_operation_model(path)["operation"]
+            patterns = [r["pattern"]
+                        for r in operation_http_route_plan(operation)["routes"]]
+            assert forbidden not in patterns, path.name
+
+    def test_the_iam_operations_the_old_file_served_are_still_exposed(self):
+        operation = load_org_operation_model(LOGIN_MESSAGES)["operation"]
+        patterns = [r["pattern"]
+                    for r in operation_http_route_plan(operation)["routes"]]
+        assert "/api/v1/iam/auth/login" in patterns
+        assert "/api/v1/iam/auth/logout" in patterns
 
 
 class TestTheFacetResolves:

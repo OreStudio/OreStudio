@@ -33,26 +33,37 @@ namespace ores::storage::net {
  * All operations are synchronous and intended for use on background threads.
  *
  * URL format: http://host:port/path
+ *
+ * Every call states the caller's bearer token and sends it as
+ * =Authorization: Bearer <token>=. The storage routes authenticate, so the
+ * token is the calling session's own credential rather than the client's: the
+ * service validates that caller and its own permission check governs. The
+ * token is a parameter and not a member because one client instance serves
+ * whichever caller invokes it.
  */
 class ORES_STORAGE_CORE_EXPORT http_client {
 public:
     /**
      * @brief Downloads a remote resource to a local file via HTTP GET.
      *
-     * @param url   Full URL of the resource (http://host:port/path)
-     * @param dest  Local path where the downloaded content will be written
+     * @param url           Full URL of the resource (http://host:port/path)
+     * @param dest          Local path where the downloaded content will be written
+     * @param bearer_token  The caller's bearer token, without the "Bearer " prefix
      * @throws std::runtime_error on connection, HTTP, or I/O failure
      */
-    static void get(const std::string& url, const std::filesystem::path& dest);
+    static void
+    get(const std::string& url, const std::filesystem::path& dest, const std::string& bearer_token);
 
     /**
      * @brief Uploads a local file to a remote URL via HTTP PUT.
      *
-     * @param url  Full URL of the destination (http://host:port/path)
-     * @param src  Local path of the file to upload
+     * @param url           Full URL of the destination (http://host:port/path)
+     * @param src           Local path of the file to upload
+     * @param bearer_token  The caller's bearer token, without the "Bearer " prefix
      * @throws std::runtime_error on connection, HTTP, or I/O failure
      */
-    static void put(const std::string& url, const std::filesystem::path& src);
+    static void
+    put(const std::string& url, const std::filesystem::path& src, const std::string& bearer_token);
 
     /**
      * @brief Uploads a local file via HTTP PUT, returning the response body.
@@ -61,12 +72,15 @@ public:
      * instead of discarding it -- e.g. so callers can read a server-computed
      * checksum out of a JSON response.
      *
-     * @param url  Full URL of the destination (http://host:port/path)
-     * @param src  Local path of the file to upload
-     * @return     The response body.
+     * @param url           Full URL of the destination (http://host:port/path)
+     * @param src           Local path of the file to upload
+     * @param bearer_token  The caller's bearer token, without the "Bearer " prefix
+     * @return              The response body.
      * @throws std::runtime_error on connection, HTTP, or I/O failure
      */
-    static std::string put_returning_body(const std::string& url, const std::filesystem::path& src);
+    static std::string put_returning_body(const std::string& url,
+                                          const std::filesystem::path& src,
+                                          const std::string& bearer_token);
 
 private:
     struct url_parts {

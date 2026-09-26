@@ -15,11 +15,13 @@
 The class declaration for one operation model's HTTP route unit.
 
 The facet's entity archetypes render a fixed CRUD set. This archetype renders
-what the model *declares*: one handler per message that carries a =:subject:=
-and a =:response:=, because the subject is what the route forwards to and the
-response is what it returns. A message with no response answers with nothing
-to carry, and a payload struct has no subject at all, so neither becomes a
-route.
+what the model *declares and exposes*: one handler per message that carries a
+=:subject:=, a =:response:= and an =:http_route: true=, because the subject is
+what the route forwards to, the response is what it returns, and the exposure
+is the message's own decision to answer HTTP callers. A message that states no
+exposure answers NATS callers alone and renders no route; a message with no
+response answers with nothing to carry, and a payload struct has no subject at
+all, so neither becomes a route either.
 
 The model type is the only difference from the entity archetypes, and it is
 stated here rather than inherited so the entity archetypes keep rendering
@@ -52,13 +54,13 @@ The full template source. Edit here and re-tangle with
 namespace ores::http::routes::{{component}} {
 
 /**
- * @brief Every operation {{entity_singular}} declares, as one HTTP route each.
+ * @brief Every operation {{entity_singular}} declares and exposes, as one HTTP route each.
  *
  * The unit is the model's own declared protocol addressed over HTTP, so a
- * message the model gains appears as a route without an edit here and a
- * message it loses takes its route with it. A route is a POST whose body is
- * the canonical request, because a declared operation states no verb and the
- * request is the whole of what it sends.
+ * message the model exposes appears as a route without an edit here and a
+ * message it stops exposing -- or loses -- takes its route with it. A route
+ * is a POST whose body is the canonical request, because a declared operation
+ * states no verb and the request is the whole of what it sends.
  *
  * The unit authorises nobody. The service's generated handler owns the
  * operation's permission, and the caller's own token travels with every

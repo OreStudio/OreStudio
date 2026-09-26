@@ -50,8 +50,13 @@ public:
      *
      * @param http_base_url  Base URL of the storage HTTP API,
      *                       e.g. "http://localhost:8080"
+     * @param bearer_token   The calling session's bearer token, without the
+     *                       "Bearer " prefix. The storage routes authenticate,
+     *                       so the token is required: a caller with no user
+     *                       session passes the service token its own
+     *                       nats_client carries.
      */
-    explicit storage_transfer(std::string http_base_url);
+    storage_transfer(std::string http_base_url, std::string bearer_token);
 
     // ── Atomic operations ─────────────────────────────────────────────────
 
@@ -151,6 +156,7 @@ public:
 
 private:
     std::string http_base_url_;
+    std::string bearer_token_;
 };
 
 }

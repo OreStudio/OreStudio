@@ -38,13 +38,13 @@
 namespace ores::http::routes::iam {
 
 /**
- * @brief Every operation authorization declares, as one HTTP route each.
+ * @brief Every operation authorization declares and exposes, as one HTTP route each.
  *
  * The unit is the model's own declared protocol addressed over HTTP, so a
- * message the model gains appears as a route without an edit here and a
- * message it loses takes its route with it. A route is a POST whose body is
- * the canonical request, because a declared operation states no verb and the
- * request is the whole of what it sends.
+ * message the model exposes appears as a route without an edit here and a
+ * message it stops exposing -- or loses -- takes its route with it. A route
+ * is a POST whose body is the canonical request, because a declared operation
+ * states no verb and the request is the whole of what it sends.
  *
  * The unit authorises nobody. The service's generated handler owns the
  * operation's permission, and the caller's own token travels with every
@@ -80,25 +80,11 @@ public:
                        ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/roles/assign-by-name — Assign role by name.
-     */
-    static boost::asio::awaitable<ores::http::domain::http_response>
-    handle_assign_role_by_name(const ores::http::domain::http_request& req,
-                               ores::nats::service::nats_client& session);
-
-    /**
      * @brief POST /api/v1/iam/roles/revoke — Revoke role.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_revoke_role(const ores::http::domain::http_request& req,
                        ores::nats::service::nats_client& session);
-
-    /**
-     * @brief POST /api/v1/iam/roles/revoke-by-name — Revoke role by name.
-     */
-    static boost::asio::awaitable<ores::http::domain::http_response>
-    handle_revoke_role_by_name(const ores::http::domain::http_request& req,
-                               ores::nats::service::nats_client& session);
 
     /**
      * @brief POST /api/v1/iam/roles/by-account — Get account roles.
@@ -120,13 +106,6 @@ public:
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get_role_permissions(const ores::http::domain::http_request& req,
                                 ores::nats::service::nats_client& session);
-
-    /**
-     * @brief POST /api/v1/iam/roles/suggest-commands — Suggest role commands.
-     */
-    static boost::asio::awaitable<ores::http::domain::http_response>
-    handle_suggest_role_commands(const ores::http::domain::http_request& req,
-                                 ores::nats::service::nats_client& session);
 };
 
 }

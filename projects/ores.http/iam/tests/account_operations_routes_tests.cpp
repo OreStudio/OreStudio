@@ -72,7 +72,7 @@ TEST_CASE("account_operations_routes_registers_every_declared_operation", tags) 
     const auto table = registered_routes(session);
     const auto& routes = table->routes();
 
-    REQUIRE(routes.size() == 11);
+    REQUIRE(routes.size() == 8);
 
     // The router's own list is the only public view of what was registered,
     // so a route that is missing from it was never registered.
@@ -87,12 +87,6 @@ TEST_CASE("account_operations_routes_registers_every_declared_operation", tags) 
              expected_route{
                  http_method::post, std::string{"/api/v1/iam/accounts/update-email"}, true},
              expected_route{
-                 http_method::post, std::string{"/api/v1/iam/accounts/set-default-party"}, true},
-             expected_route{
-                 http_method::post, std::string{"/api/v1/iam/accounts/select-party"}, true},
-             expected_route{
-                 http_method::post, std::string{"/api/v1/iam/accounts/switch-party"}, true},
-             expected_route{
                  http_method::post, std::string{"/api/v1/iam/accounts/change-password"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
@@ -101,7 +95,7 @@ TEST_CASE("account_operations_routes_registers_every_declared_operation", tags) 
         CHECK(found != routes.end());
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 11 route(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 8 route(s).";
 }
 
 TEST_CASE("account_operations_routes_requires_a_session_where_the_message_does", tags) {
@@ -125,12 +119,6 @@ TEST_CASE("account_operations_routes_requires_a_session_where_the_message_does",
              expected_route{
                  http_method::post, std::string{"/api/v1/iam/accounts/update-email"}, true},
              expected_route{
-                 http_method::post, std::string{"/api/v1/iam/accounts/set-default-party"}, true},
-             expected_route{
-                 http_method::post, std::string{"/api/v1/iam/accounts/select-party"}, true},
-             expected_route{
-                 http_method::post, std::string{"/api/v1/iam/accounts/switch-party"}, true},
-             expected_route{
                  http_method::post, std::string{"/api/v1/iam/accounts/change-password"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
@@ -143,5 +131,5 @@ TEST_CASE("account_operations_routes_requires_a_session_where_the_message_does",
         CHECK(found->auth_declared);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of 11 route(s).";
+    BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of 8 route(s).";
 }

@@ -93,7 +93,11 @@ as the service client it was built from).
 expressed as an =:ores.cpp.http-route.enabled: true= entry in the entity
 model's properties drawer, exactly as =ores.cpp.shell-command= does it. In
 =ores.assets= the three models the gateway first serves state it directly, so
-the facet's blast radius stays the domain it was landed with.
+the facet's blast radius stays the domain it was landed with. A domain entity
+or junction that opts in exposes its whole derived CRUD surface, because that
+surface is the component's canonical verb set; an =operation= model that opts
+in exposes only the messages that state =:http_route: true=, because a
+declared protocol holds operations meant for NATS callers alone.
 
 *The route table.* One derived operation becomes one route. The mapping is:
 
@@ -136,10 +140,26 @@ arrive as query parameters.
 
 An =operation= model states its whole protocol rather than deriving a verb
 set, so it reaches the facet through three archetypes that render what it
-declares: one route per message that carries a =:subject:= and a =:response:=,
-which is the same addressable set the shell projects into commands. A message
-with no response has nothing for a route to return and a payload struct has no
-subject to address, so neither becomes a route.
+declares *and exposes*: one route per message that carries a =:subject:=, a
+=:response:= and =:http_route: true=. A message that states no exposure
+answers NATS callers alone and renders no route, because an operation model
+describes one protocol for several surfaces and not every operation is an HTTP
+endpoint. A message with no response has nothing for a route to return and a
+payload struct has no subject to address, so neither becomes a route.
+
+The exposure is a per-message property in the message's own =:PROPERTIES:=
+drawer, beside =:subject:=, =:response:= and =:auth:=. Its default is the
+absence of the property, so a declared operation is not exposed unless it says
+so, and a new operation cannot widen the gateway by accident:
+
+#+begin_src org
+** lock_account_request
+:PROPERTIES:
+:subject: iam.v1.accounts.lock
+:response: lock_account_response
+:http_route: true
+:END:
+#+end_src
 
 The route states the address the protocol already agreed on. The subject
 =iam.v1.accounts.lock= reaches =/api/v1/iam/accounts/lock=: the path is the

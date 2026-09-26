@@ -30,6 +30,7 @@ The bootstrap protocol messages.
 :subject: iam.v1.bootstrap.status
 :auth: none
 :response: bootstrap_status_response
+:http_route: true
 :END:
 
 ** bootstrap_status_response
@@ -50,6 +51,7 @@ The bootstrap protocol messages.
 :subject: iam.v1.bootstrap.create-admin
 :auth: none
 :response: create_initial_admin_response
+:http_route: true
 :END:
 
 *** principal

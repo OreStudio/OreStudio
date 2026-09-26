@@ -124,20 +124,6 @@ bootstrap_routes::handle_create_initial_admin(const http_request& req, nats_clie
     }
 }
 
-boost::asio::awaitable<http_response>
-bootstrap_routes::handle_provision_tenant(const http_request& req, nats_client& session) {
-    using request_type = messaging::provision_tenant_request;
-    try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
-        if (!parsed) {
-            co_return http_response::bad_request("Invalid request body");
-        }
-        co_return co_await forward(req, session, *parsed);
-    } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
-    }
-}
-
 void bootstrap_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
@@ -172,21 +158,7 @@ void bootstrap_routes::register_routes(
     router->add_route(create_initial_admin_route.build());
     registry->register_route(create_initial_admin_route.build());
 
-    auto provision_tenant_route =
-        router->post("/api/v1/iam/bootstrap/provision-tenant")
-            .summary("Provision tenant")
-            .description("Forwards to the iam.v1.bootstrap.provision-tenant operation.")
-            .tags({"iam"})
-            .auth_optional()
-            .body<messaging::provision_tenant_request>()
-            .response<messaging::provision_tenant_response>()
-            .handler([&session](const http_request& req) {
-                return handle_provision_tenant(req, session);
-            });
-    router->add_route(provision_tenant_route.build());
-    registry->register_route(provision_tenant_route.build());
-
-    BOOST_LOG_SEV(lg(), info) << "bootstrap routes registered: " << 3 << " endpoint(s)";
+    BOOST_LOG_SEV(lg(), info) << "bootstrap routes registered: " << 2 << " endpoint(s)";
 }
 
 }

@@ -4786,10 +4786,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'entity_singular' in op:
             op['entity_singular_upper'] = op['entity_singular'].upper()
         # The operation's HTTP routes, one per declared message that states a
-        # subject and a response. Read only by the HTTP operation archetypes,
-        # so it is projected here rather than for every operation model: the
-        # address each route states comes from the subject grammar, and a
-        # model that never opted in has no route to state.
+        # subject, a response and its own exposure. Read only by the HTTP
+        # operation archetypes, so it is projected here rather than for every
+        # operation model: the address each route states comes from the subject
+        # grammar, the exposure from the message, and a model that never opted
+        # in has no route to state.
         if target_template.startswith('cpp_http_route_operation_'):
             from .org_loader import (  # noqa: PLC0415
                 operation_http_route_plan,

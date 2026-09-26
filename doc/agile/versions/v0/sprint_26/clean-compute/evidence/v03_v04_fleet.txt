@@ -1,0 +1,54 @@
+V03, the database recreates and the fleet serves.
+
+  ./compass.sh db recreate -y -k
+  exit code 0
+
+  ./compass.sh services start --use-busctl
+  the batch readiness wait times out; the single-service wait does not.
+
+The services run and serve. The compute service log after the recreate
+shows hosts saving every 30 seconds from the five wrapper nodes, and a
+query against the recreated database shows the node samples landing:
+
+  select count(*), max(sampled_at) from ores_compute_node_samples_tbl;
+   10 | 2026-09-26 02:55:18+01
+
+All four compute test suites pass against this fleet (see
+v02_test_suites.txt).
+
+What does not work is a session. The recreated database is in bootstrap
+mode, and the two bootstrap commands report success while persisting
+nothing:
+
+  bootstrap create-initial-admin super_admin@localhost Secure-Password-123 admin@ores.local
+  {"success":true,...,"account_id":"6ba40299-...","tenant_id":"ffffffff-..."}
+
+  bootstrap provision-tenant evaluation acme_corporation ... 
+  {"success":true,...,"tenant_id":"773b9192-..."}
+
+  select username from ores_iam_accounts_tbl
+   where username in ('super_admin','tenant_admin');
+  (0 rows)
+
+  select name from ores_iam_tenants_tbl;
+  Root Tenant, and the tenants the test runs created.
+
+So the account and the tenant the responses name are not in the database,
+and every login fails with "account not found for username: super_admin"
+in the iam service log. That is an iam bootstrap defect, not a compute
+one, and it is the reason V03 is partial and V04 is blocked.
+
+V04, the generated shell recipes.
+
+  ./compass.sh shell -f projects/ores.shell/scripts/library/compute/<recipe>.ores
+
+Every recipe stops at its login step:
+
+  > login super_admin@localhost Secure-Password-123
+  Login failed:
+  Script aborted at line 8: login super_admin@localhost Secure-Password-123
+
+Fourteen recipes are ready to run and none can, for that one reason. The
+commands themselves are not in doubt: the same generated units are linked
+into ores.shell and exercised by the shell's own tests, and the recipes'
+answer shapes come from the protocols the component now generates.

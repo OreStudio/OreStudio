@@ -1,0 +1,112 @@
+===== list_compute_platforms =====
+🐚 /home/marco/Development/OreStudio/ores_dev_prime_origin/build/output/linux-clang-debug-make/publish/bin/ores.shell --nats-tls-ca /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ca.crt --nats-tls-cert /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.crt --nats-tls-key /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.key --login-username tenant_admin@acme_corporation --login-password ******** --load /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_list_compute_platforms_from_the_shell.ores
+📝 Progress log: /tmp/ores_prime_origin_shell.log (tail -f to follow)
+✓ Connected to nats://localhost:20005
+✗ Auto-login failed: 
+ORE Studio Shell REPL v0.0.25
+Type 'help' for available commands, 'exit' to quit.
+ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_list_compute_platforms_from_the_shell.ores
+> connect nats://localhost:20005
+✓ Connected to nats://localhost:20005
+> login super_admin@localhost Secure-Password-123
+✗ Login failed: 
+✗ Script aborted at line 8: login super_admin@localhost Secure-Password-123
+ores-shell> Bye!
+===== list_compute_apps =====
+🐚 /home/marco/Development/OreStudio/ores_dev_prime_origin/build/output/linux-clang-debug-make/publish/bin/ores.shell --nats-tls-ca /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ca.crt --nats-tls-cert /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.crt --nats-tls-key /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.key --login-username tenant_admin@acme_corporation --login-password ******** --load /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_list_compute_apps_from_the_shell.ores
+📝 Progress log: /tmp/ores_prime_origin_shell.log (tail -f to follow)
+✓ Connected to nats://localhost:20005
+✗ Auto-login failed: 
+ORE Studio Shell REPL v0.0.25
+Type 'help' for available commands, 'exit' to quit.
+ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_list_compute_apps_from_the_shell.ores
+> connect nats://localhost:20005
+✓ Connected to nats://localhost:20005
+> login super_admin@localhost Secure-Password-123
+✗ Login failed: 
+✗ Script aborted at line 8: login super_admin@localhost Secure-Password-123
+ores-shell> Bye!
+===== list_compute_app_versions =====
+🐚 /home/marco/Development/OreStudio/ores_dev_prime_origin/build/output/linux-clang-debug-make/publish/bin/ores.shell --nats-tls-ca /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ca.crt --nats-tls-cert /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.crt --nats-tls-key /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.key --login-username tenant_admin@acme_corporation --login-password ******** --load /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_list_compute_app_versions_from_the_shell.ores
+📝 Progress log: /tmp/ores_prime_origin_shell.log (tail -f to follow)
+✓ Connected to nats://localhost:20005
+✗ Auto-login failed: 
+ORE Studio Shell REPL v0.0.25
+Type 'help' for available commands, 'exit' to quit.
+ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_list_compute_app_versions_from_the_shell.ores
+> connect nats://localhost:20005
+✓ Connected to nats://localhost:20005
+> login super_admin@localhost Secure-Password-123
+✗ Login failed: 
+✗ Script aborted at line 8: login super_admin@localhost Secure-Password-123
+ores-shell> Bye!
+===== list_compute_hosts =====
+🐚 /home/marco/Development/OreStudio/ores_dev_prime_origin/build/output/linux-clang-debug-make/publish/bin/ores.shell --nats-tls-ca /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ca.crt --nats-tls-cert /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.crt --nats-tls-key /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.key --login-username tenant_admin@acme_corporation --login-password ******** --load /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_list_compute_hosts_from_the_shell.ores
+📝 Progress log: /tmp/ores_prime_origin_shell.log (tail -f to follow)
+✓ Connected to nats://localhost:20005
+✗ Auto-login failed: 
+ORE Studio Shell REPL v0.0.25
+Type 'help' for available commands, 'exit' to quit.
+ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_list_compute_hosts_from_the_shell.ores
+> connect nats://localhost:20005
+✓ Connected to nats://localhost:20005
+> login super_admin@localhost Secure-Password-123
+✗ Login failed: 
+✗ Script aborted at line 8: login super_admin@localhost Secure-Password-123
+ores-shell> Bye!
+===== list_compute_batches =====
+🐚 /home/marco/Development/OreStudio/ores_dev_prime_origin/build/output/linux-clang-debug-make/publish/bin/ores.shell --nats-tls-ca /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ca.crt --nats-tls-cert /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.crt --nats-tls-key /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.key --login-username tenant_admin@acme_corporation --login-password ******** --load /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_list_compute_batches_from_the_shell.ores
+📝 Progress log: /tmp/ores_prime_origin_shell.log (tail -f to follow)
+✓ Connected to nats://localhost:20005
+✗ Auto-login failed: 
+ORE Studio Shell REPL v0.0.25
+Type 'help' for available commands, 'exit' to quit.
+ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_list_compute_batches_from_the_shell.ores
+> connect nats://localhost:20005
+✓ Connected to nats://localhost:20005
+> login super_admin@localhost Secure-Password-123
+✗ Login failed: 
+✗ Script aborted at line 8: login super_admin@localhost Secure-Password-123
+ores-shell> Bye!
+===== list_compute_workunits =====
+🐚 /home/marco/Development/OreStudio/ores_dev_prime_origin/build/output/linux-clang-debug-make/publish/bin/ores.shell --nats-tls-ca /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ca.crt --nats-tls-cert /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.crt --nats-tls-key /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.key --login-username tenant_admin@acme_corporation --login-password ******** --load /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_list_compute_workunits_from_the_shell.ores
+📝 Progress log: /tmp/ores_prime_origin_shell.log (tail -f to follow)
+✓ Connected to nats://localhost:20005
+✗ Auto-login failed: 
+ORE Studio Shell REPL v0.0.25
+Type 'help' for available commands, 'exit' to quit.
+ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_list_compute_workunits_from_the_shell.ores
+> connect nats://localhost:20005
+✓ Connected to nats://localhost:20005
+> login super_admin@localhost Secure-Password-123
+✗ Login failed: 
+✗ Script aborted at line 8: login super_admin@localhost Secure-Password-123
+ores-shell> Bye!
+===== list_compute_results =====
+🐚 /home/marco/Development/OreStudio/ores_dev_prime_origin/build/output/linux-clang-debug-make/publish/bin/ores.shell --nats-tls-ca /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ca.crt --nats-tls-cert /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.crt --nats-tls-key /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.key --login-username tenant_admin@acme_corporation --login-password ******** --load /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_list_compute_results_from_the_shell.ores
+📝 Progress log: /tmp/ores_prime_origin_shell.log (tail -f to follow)
+✓ Connected to nats://localhost:20005
+✗ Auto-login failed: 
+ORE Studio Shell REPL v0.0.25
+Type 'help' for available commands, 'exit' to quit.
+ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_list_compute_results_from_the_shell.ores
+> connect nats://localhost:20005
+✓ Connected to nats://localhost:20005
+> login super_admin@localhost Secure-Password-123
+✗ Login failed: 
+✗ Script aborted at line 8: login super_admin@localhost Secure-Password-123
+ores-shell> Bye!
+===== view_compute_grid_stats =====
+🐚 /home/marco/Development/OreStudio/ores_dev_prime_origin/build/output/linux-clang-debug-make/publish/bin/ores.shell --nats-tls-ca /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ca.crt --nats-tls-cert /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.crt --nats-tls-key /home/marco/Development/OreStudio/ores_dev_prime_origin/build/keys/nats/ores.shell.key --login-username tenant_admin@acme_corporation --login-password ******** --load /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_view_compute_grid_stats_from_the_shell.ores
+📝 Progress log: /tmp/ores_prime_origin_shell.log (tail -f to follow)
+✓ Connected to nats://localhost:20005
+✗ Auto-login failed: 
+ORE Studio Shell REPL v0.0.25
+Type 'help' for available commands, 'exit' to quit.
+ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_prime_origin/projects/ores.shell/scripts/library/compute/how_do_i_view_compute_grid_stats_from_the_shell.ores
+> connect nats://localhost:20005
+✓ Connected to nats://localhost:20005
+> login super_admin@localhost Secure-Password-123
+✗ Login failed: 
+✗ Script aborted at line 8: login super_admin@localhost Secure-Password-123
+ores-shell> Bye!

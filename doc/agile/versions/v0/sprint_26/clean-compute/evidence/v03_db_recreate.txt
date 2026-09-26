@@ -1,0 +1,28 @@
+Command: ./compass.sh db recreate -y -k
+Exit code: 0
+
+The database dropped and rebuilt from the create and populate aggregators.
+The full log is 71 KB of CREATE TABLE / CREATE TRIGGER / CREATE POLICY
+statements and the populate notices; the lines below are the checks that
+matter for compute.
+
+Verification against the recreated database:
+
+  select tgname from pg_trigger
+   where tgrelid = 'ores_compute_platforms_tbl'::regclass and not tgisinternal;
+
+  ores_compute_platforms_insert_trg
+  ores_compute_platforms_notify_trg
+
+The notify trigger is the one the platform model generates and the compute
+aggregators did not include until this task. Its presence proves both the
+generated SQL and the aggregator wiring, which no static check can.
+
+  select count(*) from information_schema.tables
+   where table_schema = 'public' and table_name like 'ores_compute%';
+
+  12
+
+Populate warnings are the pre-existing ones (assets images not yet
+populated for the acme seed, and tap_funky/pg_all_foreign_keys privilege
+notices from setup_schema.sql).

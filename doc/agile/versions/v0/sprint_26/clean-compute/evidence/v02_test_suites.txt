@@ -1,0 +1,31 @@
+Codegen suite (projects/ores.codegen):
+
+  venv/bin/python -m pytest tests/ -q
+  536 passed
+
+Compute test suites, run against the live fleet with .env loaded:
+
+  publish/bin/ores.compute.api.tests
+  All tests passed (165 assertions in 54 test cases)
+
+  publish/bin/ores.compute.core.tests
+  All tests passed (60 assertions in 10 test cases)
+
+  publish/bin/ores.compute.service.tests
+  All tests passed (26 assertions in 10 test cases)
+
+  publish/bin/ores.compute.wrapper.tests
+  All tests passed (20 assertions in 5 test cases)
+
+The core suite needs the fleet because its ten cases are the seven
+eventing integration tests and the three junction repository tests; all
+ten passed, so the DB-notify to event bus to NATS chain works for every
+compute entity.
+
+One defect came out of the first run and is fixed: the platform table's
+hand-written RLS policy was `for select using (...)` only, so the generated
+platform eventing test could not insert and failed with "new row violates
+row-level security policy for table ores_compute_platforms_tbl". The
+policy is now `for all`, reading the tenant's rows and the system tenant's
+seeded rows while writing only the tenant's own, the same shape as the
+app_version_platforms policy beside it.

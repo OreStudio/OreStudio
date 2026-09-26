@@ -26,16 +26,19 @@
 -- Hosts, batches, workunits, and results are strictly tenant-scoped.
 
 -- -----------------------------------------------------------------------------
--- Platforms (global registry — system tenant records visible to all tenants;
--- write access restricted to system tenant only)
+-- Platforms (global registry — the seeded rows belong to the system tenant and
+-- every tenant reads them; a tenant writes only rows of its own tenant)
 -- -----------------------------------------------------------------------------
 alter table ores_compute_platforms_tbl enable row level security;
 
 create policy platforms_tenant_isolation_policy
 on ores_compute_platforms_tbl
-for select using (
+for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()  -- system platforms visible to all
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
 );
 
 -- -----------------------------------------------------------------------------

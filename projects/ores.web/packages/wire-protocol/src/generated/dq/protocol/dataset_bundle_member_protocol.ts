@@ -60,15 +60,6 @@ export interface DatasetBundleMembersFilter {
     bundle_code: string | null;
 }
 
-export interface DatasetBundleMemberEvent {
-    event_id: string;
-    key: DatasetBundleMemberKey;
-    action: string;
-    version: number;
-    occurred_at: string;
-    correlation_id: string | null;
-}
-
 export interface ListDatasetBundleMembersRequest {
     offset: number;
     limit: number;

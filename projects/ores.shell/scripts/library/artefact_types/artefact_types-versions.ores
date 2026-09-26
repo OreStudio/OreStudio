@@ -1,0 +1,6 @@
+# =versions=
+#
+# GENERATED from doc/recipes/shell/artefact_types/artefact_type.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+artefact_types versions __none__ --limit 1

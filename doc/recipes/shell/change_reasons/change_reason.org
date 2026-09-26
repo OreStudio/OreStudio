@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: D4465BCE-68AE-5C66-B36C-642843F1843E
+:END:
+#+title: How do I run the change_reasons commands from the shell?
+#+description: Every command the change_reasons submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:change_reasons:
+
+This file documents the change_reasons resource at the shell, one section per command. Every command is a subcommand of =change_reasons=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: A388C739-2671-5F2F-A8F3-A75974A28F02
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+change_reasons list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.change_reasons.list=.
+
+#+name: change_reasons-list
+#+begin_src ores-shell :tangle change_reasons-list.ores :exports none
+change_reasons list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: E03B4425-FFD5-551B-AB5D-B1E381D7C045
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+change_reasons get <code>
+#+end_example
+
+It is addressed at =dq.v1.change_reasons.get=.
+
+#+name: change_reasons-get
+#+begin_src ores-shell :tangle change_reasons-get.ores :exports none
+change_reasons get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: A8302F8B-4380-538C-9836-5CD9DD1C9A03
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+change_reasons get-many <code>
+#+end_example
+
+It is addressed at =dq.v1.change_reasons.get_many=.
+
+#+name: change_reasons-get-many
+#+begin_src ores-shell :tangle change_reasons-get-many.ores :exports none
+change_reasons get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 69E855CB-A4E4-5708-8A10-C7CC34F9763B
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+change_reasons add <code> <description> <category_code> <applies_to_new> <applies_to_amend> <applies_to_delete> <requires_commentary> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.change_reasons.put=.
+
+#+name: change_reasons-add
+#+begin_src ores-shell :tangle change_reasons-add.ores :exports none
+change_reasons add __none__ __none__ __none__ false false false false 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 6E45033B-A942-5CC1-9D42-D2C01689FA6F
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+change_reasons set <code> <description> <category_code> <applies_to_new> <applies_to_amend> <applies_to_delete> <requires_commentary> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.change_reasons.put=.
+
+#+name: change_reasons-set
+#+begin_src ores-shell :tangle change_reasons-set.ores :exports none
+change_reasons set __none__ __none__ __none__ false false false false 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 9DE3730D-B026-59DA-83AD-8AA727EAB9D3
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+change_reasons put-many --count <n> <code> <description> <category_code> <applies_to_new> <applies_to_amend> <applies_to_delete> <requires_commentary> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.change_reasons.put_many=.
+
+#+name: change_reasons-put-many
+#+begin_src ores-shell :tangle change_reasons-put-many.ores :exports none
+change_reasons put-many --count 1 __none__ __none__ __none__ false false false false 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: C65BE4F6-F84A-5643-847B-157B36F854A2
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+change_reasons delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.change_reasons.delete=.
+
+#+name: change_reasons-delete
+#+begin_src ores-shell :tangle change_reasons-delete.ores :exports none
+change_reasons delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: D0D75127-EA9C-55E7-A5B6-4CAE227CBE4E
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+change_reasons delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.change_reasons.delete_many=.
+
+#+name: change_reasons-delete-many
+#+begin_src ores-shell :tangle change_reasons-delete-many.ores :exports none
+change_reasons delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: A740C422-5E3A-52D6-A18E-DAB2463ED1ED
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+change_reasons versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.change_reasons_versions.list=.
+
+#+name: change_reasons-versions
+#+begin_src ores-shell :tangle change_reasons-versions.ores :exports none
+change_reasons versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: E3EAFE3B-1457-55C9-94D1-4C6F973229B3
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+change_reasons version <code> --version <n>
+#+end_example
+
+It is addressed at =dq.v1.change_reasons_versions.get=.
+
+#+name: change_reasons-version
+#+begin_src ores-shell :tangle change_reasons-version.ores :exports none
+change_reasons version __none__ --version 1
+#+end_src
+

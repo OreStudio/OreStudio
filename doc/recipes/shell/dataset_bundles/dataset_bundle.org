@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 30419F02-F572-5155-ACF9-B2781E00F441
+:END:
+#+title: How do I run the dataset_bundles commands from the shell?
+#+description: Every command the dataset_bundles submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:dataset_bundles:
+
+This file documents the dataset_bundles resource at the shell, one section per command. Every command is a subcommand of =dataset_bundles=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: BF0D5FD9-1367-5B02-8C37-D28AB22E1105
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundles list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundles.list=.
+
+#+name: dataset_bundles-list
+#+begin_src ores-shell :tangle dataset_bundles-list.ores :exports none
+dataset_bundles list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 6BC15097-2F30-5F6A-82A2-CE8CEC049B7C
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundles get <code>
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundles.get=.
+
+#+name: dataset_bundles-get
+#+begin_src ores-shell :tangle dataset_bundles-get.ores :exports none
+dataset_bundles get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 6E41F786-E920-532C-9FCC-853F3C8E2BE8
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundles get-many <code>
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundles.get_many=.
+
+#+name: dataset_bundles-get-many
+#+begin_src ores-shell :tangle dataset_bundles-get-many.ores :exports none
+dataset_bundles get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 7894BEC3-47F1-539F-8BE5-D3EC3589020A
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundles add <code> <name> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundles.put=.
+
+#+name: dataset_bundles-add
+#+begin_src ores-shell :tangle dataset_bundles-add.ores :exports none
+dataset_bundles add __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: CEE5711A-AF42-570D-BAF6-0A1814D0CE63
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundles set <id> <code> <name> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundles.put=.
+
+#+name: dataset_bundles-set
+#+begin_src ores-shell :tangle dataset_bundles-set.ores :exports none
+dataset_bundles set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 1259D9AA-8314-5C2D-8EFD-C63DE9811703
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundles put-many --count <n> <id> <code> <name> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundles.put_many=.
+
+#+name: dataset_bundles-put-many
+#+begin_src ores-shell :tangle dataset_bundles-put-many.ores :exports none
+dataset_bundles put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: A9A1F318-40A1-5FCE-8AFA-922104451638
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundles delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundles.delete=.
+
+#+name: dataset_bundles-delete
+#+begin_src ores-shell :tangle dataset_bundles-delete.ores :exports none
+dataset_bundles delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 7C1D16EA-D5C3-5F64-A3B0-3FC8E371D4C5
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundles delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundles.delete_many=.
+
+#+name: dataset_bundles-delete-many
+#+begin_src ores-shell :tangle dataset_bundles-delete-many.ores :exports none
+dataset_bundles delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: D8F0C0B1-6ABA-52C0-BA89-B03A07FCE73E
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundles versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundles_versions.list=.
+
+#+name: dataset_bundles-versions
+#+begin_src ores-shell :tangle dataset_bundles-versions.ores :exports none
+dataset_bundles versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: A9AF42B7-045E-5F5D-901D-8EA76EC4C58E
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+dataset_bundles version <code> --version <n>
+#+end_example
+
+It is addressed at =dq.v1.dataset_bundles_versions.get=.
+
+#+name: dataset_bundles-version
+#+begin_src ores-shell :tangle dataset_bundles-version.ores :exports none
+dataset_bundles version __none__ --version 1
+#+end_src
+

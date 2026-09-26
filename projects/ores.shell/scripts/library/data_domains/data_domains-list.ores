@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/data_domains/data_domain.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+data_domains list --limit 1

@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/synthetic_fx_spot_configs/synthetic_fx_spot_config.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+synthetic_fx_spot_configs list --limit 1

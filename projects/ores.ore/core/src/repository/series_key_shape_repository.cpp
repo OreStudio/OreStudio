@@ -28,6 +28,7 @@
 #include "ores.ore.api/domain/series_key_shape_json_io.hpp" // IWYU pragma: keep.
 #include "ores.ore.core/repository/series_key_shape_entity.hpp"
 #include "ores.ore.core/repository/series_key_shape_mapper.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::ore::repository {
@@ -41,17 +42,76 @@ std::string series_key_shape_repository::sql() {
     return generate_create_table_sql<series_key_shape_entity>(lg());
 }
 
+ores::utility::domain::precondition
+series_key_shape_repository::replace_claim(context ctx, const domain::series_key_shape& v) {
+    const auto current = read_latest(ctx, v.series_type);
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
+
+domain::series_key_shape
+series_key_shape_repository::apply_claim(context ctx,
+                                         const domain::series_key_shape& v,
+                                         const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, v.series_type);
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
+
 void series_key_shape_repository::write(context ctx, const domain::series_key_shape& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing series key shape. " << "series_type: " << v.series_type;
-    execute_write_query(
-        ctx, series_key_shape_mapper::map(v), lg(), "Writing series key shape to database.");
+    write(ctx, v, replace_claim(ctx, v));
 }
 
 void series_key_shape_repository::write(context ctx,
                                         const std::vector<domain::series_key_shape>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing series key shapes. Count: " << v.size();
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void series_key_shape_repository::write(context ctx,
+                                        const domain::series_key_shape& v,
+                                        const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing series key shape. " << "series_type: " << v.series_type;
+    const auto t = apply_claim(ctx, v, claim);
     execute_write_query(
-        ctx, series_key_shape_mapper::map(v), lg(), "Writing series key shapes to database.");
+        ctx, series_key_shape_mapper::map(t), lg(), "Writing series key shape to database.");
+}
+
+void series_key_shape_repository::write(
+    context ctx,
+    const std::vector<domain::series_key_shape>& v,
+    const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing series key shapes. Count: " << v.size();
+    std::vector<domain::series_key_shape> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(
+        ctx, series_key_shape_mapper::map(batch), lg(), "Writing series key shapes to database.");
 }
 
 std::vector<domain::series_key_shape> series_key_shape_repository::read_latest(context ctx) {
@@ -127,15 +187,37 @@ std::optional<domain::series_key_shape> series_key_shape_repository::read_at_ver
     return entities.front();
 }
 
-void series_key_shape_repository::remove(context ctx, const std::string& series_type) {
+series_key_shape_repository::remove_status series_key_shape_repository::remove(
+    context ctx, const std::string& series_type, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing series key shape. " << "series_type: " << series_type;
+    const auto current = read_latest(ctx, series_type);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<series_key_shape_entity> |
                        where("tenant_id"_c == tid && "series_type"_c == series_type &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing series key shape from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, series_type).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void series_key_shape_repository::remove(context ctx, const std::string& series_type) {
+    static_cast<void>(remove(ctx, series_type, std::nullopt));
 }
 
 std::vector<domain::series_key_shape>
@@ -175,6 +257,25 @@ std::uint32_t series_key_shape_repository::get_total_shape_count(context ctx) {
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active series key shape count: " << count;
     return count;
+}
+
+std::vector<domain::series_key_shape>
+series_key_shape_repository::read_latest(context ctx,
+                                         const std::vector<std::string>& series_types) {
+    if (series_types.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<series_key_shape_entity>> |
+                       where("tenant_id"_c == tid && "series_type"_c.in(series_types) &&
+                             "valid_to"_c == max.value());
+    auto result = execute_read_query<series_key_shape_entity, domain::series_key_shape>(
+        ctx,
+        query,
+        [](const auto& entities) { return series_key_shape_mapper::map(entities); },
+        lg(),
+        "Reading latest series key shapes by ids.");
+    return result;
 }
 
 void series_key_shape_repository::remove(context ctx,

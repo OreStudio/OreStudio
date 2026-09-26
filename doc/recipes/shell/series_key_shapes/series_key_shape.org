@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 2C45B4AA-B148-57F4-8031-6F8941D86A0A
+:END:
+#+title: How do I run the series_key_shapes commands from the shell?
+#+description: Every command the series_key_shapes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:series_key_shapes:
+
+This file documents the series_key_shapes resource at the shell, one section per command. Every command is a subcommand of =series_key_shapes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 7788489B-4119-57ED-B345-30FEE4ED1ABB
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_key_shapes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =ore.v1.series_key_shapes.list=.
+
+#+name: series_key_shapes-list
+#+begin_src ores-shell :tangle series_key_shapes-list.ores :exports none
+series_key_shapes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: A428805D-F29F-5985-868D-6F09CB89F0FF
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_key_shapes get <series_type>
+#+end_example
+
+It is addressed at =ore.v1.series_key_shapes.get=.
+
+#+name: series_key_shapes-get
+#+begin_src ores-shell :tangle series_key_shapes-get.ores :exports none
+series_key_shapes get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 7D477E73-5685-541C-AD47-EDFE19EC0892
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_key_shapes get-many <series_type>
+#+end_example
+
+It is addressed at =ore.v1.series_key_shapes.get_many=.
+
+#+name: series_key_shapes-get-many
+#+begin_src ores-shell :tangle series_key_shapes-get-many.ores :exports none
+series_key_shapes get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 27F4F209-15FC-5E85-8E5E-E4056AA74EF2
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_key_shapes add <series_type> <qualifier_depth> <has_point_dimension> <default_point> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =ore.v1.series_key_shapes.put=.
+
+#+name: series_key_shapes-add
+#+begin_src ores-shell :tangle series_key_shapes-add.ores :exports none
+series_key_shapes add __none__ 0 false __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 1F27D759-3BE7-5A57-BE8B-C2C3A802CCA5
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_key_shapes set <series_type> <qualifier_depth> <has_point_dimension> <default_point> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =ore.v1.series_key_shapes.put=.
+
+#+name: series_key_shapes-set
+#+begin_src ores-shell :tangle series_key_shapes-set.ores :exports none
+series_key_shapes set __none__ 0 false __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B9AABFA9-C278-5A96-B75D-C691A43925A5
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_key_shapes put-many --count <n> <series_type> <qualifier_depth> <has_point_dimension> <default_point> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =ore.v1.series_key_shapes.put_many=.
+
+#+name: series_key_shapes-put-many
+#+begin_src ores-shell :tangle series_key_shapes-put-many.ores :exports none
+series_key_shapes put-many --count 1 __none__ 0 false __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 819539CF-89C3-51D6-8871-8FCF6461975A
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_key_shapes delete <series_type> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =ore.v1.series_key_shapes.delete=.
+
+#+name: series_key_shapes-delete
+#+begin_src ores-shell :tangle series_key_shapes-delete.ores :exports none
+series_key_shapes delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 50D550FF-AF9B-59A4-BA78-335253188C3F
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_key_shapes delete-many <series_type> <reason> <commentary>
+#+end_example
+
+It is addressed at =ore.v1.series_key_shapes.delete_many=.
+
+#+name: series_key_shapes-delete-many
+#+begin_src ores-shell :tangle series_key_shapes-delete-many.ores :exports none
+series_key_shapes delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 37BB6DF9-5282-5B7D-A592-2EAD54FB2853
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_key_shapes versions <series_type> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =ore.v1.series_key_shapes_versions.list=.
+
+#+name: series_key_shapes-versions
+#+begin_src ores-shell :tangle series_key_shapes-versions.ores :exports none
+series_key_shapes versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 37926E6D-828D-5CFF-8A87-3162B5CE9D6D
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_key_shapes version <series_type> --version <n>
+#+end_example
+
+It is addressed at =ore.v1.series_key_shapes_versions.get=.
+
+#+name: series_key_shapes-version
+#+begin_src ores-shell :tangle series_key_shapes-version.ores :exports none
+series_key_shapes version __none__ --version 1
+#+end_src
+

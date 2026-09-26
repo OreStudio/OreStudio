@@ -1,0 +1,342 @@
+:PROPERTIES:
+:ID: 286B7167-9B8A-4937-BBA5-E9D285AFECE3
+:END:
+#+title: Object Storage
+#+description: The target state for object storage: one bucket-and-key contract with an HTTP interface for bytes and a NATS interface for commands, usable raw by any component and wrapped by domain ones, over a replaceable backend.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:storage:nats:target_state:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+* Summary
+
+This page states the target for object storage, not the shape of the tree
+today. Storage is a namespace of buckets and keys holding opaque bytes, with no
+domain knowledge of its own: a caller names a bucket and a key, and storage
+moves the value. It is the same primitive as an S3 bucket, and it should be
+usable as casually as a Redis key-value store.
+
+The target has four parts. One *contract* — put, get, delete, exists and list
+over a bucket and an opaque key. Two *interfaces* over it: HTTP for bytes and
+NATS for commands, differing in transport and never in meaning. Two ways to
+*use* it: raw, when a caller simply wants bytes somewhere, and wrapped, when a
+domain component adds its own behaviour around the raw calls. And a replaceable
+*backend*, so the contract outlives whichever store implements it.
+
+[[*Distance from today][Distance from today]] lists what still separates the
+tree from this page.
+
+* Reading order
+
+- *What storage is* — the primitive, and what it refuses to know.
+- *Already settled* — the decisions the tree has recorded, and what this page
+  therefore does not reopen.
+- *One contract, two interfaces* — the rule that keeps HTTP and NATS honest.
+- *The HTTP interface* — bulk bytes.
+- *The NATS interface* — commands, and why modelling it is what makes storage
+  generatable.
+- *Raw use and wrapped use* — who may use storage directly, and what a wrapper
+  is allowed to add.
+- *Buckets and keys* — allocation, opacity, and encoding.
+- *Backends* — what may sit underneath, and what may not change when it does.
+- *Authentication and tenancy* — who may touch a bucket.
+
+* What storage is
+
+An object is a bucket name, a key and a byte string. That is the whole data
+model, and nothing in storage may interpret any of the three. The mental model
+is an S3 bucket: a bucket is an allocation, a key is an opaque name within it,
+and the value carries no schema. The likeness to Redis is in the manner of use,
+not the API: any component may put a value and read it back with no ceremony
+and no model in the path.
+
+The operations are put, get, delete, exists and list. Put and get move bytes;
+exists and list answer without moving them; delete removes an object. Two
+properties are inherited from S3 and are not negotiable:
+
+- A key is *opaque*. Storage never parses it, never treats a slash as a
+  directory it must create, and never lets it escape its bucket.
+- A put *replaces a whole object*. There is no append, no partial write and no
+  in-place mutation. An object is either the old value or the new one.
+
+Storage owns the contract — how bytes are named, moved, and what happens when
+they are absent. It owns no bucket name, no key scheme and no domain noun. A
+component that wants to store a portfolio archive owns the word "portfolio" and
+the rule that builds the key; storage owns the fact that bytes went somewhere
+and came back byte-identical.
+
+* Already settled
+
+Three decisions are recorded already, and this page does not reopen them.
+
+- *Storage is application-agnostic.* The component's own header says so: the
+  storage layer is application-agnostic and bucket-name constants are defined
+  by each domain library. Commit =00b358951c= performed the move, deleting
+  =buckets.hpp= from the component with the words "the storage layer is now
+  application-agnostic", and
+  [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] records
+  the consequence: storage holds no bucket names of its own, so each caller
+  names its bucket. The recorded word is *application-agnostic*, not
+  "neutral". Storage is not indifferent to its callers; it simply does not
+  know them.
+- *The component has no shell surface today, and that is a decision, not an
+  omission.* Items S01 and S02 of the clean pass read "Not applicable. No
+  entity and no shell unit." The raw verbs below are an addition to the
+  target, not the restoration of a surface that was removed.
+- *The component owns the HTTP path shape, the streaming, and the archive
+  helpers.* =PUT|GET|DELETE|HEAD /api/v1/storage/{bucket}/{key}=, a Beast
+  client that passes a file body, and the libarchive pack and extract are this
+  component's job and stay with it.
+
+The ownership of the bucket allow-list is *not* settled. It is the one
+architectural question this page leaves open, and
+[[*Buckets and keys][Buckets and keys]] states it.
+
+* One contract, two interfaces
+
+The same semantic operation set is exposed over HTTP and over NATS. They differ
+in transport and payload, never in meaning:
+
+- A put over NATS and a put over HTTP to the same bucket and key must leave the
+  same object.
+- The same failure must be reported the same way on both, so a caller can move
+  between them without relearning the error set.
+- Both authenticate the same identity.
+
+The choice between them belongs to the caller and is driven by size and
+streaming. A directory tarball, a package or anything that should never sit in
+memory goes over HTTP. A metadata question, a listing, or a value small enough
+to travel in a message goes over NATS. Neither interface is the "real" one.
+
+* The HTTP interface
+
+The shape is the one the component already builds:
+=PUT|GET|DELETE|HEAD /api/v1/storage/{bucket}/{key}=. Its properties:
+
+- *Streaming in both directions.* A request body and a response body pass
+  through a file body, so a multi-megabyte object never sits in memory. The
+  existing client does this; it is a property to keep, not to add.
+- *The status is read before the destination is touched.* A failed download
+  must not create a file or truncate one that is already there.
+- *A size ceiling the caller can learn.* Today the server has a limit the
+  client cannot discover, and a build found it the hard way.
+- *A checksum the caller can verify.* The server already computes one; it
+  should be part of the contract rather than a convenience.
+- *HEAD and DELETE complete on both sides.* HEAD answers existence and length
+  without a body; DELETE removes an object. Today HEAD is documented and
+  implemented nowhere, and DELETE exists on the server with no client method.
+
+The path prefix is the contract's only declaration today, and it is written out
+as a literal in the client and again in the server, with no shared constant and
+no compile-time link. It should be declared once — as a generated protocol, or
+a shared constant — so the two ends cannot drift apart in silence.
+
+Every storage route authenticates. An endpoint that accepts a write with no
+credential is a defect, whatever its exposure.
+
+* The NATS interface
+
+NATS carries the operations that need no bulk bytes and, when a value is small,
+the values themselves: put, get, delete, exists and the paged list. It follows
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]], the same canonical
+operation set the entity verbs already speak, and it obeys
+[[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] on subjects and message shape.
+
+Subjects belong to storage, not to its consumers: one storage family named
+after the object, in the same manner as the existing =ore.v1.= families. A
+consumer does not get its own subject family by virtue of using storage.
+
+Modelling this interface is what makes storage generatable, and that is the
+point of it. Modelled as an operation set, its protocol header, its handler,
+its permission codes, its shell commands and its TypeScript twin all generate,
+the way the entity verbs do today. Storage is not modelled now, so none of that
+is generated, and its shell verbs are hand-written — which is why they are
+named after the consumers that happen to use it rather than after storage.
+
+* Raw use and wrapped use
+
+*Raw use* is a caller naming a bucket, a key and a path. Nothing sits between
+the caller and the contract, and the shell exposes it as raw verbs —
+=storage put=, =storage get=, =storage delete=, =storage list= — whose
+arguments are a bucket, a key and a local path. Raw use is what "storage
+behaves like Redis" means at a command line: a component that just wants bytes
+somewhere should not have to learn a domain verb to put them there.
+
+*Wrapped use* is a domain component composing the raw contract with behaviour
+of its own. A wrapper may:
+
+- archive a directory before the put and unpack after the get;
+- derive a fixed key from a domain identifier, so the caller never names one;
+- verify a checksum, or a size, before accepting a value;
+- map storage failures into the domain's own errors;
+- name its verb after itself, because its verb means something more than a put.
+
+The rules that keep a wrapper thin:
+
+- A wrapper *composes* storage; it never re-implements it. No second HTTP
+  client, no second archiver, no second retry loop.
+- The bucket name and the key scheme belong to the consumer. Storage is told
+  which bucket an object lives in; it is never told what the bucket means.
+- A wrapper's verb is a thin shell over the raw verbs, not a parallel
+  interface. If a wrapper needs an operation storage does not offer, the
+  operation is missing from the contract, not from the wrapper.
+- Anything a wrapper adds is visible to it alone. Compression is the clearest
+  case: gzipping a payload before a put is the caller's business, and nothing
+  on the wire marks the object as compressed. A raw reader of that bucket must
+  be able to tell what it is holding, which is why an off-wire convention like
+  today's gzip-on-blob is a hazard rather than a feature.
+
+* Buckets and keys
+
+A bucket is an *allocation*. It is the unit at which a key namespace and a
+permission attach, so something must decide which buckets exist and who may
+use them. Under application-agnostic storage, *who that something is has not
+been decided*, and it is the one genuinely open architectural question on this
+page. There are two candidate answers:
+
+- *Storage owns a registry,* and a deployment populates it. Storage then
+  knows bucket names, which is the domain knowledge the component currently
+  refuses to hold.
+- *Each caller declares its bucket,* and the deployment collects the
+  declarations into an allow-list. Storage stays name-free and the list is
+  configuration rather than code.
+
+The hardcoded two-name list in the server is neither answer. It is an unowned
+literal, and it has already drifted: =report-data= is used by two shipping
+callers and is absent from the list, so that path answers 404 and no gate
+noticed. That is the failure the chosen answer has to prevent.
+
+A key is opaque, and the contract must state in one place how a key containing
+a slash, a space or a reserved character travels over each interface, so that
+the same key names the same object on both. Storage rejects a key that would
+escape its bucket, on every path that turns a key into a location: today the
+server guards traversal carefully and the archive extractor does not, which is
+an asymmetry across the same wire.
+
+* Backends
+
+The contract is stable; the store behind it is replaceable. The filesystem
+behind the HTTP server today is one implementation. A Redis instance, an S3
+bucket, or a table in the database are others, and choosing between them is a
+deployment decision rather than a change to any caller.
+
+A backend must provide whole-object put, get and delete; existence and listing
+by key prefix; streaming for values too large to buffer; and whatever
+durability the deployment claims. A backend must *not* change bucket and key
+semantics, the error set, either interface, or any wrapper.
+
+Compression and archiving are not backend concerns. They are caller-side
+composition, and they stay that way so that swapping a backend never changes
+the bytes a caller reads back.
+
+* Authentication and tenancy
+
+Every interface authenticates before it acts: a bearer token on HTTP, the
+existing session on NATS. Storage holds other tenants' bytes, so an
+unauthenticated read or write is a defect rather than a default.
+
+Tenancy itself is unsettled and this page does not settle it. The open
+question is whether a bucket is global with keys namespaced per tenant, or
+whether tenants get buckets of their own. Storage needs an answer before it can
+claim the isolation its callers assume.
+
+* What this page does not cover
+
+- Each wrapper's own design: the compute package, input and output keys, the
+  ore import bundle, and the verbs that expose them belong to those components.
+- The backend's implementation, deployment and durability configuration.
+- The archive format, which is a caller-side concern.
+- The existing consumer flows, which are described where they live; the largest
+  is [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]].
+
+* Distance from today
+
+Recorded so that the target is not mistaken for the tree:
+
+1. *No NATS interface.* The only transport is HTTP.
+2. *Not modelled, so nothing generates.* No protocol, handler, permission,
+   shell command or TypeScript twin is generated for storage. Its shell verbs
+   are hand-written and named after consumers (=ore upload=,
+   =compute download-input=), and there is no =storage= menu at all.
+3. *No raw surface.* No shell verb takes a bucket, a key and a path.
+4. *No authentication.* The storage routes never call =auth_required()=, the
+   route default is public, and an unauthenticated PUT succeeds. The server
+   binds to =0.0.0.0= by default.
+5. *The path prefix is duplicated,* client and server, with no shared
+   declaration.
+6. *HEAD is documented nowhere and implemented nowhere;* DELETE exists on the
+   server with no client method.
+7. *Bucket allocation is a hardcoded two-name list with no owner,* in the
+   server, while the client can address any bucket. The commit that made
+   storage application-agnostic is the same commit that moved the names into
+   the callers and left this literal behind.
+8. *Key encoding and traversal rules are not stated once.* The server guards
+   traversal; the archive extractor does not.
+9. *No test exercises the real client against the real server.* The component's
+   tests use bucket names the server would refuse.
+10. *Listing does not exist* on either interface.
+11. *The bucket list has already drifted from its consumers.* =report-data= is
+    used by =ores.reporting= and =ores.ore= and is not in the server's
+    allowlist, so that path answers 404. This is the unowned literal failing in
+    exactly the way either candidate answer in
+    [[*Buckets and keys][Buckets and keys]] prevents, and no gate noticed.
+12. *The contract publishes a path builder and no parser.* The shell
+    hand-builds a key for a batch input and hand-parses stored URIs by stripping
+    the prefix, because there is no inverse of =make_object_path=. Half of the
+    compute key builders have no caller at all.
+13. *The base URL is plumbed three ways.* The shell reads an environment
+    variable, one service is given a flag, and three services default to a port
+    the server does not use — while the component's own header documents a NATS
+    discovery subject that no C++ caller uses.
+14. *One consumer re-implements the component.* =ores.compute.wrapper= keeps its
+    own HTTP client and archiver, does not link the component, and its copy has
+    already diverged: its download opens the destination before it reads the
+    status, which is the defect this component fixed.
+15. *Two components link the component with no code reference,* which hides a
+    real consumer from any census built by grepping for calls.
+16. *The component's own tests speak a retired bucket name,* so the only bucket
+    names inside the library are fixtures the real server would refuse.
+17. *The client cannot delete, list or test existence.* The server implements
+    DELETE, HEAD is advertised in two headers and registered nowhere, and
+    =http_client= offers GET and PUT only. A raw surface needs operations the
+    client does not yet have.
+18. *A failed shell run exits 0.* Failure is signalled by a =✗= line and a
+    thread-local flag rather than by the exit code, so a script that checks
+    these verbs must read the output, not the status.
+19. *The shell half is otherwise ready.* A domain-free menu has a working
+    precedent in the same tree, the name =storage= is unused among the shell's
+    menus, and =ores.shell.application= already links the component, so the
+    shell change is small once the operations exist.
+
+* Open questions
+
+- The bucket allow-list owner, as stated in [[*Buckets and keys][Buckets and keys]].
+- Where the one shared archiver lives. The capture
+  [[id:43217FF8-2359-4C99-8E1D-6344E50C47EE][Consolidate the duplicated tarball archivers into one shared utility]]
+  names =ores.utility=; the clean-pass decision names
+  =ores.platform::filesystem=. Neither recording reverses the other, so the
+  destination is undecided, and this component holds one of the two copies.
+- Tenancy: global buckets with namespaced keys, or a bucket per tenant.
+- Listing: pagination, ordering, and whether a prefix scan belongs in the
+  contract at all.
+- Whether a small value should travel over NATS, given message size limits, or
+  whether NATS should carry commands only.
+- Lifecycle: expiry, retention and whether storage offers TTL at all.
+- Whether the checksum the server already computes becomes contractual, and
+  whether objects become content-addressed.
+- Whether storage is one service or a library plus a server, given that the
+  shell and services both reach it.
+- Discovery: whether a caller learns the storage endpoint from the bus, as
+  =storage_paths.hpp= documents today with no C++ caller, or from configuration
+  as every C++ caller actually does.
+
+* See also
+
+- [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]] -- the component as it stands today.
+- [[id:023DDD49-944D-45B2-88E1-080BCE4741EB][Bring ores.storage to the clean standard]] -- the pass that recorded the current state, including items S01 and S02.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] -- the layers and facets a storage service must fit.
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] -- the subject and message conventions the NATS interface follows.
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] -- the canonical operation set the NATS interface adopts.
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] -- the largest consumer, and the bucket scheme it owns.
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] -- why a modelled component is generatable, and what the shell items expect.

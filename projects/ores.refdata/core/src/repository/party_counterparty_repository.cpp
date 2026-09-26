@@ -25,6 +25,7 @@
 #include "ores.refdata.core/repository/party_counterparty_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/party_counterparty_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/party_counterparty_entity.hpp"
 #include "ores.refdata.core/repository/party_counterparty_mapper.hpp"

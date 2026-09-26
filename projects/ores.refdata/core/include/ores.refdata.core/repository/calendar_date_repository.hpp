@@ -100,7 +100,7 @@ public:
      * only one half addresses a set and not a row.
      */
     std::vector<domain::calendar_date> read_latest(const std::string& calendar_code,
-                                                   const std::string& date);
+                                                   const std::chrono::year_month_day& date);
 
     /**
      * @brief Gets the total count of active calendar dates.
@@ -119,17 +119,17 @@ public:
      */
     std::uint32_t get_total_calendar_date_count_by_calendar(const std::string& calendar_code);
 
-    std::vector<domain::calendar_date> read_latest_by_date(const std::string& date);
+    std::vector<domain::calendar_date> read_latest_by_date(const std::chrono::year_month_day& date);
 
     /**
      * @brief Gets the total count of active calendar dates filtered by date.
      */
-    std::uint32_t get_total_calendar_date_count_by_date(const std::string& date);
+    std::uint32_t get_total_calendar_date_count_by_date(const std::chrono::year_month_day& date);
 
     /**
      * @brief Deletes a calendar date by its pair of keys.
      */
-    void remove(const std::string& calendar_code, const std::string& date);
+    void remove(const std::string& calendar_code, const std::chrono::year_month_day& date);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -150,7 +150,7 @@ public:
      * no version asked for.
      */
     remove_status remove(const std::string& calendar_code,
-                         const std::string& date,
+                         const std::chrono::year_month_day& date,
                          std::optional<std::uint32_t> version);
 
     /**

@@ -160,6 +160,8 @@ currency_country_repository::read_latest(const std::string& currency_iso_code,
                                << country_alpha2_code;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto currency_iso_code_str = currency_iso_code;
+    const auto country_alpha2_code_str = country_alpha2_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<currency_country_entity>> |
@@ -337,6 +339,8 @@ currency_country_repository::remove(const std::string& currency_iso_code,
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto currency_iso_code_str = currency_iso_code;
+    const auto country_alpha2_code_str = country_alpha2_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<currency_country_entity> |
                        where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&

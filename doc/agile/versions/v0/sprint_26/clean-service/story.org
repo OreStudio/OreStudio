@@ -62,8 +62,18 @@ ores.service meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
   modeling directory codegen can read. The standard records this
   infrastructure-tier gap; ores.service joins the list of components it
   covers, alongside ores.connections and ores.orgmode.
-- The standard's own checklist count was wrong (it claimed 47 items and holds
-  48), corrected in place during this work.
+- The standard grew twice while the task ran, and trunk corrected its own
+  checklist count at the same time. The record covers the 49 items the
+  checklist holds on the branch, H05 included. H05 is the documentation item,
+  which this pass satisfies by rewriting the overview and refreshing the
+  diagram in the same piece of work.
+- The tree-wide build and =validate_docs.sh= do not pass on trunk, for three
+  defects the workflow shell and api scaffold left behind when PR #2173
+  merged: =ores.shell.workflow.tests= has no =main.cpp=, the
+  =ores.workflow.api= target compiles none of its generated sources, and
+  =ores.shell.workflow= has no modeling overview or diagram. None is this
+  branch's, two are already fixed on the in-flight =feature/clean-workflow=
+  branch, and the task records them under V01 and V05.
 
 * Decisions
 

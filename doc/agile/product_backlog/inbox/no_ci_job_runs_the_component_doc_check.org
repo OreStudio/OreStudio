@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 5759223A-8959-4B93-AAE1-8B1B877C5E26
+:END:
+#+title: No CI job runs validate_docs.sh, and main is red
+#+description: validate_docs.sh fails on main with two violations for ores.shell.workflow, and nothing on the pull-request path runs it.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:docs:drift:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add `projects/ores.codegen/validate_docs.sh` to the pull-request path, beside
+the component drift and inventory jobs, and clear the two violations it
+reports on main.
+
+* Why
+
+The check exits 1 on current main:
+
+  FAIL: 2 violation(s) found:
+    [MISSING_OVERVIEW] ores.shell.workflow: modeling/component_overview.org not found
+    [MISSING_PUML] ores.shell.workflow: no .puml diagram in modeling/
+
+`ores.shell.workflow` is a part of `ores.shell` that the clean-workflow change
+(PR #2173, merged 2026-09-26) left without an overview and without a diagram.
+The Component Clean Standard's H05 asks every component and every part of a
+composite for both, so the change cannot have claimed H05 and still be in this
+state.
+
+Nothing on the pull-request path runs the script: `.github/workflows/` runs the
+component drift gate, the model gate, the protocol twin gate, the handler
+permission gate, the populate reference gate, the shell recipe inventory and
+the codegen suite, and the job named `inventory` is the shell recipe one. The
+documentation check runs only when a person remembers it. Measured while
+closing `ores.telemetry`, which passes the check.
+
+* References
+
+- =projects/ores.codegen/validate_docs.sh= — the check, with no CI job.
+- =.github/workflows/codegen-drift.yml= — the jobs that do run.
+- =doc/knowledge/architecture/component_clean_standard.org= — item H05, which
+  asks every overview for its six sections, a diagram, its `.puml` and a
+  rendered image.
+
+* See also
+
+-

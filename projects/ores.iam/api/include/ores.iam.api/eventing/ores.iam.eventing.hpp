@@ -22,8 +22,10 @@
 /**
  * @brief Event types for the IAM module.
  *
- * Contains account-related events such as account creation, modification,
- * and deletion notifications.
+ * Contains the IAM change events: account, account_contact_information,
+ * account_permissions_changed, account_type, login_info, permission, role,
+ * role_assigned, role_revoked, session, tenant, tenant_status, and
+ * tenant_type.
  */
 namespace ores::iam::eventing {}
 

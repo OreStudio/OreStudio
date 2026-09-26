@@ -41,11 +41,11 @@ struct principal_parts {
 /**
  * @brief Splits a principal into the username and the hostname.
  *
- * The rule lives here because it was once written out at every call site, and
- * the call sites that forgot it stored an account under "name@host" while the
- * login looked up "name", so no account was ever found. A caller that needs
- * only the username uses username_of(); one that routes by hostname reads the
- * hostname and checks has_hostname first.
+ * Centralizing the split keeps every caller consistent: an ad-hoc split can
+ * store an account under "name@host" while login looks up "name", so no
+ * account is ever found. A caller that needs only the username uses
+ * username_of(); one that routes by hostname reads the hostname and checks
+ * has_hostname first.
  *
  * The split is on the last '@', so a username may itself contain one.
  */

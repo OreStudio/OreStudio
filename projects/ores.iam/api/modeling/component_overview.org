@@ -19,11 +19,12 @@
 
 * Summary
 
-=ores.iam.api= is a header-only library defining the shared contract for the
-IAM domain. It provides domain types for accounts, roles, tenants, parties,
-and session tokens, together with JSON and table I/O via =rfl=, and the NATS
-message protocol schemas for the 0x2000–0x2FFF range consumed by both
-=ores.iam.core= (server) and client components.
+=ores.iam.api= is the shared contract library for the IAM domain. It provides
+domain types for accounts, roles, tenants, parties, and session tokens,
+together with JSON and table I/O via =rfl=, and the NATS message protocol
+schemas for the 0x2000–0x2FFF range consumed by both =ores.iam.core= (server)
+and client components. It is a compiled library, not header-only: =src/= builds
+the domain tables, JSON I/O, generators, and the session auth service.
 
 * Inputs
 
@@ -52,4 +53,4 @@ message protocol schemas for the 0x2000–0x2FFF range consumed by both
 - [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.
 
 - [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — business logic, persistence, and NATS handlers.
-- [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][ores.iam Messaging Reference]] — full NATS subject and message catalogue.
+- [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][ores.iam Messaging Reference]] — subject families and their owning protocol headers; the generated headers are the full catalogue.

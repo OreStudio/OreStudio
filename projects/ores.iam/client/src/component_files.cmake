@@ -27,4 +27,5 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.client/client/service_token_provider.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.client/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.client/ores.iam.client.hpp"
 )

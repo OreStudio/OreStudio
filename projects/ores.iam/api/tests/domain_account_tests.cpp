@@ -305,7 +305,8 @@ TEST_CASE("account_convert_empty_vector_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
-    CHECK(!table.empty()); // Table should still have headers
+    // Even with no rows the table still has headers.
+    CHECK(!table.empty());
 }
 
 TEST_CASE("account_table_with_faker_data", tags) {

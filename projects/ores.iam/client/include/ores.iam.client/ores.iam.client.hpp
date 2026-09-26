@@ -17,30 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_API_DOMAIN_ROLE_CODES_HPP
-#define ORES_IAM_API_DOMAIN_ROLE_CODES_HPP
-
-namespace ores::iam::domain {
+#ifndef ORES_IAM_CLIENT_ORES_IAM_CLIENT_HPP
+#define ORES_IAM_CLIENT_ORES_IAM_CLIENT_HPP
 
 /**
- * @brief Well-known role names used throughout the system.
+ * @brief Client-side IAM session management.
  *
- * These names must match the rows seeded in ores_iam_roles_tbl. They live in
- * this hand-maintained header, beside the generated role.hpp, because codegen
- * cannot express "also emit this extra namespace of constants" and a
- * regeneration would silently drop them. permission_codes.hpp follows the
- * same pattern.
+ * Lightweight client-side library that manages IAM session state for UI
+ * components and other service consumers. It provides a service_token_provider
+ * that holds an authenticated session token, handles token renewal, and
+ * supplies the token to outgoing NATS requests.
  */
-namespace roles {
-constexpr auto super_admin = "SuperAdmin";
-constexpr auto tenant_admin = "TenantAdmin";
-constexpr auto trading = "Trading";
-constexpr auto sales = "Sales";
-constexpr auto operations = "Operations";
-constexpr auto support = "Support";
-constexpr auto viewer = "Viewer";
-}
-
-}
+namespace ores::iam::client {}
 
 #endif

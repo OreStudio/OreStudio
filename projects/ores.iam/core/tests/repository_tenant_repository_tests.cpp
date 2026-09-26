@@ -147,14 +147,12 @@ TEST_CASE("read_active_tenant_lookups_resolve_system_owned_records", tags) {
     // tenant (tenant_id = current) and to the row's own context
     // (id = current); a peer tenant's context stays isolated.
     //
-    // The generated repository read used to filter on the tenant carried by
-    // the context alone, so it could never read one of these rows -- not
-    // even under the row's own tenant context -- and only the hand-authored
-    // lookups below (no tenant_id filter) resolved it. The model now states
-    // :system_tenant_visible:, which is what its own data says, so the
-    // generated read resolves the row too. A tenant that can be listed but
-    // not read by key is a tenant whose history, delete and single-record
-    // read all fail, so this is the behaviour the model is asserting.
+    // The generated repository read filters on the tenant carried by the
+    // context. The model marks these rows :system_tenant_visible:, which
+    // admits the row's own tenant context, so the generated read resolves
+    // the row. A tenant that can be listed but not read by key is a tenant
+    // whose history, delete and single-record read all fail, so this is the
+    // behaviour the model asserts.
     auto own_ctx =
         h.context().with_tenant(ores::utility::uuid::tenant_id::from_uuid(target_id).value(), "");
 

@@ -17,30 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_API_DOMAIN_ROLE_CODES_HPP
-#define ORES_IAM_API_DOMAIN_ROLE_CODES_HPP
-
-namespace ores::iam::domain {
+#ifndef ORES_IAM_API_ORES_IAM_API_HPP
+#define ORES_IAM_API_ORES_IAM_API_HPP
 
 /**
- * @brief Well-known role names used throughout the system.
+ * @brief Shared IAM contract: domain types, JSON/table I/O, and NATS protocol schemas.
  *
- * These names must match the rows seeded in ores_iam_roles_tbl. They live in
- * this hand-maintained header, beside the generated role.hpp, because codegen
- * cannot express "also emit this extra namespace of constants" and a
- * regeneration would silently drop them. permission_codes.hpp follows the
- * same pattern.
+ * Header-only library defining the shared contract for the IAM domain. It
+ * provides domain types for accounts, roles, tenants, parties, and session
+ * tokens, JSON and table I/O via rfl, and the NATS message protocol schemas
+ * for the 0x2000-0x2FFF range consumed by ores.iam.core and the client
+ * components.
  */
-namespace roles {
-constexpr auto super_admin = "SuperAdmin";
-constexpr auto tenant_admin = "TenantAdmin";
-constexpr auto trading = "Trading";
-constexpr auto sales = "Sales";
-constexpr auto operations = "Operations";
-constexpr auto support = "Support";
-constexpr auto viewer = "Viewer";
-}
-
-}
+namespace ores::iam::api {}
 
 #endif

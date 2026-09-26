@@ -62,7 +62,8 @@ warm_and_subscribe_party_cache(ores::nats::service::client& nats,
     BOOST_LOG_SEV(party_cache_registrar_lg(), debug)
         << "Warming party cache for " << tenant_ids.size() << " tenant(s)";
     for (const auto& tenant_id : tenant_ids)
-        (void)cache->load(tenant_id); // warm-up failure is logged; nothing here can react to it
+        // A warm-up failure is logged; nothing here can react to it.
+        (void)cache->load(tenant_id);
 
     using ores::eventing::domain::entity_event_notification;
     using ores::eventing::domain::event_subject;

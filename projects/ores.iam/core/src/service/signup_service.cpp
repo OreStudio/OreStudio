@@ -125,10 +125,13 @@ signup_result signup_service::register_user(const std::string& username,
     new_account.id = id;
     new_account.username = username;
     new_account.password_hash = password_hash;
-    new_account.password_salt = ""; // FIXME remove
+    // The hash carries its own salt, so nothing reads this column; the model
+    // still declares it and it is written empty.
+    new_account.password_salt = "";
     new_account.totp_secret = "";
     new_account.email = email;
-    new_account.modified_by = username; // Self-registered
+    // Self-registered: the user's own username records the author.
+    new_account.modified_by = username;
 
     std::vector<domain::account> accounts{new_account};
     account_repo_.write(ctx_, accounts);

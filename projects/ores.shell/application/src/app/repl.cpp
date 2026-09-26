@@ -37,6 +37,7 @@
 #include "ores.shell/app/commands/compute/result_commands.hpp"
 #include "ores.shell/app/commands/compute/workunit_commands.hpp"
 #include "ores.shell/app/commands/connection_commands.hpp"
+#include "ores.shell/app/commands/history_commands.hpp"
 #include "ores.shell/app/commands/iam/iam_commands.hpp"
 #include "ores.shell/app/commands/lei_commands.hpp"
 #include "ores.shell/app/commands/marketdata_commands.hpp"
@@ -111,6 +112,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     tenants_commands::register_commands(*root, session_, pagination_);
     navigation_commands::register_commands(*root, pagination_);
     orgmode_commands::register_commands(*root);
+    history_commands::register_commands(*root, session_);
     script_commands::register_commands(*root, active_session_);
     bundles_commands::register_commands(*root, session_);
     workflow_instance_commands::register_commands(*root, session_);

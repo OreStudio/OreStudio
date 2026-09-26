@@ -1,0 +1,166 @@
+:PROPERTIES:
+:ID: F168FBC7-90BC-4F88-92A2-B46A4FDB7DE6
+:END:
+#+title: Task: Read any entity's history from the shell
+#+description: Give the shell one command that reads any entity's version history, because the per-entity history commands cannot be relied on: the protocol generator emits no history message, so a regenerated entity has none.
+#+type: task
+#+level: s1
+#+filetags: :shell:history:codegen:clean-shell:sprint_26:v0:
+#+owner: marco
+#+branch: feature/shell-generic-history
+#+pr: 2186
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6B32DFC7-06B6-4B3C-B49D-7779EDF43B3F][Clean ores.shell to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The shell can read any entity's version history through the generic subject every service already serves, so history is reachable for every component regardless of what the protocol generator emits.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6B32DFC7-06B6-4B3C-B49D-7779EDF43B3F][Clean ores.shell to the component clean standard]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-26                               |
+
+* Acceptance
+
+- history get <entity_type> <entity_id> reads <component>.v1.history.get and lists the entity's versions newest first.
+- --diff and --version select a version and print what changed against its predecessor, reusing the renderer the per-entity commands share.
+- An unknown entity type fails with the subject it tried, so the addressing rule is visible rather than silent.
+- The generator gap is recorded: the protocol generator emits no history message, so per-entity history commands are stale where they exist and absent where they do not.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+** The generator emits no history message
+
+A per-entity =history= command exists only where a protocol still carries what an
+*older* generator emitted, or where the protocol is hand-written. The current
+generator builds an entity's messages in =entity_protocol_messages()= and emits no
+history message: no template contains one and no code path constructs one.
+
+The evidence is a regeneration. Applying the generator to =reporting= removes its
+history subscription:
+
+#+begin_src text
+-   get_report_type_history_request::nats_subject, queue_group,
+-       [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+#+end_src
+
+The same holds for marketdata and trading's =trade=. Every component already brought
+to the clean standard carries none -- workflow, iam, refdata, analytics, assets and
+compute all have zero protocols with a history message -- while dq's eighteen are
+hand-written files. So the components that cannot be regenerated without losing
+history are exactly the ones whose protocols are stale, and that staleness is the
+only reason the feature still appears to exist there.
+
+Restoring the message in the generator changes generated output for every versioned
+entity in the tree, which is a tree-wide wave rather than a shell fix. That is why
+this task reads the subject the services actually serve instead of restoring
+per-entity commands.
+
+** Why generic, and what it gives back
+
+=<component>.v1.history.get= is served for every entity of a component through a
+dispatch registry, so one command reads any of them with no per-entity protocol.
+It also gives the history family its first client: until now that subject was
+subscribed by every service and read by nobody, which is part of how the regression
+went unnoticed.
+
+** Verified against the live fleet
+
+A =workflow_instance= was created and then updated to a second version with the
+generated commands, and the command reported both:
+
+#+begin_src text
+History of 51766dac-4e75-4f95-bb8b-8706e4c811e9 (2 version(s)):
+  v2  2026-09-26 19:16:46Z  super_admin  18 field(s)
+  v1  2026-09-26 19:16:39Z  super_admin  18 field(s)
+#+end_src
+
+=--diff --version 2= printed the fields that moved: the step index, the step count,
+both timestamps, the commentary and the recorded-at stamp. An unknown entity type
+fails with the subject it tried, which shows the component segment of the entity
+type selects the subject.
+
+** Open: one entity reads back empty
+
+The bootstrapped =super_admin= account returns no versions although the row exists
+with =version = 1=. Tenant scoping was the first hypothesis and is ruled out: the
+workflow instance read answers on the same all-ones tenant. The case is therefore
+narrower and unexplained, most likely because iam's account provider keys on
+something other than the row's uuid. Recorded as open rather than replaced by
+another theory.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2186][#2186]] | [shell] Read any entity's history from the shell |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+One command, =history get <entity_type> <entity_id> [--diff] [--version <n>]=, over
+the generic =<component>.v1.history.get= subject. It lists an entity's versions
+newest first and reuses =render_history_diff= for the diff path, so the listing is
+the only new behaviour. The subject is derived from the entity type's component
+segment, which is why one command reads any component and why an unknown entity type
+fails with the subject it tried.
+
+It also gives the history dispatch family its first client. That subject was
+subscribed by every service and read by nobody, which is part of how the regression
+below went unnoticed for as long as it did.
+
+Verified against the live fleet. A =workflow_instance= was created and updated to a
+second version with the generated commands, and the command reported both, with
+=--diff --version 2= printing the fields that moved -- step index, step count, both
+timestamps, the commentary and the recorded-at stamp. =ores.shell.exe= builds, and
+the component's file list is generator-identical:
+=regenerate_cmake_component_files.py --component ores.shell.application --check=
+reports "All component_files.cmake up to date".
+
+What was found and not fixed, on purpose. The protocol generator emits no history
+message, so every per-entity =history= command in the tree is either stale or
+hand-written, and regenerating a component removes its history subscription rather
+than restoring it. Putting the message back rewrites generated output for every
+versioned entity in the tree, which is a wave rather than a shell fix. It is recorded
+here, on the identity workflow task, and it stands as its own work item.
+
+One case is left open rather than explained: the bootstrapped =super_admin= account
+reads back with no versions although the row exists. Tenant scoping was the first
+hypothesis and is ruled out, because the workflow instance read answers on the same
+all-ones tenant. The account case is narrower and unexplained, most likely because
+iam's provider keys on something other than the row's uuid.

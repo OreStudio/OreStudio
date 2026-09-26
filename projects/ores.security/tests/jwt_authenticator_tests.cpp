@@ -340,3 +340,149 @@ TEST_CASE("jwt_error_to_string", tags) {
     REQUIRE(to_string(jwt_error::invalid_issuer) == "Invalid issuer");
     REQUIRE(to_string(jwt_error::invalid_audience) == "Invalid audience");
 }
+
+namespace {
+
+jwt_claims claims_expiring_in_an_hour() {
+    jwt_claims claims;
+    claims.subject = "user123";
+    claims.issued_at = std::chrono::system_clock::now();
+    claims.expires_at = std::chrono::system_clock::now() + std::chrono::hours(1);
+    return claims;
+}
+
+}
+
+TEST_CASE("jwt_authenticator_rejects_a_token_from_another_issuer", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing issuer mismatch";
+
+    auto signer = jwt_authenticator::create_hs256(test_secret, "another-issuer", test_audience);
+    auto verifier = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
+
+    auto token = signer.create_token(claims_expiring_in_an_hour());
+    REQUIRE(token.has_value());
+
+    auto validated = verifier.validate(*token);
+    REQUIRE_FALSE(validated.has_value());
+    CHECK(validated.error() == jwt_error::invalid_issuer);
+}
+
+TEST_CASE("jwt_authenticator_rejects_a_token_for_another_audience", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing audience mismatch";
+
+    auto signer = jwt_authenticator::create_hs256(test_secret, test_issuer, "another-audience");
+    auto verifier = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
+
+    auto token = signer.create_token(claims_expiring_in_an_hour());
+    REQUIRE(token.has_value());
+
+    auto validated = verifier.validate(*token);
+    REQUIRE_FALSE(validated.has_value());
+    CHECK(validated.error() == jwt_error::invalid_audience);
+}
+
+TEST_CASE("jwt_authenticator_allow_expired_accepts_what_validate_rejects", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the refresh path's leeway";
+
+    auto auth = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
+
+    jwt_claims claims;
+    claims.subject = "user123";
+    claims.issued_at = std::chrono::system_clock::now() - std::chrono::hours(2);
+    claims.expires_at = std::chrono::system_clock::now() - std::chrono::hours(1);
+
+    auto token = auth.create_token(claims);
+    REQUIRE(token.has_value());
+
+    const auto strict = auth.validate(*token);
+    REQUIRE_FALSE(strict.has_value());
+    CHECK(strict.error() == jwt_error::expired_token);
+
+    const auto allowed = auth.validate_allow_expired(*token);
+    REQUIRE(allowed.has_value());
+    CHECK(allowed->subject == "user123");
+}
+
+TEST_CASE("jwt_authenticator_allow_expired_still_rejects_a_bad_signature", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the leeway's signature check";
+
+    auto auth = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
+
+    jwt_claims claims;
+    claims.subject = "user123";
+    claims.issued_at = std::chrono::system_clock::now() - std::chrono::hours(2);
+    claims.expires_at = std::chrono::system_clock::now() - std::chrono::hours(1);
+
+    auto token = auth.create_token(claims);
+    REQUIRE(token.has_value());
+
+    auto tampered = *token;
+    const auto last_dot = tampered.rfind('.');
+    REQUIRE(last_dot != std::string::npos);
+    tampered[last_dot + 1] = (tampered[last_dot + 1] == 'A') ? 'B' : 'A';
+
+    const auto allowed = auth.validate_allow_expired(tampered);
+    REQUIRE_FALSE(allowed.has_value());
+    CHECK(allowed.error() == jwt_error::invalid_signature);
+}
+
+TEST_CASE("jwt_authenticator_rs256_verifier_rejects_an_hs256_token", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the algorithm confusion case";
+
+    const auto keys = generate_rsa_keypair();
+    auto verifier =
+        jwt_authenticator::create_rs256_verifier(keys.public_key_pem, test_issuer, test_audience);
+
+    // The classic attack: sign with HMAC using the public key as the shared
+    // secret, and hope the verifier reads the algorithm from the token.
+    auto attacker =
+        jwt_authenticator::create_hs256(keys.public_key_pem, test_issuer, test_audience);
+
+    auto token = attacker.create_token(claims_expiring_in_an_hour());
+    REQUIRE(token.has_value());
+
+    auto validated = verifier.validate(*token);
+    CHECK_FALSE(validated.has_value());
+}
+
+TEST_CASE("jwt_authenticator_reports_missing_claims", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a token that omits a required claim";
+
+    // The signer sets no issuer, so the token carries no iss claim, while the
+    // verifier requires one.
+    auto signer = jwt_authenticator::create_hs256(test_secret, "", test_audience);
+    auto verifier = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
+
+    auto token = signer.create_token(claims_expiring_in_an_hour());
+    REQUIRE(token.has_value());
+
+    auto validated = verifier.validate(*token);
+    REQUIRE_FALSE(validated.has_value());
+    CHECK(validated.error() == jwt_error::missing_claims);
+}
+
+TEST_CASE("jwt_authenticator_allow_expired_still_checks_the_audience", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the leeway's audience check";
+
+    auto signer = jwt_authenticator::create_hs256(test_secret, test_issuer, "another-audience");
+    auto verifier = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
+
+    jwt_claims claims;
+    claims.subject = "user123";
+    claims.issued_at = std::chrono::system_clock::now() - std::chrono::hours(2);
+    claims.expires_at = std::chrono::system_clock::now() - std::chrono::hours(1);
+
+    auto token = signer.create_token(claims);
+    REQUIRE(token.has_value());
+
+    const auto allowed = verifier.validate_allow_expired(*token);
+    REQUIRE_FALSE(allowed.has_value());
+    CHECK(allowed.error() == jwt_error::invalid_audience);
+}

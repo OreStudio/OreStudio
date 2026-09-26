@@ -218,7 +218,9 @@ TEST_CASE("report_instance_convert_empty_vector_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
-    CHECK(!table.empty()); // Table should still have headers
+    // No rows, and the headers must survive anyway: the column title is
+    // the literal the rendered table has to carry.
+    CHECK(table.find("Name") != std::string::npos);
 }
 
 TEST_CASE("report_instance_table_with_faker_data", tags) {

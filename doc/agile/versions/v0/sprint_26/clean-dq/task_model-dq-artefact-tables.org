@@ -106,6 +106,28 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part seven: a decision request for the remaining nine
+
+Run on 2026-09-26. Parts five and six established that the remaining nine protocols do not need one more shape repeated. This part states, per protocol, exactly why it cannot be modelled with today's vocabulary, so the decision that unblocks each is a decision and not more discovery.
+
+| Protocol | Backing object | Why today's vocabulary cannot reproduce it | What unblocks it |
+|----------+----------------+--------------------------------------------+-------------------|
+| =badge_protocol.hpp= | the =badge_mapping= junction | Nothing: its model deliberately disables protocol, handler and service, because a hand-written read-only handler serves the badge lookup | **Accept as a recorded exception**; it is hand-written by design, and the model says so |
+| =lei_entity_summary_protocol.hpp= | **no table**; computed from =dq_lei_entities_artefact= through =dq_lei_entities_query_functions_create.sql= | A model generates a table, and there is none | A read-only projection archetype, or an exception |
+| =report_definition_template_protocol.hpp= | **no table**; served from =dq_report_definitions_artefact= | Same | Same |
+| =fsm_protocol.hpp= | =fsm_states=, =fsm_transitions= (=fsm_machines= has no C++ layer) | A plain model reproduces the table except three things: the composite natural key =(tenant_id, machine_id, name)=, the reference index on =machine_id=, and =check (is_initial in (0, 1))= / =check (is_terminal in (0, 1))= | Vocabulary for **composite natural keys**, **reference indexes** and **integer check constraints**; plus a decision on whether to widen the API by generating a machine surface |
+| =dataset_protocol.hpp= | =dq_datasets_tbl= | Nothing structural. It is wide — 25-plus columns of text, nullable text, uuid, nullable uuid, integer and timestamp — but every column is a type the models already express | **Authoring only.** This is the one remaining entity that needs no decision, so it should be the next thing done |
+| =dataset_dependency_protocol.hpp= | =dq_dataset_dependencies_tbl= | It is a junction, and the junction archetype cannot reproduce it: the template emits =version integer not null= unconditionally and keys on =(tenant_id, left, right, valid_from, valid_to)=, while the table has **no =version= column** and keys on =(tenant_id, dataset_code, dependency_code, valid_from)= — without =valid_to=. It also carries =check (dataset_code <> dependency_code)= | A decision: change the table to the archetype's shape, extend the archetype, or record an exception |
+| =publication_protocol.hpp= | =dq_dataset_publications_tbl= | A run log: =default gen_random_uuid()=, =bigint= counters, =default current_timestamp=, and a **non-bitemporal primary key on =id= alone**, with eight check constraints | Vocabulary for function defaults, bigints, standalone timestamps and non-bitemporal keys, or an exception |
+| =publish_bundle_protocol.hpp= | =dq_bundle_publications_tbl= | The same run-log shape as publication | Same |
+| =publish_from_dq_protocol.hpp= | **no table**, and no subjects of its own: the registrar subscribes its handler to literal strings | An operation, not a row shape | An operation-model decision, or an exception |
+
+**What this changes about the plan.** Seven of the nine need a decision rather than work, and three of those seven are arguably exceptions the standard should record rather than migrations it should force: the badge projection is hand-written *by design*, and the two summaries have no table to model. Of the rest, only =dataset= is pure authoring.
+
+**So the honest next step is one entity, not a sweep.** =dataset= first, because it needs nothing new; then a decision on the vocabulary list above — composite keys, reference indexes, integer checks, function defaults, non-bitemporal keys — which is a codegen feature in its own right and should be its own story rather than a side effect of this task. The three likely exceptions should be put to the standard as recorded reasons, which the acceptance criteria already allow ("generated from a model, or recorded with the reason it is not").
+
+**Evidence.** No source change: the working tree is clean and =check_component_drift.py --component dq= reports no drift on =main=. The table shapes quoted above were read from the committed create scripts, and the junction template's unconditional =version= column from =sql_schema_junction_create.mustache:20=.
+
 * Step 8 part six: the FSM vocabulary is narrower than part five said
 
 Run on 2026-09-26. Part five claimed the FSM tables have "no natural key anywhere". **That was wrong**, and the error was mine: I grepped for =create unique index= and read only the first few lines of the output. The tables do carry a composite natural key.

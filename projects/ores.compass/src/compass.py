@@ -6492,7 +6492,7 @@ def cmd_site(argv):
                    "(build first with 'compass build --direct site')")
     site_stop = sub.add_parser("stop", help="Stop the site-preview systemd unit")
     site_status = sub.add_parser("status", help="Report the site-preview systemd unit's state")
-    for site_p in (site_start, site_stop, site_status):
+    for site_p in (sp, site_start, site_stop, site_status):
         systemctl_bus.add_busctl_argument(site_p)
 
     sp3 = sub.add_parser("page", help="Publish changed pages to the site "
@@ -6533,6 +6533,7 @@ def cmd_site(argv):
         return 1
 
     env = _read_env_map()
+    systemctl_bus.adopt_transport_setting(env, getattr(args, "use_busctl", False))
     port = args.port or _site_port(env)
     build_dir = PROJECT_ROOT / "build" / "output" / "site"
 

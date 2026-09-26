@@ -43,10 +43,9 @@ Usage: imported by the check scripts, never run.
 # an un-regenerated component's whole backlog rides along with any model
 # change to it.
 #
-# synthetic is not listed yet: its regeneration is byte-identical and
-# idempotent and all four of its test suites pass, but five checklist items
-# are open (B06 and V08, the two surveys; M06, no TypeScript twin; P03, the
-# messaging reference is stale; V04, no live fleet). The standard keeps a
-# component out until every item passes or its exceptions are accepted, so add
-# it once they are.
-COMPONENTS_UNDER_TEST = ("iam", "compute-cpp", "ore")
+# synthetic joined in sprint 26: its models, protocol, generation, shell units,
+# SQL and wiring are at the Component Clean Standard, its regeneration is
+# byte-identical and idempotent, the disabled value eventing test is
+# re-enabled, and its component diagrams are authored in the two passes H01
+# requires.
+COMPONENTS_UNDER_TEST = ("iam", "compute-cpp", "ore", "synthetic")

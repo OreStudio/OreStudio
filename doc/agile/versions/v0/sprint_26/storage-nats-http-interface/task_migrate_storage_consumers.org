@@ -114,14 +114,13 @@ to it.
 
 **What is left**
 
-- Three service handlers still build a transfer with no token, so their HTTP calls
-  answer 401: =ores.ore/service/src/messaging/report_package_handler.cpp:81=,
-  =ores.trading/core/include/ores.trading.core/messaging/trade_handler.hpp:365= and
-  =ores.marketdata/core/include/ores.marketdata.core/messaging/market_series_handler.hpp:214=.
-  Each needs the service's bearer threaded in the way the import handler got it:
-  =nats_client::token()= on the service path. Everything else that moves bytes
-  carries one -- the shell's four sites, the compute publisher, and the import
-  handler.
+- The trading and marketdata handlers hold a raw =nats_client= with no token, so
+  their export transfers answer 401. Each service application has to create an
+  outbound =nats_client=, the way =ores.ore= does, and thread it through the
+  registrar to the handler, which then asks it for a token per use. Their base
+  URLs are already right: trading's was passed to the registrar and dropped by the
+  seven lambdas that built handlers without it (fixed), and marketdata's arrives
+  as a parameter. The token is the only thing between them and a stored object.
 - The raw shell surface -- a bucket, a key and a path -- is not built, so the
   consumer verbs remain the only way to reach storage from the shell.
 - Two input-shape findings, neither about storage: an imported ORE tree whose book
@@ -149,6 +148,13 @@ to it.
   service, shell storage and application.
 - =check_component_drift.py --all= reports no drift, and the codegen unit suite is
   706 passed.
+- Every transfer that has been wired carries a bearer: the shell's four sites, the
+  compute publisher, the ore import handler, and the ore report package handler,
+  whose registrar copies the outbound client before the execute handler takes it
+  by value and moves out of it.
+- A second =register_trade_handlers=, unreferenced and without a base URL, was
+  deleted rather than fixed; it is what made an earlier reading of the trading
+  export path point at the wrong line.
 
 **Defects repaired on the way**
 

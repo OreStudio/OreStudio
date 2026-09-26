@@ -26,11 +26,11 @@ ores.fpml passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E3A24286-B923-4DAB-9F18-6555217004BB][Clean ores.fpml to the component clean standard]] |
-| Now          | The component is removed, with every reference outside sprint history. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Rebase, then open the PR.              |
+| Next         | Nothing. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -101,7 +101,7 @@ record each item's result in the table below.
 | H02 | pass | No legacy code remains. The component and every reference to it outside sprint history are gone. The AUTOMOC remnant is inherited, not introduced here, and G05 records it. |
 | H03 | pass | The change deletes code and prose and corrects one sentence. No comment was added. The removed headers carried the standard licence banner only, and the deleted =component_files.cmake= carried one Qt-era comment that left with it. |
 | V01 | pass | =compass build= over the whole tree reached 100% with exit code 0, with =projects/CMakeLists.txt= no longer adding the component. CMake configured clean, and no target linked what was removed. |
-| V02 | pass | The =ores.codegen= suite passes at 522 passed, and the =ores.compass= suite at 215 passed and 1 skipped. Both match the counts the =ores.connections= task recorded on this same trunk, so the removal moved neither. No test covered the component. |
+| V02 | pass | The =ores.codegen= suite passes at 522 passed, and the =ores.compass= suite at 215 passed and 1 skipped, both matching the counts the =ores.connections= task recorded on this same trunk. =ctest= with NATS up passes 68 of 69 suites. The one failure is =ores.synthetic.core.tests=, 2 cases of 66, and it is pre-existing: the shared database already holds business centres, so a create collides with an existing row in =ores_refdata_business_centres_insert_fn()=. The rows date from before this work, and the component removed here has no part in that path. No test covered the component. |
 | V03 | not applicable | No entity and no service, so the database has nothing of this component to recreate. |
 | V04 | not applicable | No generated shell command, so nothing to run against the fleet. |
 | V05 | pass | Every gate run and green apart from the inherited repo-wide finding that G06 records: component drift (=iam=, no drift), model drift (2 known exceptions), protocol twin coverage (20 headers, all twinned), handler permissions (144 codes seeded), populate references, shell recipe inventory, =validate_docs.sh= (apart from the pre-existing =ores.shell.iam= finding) and =compass lint=. |
@@ -189,10 +189,13 @@ ores.trading remain.
 
 Verification. =compass build= reaches 100% with exit code 0, and no target
 linked what was removed. The =ores.codegen= suite passes at 522 and the
-=ores.compass= suite at 215 with 1 skipped. Every codegen gate is green
-apart from the inherited repo-wide CMake source-list drift that G06
-records. That count falls from 147 to 145, exactly the two lists this
-component owned. =validate_docs.sh= reports only the pre-existing
+=ores.compass= suite at 215 with 1 skipped. =ctest= with the fleet's NATS
+server up passes 68 of 69 suites. The one failure is pre-existing and
+belongs to ores.synthetic: the shared database already holds business
+centres, so two publisher cases collide with an existing row. Every codegen
+gate is green apart from the inherited repo-wide CMake source-list drift
+that G06 records. That count falls from 147 to 145, exactly the two lists
+this component owned. =validate_docs.sh= reports only the pre-existing
 =ores.shell.iam= finding, and =compass lint= passes.
 
 No test covered the component, so that part of the change rests on the

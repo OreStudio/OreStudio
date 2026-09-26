@@ -21,11 +21,11 @@ ores.fpml meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The component is removed and the references are swept. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Open the PR, then close the story.     |
+| Next          | Nothing. |
 | Last touched  | 2026-09-26                               |
 
 * Acceptance
@@ -44,7 +44,7 @@ met by no longer applying.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:06E68FC3-941F-4705-B093-559E3188EF69][Bring ores.fpml to the clean standard]] | STARTED | 2026-09-26 | | Work ores.fpml through the Component Clean Standard in order and record each item. |
+| [[id:06E68FC3-941F-4705-B093-559E3188EF69][Bring ores.fpml to the clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Work ores.fpml through the Component Clean Standard in order and record each item. |
 
 * Notes
 
@@ -81,3 +81,19 @@ met by no longer applying.
   =COMPLETE=, so its unchecked ores.fpml line is a historical record.
 - The two inherited codegen findings the task records. Each needs its own
   repo-wide sweep.
+
+* Result
+
+ores.fpml is removed and the story closes. The Component Clean Standard is
+met by subtraction, as it was for ores.connections earlier in this sprint.
+
+The whole tree builds, the codegen suite passes at 522 and the compass
+suite at 215, and every codegen gate is green apart from the inherited
+repo-wide CMake source-list drift the task records. The task carries all
+42 checklist items and the two code commits.
+
+One pre-existing test failure remains and is not this story's. The
+ores.synthetic.core suite fails two cases because the shared database
+already holds business centres, so a create collides with an existing row.
+The rows date from before this work began, and the component removed here
+has no part in that path.

@@ -72,7 +72,7 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
 | 7. Publication template | DONE | The template generated a retired design; deleted with 21 dead files; see Step 7 results |
 | 8. Remaining models | TODO | The FPML family is blocked; the rest is unblocked |
-| 9. Regenerate C++ | IN PROGRESS | Four facets byte-identical; C++ is a per-entity protocol migration, 7 of 14 entities done; see Step 9 parts one and two |
+| 9. Regenerate C++ | IN PROGRESS | Four facets byte-identical; C++ is a per-entity protocol migration, 9 of 14 entities done; see Step 9 parts one to three |
 | 10. Eventing headers | TODO | |
 | 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
 | 12. Divergent tables: declare the projection | DONE | All 11 landed; divergent is 0; see Step 12 results |
@@ -105,6 +105,31 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 - The umbrella headers and the bespoke handlers they carry (=badge_handler=, =badge_service=, =data_organization_handler=, =dimension_handler=) are consumed only by =registrar.cpp=, so they can go. But each carries registrations for entities that are not modelled yet — methodologies, dimensions, datasets, coding schemes, publications — and those have to move before the umbrella can be deleted.
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
+
+* Step 9 part three: the dataset bundles, and a generator defect wider than this task
+
+Run on 2026-09-26. =dataset_bundle= and =dataset_bundle_member= are migrated; nine of fourteen entities are canonical.
+
+**Rewiring the registrar was the point.** =registrar.cpp= registered both entities by hand against type names the migration renames, duplicating the generated registrars it already composes. The hand-written blocks are gone and =register_dataset_bundle_handlers= and =register_dataset_bundle_member_handlers= are composed with the rest.
+
+**A generator defect surfaced, and it is not dq's.** The junction branch of =cpp_service.cpp.mustache= populated its response with =response.{{name_short}}=, while =org_loader= builds the junction protocol's collection member from =entity_plural_short= — which for a junction is the *full* name. The two disagree whenever a model declares a shorter =:name_short:=:
+
+| Model | name | name_short |
+|-------+------+------------|
+| =ores.dq.dataset_bundle_member= | =dataset_bundle_members= | =members= |
+| =ores.dq.badge_mapping= | =badge_mappings= | =mappings= |
+| =ores.refdata.currency_currency_group= | =currency_currency_groups= | =currency_groups= |
+| =ores.refdata.tenor_convention_resolution= | =tenor_convention_resolutions= | =resolutions= |
+
+The result is a compile error rather than a wrong value, which is why the stale committed copies hid it: refdata's own C++ facet carries 479 files of drift, so its services predate the mismatch and still name the full member.
+
+Fixed at source in =ores.cpp.service.service_impl.org= with a regression test that renders a junction whose =:name_short:= differs from its name and asserts the response member is the full name. Reverting the template makes exactly that test fail. The repository's own =name_short= parameter is a different thing and keeps its meaning.
+
+**One hand-written consumer followed**, as P05 requires: =ores.shell/application/src/app/commands/bundles_commands.cpp= called =get_dataset_bundles_request= and now calls =list_dataset_bundles_request=. Its response member was already =bundles= — which is =dataset_bundle='s =name_short= — so nothing else moved.
+
+**The shell-application consumers are now the whole critical path.** Three of them block the remaining five entities: =bundles_commands.cpp= (migrated here), =change_reasons_commands.cpp= and =change_reason_categories_commands.cpp=. Each is a hand-written command that duplicates a unit the facet generates into =projects/ores.shell/dq=, which is compiled by nothing. So the remaining work is: register =ores.shell.dq=, wire it into the shell's CMake, delete the hand-written triples, and migrate the four entities. That is one coherent unit and it is next.
+
+**Verified by build:** =ores.dq.core.tests=, =ores.dq.api.tests=, =ores.dq.service.tests= and =ores.shell.application.lib= all link. Codegen suite 687 passing; validator 0 warnings; =component_files= lists up to date.
 
 * Step 9 part two: six more entities, and the two that must wait
 

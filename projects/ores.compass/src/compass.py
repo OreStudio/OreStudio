@@ -6232,9 +6232,11 @@ BUILD_TARGET_ALIASES = {
     "manual": "deploy_manual",
     "org-roam-db-sync": "org_roam_db_sync",
     "org-ids": "org_ids",
-    # .claude/ is generated, never checked in: settings.json tangles from
-    # doc/llm/claude_code_settings.org; skills deploy from doc/llm/skills.
-    # Recreate the whole directory with: compass build --direct settings skills
+    # .claude/ and .dsh/ are generated, never checked in: settings.json
+    # tangles from doc/llm/claude_code_settings.org, the DSH sandbox rules
+    # from doc/llm/dsh_settings.org, and skills deploy from doc/llm/skills.
+    # Recreate both directories with: compass build --direct settings skills
+    # Narrow the alias to one surface with --claude or --dsh.
     "settings": "deploy_settings",
     "skills": "deploy_skills",
     "help": "deploy_help",
@@ -6249,6 +6251,7 @@ EMACS_BUILD_SCRIPTS = {
     "deploy_help":             "ores-build-help.el",
     "deploy_skills":           "ores-build-skills.el",
     "deploy_settings":         "ores-build-settings.el",
+    "deploy_dsh_settings":     "ores-build-dsh-settings.el",
     "org_roam_db_sync":        "ores-sync-org-roam.el",
     "org_ids":                 "ores-org-ids.el",
     "tangle_shell_scripts":    "ores-build-recipe-scripts.el",
@@ -6257,6 +6260,38 @@ EMACS_BUILD_SCRIPTS = {
 }
 
 _EMACS_LISP_DIR = Path("projects") / "ores.lisp" / "src"
+
+# The `settings` alias deploys one artefact per harness that runs agents in a
+# checkout. Each is generated from a literate document under doc/llm/, and
+# --claude and --dsh narrow the alias to one surface.
+SETTINGS_ALIAS = "settings"
+SETTINGS_SURFACES = {
+    "claude": "deploy_settings",
+    "dsh": "deploy_dsh_settings",
+}
+
+
+def resolve_build_targets(targets, claude=False, dsh=False):
+    """Expand build target aliases, narrowing the settings alias by surface.
+
+    Raises ValueError when a surface flag arrives without the settings alias:
+    ignoring it would print a successful build of something else, and the
+    caller asked for a narrower one.
+    """
+    chosen = [SETTINGS_SURFACES[surface]
+              for surface, wanted in (("claude", claude), ("dsh", dsh))
+              if wanted]
+    if chosen and SETTINGS_ALIAS not in targets:
+        raise ValueError(
+            "--claude and --dsh narrow the 'settings' target; they cannot be "
+            "used with another target")
+    resolved = []
+    for target in targets:
+        if target == SETTINGS_ALIAS:
+            resolved.extend(chosen or list(SETTINGS_SURFACES.values()))
+        else:
+            resolved.append(BUILD_TARGET_ALIASES.get(target, target))
+    return resolved
 
 
 def _direct_build_log_path(target: str) -> Path:
@@ -6966,6 +7001,13 @@ def cmd_build(argv):
                     help="Call emacs scripts directly, bypassing cmake and "
                          "vcpkg. Required for light environments. Supported "
                          f"targets: {', '.join(sorted(EMACS_BUILD_SCRIPTS))}")
+    ap.add_argument("--claude", action="store_true",
+                    help="With the 'settings' target: deploy the Claude Code "
+                         "settings only.")
+    ap.add_argument("--dsh", action="store_true",
+                    help="With the 'settings' target: deploy the DSH sandbox "
+                         "settings only. Neither flag, or both, deploys both "
+                         "surfaces.")
     ap.add_argument("--status", action="store_true",
                     help="Print who currently/last held each build-lock "
                          "slot, plus a tail of its build log, and exit "
@@ -6995,7 +7037,12 @@ def cmd_build(argv):
             print("")
         return 0
 
-    targets = [BUILD_TARGET_ALIASES.get(t, t) for t in args.targets]
+    try:
+        targets = resolve_build_targets(args.targets,
+                                        claude=args.claude, dsh=args.dsh)
+    except ValueError as exc:
+        print(f"❌ {exc}", file=sys.stderr)
+        return 1
 
     if args.direct:
         if not targets:

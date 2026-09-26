@@ -206,7 +206,8 @@ TEST_CASE("report_instance_convert_multiple_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
-    CHECK(!table.empty());
+    // The row's own natural key is the literal the table must show.
+    CHECK(table.find(items.front().name) != std::string::npos);
 }
 
 TEST_CASE("report_instance_convert_empty_vector_to_table", tags) {

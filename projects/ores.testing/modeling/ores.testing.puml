@@ -38,6 +38,7 @@ namespace ores #F2F2F2 {
             -helper_ : database_helper
         }
         class scoped_environment_override {
+            +operator : scoped_environment_override&
             -fake_ : ores::platform::environment::fake_environment_provider
             -previous_ : ores::platform::environment::environment_provider*
             -stripped_ : vector<string>

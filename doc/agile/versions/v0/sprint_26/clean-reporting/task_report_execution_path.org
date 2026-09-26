@@ -265,7 +265,7 @@ After defects 1 to 6 were fixed, one more surfaced and then the FSM moved.
 |---+-------+--------+-------|
 | 7 | ores.reporting | The fixture was owned by an arbitrary business party, so a session scoped to another party could not see the definition it was meant to trigger. The fixture is now owned by the tenant's system party, which every session can see. | Fixed |
 | 8 | ores.reporting | =ores_reporting_resolve_book_ids_for_config_fn= compared =valid_to= against the literal ='infinity'=, while every generated table stores =ores_utility_infinity_timestamp_fn()=, which is =9999-12-31 23:59:59+00=. It therefore resolved no scope for any config, and every report failed with "no books or portfolios in scope". | Fixed |
-| 9 | environment | The trading service performs =export_trades_to_storage=, and it has no HTTP base URL: only =ORES_ORE_SERVICE_HTTP_BASE_URL= is defined, the trading unit passes no =--http-base-url=, and its parser declares the option. The upload therefore cannot connect, so no report can gather trades. | Open, outside this component |
+| 9 | environment | The trading service performs =export_trades_to_storage=, and it has no HTTP base URL: only =ORES_ORE_SERVICE_HTTP_BASE_URL= is defined, the trading unit passes no =--http-base-url=, and its parser declares the option. The upload therefore cannot connect, so no report can gather trades. | Already captured, outside this component: [[id:3F9C2D47-5A18-4E6B-B0C4-8D2F6A1E9B73][Three services default their storage base URL to a port the server does not use]]. ores.trading, ores.marketdata and ores.reporting all default the flag to port 8080 and their units pass no override. |
 
 Observed end to end after defect 8, through the shell:
 

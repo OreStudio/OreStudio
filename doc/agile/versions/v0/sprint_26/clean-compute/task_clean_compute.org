@@ -61,7 +61,7 @@ record each item's result in the table below.
 | B02  | Pass    | =evidence/b02_b03_b04_inventory.txt=: nine models. Six entity, one junction, one module and one component overview. The module and the overview carry no variability. |
 | B03  | Partial | Same file: 258 C++ files outside tests, 189 generated and 69 hand-written. Classification in Notes. |
 | B04  | Pass    | Same file: 40 subjects across ten protocol headers. Eleven raw subject literals in hand-written code, seven of them in the three hand-written protocol headers. |
-| B05  | Pass    | Nothing blocks the work. PR #2138 already edits six compute models for M09, so this branch rebases onto it. No other in-flight branch touches =projects/ores.compute=. |
+| B05  | Pass    | Nothing blocks the work. PR #2138 merged, so the branch rebased onto =origin/main= at =5de59e3fb8= and picked up its M09 chrome removal. No other in-flight branch touches =projects/ores.compute=. |
 | G01  | Pass    | Regeneration is byte-clean and the component builds. =compass build ores.compute.api.lib ores.compute.core.lib ores.compute.service.lib ores.compute.wrapper.lib ores.compute.client.lib= exits 0. =evidence/g01_regeneration_run4.txt=. |
 | G05  | Pass    | Five generator defects, all in =org_loader.py=, fixed at source with eleven cases in =projects/ores.codegen/tests/test_protocol_name_collisions.py=. Details in Notes. |
 | M09  | Partial | The five codegen defects are fixed, and =result= no longer declares the audit column =modified_by= as its key. The presentation drawer remains in all six entity models. |

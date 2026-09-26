@@ -70,7 +70,7 @@ record each item's result in the table below.
 | M06 | PENDING with synthetic registered under the protocol twin gate. | |
 | M07 | There is no =junction= metatype in this component, so this item does not apply. | model survey |
 | M08 | Custom types are bound to their headers and flags are booleans. One flag, =system_tenant_validation=, is not in the variability catalogue; recorded. | leg_c_models.md |
-| M09 | The dead Qt presentation keys remain on seven models. They are removed by in-flight PR #2138, which edits the same files, so this pass does not duplicate the edit. | PR #2138 |
+| M09 | Pass after the rebase. The dead Qt presentation keys were removed from the same seven models by PR #2138, which has merged. This branch rebased onto that trunk with no conflicts and the regenerated tree is unchanged. | PR #2138 (merge ddced912a5); rebase onto bf076c5a51 |
 | M10 | Added =projects/ores.synthetic/modeling/component_overview.org= with =#+component_kind: composite= and =#+parts: api core service=, so codegen generates the root CMakeLists. The composite table in component_architecture.org gained the =modeling= part. | commit 4ea0f82188; regeneration |
 | P01 | The canonical protocol is generated for all nine entities: list, get, get-many, put, put-many, delete, delete-many, versions, version, plus history through the shared history subject. | regenerated =api/include/ores.synthetic.api/messaging/*_protocol.hpp= |
 | P02 | Three raw subject strings remain in hand-written code and are recorded as exceptions: the =synthetic.v1.theme.publish-from-dq= subscription in core's registrar, and the two JetStream filters =synthetic.v1.tick.>= and =synthetic.v1.sandbox.tick.>= in the service application. The first is a hand-written operation subject with no generated constant; the two filters are wildcards over a subject the feed composes at runtime. Everything else references a generated constant. | =grep= for subject literals in projects/ores.synthetic |
@@ -109,15 +109,15 @@ record each item's result in the table below.
   parameter-value entity's shell unit, its recipe and its eventing
   integration test, which the bound profile's physical space enables, plus
   the generated root CMakeLists.
-- PR #2138 (=feature/remove-the-legacy-qt-remnants=) is open and edits the
-  same seven synthetic models. This branch does not touch the dead
-  presentation keys, so the two changes do not collide; rebase after #2138
-  lands.
-- The full tree builds and =check_component_drift.py --all= is green with
-  synthetic registered. What stays open is the live half: the component's
-  ctest suites with the fleet up (V02), the database recreate (V03) and the
-  generated shell commands against the live fleet (V04). The environment
-  has no service units loaded after the machine restart.
+- PR #2138 (=feature/remove-the-legacy-qt-remnants=) has merged. It removed
+  the dead presentation keys from the same seven synthetic models. This
+  branch rebased onto that trunk with no conflicts, and the drift check
+  still reports the regenerated tree unchanged.
+- The full tree built and =check_component_drift.py --all= was green while
+  synthetic was registered. The entry is now held back, because the live
+  half still fails: the component's ctest suites (V02), the database
+  recreate (V03) and the generated shell commands against the live fleet
+  (V04). The fleet is up from this worktree; only the recreate is unrun.
 - The regime error-handling question (61 throw sites in this component)
   belongs to the house-wide capture, not to this pass.
 - One generator defect found by the build is fixed at source: the eventing

@@ -85,7 +85,43 @@ Specific documentation findings, in severity order:
 
 **7. The round trip is now off the exporter.** =xml/roundtrip.{hpp,cpp}= owns the walk and composes the importer and the exporter. The exporter is four pure transforms and no longer includes the importer. The summary separates =unsupported= from =failed= and keeps each failure's path and message. The walk's behaviour is unchanged, so the 17-document fidelity gap it exposes is untouched; it is a mapper defect tracked as capture =67277DBB-5ABD-4C36-934B-E97144E8910B=.
 
-**8. What the component actually is.** =ores.ore.core= is the original component and the one three other components link: =ores.marketdata.core= and =.service= for the market parsers, key registry and the entity repository; =ores.compute.wrapper= for the ORE log parser; =ores.shell.application= for the import planner and the exporter. The api is a thin skin over one entity's generated output. If those dependencies are intended, the material they reach belongs in the shared contract part; if not, they are dependency violations outside this component's tree. No document decides it.
+**8. What the component actually is, and who reaches into it.** =ores.ore.core= is the original component and the one other components link. An include census over =ores.marketdata=, =ores.compute=, =ores.shell= and =ores.web= finds fourteen =ores.ore.core= includes against three =ores.ore.api= ones:
+
+| Reached from outside | Header | Includes |
+|----------------------|--------|----------|
+| market | =market/series_key_registry.hpp= | 3 |
+| market | =market/fx_quote_convention_checker.hpp= | 3 |
+| market | =market/market_data_parser.hpp= | 2 |
+| market | =market/fixing.hpp= | 1 |
+| entity repository | =repository/series_key_shape_repository.hpp= | 2 |
+| xml | =xml/exporter.hpp= | 1 |
+| planner | =planner/import_choices.hpp= | 1 |
+| log | =log/ore_log_parser.hpp= | 1 |
+
+The api carries one generated entity's stack and the two import protocols. The contracts other components actually consume sit in core.
+
+The repo's convention is written down in
+[[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]]: the api
+holds domain types and protocol schemas shared by client and server, the core
+holds the service logic, the handlers and the registrar, and the service is the
+executable. On that convention, thirteen of the fourteen includes are layering
+violations, and the shell's use of the planner and the exporter is the clearest,
+because the shell is a client and clients speak the protocol.
+
+Two things complicate the mechanical fix. The reachable material is *behaviour*
+-- parsers, a key registry, a log reader -- while the api is defined as types and
+protocol schemas, so moving it there trades one violation for another. And
+=ores.ore= is an integration component, not a domain service: ORE's XML
+vocabulary is a shared concern other components have a real reason to borrow,
+which is not true of, say, =ores.iam=.
+
+So there are two candidate resolutions. (a) Move the reachable material into the
+api and widen the api's definition to admit pure transforms. (b) Keep
+=ores.ore.core= as a deliberate shared library and record why, accepting the
+asymmetry with every other component. Option (b) is what the component does
+today; what is missing is the record. Either way the shell's direct use of
+=planner/import_choices.hpp= and =xml/exporter.hpp= should move onto the
+protocol, because that half has no library justification.
 
 * Recommendations
 

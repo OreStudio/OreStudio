@@ -276,6 +276,85 @@ namespace ores #F2F2F2 {
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
 
+' --- The document engine ---
+'
+' Most of the public surface is free functions over plain structs, which the
+' automated pass cannot show: load_data, parse_market_data, parse_fixings,
+' parse_ore_log and roundtrip. Only the mappers, the importer, the exporter,
+' the planner, the scanner and the generated entity stack are classes.
+
+' trade_mapper dispatches one ORE trade to the instrument mapper that owns its
+' asset class. Each instrument mapper carries a forward_* and a reverse_* pair
+' per trade type it handles.
+ores::ore::domain::trade_mapper ..> ores::ore::domain::swap_instrument_mapper : dispatches
+ores::ore::domain::trade_mapper ..> ores::ore::domain::fx_instrument_mapper : dispatches
+ores::ore::domain::trade_mapper ..> ores::ore::domain::credit_instrument_mapper : dispatches
+ores::ore::domain::trade_mapper ..> ores::ore::domain::bond_instrument_mapper : dispatches
+ores::ore::domain::trade_mapper ..> ores::ore::domain::equity_instrument_mapper : dispatches
+ores::ore::domain::trade_mapper ..> ores::ore::domain::commodity_instrument_mapper : dispatches
+ores::ore::domain::trade_mapper ..> ores::ore::domain::scripted_instrument_mapper : dispatches
+ores::ore::domain::trade_mapper ..> ores::ore::domain::composite_instrument_mapper : dispatches
+
+' The importer reads four document kinds; the exporter writes all four. The
+' exporter reaches the instrument mappers as well as the document mappers,
+' because it serialises any trade the importer produced.
+ores::ore::xml::importer --> ores::ore::domain::trade_mapper : uses
+ores::ore::xml::importer --> ores::ore::domain::conventions_mapper : uses
+ores::ore::xml::importer --> ores::ore::domain::currency_mapper : uses
+ores::ore::xml::importer --> ores::ore::domain::calendar_adjustment_mapper : uses
+ores::ore::xml::exporter --> ores::ore::domain::trade_mapper : uses
+ores::ore::xml::exporter --> ores::ore::domain::conventions_mapper : uses
+ores::ore::xml::exporter --> ores::ore::domain::currency_mapper : uses
+ores::ore::xml::exporter --> ores::ore::domain::calendar_adjustment_mapper : uses
+
+' roundtrip is a free function, so it has no class to hang off. It composes
+' the importer and the exporter over one directory and owns neither; it is the
+' only thing in the component that writes to disk.
+note right of "ores::ore::xml::roundtrip_summary"
+    Produced by xml::roundtrip(in, out), a free function that composes
+    the importer and the exporter. It walks a directory, re-exports
+    what it read, and records every document it could not carry. The
+    count is split into unsupported kinds, which the importer does not
+    handle, and failed kinds, whose re-read did not match; each failure
+    keeps its path and its message.
+end note
+
+' --- The import planner ---
+'
+' The planner decides what an import will do before anything is written. It
+' builds the portfolio and book hierarchy from what the scan found, and reads
+' trades through the importer rather than the scanner, so that a file it
+' cannot parse is reported rather than silently skipped.
+ores::ore::planner::ore_import_planner --> ores::ore::hierarchy::ore_hierarchy_builder : uses
+ores::ore::planner::ore_import_planner --> ores::ore::xml::importer : uses
+
+' --- The classifier split ---
+'
+' Both classifiers ask one root-element reader. The scanner used to match the
+' literal strings "<Portfolio>" and "<CurrencyConfig>" in the first 512 bytes,
+' which silently rewrote a curve configuration as an empty conventions
+' document when the root element fell outside that window.
+ores::ore::scanner::ore_directory_scanner ..> ores::ore::xml::document_kind : classifies by
+
+' --- The market facet ---
+
+' The parsers are free functions, so they have no class to hang off:
+' parse_market_data and parse_fixings both take an istream, return
+' market_datum, and report each problem through parse_report. Both resolve
+' every key through the registry, which is built once from the entity rows.
+note right of "ores::ore::market::series_key_registry"
+    Built once at construction from the series key shape rows. Every
+    market data key is decomposed and resolved through it, so an
+    unknown key becomes a parse issue rather than an exception.
+end note
+
+' --- The generated entity stack ---
+
+ores::ore::service::series_key_shape_service o-- ores::ore::repository::series_key_shape_repository : owns
+ores::ore::repository::series_key_shape_repository ..> ores::ore::repository::series_key_shape_mapper : uses
+ores::ore::repository::series_key_shape_mapper --> ores::ore::repository::series_key_shape_entity : maps
+ores::ore::messaging::series_key_shape_handler ..> ores::ore::service::series_key_shape_service : uses
+
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.ore.core.puml"
 ' End:

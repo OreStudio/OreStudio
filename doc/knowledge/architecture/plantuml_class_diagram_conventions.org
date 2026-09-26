@@ -105,6 +105,23 @@ Stereotype goes /after/ the class name: =class foo <<orm>> #99CB99=.
 - Use directional variants (=-up-=, =-down-=, =-left-=, =-right-=)
   to control layout when the default flow is ugly.
 
+** Note targets and fully-qualified names
+
+A =note ... of= line takes a /short/ name or a /double-quoted/ fully-qualified
+one. An unquoted fully-qualified name is a trap: PlantUML reads the first
+segment as the target and draws an empty extra class named after it. The
+diagram still renders and the note still attaches, so the defect is invisible
+unless someone reads the picture.
+
+#+begin_src plantuml
+note right of "ores::ore::xml::roundtrip_summary"  ' correct
+note right of roundtrip_summary                    ' correct, when unambiguous
+note right of ores::ore::xml::roundtrip_summary    ' adds a phantom class "ores"
+#+end_src
+
+Arrow lines are the opposite case: those take the unquoted fully-qualified
+name.
+
 * Implementation-file dependencies
 
 Scan =.cpp= files for /architecturally significant/ patterns:
@@ -202,6 +219,7 @@ libraries.
 | No class-to-namespace arrows | Search for =namespace= in arrow lines.                  |
 | Correct stereotype order     | =class name <<stereo>> #COLOR=.                         |
 | Consistent colours           | Match the styling table above.                          |
+| No phantom note target       | Search =note .* of= for an unquoted =::= name.           |
 | Syntax valid                 | =cmake --build --target generate_<component>_diagram=. |
 
 * See also

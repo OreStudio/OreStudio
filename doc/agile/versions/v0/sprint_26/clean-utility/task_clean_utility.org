@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :clean-utility:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-utility
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-09-26
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ ores.utility passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2464A2A7-8744-4F0C-A2E4-6A1D11DF30EA][Clean ores.utility to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Survey done, work landed.              |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | Verification and review.               |
+| Last touched | 2026-09-26                               |
 
 * Acceptance
 
@@ -57,31 +57,109 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-| B01 | pass | Baseline before any edit. No catalogue row, so the drift gate cannot name the component. `regenerate_cmake_component_files.py --component ores.utility --check` reports 2 stale files, `src/component_files.cmake` and `tests/component_files.cmake`. |
+| B01 | pass | Baseline before any edit, on `feature/clean-utility` at `89cc8d8acd`. Build 0 at 100 percent. `ores.utility.tests` passes at 476 assertions in 141 test cases. `regenerate_cmake_component_files.py --component ores.utility --check` reports 2 stale files, `src/component_files.cmake` and `tests/component_files.cmake`. No catalogue row, so the drift gate cannot name the component. |
 | B02 | pass | 0 entity, junction, operation and message models. |
-| B03 | pass | 65 production C++ files classified, 44 headers and 21 sources, plus 15 files under `tests/`. Six sub-trees have no consumer outside their own test, about 1560 lines. Eleven umbrella headers have no consumer at all. |
+| B03 | pass | 65 production C++ files at the survey, 44 headers and 21 sources, plus 15 files under `tests/`. Six sub-trees had no consumer outside their own test, and eleven umbrella headers had no consumer at all. The component now holds 41 production files, 25 headers and 16 sources, and 14 test files. Every surviving facet reaches at least one file outside the component: `rfl` 857, `generation` 460, `uuid` 432, `domain` 251, `streaming` 80, `faker` 10, `program_options` 6, `convert` 4, `crypto` 3, `compression` 2, `serialization` 1 and `string` 1. |
 | B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. |
 | B05 | pass | This story is the only live capture naming the component. |
-| M01 to M08 | not applicable | No org model. |
-| M09 | not applicable | No model, so no legacy fragment to find in one. |
-| M10 | fail | `component_overview.org` says the component has "no dependencies on any other ORE Studio component", while `src/CMakeLists.txt:104` links `ores.platform.lib` PUBLIC. It lists `include/ores.utility/datetime/`, which does not exist, advertises a geo facet with no code, and omits 8 of its 14 facets including `generation/`, which has 464 external consumers. |
+| M01 to M05, M07 to M09 | not applicable | No org model. |
+| M06 | not applicable, with a recorded exception | `domain/protocol.hpp` is a hand-written wire type: 124 lines, reached by 255 files outside the component, and the codegen templates include it, so it cannot become a per-entity model. The exception and its reason are recorded under /Recorded exceptions/. |
+| M10 | fixed | `component_overview.org` claimed the component had no dependency on any other ORE Studio component while `src/CMakeLists.txt` links `ores.platform.lib` `PUBLIC`. It listed `include/ores.utility/datetime/`, which never existed, advertised a geo facet with no code, named Base32 and TOTP, and omitted 8 of the 14 facets. It is rewritten: the dependency is stated, every facet is listed with its external reach, and `See also` is filled. The `ores.utility.hpp` stub that repeated the same claims is deleted. |
 | P01 to P06 | not applicable | No entity and no protocol. |
-| G01 | not applicable | No model, so nothing regenerates. |
-| G02 | fail | Six dead or test-only sub-trees remain, plus two `Reflector<>` specialisations for `ores::comms::messaging` types, and `ores.comms` does not exist. |
-| G03 | fail | The two `component_files.cmake` files carry no generated marker. |
-| G04 | not applicable | No generated code. |
-| G05 | fail | The `generate_component_puml.py` brace defect reaches this component. A dry run deletes 3 lines. |
-| G06 | fail | The same two files as G03. |
+| G01 | not applicable | No model, so nothing regenerates from one. |
+| G02 | fixed | The six dead or test-only sub-trees are deleted with their tests, the two `Reflector<>` specialisations for the non-existent `ores::comms::messaging` are deleted, and the eleven consumer-less umbrella stubs are deleted. The CMake lists are regenerated. |
+| G03 | fixed | The two `component_files.cmake` files now carry the generated marker. |
+| G04 | not applicable | No generated code beyond the two CMake-stamped version templates, which stay. |
+| G05 | fixed | The generator defect that reached this component dropped any data member with a brace initialiser, so `hierarchy_flat_row::id` and `hierarchy_node::id` vanished from the refresh. It is fixed at source with three regression cases that fail against the unfixed parser. The wrapped-declaration defect the platform pass fixed also reached here and is gone with the same script. |
+| G06 | fixed | The same two files as G03, now current. |
 | W01 to W04 | not applicable | No entity, registrar, handler, populate script or SQL script. |
 | S01, S02 | not applicable | No entity and no shell unit. |
-| H01 | pass, with findings | `validate_docs.py` passes. No leftover artefact, every file and type name snake_case, the CMake lists match the tree, no commented-out code. Complexity is low at 1682 NLOC, 136 functions, average cyclomatic complexity 1.9, with one warning. |
-| H02 | fail | The six sub-trees and the retired reflector specialisations. |
-| H03 | fail | Six end-of-line comments and the `Step 1` to `Step 4` narration in `short_code_generator.cpp`. |
-| V01 | pending | Whole-tree build, measured after the work. |
-| V02 | fail | `gzip` has zero coverage anywhere in the repo and sits on the NATS and storage wire. Three further live files are untested here. About ten assertions are tautological. |
+| H01 | pass | `validate_docs.py` reports only the pre-existing `ores.shell.iam` finding. No leftover artefact, every file and type name snake_case, the CMake lists match the tree, no commented-out code, no stub header left. The rendered diagram was read: every box carries its API, the free-function facets are drawn rather than omitted, and every edge is one the code supports. |
+| H02 | fixed | The six sub-trees, the retired reflector specialisations, the eleven umbrellas, and the `converter` namespace that did not match its `convert` folder. |
+| H03 | fixed | The six end-of-line comments moved above their code, and the `Step 1` to `Step 4` narration left `short_code_generator.cpp`. |
+| V01 | pass | Whole-tree build 0 at 100 percent. |
+| V02 | fixed | `gzip` had zero coverage anywhere in the repo while `ores.nats` and `ores.storage` call it; it now has 7 cases. The live files with no test of their own gained two suites: 13 cases for the generation engine, context, environment and keys, and 4 for the faker datetime helpers. The suite went from 476 assertions in 141 test cases to 614 in 128: three test files holding 38 cases left with the deleted sub-trees, 24 cases arrived, and the tautological determinism case in `tree_builder_tests.cpp` became one that pins the shape for a known seed and one that proves the seed selects the shape. |
 | V03, V04 | not applicable | No entity, no SQL and no generated shell command. |
-| V05 | pending | Every gate, measured after the work. |
+| V05 | pass | Every gate green on the committed head: `regenerate_cmake_component_files.py --component ores.utility --check`, `check_component_drift.py --all`, `validate_docs.py`, `./compass.sh lint`, the codegen suite at 533 tests, and `clang-format --dry-run --Werror` on every changed and added file. |
 | V06 | not applicable | No catalogue row and no models, so the component cannot join `COMPONENTS_UNDER_TEST`. Recorded as the programme gap. |
+
+* Deletions
+
+The six sub-trees were decided as one group rather than file by file,
+because they share one reason and separate decisions would have produced
+six inconsistent answers for it. In every case the only consumer was the
+sub-tree's own test, which is the B06 test-only case.
+
+| Sub-tree | Files | Lines | Why it goes |
+|----------+-------+-------+-------------|
+| `serialization/reader` and `writer` | 4 | 475 | No consumer anywhere. The pair marshals the retired binary envelope, and each half includes only the other. |
+| `concurrency/retry_strategy.hpp` | 1 | 132 | No consumer anywhere. |
+| `streaming/std_optional.hpp` | 1 | 38 | No consumer anywhere. It also adds an overload to `std`, which the standard allows only narrowly. |
+| `faker/totp` | 2 | 72 | Only its own test. TOTP enrolment is recorded as missing work on the account journey, so removing a test-data faker does not block it. |
+| `convert/base32_converter` | 2 | 91 | Its only consumer was `faker/totp`, so it falls with it. |
+| `string/converter` and `conversion_error` | 3 | 139 | Only its own test. The class wrapped `std::stoi` to throw a custom exception. |
+
+Thirteen files and 1526 lines left with the sub-trees and their tests.
+Eleven umbrella stubs left as well: `ores.utility.hpp` and the ten
+facet-level files that held nothing but a `namespace` declaration and a
+`@brief` comment, 346 lines in total, none of them included anywhere.
+`ores.utility.hpp` carried four claims the tree does not support, and two
+facet files advertised functions that do not exist.
+
+One file with the same shape stays. =serialization/error_code.hpp= is
+hand-written wire material, but `ores.iam.core` includes it, so it is
+live and its disposition is recorded below rather than deleted.
+
+* Recorded exceptions
+
+Two hand-written artefacts stay, for different reasons.
+
+- *M06, `domain/protocol.hpp`.* The component's wire envelope is
+  hand-written: 124 lines, reached by 255 files outside the component, and
+  the codegen templates include it, so a per-entity model cannot carry it.
+  The standard's M06 asks for every wire type to be modelled and no
+  hand-written protocol header to remain; this file is the recorded
+  exception, and the template dependency is the reason.
+- *=serialization/error_code.hpp=, misplaced.* It enumerates the retired
+  binary protocol's failures and carries signup and authentication codes
+  that belong to `ores.iam`. Its only remaining consumer is
+  `ores.iam.core/service/signup_service.hpp`, so it cannot be deleted, and
+  it does not belong in a foundation library. Recorded for separate work.
+
+Three further findings are recorded rather than fixed here, because each
+belongs to another component.
+
+- `string/short_code_generator` is counterparty-name logic that belongs to
+  `ores.synthetic` or `ores.refdata`.
+- `program_options/shared_domain_registry` is process-global mutable state
+  in a foundation library.
+- `ores.platform::time::datetime::to_iso8601_utc` emits a space separator,
+  so the name and the platform overview overstate the format. Captured as
+  `doc/agile/product_backlog/inbox/to_iso8601_utc_emits_a_space_separator.org`.
+
+* Work items
+
+Twelve items were planned. Each one is recorded here with its outcome.
+
+| Item | Outcome |
+|------+---------|
+| 1. Decide the six sub-trees as a group | done. All six deleted, with their tests, on the B06 test-only rule. Recorded above. |
+| 2. Delete the `ores::comms::messaging` reflector specialisations | done. Both go, with the forward declarations that existed only for them. `ores.comms` does not exist. |
+| 3. Deal with the eleven umbrella headers | done. All eleven deleted. The facet inventory they duplicated lives on the rewritten component overview. |
+| 4. Rewrite `component_overview.org` | done, including the false dependency claim, the non-existent `datetime/` facet, the geo facet with no code, and all fourteen facets. |
+| 5. Fix the same claims in `ores.utility.hpp` | done by deletion. The file was a stub with no consumer. |
+| 6. Test the live untested files | done. `gzip` had no test anywhere in the repo and now has 7 cases. Two new suites cover the generation facet and the faker datetime helpers. |
+| 7. Strengthen the tautological assertions | done. The TOTP test left with `faker/totp`. `tree_builder_tests.cpp` compared two production runs to each other; that case is replaced by one that pins the tree shape for a known seed and one that proves the seed selects the shape. |
+| 8. Regenerate the diagram through both passes | done. The automated pass was refreshed only after its defect was fixed, and the manual pass fills every method-only box and draws the free-function facets the parser cannot see. The render was read. |
+| 9. Move the end-of-line comments and drop the `Step` narration | done. Six comments moved above their code, and the `Step 1` to `Step 4` comments are gone from `short_code_generator.cpp`. |
+| 10. Reconcile the `converter` namespace with its folder | done. The namespace is now `ores::utility::convert`, matching the facet folder, and the four call sites outside the component are updated. |
+| 11. Record the `domain/protocol.hpp` M06 exception | done, above. |
+| 12. Record the misplaced concerns | done, above. Three findings, one of them captured in the backlog. |
+
+One defect surfaced during the work and is recorded on the Review table: a
+third `generate_component_puml.py` defect dropped any data member with a
+brace initialiser, which the utility refresh exposed. It is fixed at source
+with a regression test.
 
 * Notes
 
@@ -99,6 +177,11 @@ the component.
   cases.
 - Keep the component. The dead sub-trees are a minority. The foundation
   facets carry the repo.
+
+Re-measured on `feature/clean-utility`, 2026-09-26. The survey's scale and
+per-facet figures were taken before any edit and against the pre-deletion
+header set. Where they differ from the Plan table, the Plan table is the
+figure that describes the tree now.
 
 The six sub-trees, with their external callers.
 
@@ -168,6 +251,30 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The refreshed utility diagram lost the `id` member of `hierarchy_flat_row` and `hierarchy_node`, which the source declares as `boost::uuids::uuid id{};` | build/scripts/generate_component_puml.py | fixed | Found by reading the refresh rather than trusting it. A third defect in the parser: the field pattern accepted an `= value` initialiser but not a brace initialiser, and the brace bookkeeping consumed the line before the field reader saw it. Both halves are fixed, and three regression cases fail against the unfixed parser. |
+| 2 | `to_iso8601_utc` emits `YYYY-MM-DD HH:MM:SSZ`, so the name and the platform overview overstate the format as ISO 8601, which requires a `T` | projects/ores.platform/src/time/datetime.cpp | recorded, not fixed | Found while writing the faker datetime test: the assertion had to be written with a space. The pair `to_iso8601_utc` and `from_iso8601_utc` is self-consistent, and changing the separator moves the stored and transmitted shape, so it needs a compatibility decision rather than a quiet edit here. Captured in the backlog. |
+| 3 | The generator fix makes seven other components' `.puml` files stale, because their headers carry brace-initialised members | projects/ores.database, ores.diff, ores.nats, ores.orgmode, ores.security, ores.service, ores.testing | recorded, not fixed | The fix has to land with the component that found it. Each of those components owns a clean-up pass, several of them in flight in other worktrees, so the refresh belongs to those passes rather than to this PR. |
 
 * Result
+
+ores.utility meets the standard for the items that apply to a model-free
+component. Twelve work items landed across eight `[utility]` commits.
+
+The component lost 27 files and 1872 lines: six sub-trees whose only
+consumer was their own test, and eleven umbrella stubs that held nothing
+but a namespace declaration. It gained a component overview that describes
+what is actually there, a rendered diagram whose boxes carry their APIs,
+and 24 test cases, of which 7 are the first test `gzip` has had anywhere in
+the repo. Its test suite went from 476 assertions in 141 test cases to 614
+in 128, with the tautological determinism case replaced by two that assert
+something. One generator defect is fixed at its source.
+
+The component keeps its place as the foundation library. Every facet that
+survives reaches at least one file outside the component, and the facet
+with the widest reach, `rfl`, reaches 857 of them.
+
+Three items stay out of scope. The M06 exception for
+`domain/protocol.hpp` is recorded with its reason. Three misplaced
+concerns are recorded for separate work, one of them captured in the
+backlog. Seven other components' diagrams are stale against the fixed
+generator and belong to their own passes.

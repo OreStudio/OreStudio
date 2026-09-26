@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 44FA7541-D3E2-4D46-9D60-8C8517A64980
+:END:
+#+title: to_iso8601_utc emits a space separator, so the name and the platform overview overstate the format
+#+description: to_iso8601_utc formats as YYYY-MM-DD HH:MM:SSZ, with a space, which is not ISO 8601; the platform overview calls it ISO 8601. Either the separator becomes T or the name and the overview stop claiming the standard.
+#+type: capture
+#+level: cross
+#+filetags: :platform:datetime:api_contract:doc:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores.platform::time::datetime::to_iso8601_utc= formats a time point as
+=YYYY-MM-DD HH:MM:SSZ=, with a space between the date and the time. Its
+parser =from_iso8601_utc= reads the same shape, so the pair is
+self-consistent.
+
+The name claims ISO 8601, and ISO 8601 puts a =T= between the date and the
+time. The separator surfaced while testing =ores.utility=: the assertion
+that a =faker::datetime= value round-trips through this formatter had to be
+written with a space, not the =T= the name implies.
+
+=to_db_string= is this same string without the trailing =Z=, so the
+database literal is also the space form. PostgreSQL accepts both.
+
+* Why
+
+Two things are wrong today, and either fix clears both.
+
+- The function name and its documentation promise a standard it does not
+  emit. A caller who parses the value with a conforming ISO 8601 parser
+  gets a failure, and a caller who writes one gets a value the tree cannot
+  read back.
+- The =ores.platform= component overview says time is "stored and
+  transmitted as UTC, in ISO 8601 with a =Z= suffix". That sentence is
+  inherited from the merged platform clean-up and is not true of the
+  separator.
+
+The choice is between renaming the pair and dropping the ISO claim, or
+switching the separator to =T= and keeping it. The second is the standard
+way and is what a conforming reader expects. It changes the stored and
+transmitted shape, so it needs a compatibility decision and a sweep of
+the callers rather than a quiet edit.
+
+* References
+
+- =projects/ores.platform/src/time/datetime.cpp= — =to_iso8601_utc= and
+  =from_iso8601_utc=.
+- =projects/ores.platform/modeling/component_overview.org= — the summary
+  sentence that repeats the claim.
+- =projects/ores.utility/tests/faker_datetime_tests.cpp= — where the
+  separator surfaced.
+
+* See also
+
+- [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] — the UTC-storage and local-display policy this format serves.
+- [[id:DE3200A3-7E68-40DE-B2C8-53FAF985B27D][Bring ores.platform to the clean standard]] — the pass that wrote the overview sentence.

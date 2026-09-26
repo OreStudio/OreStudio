@@ -28,9 +28,9 @@ ores.refdata passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:70CC87FB-BA24-4B22-827F-F4F42C1F5A1B][Clean ores.refdata to the component clean standard]] |
-| Now          | V01 passes; B06 deleted the dead symbols. Rebuilding, then V02. |
+| Now          | V01 still passes after the B06 deletions. The fleet is restarting for V02. |
 | Waiting on   | Nothing. |
-| Next         | Confirm the build after the deletions, then run the tests (V02). |
+| Next         | Collect V02, then work P01-P06, W01-W04, S01/S02 and H01. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance

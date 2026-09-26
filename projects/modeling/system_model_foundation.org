@@ -2,12 +2,12 @@
 :ID: C5F35442-A2C3-415A-80F2-C09CAA0842FF
 :END:
 #+title: System Model: Foundation Layer
-#+description: Component inventory for the Foundation layer: the bedrock utilities, platform abstractions, logging, telemetry, database access, security, and code generation that underpin all other layers.
+#+description: Component inventory for the Foundation layer: the bedrock utilities, platform abstractions, logging, telemetry, database access, security, org-mode parsing, and code generation that underpin all other layers.
 #+type: knowledge
 #+level: cross
 #+filetags: :modeling:architecture:foundation:system_model:
 #+created: 2026-05-28
-#+updated: 2026-05-28
+#+updated: 2026-09-26
 
 This page is part of the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]]. Foundation is the bedrock of the system —
 every component here could in principle be extracted as a standalone library
@@ -128,6 +128,17 @@ Used by ores.iam for credential handling.
 | Sub-component | Role                                    | Dependencies |
 |---------------+-----------------------------------------+--------------|
 | [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]] | Cryptographic primitives and validators | [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]] |
+
+** ores.orgmode
+
+Parses the subset of org-mode this project's docs use — frontmatter keywords,
+property drawers, headings, paragraphs, lists, tables, and =id:= links — into a
+C++ document structure, and resolves those links against the org-roam SQLite
+index that =compass= builds. A pure C++ library, consumed by =ores.shell=.
+
+| Sub-component | Role                                      | Dependencies |
+|---------------+-------------------------------------------+--------------|
+| [[id:647EA42E-3E11-4898-97BA-8DD2B9949897][ores.orgmode]] | Org-mode parsing and org-roam link resolution | —            |
 
 ** ores.codegen
 

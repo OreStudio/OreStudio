@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-orgmode:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/clean-orgmode
+#+pr: 2142
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
-#+updated: 2026-09-23
-#+environment:
+#+updated: 2026-09-26
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CCFD90A3-A138-4744-8D99-217919BC13E5][Clean ores.orgmode to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -22,44 +22,116 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 ores.orgmode passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] for a component of kind *All*.
 
+The inventory below shows that the component is a hand-written, model-less
+C++ library, so the model, protocol, wiring and shell sections do not
+apply. The item table records that outcome item by item. V06 records the
+one exception, and the story carries the decision.
+
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:CCFD90A3-A138-4744-8D99-217919BC13E5][Clean ores.orgmode to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-26                               |
 
 * Acceptance
 
-- Every checklist item that applies to a component of kind *All* passes, with its evidence recorded on the task.
-- Every item that does not apply is recorded as not applicable, with the reason.
+- Every checklist item that applies to a component of kind *All* passes, or is recorded with the reason it does not apply.
+- Every item that cannot pass is recorded as an exception with its reason.
 - Every generator defect found is fixed at its source, with a regression test.
-- ores.orgmode is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
+- No consumer is left broken. The whole tree builds with the component.
+
+The original acceptance asked that ores.orgmode join
+=COMPONENTS_UNDER_TEST=. That cannot be met and is superseded, because
+ores.orgmode is not a codegen component. V06 records the reason.
 
 * Plan
 
-Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order, one entity at a time, and
-record each item's result in the table below.
-
-1. Baseline and inventory (B01 to B05). Record the baseline before any
-   edit.
-2. Models (M01 to M10).
-3. Protocol (P01 to P06).
-4. Generation (G01 to G06).
-5. Wiring and data (W01 to W04).
-6. Shell (S01, S02).
-7. Structure and hygiene (H01 to H03).
-8. Verification (V01 to V06), ending with the registry entry.
+Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order and record each
+item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | pass | Baseline taken before any edit. =regenerate_cmake_component_files.py --component ores.orgmode --check= reports 2 stale files: =src/component_files.cmake= and =tests/component_files.cmake=, each differing only by the generated-file marker. =check_component_drift.py --component orgmode --dry-run= answers =Unknown component: 'orgmode'=, and =--all= passes for =iam=, because orgmode is absent from =component_catalogue.org=. =check_model_drift.py= reports no drift, with the 2 known exceptions in =compute= and =reporting=. |
+| B02 | pass | Every model file classified by metatype. =projects/ores.orgmode/modeling/= holds =component_overview.org= (=#+type: ores.codegen.component=, metatype component, carries no variability), =ores.orgmode.puml= and =ores.orgmode.png=. 0 entity, 0 junction, 0 operation, 0 message, 0 field-group and 0 module models. |
+| B03 | pass | All 14 non-test C++ files classified. 11 headers and 3 translation units: 7 domain structs plus the paragraph join function (=domain/=), the parser (=parse=, =parse_file=), the resolver, the export macro header and the umbrella header. Every one is hand-written infrastructure. None matches a codegen archetype's output, and none is dead. The =CMakeLists.txt= and =component_files.cmake= files are build files, not C++. |
+| B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. |
+| B05 | pass | Captures and in-flight branches read. Two live captures under =doc/agile/product_backlog/next/= name the component. =fix_component_doc_drift.org= lists it in an affected-components snapshot, which is stale for orgmode because =validate_docs.sh= now passes for it. =compass_add_component_wrong_type_stamp.org= was found while scaffolding orgmode and concerns the scaffold template, not this component. Neither collides with this task. No in-flight branch touches the component: the fleet's =clean-*= branches belong to other components. |
+| M01 | not applicable | No org entity model, so no format to migrate and no =lookup_entity= to move. |
+| M02 | not applicable | No entity model, so no variability profile to bind. |
+| M03 | not applicable | No model states a property, so none can repeat its profile. |
+| M04 | not applicable | No model feature to place in a namespace. |
+| M05 | not applicable | No entity, so no table to describe. |
+| M06 | not applicable | The component exchanges no wire type and has no hand-written protocol header. |
+| M07 | not applicable | No junction. |
+| M08 | not applicable | No org-model custom-type binding. |
+| M09 | pass | The only model is the component overview, and it carries no legacy fragment: no Qt or Wt drawer or property, no retired message type, no retired feature and no dead history property. A grep of =modeling/= for the retired keywords returns nothing. |
+| M10 | pass | The overview declares the component, its inputs, outputs, entry points and dependencies, and links its story and the component architecture. =validate_docs.sh= passes for ores.orgmode. Its =#+filetags:= was empty; it now reads =:orgmode:foundation:component:=, matching the sibling overviews. |
+| P01 | not applicable | No entity and no protocol. |
+| P02 | not applicable | No subject is owned, and no raw subject literal exists in the component. |
+| P03 | not applicable | No registrar and no declared message. |
+| P04 | not applicable | No operation model and no hand-written protocol header. |
+| P05 | not applicable | No protocol change reaches a consumer. |
+| P06 | not applicable | No event cache. |
+| G01 | not applicable | orgmode is not in =component_catalogue.org=, so it has no codegen model to regenerate. The consequence is recorded under V06. |
+| G02 | pass | No hand-written file the generation supersedes remains. The two =component_files.cmake= files are the generation's own output, and no hand-written protocol umbrella exists. |
+| G03 | pass | The two generated list files carry the =AUTO-GENERATED FILE= marker and name their template. No hand-written file carries it. |
+| G04 | not applicable | No generated code to review against the component's best hand-written code. |
+| G05 | pass | No generator defect was found. The codegen has no model-less flat component profile; that is new capability, not a defect, and V06 records its consequence. |
+| G06 | pass | =regenerate_cmake_component_files.py --component ores.orgmode --check= reports =All component_files.cmake up to date=. The repo-wide =--all --check= still reports inherited stale lists in other components, which belong to their own stories. |
+| W01 | not applicable | No registrar family, so no composition point. |
+| W02 | not applicable | No handler checks a permission. |
+| W03 | not applicable | No populate script names the component. |
+| W04 | not applicable | The component owns no SQL script. |
+| S01 | not applicable | No entity or junction, so no shell command unit. |
+| S02 | not applicable | No command, so no recipe and no destructive flag. |
+| H01 | pass | The Component Architecture Audit ran and its record is this task. Shape: a simple component, matching the signed-off folder catalogue (=CMakeLists.txt=, =include/=, =src/=, =tests/=, =modeling/=); the facet dirs =domain=, =indexing= and =parser= match the pattern the other hand-written libraries use. No leftover artefact (no =*stub*=, =*.orig=, =*.rej=, =__pycache__=), no platform-specific code (=_WIN32=, =<unistd.h>=, =<sys/...>= all absent), tests present and green, names snake_case and matching their types. Two findings were fixed: the diagram was stale, and the component appeared on no System Model layer page. |
+| H02 | pass | No legacy code remains: no dead code, no commented-out code, and no hand-written duplicate of a generated artefact. The component's own sources and models carry no Qt or Wt fragment; the diagram's stale prose was the only surviving scaffold artefact, and H01 removes it. One inherited artefact is out of scope: the regenerated =src/component_files.cmake= carries the shared template's =# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.= comment, present in 79 =component_files.cmake= files repo-wide and sourced from =cmake_component_files_src.mustache=. Removing it is a codegen template change with a regression test, not a component fix, and the story records it as out of scope. |
+| H03 | pass | Comments reviewed against the project comment rules. The Doxygen blocks and the non-obvious why-notes (the elisp quoting, the case-sensitivity choice, the best-effort type lookup) are kept; there is no commented-out code and no edit narration. |
+| V01 | pass | =compass build= over the whole tree reached 100% with exit code 0. |
+| V02 | pass | =compass build test_ores.orgmode.tests= passes: 62 assertions in 20 test cases, three resolver error-path cases having been added after the first coverage measurement. The =ores.codegen= suite passes at 530, and the =ores.compass= suite at 230 passed and 1 skipped, both re-measured after the rebase. Coverage of the component's own sources, measured with an instrumented =clang= build (=WITH_PROFILING=On=) and =llvm-cov gcov=: =heading.cpp= 100% of 19 lines, =parser.cpp= 95.9% of 195, =resolver.cpp= 96.5% of 57, so 261 of 271 lines overall. The uncovered lines are the two defaulted move operations, seven =gcov= artifacts on the static regex accessors' closing braces, and the defensive empty guard in =normalise_table=, which the caller's =!pending_table.empty()= check makes unreachable. No test covers the diagram, the two generated list files or the two doc edits; the renderer's exit code, the check script and =validate_docs.sh= are their evidence. |
+| V03 | not applicable | No entity and no service, so the database holds nothing of this component. |
+| V04 | not applicable | No generated shell command, so nothing to run against the fleet. |
+| V05 | pass | Every gate run and green: component drift (=iam=), model drift (2 known exceptions), protocol twin coverage, handler permissions, populate references, shell recipe inventory, =regenerate_cmake_component_files.py --component ores.orgmode=, =validate_docs.sh= (apart from the pre-existing =ores.shell.iam= finding), =compass lint=, and the six checks of =.github/workflows/doc-lint.yml=. The one inherited repo-wide finding is the CMake source-list drift that G06 records. |
+| V06 | exception | ores.orgmode stays out of =COMPONENTS_UNDER_TEST=. It is not a codegen component: it has no entity, junction or operation model, and it is absent from =component_catalogue.org=. Enrolling it cannot be done safely, and two dry runs prove it. Add a catalogue row mapping =orgmode= to =projects/ores.orgmode/modeling=, then run =check_component_drift.py --component orgmode --dry-run=. In the component's declared shape the codegen treats an undeclared component kind as =flat= (=org_loader.py=), and the flat archetypes match: the run reports 9 files would change and 3 would be created, among them =include/ores.orgmode/domain/stub.hpp=, =src/domain/stub.cpp= and =tests/stub_tests.cpp=, whose template text is "STUB code to be removed". Declaring =#+component_kind: composite= avoids the stub archetypes, but the run then reports 1 file would change: the root =CMakeLists.txt= is regenerated from =cmake_composite_root.mustache=, which adds parts a simple component does not have, and the two =component_files.cmake= lists stop generating because their archetypes exclude =composite=. Neither kind fits, so the registry entry is superseded and recorded here with its reason. The gate the entry exists to feed still passes: =check_component_drift.py --all= is green for the current list. |
 
 * Notes
+
+- Inventory, 2026-09-26. 0 entity, junction or operation models. 14 C++
+  files outside tests, 0 of them generated (0%). 0 messaging headers, 0 of
+  them hand-written.
+- Consumer census. =ores.shell= consumes the library:
+  =orgmode_commands.cpp= includes =parser.hpp= and =resolver.hpp= and
+  =ores.shell/application/src/CMakeLists.txt= links =ores.orgmode.lib=. No
+  other component references it. The library links only Boost and sqlite3.
+- Complexity measure, from =lizard= over =include/= and =src/=: 452 NLOC,
+  27 functions, average cyclomatic complexity 3.1. The top file is
+  =src/parser/parser.cpp=, whose =parse()= is the single warning at CCN 21
+  over 90 NLOC. There is no generated source to skew the totals.
+- The codegen's flat profile has never been used: no
+  =component_overview.org= in the tree declares =#+component_kind: flat=.
+  No component tree holds a generated stub file; the only occurrences of the
+  stub template's text are the two =*.mustache= templates and their two
+  archetype =.org= sources.
+- Coverage, measured on 2026-09-26: 261 of the component's 271 executable
+  lines in =include/= and =src/= are hit by its tests. The three uncovered
+  groups are the defaulted move operations (not worth pinning), seven =gcov=
+  artifacts on the static regex accessors, and =normalise_table='s empty
+  guard, which its only caller makes unreachable. The measurement is an
+  instrumented =clang= build with =llvm-cov gcov=; the repo's own coverage
+  runs nightly through =CTest.cmake= and submits to CDash. The first
+  measurement exposed three untested resolver error paths, now covered.
+- The refreshed diagram is captured with
+  =build/scripts/generate_component_puml.py --project ores.orgmode= and then
+  cleaned up by hand. PlantUML resolves a relationship only when it sits in
+  the same namespace block as its classes, so the hand-authored parser
+  functions, compositions and resolver note live in the generated section,
+  above the sentinel. A future capture run regenerates that section and the
+  cleanup is redone.
 
 * Test Scenarios
 
@@ -67,6 +139,10 @@ Manual QA scenarios (scaffolded via =compass add test_scenario=)
 that verify this task. Link
 new ones here as they're created; the scenario doc itself links back
 via its "Verifies task" field.
+
+No scenario applies. The change touches a diagram, two generated build
+lists and two documents, and no user reaches the component. The build,
+the component suite and the gates are the evidence.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -76,12 +152,66 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2142][#2142]] | [orgmode] Bring the component to the clean standard |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The Notes claim "no committed file carries the stub template's text" is literally false; the record itself quotes it | task_clean_orgmode.org | fixed | Real. The sentence now says no component tree holds a generated stub file, and names the four files that do carry the text. |
+| 2 | V06's "adding a catalogue row makes the codegen scaffold a flat component" is contingent, not structural: =flat= is the default for an undeclared kind at =org_loader.py=, and =composite= would not match the stub archetypes | task_clean_orgmode.org | fixed | Real, and the fix is a second experiment. A row plus =#+component_kind: composite= reports 1 file would change: the root =CMakeLists.txt= regenerated from =cmake_composite_root.mustache=, which adds parts a simple component does not have, and the file lists stop generating. V06 now records both dry runs. |
+| 3 | H02's "no Qt or Wt fragment" overlooks the inherited =AUTOMOC= / =Q_OBJECT= comment in the regenerated =src/component_files.cmake= | task_clean_orgmode.org, story.org | fixed, scoped | Real. The comment is in 79 =component_files.cmake= files and comes from =cmake_component_files_src.mustache=, so removing it is a codegen template change with a regression test. H02 now scopes the claim to the component's own sources and models, and the story records the template comment as out of scope. |
+| 4 | The diagram omits =join_paragraph_lines=, an exported function the headers declare | ores.orgmode.puml | fixed | Real. The diagram already lists the other two free functions, so the omission was inconsistent. The function is added and the image re-rendered. |
+| 5 | The hand-authored relationship arrows and resolver note sit above the sentinel, so the next capture run drops them, and the warning lives only in the historical record | ores.orgmode.puml | fixed | Real footgun. =generate_component_puml.py= replaces everything above the sentinel with class boxes only, so the warning now sits below the sentinel, where a capture run preserves it: it names what is lost and tells the next reader to re-add it. The image is byte-identical, since the added lines are comments. |
+| 6 | Table cells in the two status tables are not re-aligned to the original column widths | story.org, task_clean_orgmode.org | dismissed | Cosmetic. Org reflows table alignment on the next edit, =compass lint= passes, and the existing tables in this sprint are unaligned. The churn would not change what a reader sees. |
+| 7 | After the rebase onto trunk the record's suite counts are stale: it says codegen 522 and compass 215, while the rebased tree gives 530 and 230 | task_clean_orgmode.org | fixed | Real. Trunk grew between the old and new base (PRs #2146, #2148, #2150, #2154), so the counts were right when measured and wrong as merged. Both rows now carry the re-measured numbers. |
 
 * Result
+
+ores.orgmode is brought to the Component Clean Standard short of the
+registry entry, which the standard's own exception rule covers.
+
+The component is a hand-written simple library, not a codegen component,
+so the model, protocol, wiring and shell sections do not apply. Each item
+that does not apply is recorded with its reason. The work that did apply:
+the two generated CMake source lists regained their generated marker, the
+component diagram was refreshed from the headers and re-rendered, the
+Foundation layer page gained the component, and the component overview
+gained its filetags.
+
+Verification. The whole tree builds with =compass build=, exit 0. The
+=ores.orgmode= suite passes 62 assertions in 20 test cases, the
+=ores.codegen= suite 530, and the =ores.compass= suite 230 with 1 skipped.
+Coverage of the component's own sources, measured with an instrumented
+build, is 261 of 271 lines. Every codegen gate passes, apart from the
+inherited repo-wide CMake source-list drift that G06 records.
+
+The one exception is V06. ores.orgmode does not join
+=COMPONENTS_UNDER_TEST= because it is not a codegen component. Neither
+available component kind fits it: the default =flat= scaffolds the stub
+trio, and =composite= rewrites the root =CMakeLists.txt= and stops the file
+lists generating. The proof is the two dry runs recorded in the table, which
+a reviewer can rerun.
+
+Verification rounds found defects, and every one is fixed. An independent
+verifier reproduced the V06 dry run, the cmake check, the lizard totals, the
+three test-suite results and the consumer census, and confirmed the rendered
+image matches its source byte for byte. It then failed four statements in
+this record: the refuted Notes sentence, the contingent V06 framing, the
+unscoped H02 Qt claim and the missing =join_paragraph_lines= in the diagram.
+Each is corrected above after I reproduced it.
+
+A Claude review of PR #2142 re-checked the build lists against the files on
+disk, the V06 catalogue state, the diagram fields and the Foundation layer
+entry, and found no blocking issue. It raised one real footgun, that a
+capture run drops the hand-authored arrows and note above the sentinel, so
+the warning now sits below the sentinel where a capture run preserves it. It
+raised one cosmetic table-alignment nit, dismissed above with its reason.
+
+A second independent verification ran on the rebased head and returned
+PASS+NOTES. It reproduced the test counts, the diagram hash and the V06 dry
+run, and confirmed the three new resolver cases are behaviour tests that fail
+if the resolver misbehaves. Its one defect was that the rebase had made the
+recorded suite counts stale, corrected above. It could not reproduce the
+coverage line counts without a full instrumented rebuild, so it recorded that
+claim as unverified rather than disputed.

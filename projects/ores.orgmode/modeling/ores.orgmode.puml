@@ -17,45 +17,91 @@
 '
 @startuml
 
-title ores.orgmode Component (planned — currently a codegen stub)
+title ores.orgmode Component
 
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace orgmode #F2F2F2 {
-        namespace domain #FEFECE {
+        namespace domain #F2F2F2 {
             class document <<struct>> {
-                +keywords : std::vector<keyword>
-                +properties : std::map<std::string, std::string>
-                +headings : std::vector<heading>
+                +keywords : vector<keyword>
+                +file_properties : vector<property>
+                +headings : vector<heading>
             }
             class heading <<struct>> {
                 +level : unsigned int
-                +title : std::string
-                +todo_keyword : std::string
-                +body : std::vector<block>
-                +children : std::vector<heading>
+                +title : string
+                +id : optional<string>
+                +properties : vector<property>
+                +body_lines : vector<string>
+                +bullet_lists : vector<vector<string>>
+                +tables : vector<domain::table>
+                +links : vector<link>
+                +children : vector<heading>
+            }
+            class keyword <<struct>> {
+                +key : string
+                +value : string
             }
             class link <<struct>> {
-                +target_id : std::string
-                +text : std::string
+                +target_id : string
+                +text : string
             }
-            document o-- heading
-            heading o-- link
+            class property <<struct>> {
+                +key : string
+                +value : string
+            }
+            class resolved_target <<struct>> {
+                +id : string
+                +path : string
+                +title : string
+                +type : string
+            }
+            class table <<struct>> {
+                +headers : vector<string>
+                +rows : vector<vector<string>>
+            }
+            class join_paragraph_lines <<function>> {
+                +join_paragraph_lines(lines : const vector<string>&) : string
+            }
+            document *-- "0..*" heading
+            document *-- "0..*" keyword
+            document *-- "0..*" property
+            heading *-- "0..*" heading
+            heading *-- "0..*" property
+            heading *-- "0..*" link
+            heading *-- "0..*" table
         }
-        namespace parser #FEFECE {
+        namespace parser #F2F2F2 {
             class parse <<function>> {
-                +parse(path: std::filesystem::path) : domain::document
+                +parse(text : const string&) : domain::document
+                +parse_file(path : const filesystem::path&) : domain::document
             }
-            parse ..> domain::document : produces
+            parse ..> ores::orgmode::domain::document : produces
         }
-        namespace indexing #FEFECE {
-            class resolver <<class>> {
-                +resolve(link: domain::link) : resolved_target
+        namespace indexing #F2F2F2 {
+            class resolver {
+                -db_ : unique_ptr<sqlite3, handle_deleter>
             }
-            resolver ..> domain::link : consumes
+            note top of resolver
+            Resolves id: links against the org-roam index that compass builds.
+            - resolve(id : const string&) : optional<resolved_target>
+            - resolve(l : const link&) : optional<resolved_target>
+            end note
+            resolver ..> ores::orgmode::parser::parse : uses
+            resolver ..> ores::orgmode::domain::resolved_target : produces
         }
     }
 }
 
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+'
+' A capture run replaces everything above the sentinel with class boxes only.
+' The relationship arrows and the resolver note above it are hand-authored, so
+' re-add them after running generate_component_puml.py.
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.orgmode.puml"
+' End:
 @enduml

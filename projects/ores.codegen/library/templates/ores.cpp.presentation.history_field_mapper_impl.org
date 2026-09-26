@@ -84,7 +84,13 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
 {{/primary_key.is_uuid}}
 {{#natural_keys}}
 {{#is_uuid}}
+{{#render_is_optional_uuid}}
+    fields.push_back({.name = "{{render_label}}",
+                      .value = v.{{column}} ? boost::uuids::to_string(*v.{{column}}) : std::string{}});
+{{/render_is_optional_uuid}}
+{{^render_is_optional_uuid}}
     fields.push_back({.name = "{{render_label}}", .value = boost::uuids::to_string(v.{{column}})});
+{{/render_is_optional_uuid}}
 {{/is_uuid}}
 {{^is_uuid}}
 {{#is_date}}

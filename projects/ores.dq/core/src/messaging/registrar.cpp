@@ -27,7 +27,6 @@
 #include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_dependency_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
-#include "ores.dq.api/messaging/fsm_protocol.hpp"
 #include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
@@ -46,6 +45,8 @@
 #include "ores.dq.core/messaging/change_reason_registrar.hpp"
 #include "ores.dq.core/messaging/coding_scheme_authority_type_registrar.hpp"
 #include "ores.dq.core/messaging/coding_scheme_registrar.hpp"
+#include "ores.dq.core/messaging/fsm_state_registrar.hpp"
+#include "ores.dq.core/messaging/fsm_transition_registrar.hpp"
 #include "ores.dq.core/messaging/code_domain_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/code_domain_registrar.hpp"
 #include "ores.dq.core/messaging/data_domain_history_provider_registrar.hpp"
@@ -57,7 +58,6 @@
 #include "ores.dq.core/messaging/dataset_bundle_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_dependency_handler.hpp"
 #include "ores.dq.core/messaging/dataset_handler.hpp"
-#include "ores.dq.core/messaging/fsm_handler.hpp"
 #include "ores.dq.core/messaging/lei_entity_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/lei_entity_registrar.hpp"
 #include "ores.dq.core/messaging/lei_relationship_history_provider_registrar.hpp"
@@ -104,20 +104,22 @@ registrar::register_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
 
     // =========================================================================
-    // FSM States
+    // FSM states and transitions are on the standard generated stack; see each
+    // entity's own _handler/_registrar pair.
     // =========================================================================
 
-    auto fsm = std::make_shared<fsm_handler>(nats, ctx, verifier);
-
-    subs.push_back(nats.queue_subscribe(
-        get_fsm_states_request::nats_subject, queue_group, [fsm](ores::nats::message msg) {
-            fsm->list(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_fsm_transitions_request::nats_subject, queue_group, [fsm](ores::nats::message msg) {
-            fsm->list_transitions(std::move(msg));
-        }));
+    {
+        auto fsm_state_subs = register_fsm_state_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(fsm_state_subs.begin()),
+                    std::make_move_iterator(fsm_state_subs.end()));
+    }
+    {
+        auto fsm_transition_subs = register_fsm_transition_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(fsm_transition_subs.begin()),
+                    std::make_move_iterator(fsm_transition_subs.end()));
+    }
 
     // =========================================================================
     // Change reason category and change reason are both on the standard

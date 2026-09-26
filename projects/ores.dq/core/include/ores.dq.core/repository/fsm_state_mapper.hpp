@@ -17,10 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_REPOSITORY_FSM_STATE_MAPPER_HPP
 #define ORES_DQ_CORE_REPOSITORY_FSM_STATE_MAPPER_HPP
 
 #include "ores.dq.api/domain/fsm_state.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/fsm_state_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -29,7 +35,7 @@ namespace ores::dq::repository {
 /**
  * @brief Maps fsm_state domain entities to data storage layer and vice-versa.
  */
-class fsm_state_mapper {
+class ORES_DQ_CORE_EXPORT fsm_state_mapper {
 private:
     inline static std::string_view logger_name = "ores.dq.repository.fsm_state_mapper";
 

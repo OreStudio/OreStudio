@@ -208,7 +208,14 @@ domain::{{entity_singular}}
     r.{{column}} = v.{{{group_prefix}}}{{column}};
 {{/is_text}}
 {{#is_uuid}}
+{{#render_is_optional_uuid}}
+    if (v.{{{group_prefix}}}{{column}}) {
+        r.{{column}} = boost::uuids::to_string(*v.{{{group_prefix}}}{{column}});
+    }
+{{/render_is_optional_uuid}}
+{{^render_is_optional_uuid}}
     r.{{column}} = boost::uuids::to_string(v.{{{group_prefix}}}{{column}});
+{{/render_is_optional_uuid}}
 {{/is_uuid}}
 {{#is_int}}
     r.{{column}} = std::to_string(v.{{{group_prefix}}}{{column}});
@@ -237,7 +244,14 @@ domain::{{entity_singular}}
     produce incorrect code if those keys live in the identity sub-struct. }}
 {{#natural_keys}}
 {{#is_uuid}}
+{{#render_is_optional_uuid}}
+    if (v.{{column}}) {
+        r.{{column}} = boost::uuids::to_string(*v.{{column}});
+    }
+{{/render_is_optional_uuid}}
+{{^render_is_optional_uuid}}
     r.{{column}} = boost::uuids::to_string(v.{{column}});
+{{/render_is_optional_uuid}}
 {{/is_uuid}}
 {{#is_date}}
     r.{{column}} = std::format("{:%Y-%m-%d}", v.{{column}});

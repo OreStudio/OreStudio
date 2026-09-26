@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_DOMAIN_FSM_TRANSITION_HPP
 #define ORES_DQ_API_DOMAIN_FSM_TRANSITION_HPP
 
@@ -25,13 +30,20 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::dq::domain {
 
 /**
- * @brief A valid state-to-state transition within a finite state machine.
+ * @brief A transition between two states of a finite state machine.
  *
- * A NULL from_state_id represents an initial booking transition (no prior state).
+ * A transition between two states of a finite state machine, unique within a
+ * machine for a given pair of states.
+ *
+ * from_state_id is nullable, so a transition may start from anywhere rather
+ * than from a named state. Like machine_id and to_state_id it is a plain uuid
+ * column rather than a declared reference, because the table carries no
+ * constraint and adding one would refuse rows the platform accepts today.
  */
 struct fsm_transition final {
     /**
@@ -50,34 +62,32 @@ struct fsm_transition final {
     boost::uuids::uuid id;
 
     /**
-     * @brief UUID of the FSM machine this transition belongs to.
+     * @brief The state machine this transition belongs to; part of the natural key.
      */
     boost::uuids::uuid machine_id;
 
     /**
-     * @brief Source state UUID.
-     *
-     * NULL/absent for initial booking transitions (no prior state required).
+     * @brief The state the transition leaves, when it is named.
      */
     std::optional<boost::uuids::uuid> from_state_id;
 
     /**
-     * @brief Target state UUID.
+     * @brief The state the transition enters; part of the natural key.
      */
     boost::uuids::uuid to_state_id;
 
     /**
-     * @brief Human-readable transition name (e.g. "confirm", "cancel_new").
+     * @brief Name of the transition.
      */
     std::string name;
 
     /**
-     * @brief Optional guard function name for business rule enforcement.
+     * @brief Optional guard the transition is taken behind.
      */
-    std::string guard_function;
+    std::optional<std::string> guard_function;
 
     /**
-     * @brief Username of the person who last modified this record.
+     * @brief Username of the person who last modified this fsm transition.
      */
     std::string modified_by;
 
@@ -88,6 +98,8 @@ struct fsm_transition final {
 
     /**
      * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 
@@ -98,9 +110,37 @@ struct fsm_transition final {
 
     /**
      * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const fsm_transition&, const fsm_transition&) = default;
 };
+
+/**
+ * @brief Dispatch-key identifier for fsm_transition, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const fsm_transition&) {
+    return "ores.dq.fsm_transition";
+}
 
 }
 

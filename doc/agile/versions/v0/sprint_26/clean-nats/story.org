@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-09-26
 #+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,12 +21,13 @@ ores.nats meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-26                               |
+| End           | 2026-09-26                               |
 
 * Acceptance
 
@@ -34,12 +35,13 @@ ores.nats meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 - Every item that does not apply is recorded as not applicable, with the reason.
 - Every generator defect found is fixed at its source, with a regression test.
 - ores.nats is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
+- V06 states why the first half of that criterion cannot hold: the registry admits only model-bearing catalogue entries. The experiment that listed nats anyway is kept as evidence, and =check_component_drift.py --all= passes without the entry.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:D39AC7F1-78A8-49B0-B896-ABAA219C75A4][Bring ores.nats to the clean standard]] | STARTED | 2026-09-26 | | Work ores.nats through the Component Clean Standard in order and record each item. |
+| [[id:D39AC7F1-78A8-49B0-B896-ABAA219C75A4][Bring ores.nats to the clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Work ores.nats through the Component Clean Standard in order and record each item. |
 
 * Notes
 
@@ -57,7 +59,12 @@ ores.nats meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
   recorded finding.
 - *Delete code with no consumer.* B06's census found the whole JetStream
   read and message surface, three domain types, two client verbs and the
-  banner header with no caller in the tree, and they are gone.
+  free =as_string_view= helper with no caller in the tree, and they are
+  gone.
+- *The namespace documentation header is not dead code.* The census listed
+  =ores.nats.hpp= with no consumer, and G08 exempts it by name: its content
+  is an empty namespace, so nothing includes it and nothing should. It is
+  kept, and the stale claims inside it are corrected in place.
 - *Fix a generator before refreshing what it generates.* The diagram
   generator dropped every class whose declaration carries an attribute
   before its export macro, so this component's diagram was missing two

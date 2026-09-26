@@ -82,7 +82,7 @@ record each item's result in the table below.
 | G03 | Pass in part. The component holds 97 C++ files outside tests where the baseline held 53: 56 carry the generated marker and 41 remain hand-written, against a baseline of 0 and 53. Twelve of the original files are now generated, which is the 12 the baseline predicted would change. | File census over =projects/ores.workflow=, marker =AUTO-GENERATED FILE=. |
 | G06 | Pass for this component. All three modules report "All component_files.cmake up to date", each regenerated through the =ores.cmake.component.files= archetype rather than edited by hand. | =regenerate_cmake_component_files.py --component ores.workflow.{api,core,service}=. =--all= still fails on 24 components, verified pre-existing because =ores.reporting.core= is stale on a component this work never touched. |
 | W01 | Finding: the registrar families exist but are not composed. Generation materialised =workflow_instance_registrar.cpp=, =workflow_step_registrar.cpp=, their two history-provider registrars and the service's two event registrars, and the hand-written aggregate =core/src/messaging/registrar.cpp= references none of them. | The aggregate registrar's include list and =register_handlers= body, against the files generation wrote. Detail below. |
-| W02 | Finding: five permission codes are checked and none is seeded, and three legacy codes are seeded that nothing checks. | The handlers, =workflow_instance_handler.hpp= among them; =iam_permissions_populate.sql=. Detail below. |
+| W02 | Fixed, and less severe than first recorded. The catalogue carried three =workflow::instances:*= rows that no handler checks, and none of the five codes the handlers do check. Access was never broken, because =has_permission= expands a component wildcard and =workflow::*= satisfies all five; what was stale was the catalogue an operator grants from. The three dead rows are replaced by the five checked codes. | The handlers; =iam_permissions_populate.sql=; =has_permission= in =ores.service/messaging/handler_helpers.hpp=, lines 204 to 213. Detail below. |
 | W03 | Pass. The populate references resolve. | =check_populate_references.py=, which reports "populate references resolve". |
 | W04 | Pending: the SQL reachability and the service grants need =compass db recreate=, which the same environment gap blocks as V01. | To be recorded with V03. |
 | S01 | Finding, in two parts. Generation wrote a command unit and a test for both entities, covering the canonical verbs, but nothing registers them; and the hand-written =workflow_commands.{hpp,cpp}= they supersede is still present, still compiled, and still wired into the shell's REPL. | The generated units and their tests; =git grep= showing the generated pair referenced nowhere outside its own module while the hand-written pair is named by =repl.cpp=, =bundles_commands=, =provision_commands= and =ore_commands=. Detail below. |
@@ -454,6 +454,31 @@ way, and changing the generated side would break the convention that
 component(s), 160 distinct code(s))", which does not cover =ores.workflow=: the
 component is not in the registry until V06, so this item is where the check
 would catch it and currently cannot.
+
+** Correction to W02's severity
+
+The first reading said five codes were checked and none seeded, which reads as a
+functional gap. It is not one, and the correction matters because it changes the
+fix.
+
+=has_permission= in =ores.service/messaging/handler_helpers.hpp= expands a
+component-level wildcard: a role holding =workflow::*= satisfies
+=workflow::workflow_instances:write=, because the check strips the trailing
+asterisk and matches the prefix. The catalogue already carries =workflow::*=, so
+every handler's check passes for a role that holds it, and access was never
+broken.
+
+What was actually wrong is the catalogue. It listed three codes no handler
+checks -- =workflow::instances:read=, =:write= and =:delete=, the legacy spelling
+from before the entity was renamed -- and listed none of the five the handlers
+do check. A permission absent from the catalogue cannot be granted on its own, so
+the wildcard was the only way to authorise these handlers, which is coarser than
+the catalogue intends.
+
+The fix is a catalogue correction rather than an access fix: the three dead rows
+are replaced by the five checked codes, and =workflow::*= stays. Only the five
+checked codes are seeded, and no read code is invented, because a row no handler
+checks is the same defect in the other direction.
 
 ** S01 the shell units, generated and wired nowhere
 

@@ -32,8 +32,9 @@ the condition that trips this assertion.
 
 The service it is about is gone. The controller binary and
 =projects/ores.controller/= were removed in sprint 24 (PR #1806), which
-the sprint 25 investigation confirmed, and =ores.wt.service= is part of the
-legacy presentation that the sprint 26 pass removes. There is no crash loop
+the sprint 25 investigation confirmed, and =ores.wt.service= itself was
+removed with the =ores.qt= tree in sprint 25, by PR #2106
+(="[build] Remove the ores.qt and ores.wt trees"=). There is no crash loop
 left to root-cause and no service left to re-enable. The hotfix this
 capture leaned on, =enabled = 0= in the controller service-definitions
 SQL, went with the controller.
@@ -46,7 +47,7 @@ reports it, the cause is here.
 * References
 
 - =doc/agile/versions/v0/sprint_25/systemd-resource-management-and-isolation/task_investigate_decommission_controller_tables.org= — the task that confirmed the controller code was already fully gone, and what happened to its tables.
-- =doc/agile/versions/v0/sprint_26/remove_the_legacy_qt_remnants/story.org= — the pass that removes the legacy presentation, of which =ores.wt.service= is part.
+- =doc/agile/versions/v0/sprint_25/retire_qt_and_emit_ui_metadata_to_typescript/task_remove-qt-and-wt.org= — the task that removed the =ores.qt= and =ores.wt= trees, =ores.wt.service= among them.
 
 * See also
 

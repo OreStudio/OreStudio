@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 43B08DB6-37C8-4EF7-B657-41240916DDAF
+:END:
+#+title: The component diagram parser drops three declaration shapes
+#+description: generate_component_puml.py misses a base clause that wraps, a static data member, and a member whose initialiser wraps; fixing it changes 72 of 85 components' committed diagrams.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:diagram:plantuml:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Fix `build/scripts/generate_component_puml.py` so it reads three declaration
+shapes it currently drops, and regenerate every component's committed
+diagram in one pass, because the automated section of all of them comes from
+that script.
+
+* Why
+
+The three shapes, all found while refreshing the `ores.telemetry` diagrams:
+
+- a base clause that wraps onto the next line,
+  `class database_sink_backend :` then `public telemetry_sink_backend {`, so
+  the whole class disappears from the diagram;
+- a `static` data member, which the skip list matches before the member
+  pattern sees it — the protocol messages carry `nats_subject`,
+  `requires_session` and `response_type` exactly this way;
+- a member whose initialiser continues on the next line, so the declaration
+  never reaches its semicolon.
+
+A fix was written and measured before it was withdrawn. `--all --dry-run`
+reports **72 of 85 projects would change**, because every committed `.puml`
+carries an automated section this script owns. A component clean-up must not
+rewrite 72 other components' diagrams, and several of those components belong
+to environments with work in flight, so the fix needs its own story with the
+whole-tree regeneration as its change. The clean standard's G05 asks for the
+fix at the source with a regression test; the component that found it records
+the three defects here and draws them by hand in its manual diagram pass
+until this lands.
+
+* References
+
+- =build/scripts/generate_component_puml.py= — the parser, its `_SKIP_LINE_RE`
+  and the declaration patterns.
+- =projects/ores.codegen/tests/test_plantuml_component_parse_class_attribute.py=
+  — the shape a regression case takes; the nats clean-up fixed the same
+  parser's attribute handling and left its cases there.
+- =projects/ores.telemetry/core/modeling/ores.telemetry.core.puml= — the
+  manual pass that draws the three shapes today.
+
+* See also
+
+-

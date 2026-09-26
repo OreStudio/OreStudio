@@ -199,3 +199,41 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores.telemetry= is at the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component
+Clean Standard]] for a component of kind *Protocol*, the first through it. All
+49 items are recorded: 31 pass and 18 are not applicable, each with its
+reason. The Entity items do not apply because the component models no entity,
+and the Shell items follow from them.
+
+The work came to five things. The component **had no model**: three operation
+models now declare the six subjects it serves and sends, with the payloads
+they carry, and the protocol headers they generate replace the hand-written
+ones. The three protocol headers and the six payload domain headers are
+deleted, and the repository, the mapper, the sink backend, the handler, the
+NATS poller and the component's tests read the generated types, as do
+=ores.compute='s wrapper and =ores.testing='s logging listener in other
+components. The component **had no model of its own**: it gained its root
+modelling directory, a group-index overview and a two-pass diagram, and its
+three part overviews were refreshed. The **dead code is gone**: the file-JSONL
+exporter sub-tree, =log/macros.hpp=, a duplicate database sink helper and an
+unbuilt examples directory. The two NATS sample handlers **answered every
+request with nothing**, and now read the repository the subjects promised. The
+**four diagrams** were refreshed in two passes and read back.
+
+Every gate is green for this component: the drift check reports no drift with
+the component listed in =COMPONENTS_UNDER_TEST=; the model, protocol twin,
+handler permission, populate, recipe and CMake gates pass; and the three
+suites pass at 2175, 70 and 32 assertions with the codegen suite at 594. Two
+failures on main are recorded rather than fixed, because neither is this
+component's and both belong to other environments: =ores.shell.workflow= has
+no overview and no test =main=, and the physical-space inventory check is
+stale on =ores.doc.knowledge.org=.
+
+What stays open is recorded rather than claimed. The distributed-tracing API
+and the four stats reads are kept, each with the capture that names the
+consumer that should reach them. The diagram parser drops a wrapped base
+clause, a =static= data member and a wrapped initialiser, which the manual
+diagram pass draws by hand and a capture now owns, because fixing the parser
+would rewrite 72 components' committed diagrams. Seven of the 23 sources have
+no test, which is the coverage work item.

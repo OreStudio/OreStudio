@@ -2748,14 +2748,17 @@ def declared_key_field(entity: dict[str, Any]) -> str:
     a declaration of the model, made once, and that it is the same key that
     appears in the resource's operations and in the HTTP projection's path
     parameter, so a caller never translates between an address and a request.
-    The one declaration is the presentation drawer's ``key_field``: it is
-    already the field the route's path segment carries, so reading it here is
-    what makes the operation and the path agree.
+    Reading it here is what makes the operation and the path agree.
 
-    Empty when the model declares no key, which is a model with no screen. Its
-    storage key is then the only key it has, and callers address it by that.
+    The declaration is the model's own ``key_field``. It used to sit in the
+    presentation drawer alone; it is read from the model root first, so a model
+    can drop a drawer it no longer needs without losing its key.
+
+    Empty when the model declares no key, which is a model whose rows are
+    addressed by the storage key. Its storage key is then the only key it has.
     """
-    return (entity.get("presentation") or {}).get("key_field") or ""
+    return (entity.get("key_field")
+            or (entity.get("presentation") or {}).get("key_field") or "")
 
 
 def declared_key_column(entity: dict[str, Any]) -> dict[str, Any] | None:

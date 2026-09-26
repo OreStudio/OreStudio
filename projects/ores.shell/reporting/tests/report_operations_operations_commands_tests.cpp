@@ -43,10 +43,8 @@ namespace {
 const std::string_view test_suite("ores.shell.reporting.tests");
 const std::string tags("[commands]");
 
-// One token per positional argument the command takes, in declaration order.
-std::vector<std::string> tokens(const std::size_t count) {
-    return std::vector<std::string>(count, std::string{"sample"});
-}
+// One token per positional argument the command takes, in declaration order,
+// spelled for the type the command parses it with.
 
 }
 
@@ -69,7 +67,13 @@ TEST_CASE("report_operations_operations_process_trigger_report_instance_requires
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_trigger_report_instance(out, session, tokens(2));
+    report_operations_operations_commands::process_trigger_report_instance(
+        out,
+        session,
+        std::vector<std::string>{
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000001",
+        });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -107,7 +111,13 @@ TEST_CASE("report_operations_operations_process_trigger_report_instance_reaches_
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_trigger_report_instance(out, session, tokens(2));
+    report_operations_operations_commands::process_trigger_report_instance(
+        out,
+        session,
+        std::vector<std::string>{
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000001",
+        });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -125,7 +135,11 @@ TEST_CASE("report_operations_operations_process_schedule_report_definitions_requ
 
     command_feedback::reset();
     report_operations_operations_commands::process_schedule_report_definitions(
-        out, session, tokens(1));
+        out,
+        session,
+        std::vector<std::string>{
+            "sample",
+        });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -165,7 +179,11 @@ TEST_CASE("report_operations_operations_process_schedule_report_definitions_reac
 
     command_feedback::reset();
     report_operations_operations_commands::process_schedule_report_definitions(
-        out, session, tokens(1));
+        out,
+        session,
+        std::vector<std::string>{
+            "sample",
+        });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -183,7 +201,11 @@ TEST_CASE("report_operations_operations_process_unschedule_report_definitions_re
 
     command_feedback::reset();
     report_operations_operations_commands::process_unschedule_report_definitions(
-        out, session, tokens(1));
+        out,
+        session,
+        std::vector<std::string>{
+            "sample",
+        });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -224,7 +246,11 @@ TEST_CASE(
 
     command_feedback::reset();
     report_operations_operations_commands::process_unschedule_report_definitions(
-        out, session, tokens(1));
+        out,
+        session,
+        std::vector<std::string>{
+            "sample",
+        });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -240,7 +266,14 @@ TEST_CASE("report_operations_operations_process_gather_trades_requires_a_session
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_gather_trades(out, session, tokens(4));
+    report_operations_operations_commands::process_gather_trades(out,
+                                                                 session,
+                                                                 std::vector<std::string>{
+                                                                     "sample",
+                                                                     "sample",
+                                                                     "sample",
+                                                                     "sample",
+                                                                 });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -276,7 +309,14 @@ TEST_CASE("report_operations_operations_process_gather_trades_reaches_the_transp
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_gather_trades(out, session, tokens(4));
+    report_operations_operations_commands::process_gather_trades(out,
+                                                                 session,
+                                                                 std::vector<std::string>{
+                                                                     "sample",
+                                                                     "sample",
+                                                                     "sample",
+                                                                     "sample",
+                                                                 });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -292,7 +332,14 @@ TEST_CASE("report_operations_operations_process_gather_market_data_requires_a_se
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_gather_market_data(out, session, tokens(4));
+    report_operations_operations_commands::process_gather_market_data(out,
+                                                                      session,
+                                                                      std::vector<std::string>{
+                                                                          "sample",
+                                                                          "sample",
+                                                                          "sample",
+                                                                          "sample",
+                                                                      });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -329,7 +376,14 @@ TEST_CASE("report_operations_operations_process_gather_market_data_reaches_the_t
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_gather_market_data(out, session, tokens(4));
+    report_operations_operations_commands::process_gather_market_data(out,
+                                                                      session,
+                                                                      std::vector<std::string>{
+                                                                          "sample",
+                                                                          "sample",
+                                                                          "sample",
+                                                                          "sample",
+                                                                      });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -345,7 +399,16 @@ TEST_CASE("report_operations_operations_process_assemble_bundle_requires_a_sessi
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_assemble_bundle(out, session, tokens(6));
+    report_operations_operations_commands::process_assemble_bundle(out,
+                                                                   session,
+                                                                   std::vector<std::string>{
+                                                                       "sample",
+                                                                       "sample",
+                                                                       "sample",
+                                                                       "sample",
+                                                                       "sample",
+                                                                       "sample",
+                                                                   });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -381,7 +444,16 @@ TEST_CASE("report_operations_operations_process_assemble_bundle_reaches_the_tran
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_assemble_bundle(out, session, tokens(6));
+    report_operations_operations_commands::process_assemble_bundle(out,
+                                                                   session,
+                                                                   std::vector<std::string>{
+                                                                       "sample",
+                                                                       "sample",
+                                                                       "sample",
+                                                                       "sample",
+                                                                       "sample",
+                                                                       "sample",
+                                                                   });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -397,7 +469,16 @@ TEST_CASE("report_operations_operations_process_prepare_ore_package_requires_a_s
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_prepare_ore_package(out, session, tokens(6));
+    report_operations_operations_commands::process_prepare_ore_package(out,
+                                                                       session,
+                                                                       std::vector<std::string>{
+                                                                           "sample",
+                                                                           "sample",
+                                                                           "sample",
+                                                                           "sample",
+                                                                           "sample",
+                                                                           "sample",
+                                                                       });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -434,7 +515,16 @@ TEST_CASE("report_operations_operations_process_prepare_ore_package_reaches_the_
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_prepare_ore_package(out, session, tokens(6));
+    report_operations_operations_commands::process_prepare_ore_package(out,
+                                                                       session,
+                                                                       std::vector<std::string>{
+                                                                           "sample",
+                                                                           "sample",
+                                                                           "sample",
+                                                                           "sample",
+                                                                           "sample",
+                                                                           "sample",
+                                                                       });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -450,7 +540,14 @@ TEST_CASE("report_operations_operations_process_submit_compute_requires_a_sessio
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_submit_compute(out, session, tokens(4));
+    report_operations_operations_commands::process_submit_compute(out,
+                                                                  session,
+                                                                  std::vector<std::string>{
+                                                                      "sample",
+                                                                      "sample",
+                                                                      "sample",
+                                                                      "sample",
+                                                                  });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -486,7 +583,14 @@ TEST_CASE("report_operations_operations_process_submit_compute_reaches_the_trans
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_submit_compute(out, session, tokens(4));
+    report_operations_operations_commands::process_submit_compute(out,
+                                                                  session,
+                                                                  std::vector<std::string>{
+                                                                      "sample",
+                                                                      "sample",
+                                                                      "sample",
+                                                                      "sample",
+                                                                  });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -502,7 +606,14 @@ TEST_CASE("report_operations_operations_process_collect_compute_results_requires
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_collect_compute_results(out, session, tokens(4));
+    report_operations_operations_commands::process_collect_compute_results(out,
+                                                                           session,
+                                                                           std::vector<std::string>{
+                                                                               "sample",
+                                                                               "sample",
+                                                                               "sample",
+                                                                               "sample",
+                                                                           });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -540,7 +651,14 @@ TEST_CASE("report_operations_operations_process_collect_compute_results_reaches_
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_collect_compute_results(out, session, tokens(4));
+    report_operations_operations_commands::process_collect_compute_results(out,
+                                                                           session,
+                                                                           std::vector<std::string>{
+                                                                               "sample",
+                                                                               "sample",
+                                                                               "sample",
+                                                                               "sample",
+                                                                           });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -556,7 +674,13 @@ TEST_CASE("report_operations_operations_process_finalise_report_requires_a_sessi
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_finalise_report(out, session, tokens(3));
+    report_operations_operations_commands::process_finalise_report(out,
+                                                                   session,
+                                                                   std::vector<std::string>{
+                                                                       "sample",
+                                                                       "sample",
+                                                                       "sample",
+                                                                   });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -592,7 +716,13 @@ TEST_CASE("report_operations_operations_process_finalise_report_reaches_the_tran
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_finalise_report(out, session, tokens(3));
+    report_operations_operations_commands::process_finalise_report(out,
+                                                                   session,
+                                                                   std::vector<std::string>{
+                                                                       "sample",
+                                                                       "sample",
+                                                                       "sample",
+                                                                   });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -608,7 +738,14 @@ TEST_CASE("report_operations_operations_process_fail_report_requires_a_session",
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_fail_report(out, session, tokens(4));
+    report_operations_operations_commands::process_fail_report(out,
+                                                               session,
+                                                               std::vector<std::string>{
+                                                                   "sample",
+                                                                   "sample",
+                                                                   "sample",
+                                                                   "sample",
+                                                               });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -644,7 +781,14 @@ TEST_CASE("report_operations_operations_process_fail_report_reaches_the_transpor
     std::ostringstream out;
 
     command_feedback::reset();
-    report_operations_operations_commands::process_fail_report(out, session, tokens(4));
+    report_operations_operations_commands::process_fail_report(out,
+                                                               session,
+                                                               std::vector<std::string>{
+                                                                   "sample",
+                                                                   "sample",
+                                                                   "sample",
+                                                                   "sample",
+                                                               });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

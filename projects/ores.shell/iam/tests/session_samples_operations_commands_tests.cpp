@@ -44,10 +44,8 @@ namespace {
 const std::string_view test_suite("ores.shell.iam.tests");
 const std::string tags("[commands]");
 
-// One token per positional argument the command takes, in declaration order.
-std::vector<std::string> tokens(const std::size_t count) {
-    return std::vector<std::string>(count, std::string{"sample"});
-}
+// One token per positional argument the command takes, in declaration order,
+// spelled for the type the command parses it with.
 
 }
 
@@ -77,7 +75,11 @@ TEST_CASE("session_samples_operations_process_get_session_samples_requires_a_ses
     std::ostringstream out;
 
     command_feedback::reset();
-    session_samples_operations_commands::process_get_session_samples(out, session, tokens(1));
+    session_samples_operations_commands::process_get_session_samples(out,
+                                                                     session,
+                                                                     std::vector<std::string>{
+                                                                         "sample",
+                                                                     });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -114,7 +116,11 @@ TEST_CASE("session_samples_operations_process_get_session_samples_reaches_the_tr
     std::ostringstream out;
 
     command_feedback::reset();
-    session_samples_operations_commands::process_get_session_samples(out, session, tokens(1));
+    session_samples_operations_commands::process_get_session_samples(out,
+                                                                     session,
+                                                                     std::vector<std::string>{
+                                                                         "sample",
+                                                                     });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

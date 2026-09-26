@@ -44,10 +44,8 @@ namespace {
 const std::string_view test_suite("ores.shell.iam.tests");
 const std::string tags("[commands]");
 
-// One token per positional argument the command takes, in declaration order.
-std::vector<std::string> tokens(const std::size_t count) {
-    return std::vector<std::string>(count, std::string{"sample"});
-}
+// One token per positional argument the command takes, in declaration order,
+// spelled for the type the command parses it with.
 
 }
 
@@ -77,7 +75,8 @@ TEST_CASE("session_operations_operations_process_get_active_sessions_requires_a_
     std::ostringstream out;
 
     command_feedback::reset();
-    session_operations_operations_commands::process_get_active_sessions(out, session, tokens(0));
+    session_operations_operations_commands::process_get_active_sessions(
+        out, session, std::vector<std::string>{});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -95,7 +94,8 @@ TEST_CASE("session_operations_operations_process_get_active_sessions_reaches_the
     std::ostringstream out;
 
     command_feedback::reset();
-    session_operations_operations_commands::process_get_active_sessions(out, session, tokens(0));
+    session_operations_operations_commands::process_get_active_sessions(
+        out, session, std::vector<std::string>{});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

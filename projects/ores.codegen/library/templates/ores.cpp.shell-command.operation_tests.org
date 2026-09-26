@@ -58,10 +58,8 @@ namespace {
 const std::string_view test_suite("ores.shell.{{component}}.tests");
 const std::string tags("[commands]");
 
-// One token per positional argument the command takes, in declaration order.
-std::vector<std::string> tokens(const std::size_t count) {
-    return std::vector<std::string>(count, std::string{"sample"});
-}
+// One token per positional argument the command takes, in declaration order,
+// spelled for the type the command parses it with.
 
 }
 
@@ -97,7 +95,7 @@ TEST_CASE("{{entity_singular}}_operations_process_{{identifier}}_requires_a_sess
 
     command_feedback::reset();
     {{entity_singular}}_operations_commands::process_{{identifier}}(
-        out, session, tokens({{positional_count}}));
+        out, session, std::vector<std::string>{ {{#positionals}}"{{token_literal}}", {{/positionals}}});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -139,7 +137,7 @@ TEST_CASE("{{entity_singular}}_operations_process_{{identifier}}_reaches_the_tra
 
     command_feedback::reset();
     {{entity_singular}}_operations_commands::process_{{identifier}}(
-        out, session, tokens({{positional_count}}));
+        out, session, std::vector<std::string>{ {{#positionals}}"{{token_literal}}", {{/positionals}}});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

@@ -3853,6 +3853,29 @@ def shell_command_name(message_name: str) -> str:
     return "-".join(words)
 
 
+# The one token a generated shell test hands each positional, spelled for the
+# type the command parses it with. Types outside this table fall back to the
+# string spelling, which the generated test's "unfillable" report already
+# treats as the case worth knowing about.
+_SHELL_TOKEN_LITERALS = {
+    "std::string": "sample",
+    "bool": "true",
+    "int": "1",
+    "std::int32_t": "1",
+    "std::int64_t": "1",
+    "std::uint16_t": "1",
+    "std::uint32_t": "1",
+    "std::uint64_t": "1",
+    "boost::uuids::uuid": "00000000-0000-0000-0000-000000000001",
+}
+
+
+def _shell_token_literal(cpp: str, is_list: bool) -> str:
+    if is_list:
+        return "sample"
+    return _SHELL_TOKEN_LITERALS.get(cpp, "sample")
+
+
 def _shell_field(field: dict[str, Any]) -> dict[str, Any]:
     """One declared request field, as the shell unit asks for it.
 
@@ -3873,6 +3896,11 @@ def _shell_field(field: dict[str, Any]) -> dict[str, Any]:
         "is_number": cpp in ("int", "std::uint32_t", "std::uint64_t"),
         "needs_from_token": not is_list and cpp not in ("std::string", "bool"),
         "fillable": is_list or cpp in _SHELL_TOKEN_TYPES,
+        # A value the command can actually parse. A test that hands every
+        # positional the same string only exercises the string fields: a uuid
+        # or a number throws in from_token before the command reaches the
+        # transport, so the test asserts the wrong failure.
+        "token_literal": _shell_token_literal(cpp, is_list),
     }
 
 

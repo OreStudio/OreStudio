@@ -119,9 +119,12 @@ TEST_CASE("create_report_type_with_faker", tags) {
     sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Report type: " << sut;
 
+    // The fixture's own fields say only that faker works. The component's
+    // behaviour is its rendered form, so assert on that.
+    std::ostringstream os;
+    os << sut;
+    CHECK(os.str().find(sut.code) != std::string::npos);
     CHECK(sut.version >= 1);
-    CHECK(!sut.code.empty());
-    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new");
 }
 

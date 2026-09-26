@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_field_group.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_DOMAIN_AUDIT_RECORD_HPP
 #define ORES_DQ_API_DOMAIN_AUDIT_RECORD_HPP
 
@@ -32,8 +37,8 @@ namespace ores::dq::domain {
  * vocabulary for change_reason_code.
  *
  * Extracted as a plain nested sub-struct so that rfl::internal::no_duplicate_field_names
- * never instantiates a Literal wider than 5 fields for this block.
- * See the decomposition section of doc/knowledge/architecture/data_oriented_design.org.
+ * never instantiates a Literal wider than 5 fields for this block. See the
+ * decomposition section of doc/knowledge/architecture/data_oriented_design.org.
  */
 struct audit_record {
     /**

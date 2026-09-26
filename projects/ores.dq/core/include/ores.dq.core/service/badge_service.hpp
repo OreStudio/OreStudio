@@ -21,15 +21,9 @@
 #define ORES_DQ_CORE_SERVICE_BADGE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.dq.api/domain/badge_definition.hpp"
-#include "ores.dq.api/domain/badge_severity.hpp"
-#include "ores.dq.api/domain/code_domain.hpp"
 #include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.dq.core/export.hpp"
-#include "ores.dq.core/repository/badge_definition_repository.hpp"
 #include "ores.dq.core/repository/badge_mapping_repository.hpp"
-#include "ores.dq.core/repository/badge_severity_repository.hpp"
-#include "ores.dq.core/repository/code_domain_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <string>
 #include <vector>
@@ -37,8 +31,10 @@
 namespace ores::dq::service {
 
 /**
- * @brief Service for managing badges, badge severities, code domains, and
- * badge mappings.
+ * @brief Read-only service over the badge mapping junction.
+ *
+ * Badge definitions, badge severities and code domains each have a generated
+ * service of their own; only the mapping projection is read here.
  */
 class ORES_DQ_CORE_EXPORT badge_service {
 private:
@@ -55,44 +51,10 @@ public:
 
     explicit badge_service(context ctx);
 
-    // =========================================================================
-    // Badge Severity
-    // =========================================================================
-
-    std::vector<domain::badge_severity> list_severities();
-    void save_severity(const domain::badge_severity& v);
-    void remove_severities(const std::vector<std::string>& codes);
-    std::vector<domain::badge_severity> get_severity_history(const std::string& code);
-
-    // =========================================================================
-    // Code Domain
-    // =========================================================================
-
-    std::vector<domain::code_domain> list_code_domains();
-    void save_code_domain(const domain::code_domain& v);
-    void remove_code_domains(const std::vector<std::string>& codes);
-    std::vector<domain::code_domain> get_code_domain_history(const std::string& code);
-
-    // =========================================================================
-    // Badge Definition
-    // =========================================================================
-
-    std::vector<domain::badge_definition> list_definitions();
-    void save_definition(const domain::badge_definition& v);
-    void remove_definitions(const std::vector<std::string>& codes);
-    std::vector<domain::badge_definition> get_definition_history(const std::string& code);
-
-    // =========================================================================
-    // Badge Mapping (read-only)
-    // =========================================================================
-
     std::vector<messaging::badge_mapping> list_mappings();
 
 private:
     context ctx_;
-    repository::badge_severity_repository sev_repo_;
-    repository::badge_definition_repository def_repo_;
-    repository::code_domain_repository dom_repo_;
     repository::badge_mapping_repository map_repo_;
 };
 

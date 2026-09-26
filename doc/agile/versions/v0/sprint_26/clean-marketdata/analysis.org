@@ -320,21 +320,37 @@ stay as written. Six of the mis-modelled shapes are fixed:
 | BASIS_SWAP | 5,994 | declared ccy/index/tenor/point; ORE writes two tenors and no index | =second_tenor= |
 | CC_BASIS_SWAP | 3,824 | declared one currency and one tenor; ORE writes two of each | =second_ccy= |
 | CC_FIX_FLOAT_SWAP | 106 | same | =second_ccy= |
+| MM_FUTURE | 319 | declared ccy/index/tenor/point; ORE writes ccy/contract-month/contract-code/tenor | =contract_month=, =contract_code= |
+| OI_FUTURE | 620 | same | =contract_month=, =contract_code= |
 
-That is 13,806 corpus lines brought in, and the shape record is down from
-11 entries to 6. What remains is CORRELATION, CPR, ZERO, MM_FUTURE,
-OI_FUTURE, and MM's residual (producers spell the index =ESTER= where
-=index_family= says =estr=).
+That is 13,806 corpus lines brought in by the first six, and a further 939 by
+the two futures. What remains of the shape record is CPR and MM's residual
+(producers spell the index =ESTER= where =index_family= says =estr=).
 
-Each of the six needs the identifier grammar extended, and the oresmd
-parser is hand-written per asset class rather than table-driven -- its
-generic branch handles the entity, a currency, the type, the quote type
-and a point, and nothing else -- so a new field is a coordinated change
-across the model, the parser, the URI order and the projections. Two of
-them also need a registry correction first: MM_FUTURE and OI_FUTURE carry
-the same corpus shape but the shape table describes it two different ways,
-with different qualifier depths, so which segments identify the series is
-not yet settled.
+Each of the remaining shapes needs the identifier grammar extended, and the
+oresmd parser is hand-written per asset class rather than table-driven -- its
+generic branch handles the entity, a currency, the type, the quote type and a
+point, and nothing else -- so a new field is a coordinated change across the
+model, the parser, the URI order and the projections.
+
+** The futures contradiction was the documentation's, not the data's
+
+=MM_FUTURE= and =OI_FUTURE= were recorded here as needing a registry correction
+first, because the shape table describes the two with different qualifier
+depths, so which segments identify the series looked unsettled. Reading the
+corpus settles it. Both are 6-segment and identical in shape -- the corpus
+writes =MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M= and
+=OI_FUTURE/PRICE/USD/2024-01/XCME:SRA/3M= -- for all 939 keys, with no
+5-segment form anywhere in the corpus.
+
+The contradiction was in the documents. The market data catalogue carried the
+abbreviated key (=/USD/2025-09/3M=, the contract code dropped), and the model
+had copied the registry's mislabelled =CCY/INDEX/TENOR/POINT=, which puts the
+contract month in a field called =index= and the contract code in a field
+called =tenor=. The catalogue examples are corrected, and the model now
+declares =CCY/CONTRACT_MONTH/CONTRACT_CODE/TENOR=. The
+=contract_code= is kept verbatim: ORE writes =XICE:FEI= and =XCME:SRA=, and
+the token names the contract rather than decomposing into fields we can check.
 
 ** Grammar holes
 

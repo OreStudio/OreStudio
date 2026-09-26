@@ -2216,6 +2216,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Mark last item in artefact_indexes list
         if 'artefact_indexes' in entity:
             _mark_last_item(entity['artefact_indexes'])
+        # Mark last item in artefact_columns list, so the declared staging
+        # body renders its commas correctly.
+        if 'artefact_columns' in entity:
+            _mark_last_item(entity['artefact_columns'])
         # Derive component paths from component + subcomponent
         if 'component' in entity:
             component = entity['component']
@@ -2288,6 +2292,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['has_nullable_coding_scheme'] = False
         if 'artefact_indexes' in domain_entity:
             _mark_last_item(domain_entity['artefact_indexes'])
+        if 'artefact_columns' in domain_entity:
+            _mark_last_item(domain_entity['artefact_columns'])
         if any(
             v.get('cardinality_limit_table')
             for v in domain_entity.get('insert_trigger', {}).get('validations', [])

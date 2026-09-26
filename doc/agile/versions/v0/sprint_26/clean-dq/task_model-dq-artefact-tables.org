@@ -67,14 +67,41 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 1. Baseline | DONE | Census and drift captured; see Notes |
 | 2. Liveness census | DONE | 49 tables, 0 deletion candidates; see Step 2 results |
 | 3. Divergent tables | DONE | 12 tables, 6 difference classes, 0 defects; see Step 3 results |
-| 4. Foreign models | TODO | Blocked for the FPML family; see below |
+| 4. Foreign models | TODO | Unblocked, except the FPML family; see below |
 | 5. Derivable tables | TODO | Unblocked |
 | 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
-| 7. Publication template | TODO | Needs the Artefact columns section from step 3 |
+| 7. Publication template | TODO | Unblocked |
 | 8. Remaining models | TODO | The FPML family is blocked; the rest is unblocked |
 | 9. Regenerate C++ | TODO | |
 | 10. Eventing headers | TODO | |
-| 11. Artefact projection in the model | TODO | The =* Artefact columns= section step 3 specifies |
+| 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
+
+* Step 11 results
+
+Run on 2026-09-26. This is the generator work step 3 called for, and it unblocks steps 4, 5, 7 and 8.
+
+**What was added.** The optional =* Artefact columns= section, read by both artefact archetypes:
+
+| Part | File | What it does |
+|------+------+--------------|
+| Reader | =src/codegen/org_loader.py=, =_artefact_columns= | Parses the section into =artefact_columns= and =artefact_key_column=. Called by both the domain-entity loader and the lookup-entity loader. |
+| Comma marking | =src/codegen/core.py= | Marks the last declared column in both normalisation passes, so the body renders its commas. |
+| Archetypes | =ores.sql.schema.domain_entity_artefact_create.org=, =sql_schema_artefact_create.org= | Render the declared body instead of the projection when the section is present. Both re-tangled from their org sources. |
+
+**Semantics.** Absent, both archetypes render exactly what they rendered before. Present, the section replaces the staging table's body after its =dataset_id=/=tenant_id= header, in the order written. The first entry is the staging key, and the generated key index is built on it; a section-level =:key:= property overrides that when the key is not written first. Two shapes are refused rather than rendered wrongly:
+
+- an empty section, because a section that declares nothing is a mistake, not a request for the default;
+- a section together with =:has_artefact_insert_fn: true=, because the generated insert helper is built from the entity's own columns and would insert the wrong shape into a table that declares its own. No current model wants both, so the pair is refused instead of guessed at.
+
+**Evidence that the default path is untouched.** The change is byte-identical for every existing model, which three independent checks agree on:
+
+- =compass codegen entity generate account_type --address ores.sql.schema --diff= reports no differences. =account_type= is a generated DQ artefact table.
+- =check_component_drift.py --component iam --dry-run= still reports no drift at all.
+- =check_component_drift.py --component dq --dry-run= still reports 513 files, unchanged from before the template edit.
+
+**Evidence that the new path works.** =tests/test_artefact_columns.py= adds 10 tests: the default projection and its key index; the declared body replacing it; the entity columns the section omits being dropped; the key index following the declared key; =:key:= overriding the first column; the header indexes surviving; both refusals; and the lookup-entity archetype honouring the section too.
+
+The tests are mutation-proven. Neutering =_artefact_columns= to return nothing fails exactly the 7 section-dependent tests while the 3 default-path tests still pass, so the tests exercise the new behaviour rather than passing alongside it. The tangle is stable: re-tangling produces no further change to either =.mustache=, so the template-drift gate's =git diff --exit-code= holds.
 
 * The FPML family: why 13 tables have no model, and what blocks them
 

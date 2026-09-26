@@ -106,6 +106,24 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part five: what the remaining nine need, and the vocabulary they do not have
+
+Run on 2026-09-26. No migration this time: the round set out to take the read-only group and found that the plan's grouping was too tidy. The remaining nine do not divide into "read-only" and "operations". They divide by **what model vocabulary they need**, and seven of them need vocabulary the component has never used.
+
+**Two protocols serve no table at all.** =lei_entity_summary_protocol.hpp= (=dq.v1.lei-entities.summary=) and =report_definition_template_protocol.hpp= (=dq.v1.report-definition-templates.list=) have no table of their own. There is no =dq_lei_entity_summaries_create.sql= and no =dq_report_definition_templates_create.sql=: the first is computed from =dq_lei_entities_artefact= through =dq_lei_entities_query_functions_create.sql=, the second is served from =dq_report_definitions_artefact=. Modelling an entity generates a table, so there is nothing here to model. These two need either a read-only projection archetype or a recorded exception, and that is a design decision before it is work.
+
+**The FSM family is table-backed but has no natural key.** =dq_fsm_machines_create.sql=, =dq_fsm_states_create.sql= and =dq_fsm_transitions_create.sql= are hand-written. All three are uuid-surrogate tables whose only unique indexes are on =(tenant_id, id)= and =(tenant_id, id, version)=: **no natural key anywhere**. =fsm_state= and =fsm_transition= additionally carry uuid reference columns (=machine_id=, =from_state_id=, =to_state_id=) and integer flags with =default 0=, and =fsm_transition='s =from_state_id= is nullable. Every dq model so far either keys on a =code= or =name= natural key or is a junction, so neither "uuid primary key with no natural key" nor "uuid reference column in an entity" has a precedent in this component to copy.
+
+There is a second problem in the same family. =fsm_machine= has a table but **no C++ layer at all** — no repository, no service, no handler. Modelling it would generate a messaging surface the platform never had, which is a widening rather than a migration. So the family is not three migrations of one shape; it is two migrations of an unprecedented shape plus a decision about the third.
+
+**The operations group is five headers and two run logs.** =dataset_protocol.hpp= serves list, save, delete and history plus a bespoke =publish=; =dataset_dependency_protocol.hpp= serves =by-dataset= and =resolve=; =publication_protocol.hpp= serves =list=; =publish_bundle_protocol.hpp= serves =publish=; and =publish_from_dq_protocol.hpp= has **no subjects of its own**, because the registrar subscribes its handler to literal strings. The publish tables are run logs: =dq_bundle_publication_create.sql= has =id uuid default gen_random_uuid()=, =bigint= counters, a =boolean=, =published_at timestamp default current_timestamp=, a nullable =completed_at=, and a **non-bitemporal primary key on =id= alone**. Function defaults, bigints and a non-bitemporal key are all vocabulary the dq models do not use.
+
+**Where that leaves the plan.** The survey's ordering — read-only group, then operations — assumed one more shape repeated. The honest split of the nine is: one hand-written by design (=badge_protocol.hpp=, the mapping projection); two with no table to model; one family of three tables with no natural key and no C++ for its third member; and five operation headers over behaviour and run logs. **Seven need a vocabulary decision before a model can be written.**
+
+**The next step, in order.** The FSM shape is the best first decision because it is table-backed, self-contained and needs no new messaging surface for the two entities that already have one — and the scaffolder already offers a =--shape fk-scoped= preset for exactly this form, which no dq model exercises yet. Establishing that vocabulary, then =dataset= and its dependency, then the two run logs, then deciding the two projections, is the sequence that follows from this survey rather than from the earlier one.
+
+**Evidence.** No source change this round: the working tree is clean, =check_component_drift.py --component dq= reports no drift on =main=, and the three scaffolded FSM models were removed rather than left half-written.
+
 * Step 8 part four: the coding scheme pair, and a corrected count
 
 Run on 2026-09-26. =coding_scheme_authority_type= and =coding_scheme= are modelled, so another protocol leaves the hand-written list.

@@ -235,6 +235,13 @@ TEST_CASE("round_trip_ir_capfloor_normal_vol", tags) {
     REQUIRE(original == roundtripped);
 }
 
+TEST_CASE("round_trip_ir_bond_option_vol", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
 TEST_CASE("round_trip_equity", tags) {
     const auto original =
         oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote&quote=spot"));

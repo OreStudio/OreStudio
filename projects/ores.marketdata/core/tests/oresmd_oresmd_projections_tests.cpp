@@ -238,6 +238,12 @@ TEST_CASE("ir_capfloor_log_normal_vol_quote_key_matches_the_corpus", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "CAPFLOOR/RATE_LNVOL/CHF/5Y/6M/0/0/0.03");
 }
 
+TEST_CASE("ir_bond_option_vol_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm");
+    REQUIRE(oresmd_projections::to_quote_key(id) ==
+            "BOND_OPTION/RATE_LNVOL/EUR_GENERIC/1Y/10Y/ATM");
+}
+
 /*
  * New-style quote= parameter with implicit metric (defaulted from the quote type).
  */

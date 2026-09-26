@@ -62,11 +62,6 @@ UNREPRESENTED: dict[str, str] = {
         "the identifier carries an instrument id rather than a currency, and "
         "the key has no currency, tenor or point dimension."
     ),
-    "BOND_OPTION": (
-        "Bond option log-normal volatility, keyed by a generic currency and "
-        "two tenors. Needs the bond asset class above plus a volatility "
-        "surface point."
-    ),
     "COMMODITY_OPTION": (
         "Commodity option log-normal volatility, 6, 7 and 9 segments, with "
         "delta and forward coordinates. Needs the volatility surface point "
@@ -124,6 +119,7 @@ VOL_REPRESENTED: dict[str, str] = {
     "CAPFLOOR": "ir",
     "ZC_INFLATIONCAPFLOOR": "inflation",
     "YY_INFLATIONCAPFLOOR": "inflation",
+    "BOND_OPTION": "ir",
 }
 
 # An asset class whose model declares a ``vol`` field but whose projection

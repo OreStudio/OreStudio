@@ -42,6 +42,7 @@ constexpr std::string_view mm_future{"MM_FUTURE"};
 constexpr std::string_view oi_future{"OI_FUTURE"};
 constexpr std::string_view swaption{"SWAPTION"};
 constexpr std::string_view capfloor{"CAPFLOOR"};
+constexpr std::string_view bond_option{"BOND_OPTION"};
 constexpr std::string_view equity{"EQUITY"};
 constexpr std::string_view equity_fwd{"EQUITY_FWD"};
 constexpr std::string_view equity_dividend{"EQUITY_DIVIDEND"};
@@ -135,11 +136,12 @@ metric default_metric(ir_quote_type qt) {
         case ir_quote_type::mm_future:
         case ir_quote_type::oi_future:
             return metric::price;
-        // A capfloor's ORE metric segment is its vol model, RATE_NVOL or
-        // RATE_LNVOL, which the metric enum has no member for; quote_key_ir
-        // reads ore_vol_model() for it and never this. The case exists so the
-        // switch stays exhaustive.
+        // A capfloor's and a bond option's ORE metric segment is their vol
+        // model, which the metric enum has no member for; quote_key_ir reads
+        // ore_vol_model() for it and never this. The cases exist so the switch
+        // stays exhaustive.
         case ir_quote_type::capfloor:
+        case ir_quote_type::bond_option:
             return metric::rate;
     }
     return metric::rate;
@@ -232,7 +234,13 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
         // Use typed vol struct if available, else fall back to point composite.
         if (id.vol && id.tenor) {
             const auto& v = *id.vol;
-            return std::format("SWAPTION/{}/{}/{}/{}/{}",
+            // BOND_OPTION is the swaption shape over a bond: the same six
+            // segments, with the underlying where a swaption has a currency.
+            const auto family = (id.quote_type == ir_quote_type::bond_option)
+                                    ? ore_type_spec::bond_option
+                                    : ore_type_spec::swaption;
+            return std::format("{}/{}/{}/{}/{}/{}",
+                               family,
                                ore_vol_model(v.model_subtype),
                                id.ccy,
                                to_upper(v.expiry),
@@ -885,6 +893,29 @@ std::optional<market_data_identifier> from_ir_capfloor(const std::vector<std::st
     return id;
 }
 
+std::optional<market_data_identifier> from_ir_bond_option(const std::vector<std::string>& parts) {
+    // BOND_OPTION/MODEL/UNDERLYING/EXPIRY/BOND_TENOR/STRIKE -- the swaption
+    // shape over a bond. The third segment is a generic underlying name, not a
+    // currency, so it is taken verbatim.
+    if (parts.size() != 6)
+        return std::nullopt;
+    const auto model = parse_vol_model(parts[1]);
+    if (!model)
+        return std::nullopt;
+    ir_market_data_identifier id;
+    id.ccy = to_upper(parts[2]);
+    id.type = instrument_type::vol;
+    id.quote_type = ir_quote_type::bond_option;
+    id.tenor = to_lower(parts[4]);
+    id.point = to_lower(parts[3]) + "," + to_lower(parts[4]) + "," + to_lower(parts[5]);
+    volatility_surface_point v;
+    v.model_subtype = *model;
+    v.expiry = to_upper(parts[3]);
+    v.strike = to_upper(parts[5]);
+    id.vol = std::move(v);
+    return id;
+}
+
 std::optional<market_data_identifier> from_ir_swaption(const std::vector<std::string>& parts) {
     // SWAPTION/MODEL/CCY/EXPIRY/TENOR/STRIKE. The forward emits either branch (typed
     // vol struct or point composite) in this same six-segment shape; both collapse
@@ -1125,6 +1156,8 @@ inverse_projection(const std::vector<std::string>& parts,
         return from_ir_swap(parts);
     if (type == ore_type_spec::discount)
         return from_ir_discount(parts);
+    if (type == ore_type_spec::bond_option)
+        return from_ir_bond_option(parts);
     if (type == ore_type_spec::swaption)
         return from_ir_swaption(parts);
     if (type == ore_type_spec::capfloor)

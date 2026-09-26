@@ -83,7 +83,8 @@ enum class ir_quote_type {
     zero,              ///< ZERO (zero-coupon rate).
     mm_future,         ///< MM_FUTURE (money market future price).
     oi_future,         ///< OI_FUTURE (overnight index future price).
-    capfloor           ///< CAPFLOOR (cap/floor volatility on a strike grid).
+    capfloor,          ///< CAPFLOOR (cap/floor volatility on a strike grid).
+    bond_option        ///< BOND_OPTION (bond option implied vol).
 };
 
 /**

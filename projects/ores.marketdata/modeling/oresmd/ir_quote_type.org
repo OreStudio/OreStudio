@@ -30,6 +30,7 @@
 | mm_future           | MM_FUTURE         | mm_future              | PRICE           | tenor           | includes_index          | 6-segment: MM_FUTURE/PRICE/CCY/INDEX/TENOR/POINT | MM_FUTURE (money market future price). |
 | oi_future           | OI_FUTURE         | oi_future              | PRICE           | tenor           | includes_index          | 6-segment: OI_FUTURE/PRICE/CCY/INDEX/TENOR/POINT | OI_FUTURE (overnight index future price). |
 | capfloor            | CAPFLOOR          | capfloor               | RATE            | surface         | capfloor_vol            | 8-segment: CAPFLOOR/RATE_NVOL/CCY/MATURITY/FLOAT_TENOR/SHIFT/STRIP/STRIKE, and the same shape under RATE_LNVOL; the metric segment comes from the vol model, not from this table's ore_metric | CAPFLOOR (cap/floor volatility on a strike grid). |
+| bond_option         | BOND_OPTION       | bond_option            | RATE            | surface         | swaption_vol            | 6-segment: BOND_OPTION/RATE_LNVOL/UNDERLYING/EXPIRY/BOND_TENOR/STRIKE -- the swaption shape over a bond, so the underlying is a generic name rather than a currency | BOND_OPTION (bond option implied vol). |
 
 * Enum brief
 
@@ -188,6 +189,7 @@ IR has the most complex qualifier shape variants:
 | oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme | OI_FUTURE/PRICE/USD/SOFR/3M/CME | ir_oi_future_price_quote_key |
 | oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03 | CAPFLOOR/RATE_NVOL/CHF/5Y/6M/0/0/0.03 | ir_capfloor_normal_vol_quote_key_matches_the_corpus |
 | oresmd://ir/chf?type=vol&quote=capfloor&point=5y,6m,0,0,0.03 | CAPFLOOR/RATE_LNVOL/CHF/5Y/6M/0/0/0.03 | ir_capfloor_log_normal_vol_quote_key_matches_the_corpus |
+| oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm | BOND_OPTION/RATE_LNVOL/EUR_GENERIC/1Y/10Y/ATM | ir_bond_option_vol_quote_key_matches_the_corpus |
 
 ** Projections (defaulted metric)
 
@@ -209,6 +211,7 @@ IR has the most complex qualifier shape variants:
 |-----+-------------|
 | oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y | round_trip_ir_quote |
 | oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03 | round_trip_ir_capfloor_normal_vol |
+| oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm | round_trip_ir_bond_option_vol |
 
 ** Round-trip (extended)
 

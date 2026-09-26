@@ -16,13 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-# Template: cmake_component_files_src.mustache
-# To modify, update the template and regenerate.
 set(files
     "app/application.cpp"
     "app/commands/accounts_commands.cpp"
-    "app/commands/assets/assets_commands.cpp"
     "app/commands/bundles_commands.cpp"
     "app/commands/change_reason_categories_commands.cpp"
     "app/commands/change_reasons_commands.cpp"
@@ -74,7 +70,6 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/application.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/accounts_commands.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/assets/assets_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/bundles_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/change_reason_categories_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/change_reasons_commands.hpp"

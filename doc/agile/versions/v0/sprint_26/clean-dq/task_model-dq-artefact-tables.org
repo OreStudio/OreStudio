@@ -106,6 +106,30 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part four: the coding scheme pair, and a corrected count
+
+Run on 2026-09-26. =coding_scheme_authority_type= and =coding_scheme= are modelled, so another protocol leaves the hand-written list.
+
+**A correction first.** Part three's pull request said eight hand-written protocols remained and then listed ten; the count was wrong, and the list was right. Counting by hand is what failed. The reliable test is the generated marker, and the figure it gives is stated at the end of this section, from that check rather than from memory.
+
+**The pair.** =coding_scheme_authority_type= is a code-keyed lookup and =coding_scheme= is the same shape plus an authority, a subject area and an optional uri, so both follow the dimension pattern. The authority and subject-area columns stay **plain text**: the hand-written table never carried a constraint, and declaring a foreign key would refuse rows the platform accepts today. The generated tables match column for column -- the authority type exactly, and the scheme modulo the explicit null on =uri= and the redundant index the profile adds on the primary key.
+
+**=coding_scheme_protocol.hpp= is now generated, so it leaves the hand-written list** rather than being deleted: the model writes the canonical protocol to the same path, and the old structs go with the overwrite. That is the third way a header leaves the list, after deletion (=dimension_protocol.hpp=, =data_organization_protocol.hpp=) and shrinking (=badge_protocol.hpp=).
+
+**What else the pair retired.** The registrar composes =register_coding_scheme_authority_type_handlers= and =register_coding_scheme_handlers=; the four hand-written singular SQL files give way to the generated plural forms in =dq_create.sql= and =dq_drop.sql=; both repository tests move to the stateless API; and both shell units are wired into the aggregator and the part's file lists.
+
+**Where the list stands.** Measured immediately after this change, with the command that measures it rather than by eye:
+
+#+begin_src sh
+for f in projects/ores.dq/api/include/ores.dq.api/messaging/*_protocol.hpp; do
+    [ "$(grep -c AUTO-GENERATED $f)" = 0 ] && basename $f
+done
+#+end_src
+
+That gives **nine** hand-written dq protocol headers: =badge_protocol.hpp= (the mapping projection, hand-written by design), =dataset_protocol.hpp=, =dataset_dependency_protocol.hpp=, =fsm_protocol.hpp=, =lei_entity_summary_protocol.hpp=, =publication_protocol.hpp=, =publish_bundle_protocol.hpp=, =publish_from_dq_protocol.hpp= and =report_definition_template_protocol.hpp=. Three of the original twelve are gone: =dimension_protocol.hpp= and =data_organization_protocol.hpp= deleted, =coding_scheme_protocol.hpp= replaced by its generated twin. The next part re-measures rather than trusting this line.
+
+**Evidence.** Codegen suite 709 passing; dq drift clean twice in a row and =--all= clean; the six affected targets build and link including =ores.shell.exe=; the script tangle produces no change; every other gate passes.
+
 * Step 8 part three: methodology, and the end of the data organization layer
 
 Run on 2026-09-26. =methodology= is modelled and the hand-written layer that served it is gone, so two more headers leave the list.

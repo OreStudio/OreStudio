@@ -106,9 +106,9 @@
 
 -- Coding schemes
 \ir ./dq_coding_schemes_notify_trigger_drop.sql
-\ir ./dq_coding_scheme_drop.sql
+\ir ./dq_coding_schemes_drop.sql
 \ir ./dq_coding_scheme_authority_types_notify_trigger_drop.sql
-\ir ./dq_coding_scheme_authority_type_drop.sql
+\ir ./dq_coding_scheme_authority_types_drop.sql
 
 -- Subject areas
 \ir ./dq_subject_areas_notify_trigger_drop.sql

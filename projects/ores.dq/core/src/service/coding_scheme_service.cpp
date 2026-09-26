@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,143 +17,404 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.core/service/coding_scheme_service.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <algorithm>
+#include <cstdint>
+#include <iterator>
+#include <optional>
 #include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
+
+using ores::service::messaging::stamp;
 
 namespace ores::dq::service {
 
 using namespace ores::logging;
 
 coding_scheme_service::coding_scheme_service(context ctx)
-    : coding_scheme_repo_(ctx)
-    , authority_type_repo_(ctx) {}
+    : ctx_(std::move(ctx)) {}
+namespace {
 
-// ============================================================================
-// Coding Scheme Management
-// ============================================================================
+/**
+ * @brief The current row a key names, or an empty vector when there is none.
+ *
+ * A key record carries each column with the column's own type, and the
+ * repository takes the text form every one of its key parameters shares, so
+ * the conversion lives here rather than at every call site.
+ *
+ * The key record carries the key the model declares, which is the one a caller
+ * holds. When that is not the storage key the row is found by it and the
+ * repository's storage-key read is not used at all.
+ */
+std::vector<domain::coding_scheme> read_one(repository::coding_scheme_repository& repo,
+                                            const ores::database::context& ctx,
+                                            const messaging::coding_scheme_key& key) {
+    return repo.read_latest(ctx, key.code);
+}
 
-std::vector<domain::coding_scheme> coding_scheme_service::list_coding_schemes() {
+/**
+ * @brief The key a domain object states, so a written row can be read back.
+ *
+ * A create states its own key in the write record, so the key of the row a
+ * write produced is the one the object carries.
+ */
+messaging::coding_scheme_key key_from(const domain::coding_scheme& v) {
+    messaging::coding_scheme_key key;
+    key.code = v.code;
+    return key;
+}
+
+/**
+ * @brief Builds the domain object a write record states.
+ *
+ * The record carries the user-owned fields and nothing else: tenancy,
+ * provenance, the version and the validity window are the service's and the
+ * database's to state, and are set after this conversion.
+ */
+domain::coding_scheme to_domain(const messaging::coding_scheme_write& write) {
+    domain::coding_scheme v;
+    v.code = write.code;
+    v.name = write.name;
+    v.authority_type = write.authority_type;
+    v.subject_area_name = write.subject_area_name;
+    v.domain_name = write.domain_name;
+    v.uri = write.uri;
+    v.description = write.description;
+    return v;
+}
+
+} // namespace
+
+messaging::list_coding_schemes_response
+coding_scheme_service::list_coding_schemes(const messaging::list_coding_schemes_request& request) {
+    messaging::list_coding_schemes_response response;
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "order_not_supported";
+        response.result.message =
+            "This store pages in key order and cannot order by a stated field.";
+        return response;
+    }
+    response.schemes = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.total = repo_.get_total_scheme_count(ctx_);
+    return response;
+}
+
+messaging::get_coding_scheme_response
+coding_scheme_service::get_coding_scheme(const messaging::get_coding_scheme_request& request) {
+    messaging::get_coding_scheme_response response;
+    auto found = read_one(repo_, ctx_, request.key);
+    if (found.empty()) {
+        response.result.outcome = ores::utility::domain::outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    response.coding_scheme = std::move(found.front());
+    return response;
+}
+
+messaging::get_many_coding_schemes_response coding_scheme_service::get_many_coding_schemes(
+    const messaging::get_many_coding_schemes_request& request) {
+    messaging::get_many_coding_schemes_response response;
+    // One entry per requested key, in the order asked for, so the reply is
+    // positional and a caller reads absence from an empty entry rather than
+    // from a missing one.
+    response.entries.reserve(request.keys.size());
+    for (const auto& k : request.keys) {
+        messaging::coding_scheme_lookup entry;
+        entry.key = k;
+        auto found = read_one(repo_, ctx_, k);
+        if (!found.empty())
+            entry.coding_scheme = std::move(found.front());
+        response.entries.push_back(std::move(entry));
+    }
+    return response;
+}
+
+messaging::put_coding_scheme_response
+coding_scheme_service::put_coding_scheme(const messaging::put_coding_scheme_request& request) {
+    messaging::put_coding_scheme_response response;
+    domain::coding_scheme value;
+    response.result = prepare_change(request.change, request.intent, value);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+    repo_.write(ctx_, value, request.change.precondition);
+    auto written = read_one(repo_, ctx_, key_from(value));
+    if (!written.empty())
+        response.coding_scheme = std::move(written.front());
+    return response;
+}
+
+messaging::put_many_coding_schemes_response coding_scheme_service::put_many_coding_schemes(
+    const messaging::put_many_coding_schemes_request& request) {
+    messaging::put_many_coding_schemes_response response;
+    std::vector<domain::coding_scheme> batch;
+    batch.reserve(request.changes.size());
+    for (const auto& change : request.changes) {
+        domain::coding_scheme value;
+        const auto result = prepare_change(change, request.intent, value);
+        if (result.outcome != ores::utility::domain::outcome::ok) {
+            // Nothing has been written: the whole set is checked before any
+            // of it lands, so a refused element refuses the batch.
+            response.result = result;
+            return response;
+        }
+        batch.push_back(std::move(value));
+    }
+    // One statement, so the set lands together. The store checks each row's
+    // claim inside that statement, which is what makes the check above and the
+    // write one decision rather than two.
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        claims.push_back(change.precondition);
+    repo_.write(ctx_, batch, claims);
+    response.schemes.reserve(batch.size());
+    for (const auto& value : batch) {
+        auto written = read_one(repo_, ctx_, key_from(value));
+        response.schemes.push_back(written.empty() ? value : std::move(written.front()));
+    }
+    return response;
+}
+
+messaging::delete_coding_scheme_response coding_scheme_service::delete_coding_scheme(
+    const messaging::delete_coding_scheme_request& request) {
+    messaging::delete_coding_scheme_response response;
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    if (request.removal.precondition.kind == precondition_kind::must_not_exist) {
+        response.result.outcome = outcome::invalid;
+        response.result.code = "precondition_not_supported";
+        response.result.message = "A removal cannot require that a row is absent.";
+        return response;
+    }
+    std::optional<std::uint32_t> expected;
+    if (request.removal.precondition.kind == precondition_kind::must_match_version) {
+        if (!request.removal.precondition.version) {
+            response.result.outcome = outcome::invalid;
+            response.result.code = "precondition_incomplete";
+            response.result.message = "A versioned removal must state the version it expects.";
+            return response;
+        }
+        expected = request.removal.precondition.version;
+    }
+    switch (repo_.remove(ctx_, request.removal.key.code, expected)) {
+        case repository::coding_scheme_repository::remove_status::removed:
+            break;
+        case repository::coding_scheme_repository::remove_status::missing:
+            response.result.outcome = outcome::missing;
+            response.result.code = "not_found";
+            break;
+        case repository::coding_scheme_repository::remove_status::conflicting:
+            response.result.outcome = outcome::conflict;
+            response.result.code = "version_conflict";
+            break;
+        case repository::coding_scheme_repository::remove_status::unsupported:
+            response.result.outcome = outcome::invalid;
+            response.result.code = "precondition_not_supported";
+            response.result.message = "This resource keeps no version to match.";
+            break;
+    }
+    return response;
+}
+
+messaging::delete_many_coding_schemes_response coding_scheme_service::delete_many_coding_schemes(
+    const messaging::delete_many_coding_schemes_request& request) {
+    messaging::delete_many_coding_schemes_response response;
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    for (const auto& removal : request.removals) {
+        if (removal.precondition.kind != precondition_kind::any) {
+            // The store removes a set in one statement, which carries no
+            // per-row version. Refusing is the only answer that keeps the
+            // batch atomic: serving it as a sequence of single removals would
+            // leave a partial batch behind as soon as one row had moved on.
+            response.result.outcome = outcome::invalid;
+            response.result.code = "batch_removal_is_unconditional";
+            response.result.message =
+                "A batch removal is unconditional; remove the rows one at a time "
+                "to state a version.";
+            return response;
+        }
+    }
+    if (request.removals.empty())
+        return response;
+    std::vector<std::string> code_keys;
+    code_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        code_keys.push_back(removal.key.code);
+    repo_.remove(ctx_, code_keys);
+    return response;
+}
+
+messaging::list_coding_scheme_versions_response coding_scheme_service::list_coding_scheme_versions(
+    const messaging::list_coding_scheme_versions_request& request) {
+    messaging::list_coding_scheme_versions_response response;
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "order_not_supported";
+        response.result.message =
+            "This store pages in key order and cannot order by a stated field.";
+        return response;
+    }
+    if (request.filter) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_not_supported";
+        response.result.message = "Filtering is not served for this resource yet.";
+        return response;
+    }
+    auto all = repo_.read_all(ctx_, request.key.code);
+    // The store reads versions newest first, and the order a caller gets when
+    // it states none is key order, which for a version key is oldest first.
+    std::reverse(all.begin(), all.end());
+    response.total = all.size();
+    const auto begin = std::min<std::size_t>(request.offset, all.size());
+    const auto end = std::min<std::size_t>(begin + request.limit, all.size());
+    response.versions.assign(std::make_move_iterator(all.begin() + begin),
+                             std::make_move_iterator(all.begin() + end));
+    return response;
+}
+
+messaging::get_coding_scheme_version_response coding_scheme_service::get_coding_scheme_version(
+    const messaging::get_coding_scheme_version_request& request) {
+    messaging::get_coding_scheme_version_response response;
+    auto found = repo_.read_at_version(ctx_, request.key.coding_scheme.code, request.key.version);
+    if (!found) {
+        response.result.outcome = ores::utility::domain::outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    response.version = std::move(*found);
+    return response;
+}
+
+ores::utility::domain::result
+coding_scheme_service::prepare_change(const messaging::coding_scheme_change& change,
+                                      const ores::utility::domain::change_intent& intent,
+                                      domain::coding_scheme& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain(change.write);
+    const auto current = read_one(repo_, ctx_, key_from(out));
+    switch (change.precondition.kind) {
+        case precondition_kind::must_not_exist:
+            if (!current.empty()) {
+                result.outcome = outcome::conflict;
+                result.code = "already_exists";
+                return result;
+            }
+            break;
+        case precondition_kind::must_match_version:
+            if (current.empty()) {
+                result.outcome = outcome::missing;
+                result.code = "not_found";
+                return result;
+            }
+            // The protocol states the version as a uint32 and the row carries it
+            // as an int, so the comparison states the conversion.
+            if (!change.precondition.version ||
+                static_cast<std::uint32_t>(current.front().version) !=
+                    *change.precondition.version) {
+                result.outcome = outcome::conflict;
+                result.code = "version_conflict";
+                return result;
+            }
+            break;
+        case precondition_kind::any:
+            break;
+    }
+    // The version is the repository's to state, from the claim: it is the one
+    // thing the store's arbiter reads, and stating it in two places is how the
+    // two come to disagree.
+    stamp(out,
+          ctx_,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    out.change_commentary = intent.commentary;
+    return result;
+}
+
+
+std::vector<domain::coding_scheme> coding_scheme_service::list_schemes(std::uint32_t offset,
+                                                                       std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all coding schemes";
-    return coding_scheme_repo_.read_latest();
+    return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::vector<domain::coding_scheme> coding_scheme_service::list_coding_schemes(std::uint32_t offset,
-                                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing coding schemes with pagination: offset=" << offset
-                               << ", limit=" << limit;
-    return coding_scheme_repo_.read_latest(offset, limit);
+std::uint32_t coding_scheme_service::count_schemes() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total coding schemes count";
+    return repo_.get_total_scheme_count(ctx_);
 }
 
-std::vector<domain::coding_scheme>
-coding_scheme_service::list_coding_schemes_by_authority_type(const std::string& authority_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing coding schemes for authority type: " << authority_type;
-    return coding_scheme_repo_.read_latest_by_authority_type(authority_type);
-}
-
-std::uint32_t coding_scheme_service::get_coding_scheme_count() {
-    return coding_scheme_repo_.get_total_count();
-}
 
 std::optional<domain::coding_scheme>
-coding_scheme_service::find_coding_scheme(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding coding scheme: " << code;
-    auto schemes = coding_scheme_repo_.read_latest(code);
-    if (schemes.empty()) {
+coding_scheme_service::get_scheme_at_version(const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting coding scheme at version. " << "code: " << code
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, code, version);
+}
+
+std::optional<domain::coding_scheme> coding_scheme_service::get_scheme(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting coding scheme. " << "code: " << code;
+    auto results = repo_.read_latest(ctx_, code);
+    if (results.empty())
         return std::nullopt;
-    }
-    return schemes.front();
-}
-
-void coding_scheme_service::save_coding_scheme(const domain::coding_scheme& scheme) {
-    if (scheme.code.empty()) {
-        throw std::invalid_argument("Coding scheme code cannot be empty.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving coding scheme: " << scheme.code;
-    coding_scheme_repo_.write(scheme);
-    BOOST_LOG_SEV(lg(), info) << "Saved coding scheme: " << scheme.code;
-}
-
-void coding_scheme_service::save_coding_schemes(const std::vector<domain::coding_scheme>& schemes) {
-    for (const auto& s : schemes) {
-        if (s.code.empty()) {
-            throw std::invalid_argument("Coding scheme code cannot be empty.");
-        }
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << schemes.size() << " coding schemes";
-    coding_scheme_repo_.write(schemes);
-}
-
-void coding_scheme_service::remove_coding_scheme(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing coding scheme: " << code;
-    coding_scheme_repo_.remove(code);
-    BOOST_LOG_SEV(lg(), info) << "Removed coding scheme: " << code;
-}
-
-void coding_scheme_service::remove_coding_schemes(const std::vector<std::string>& codes) {
-    coding_scheme_repo_.remove(codes);
+    return results.front();
 }
 
 std::vector<domain::coding_scheme>
-coding_scheme_service::get_coding_scheme_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for coding scheme: " << code;
-    return coding_scheme_repo_.read_all(code);
+coding_scheme_service::get_schemes(const std::vector<std::string>& codes) {
+    return repo_.read_latest(ctx_, codes);
 }
 
-// ============================================================================
-// Coding Scheme Authority Type Management
-// ============================================================================
-
-std::vector<domain::coding_scheme_authority_type> coding_scheme_service::list_authority_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all coding scheme authority types";
-    return authority_type_repo_.read_latest();
+void coding_scheme_service::save_scheme(const domain::coding_scheme& v) {
+    if (v.code.empty())
+        throw std::invalid_argument("Coding Scheme code cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving coding scheme. " << "code: " << v.code;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved coding scheme. " << "code: " << v.code;
 }
 
-std::optional<domain::coding_scheme_authority_type>
-coding_scheme_service::find_authority_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding coding scheme authority type: " << code;
-    auto types = authority_type_repo_.read_latest(code);
-    if (types.empty()) {
-        return std::nullopt;
+void coding_scheme_service::save_schemes(const std::vector<domain::coding_scheme>& schemes) {
+    for (const auto& e : schemes) {
+        if (e.code.empty())
+            throw std::invalid_argument("Coding Scheme code cannot be empty.");
     }
-    return types.front();
-}
-
-void coding_scheme_service::save_authority_type(
-    const domain::coding_scheme_authority_type& authority_type) {
-    if (authority_type.code.empty()) {
-        throw std::invalid_argument("Authority type code cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << schemes.size() << " coding schemes";
+    auto ts = schemes;
+    for (auto& e : ts) {
+        stamp(e, ctx_);
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving coding scheme authority type: " << authority_type.code;
-    authority_type_repo_.write(authority_type);
-    BOOST_LOG_SEV(lg(), info) << "Saved coding scheme authority type: " << authority_type.code;
+    repo_.write(ctx_, ts);
 }
 
-void coding_scheme_service::save_authority_types(
-    const std::vector<domain::coding_scheme_authority_type>& authority_types) {
-    for (const auto& a : authority_types) {
-        if (a.code.empty()) {
-            throw std::invalid_argument("Authority type code cannot be empty.");
-        }
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << authority_types.size()
-                               << " coding scheme authority types";
-    authority_type_repo_.write(authority_types);
+void coding_scheme_service::delete_scheme(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing coding scheme. " << "code: " << code;
+    repo_.remove(ctx_, code);
+    BOOST_LOG_SEV(lg(), info) << "Removed coding scheme. " << "code: " << code;
 }
 
-void coding_scheme_service::remove_authority_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing coding scheme authority type: " << code;
-    authority_type_repo_.remove(code);
-    BOOST_LOG_SEV(lg(), info) << "Removed coding scheme authority type: " << code;
+void coding_scheme_service::delete_schemes(const std::vector<std::string>& codes) {
+    repo_.remove(ctx_, codes);
 }
 
-void coding_scheme_service::remove_authority_types(const std::vector<std::string>& codes) {
-    authority_type_repo_.remove(codes);
-}
-
-std::vector<domain::coding_scheme_authority_type>
-coding_scheme_service::get_authority_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for coding scheme authority type: " << code;
-    return authority_type_repo_.read_all(code);
+std::vector<domain::coding_scheme>
+coding_scheme_service::get_scheme_history(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for coding scheme. " << "code: " << code;
+    return repo_.read_all(ctx_, code);
 }
 
 }

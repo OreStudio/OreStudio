@@ -4,6 +4,8 @@
 #include "ores.shell/app/commands/dq/catalog_commands.hpp"
 #include "ores.shell/app/commands/dq/change_reason_category_commands.hpp"
 #include "ores.shell/app/commands/dq/change_reason_commands.hpp"
+#include "ores.shell/app/commands/dq/coding_scheme_authority_type_commands.hpp"
+#include "ores.shell/app/commands/dq/coding_scheme_commands.hpp"
 #include "ores.shell/app/commands/dq/code_domain_commands.hpp"
 #include "ores.shell/app/commands/dq/data_domain_commands.hpp"
 #include "ores.shell/app/commands/dq/dataset_bundle_commands.hpp"
@@ -26,6 +28,8 @@ void dq_commands::register_commands(cli::Menu& root_menu,
     catalog_commands::register_commands(root_menu, session);
     change_reason_category_commands::register_commands(root_menu, session);
     change_reason_commands::register_commands(root_menu, session);
+    coding_scheme_authority_type_commands::register_commands(root_menu, session);
+    coding_scheme_commands::register_commands(root_menu, session);
     code_domain_commands::register_commands(root_menu, session);
     data_domain_commands::register_commands(root_menu, session);
     dataset_bundle_commands::register_commands(root_menu, session);

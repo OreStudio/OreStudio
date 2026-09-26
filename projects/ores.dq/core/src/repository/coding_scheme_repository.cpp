@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,12 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.core/repository/coding_scheme_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/coding_scheme_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/coding_scheme_entity.hpp"
 #include "ores.dq.core/repository/coding_scheme_mapper.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
@@ -36,109 +42,190 @@ std::string coding_scheme_repository::sql() {
     return generate_create_table_sql<coding_scheme_entity>(lg());
 }
 
-coding_scheme_repository::coding_scheme_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
-
-void coding_scheme_repository::write(const domain::coding_scheme& scheme) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing coding_scheme to database: " << scheme.code;
-    execute_write_query(
-        ctx_, coding_scheme_mapper::map(scheme), lg(), "writing coding_scheme to database");
+ores::utility::domain::precondition
+coding_scheme_repository::replace_claim(context ctx, const domain::coding_scheme& v) {
+    const auto current = read_latest(ctx, v.code);
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
 }
 
-void coding_scheme_repository::write(const std::vector<domain::coding_scheme>& schemes) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing coding_schemes to database. Count: " << schemes.size();
-    execute_write_query(
-        ctx_, coding_scheme_mapper::map(schemes), lg(), "writing coding_schemes to database");
+domain::coding_scheme coding_scheme_repository::apply_claim(
+    context ctx, const domain::coding_scheme& v, const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, v.code);
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
 }
 
-std::vector<domain::coding_scheme> coding_scheme_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+void coding_scheme_repository::write(context ctx, const domain::coding_scheme& v) {
+    write(ctx, v, replace_claim(ctx, v));
+}
+
+void coding_scheme_repository::write(context ctx, const std::vector<domain::coding_scheme>& v) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void coding_scheme_repository::write(context ctx,
+                                     const domain::coding_scheme& v,
+                                     const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing coding scheme. " << "code: " << v.code;
+    const auto t = apply_claim(ctx, v, claim);
+    execute_write_query(
+        ctx, coding_scheme_mapper::map(t), lg(), "Writing coding scheme to database.");
+}
+
+void coding_scheme_repository::write(
+    context ctx,
+    const std::vector<domain::coding_scheme>& v,
+    const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing coding schemes. Count: " << v.size();
+    std::vector<domain::coding_scheme> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(
+        ctx, coding_scheme_mapper::map(batch), lg(), "Writing coding schemes to database.");
+}
+
+std::vector<domain::coding_scheme> coding_scheme_repository::read_latest(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<coding_scheme_entity>> |
                        where("valid_to"_c == max.value()) | order_by("code"_c);
 
     return execute_read_query<coding_scheme_entity, domain::coding_scheme>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return coding_scheme_mapper::map(entities); },
         lg(),
-        "Reading latest coding_schemes");
+        "Reading latest coding schemes");
 }
 
-std::vector<domain::coding_scheme> coding_scheme_repository::read_latest(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest coding_scheme. Code: " << code;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+std::vector<domain::coding_scheme> coding_scheme_repository::read_latest(context ctx,
+                                                                         const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest coding scheme. " << "code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<coding_scheme_entity>> |
                        where("code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<coding_scheme_entity, domain::coding_scheme>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return coding_scheme_mapper::map(entities); },
         lg(),
-        "Reading latest coding_scheme by code.");
+        "Reading latest coding scheme by code.");
 }
 
-std::vector<domain::coding_scheme> coding_scheme_repository::read_latest(std::uint32_t offset,
-                                                                         std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest coding_schemes with offset: " << offset
-                               << " and limit: " << limit;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+std::vector<domain::coding_scheme> coding_scheme_repository::read_all(context ctx,
+                                                                      const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all coding scheme versions. " << "code: " << code;
+    const auto query = sqlgen::read<std::vector<coding_scheme_entity>> | where("code"_c == code) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
+
+    return execute_read_query<coding_scheme_entity, domain::coding_scheme>(
+        ctx,
+        query,
+        [](const auto& entities) { return coding_scheme_mapper::map(entities); },
+        lg(),
+        "Reading all coding scheme versions by code.");
+}
+
+std::optional<domain::coding_scheme> coding_scheme_repository::read_at_version(
+    context ctx, const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading coding scheme at version. " << "code: " << code
+                               << " version: " << version;
+    const auto query = sqlgen::read<std::vector<coding_scheme_entity>> |
+                       where("code"_c == code && "version"_c == version) | sqlgen::limit(1);
+
+    const auto entities = execute_read_query<coding_scheme_entity, domain::coding_scheme>(
+        ctx,
+        query,
+        [](const auto& entities) { return coding_scheme_mapper::map(entities); },
+        lg(),
+        "Reading coding scheme at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+coding_scheme_repository::remove_status coding_scheme_repository::remove(
+    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing coding scheme. " << "code: " << code;
+    const auto current = read_latest(ctx, code);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<coding_scheme_entity> |
+                       where("tenant_id"_c == tid && "code"_c == code &&
+                             "valid_to"_c == max.value() && "version"_c == expected);
+
+    execute_delete_query(ctx, query, lg(), "Removing coding scheme from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, code).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void coding_scheme_repository::remove(context ctx, const std::string& code) {
+    static_cast<void>(remove(ctx, code, std::nullopt));
+}
+
+std::vector<domain::coding_scheme>
+coding_scheme_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest coding schemes with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<coding_scheme_entity>> |
                        where("valid_to"_c == max.value()) | order_by("code"_c) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<coding_scheme_entity, domain::coding_scheme>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return coding_scheme_mapper::map(entities); },
         lg(),
-        "Reading latest coding_schemes with pagination.");
+        "Reading latest coding schemes with pagination.");
 }
 
-std::vector<domain::coding_scheme>
-coding_scheme_repository::read_latest_by_authority_type(const std::string& authority_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest coding_schemes by authority_type: "
-                               << authority_type;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<coding_scheme_entity>> |
-                       where("authority_type"_c == authority_type && "valid_to"_c == max.value()) |
-                       order_by("code"_c);
-
-    return execute_read_query<coding_scheme_entity, domain::coding_scheme>(
-        ctx_,
-        query,
-        [](const auto& entities) { return coding_scheme_mapper::map(entities); },
-        lg(),
-        "Reading latest coding_schemes by authority_type.");
-}
-
-std::vector<domain::coding_scheme>
-coding_scheme_repository::read_latest_by_subject_area(const std::string& subject_area_name,
-                                                      const std::string& domain_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest coding_schemes by subject_area: "
-                               << subject_area_name << "/" << domain_name;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<coding_scheme_entity>> |
-                       where("subject_area_name"_c == subject_area_name &&
-                             "domain_name"_c == domain_name && "valid_to"_c == max.value()) |
-                       order_by("code"_c);
-
-    return execute_read_query<coding_scheme_entity, domain::coding_scheme>(
-        ctx_,
-        query,
-        [](const auto& entities) { return coding_scheme_mapper::map(entities); },
-        lg(),
-        "Reading latest coding_schemes by subject_area.");
-}
-
-std::uint32_t coding_scheme_repository::get_total_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active coding_scheme count";
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+std::uint32_t coding_scheme_repository::get_total_scheme_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active coding scheme count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -147,39 +234,38 @@ std::uint32_t coding_scheme_repository::get_total_count() {
     const auto query = sqlgen::select_from<coding_scheme_entity>(sqlgen::count().as<"count">()) |
                        where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active coding_scheme count: " << count;
+    BOOST_LOG_SEV(lg(), debug) << "Total active coding scheme count: " << count;
     return count;
 }
 
-std::vector<domain::coding_scheme> coding_scheme_repository::read_all(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all coding_scheme versions. Code: " << code;
-
-    const auto query = sqlgen::read<std::vector<coding_scheme_entity>> | where("code"_c == code) |
-                       order_by("version"_c.desc());
-
-    return execute_read_query<coding_scheme_entity, domain::coding_scheme>(
-        ctx_,
+std::vector<domain::coding_scheme>
+coding_scheme_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+    if (codes.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<coding_scheme_entity>> |
+                       where("code"_c.in(codes) && "valid_to"_c == max.value());
+    auto result = execute_read_query<coding_scheme_entity, domain::coding_scheme>(
+        ctx,
         query,
         [](const auto& entities) { return coding_scheme_mapper::map(entities); },
         lg(),
-        "Reading all coding_scheme versions by code.");
+        "Reading latest coding schemes by ids.");
+    return result;
 }
 
-void coding_scheme_repository::remove(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing coding_scheme from database: " << code;
-
-    const auto query = sqlgen::delete_from<coding_scheme_entity> | where("code"_c == code);
-
-    execute_delete_query(ctx_, query, lg(), "removing coding_scheme from database");
+void coding_scheme_repository::remove(context ctx, const std::vector<std::string>& codes) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<coding_scheme_entity> |
+        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing coding schemes.");
 }
 
-void coding_scheme_repository::remove(const std::vector<std::string>& codes) {
-    const auto query = sqlgen::delete_from<coding_scheme_entity> | where("code"_c.in(codes));
-    execute_delete_query(ctx_, query, lg(), "batch removing coding_schemes");
-}
 
 }

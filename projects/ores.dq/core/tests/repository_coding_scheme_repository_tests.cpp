@@ -50,12 +50,12 @@ TEST_CASE("write_single_coding_scheme", tags) {
     database_helper h;
 
     generation_context ctx;
-    coding_scheme_repository repo(h.context());
+    coding_scheme_repository repo;
     auto coding_scheme = generate_synthetic_coding_scheme(ctx);
-    coding_scheme.tenant_id = h.tenant_id().to_string();
+    coding_scheme.tenant_id = h.tenant_id();
 
     BOOST_LOG_SEV(lg, debug) << "Coding scheme: " << coding_scheme;
-    CHECK_NOTHROW(repo.write(coding_scheme));
+    CHECK_NOTHROW(repo.write(h.context(), coding_scheme));
 }
 
 TEST_CASE("write_multiple_coding_schemes", tags) {
@@ -64,14 +64,14 @@ TEST_CASE("write_multiple_coding_schemes", tags) {
 
     database_helper h;
 
-    coding_scheme_repository repo(h.context());
+    coding_scheme_repository repo;
     generation_context ctx;
     auto coding_schemes = generate_synthetic_coding_schemes(3, ctx);
     for (auto& c : coding_schemes)
-        c.tenant_id = h.tenant_id().to_string();
+        c.tenant_id = h.tenant_id();
     BOOST_LOG_SEV(lg, debug) << "Coding schemes: " << coding_schemes;
 
-    CHECK_NOTHROW(repo.write(coding_schemes));
+    CHECK_NOTHROW(repo.write(h.context(), coding_schemes));
 }
 
 TEST_CASE("read_latest_coding_schemes", tags) {
@@ -80,16 +80,16 @@ TEST_CASE("read_latest_coding_schemes", tags) {
 
     database_helper h;
 
-    coding_scheme_repository repo(h.context());
+    coding_scheme_repository repo;
     generation_context ctx;
     auto written_coding_schemes = generate_synthetic_coding_schemes(3, ctx);
     for (auto& c : written_coding_schemes)
-        c.tenant_id = h.tenant_id().to_string();
+        c.tenant_id = h.tenant_id();
     BOOST_LOG_SEV(lg, debug) << "Written coding schemes: " << written_coding_schemes;
 
-    repo.write(written_coding_schemes);
+    repo.write(h.context(), written_coding_schemes);
 
-    auto read_coding_schemes = repo.read_latest();
+    auto read_coding_schemes = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
 
     CHECK(!read_coding_schemes.empty());
@@ -102,19 +102,19 @@ TEST_CASE("read_latest_coding_scheme_by_code", tags) {
 
     database_helper h;
 
-    coding_scheme_repository repo(h.context());
+    coding_scheme_repository repo;
     generation_context ctx;
     auto coding_schemes = generate_synthetic_coding_schemes(3, ctx);
     for (auto& c : coding_schemes)
-        c.tenant_id = h.tenant_id().to_string();
+        c.tenant_id = h.tenant_id();
 
     const auto target = coding_schemes.front();
     BOOST_LOG_SEV(lg, debug) << "Write coding schemes: " << coding_schemes;
-    repo.write(coding_schemes);
+    repo.write(h.context(), coding_schemes);
 
     BOOST_LOG_SEV(lg, debug) << "Target coding scheme: " << target;
 
-    auto read_coding_schemes = repo.read_latest(target.code);
+    auto read_coding_schemes = repo.read_latest(h.context(), target.code);
     BOOST_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
 
     REQUIRE(read_coding_schemes.size() == 1);
@@ -128,12 +128,12 @@ TEST_CASE("read_nonexistent_coding_scheme", tags) {
 
     database_helper h;
 
-    coding_scheme_repository repo(h.context());
+    coding_scheme_repository repo;
 
     const std::string nonexistent_code = "nonexistent.coding_scheme.12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
-    auto read_coding_schemes = repo.read_latest(nonexistent_code);
+    auto read_coding_schemes = repo.read_latest(h.context(), nonexistent_code);
     BOOST_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
 
     CHECK(read_coding_schemes.size() == 0);

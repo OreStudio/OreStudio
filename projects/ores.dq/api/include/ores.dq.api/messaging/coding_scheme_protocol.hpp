@@ -17,116 +17,258 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_MESSAGING_CODING_SCHEME_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_CODING_SCHEME_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/coding_scheme.hpp"
-#include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <optional>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::dq::messaging {
 
-// =============================================================================
-// Coding Scheme Authority Type Protocol
-// =============================================================================
-
-struct get_coding_scheme_authority_types_request {
-    using response_type = struct get_coding_scheme_authority_types_response;
-    static constexpr std::string_view nats_subject = "dq.v1.coding-scheme-authority-types.list";
-    int offset = 0;
-    int limit = 100;
+struct coding_scheme_key {
+    std::string code;
 };
 
-struct get_coding_scheme_authority_types_response {
-    std::vector<ores::dq::domain::coding_scheme_authority_type> coding_scheme_authority_types;
-    int total_available_count = 0;
+struct coding_scheme_write {
+    std::string code;
+    std::string name;
+    std::string authority_type;
+    std::string subject_area_name;
+    std::string domain_name;
+    std::string uri;
+    std::string description;
 };
 
-struct save_coding_scheme_authority_type_request {
-    using response_type = struct save_coding_scheme_authority_type_response;
-    static constexpr std::string_view nats_subject = "dq.v1.coding-scheme-authority-types.save";
-    ores::dq::domain::coding_scheme_authority_type data;
+struct coding_scheme_change {
+    coding_scheme_write write;
+    ores::utility::domain::precondition precondition;
 };
 
-struct save_coding_scheme_authority_type_response {
-    bool success = false;
-    std::string message;
+struct coding_scheme_removal {
+    coding_scheme_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
 };
 
-struct delete_coding_scheme_authority_type_request {
-    using response_type = struct delete_coding_scheme_authority_type_response;
-    static constexpr std::string_view nats_subject = "dq.v1.coding-scheme-authority-types.delete";
-    std::vector<std::string> types;
+struct coding_scheme_lookup {
+    coding_scheme_key key;
+    std::optional<ores::dq::domain::coding_scheme> coding_scheme;
 };
 
-struct delete_coding_scheme_authority_type_response {
-    bool success = false;
-    std::string message;
+struct coding_scheme_event {
+    boost::uuids::uuid event_id;
+    coding_scheme_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
 };
 
-struct get_coding_scheme_authority_type_history_request {
-    using response_type = struct get_coding_scheme_authority_type_history_response;
-    static constexpr std::string_view nats_subject = "dq.v1.coding-scheme-authority-types.history";
-    std::string type;
+struct coding_scheme_version_key {
+    coding_scheme_key coding_scheme;
+    std::uint32_t version;
 };
 
-struct get_coding_scheme_authority_type_history_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::dq::domain::coding_scheme_authority_type> history;
+struct coding_scheme_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
 };
 
-// =============================================================================
-// Coding Scheme Protocol
-// =============================================================================
-
-struct get_coding_schemes_request {
-    using response_type = struct get_coding_schemes_response;
-    static constexpr std::string_view nats_subject = "dq.v1.coding-schemes.list";
-    int offset = 0;
-    int limit = 100;
+struct list_coding_schemes_request {
+    using response_type = struct list_coding_schemes_response;
+    static constexpr std::string_view nats_subject = "dq.v1.coding_schemes.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
 };
 
-struct get_coding_schemes_response {
-    std::vector<ores::dq::domain::coding_scheme> coding_schemes;
-    int total_available_count = 0;
+struct list_coding_schemes_response {
+    ores::utility::domain::result result;
+    std::vector<ores::dq::domain::coding_scheme> schemes;
+    std::uint64_t total;
 };
 
-struct save_coding_scheme_request {
-    using response_type = struct save_coding_scheme_response;
-    static constexpr std::string_view nats_subject = "dq.v1.coding-schemes.save";
-    ores::dq::domain::coding_scheme data;
+struct get_coding_scheme_request {
+    using response_type = struct get_coding_scheme_response;
+    static constexpr std::string_view nats_subject = "dq.v1.coding_schemes.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    coding_scheme_key key;
 };
 
-struct save_coding_scheme_response {
-    bool success = false;
-    std::string message;
+struct get_coding_scheme_response {
+    ores::utility::domain::result result;
+    std::optional<ores::dq::domain::coding_scheme> coding_scheme;
+};
+
+struct get_many_coding_schemes_request {
+    using response_type = struct get_many_coding_schemes_response;
+    static constexpr std::string_view nats_subject = "dq.v1.coding_schemes.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<coding_scheme_key> keys;
+};
+
+struct get_many_coding_schemes_response {
+    ores::utility::domain::result result;
+    std::vector<coding_scheme_lookup> entries;
+};
+
+struct put_coding_scheme_request {
+    using response_type = struct put_coding_scheme_response;
+    static constexpr std::string_view nats_subject = "dq.v1.coding_schemes.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    coding_scheme_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_coding_scheme_response {
+    ores::utility::domain::result result;
+    ores::dq::domain::coding_scheme coding_scheme;
+};
+
+struct put_many_coding_schemes_request {
+    using response_type = struct put_many_coding_schemes_response;
+    static constexpr std::string_view nats_subject = "dq.v1.coding_schemes.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<coding_scheme_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_coding_schemes_response {
+    ores::utility::domain::result result;
+    std::vector<ores::dq::domain::coding_scheme> schemes;
 };
 
 struct delete_coding_scheme_request {
     using response_type = struct delete_coding_scheme_response;
-    static constexpr std::string_view nats_subject = "dq.v1.coding-schemes.delete";
-    std::vector<std::string> codes;
+    static constexpr std::string_view nats_subject = "dq.v1.coding_schemes.delete";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    coding_scheme_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_coding_scheme_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_coding_scheme_history_request {
-    using response_type = struct get_coding_scheme_history_response;
-    static constexpr std::string_view nats_subject = "dq.v1.coding-schemes.history";
-    std::string code;
+struct delete_many_coding_schemes_request {
+    using response_type = struct delete_many_coding_schemes_response;
+    static constexpr std::string_view nats_subject = "dq.v1.coding_schemes.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<coding_scheme_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_coding_scheme_history_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::dq::domain::coding_scheme> history;
+struct delete_many_coding_schemes_response {
+    ores::utility::domain::result result;
 };
+
+struct list_coding_scheme_versions_request {
+    using response_type = struct list_coding_scheme_versions_response;
+    static constexpr std::string_view nats_subject = "dq.v1.coding_schemes_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    coding_scheme_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<coding_scheme_versions_filter> filter;
+};
+
+struct list_coding_scheme_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::dq::domain::coding_scheme> versions;
+    std::uint64_t total;
+};
+
+struct get_coding_scheme_version_request {
+    using response_type = struct get_coding_scheme_version_response;
+    static constexpr std::string_view nats_subject = "dq.v1.coding_schemes_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    coding_scheme_version_key key;
+};
+
+struct get_coding_scheme_version_response {
+    ores::utility::domain::result result;
+    ores::dq::domain::coding_scheme version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace coding_scheme_event_subjects {
+inline constexpr std::string_view created = "dq.v1.coding_schemes_events.created";
+inline constexpr std::string_view updated = "dq.v1.coding_schemes_events.updated";
+inline constexpr std::string_view deleted = "dq.v1.coding_schemes_events.deleted";
+}
 
 }
 

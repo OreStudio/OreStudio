@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_REPOSITORY_CODING_SCHEME_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_CODING_SCHEME_REPOSITORY_HPP
 
@@ -24,6 +29,10 @@
 #include "ores.dq.api/domain/coding_scheme.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -31,7 +40,7 @@
 namespace ores::dq::repository {
 
 /**
- * @brief Reads and writes coding_schemes to data storage.
+ * @brief Reads and writes coding schemes to data storage.
  */
 class ORES_DQ_CORE_EXPORT coding_scheme_repository {
 private:
@@ -46,37 +55,139 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit coding_scheme_repository(context ctx);
-
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
-    void write(const domain::coding_scheme& scheme);
-    void write(const std::vector<domain::coding_scheme>& schemes);
-
-    std::vector<domain::coding_scheme> read_latest();
-    std::vector<domain::coding_scheme> read_latest(const std::string& code);
-    std::vector<domain::coding_scheme> read_latest(std::uint32_t offset, std::uint32_t limit);
+    /**
+     * @brief Writes coding schemes to database.
+     *
+     * The plain form replaces the row the caller last read: it states the
+     * version the row carries now, so the store can tell a replace from a
+     * create. A row that moved on since that read is a conflict, never a silent
+     * overwrite.
+     */
+    /**@{*/
+    void write(context ctx, const domain::coding_scheme& v);
+    void write(context ctx, const std::vector<domain::coding_scheme>& v);
+    /**@}*/
 
     /**
-     * @brief Reads latest coding_schemes by authority type.
+     * @brief Writes a coding scheme, honouring the claim it states.
+     *
+     * The claim is the version the caller read (@c must_match_version), that no
+     * current row exists (@c must_not_exist), or neither (@c any, which
+     * replaces the row as it stands). The store decides in the write's own
+     * transaction, so a create that collides with a live row and a write over a
+     * row that moved on are refused by the store rather than by a check a
+     * caller might have forgotten.
      */
-    std::vector<domain::coding_scheme>
-    read_latest_by_authority_type(const std::string& authority_type);
+    void write(context ctx,
+               const domain::coding_scheme& v,
+               const ores::utility::domain::precondition& claim);
 
     /**
-     * @brief Reads latest coding_schemes by subject area.
+     * @brief Writes a set of coding schemes, each honouring its own
+     * claim, as one statement.
+     */
+    void write(context ctx,
+               const std::vector<domain::coding_scheme>& v,
+               const std::vector<ores::utility::domain::precondition>& claims);
+
+    /**
+     * @brief Reads latest coding schemes, possibly filtered by primary key.
+     */
+    /**@{*/
+    std::vector<domain::coding_scheme> read_latest(context ctx);
+    std::vector<domain::coding_scheme> read_latest(context ctx, const std::string& code);
+    std::vector<domain::coding_scheme> read_latest(context ctx,
+                                                   const std::vector<std::string>& codes);
+    /**@}*/
+
+
+    /**
+     * @brief Reads all coding schemes, possibly filtered by primary key.
+     */
+    std::vector<domain::coding_scheme> read_all(context ctx, const std::string& code);
+
+    /**
+     * @brief Reads a single coding scheme as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::coding_scheme>
+    read_at_version(context ctx, const std::string& code, std::uint32_t version);
+
+    /**
+     * @brief Reads latest coding schemes with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
      */
     std::vector<domain::coding_scheme>
-    read_latest_by_subject_area(const std::string& subject_area_name,
-                                const std::string& domain_name);
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
-    std::uint32_t get_total_count();
-    std::vector<domain::coding_scheme> read_all(const std::string& code);
-    void remove(const std::string& code);
-    void remove(const std::vector<std::string>& codes);
+    /**
+     * @brief Gets the total count of active coding schemes.
+     * @param ctx Repository context with database connection
+     * @return Total number of active coding schemes
+     */
+    std::uint32_t get_total_scheme_count(context ctx);
+
+    /**
+     * @brief Deletes a coding scheme by closing its temporal validity.
+     */
+    void remove(context ctx, const std::string& code);
+
+    /**
+     * @brief What a removal did, so a caller reports a conflict as an outcome
+     * rather than catching an exception.
+     *
+     * @c missing means there was no current row to remove, and @c unsupported
+     * means the store cannot answer the version at all -- a current-state
+     * table has no version column, so a versioned removal has no meaning
+     * there.
+     */
+    enum class remove_status { removed, conflicting, missing, unsupported };
+
+    /**
+     * @brief Removes a coding scheme, refusing a row that moved on.
+     *
+     * A stated version is the version the caller read. The removal is refused
+     * with @c conflicting when the current row carries another, so a caller
+     * that decided on stale state cannot remove a change it never saw. A null
+     * version removes whatever is current, which is what a caller that stated
+     * no version asked for.
+     */
+    remove_status
+    remove(context ctx, const std::string& code, std::optional<std::uint32_t> version);
+
+    /**
+     * @brief Deletes coding schemes by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& codes);
+
 
 private:
-    context ctx_;
+    /**
+     * @brief The claim a replace makes: the version the row carries now, or
+     * that no row exists yet.
+     */
+    ores::utility::domain::precondition replace_claim(context ctx, const domain::coding_scheme& v);
+
+    /**
+     * @brief The object with the claim's version stamped onto it.
+     *
+     * A claim the store cannot check is refused here rather than ignored.
+     */
+    domain::coding_scheme apply_claim(context ctx,
+                                      const domain::coding_scheme& v,
+                                      const ores::utility::domain::precondition& claim);
 };
 
 }

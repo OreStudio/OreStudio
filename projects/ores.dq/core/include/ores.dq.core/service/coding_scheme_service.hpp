@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,16 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_SERVICE_CODING_SCHEME_SERVICE_HPP
 #define ORES_DQ_CORE_SERVICE_CODING_SCHEME_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/coding_scheme.hpp"
-#include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
+#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq.core/export.hpp"
-#include "ores.dq.core/repository/coding_scheme_authority_type_repository.hpp"
 #include "ores.dq.core/repository/coding_scheme_repository.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -36,9 +42,8 @@ namespace ores::dq::service {
 /**
  * @brief Service for managing coding schemes.
  *
- * This service provides functionality for:
- * - Managing coding schemes (CRUD operations)
- * - Filtering coding schemes by authority type
+ * Provides a higher-level interface for coding scheme operations,
+ * wrapping the underlying repository.
  */
 class ORES_DQ_CORE_EXPORT coding_scheme_service {
 private:
@@ -54,131 +59,136 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a coding_scheme_service with required repositories.
+     * @brief Constructs a coding_scheme_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit coding_scheme_service(context ctx);
 
-    // ========================================================================
-    // Coding Scheme Management
-    // ========================================================================
+    /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_coding_schemes_response
+    list_coding_schemes(const messaging::list_coding_schemes_request& request);
+    messaging::get_coding_scheme_response
+    get_coding_scheme(const messaging::get_coding_scheme_request& request);
+    messaging::get_many_coding_schemes_response
+    get_many_coding_schemes(const messaging::get_many_coding_schemes_request& request);
+    messaging::put_coding_scheme_response
+    put_coding_scheme(const messaging::put_coding_scheme_request& request);
+    messaging::put_many_coding_schemes_response
+    put_many_coding_schemes(const messaging::put_many_coding_schemes_request& request);
+    messaging::delete_coding_scheme_response
+    delete_coding_scheme(const messaging::delete_coding_scheme_request& request);
+    messaging::delete_many_coding_schemes_response
+    delete_many_coding_schemes(const messaging::delete_many_coding_schemes_request& request);
+    messaging::list_coding_scheme_versions_response
+    list_coding_scheme_versions(const messaging::list_coding_scheme_versions_request& request);
+    messaging::get_coding_scheme_version_response
+    get_coding_scheme_version(const messaging::get_coding_scheme_version_request& request);
+    /**@}*/
 
     /**
-     * @brief Lists all coding schemes.
+     * @brief Lists coding schemes with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of coding schemes for the requested page.
      */
-    std::vector<domain::coding_scheme> list_coding_schemes();
-
-    /**
-     * @brief Lists coding schemes with pagination.
-     */
-    std::vector<domain::coding_scheme> list_coding_schemes(std::uint32_t offset,
-                                                           std::uint32_t limit);
-
-    /**
-     * @brief Lists coding schemes for a specific authority type.
-     */
-    std::vector<domain::coding_scheme>
-    list_coding_schemes_by_authority_type(const std::string& authority_type);
+    std::vector<domain::coding_scheme> list_schemes(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active coding schemes.
+     *
+     * @return Total number of active coding schemes.
      */
-    std::uint32_t get_coding_scheme_count();
+    std::uint32_t count_schemes();
+
 
     /**
-     * @brief Finds a coding scheme by its code.
+     * @brief Retrieves a single coding scheme as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The coding scheme at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::coding_scheme> find_coding_scheme(const std::string& code);
+    std::optional<domain::coding_scheme> get_scheme_at_version(const std::string& code,
+                                                               std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single coding scheme by its primary key.
+     *
+     * @return The coding scheme if found, std::nullopt otherwise.
+     */
+    std::optional<domain::coding_scheme> get_scheme(const std::string& code);
+
+    /**
+     * @brief Retrieves a batch of coding schemes by primary key.
+     */
+    std::vector<domain::coding_scheme> get_schemes(const std::vector<std::string>& codes);
 
     /**
      * @brief Saves a coding scheme (creates or updates).
      *
-     * @param scheme The coding scheme to save
+     * @param scheme The coding scheme to save.
+     * @throws std::exception on failure.
      */
-    void save_coding_scheme(const domain::coding_scheme& scheme);
+    void save_scheme(const domain::coding_scheme& scheme);
 
     /**
-     * @brief Saves multiple coding schemes (creates or updates).
+     * @brief Saves a batch of coding schemes.
      *
-     * @param schemes The coding schemes to save
+     * @param schemes The coding schemes to save.
+     * @throws std::exception on failure.
      */
-    void save_coding_schemes(const std::vector<domain::coding_scheme>& schemes);
+    void save_schemes(const std::vector<domain::coding_scheme>& schemes);
 
     /**
-     * @brief Removes a coding scheme.
+     * @brief Deletes a coding scheme by its primary key.
      *
-     * @param code The code of the coding scheme to remove
+     * @throws std::exception on failure.
      */
-    void remove_coding_scheme(const std::string& code);
+    void delete_scheme(const std::string& code);
 
     /**
-     * @brief Removes multiple coding schemes.
+     * @brief Deletes coding schemes by their primary keys.
      */
-    void remove_coding_schemes(const std::vector<std::string>& codes);
+    void delete_schemes(const std::vector<std::string>& codes);
 
     /**
-     * @brief Gets the version history for a coding scheme.
+     * @brief Retrieves all historical versions of a coding scheme.
      *
-     * @param code The coding scheme code
-     * @return Vector of all versions, newest first
+     * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::coding_scheme> get_coding_scheme_history(const std::string& code);
-
-    // ========================================================================
-    // Coding Scheme Authority Type Management
-    // ========================================================================
-
-    /**
-     * @brief Lists all coding scheme authority types.
-     */
-    std::vector<domain::coding_scheme_authority_type> list_authority_types();
-
-    /**
-     * @brief Finds a coding scheme authority type by its code.
-     */
-    std::optional<domain::coding_scheme_authority_type>
-    find_authority_type(const std::string& code);
-
-    /**
-     * @brief Saves a coding scheme authority type (creates or updates).
-     *
-     * @param authority_type The authority type to save
-     */
-    void save_authority_type(const domain::coding_scheme_authority_type& authority_type);
-
-    /**
-     * @brief Saves multiple coding scheme authority types (creates or updates).
-     *
-     * @param authority_types The authority types to save
-     */
-    void
-    save_authority_types(const std::vector<domain::coding_scheme_authority_type>& authority_types);
-
-    /**
-     * @brief Removes a coding scheme authority type.
-     *
-     * @param code The code of the authority type to remove
-     */
-    void remove_authority_type(const std::string& code);
-
-    /**
-     * @brief Removes multiple coding scheme authority types.
-     */
-    void remove_authority_types(const std::vector<std::string>& codes);
-
-    /**
-     * @brief Gets the version history for a coding scheme authority type.
-     *
-     * @param code The authority type code
-     * @return Vector of all versions, newest first
-     */
-    std::vector<domain::coding_scheme_authority_type>
-    get_authority_type_history(const std::string& code);
+    std::vector<domain::coding_scheme> get_scheme_history(const std::string& code);
 
 private:
-    repository::coding_scheme_repository coding_scheme_repo_;
-    repository::coding_scheme_authority_type_repository authority_type_repo_;
+    context ctx_;
+    repository::coding_scheme_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::coding_scheme_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::coding_scheme& out);
 };
 
 }

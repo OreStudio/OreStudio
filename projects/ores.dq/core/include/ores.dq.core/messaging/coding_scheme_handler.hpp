@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_handler.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_MESSAGING_CODING_SCHEME_HANDLER_HPP
 #define ORES_DQ_CORE_MESSAGING_CODING_SCHEME_HANDLER_HPP
 
@@ -30,16 +35,8 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <optional>
-#include <stdexcept>
 
 namespace ores::dq::messaging {
-
-using ores::service::messaging::reply;
-using ores::service::messaging::decode;
-using ores::service::messaging::stamp;
-using ores::service::messaging::error_reply;
-using ores::service::messaging::has_permission;
-using namespace ores::logging;
 
 namespace {
 inline auto& coding_scheme_handler_lg() {
@@ -48,6 +45,15 @@ inline auto& coding_scheme_handler_lg() {
 }
 } // namespace
 
+using ores::service::messaging::reply;
+using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
+using namespace ores::logging;
+
+/**
+ * @brief NATS message handler for coding scheme operations.
+ */
 class coding_scheme_handler {
 public:
     coding_scheme_handler(ores::nats::service::client& nats,
@@ -57,253 +63,397 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    // =========================================================================
-    // Coding Scheme Authority Types
-    // =========================================================================
-
-    void list_authority_types(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.coding_schemes.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_coding_schemes(ores::nats::message msg) {
         BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<get_coding_scheme_authority_types_request>(msg);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_coding_schemes_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::coding_scheme_service svc(ctx);
+        service::coding_scheme_service svc(req_ctx);
         try {
-            const auto items = svc.list_authority_types();
-            get_coding_scheme_authority_types_response resp;
-            resp.coding_scheme_authority_types = items;
-            resp.total_available_count = static_cast<int>(items.size());
+            auto response = svc.list_coding_schemes(*req);
             BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(coding_scheme_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            get_coding_scheme_authority_types_response resp;
-            resp.total_available_count = 0;
-            reply(nats_, msg, resp);
+            list_coding_schemes_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void save_authority_type(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.coding_schemes.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_coding_scheme(ores::nats::message msg) {
         BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<save_coding_scheme_authority_type_request>(msg);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_coding_scheme_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        service::coding_scheme_service svc(req_ctx);
+        try {
+            auto response = svc.get_coding_scheme(*req);
+            BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(coding_scheme_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_coding_scheme_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.coding_schemes.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_coding_schemes(ores::nats::message msg) {
+        BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "dq::coding_scheme_authority_types:write")) {
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_coding_schemes_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::coding_scheme_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_coding_schemes(*req);
+            BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(coding_scheme_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_coding_schemes_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.coding_schemes.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_coding_scheme(ores::nats::message msg) {
+        BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::coding_schemes:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::coding_scheme_service svc(ctx);
+        auto req = decode<put_coding_scheme_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::coding_scheme_service svc(req_ctx);
         try {
-            stamp(req->data, ctx);
-            svc.save_authority_type(req->data);
+            auto response = svc.put_coding_scheme(*req);
             BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, save_coding_scheme_authority_type_response{true, {}});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(coding_scheme_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_coding_scheme_authority_type_response{false, e.what()});
+            put_coding_scheme_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void delete_authority_types(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.coding_schemes.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_coding_schemes(ores::nats::message msg) {
         BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<delete_coding_scheme_authority_type_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "dq::coding_scheme_authority_types:delete")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::coding_schemes:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::coding_scheme_service svc(ctx);
+        auto req = decode<put_many_coding_schemes_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::coding_scheme_service svc(req_ctx);
         try {
-            svc.remove_authority_types(req->types);
+            auto response = svc.put_many_coding_schemes(*req);
             BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, delete_coding_scheme_authority_type_response{true, {}});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(coding_scheme_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, delete_coding_scheme_authority_type_response{false, e.what()});
+            put_many_coding_schemes_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void authority_type_history(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.coding_schemes.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_coding_scheme(ores::nats::message msg) {
         BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<get_coding_scheme_authority_type_history_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::coding_scheme_service svc(ctx);
-        try {
-            const auto history = svc.get_authority_type_history(req->type);
-            get_coding_scheme_authority_type_history_response resp;
-            resp.success = true;
-            resp.history = history;
-            BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(coding_scheme_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            get_coding_scheme_authority_type_history_response resp;
-            resp.success = false;
-            resp.message = e.what();
-            reply(nats_, msg, resp);
-        }
-    }
-
-    // =========================================================================
-    // Coding Schemes
-    // =========================================================================
-
-    void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<get_coding_schemes_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            return;
-        }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::coding_scheme_service svc(ctx);
-        try {
-            const auto items = svc.list_coding_schemes(static_cast<std::uint32_t>(req->offset),
-                                                       static_cast<std::uint32_t>(req->limit));
-            const auto count = svc.get_coding_scheme_count();
-            get_coding_schemes_response resp;
-            resp.coding_schemes = items;
-            resp.total_available_count = static_cast<int>(count);
-            BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(coding_scheme_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            get_coding_schemes_response resp;
-            resp.total_available_count = 0;
-            reply(nats_, msg, resp);
-        }
-    }
-
-    void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<save_coding_scheme_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            return;
-        }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "dq::coding_schemes:write")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::coding_schemes:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::coding_scheme_service svc(ctx);
-        try {
-            stamp(req->data, ctx);
-            svc.save_coding_scheme(req->data);
-            BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, save_coding_scheme_response{true, {}});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(coding_scheme_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_coding_scheme_response{false, e.what()});
-        }
-    }
-
-    void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Handling " << msg.subject;
         auto req = decode<delete_coding_scheme_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "dq::coding_schemes:delete")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        service::coding_scheme_service svc(ctx);
+        service::coding_scheme_service svc(req_ctx);
         try {
-            svc.remove_coding_schemes(req->codes);
+            auto response = svc.delete_coding_scheme(*req);
             BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, delete_coding_scheme_response{true, {}});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(coding_scheme_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, delete_coding_scheme_response{false, e.what()});
+            delete_coding_scheme_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.coding_schemes.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_coding_schemes(ores::nats::message msg) {
         BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<get_coding_scheme_history_request>(msg);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::coding_schemes:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_coding_schemes_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::coding_scheme_service svc(ctx);
+        service::coding_scheme_service svc(req_ctx);
         try {
-            const auto hist = svc.get_coding_scheme_history(req->code);
-            get_coding_scheme_history_response resp;
-            resp.success = true;
-            resp.history = hist;
+            auto response = svc.delete_many_coding_schemes(*req);
             BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(coding_scheme_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            get_coding_scheme_history_response resp;
-            resp.success = false;
-            resp.message = e.what();
-            reply(nats_, msg, resp);
+            delete_many_coding_schemes_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.coding_schemes_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_coding_scheme_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_coding_scheme_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::coding_scheme_service svc(req_ctx);
+        try {
+            auto response = svc.list_coding_scheme_versions(*req);
+            BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(coding_scheme_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_coding_scheme_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.coding_schemes_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_coding_scheme_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_coding_scheme_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::coding_scheme_service svc(req_ctx);
+        try {
+            auto response = svc.get_coding_scheme_version(*req);
+            BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(coding_scheme_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_coding_scheme_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

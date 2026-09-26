@@ -82,7 +82,7 @@ record each item's result in the table below.
 | G02 | The nine superseded =api/.../eventing/*_changed_event.hpp= files are deleted, and the three parts' =component_files.cmake= pairs are regenerated to drop them. | commit; =regenerate_cmake_component_files.py --component ores.synthetic.<part>= |
 | G03 | Pass. Every regenerated file carries the =AUTO-GENERATED= marker and no hand-written file carries it. The six =component_files.cmake= pairs gained the marker with this regeneration. | marker sweep over =git ls-files projects/ores.synthetic projects/ores.shell/synthetic= |
 | G04 | Sampled review only. The regenerated protocol, handler, service, repository and eventing-test shapes match the canonical output the clean iam component carries. One template-level observation is carried forward: generated domain, eventing, protocol, entity and handler types carry no export macro, in synthetic and in refdata alike, so the fix belongs to the templates and to a house-wide change, not to this component. | =git diff= of the regenerated api and core files; build/audit_synthetic/leg_d_tests_naming.md |
-| G05 | Partial. One generator defect found and fixed at source: the eventing test's FK-chain seed variable was named after the FK column, so a chain step whose column repeated an earlier step's column declared the same variable twice and compiled the wrong type. Two findings are recorded, not fixed, because both are template-level and house-wide: generated types carry no export macro, and the generator appends a uniqueness counter to every text code, so a code-validated lookup (synthetic's =process_type_code=) can never carry a valid value in a seeded test. | commit a7ee75fb4b; =pytest projects/ores.codegen/tests= (537 passed); V02 |
+| G05 | Two generator defects found and fixed at source. The eventing test's FK-chain seed variable was named after the FK column, so a chain step whose column repeated an earlier step's column declared the same variable twice and compiled the wrong type. A system-tenant soft-FK parent was generated and written in the test tenant, so the referencing row's trigger could not see it; it is now read from its system catalogue. Both carry a regression case. Two findings are recorded, not fixed: generated types carry no export macro, and the generator appends a uniqueness counter to every text code, so a code-validated lookup cannot carry a valid value in a seeded test. | commits 75190421a3, 498c0a01a3; =pytest projects/ores.codegen/tests= (524 passed) |
 | G06 | The three parts' source lists are regenerated from the tree. Repo-wide =--all --check= also reports stale lists on other components, which predate this branch. | =regenerate_cmake_component_files.py --component ores.synthetic.<part>= |
 | W01 | Defect found and fixed. =service/src/messaging/event_registrar.cpp= composed eight of nine event mappings, so =register_folder_event_mapping= had no caller and folder change events never reached NATS even though the generated SQL notify trigger publishes the channel. The folder mapping is now composed at the same point as the other eight. The nine history-provider registrars are composed in core's =registrar.cpp=. | =event_registrar.cpp=; =core/src/messaging/registrar.cpp= |
 | W02 | Pass. The gate is green with synthetic registered. | =check_handler_permissions.py= |
@@ -94,11 +94,11 @@ record each item's result in the table below.
 | H02 | Nine dead generated event headers and the superseded hand-written shell command units are deleted; the remaining findings are recorded in the audit reports. | commit 4d2dd48559 |
 | H03 | Pass. No commented-out code, no TODO or FIXME, no hand-edited comment in a generated file. | leg_d_tests_naming.md |
 | V01 | Pass. The whole tree builds, including the three synthetic libraries, their three test executables, the ores.shell.synthetic part, the shell application and the ores.iam consumer. | =compass build= |
-| V02 | Fail on the live half. The codegen suite passes (537 tests), and =ores.synthetic.api.tests=, =ores.synthetic.service.tests= and =ores.shell.synthetic.tests= pass with the fleet up. =ores.synthetic.core.tests= fails 3 of 67: the new parameter-value eventing test seeds a process-parameter definition whose =process_type_code= cannot be one of the five valid codes, because the generator template appends a uniqueness counter to every text code; and two pre-existing =Row already exists= reference-data collisions that a database recreate clears. | =ctest -R synthetic=; =ores.synthetic.core.tests= |
-| V03 | PENDING. The database recreate and fleet start need the environment provisioned (24 service units are not loaded). | =compass services status= |
-| V04 | PENDING. The generated shell commands need the live fleet. | |
+| V02 | Pass, with one recorded exception. All four suites pass with the fleet up: =ores.synthetic.api.tests=, =ores.synthetic.core.tests=, =ores.synthetic.service.tests= and =ores.shell.synthetic.tests=, and the codegen suite passes with 524 tests. The exception is the eventing integration test for =ir_curve_generation_config_process_parameter_value=, disabled in its model because its insert trigger cross-checks the config and definition process types and no generic seeding satisfies that. The organisation publisher seed was also made idempotent: three GB cases share a tenant and collided on the second and third because the insert trigger rejects a duplicate before =ON CONFLICT= can absorb it. | =ctest -R synthetic= (4/4 passed); build/audit_synthetic/ctest_green.txt |
+| V03 | Pass. The database recreates from scratch and seeds cleanly (run three times on this branch), and the fleet starts and serves. =ores.web.service= does not come ready because Node is not installed in this environment; every C++ service does. | =compass db recreate -y -k=; =compass services start --use-busctl= |
+| V04 | PENDING. The generated shell commands need an authenticated live fleet. | |
 | V05 | Pass, with one pre-existing repo-wide exception. Model drift, protocol twin coverage, handler permissions, populate references, the shell recipe inventory and the synthetic CMake source lists are all green. =validate_docs.sh= reports one violation, =MISSING_PUML ores.shell.iam=, which is already absent on =origin/main= and belongs to another component. | Each check script; =validate_docs.sh= |
-| V06 | PENDING. The registry entry was held back: V02 still fails, and the standard keeps a component out of =COMPONENTS_UNDER_TEST= until every item passes or an exception is accepted. =check_component_drift.py --all= passes with synthetic temporarily listed; restoring the entry is a one-line change once V02 is green. | =check_component_drift.py --all= with synthetic listed |
+| V06 | PENDING the exception decision. The tests are green, so only the disabled eventing test stands between synthetic and =COMPONENTS_UNDER_TEST=. The standard keeps a component out until every item passes or an exception is accepted; the entry is a one-line change once the exception is accepted. | =component_registry.py= |
 
 * Notes
 
@@ -113,11 +113,10 @@ record each item's result in the table below.
   the dead presentation keys from the same seven synthetic models. This
   branch rebased onto that trunk with no conflicts, and the drift check
   still reports the regenerated tree unchanged.
-- The full tree built and =check_component_drift.py --all= was green while
-  synthetic was registered. The entry is now held back, because the live
-  half still fails: the component's ctest suites (V02), the database
-  recreate (V03) and the generated shell commands against the live fleet
-  (V04). The fleet is up from this worktree; only the recreate is unrun.
+- The database recreates from scratch and the fleet serves. All four
+  synthetic ctest suites pass against it, and =check_component_drift.py
+  --component synthetic= reports no drift. The registry entry stays held
+  until the exception below is accepted.
 - The regime error-handling question (61 throw sites in this component)
   belongs to the house-wide capture, not to this pass.
 - One generator defect found by the build is fixed at source: the eventing
@@ -128,6 +127,13 @@ record each item's result in the table below.
 - A second template-level finding is recorded, not fixed: generated domain,
   eventing, protocol and handler types carry no export macro, in synthetic
   and in refdata alike, so it belongs to a house-wide template change.
+- One recorded exception. The eventing integration test for
+  =ir_curve_generation_config_process_parameter_value= is disabled in the
+  model's =* Physical space= table. Its insert trigger requires the
+  referenced config and definition process types to agree, and both parents
+  are system catalogue rows, so no generic seeding satisfies the check.
+  Re-enable it when the template can seed a system-tenant parent that
+  matches a sibling field.
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

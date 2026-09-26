@@ -50,6 +50,15 @@
 namespace ores::reporting::messaging {
 
 namespace {
+
+// The concurrency policy codes the change-reason-free seed defines. Stated once
+// so a reader sees the exact set this handler depends on; a fourth policy in the
+// seed would have to be added here too, and the unknown-policy branch is what
+// catches it if it is not.
+constexpr std::string_view policy_fail = "fail";
+constexpr std::string_view policy_queue = "queue";
+constexpr std::string_view policy_skip = "skip";
+
 inline auto& report_instance_trigger_handler_lg() {
     static auto instance =
         ores::logging::make_logger("ores.reporting.messaging.report_instance_trigger_handler");
@@ -149,7 +158,7 @@ private:
         }
 
         const auto policy = def->concurrency_policy;
-        if (policy != "fail" && policy != "queue" && policy != "skip") {
+        if (policy != policy_fail && policy != policy_queue && policy != policy_skip) {
             response.result.outcome = ores::utility::domain::outcome::invalid;
             response.result.code = "unknown_concurrency_policy";
             response.result.message = std::format(
@@ -169,9 +178,9 @@ private:
         if (in_flight) {
             note = std::format("An instance of this definition is already in flight ({}).",
                                *in_flight);
-            if (policy == "queue") {
+            if (policy == policy_queue) {
                 initial_state = instance_states_.require("queued");
-            } else if (policy == "skip") {
+            } else if (policy == policy_skip) {
                 initial_state = instance_states_.require("skipped");
             } else {
                 initial_state = instance_states_.require("failed");

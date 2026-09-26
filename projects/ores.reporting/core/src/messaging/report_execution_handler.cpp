@@ -82,6 +82,15 @@ void report_execution_handler::mark_instance_failed(const std::string& tenant_id
         boost::uuids::string_generator sg;
         auto inst = inst_svc.get_instance(sg(instance_id));
         if (inst) {
+            // The engine compensates every completed step and every step's
+            // compensation is this same fail_report subject, so this runs once
+            // per completed step, each carrying that step's own generic
+            // message. The failure that actually happened is the first one:
+            // the first writer wins and the rest are no-ops, rather than the
+            // last one overwriting the true reason with an unrelated step's.
+            if (inst->fsm_state_id &&
+                *inst->fsm_state_id == instance_states_.require("failed"))
+                return;
             inst->fsm_state_id = instance_states_.require("failed");
             inst->completed_at = std::chrono::system_clock::now();
             inst->output_message = error_message;

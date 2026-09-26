@@ -173,11 +173,18 @@ report_scheduling_service::schedule_one(const domain::report_definition& def,
     // Resolve the "active" FSM state UUID once from the system context.
     const auto active_state =
         find_fsm_state_id(ctx_, lg(), "active", "ores_reporting_active_definition_state_fn");
+    if (!active_state) {
+        // The job is already in the scheduler, so the two are out of step from
+        // here. Say so rather than saving a null state and leaving only a
+        // warning: reconcile adopts the job by name on the next start.
+        return std::unexpected("The active report definition state is not seeded: the "
+                               "scheduler job exists but the definition cannot record it.");
+    }
 
     // Update the definition with the new scheduler_job_id and active state.
     auto updated = def;
     updated.scheduler_job_id = job_id;
-    updated.fsm_state_id = active_state;
+    updated.fsm_state_id = *active_state;
     updated.modified_by = actor;
     updated.performed_by = ctx_.service_account();
     updated.change_reason_code = std::string(ores::service::messaging::change_reasons::update);
@@ -235,11 +242,15 @@ report_scheduling_service::unschedule_one(const domain::report_definition& def,
     // Resolve the "suspended" FSM state UUID from the system context.
     const auto suspended_state =
         find_fsm_state_id(ctx_, lg(), "suspended", "ores_reporting_suspended_definition_state_fn");
+    if (!suspended_state) {
+        return std::unexpected("The suspended report definition state is not seeded: the "
+                               "scheduler job was removed but the definition cannot record it.");
+    }
 
     // Clear scheduler_job_id and transition to suspended state.
     auto updated = def;
     updated.scheduler_job_id = std::nullopt;
-    updated.fsm_state_id = suspended_state;
+    updated.fsm_state_id = *suspended_state;
     updated.modified_by = actor;
     updated.performed_by = ctx_.service_account();
     updated.change_reason_code = std::string(ores::service::messaging::change_reasons::update);
@@ -415,6 +426,13 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         // Resolve "active" state once per tenant batch (avoids repeated DB calls).
         const auto active_state =
             find_fsm_state_id(ctx_, lg(), "active", "ores_reporting_active_definition_state_fn");
+        if (!active_state) {
+            BOOST_LOG_SEV(lg(), error) << "The active report definition state is not seeded; "
+                                       << pending.size()
+                                       << " definition(s) cannot be linked to their jobs.";
+            total_failed += static_cast<int>(pending.size());
+            continue;
+        }
 
         // Persist the scheduler_job_id on each definition the scheduler kept.
         for (const auto& entry : pending) {
@@ -422,7 +440,7 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
 
             auto def_updated = *entry.def;
             def_updated.scheduler_job_id = entry.job_id;
-            def_updated.fsm_state_id = active_state;
+            def_updated.fsm_state_id = *active_state;
             def_updated.modified_by = ctx_.service_account();
             def_updated.performed_by = ctx_.service_account();
             def_updated.change_reason_code =

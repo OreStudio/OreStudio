@@ -1,0 +1,48 @@
+PR 2, the group-prefix sites the service template still has
+
+Measured 2026-09-26 on feature/sync-trading-drift after the repository
+and key-text fixes. The repository layer builds; the service layer does
+not.
+
+$ cmake --build build/output/linux-clang-debug-make --target ores.trading.core.lib -j 3
+
+balance_guaranteed_swap_instrument_service.cpp:74:27: error: no member named
+'instrument_id' in 'ores::trading::domain::balance_guaranteed_swap_instrument'
+    key.instrument_id = v.instrument_id;            (template key_from)
+balance_guaranteed_swap_instrument_service.cpp:344:60: error: no member named
+'version'
+    static_cast<std::uint32_t>(current.front().version)   (template, literal)
+balance_guaranteed_swap_instrument_service.cpp:362:9: error: no member named
+'change_commentary'
+    out.change_commentary = intent.commentary;      (the field is in the audit group)
+bond_future_delivery_basket_service.cpp:62:17: error: no matching member
+function for call to 'read_latest'
+    repo.read_latest(ctx, boost::uuids::to_string(key.instrument_id),
+                     key.sequence_number);          (int member, text parameter)
+bond_future_delivery_basket_service.cpp:268:30: error: no matching member
+function for call to 'push_back'
+    sequence_number_keys.push_back(removal.key.sequence_number);
+
+What the template needs
+-----------------------
+cpp_service.cpp.mustache states the conversions inline, as
+{{#is_uuid}}...{{/is_uuid}} arms, at every site, and states none for a
+number. It also reads the domain object's members flat.
+
+- key_from loops: v.{{column}} must carry the column's group_prefix.
+- The version references must carry domain_entity.scaffold_prefix.
+- The audit members must carry domain_entity.audit_prefix, which is what
+  change_commentary needs.
+- Every key-record conversion needs the numeric arm _key_as_text has:
+  lines 51, 54, 342, 844, 1084 and 1131 of the template.
+
+The durable fix is to prepare each of those expressions in core.py, as
+string fields on the primary_key dict, and have the template splice
+them, the way it already splices v_args and removal_key_args. That
+removes the inline conversion arms instead of adding a fourth type to
+each of six of them.
+
+The same class of site may exist in the other templates that reach the
+domain object: the service header, the table I/O, the JSON I/O, the
+generator and the history-difference payloads. The build will name them
+one at a time; each is the same prefix or the same text conversion.

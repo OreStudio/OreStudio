@@ -243,6 +243,28 @@ Recorded recommendation: take the first now, because the component's
 acceptance is drift-clean regeneration, not a wire reshape, and revisit
 the table form when PR 3 models the remaining families.
 
+** The group prefix reaches further than the repository
+
+The repository template is fixed, and the repository layer builds. The
+service layer stops at the same defect in its own template:
+key_from reads v.instrument_id with no member, the version literal has
+no scaffold prefix, change_commentary is an audit member read flat, and
+a compound key's integer member is passed to a parameter that takes
+text. Evidence:
+=evidence/pr2_generator_defect_service_group.txt=.
+
+The template states its conversions inline, as {{#is_uuid}} arms, at six
+sites and has no arm for a number. The durable fix is to prepare those
+expressions in core.py as string fields and have the template splice
+them, the way it already splices =primary_key.v_args= and
+=removal_key_args=. That deletes the inline arms instead of adding a
+fourth type to each one.
+
+The same class of site may exist in the service header, the table I/O,
+the JSON I/O, the generator and the history-difference payloads. Expect
+the build to name them one at a time; each is the same prefix or the
+same text conversion.
+
 
 ** 3. Regenerate
 

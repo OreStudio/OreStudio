@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ID: 81D4D50F-A8D4-47F8-9500-89F6AC460469
 :END:
 #+title: ores.iam.account
@@ -251,6 +252,78 @@ faker::person::jobTitle()
 The account this person reports to, capturing the functional reporting
 line. Soft self-reference to another row in this same table; unset means
 no reporting line is recorded.
+
+
+* Artefact columns
+
+The import carries =business_unit_code=, =role=, =reports_to_username= and =photo_key=, all four written by the Acme populate and all four absent from the store in that form: =business_unit_code= is informational only today because =ores_iam_accounts_tbl= has no business-unit FK, and =reports_to_username= is resolved to =reports_to_account_id= at publish. The password salt, the service password hash and the TOTP secret are deliberately absent: the publish supplies empty values and staging is not where those belong.
+
+** id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** username
+:PROPERTIES:
+:type: text
+:END:
+
+** full_name
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** email
+:PROPERTIES:
+:type: text
+:END:
+
+** password_hash
+:PROPERTIES:
+:type: text
+:END:
+
+** account_type
+:PROPERTIES:
+:type: text
+:default: 'user'
+:END:
+
+** business_unit_code
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** role
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** job_title
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** reports_to_username
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** photo_key
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
 
 * SQL
 

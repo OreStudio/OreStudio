@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ID: 892C7799-23B7-4D3D-900D-8A2D08D62A6C
 :END:
 #+title: ores.iam.account_contact_information
@@ -214,6 +215,80 @@ Contact web page address.
 #+begin_src cpp :name generator
 std::string("https://example.com")
 #+end_src
+
+
+* Artefact columns
+
+The import identifies the owning account by =account_username=, a natural key. =ores_iam_publish_account_contact_informations_from_dq_fn= resolves it to =account_id= by looking the account up by username.
+
+** id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** account_username
+:PROPERTIES:
+:type: text
+:END:
+
+** street_line_1
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** street_line_2
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** city
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** state
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** country_code
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** postal_code
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** phone
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** email
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** web_page
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
 
 * SQL
 

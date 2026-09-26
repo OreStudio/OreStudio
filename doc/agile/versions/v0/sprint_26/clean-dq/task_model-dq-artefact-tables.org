@@ -77,6 +77,34 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
 | 12. Divergent tables: declare the projection | IN PROGRESS | 4 of 11 landed; see Step 3 revisited and Step 12 results |
 
+* Step 12 results (part two)
+
+Run on 2026-09-26. The last five moved, and =divergent= is now empty.
+
+| Table | Contract the pipeline needs |
+|-------+----------------------------|
+| =account_contact_information= | =account_username=, resolved to =account_id= by looking the account up by username |
+| =account= | =business_unit_code=, =role=, =reports_to_username= and =photo_key=; the password salt, the service password hash and the TOTP secret stay out of staging |
+| =image= | the key renamed to =image_id=, =code= to =key=, and the SVG as plain text in =svg_data= |
+| =tag= | the key named =tag_id= |
+| =image_tag= | the two keys only |
+
+All four domain-entity bodies come out byte-identical to the hand-written column block. No notify trigger changed this time, so no component drift moved with them.
+
+**The junction template needed the same switch, and finding that took two tries.** =image_tag= is a junction, and the junction artefact template did not read =* Artefact columns= at all. The switch itself was straightforward — the section replaces the body, and the key indexes still come from the junction's =left= and =right= names. What the first attempt missed is that a junction is loaded by a *third* loader: =* Artefact columns= was parsed for domain entities and for lookup entities, but not by =load_org_junction_model=. The template rendered the projection and the test failed, rather than the section being silently inert — which is the outcome worth having, and the reason the test was written before the model used it.
+
+**Two dead helpers went with them**, both confirmed dead by a repo-wide search before removal:
+
+- =ores_dq_image_tags_artefact_insert_fn=, whose only remaining reference was a =drop function if exists=.
+- =ores_dq_countries_artefact_insert_fn=, removed in the previous batch the same way.
+
+**Two latent findings recorded, not fixed.** Both sit in hand-written SQL that step 8 owns, and neither is on a live path:
+
+- =ores_dq_image_tags_artefact_upsert_fn= inserts =(dataset_id, image_id, tag_id)= while =tenant_id= is NOT NULL, so it would fail if anything called it. Nothing does; the census found it write-only and uncalled in step 2.
+- =accounts.photo_key= is written by all four Acme populate scripts and read by nothing. =business_unit_code= looks the same but is not: =iam_publish_from_dq_create.sql= documents it as "informational only today", with no business-unit FK on =ores_iam_accounts_tbl=.
+
+**Figures.** Census: generated 36 to 41, divergent 5 to 0. The remaining buckets are 1 derivable (=coding_schemes=, which needs a model) and 7 orphan. Validator 0 warnings; codegen suite 684 passing; iam, assets-cpp, refdata and dq all report the same drift as before, because a hand-written staging table was never in the drift and no notify trigger changed this time — refdata stays at 513 and dq at 507.
+
 * Step 12 results (part one)
 
 Run on 2026-09-26. Six staging tables moved to generated: =business_units=, =books=, =currencies=, =currency_pair_conventions= and =portfolio=, each with a declared =* Artefact columns= section, and =calendar= with none.

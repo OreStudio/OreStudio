@@ -93,7 +93,7 @@ item's result in the table below.
 | H02 | pass | No legacy code remains: no dead code, no commented-out code, and no hand-written duplicate of a generated artefact. The component's own sources and models carry no Qt or Wt fragment; the diagram's stale prose was the only surviving scaffold artefact, and H01 removes it. One inherited artefact is out of scope: the regenerated =src/component_files.cmake= carries the shared template's =# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.= comment, present in 79 =component_files.cmake= files repo-wide and sourced from =cmake_component_files_src.mustache=. Removing it is a codegen template change with a regression test, not a component fix, and the story records it as out of scope. |
 | H03 | pass | Comments reviewed against the project comment rules. The Doxygen blocks and the non-obvious why-notes (the elisp quoting, the case-sensitivity choice, the best-effort type lookup) are kept; there is no commented-out code and no edit narration. |
 | V01 | pass | =compass build= over the whole tree reached 100% with exit code 0. |
-| V02 | pass | =compass build test_ores.orgmode.tests= passes: 62 assertions in 20 test cases, three resolver error-path cases having been added after the first coverage measurement. The =ores.codegen= suite passes at 522, and the =ores.compass= suite at 215 passed and 1 skipped. Coverage of the component's own sources, measured with an instrumented =clang= build (=WITH_PROFILING=On=) and =llvm-cov gcov=: =heading.cpp= 100% of 19 lines, =parser.cpp= 95.9% of 195, =resolver.cpp= 96.5% of 57, so 261 of 271 lines overall. The uncovered lines are the two defaulted move operations, seven =gcov= artifacts on the static regex accessors' closing braces, and the defensive empty guard in =normalise_table=, which the caller's =!pending_table.empty()= check makes unreachable. No test covers the diagram, the two generated list files or the two doc edits; the renderer's exit code, the check script and =validate_docs.sh= are their evidence. |
+| V02 | pass | =compass build test_ores.orgmode.tests= passes: 62 assertions in 20 test cases, three resolver error-path cases having been added after the first coverage measurement. The =ores.codegen= suite passes at 530, and the =ores.compass= suite at 230 passed and 1 skipped, both re-measured after the rebase. Coverage of the component's own sources, measured with an instrumented =clang= build (=WITH_PROFILING=On=) and =llvm-cov gcov=: =heading.cpp= 100% of 19 lines, =parser.cpp= 95.9% of 195, =resolver.cpp= 96.5% of 57, so 261 of 271 lines overall. The uncovered lines are the two defaulted move operations, seven =gcov= artifacts on the static regex accessors' closing braces, and the defensive empty guard in =normalise_table=, which the caller's =!pending_table.empty()= check makes unreachable. No test covers the diagram, the two generated list files or the two doc edits; the renderer's exit code, the check script and =validate_docs.sh= are their evidence. |
 | V03 | not applicable | No entity and no service, so the database holds nothing of this component. |
 | V04 | not applicable | No generated shell command, so nothing to run against the fleet. |
 | V05 | pass | Every gate run and green: component drift (=iam=), model drift (2 known exceptions), protocol twin coverage, handler permissions, populate references, shell recipe inventory, =regenerate_cmake_component_files.py --component ores.orgmode=, =validate_docs.sh= (apart from the pre-existing =ores.shell.iam= finding), =compass lint=, and the six checks of =.github/workflows/doc-lint.yml=. The one inherited repo-wide finding is the CMake source-list drift that G06 records. |
@@ -164,6 +164,7 @@ the component suite and the gates are the evidence.
 | 4 | The diagram omits =join_paragraph_lines=, an exported function the headers declare | ores.orgmode.puml | fixed | Real. The diagram already lists the other two free functions, so the omission was inconsistent. The function is added and the image re-rendered. |
 | 5 | The hand-authored relationship arrows and resolver note sit above the sentinel, so the next capture run drops them, and the warning lives only in the historical record | ores.orgmode.puml | fixed | Real footgun. =generate_component_puml.py= replaces everything above the sentinel with class boxes only, so the warning now sits below the sentinel, where a capture run preserves it: it names what is lost and tells the next reader to re-add it. The image is byte-identical, since the added lines are comments. |
 | 6 | Table cells in the two status tables are not re-aligned to the original column widths | story.org, task_clean_orgmode.org | dismissed | Cosmetic. Org reflows table alignment on the next edit, =compass lint= passes, and the existing tables in this sprint are unaligned. The churn would not change what a reader sees. |
+| 7 | After the rebase onto trunk the record's suite counts are stale: it says codegen 522 and compass 215, while the rebased tree gives 530 and 230 | task_clean_orgmode.org | fixed | Real. Trunk grew between the old and new base (PRs #2146, #2148, #2150, #2154), so the counts were right when measured and wrong as merged. Both rows now carry the re-measured numbers. |
 
 * Result
 
@@ -180,7 +181,7 @@ gained its filetags.
 
 Verification. The whole tree builds with =compass build=, exit 0. The
 =ores.orgmode= suite passes 62 assertions in 20 test cases, the
-=ores.codegen= suite 522, and the =ores.compass= suite 215 with 1 skipped.
+=ores.codegen= suite 530, and the =ores.compass= suite 230 with 1 skipped.
 Coverage of the component's own sources, measured with an instrumented
 build, is 261 of 271 lines. Every codegen gate passes, apart from the
 inherited repo-wide CMake source-list drift that G06 records.
@@ -206,3 +207,11 @@ entry, and found no blocking issue. It raised one real footgun, that a
 capture run drops the hand-authored arrows and note above the sentinel, so
 the warning now sits below the sentinel where a capture run preserves it. It
 raised one cosmetic table-alignment nit, dismissed above with its reason.
+
+A second independent verification ran on the rebased head and returned
+PASS+NOTES. It reproduced the test counts, the diagram hash and the V06 dry
+run, and confirmed the three new resolver cases are behaviour tests that fail
+if the resolver misbehaves. Its one defect was that the rebase had made the
+recorded suite counts stale, corrected above. It could not reproduce the
+coverage line counts without a full instrumented rebuild, so it recorded that
+claim as unverified rather than disputed.

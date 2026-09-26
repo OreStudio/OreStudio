@@ -17,34 +17,34 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
 -- =============================================================================
--- Coding Schemes Artefact Table
---
--- Staging table for coding/identification schemes before publication to
--- dq_coding_schemes_tbl. Supports the DQ artefact pipeline pattern.
+-- A published code list that a subject area's values come from, such as an ISO currency list or an FpML codelist. The scheme names the authority that publishes it and the subject area it applies to, and may point at the document that defines it. The authority and the subject-area columns are plain text rather than declared foreign keys, because the table has never carried a constraint and adding one would refuse rows the platform accepts today. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_coding_schemes_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
     "code" text not null,
-    "version" integer not null default 0,
+    "version" integer not null,
     "name" text not null,
     "authority_type" text not null,
     "subject_area_name" text not null,
     "domain_name" text not null,
-    "uri" text,
+    "uri" text null,
     "description" text not null
 );
 
-create index if not exists coding_schemes_artefact_dataset_idx
-on "ores_dq_coding_schemes_artefact_tbl" (dataset_id);
+create index if not exists dq_coding_schemes_artefact_dataset_idx
+on ores_dq_coding_schemes_artefact_tbl (dataset_id);
 
-create index if not exists coding_schemes_artefact_tenant_idx
-on "ores_dq_coding_schemes_artefact_tbl" (tenant_id);
+create index if not exists dq_coding_schemes_artefact_tenant_idx
+on ores_dq_coding_schemes_artefact_tbl (tenant_id);
 
-create index if not exists coding_schemes_artefact_code_idx
-on "ores_dq_coding_schemes_artefact_tbl" (code);
-
-create index if not exists coding_schemes_artefact_authority_type_idx
-on "ores_dq_coding_schemes_artefact_tbl" (authority_type);
+create index if not exists dq_coding_schemes_artefact_code_idx
+on ores_dq_coding_schemes_artefact_tbl (code);

@@ -95,8 +95,8 @@ record each item's result in the table below.
 | H03  | Pass. The comment pass over the changed and added comments found no clutter, no narration and no end-of-line comment. | Comment note below |
 | V01  | Pass. The whole tree builds, the shell adapter part and =ores.shell.exe= included. | =compass build= (exit 0) |
 | V02  | Pass. The codegen suite passes, all five analytics suites pass against the running fleet, and the full suite is 70 of 71. | =pytest projects/ores.codegen/tests= (523 passed); =ctest -R analytics= (5/5); full =ctest= (70/71) |
-| V03  | Pass. The database recreates from scratch and the analytics layer populates. | =compass db recreate -y -k= (exit 0, 44 pricing engine types) |
-| V04  | Pass with one recorded exception. All 40 generated analytics scripts ran against the live fleet; 39 answered, one aborted in the client. | live run log; V04 note below |
+| V03  | Pass. The database recreates from scratch, and the Acme Corporation tenant provisions end to end on top of it. | =compass db recreate -y -k= (exit 0); Acme provision script (exit 0, all workflow steps completed) |
+| V04  | Pass with one recorded exception. All 40 generated analytics scripts ran against the live fleet as the Acme tenant admin; 39 answered, one aborted in the client. | live run log; V04 note below |
 | V05  | Pass. component drift, model drift, protocol twin coverage (24 headers, 2 components), handler permissions (2 components, 152 codes), populate references, recipe inventory and the CMake source lists are all clean. | each check script, exit 0 |
 | V06  | Pass. =analytics-cpp= is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= reports no drift. | =component_registry.py=; =check_component_drift.py --all= (exit 0) |
 
@@ -257,20 +257,35 @@ has no systemd user bus, so =compass services start= needs =--use-busctl=
 and the stale services could not be stopped from inside. A host restart
 cleared both.
 
-After the restart the environment was refreshed to format version 23, the
-database was already current, and the fleet started with 22 of 23 units
-ready. Only the web BFF failed, and the analytics surface does not use it.
+After the restart the environment was refreshed to format version 23, and
+the whole cycle was then run from scratch on 2026-09-26:
 
-- V02. Five suites ran, all passed: =ores.shell.analytics.tests=,
-  =ores.analytics.api.tests=, =ores.analytics.core.tests=,
-  =ores.analytics.quant.tests= and =ores.analytics.service.tests=.
+1. The fleet was stopped, the database recreated with =compass db recreate
+   -y -k=, and the fleet started again. Twenty-two of twenty-three units
+   reached ready; only the web BFF failed, and the analytics surface does
+   not use it.
+2. The system was provisioned with the Acme Corporation holding group:
+   the system bootstrap, the two ORE packages, =provision tenant --source
+   acme=, and the =risk_management= bundle. The tenant and its admin both
+   exist and every workflow step completed.
+3. The shell run was made as that tenant admin, not as the system
+   bootstrap account.
+
+- V02. Five suites ran against the recreated database and all passed:
+  =ores.shell.analytics.tests=, =ores.analytics.api.tests=,
+  =ores.analytics.core.tests=, =ores.analytics.quant.tests= and
+  =ores.analytics.service.tests=.
 - V04. All 40 generated analytics scripts ran against the live fleet as
-  the bootstrapped =super_admin=. Ten answered =ok=. Twenty-nine answered
+  =tenant_admin@acme_corporation=. Ten answered =ok=, among them the read
+  that returns the 44 seeded pricing engine types. Twenty-nine answered
   with a service verdict: a generated script sends sentinel values, so the
   service answers =failed= on validation or =missing= for a key that
   addresses nothing. That is the command working, not failing. One aborted
   in the client, =pricing_model_product_parameters put-many=, recorded
   below.
+- The sentinel writes left nothing behind. The three analytics tables hold
+  zero rows for the Acme tenant, so a sentinel write either failed
+  validation or addressed no row.
 
 ** V04 recorded exception
 

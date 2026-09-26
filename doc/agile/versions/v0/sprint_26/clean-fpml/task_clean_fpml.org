@@ -172,8 +172,10 @@ behaviour to walk through. The build and the gates are the evidence.
 | 3 | Removing the two related-document links from the deleted section could orphan the FpML and Coding Schemes knowledge pages. | projects/modeling/system_model_domain.org | no change, verified | Both pages keep six and nine incoming links respectively from other knowledge pages, so neither is orphaned. |
 | 4 | The acceptance item that ores.fpml join =COMPONENTS_UNDER_TEST= reads as unmet. | doc/agile/versions/v0/sprint_26/clean-fpml/task_clean_fpml.org | accepted as an exception | The item cannot be met: the component has no catalogue row, and listing it breaks =check_component_drift.py --all=. The superseding paragraph is in * Acceptance, and V06 records the reason. |
 | 5 | The runbook's step 5a, the local code review, was skipped before the PR was raised. | this task | recorded | This table is that pass, run after the raise instead of before. The build and test evidence did precede the raise. |
+| 6 | Bot review round 1. The =@claude= review found no bugs, no dangling references and no build breaks, and calls the PR ready as-is. | PR #2143 | no change | It re-derived the result independently: the CMake removal, the absence of an =ores.ore= dependency on the component, the retired org-id, the =external/fpml/= redirect, and both regenerated diagrams. |
+| 7 | The review judged the new capture's empty What and Why sections to be the repo pattern and dismissed them. | remove_the_automoc_comment_from_the_cmake_archetype.org | fixed | Half right, so not dismissed. 21 of the 63 inbox captures still carry the stub text, but the well-formed ones fill the body. Filled in commit =25cfbce8eb=, which also corrects the affected file count from ~85 to 78. |
 
-The review request =@claude review PR= is on the PR as comment 5841685082. This table is the local pass; the bot's findings arrive as PR comments and get handled as a review round.
+The review request =@claude review PR= is on the PR as comment 5841685082, and the bot's reply is comment 5841688038. Round 1 produced no line comments and no unresolved threads.
 
 * Result
 

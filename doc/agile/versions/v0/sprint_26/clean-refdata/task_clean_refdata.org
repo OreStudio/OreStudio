@@ -28,9 +28,9 @@ ores.refdata passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:70CC87FB-BA24-4B22-827F-F4F42C1F5A1B][Clean ores.refdata to the component clean standard]] |
-| Now          | V03 is blocked by a systemic seed/trigger mismatch on main: the new duplicate-create refusal fires before =on conflict do nothing=, so seeds that repeat a key abort. Database and fleet are down until it is fixed. |
+| Now          | V03 is unblocked and V01 and V02 pass. The seed/trigger fix reached this branch, the database now rebuilds from nothing, and all four refdata test targets pass on it. V07's remaining findings are being strengthened. |
 | Waiting on   | Nothing. |
-| Next         | The seed/trigger fix lands, then V03, V02, V05 and the registry entry; fix V07's remaining findings meanwhile. |
+| Next         | Land the V07 strengthening, then V05, V06 (the registry entry) and the V04/V08 closes. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -165,6 +165,13 @@ record each item's result in the table below.
 | H04 | PASS — no platform macro, platform header or hand-rolled standard facility in the component or its shell module. | =grep= for =_WIN32=, =__linux__=, =__APPLE__=, =<windows.h>=, =<unistd.h>=, =ORES_NO_UNIQUE_ADDRESS= and a hand-rolled =unreachable()=. |
 | G06 | Tree-wide remainder: 69 =component_files.cmake= files are stale tree-wide, not this component's. | =regenerate_cmake_component_files.py --all --check=. |
 | V05 | Baseline gates: protocol twin coverage green (5 registered components, refdata not among them); handler permissions green (4 components); populate references green; shell recipes blocked on V04 credentials. | =build/audit/refdata-clean/V05-*.txt=. |
+| V01 | PASS, re-confirmed after the cherry-picks. A full =compass build= from the rebased branch exits 0 and links every target, =ores.refdata.{api,client,core,service}= and =ores.shell.exe= among them. | Build log; exit 0. |
+| V03 | Seventh and last blocker cleared. Another worktree's fix =afe8c87282= ("Ask before inserting into a version-gated table") gives each of the twelve seed helpers an existence check before the insert, which is the pattern the seed file's own header documents; without it a before-insert trigger refuses the second seed of a key before =on conflict do nothing= resolves. Cherry-picked as =69c91154a8=, authorship preserved. | =git show afe8c87282=; =git log -1 69c91154a8=. |
+| V03 | PASS — =compass db recreate -y -k= runs to the end (exit 0) and the store answers: schema 0.0.25, rebuilt from =69c91154a8-d=, =drift: current=. The recreate logs the known benign noise (asset images not yet populated, =tap_funky= grant warnings). | =compass db status=; recreate output. |
+| V02 | PASS — all four refdata test targets pass on the database recreated from nothing: =ores.refdata.api.tests=, =ores.refdata.client.tests=, =ores.refdata.core.tests= (244.8 s) and =ores.refdata.service.tests=. 4 of 4, 0 failed. The earlier 62/11 split was the partial store, not the component. | =compass test run -- -R 'ores\.refdata'=; ctest summary. |
+| V07 | The initial manual survey under-counted. It recorded 55 cases in three families, but V07 also names *a non-throw* as a finding, and 57 write cases asserted only =CHECK_NOTHROW=. A re-runnable scanner now enumerates every shape, so the worklist is a number a reviewer can re-derive rather than a sample. | =build/audit/refdata-clean/v07_scan.py=; worklist in =V07-findings.txt=. |
+| V07 | Scanner rule, and why it is narrower than the standard's wording: the standard names truthiness, but a bool computed by searching the result for a written value fails when the subject does nothing, so =any_of(rows, c.code == written.code)= is not a finding. The scanner reads only the shapes that survive a subject that does nothing. | The comment on =VACUOUS= in the scanner; the =read_latest_book_statuses= case it would otherwise miscall. |
+| V07 | Worklist: 111 cases in 27 hand-written files — 57 non-throw, 32 length-vs-literal, 16 length-vs-length, 8 empty. The pattern is worked out on =repository_currency_repository_tests.cpp= and applied across the rest. | Scanner output; that file now reports 0 findings. |
 
 * Notes
 

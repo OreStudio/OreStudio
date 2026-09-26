@@ -40,6 +40,22 @@ ores.reporting passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 - Every generator defect found is fixed at its source, with a regression test.
 - ores.reporting is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
 
+* Before the rebase
+
+The branch is 140 commits behind main, and a merge-base check over the files this
+pass fixed shows that **two of its fixes have been made upstream independently**.
+They are not conflicts to resolve in this branch's favour:
+
+| File | Upstream | What it means |
+|------+----------+---------------|
+| =ores.workflow/.../workflow_engine.cpp= | =73442db01d [workflow] Set modified_by so that a workflow can start= | The same defect this pass fixed in round 4. Take upstream's version. |
+| =ores.http/.../storage_routes.cpp= | =eb3331ca63 [storage] Authenticate the storage routes, add HEAD and listing, and share one store= | It **deletes** the =k_known_buckets= allow-list rather than adding =report-data= to it, which is the better fix. Take upstream's version. |
+| =ores.codegen/scripts/component_registry.py= | one upstream commit | Likely a registry entry that conflicts with adding =reporting=; re-apply the entry on top. |
+
+That two of this pass's ten defects were found and fixed upstream while it ran is
+its own evidence: they were real, they were not local, and the merge is the point
+at which the duplicate work is discarded rather than carried.
+
 * Plan
 
 Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order, one entity at a time, and

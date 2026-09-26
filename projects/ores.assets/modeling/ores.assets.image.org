@@ -141,7 +141,7 @@ The SVG document itself.
 :protocol_include:        ores.assets.api/messaging/image_protocol.hpp
 :collection_name:         images
 :item_var:                image
-:key_field:               key
+:key_field:               code
 :get_request_class:       assets::messaging::get_images_request
 :get_response_class:      assets::messaging::get_images_response
 :get_message_type:        get_images_request

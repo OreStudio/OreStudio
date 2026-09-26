@@ -126,14 +126,14 @@ void image_commands::register_commands(cli::Menu& root_menu, nats_client& sessio
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <id>");
+        "get <code>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <id>");
+        "get-many <code>");
 
     menu->Insert(
         "add",
@@ -161,28 +161,28 @@ void image_commands::register_commands(cli::Menu& root_menu, nats_client& sessio
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <id> <reason> <commentary> [--version <n>]");
+        "delete <code> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <id> <reason> <commentary>");
+        "delete-many <code> <reason> <commentary>");
 
     menu->Insert(
         "versions",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <id> --version <n>");
+        "version <code> --version <n>");
 
     root_menu.Insert(std::move(menu));
 }
@@ -264,6 +264,7 @@ void image_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.code, parsed->positionals[next++], "code");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -308,7 +309,7 @@ void image_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::image_key key;
-            read_token(key.id, parsed->positionals[i + 0], "id");
+            read_token(key.code, parsed->positionals[i + 0], "code");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -525,6 +526,7 @@ void image_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.code, parsed->positionals[next++], "code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -578,7 +580,7 @@ void image_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::image_key key;
-            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
+            read_token(key.code, parsed->positionals[i * 1 + 0], "code");
             req.removals.push_back(messaging::image_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -630,6 +632,7 @@ void image_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.code, parsed->positionals[next++], "code");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -675,6 +678,7 @@ void image_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.image.code, parsed->positionals[next++], "code");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

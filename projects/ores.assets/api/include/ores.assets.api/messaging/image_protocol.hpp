@@ -36,7 +36,7 @@
 namespace ores::assets::messaging {
 
 struct image_key {
-    boost::uuids::uuid id;
+    std::string code;
 };
 
 struct image_write {

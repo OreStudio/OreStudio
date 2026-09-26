@@ -104,19 +104,19 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest asset images filtered by key.
+     * @brief Reads latest asset images filtered by code.
      */
-    std::vector<domain::image> read_latest_by_key(context ctx, const std::string& key);
+    std::vector<domain::image> read_latest_by_code(context ctx, const std::string& code);
 
     /**
-     * @brief Reads the newest asset images filtered by key, current or not.
+     * @brief Reads the newest asset images filtered by code, current or not.
      *
      * History is addressed by the key the model declares and must stay readable
      * after a delete, which closes the transaction-time window rather than
      * removing the row. A latest read cannot resolve a closed row, so this one
      * ignores the window and takes the newest match.
      */
-    std::vector<domain::image> read_any_by_key(context ctx, const std::string& key);
+    std::vector<domain::image> read_any_by_code(context ctx, const std::string& code);
 
 
     /**

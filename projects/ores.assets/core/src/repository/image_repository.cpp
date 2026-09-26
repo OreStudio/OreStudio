@@ -139,27 +139,29 @@ std::vector<domain::image> image_repository::read_latest(context ctx, const std:
         "Reading latest asset image by id.");
 }
 
-std::vector<domain::image> image_repository::read_latest_by_key(context ctx,
-                                                                const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset image by key: " << key;
+std::vector<domain::image> image_repository::read_latest_by_code(context ctx,
+                                                                 const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset image by code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<image_entity>> |
-                       where("tenant_id"_c == tid && "key"_c == key && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<image_entity>> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<image_entity, domain::image>(
         ctx,
         query,
         [](const auto& entities) { return image_mapper::map(entities); },
         lg(),
-        "Reading latest asset image by key.");
+        "Reading latest asset image by code.");
 }
 
-std::vector<domain::image> image_repository::read_any_by_key(context ctx, const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any asset image by key: " << key;
+std::vector<domain::image> image_repository::read_any_by_code(context ctx,
+                                                              const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any asset image by code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<image_entity>> |
-                       where("tenant_id"_c == tid && "key"_c == key) |
+                       where("tenant_id"_c == tid && "code"_c == code) |
                        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
     return execute_read_query<image_entity, domain::image>(
@@ -167,7 +169,7 @@ std::vector<domain::image> image_repository::read_any_by_key(context ctx, const 
         query,
         [](const auto& entities) { return image_mapper::map(entities); },
         lg(),
-        "Reading any asset image by key.");
+        "Reading any asset image by code.");
 }
 
 

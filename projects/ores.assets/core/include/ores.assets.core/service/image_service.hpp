@@ -138,7 +138,7 @@ public:
      *
      * @return The asset image if found, std::nullopt otherwise.
      */
-    std::optional<domain::image> get_image_by_key(const std::string& key);
+    std::optional<domain::image> get_image_by_code(const std::string& code);
 
     /**
      * @brief Retrieves a batch of asset images by primary key.

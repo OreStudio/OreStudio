@@ -58,7 +58,7 @@ namespace {
 std::vector<domain::image> read_one(repository::image_repository& repo,
                                     const ores::database::context& ctx,
                                     const messaging::image_key& key) {
-    return repo.read_latest_by_key(ctx, key.key);
+    return repo.read_latest_by_code(ctx, key.code);
 }
 
 /**
@@ -69,7 +69,7 @@ std::vector<domain::image> read_one(repository::image_repository& repo,
  */
 messaging::image_key key_from(const domain::image& v) {
     messaging::image_key key;
-    key.key = v.key;
+    key.code = v.code;
     return key;
 }
 
@@ -407,10 +407,10 @@ std::optional<domain::image> image_service::get_image(const boost::uuids::uuid& 
     return results.front();
 }
 
-std::optional<domain::image> image_service::get_image_by_key(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting asset image by key: " << key;
+std::optional<domain::image> image_service::get_image_by_code(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting asset image by code: " << code;
     messaging::image_key k;
-    k.key = key;
+    k.code = code;
     auto found = read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
@@ -462,13 +462,13 @@ std::vector<domain::image> image_service::get_image_history(const std::string& k
     // value the storage key never holds, and reports an entity that has a
     // history as having none.
     messaging::image_key k;
-    k.key = key;
+    k.code = key;
     // A delete here closes the transaction-time window and leaves every version
     // in place, so resolving through a latest read would lose the history at
     // exactly the moment it is wanted. This takes the newest row carrying the
     // declared key whether or not it is still current, which for a record that
     // still exists is the same row the latest read would have returned.
-    const auto found = repo_.read_any_by_key(ctx_, k.key);
+    const auto found = repo_.read_any_by_code(ctx_, k.code);
     if (found.empty())
         return {};
     const auto& row = found.front();

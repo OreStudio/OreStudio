@@ -52,6 +52,20 @@ namespace ores::workflow::service {
  * read-modify-write under optimistic locking and would otherwise lose each
  * other's updates: the identity fixture had set_step_state lose to
  * stamp_command_published, which left the step in_progress for good.
+ *
+ * The lock is not recursive, and what makes that safe is the client's dispatch
+ * model rather than anything the library promises: client::publish is
+ * natsConnection_PublishMsg, which returns without waiting, and a callback is
+ * delivered on the connection's read loop rather than on the thread that
+ * published. A client that ever delivered a callback synchronously on the
+ * publishing thread would deadlock here instead of failing, so re-check this
+ * before changing the NATS client or the way it dispatches.
+ *
+ * The lock is engine-wide rather than per-instance, so unrelated instances
+ * serialise behind each other. That is a throughput ceiling, not a correctness
+ * problem, and it is the honest cost of the fix: a lock keyed by instance id
+ * would remove it, but every writer of one instance would still have to be in
+ * the same critical section.
  */
 class ORES_WORKFLOW_CORE_EXPORT workflow_engine {
 private:

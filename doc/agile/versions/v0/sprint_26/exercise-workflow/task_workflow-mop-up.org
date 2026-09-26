@@ -223,9 +223,58 @@ workflow wait eeeeeeee-... --timeout 60 --expect-steps 2
 
 All four workflow test targets pass.
 
-** Still open
+** 2. A start that reports acceptance -- done
 
-The start path still reports acceptance it has not got, and the configurations
-are still unnamed and unscripted. Both are in the plan above; neither is
-blocked now.
+=workflow start= now matches the type against the registered definitions before
+it dispatches anything, and then waits for the instance row the engine creates.
+What it reports is acceptance, not completion: the publish stays a durable
+JetStream publish and callers still follow the run with =workflow wait=.
 
+Verified against the live fleet:
+
+#+begin_example
+workflow start no_such_workflow '{"steps":[{"name":"one"}]}'
+✗ No workflow type named 'no_such_workflow' is registered.
+✗ Registered types: bundle_publish_workflow identity_workflow ore_import_workflow
+  provision_parties_workflow report_execution_workflow
+✗ Script aborted at line 1
+
+workflow start identity_workflow '{"steps":[{"name":"one"}]}' --instance-id ffffffff-...
+Started identity_workflow.
+workflow_instance_id: ffffffff-1111-2222-3333-444444444444
+#+end_example
+
+** Still open: 3. The configurations
+
+Nine names are designed and none is scripted. The blocker is not the scripts but
+the assertion: =workflow wait= calls =fail()= on any outcome that is not "all
+steps completed", so a script for =fail_fast= or =saga= -- whose correct
+terminal state is =failed= or =compensated= -- aborts, and an aborted script
+cannot be told from a broken one. The shell has no assertion verb and the script
+runner has no negation.
+
+The way through is =workflow wait --expect-state <completed|failed|compensated|absent>=
+as the assertion primitive, with =absent= covering the refusal paths. The
+acceptance also allows the refusal paths to be covered by integration tests
+instead ("a configuration or an integration test"), which handles =empty= and
+=unknown_type= but not the two compensating ones.
+
+The start acceptance above is what makes the refusal configurations checkable at
+all, which is why it came first.
+
+
+** Follow-ups from the review on #2207
+
+Two notes, neither a blocker, both recorded rather than acted on.
+
+The engine-wide lock has a throughput ceiling: unrelated instances serialise
+behind each other's database writes and publishes. A lock keyed by instance id
+would remove it, but every writer of one instance would still have to share a
+critical section, so it is a piece of design rather than a mechanical change.
+The engine has never run enough concurrent instances for this to bite.
+
+The non-recursive lock is safe because the client dispatches asynchronously,
+which is measured behaviour and not a guarantee the library makes. The header
+now names the behaviour it relies on and says that a synchronous delivery would
+deadlock, so whoever changes the NATS client next has the warning in front of
+them rather than a silent hang to debug.

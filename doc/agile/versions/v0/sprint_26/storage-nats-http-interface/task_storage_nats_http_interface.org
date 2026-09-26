@@ -36,9 +36,9 @@ fail closed rather than fall back to allow.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5EA439A5-43AE-4223-9026-6B3D8C91AEEA][Give object storage a NATS and HTTP interface with authentication]] |
-| Now          | Design settled by reading the generator, the protocol and both authentication paths against the component. |
-| Waiting on   | Nothing.                               |
-| Next         | Decide the bucket owner, then model =objects= and add =storage= to the catalogue. |
+| Now          | Implemented and exercised against the running fleet. Both interfaces serve the same objects and every gate is green; the PR is up for review. |
+| Waiting on   | The review.                            |
+| Next         | Merge, then close this task.           |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -309,3 +309,77 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The component is a service, and both of its interfaces work against the running
+fleet.
+
+**What it delivers**
+
+- =ores.storage= is a composite: =api= holds the modelled protocol and the path
+  helpers a consumer links, =core= holds the streaming HTTP client, the
+  archiver, the transfer helpers, the local store and the handler, and
+  =service= is the process that binds the operation set.
+- The surface is modelled once, as
+  [[id:D469834F-DB7C-4486-B43F-CBD984744C36][ores.storage.objects]]: put, get,
+  delete and list on =storage.v1.objects.>=. The generator produces the protocol
+  header, the TypeScript twin and the shell commands from the model; the
+  handler, service and registrar are hand-written, because no facet admits an
+  operation model.
+- Both interfaces authenticate and authorise per operation. The HTTP routes call
+  =auth_required()= and then a =check_auth= of their own with
+  =storage::objects:= codes; the handler builds a request context and checks the
+  same codes. The codes are seeded, and storage is in the handler-permission
+  registry, so five components and 174 codes are verified.
+- The bytes sit behind one =local_store= that both interfaces call, so the
+  routes and the handler cannot drift in how they treat a key, a bucket or an
+  absent object.
+- The bucket allow-list is gone rather than replaced. The server validates the
+  bucket as a single path segment and creates it on first write.
+- The shell has a raw surface generated from the model, and
+  =ores.compute.wrapper= links the component: its own HTTP client and archiver
+  are deleted, and with them the download path that opened its destination
+  before it read the status.
+
+**Evidence**
+
+- Over the bus, through the generated shell verbs: put answered its size, get
+  returned the exact bytes, get of an absent key answered =found=false=, list
+  reported the object and its length, delete answered =removed=true=, and the
+  list was empty afterwards.
+- Over HTTP, with a token from =/api/v1/auth/login=: an unauthenticated GET
+  answered 401, PUT answered the server's sha256, HEAD answered the length with
+  no body, GET returned the exact bytes, LIST reported the page, and DELETE
+  answered =removed=true= and =removed=false= for a key that was not there.
+- Crossed: an object written over HTTP was read over the bus, and an object
+  written over the bus was read over HTTP, byte for byte.
+- Suites: the api part 4 cases and 5 assertions, the core part 17 cases and 60
+  assertions, the shell unit 13 cases and 25 assertions. Every gate is green:
+  component drift, the CMake source lists, model drift, protocol twin coverage,
+  handler permissions, populate references, the shell recipe inventory and the
+  documentation checks.
+
+**What it does not deliver, and why**
+
+- The raw shell verbs carry the value inline, and the generated menu is named
+  =objects= after the entity. The target state asks for a =storage= menu whose
+  verbs take a local path. The operation shell-command archetype derives the
+  menu from the entity and renders a string field inline, so both are template
+  changes rather than model changes. The file-shaped form is the HTTP interface
+  today, which has no shell verb.
+- The three services whose =http-base-url= disagrees with the port the server
+  listens on, and the =report-data= bucket name duplicated in two anonymous
+  namespaces, are each their own capture. Neither is made worse here.
+
+**Defects found in shared tooling, left where they live**
+
+- The service parser template passes the literal =SERVICE= as the environment
+  prefix, so a new service reads the wrong database variables and refuses to
+  start.
+- The service application template leaves the context factory's service account
+  empty, which the factory rejects.
+- The part CMake templates emit a part's include directory as
+  =projects/${name}/include=, which is the flat path, and the core profile omits
+  LibArchive, Boost and the test link dependencies.
+- Adding a part needs the composite root regenerated, and an operation model
+  needs =:ores.cpp.shell-command.enabled: true= before shell commands appear;
+  neither is discoverable from the model alone.

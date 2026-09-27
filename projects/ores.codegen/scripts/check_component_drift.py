@@ -11,6 +11,19 @@ Two selectors choose what to check:
                   component_registry.py; the local compass-pr-raise gate
                   covers this set
   --component X   check one named component, by catalogue slug
+  --sweep         check every catalogue component, and fail only on the files
+                  the branch touched
+
+``--sweep`` exists because the registry is a list of components that are
+already clean. A component waiting its turn has no gate, and neither does
+output an archetype routes into another component's tree, because the gate
+renders a component's own models and compares the files they produce. A
+cross-component rename can therefore move a symbol out from under a model's
+pasted source block with no gate looking. The sweep renders all of them and
+compares, which reaches both, and it fails only on files the branch touched,
+because a component's pre-existing drift belongs to that component's own
+clean-up. It renders into a temporary root and writes nothing, so it is safe
+on a branch whose templates are older than main's.
 
 Two modes choose whether it writes, and the difference is the point of
 this script:
@@ -52,6 +65,8 @@ Usage:
   check_component_drift.py --component refdata
   check_component_drift.py --all --address ores.cpp
   check_component_drift.py --all --dry-run
+  check_component_drift.py --sweep
+  check_component_drift.py --sweep --base origin/main
 """
 from __future__ import annotations
 
@@ -74,7 +89,11 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 
 from codegen.generate import _generate_single, cmd_regenerate  # noqa: E402
 from codegen.logging_config import configure  # noqa: E402
-from codegen.manifest import discover_models, get_component  # noqa: E402
+from codegen.manifest import (  # noqa: E402
+    all_components,
+    discover_models,
+    get_component,
+)
 from codegen.physical_space import load_graph  # noqa: E402
 from component_registry import COMPONENTS_UNDER_TEST  # noqa: E402
 
@@ -284,17 +303,146 @@ def _dry_run(components: list, address: str, verbose: bool) -> int:
     """The safe mode: render to a temporary root, report, write nothing."""
     with tempfile.TemporaryDirectory(prefix="ores-codegen-dry-run-") as tmpdir:
         tmp_root = Path(tmpdir)
-        # clang-format discovers .clang-format only by walking up from the
-        # formatted file; a bare tempdir has no such ancestor, so without
-        # this seed the diff would show the LLVM default style as drift.
-        repo_clang_format = REPO_ROOT / ".clang-format"
-        if repo_clang_format.is_file():
-            (tmp_root / _SEEDED_CLANG_FORMAT).write_bytes(
-                repo_clang_format.read_bytes())
+        _seed_clang_format(tmp_root)
         rc = _render_components(components, address, tmp_root)
         if rc != 0:
             return rc
         return _report_drift(tmp_root, verbose)
+
+
+def _seed_clang_format(tmp_root: Path) -> None:
+    """Copy .clang-format into the temporary root.
+
+    clang-format discovers the file only by walking up from the formatted file,
+    and a bare temporary directory has no such ancestor, so without this seed
+    the diff would show the LLVM default style as drift.
+    """
+    repo_clang_format = REPO_ROOT / _SEEDED_CLANG_FORMAT
+    if repo_clang_format.is_file():
+        (tmp_root / _SEEDED_CLANG_FORMAT).write_bytes(
+            repo_clang_format.read_bytes())
+
+
+def _catalogue_components() -> list:
+    """Every catalogue component that owns a modeling directory, sorted.
+
+    The registry names the components that are already clean. The catalogue is
+    the larger set, and generated output under a component the registry does
+    not list has no gate at all.
+
+    A catalogue name may be a second spelling of a component that is already
+    listed: ``trade`` and ``trading-cpp`` share one modeling directory, as do
+    ``dq`` and ``dq-cpp``, and ``iam`` and ``iam-cpp``. Rendering one spelling
+    renders the models, so the later one is dropped.
+    """
+    names = []
+    seen_modeling_dirs = set()
+    for name in sorted(all_components()):
+        try:
+            component = get_component(name)
+        except ValueError:
+            continue
+        modeling_dir = getattr(component, "modeling_dir", None)
+        if not modeling_dir or modeling_dir in seen_modeling_dirs:
+            continue
+        seen_modeling_dirs.add(modeling_dir)
+        names.append(name)
+    return names
+
+
+def _touched_files(base: str) -> set:
+    """Repository-relative paths the working tree changes against ``base``.
+
+    Includes untracked files, because a file the branch added is a file the
+    branch touched. Returns an empty set when git cannot answer.
+    """
+    touched = set()
+    for args in (["git", "diff", "--name-only", base],
+                 ["git", "ls-files", "--others", "--exclude-standard"]):
+        out = subprocess.run(args, cwd=REPO_ROOT, check=False,
+                             capture_output=True, text=True)
+        if out.returncode == 0:
+            touched.update(line for line in out.stdout.splitlines() if line)
+    return touched
+
+
+def _resolve_base(explicit: str | None) -> str | None:
+    """The commit to compare the branch against, or ``None``.
+
+    The whole sweep rests on telling drift this branch caused from drift that
+    was already there, so an unresolvable base is a refusal rather than a
+    guess: without it every component's clean-up debt would read as a failure.
+    """
+    if explicit:
+        return explicit
+    for ref in ("origin/main", "main"):
+        found = subprocess.run(["git", "merge-base", "HEAD", ref],
+                               cwd=REPO_ROOT, check=False,
+                               capture_output=True, text=True)
+        if found.returncode == 0 and found.stdout.strip():
+            return found.stdout.strip()
+    return None
+
+
+def _sweep(base: str, verbose: bool) -> int:
+    """Sweep every catalogue component and fail on drift this branch caused.
+
+    The registry is a list of components that are already clean, so a
+    component waiting its turn has no gate, and output an archetype routes
+    into another component's tree has no gate either. This renders all of them
+    into a temporary root and compares, which reaches both. It then fails only
+    on the files the branch touched, because a component's pre-existing drift
+    belongs to that component's own clean-up and is not this branch's to fix.
+
+    Renders and compares only. Nothing is written into the repository.
+    """
+    components = _catalogue_components()
+    if not components:
+        print("no catalogue component has a modeling directory", file=sys.stderr)
+        return 1
+    touched = _touched_files(base)
+    print(f"Sweeping {len(components)} catalogue component(s) against {base[:12]} "
+          f"(renders only, no writes)...")
+
+    with tempfile.TemporaryDirectory(prefix="ores-codegen-sweep-") as tmpdir:
+        tmp_root = Path(tmpdir)
+        _seed_clang_format(tmp_root)
+        rc = _render_components(components, "ores", tmp_root)
+        if rc != 0:
+            return rc
+        would_change, would_create = _compare_generated_tree(tmp_root)
+        drifted = [str(rel) for rel in would_change]
+        created = [str(rel) for rel in would_create]
+        failing = sorted(set(drifted + created) & touched)
+
+        for rel in failing:
+            print(f"\nwould change: {rel}")
+            path = tmp_root / rel
+            if path.is_file() and (REPO_ROOT / rel).is_file():
+                repo_text = (REPO_ROOT / rel).read_text(encoding="utf-8",
+                                                        errors="replace")
+                gen_text = path.read_text(encoding="utf-8", errors="replace")
+                full = list(difflib.unified_diff(
+                    repo_text.splitlines(keepends=True),
+                    gen_text.splitlines(keepends=True),
+                    fromfile=f"a/{rel}", tofile=f"b/{rel}"))
+                sys.stdout.writelines(full if verbose else _first_hunk(full))
+
+    if failing:
+        print(f"\n{len(failing)} file(s) this branch touched would change when "
+              "regenerated, out of "
+              f"{len(drifted) + len(created)} that would change across the "
+              "catalogue.", file=sys.stderr)
+        print("Generated output does not match the model that produces it, and "
+              "no gate covers this component because it is not in the "
+              "registry. Regenerate the component and commit the result.",
+              file=sys.stderr)
+        return 1
+
+    print(f"Sweep clean: no file this branch touched would change. "
+          f"{len(drifted) + len(created)} file(s) would change elsewhere in the "
+          "catalogue, which belongs to those components' own clean-up.")
+    return 0
 
 
 def main() -> int:
@@ -311,7 +459,21 @@ def main() -> int:
         metavar="NAME",
         help="regenerate one component by catalogue slug (e.g. refdata)",
     )
+    modes.add_argument(
+        "--sweep",
+        action="store_true",
+        help="render every catalogue component, not just the components under "
+        "test, and fail only on files the branch touched; renders only, never "
+        "writes",
+    )
     ap.add_argument("--address", default="ores", metavar="ADDRESS")
+    ap.add_argument(
+        "--base",
+        default="",
+        metavar="REF",
+        help="with --sweep, the commit to compare the branch against "
+        "(default: the merge base with origin/main)",
+    )
     ap.add_argument(
         "--dry-run",
         action="store_true",
@@ -323,6 +485,15 @@ def main() -> int:
     args = ap.parse_args()
 
     configure(verbose=args.verbose)
+
+    if args.sweep:
+        base = _resolve_base(args.base or None)
+        if base is None:
+            print("cannot find the commit to compare against. Pass "
+                  "--base <ref>, or fetch origin/main so the merge base can "
+                  "be taken.", file=sys.stderr)
+            return 1
+        return _sweep(base, args.verbose)
 
     components = list(COMPONENTS_UNDER_TEST) if args.all else [args.component]
 

@@ -65,6 +65,7 @@ Three classes, one task each:
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:B9D75AAE-DDDD-41C7-BB40-97FB3CEC7D80][A test file whose cases are compiled away reports green]] | DONE | 2026-09-27 | 2026-09-27 | A TEST_CASE that never reaches the compiler is invisible: the file builds, ctest passes, and only the case count betrays it. The ores.service readiness tests sat inside a BOOST_ASIO_HAS_LOCAL_SOCKETS guard placed above every boost::asio include, so the macro was undefined when the guard was read and the file compiled to nothing. ctest reported 39 cases where the sources held 42. Nothing compares the two. |
+| [[id:EE473AFD-DFAB-4F72-97B0-F74D56BE9BA8][Sweep every catalogue component for drift the registry cannot see]] | STARTED | 2026-09-27 | | The drift gate's coverage is the registry, which lists ten components; the catalogue holds twenty-four. Output that an archetype routes into another component's tree, and any generated file under a component the registry does not list, has no gate. Add a dry-run sweep over every catalogue component that fails only on files the branch touched, so a cross-component rename cannot pass review unseen. |
 
 * Decisions
 

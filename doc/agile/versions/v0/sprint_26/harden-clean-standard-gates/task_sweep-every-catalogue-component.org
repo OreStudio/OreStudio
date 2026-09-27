@@ -1,0 +1,207 @@
+:PROPERTIES:
+:ID: EE473AFD-DFAB-4F72-97B0-F74D56BE9BA8
+:END:
+#+title: Task: Sweep every catalogue component for drift the registry cannot see
+#+description: The drift gate's coverage is the registry, which lists ten components; the catalogue holds twenty-four. Output that an archetype routes into another component's tree, and any generated file under a component the registry does not list, has no gate. Add a dry-run sweep over every catalogue component that fails only on files the branch touched, so a cross-component rename cannot pass review unseen.
+#+type: task
+#+level: s1
+#+filetags: :harden-clean-standard-gates:sprint_26:v0:
+#+owner: marco
+#+branch: feature/sweep-catalogue-drift
+#+pr: 2264
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Widen the drift gate so it covers generated output that no run of a component's
+own models can reach.
+
+The gate's coverage is the registry, and the registry lists the components that
+are already clean. Two holes follow. An archetype can route a model's output
+into another component's tree, so no run of either component reaches it. And the
+catalogue holds components the registry does not list, so their generated output
+has no gate at all.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- A sweep renders every catalogue component, not the registry, so output an
+  archetype routes into another component's tree is reached.
+- It fails only on files the branch touched, because a component's remaining
+  drift belongs to that component's own clean-up story.
+- It renders into a temporary root and writes nothing, so it is safe on a branch
+  whose templates are older than main's.
+- It refuses when the commit to compare against cannot be resolved, rather than
+  treating every component's clean-up debt as a failure.
+- It fails when the catalogue yields no component to render, rather than passing
+  a tree it read nothing from.
+- A file the branch deleted whose model still produces it fails, as a
+  would-create. A committed deletion of a path no model produces any more is out
+  of scope, and the limit is recorded.
+
+* Plan
+
+*Two holes, one cause.* =check_component_drift.py --all= renders the components
+in =COMPONENTS_UNDER_TEST= and compares the tree. That set is ten components. The
+catalogue holds twenty-four entries, which name twenty-one distinct modeling
+directories, because =trade= and =trading-cpp=, =dq= and =dq-cpp=, and =iam= and
+=iam-cpp= are second spellings of one component each; one of the twenty-one,
+=controller-cpp=, has no models and no modeling directory in the tree, so twenty
+components render. So a component waiting its turn has no gate, and neither does
+output an archetype routes into another component's tree.
+
+*Measured, for hole A.* The shell-command facet's output pattern routes by the
+*model's* component rather than by the catalogue component a run names, so
+rendering =ores.trading= at the =ores.cpp= address writes 66 files under
+=projects/ores.shell/trading/=. Rendering =ores.shell= cannot reach them, because
+shell owns one model and it produces the composite root. The directory holds 76
+files in total: the 66 the trade render produces, nine CMake, diagram and
+documentation files, and one further source file.
+
+*Measured, for hole B.* The =ores.service= clean-up moved three workflow header
+names out of =ores.service= into =ores.workflow.api=, and =ores.refdata= keeps a
+workflow override as a source block pasted into a generated handler. The
+generated file was hand-edited and the model left naming the deleted symbols.
+=check_component_drift.py --all= was green and CI was green on every head,
+because refdata is not in the registry.
+
+*The rule, and why it needs a base.* A full comparison cannot be the rule: 645
+files would change across the catalogue today, and that debt belongs to each
+component's own clean-up. So the sweep fails only on a path it would change that
+the branch also touched. That needs the commit the branch diverged from, so the
+sweep takes the merge base with =origin/main= and refuses when it cannot resolve
+one. A wrong answer there is silent, which is worse than a refusal.
+
+*Why a render and not a symbol check.* The capture proposed a cheaper half as
+well: a check that every symbol a model's pasted block names resolves in the
+tree. That is a different guarantee and it is not in this task. It would catch a
+model and its generated file that agree with each other and are both stale,
+which the sweep cannot see because the render reproduces the committed bytes.
+The sweep catches the disagreement, which is the measured case.
+
+*Cost.* A full sweep renders twenty components and takes about a minute: 74
+seconds measured here and 61 on the reviewing machine, so the figure moves with
+the hardware. The workflow job is 2 minutes with its setup. That is why it is its
+own workflow rather than another step in =codegen-drift.yml=. That workflow fires
+on the inputs codegen reads; the sweep exists for the output codegen writes, and
+the measured case touched no model at all, so it fires on any change under
+=projects/=.
+
+*Two limits this sweep does not close.* Both are the price of rendering per
+technical space rather than at the whole =ores= address, and neither is covered
+by a test.
+
+- *Generated recipes are not reached.* The recipe facets declare
+  =#+requires_facet:= on a facet in another technical space, so they fire only at
+  the whole =ores= address. Measured for =ores.trading=, whose 64 models make the
+  two paths comparable: rendering each model at the whole =ores= address gives
+  2,003 files, 22 of them recipes; the sweep's own path, which expands =ores= into
+  the technical spaces, gives 1,867 files and no recipe at all. The two calls are
+  easy to confuse, because passing =ores= to =_render_components= expands it
+  rather than rendering it, so a measurement of the whole address has to go
+  through =_generate_single=. The 247 files at the generated recipe path shape
+  under =doc/recipes/shell/= and =doc/recipes/http= -- 233 and 14, of which 172
+  carry the =:tangle= block a generated recipe exports -- therefore have no gate,
+  and a branch that deletes one cannot be caught either.
+- *A generated file no render produces is invisible.* The comparison walks the
+  render's output, so a tree file the models do not produce is never examined.
+  That is what keeps each component's 645 files of clean-up debt out of the
+  result, but it also means the sweep cannot report a file that should exist and
+  does not, once its model no longer produces it. A file the branch deleted whose
+  model still produces it *is* caught, as a would-create; the deletion is caught
+  only while some model still produces the path. A committed deletion of a path
+  no model produces any more -- the shape a retired, renamed or moved template
+  leaves behind, and so the shape a cross-component rename leaves behind -- is
+  silent.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2264][#2264]] | [codegen] Sweep every catalogue component for drift |
+
+* Review
+
+Independent verification of PR #2264 at head =7fcda3e39c=, patch-id
+=16f83aa7b295369591fcb8f0f9337e0bc291ac3a=, verdict PASS+NOTES. Both
+safety-critical claims reproduced: the sweep writes nothing, proved by hashing
+40,928 worktree paths before and after, and the 645-file catalogue figure held on
+two runs. The rule resisted all four attack vectors.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The record claims 102 generated files under =projects/ores.shell/trading/=; the verifier measures 76 and could not find 102 anywhere. | task doc | Fixed | My number came from a grep for =trading= across all of =projects/ores.shell=, not the =trading/= subtree. The record now says 66 rendered from trade out of 76 present. |
+| 2 | The count frame is ambiguous: 24 catalogue entries, 21 distinct modeling directories, 21 returned by =_catalogue_components()=, and =controller-cpp= has no models, so only 20 render. | task doc | Fixed | The Plan now states all four numbers and which is which; the cost paragraph says twenty components, not twenty-one. |
+| 3 | The sweep renders per technical space, so it produces no recipes; the 247 generated recipes under =doc/recipes/= have no gate, and the PR does not say so. | task doc | Fixed | Recorded as the first of two limits, with the measurement for =ores.trading=: 1,867 files and no recipe per space, 2,003 files and 22 recipes at the whole address. |
+| 4 | A generated file the branch deletes never fails, because the comparison walks the render's output. | task doc, tests | Partly refuted | A deleted file whose model still produces it reads as a would-create and does fail; a test now pins that. The genuine residue is a file no render produces, which is recorded as the second limit. |
+| 5 | "about 80 seconds" is not the measured time. | task doc | Fixed | 74 seconds measured here, 61 on the reviewing machine, both named. |
+| 6 | The nine tests have no case for deletion, an untouched create, or a render failure. | tests | Fixed | Four tests added, thirteen now. |
+
+Second round, on the head the first round's fixes produced:
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 7 | The recipe count matches no definition: =find= gives 294 files under the two directories and 172 carrying a =:tangle= block. | task doc | Fixed | 247 is the count at the generated path shape, since the output patterns are nested; the record now says 247 nested, 233 and 14, of which 172 carry the =:tangle= block. |
+| 8 | The trade render figures are wrong: both paths give 1,866 files and no recipe, so 2,003 and 22 is unreachable. | task doc | Refuted | The verifier passed =ores= to =_render_components= for the whole-address case, which expands =ores= into the technical spaces rather than rendering it, so it measured the sweep's path twice. Re-measured here through =_generate_single=: the whole address gives 2,003 files and 22 recipes, the sweep's path 1,867 and none, over 64 models. The record now names both calls, because the trap is easy to fall into and I fell into it once myself. |
+| 9 | The deletion residue is wider than the record says: the rule catches a deletion only while some model still produces the path, and a committed deletion of a path no model produces is silent. | task doc | Fixed | Both the limit and the acceptance bullet now say that, and name it as the shape a cross-component rename leaves behind. |
+
+* Result
+
+=check_component_drift.py --sweep= renders every catalogue component that owns a
+modeling directory, twenty of them, into a temporary root and compares the result
+against the repository. It reaches the two kinds of generated output the registry
+cannot: a component waiting its turn, and output an archetype routes into another
+component's tree. Rendering =ores.trading= at the =ores.cpp= address writes 66
+files under =projects/ores.shell/trading/=, and no run of =ores.shell= can reach
+them.
+
+It fails only on a path it would change that the branch also touched, because 645
+files would change across the catalogue today and that debt belongs to each
+component's own clean-up. The base is the merge base with =origin/main=, and the
+sweep refuses when it cannot resolve one rather than reading every component's
+debt as a failure. It renders and compares only, so it writes nothing and is safe
+on a branch whose templates are older than main's.
+
+It runs in its own workflow, =codegen-sweep.yml=, which fires on any change under
+=projects/= because the measured case touched no model at all. A full sweep takes
+about a minute, 74 seconds measured here and 61 on the reviewing machine, and the
+job is 2 minutes with its setup. It is named in V05 of the Component Clean
+Standard and in the =compass-pr-raise= gate roster. Thirteen tests drive the rule
+against a throw-away tree with the render stubbed, and the codegen suite is 887
+passed.
+
+Two limits are recorded rather than closed, and both are the price of rendering
+per technical space: the recipe facets fire only at the whole =ores= address, so
+the 247 files at the generated recipe path shape have no gate; and the comparison
+walks the render's output, so a committed deletion of a path no model produces any
+more is silent.

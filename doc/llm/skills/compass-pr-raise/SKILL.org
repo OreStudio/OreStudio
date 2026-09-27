@@ -107,6 +107,19 @@ lifecycle is ordered this way.
      untracked drift it surfaces. A component not yet at zero drift is
      measured per-component with =--component <name>=; it cannot pass
      =--all= until it joins the registry.
+   - *catalogue drift sweep*:
+     =python3 projects/ores.codegen/scripts/check_component_drift.py --sweep=.
+     =--all= covers the registry, which is the components that are already
+     clean, so a component waiting its turn has no gate, and neither does
+     output an archetype routes into another component's tree -- rendering
+     =ores.trading= writes 66 files under =projects/ores.shell/=, which no run
+     of =ores.shell= can reach. The sweep renders all 21 catalogue components
+     into a temporary root and compares, then fails only on the files this
+     branch touched, because a component's remaining drift belongs to its own
+     clean-up story. It renders and compares only, so nothing is written and it
+     is safe on a branch whose templates are older than main's. Run it whenever
+     anything under =projects/= changed, which is why it also runs on every pull
+     request that touches =projects/**=.
    - *populate reference drift*:
      =python3 projects/ores.codegen/scripts/check_populate_references.py=.
      It reads the lookup contract from the upsert function bodies under

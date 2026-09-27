@@ -1,0 +1,82 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+---
+name: Codegen sweep
+on:  # yamllint disable-line rule:truthy
+  # Deliberately wider than codegen-drift.yml, which fires on the inputs
+  # codegen reads. The sweep exists for the output codegen writes, and the
+  # measured case touched no model at all: a rename in one component left a
+  # stale pasted block in another component's generated handler. So this
+  # workflow fires on any change under projects/.
+  push:
+    branches: ["main"]
+    paths:
+      - "projects/**"
+      - "doc/recipes/**"
+
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "projects/**"
+      - "doc/recipes/**"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # The drift gate renders the components in component_registry.py and compares
+  # the tree. That set is the components that are already clean, so a component
+  # waiting its turn has no gate at all, and neither does output an archetype
+  # routes into another component's tree: rendering ores.trading writes 66
+  # files under projects/ores.shell/, which no run of ores.shell can reach.
+  #
+  # The sweep renders all 21 catalogue components into a temporary root and
+  # compares, which reaches both. It then fails only on the files this branch
+  # touched, because a component's remaining drift belongs to that component's
+  # own clean-up story and is not this branch's to fix. Because it renders into
+  # a temporary root it writes nothing, so it is safe on a branch whose
+  # templates are older than main's -- which is the hazard that makes the
+  # in-place drift check destructive.
+  sweep:
+    runs-on: ubuntu-24.04
+    steps:
+      # fetch-depth 0 so origin/main exists and the merge base can be taken:
+      # the sweep cannot tell drift this branch caused from drift that was
+      # already there without it.
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Install codegen dependencies
+        run: |
+          pip install --quiet -r projects/ores.codegen/requirements.txt
+      # The renderer runs clang-format over its C++ output, and the sweep
+      # compares bytes, so the formatter has to be present or every generated
+      # C++ file reads as drifted. The distro package is deliberate: it is the
+      # same clang-format the other codegen jobs use.
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+      - name: Sweep every catalogue component for drift this branch caused
+        run: |
+          python3 projects/ores.codegen/scripts/check_component_drift.py --sweep

@@ -80,7 +80,7 @@ Two failures remain and neither is this branch's: =regenerate_cmake_component_fi
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B22C0343-9FD0-4405-B301-0228CE07DE29][Scaffold story: Generate HTTP routes from the models]] | STARTED | 2026-09-26 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B22C0343-9FD0-4405-B301-0228CE07DE29][Scaffold story: Generate HTTP routes from the models]] | DONE | 2026-09-26 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:6356873B-10D7-4AC7-AD63-8FA2F9C1BD78][Build the HTTP route facet and land ores.assets through it]] | BACKLOG | | | Initial task for: Generate HTTP routes from the models |
 
 * Decisions

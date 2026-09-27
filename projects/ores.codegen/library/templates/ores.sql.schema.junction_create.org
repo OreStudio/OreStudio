@@ -24,6 +24,13 @@ and =:rls_system_tenant_visible:= widens the policy to the system
 tenant. =:rls_party_isolation:= belongs to the domain entity archetype
 and is not read here, so setting it on a junction changes nothing.
 
+The policy is dropped before it is created, so the script is idempotent:
+re-running =setup_schema.sql= against an already-populated database must
+not abort on a policy that already exists. The domain-entity archetype
+gained the same guard in 48f4282df6, which missed this one -- the guard
+reached the checked-in junction SQL by hand in 02c78a7dda instead, and the
+next regeneration would have removed it.
+
 * Template
 
 The full template source. Edit here and re-tangle with
@@ -220,6 +227,9 @@ do instead
 {{/junction.sql.rls_system_tenant_visible}}
 -- =============================================================================
 alter table "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" enable row level security;
+
+drop policy if exists {{junction.name}}_tbl_tenant_isolation_policy
+    on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl";
 
 create policy {{junction.name}}_tbl_tenant_isolation_policy
 on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"

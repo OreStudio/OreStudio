@@ -200,3 +200,63 @@ def test_the_key_indexes_still_follow_left_and_right(tmp_path):
         "create index if not exists dq_test_junctions_artefact_right_idx\n"
         "on ores_dq_test_junctions_artefact_tbl (right_code);"
     ) in sql
+
+
+"""The junction create script's row-level security trailer.
+
+A junction that opts into tenant isolation gets a policy, and the policy
+has to be dropped before it is created. Re-running ``setup_schema.sql``
+against an already-populated database aborts otherwise, which is what
+commit 48f4282df6 fixed for the domain-entity archetype. The junction
+archetype kept issuing a bare ``create policy``, so the guard existed only
+in the checked-in SQL -- hand-added by 02c78a7dda -- and the next
+regeneration stripped it.
+"""
+
+RLS_JUNCTION = """\
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:rls_tenant_isolation: true
+:END:
+"""
+
+
+def generate_create(tmp_path, extra=""):
+    model_path = tmp_path / "ores.testcomp.test_junction.org"
+    model_path.write_text(JUNCTION + extra, encoding="utf-8")
+    output_dir = tmp_path / "out_create"
+    output_dir.mkdir(exist_ok=True)
+    generate_from_model(
+        str(model_path),
+        DATA_DIR,
+        TEMPLATES_DIR,
+        output_dir,
+        is_processing_batch=True,
+        target_template="sql_schema_junction_create.mustache",
+        target_output="out.sql",
+    )
+    return (output_dir / "out.sql").read_text(encoding="utf-8")
+
+
+def test_a_junction_policy_is_dropped_before_it_is_created(tmp_path):
+    sql = generate_create(tmp_path, RLS_JUNCTION)
+
+    drop = (
+        "drop policy if exists test_junctions_tbl_tenant_isolation_policy\n"
+        '    on "ores_testcomp_test_junctions_tbl";'
+    )
+    create = "create policy test_junctions_tbl_tenant_isolation_policy"
+
+    assert drop in sql
+    assert create in sql
+    assert sql.index(drop) < sql.index(create)
+
+
+def test_a_junction_without_the_flag_gets_no_rls_trailer(tmp_path):
+    sql = generate_create(tmp_path)
+
+    assert "enable row level security" not in sql
+    assert "create policy" not in sql

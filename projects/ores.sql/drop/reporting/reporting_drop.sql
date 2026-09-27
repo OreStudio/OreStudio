@@ -45,4 +45,7 @@
 \ir ./reporting_configuration_types_notify_trigger_drop.sql
 \ir ./reporting_configuration_types_drop.sql
 
+\ir ./reporting_parameter_value_domains_notify_trigger_drop.sql
+\ir ./reporting_parameter_value_domains_drop.sql
+
 \ir ./reporting_functions_drop.sql

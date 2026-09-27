@@ -1,0 +1,169 @@
+:PROPERTIES:
+:ID: 9D4B7E13-2A85-4C69-B3F7-5E8C0A1D4932
+:END:
+#+title: ores.reporting.parameter_value_domain
+#+description: Codegen entity model for the reporting =parameter_value_domain= table. What a parameter value is, and what it refers to when it names something.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: The kind of value a configuration parameter holds.
+#+entity_singular: parameter_value_domain
+#+entity_plural: parameter_value_domains
+#+entity_title: Parameter Value Domain
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+Every configuration parameter holds one value, and this says what that value
+is: a currency, a date, a boolean, an integer, a tenor, a document reference,
+or a list. Where the value names something in the model, =referenced_entity=
+names the entity it points at, so the mapper knows what to write into the
+document and a reader knows what the value means.
+
+The entity is not called value_domain because that name is a knob in the
+codegen meta-model; an entity using it resolves to a placeholder and the
+generator writes files called unknown instead of failing.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:system_tenant_validation: true
+:profile:                  simple-lookup
+:tablename: ores_reporting_parameter_value_domains_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The stable code for the domain, for example currency or tenor.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The human-readable name of the domain.
+
+** storage_kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How a value in this domain is stored: text, numeric, integer, boolean,
+date, uuid or list.
+
+** referenced_entity
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The entity a value in this domain refers to, when it refers to one, for
+example ores.refdata.currency. Empty when the value stands alone.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_parameter_value_domains_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: domain
+:entity_plural_short:   domains
+:entity_singular_words: parameter value domain
+:entity_plural_words:   parameter value domains
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pvd
+:END:
+
+** Table display
+
+| column           | header      |
+|------------------+-------------|
+| code             | Code        |
+| name             | Name        |
+| storage_kind     | Storage     |
+| referenced_entity | Refers To  |
+| modified_by      | Modified By |
+| version          | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.reporting.api/domain/parameter_value_domain.hpp
+:domain_class:           reporting::domain::parameter_value_domain
+:protocol_include:       ores.reporting.api/messaging/parameter_value_domain_protocol.hpp
+:collection_name:        domains
+:key_field:              code
+:get_request_class:      reporting::messaging::get_parameter_value_domains_request
+:get_response_class:     reporting::messaging::get_parameter_value_domains_response
+:get_message_type:       get_parameter_value_domains_request
+:save_request_class:     reporting::messaging::save_parameter_value_domain_request
+:save_response_class:    reporting::messaging::save_parameter_value_domain_response
+:save_message_type:      save_parameter_value_domain_request
+:delete_request_class:   reporting::messaging::delete_parameter_value_domain_request
+:delete_response_class:  reporting::messaging::delete_parameter_value_domain_response
+:delete_message_type:    delete_parameter_value_domain_request
+:END:
+
+*** Detail fields
+
+| field             | label     | type      | is_key | is_required | placeholder |
+|-------------------+-----------+-----------+--------+-------------+-------------|
+| code              | Code      | line_edit | true   | true        | Enter domain code |
+| name              | Name      | line_edit |        | true        | Enter display name |
+| storage_kind      | Storage   | line_edit |        | true        | Enter storage kind |
+| referenced_entity | Refers To | line_edit |        | true        | Enter referenced entity |
+
+*** Columns
+
+| enum_name        | field             | header    | type   | width |
+|------------------+-------------------+-----------+--------+-------|
+| Code             | code              | Code      | string | 160   |
+| Name             | name              | Name      | string | 220   |
+| StorageKind      | storage_kind      | Storage   | string | 140   |
+| ReferencedEntity | referenced_entity | Refers To | string | 240   |
+| Version          | version           | Version   | int    | 80    |
+| ModifiedBy       | modified_by       | Modified By | string | 120 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

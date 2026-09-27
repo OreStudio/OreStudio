@@ -566,14 +566,61 @@ stress__stress_stresstest_config *-- "0..1" stress__stress_shift_config : intrad
 stress__stress_stresstest_config *-- "0..1" stress__stress_shift_config : swaption_volatilities
 stress__stress_stresstest_config *-- "0..1" stress__stress_shift_config : yield_curves
 stress__stress_testing_config *-- "1..*" stress__stress_stresstest_config : stress_test
-stress_shift_config : "one relation for 10 families. family holds the code: stressdiscountcurve, stressindexcurve, stressyieldcurve, stresssurvivalprobability, stressfxvolatility, stressswaptionvolatility, stresscapfloorvolatility, stresscommoditycurve, stressintradaypowercurve, stresscommodityvolatility"
-stress_shift_tenor_config : "tenor_id references the tenor entity; ORE writes these as a comma-separated string"
-simm_historical_volatility_ratio_config : "one relation for 3 <historical_volatility_ratio> rows"
-simm_inter_bucket_config : "one relation for 4 <inter_bucket> rows"
-simm_risk_weights_config : "one relation for 6 <risk_weights> rows"
-simm_threshold_config : "one relation for 2 <threshold> rows"
-sensitivity_shift_config : "one relation for 26 families. family holds the code: discountcurve, indexcurve, yieldcurve, fxspot, fxvolatility, swaptionvolatility, yieldvolatility, capfloorvolatility, cdsvolatility, creditcurve, equityspot, equityvolatility, zeroinflationindexcurve, yyinflationindexcurve, cpicapfloorvolatility, yycapfloorvolatility, basecorrelation, securityspread, dividendyield, commodityCurve, intradaypowercurve, commodityvolatility, correlationcurve, sensiBondFutureVolatility, survivalprobability, recoveryrate"
-sensitivity_shift_tenor_config : "tenor_id references the tenor entity; ORE writes these as a comma-separated string"
-sensitivity_shift_config : "one relation for 2 <shift> rows"
-sensitivity_shifts_config : "one relation for 2 <shifts> rows"
+note right of stress__stress_shift_config
+  one relation for 10 shift families; family FKs the shift_family lookup
+end note
+note right of stress__stress_shift_tenor_config
+  the tenors the shift applies to; a reference to the tenor entity, where ORE writes a comma-separated string
+end note
+note right of simmcalibration__simm_historical_volatility_ratio_config
+  one relation for 3 <historical_volatility_ratio> rows
+end note
+note right of simmcalibration__simm_inter_bucket_config
+  one relation for 4 <inter_bucket> rows
+end note
+note right of simmcalibration__simm_risk_weights_config
+  one relation for 6 <risk_weights> rows
+end note
+note right of simmcalibration__simm_threshold_config
+  one relation for 2 <threshold> rows
+end note
+note right of sensitivity__sensitivity_shift_config
+  one relation for 26 shift families; family FKs the shift_family lookup
+end note
+note right of sensitivity__sensitivity_shift_tenor_config
+  the tenors the shift applies to; a reference to the tenor entity, where ORE writes a comma-separated string
+end note
+note right of sensitivity__sensitivity_shift_config
+  one relation for 2 <shift> rows
+end note
+note right of sensitivity__sensitivity_shifts_config
+  one relation for 2 <shifts> rows
+end note
+note right of stress__stress_testing_config
+  a named stress library. Composed of stress scenarios, each applying shifts to families of market objects.
+end note
+note right of simmcalibration__simm_calibration_config
+  ISDA SIMM parameter sets, one per version: risk weights, correlations and concentration thresholds per risk class.
+end note
+note right of sensitivity__sensitivity_config
+  which market objects are shifted and by how much, and how par-rate conversion is done.
+end note
+note right of creditsimulation__credit_simulation_config
+  the credit portfolio model: transition matrices, the entities that migrate, and the run settings.
+end note
+note right of baselTrafficLightconfig__basel_traffic_light_config_configuration_config
+  MPOR observation buckets and the amber and red limits that classify them.
+end note
+note as rule_9935
+  Every discriminator column is an FK to a seeded lookup, not a text code. A note listing valid values is a lookup that has not been built yet.
+end note
+note as rule_18263
+  A correlation is pairwise by its meaning: two asset classes and an index within each. A matrix is many such rows, not a wider struct.
+end note
+note as rule_50012
+  A value indexed by factor - a loading, a weight per bucket - is a row per (owner, factor); a relation among participants is a row per participant.
+end note
+note as rule_57915
+  The ORE XML structure is rebuilt by the mappers in ores.ore. The model holds domain entities and nothing about how they are written down.
+end note
 @enduml

@@ -73,4 +73,38 @@ configuration_parameter *-- "1" parameter_definition : named by
 parameter_definition *-- "1" value_domain : valued as
 parameter_definition *-- "1" configuration_type : belongs to
 
+note right of report_definition
+  a scheduled report: what to run, when, and under which concurrency policy. Report types are ours, not ORE's.
+end note
+note right of report_configuration
+  the report's slots. One row per configuration type it binds: the type is the slot, configuration_id fills it. Several reports may fill the same slot with the same configuration.
+end note
+note right of configuration_type
+  the kinds of configuration a report can bind: Stress Testing, Simulation, Sensitivity, SIMM Calibration, Historical Return, Basel Traffic Light, Credit Simulation, and the ORE run itself.
+end note
+note right of configuration
+  one named, reusable configuration. The name is ours; the detail lives with the component named by owning_component.
+end note
+note right of configuration_parameter
+  one value. value is text because the domain says what it is; the mapper writes it into the document.
+end note
+note right of parameter_definition
+  the vocabulary of an ORE run document: which parameter names a scope and subtype accepts, and the domain of each value. 165 of the 218 names observed belong to exactly one analytic kind.
+end note
+note right of value_domain
+  what a value is - currency, date, boolean, integer, tenor, document, list - and, where it names something, the entity it refers to.
+end note
+note as rule_0
+  Every discriminator column is an FK to a seeded lookup, not a text code. A note listing valid values is a lookup that has not been built yet.
+end note
+note as rule_1
+  A correlation is pairwise by its meaning: two asset classes and an index within each. A matrix is many such rows, not a wider struct.
+end note
+note as rule_2
+  A value indexed by factor - a loading, a weight per bucket - is a row per (owner, factor); a relation among participants is a row per participant.
+end note
+note as rule_3
+  The ORE XML structure is rebuilt by the mappers in ores.ore. The model holds domain entities and nothing about how they are written down.
+end note
+
 @enduml

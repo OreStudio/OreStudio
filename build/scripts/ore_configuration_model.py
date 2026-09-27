@@ -166,6 +166,56 @@ def split_compounds(sn: str) -> str:
     return "_".join(COMPOUNDS.get(tok, tok) for tok in sn.split("_"))
 
 
+
+# What each relation models, in the domain's terms. A struct and its columns say
+# what is stored; these say what it is for, which is the part a reader cannot
+# recover from the shape.
+STRUCT_NOTES = {
+    "report_definition": "a scheduled report: what to run, when, and under which "
+        "concurrency policy. Report types are ours, not ORE's.",
+    "report_configuration": "the report's slots. One row per configuration type it "
+        "binds: the type is the slot, configuration_id fills it. Several reports "
+        "may fill the same slot with the same configuration.",
+    "configuration_type": "the kinds of configuration a report can bind: Stress "
+        "Testing, Simulation, Sensitivity, SIMM Calibration, Historical Return, "
+        "Basel Traffic Light, Credit Simulation, and the ORE run itself.",
+    "configuration": "one named, reusable configuration. The name is ours; the "
+        "detail lives with the component named by owning_component.",
+    "parameter_definition": "the vocabulary of an ORE run document: which parameter "
+        "names a scope and subtype accepts, and the domain of each value. 165 of "
+        "the 218 names observed belong to exactly one analytic kind.",
+    "configuration_parameter": "one value. value is text because the domain says "
+        "what it is; the mapper writes it into the document.",
+    "value_domain": "what a value is - currency, date, boolean, integer, tenor, "
+        "document, list - and, where it names something, the entity it refers to.",
+    "stress_testing_config": "a named stress library. Composed of stress scenarios, "
+        "each applying shifts to families of market objects.",
+    "stress_test_config": "one named scenario (id, e.g. eur_6m_up): what to shift, "
+        "and the spot, spread and volatility blocks it starts from.",
+    "sensitivity_config": "which market objects are shifted and by how much, and "
+        "how par-rate conversion is done.",
+    "simm_calibration_config": "ISDA SIMM parameter sets, one per version: risk "
+        "weights, correlations and concentration thresholds per risk class.",
+    "simulation_config": "Monte Carlo settings and the cross-asset model: what is "
+        "simulated and how the models are calibrated.",
+    "credit_simulation_config": "the credit portfolio model: transition matrices, "
+        "the entities that migrate, and the run settings.",
+    "historical_return_config": "the historical-return convention per risk factor "
+        "key: how a return is computed and any displacement.",
+    "basel_traffic_light_config_configuration_config": "MPOR observation buckets and "
+        "the amber and red limits that classify them.",
+}
+RULE_NOTES = [
+    "Every discriminator column is an FK to a seeded lookup, not a text code. A "
+    "note listing valid values is a lookup that has not been built yet.",
+    "A correlation is pairwise by its meaning: two asset classes and an index "
+    "within each. A matrix is many such rows, not a wider struct.",
+    "A value indexed by factor - a loading, a weight per bucket - is a row per "
+    "(owner, factor); a relation among participants is a row per participant.",
+    "The ORE XML structure is rebuilt by the mappers in ores.ore. The model holds "
+    "domain entities and nothing about how they are written down.",
+]
+
 def tidy(doc: str, name: str) -> str:
     """`{type}_{what it models}_config`, in one namespace."""
     if name == ROOTS.get(doc):
@@ -196,9 +246,11 @@ def tidy_all(structs, edges, notes):
     for d, names in structs.items():
         structs[d] = {rename[d][n]: m for n, m in names.items()}
     edges = [(d, rename[d][s], rename[d][t], lbl, lo, hi) for d, s, t, lbl, lo, hi in edges]
-    notes = [re.sub(r"^([a-zA-Z_]+)", lambda m: rename.get(
-        next((d for d in rename if m.group(1) in rename[d]), ""), {}).get(m.group(1), m.group(1)),
-        n) for n in notes]
+    notes = [(d, rename[d].get(n, n), txt) for d, n, txt in notes]
+    for d, names in rename.items():
+        for old, new in names.items():
+            if new in STRUCT_NOTES and not any(n == new for _d, n, _t in notes):
+                notes.append((d, new, STRUCT_NOTES[new]))
     return structs, edges, notes
 
 
@@ -317,7 +369,7 @@ def build(docs: dict, keep: dict[str, set[str]] | None = None):
     keep = keep or keep_sets()
     structs: dict[str, dict[str, list[tuple[str, str]]]] = {}
     edges: list[tuple[str, str, str, str, str]] = []
-    notes: list[str] = []
+    notes: list[tuple[str, str, str]] = []
 
     for doc in ANALYTICS_DOCUMENTS:
         classes = {c["name"]: c for c in docs[doc]["classes"]
@@ -359,10 +411,11 @@ def build(docs: dict, keep: dict[str, set[str]] | None = None):
             for suffix, cols in SHIFT_ROWS.items():
                 structs[doc][f"{doc}_{suffix}"] = cols
                 edges.append((doc, f"{doc}_shift", f"{doc}_{suffix}", suffix, "0", "unbounded"))
-            notes.append(f'{doc}_shift_config : "one relation for {len(rows)} families. '
-                         f'family holds the code: ' + ", ".join(f for f, _e in rows) + '"')
-            notes.append(f'{doc}_shift_tenor_config : "tenor_id references the tenor '
-                         f'entity; ORE writes these as a comma-separated string"')
+            notes.append((doc, f"{doc}_shift", f"one relation for {len(rows)} shift "
+                          f"families; family FKs the shift_family lookup"))
+            notes.append((doc, f"{doc}_shift_tenor", "the tenors the shift applies to; "
+                          "a reference to the tenor entity, where ORE writes a "
+                          "comma-separated string"))
             
         # Rows a parent reaches by one element name are one relation, provided
         # their shapes agree.
@@ -385,7 +438,7 @@ def build(docs: dict, keep: dict[str, set[str]] | None = None):
                 + list(members[unique[0]]))
             for t in unique:
                 merged[t] = name
-            notes.append(f'{name} : "one relation for {len(unique)} <{element}> rows"')
+            notes.append((doc, name, f"one relation for {len(unique)} <{element}> rows"))
 
         for name in sorted(classes):
             tgt = resolve(name)
@@ -430,7 +483,13 @@ def emit(docs: dict, title: str, include_reporting: bool) -> str:
         rels.append(f"{doc}__{src} *-- {multi} {doc}__{tgt} : {label}")
     out.append("")
     out.extend(sorted(set(rels)))
-    out.extend(notes)
+    for doc, name, text in notes:
+        if name in structs.get(doc, {}):
+            out.append(f"note right of {doc}__{name}")
+            out.append(f"  {text}")
+            out.append("end note")
+    for rule in RULE_NOTES:
+        out.append(f"note as rule_{hash(rule) & 0xffff}\n  {rule}\nend note")
     out.append("@enduml")
     return "\n".join(out) + "\n"
 
@@ -451,8 +510,12 @@ def main() -> int:
         body = text.split('package "ores.analytics"')[0].rstrip()
         # The relationships live after the analytics package, so the split drops
         # them: put the reporting ones back.
+        names = re.findall(r"^  class (\w+)", REPORTING, re.M)
+        extra = [f"note right of {n}\n  {STRUCT_NOTES[n]}\nend note"
+                 for n in names if n in STRUCT_NOTES]
+        extra += [f"note as rule_{i}\n  {r}\nend note" for i, r in enumerate(RULE_NOTES)]
         text = "\n".join(body.splitlines()[:-1] + [""] + REPORTING_RELS
-                         + ["", "@enduml"]) + "\n"
+                         + [""] + extra + ["", "@enduml"]) + "\n"
         name = args.out_name or "configuration_model_reporting.puml"
     else:
         name = args.out_name or "configuration_model_analytics.puml"

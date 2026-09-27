@@ -34,6 +34,22 @@ Rebinding (editing =source_name=) switches the ingest source without restarting
 producers. Setting =enabled = false= suspends the subscription without deleting
 the binding.
 
+This model binds to no variability profile, and the omission is
+deliberate rather than unfinished. A binding is workspace-scoped
+(=has_workspace_id = true=), keyed by a surrogate UUID
+(=has_uuid_primary_key = true=), and carries the standard presentation
+tier (=has_pagination = true=, =has_change_reason_cache = true=,
+=has_tenant_id = true=). No profile in the catalogue has that
+combination: =workspace-scoped-lookup= fixes
+=has_uuid_primary_key = false= and =uuid-surrogate-lookup= fixes
+=has_workspace_id = false=, so every candidate contradicts one of the
+two features that define this entity. Binding to the nearest profile
+would move a false promise rather than remove it.
+
+The gap is a profile the catalogue lacks, not a defect in this model.
+=ores.reporting.report_definition= has the same shape and is recorded
+in =KNOWN_MODEL_DRIFT= for the same reason.
+
 * Flags
 :PROPERTIES:
 :schema:        public
@@ -224,16 +240,6 @@ feed_binding_repository::read_latest_all_tenants(context ctx) {
 :collection_name:         feed_bindings
 :key_field:               ore_key
 :has_uuid_primary_key:    true
-:get_request_class:       marketdata::messaging::get_feed_bindings_request
-:get_response_class:      marketdata::messaging::get_feed_bindings_response
-:get_message_type:        get_feed_bindings_request
-:save_request_class:      marketdata::messaging::save_feed_binding_request
-:save_response_class:     marketdata::messaging::save_feed_binding_response
-:save_message_type:       save_feed_binding_request
-:save_request_item_field: data
-:delete_request_class:    marketdata::messaging::delete_feed_binding_request
-:delete_response_class:   marketdata::messaging::delete_feed_binding_response
-:delete_message_type:     delete_feed_binding_request
 :has_change_reason_cache: true
 :END:
 

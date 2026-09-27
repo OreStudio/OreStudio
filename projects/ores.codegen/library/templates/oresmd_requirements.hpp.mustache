@@ -44,7 +44,7 @@ struct {{asset_class}}_market_data_requirement final {
  */
 using market_data_requirement = std::variant<
 {{#oresmd_variant_specs}}
-    {{asset_class}}_market_data_requirement{{^last}},{{/last}}
+    {{asset_class}}_market_data_requirement{{^last_spec}},{{/last_spec}}
 {{/oresmd_variant_specs}}
 >;
 

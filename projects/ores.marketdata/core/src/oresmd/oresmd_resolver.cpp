@@ -84,7 +84,17 @@ market_data_identifier resolve_ir(const ir_market_data_requirement& req,
     id.ccy = pick_mandatory_string(req.ccy, d ? d->ccy : std::string{}, "ccy");
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.index = pick_optional(req.index, d ? d->index : std::nullopt);
+    id.index_spelling = pick_optional(req.index_spelling, d ? d->index_spelling : std::nullopt);
     id.tenor = pick_optional(req.tenor, d ? d->tenor : std::nullopt);
+    id.second_tenor = pick_optional(req.second_tenor, d ? d->second_tenor : std::nullopt);
+    id.second_ccy = pick_optional(req.second_ccy, d ? d->second_ccy : std::nullopt);
+    id.contract_month = pick_optional(req.contract_month, d ? d->contract_month : std::nullopt);
+    id.contract_code = pick_optional(req.contract_code, d ? d->contract_code : std::nullopt);
+    id.shift = pick_optional(req.shift, d ? d->shift : std::nullopt);
+    id.strip = pick_optional(req.strip, d ? d->strip : std::nullopt);
+    id.curve_id = pick_optional(req.curve_id, d ? d->curve_id : std::nullopt);
+    id.settle = pick_optional(req.settle, d ? d->settle : std::nullopt);
+    id.day_count = pick_optional(req.day_count, d ? d->day_count : std::nullopt);
     id.role = pick_optional(req.role, d ? d->role : std::nullopt);
     id.metric = pick_optional(req.metric, d ? d->metric : std::nullopt);
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
@@ -125,6 +135,8 @@ market_data_identifier resolve_correlation(const correlation_market_data_require
         pick_mandatory_string(req.factor_pair, d ? d->factor_pair : std::string{}, "factor_pair");
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
+    id.second_factor = pick_optional(req.second_factor, d ? d->second_factor : std::nullopt);
+    id.point = pick_optional(req.point, d ? d->point : std::nullopt);
     return id;
 }
 
@@ -147,6 +159,41 @@ market_data_identifier resolve_commodity(const commodity_market_data_requirement
     id.commodity_code = pick_mandatory_string(
         req.commodity_code, d ? d->commodity_code : std::string{}, "commodity_code");
     id.ccy = pick_mandatory_string(req.ccy, d ? d->ccy : std::string{}, "ccy");
+    id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
+    id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
+    id.point = pick_optional(req.point, d ? d->point : std::nullopt);
+    return id;
+}
+
+market_data_identifier resolve_security(const security_market_data_requirement& req,
+                                        const market_data_identifier& defaults) {
+    const auto* d = std::get_if<security_market_data_identifier>(&defaults);
+    security_market_data_identifier id;
+    id.security_id =
+        pick_mandatory_string(req.security_id, d ? d->security_id : std::string{}, "security_id");
+    id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
+    id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
+    return id;
+}
+
+market_data_identifier resolve_shape_profile(const shape_profile_market_data_requirement& req,
+                                             const market_data_identifier& defaults) {
+    const auto* d = std::get_if<shape_profile_market_data_identifier>(&defaults);
+    shape_profile_market_data_identifier id;
+    id.profile_id =
+        pick_mandatory_string(req.profile_id, d ? d->profile_id : std::string{}, "profile_id");
+    id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
+    id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
+    id.point = pick_optional(req.point, d ? d->point : std::nullopt);
+    return id;
+}
+
+market_data_identifier resolve_rating(const rating_market_data_requirement& req,
+                                      const market_data_identifier& defaults) {
+    const auto* d = std::get_if<rating_market_data_identifier>(&defaults);
+    rating_market_data_identifier id;
+    id.provider_id =
+        pick_mandatory_string(req.provider_id, d ? d->provider_id : std::string{}, "provider_id");
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
     id.point = pick_optional(req.point, d ? d->point : std::nullopt);
@@ -177,6 +224,12 @@ oresmd_resolver::resolve(const domain::market_data_requirement& requirement,
                 return resolve_inflation(req, defaults);
             else if constexpr (std::is_same_v<T, correlation_market_data_requirement>)
                 return resolve_correlation(req, defaults);
+            else if constexpr (std::is_same_v<T, security_market_data_requirement>)
+                return resolve_security(req, defaults);
+            else if constexpr (std::is_same_v<T, shape_profile_market_data_requirement>)
+                return resolve_shape_profile(req, defaults);
+            else if constexpr (std::is_same_v<T, rating_market_data_requirement>)
+                return resolve_rating(req, defaults);
         },
         requirement);
 }

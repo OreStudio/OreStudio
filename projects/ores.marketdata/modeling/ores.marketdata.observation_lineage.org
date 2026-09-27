@@ -44,7 +44,7 @@ itself handles a rerun.
 :schema:        public
 :product:       ores
 :component:     marketdata
-:has_tenant_id: true
+:profile:       uuid-surrogate-lookup
 :natural_keys_composite_name: party_series_obs_point
 :END:
 

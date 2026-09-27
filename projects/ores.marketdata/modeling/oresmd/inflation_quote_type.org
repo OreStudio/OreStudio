@@ -20,6 +20,9 @@
 | zc_swap | ZC_INFLATIONSWAP | zc_inflation_swap | RATE | tenor | simple | ZC_INFLATIONSWAP/RATE (zero-coupon inflation swap rate). |
 | yy_swap | YY_INFLATIONSWAP | yy_inflation_swap | RATE | tenor | simple | YY_INFLATIONSWAP/RATE (year-on-year inflation swap rate). |
 | seasonality | SEASONALITY | seasonality | RATE | tenor | mult_literal | SEASONALITY/RATE (seasonality adjustment factor). |
+| zc_capfloor | ZC_INFLATIONCAPFLOOR | zc_inflation_capfloor | PRICE | surface | capfloor_price | 6-segment: ZC_INFLATIONCAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE, and the same shape under RATE_NVOL. |
+| yy_capfloor | YY_INFLATIONCAPFLOOR | yy_inflation_capfloor | PRICE | surface | capfloor_price | 6-segment: YY_INFLATIONCAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE, and the same shape under RATE_NVOL. |
+| cf_price | CAPFLOOR | capfloor | PRICE | surface | capfloor_price | 6-segment: CAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE -- the inflation cap/floor price under the older CAPFLOOR type name, which the corpus carries beside ZC_INFLATIONCAPFLOOR/PRICE for the same instrument. |
 
 * Enum brief
 
@@ -42,6 +45,7 @@ A logical, possibly-partial oresmd requirement for an inflation instrument.
 | type | instrument_type | yes | type | instrument_type::quote |
 | quote_type | std::optional<inflation_quote_type> | no | quote | |
 | point | std::optional<std::string> | no | point | |
+| vol | std::optional<volatility_surface_point> | no | | |
 
 * Reject keys
 
@@ -50,6 +54,14 @@ A logical, possibly-partial oresmd requirement for an inflation instrument.
 | ccy |
 | index |
 | tenor |
+| second_tenor |
+| second_ccy |
+| second_factor |
+| curve_id |
+| settle |
+| day_count |
+| shift |
+| strip |
 | role |
 | metric |
 
@@ -61,9 +73,17 @@ A logical, possibly-partial oresmd requirement for an inflation instrument.
 | oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y | ZC_INFLATIONSWAP/RATE/UKRPI/5Y | zc_inflation_swap_quote_key |
 | oresmd://inflation/ukrpi?type=quote&quote=yy_swap&point=5y | YY_INFLATIONSWAP/RATE/UKRPI/5Y | yy_inflation_swap_quote_key |
 | oresmd://inflation/ukrpi?type=quote&quote=seasonality&point=jan | SEASONALITY/RATE/MULT/UKRPI/JAN | seasonality_quote_key |
+| oresmd://inflation/euhicpxt?type=vol&quote=zc_capfloor&model=price&point=10y,c,0.00 | ZC_INFLATIONCAPFLOOR/PRICE/EUHICPXT/10Y/C/0.00 | zc_inflation_capfloor_price_quote_key_matches_the_corpus |
+| oresmd://inflation/euhicpxt?type=vol&quote=cf_price&model=price&point=10y,c,0.00 | CAPFLOOR/PRICE/EUHICPXT/10Y/C/0.00 | cf_price_quote_key_matches_the_corpus |
+| oresmd://inflation/euhicpxt?type=vol&quote=yy_capfloor&model=rate_nvol&point=5y,f,0.02 | YY_INFLATIONCAPFLOOR/RATE_NVOL/EUHICPXT/5Y/F/0.02 | yy_inflation_capfloor_normal_vol_quote_key_matches_the_corpus |
 
 ** Round-trip
 
 | uri | description |
 |-----+-------------|
 | oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y | round_trip_inflation |
+| oresmd://inflation/ukrpi?type=quote&quote=yy_swap&point=5y | round_trip_inflation_yy_swap |
+| oresmd://inflation/ukrpi?type=quote&quote=seasonality&point=jan | round_trip_inflation_seasonality |
+| oresmd://inflation/euhicpxt?type=vol&quote=zc_capfloor&model=price&point=10y,c,0.00 | round_trip_inflation_zc_capfloor_price |
+| oresmd://inflation/euhicpxt?type=vol&quote=cf_price&model=price&point=10y,c,0.00 | round_trip_inflation_cf_price |
+| oresmd://inflation/euhicpxt?type=vol&quote=yy_capfloor&model=rate_nvol&point=5y,f,0.02 | round_trip_inflation_yy_capfloor_normal_vol |

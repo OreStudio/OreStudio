@@ -80,8 +80,8 @@ is being asked for, so it resolves to any of:
 |--------------------+---------------------------+---------------------------------------|
 | =oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=fixing= | The index/fixing itself — projects to index name =USD-LIBOR-3M=. | Implicit in an =ir_curve_generation_config= row's =index_name= field, not a standalone config today. |
 | =oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=curve= | The whole curve — projects to curve key =Yield/USD/USD3M=. | The =ir_curve_generation_config= row itself (=currency_code=USD=, =index_name=USD-LIBOR-3M=) — the =role= this row lacks a field for today. |
-| =oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&metric=par_rate&point=5y= | A 5Y par swap rate quote on that curve — projects to quote key =IR_SWAP/RATE/USD/2D/3M/5Y=. | A =market_series= row (=series_type=IR_SWAP=, =metric=RATE=, =qualifier=USD/2D/3M=, =point_id=5Y=) — not a generation config, a published market observation. |
-| =oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&metric=discount_factor&point=6m= | A directly-quoted discount factor sampled off that curve at 6M — projects to quote key =DISCOUNT/RATE/USD/USD3M/6M=. | A =market_series= row (=series_type=DISCOUNT=, =metric=RATE=, =qualifier=USD3M=, =point_id=6M=). |
+| =oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y= | A 5Y par swap rate quote on that curve — projects to quote key =IR_SWAP/RATE/USD/2D/3M/5Y=. | A =market_series= row (=series_type=IR_SWAP=, =metric=RATE=, =qualifier=USD/2D/3M=, =point_id=5Y=) — not a generation config, a published market observation. |
+| =oresmd://ir/usd?curve_id=USD3M&tenor=6m&type=quote&quote=discount&metric=rate= | A directly-quoted discount factor sampled off that curve at 6M — projects to quote key =DISCOUNT/RATE/USD/USD3M/6M=. | A =market_series= row (=series_type=DISCOUNT=, =metric=RATE=, =qualifier=USD3M=, =point_id=6M=). |
 
 *** Requirement: =oresmd://ir/eur?role=discount=
 
@@ -329,8 +329,8 @@ needs =point=.
 | =oresmd://ir/usd?index=sofr&tenor=1d&role=discount&type=fixing= | =USD-SOFR= | =Yield/USD/USD1D= | — |
 | =oresmd://ir/eur?index=euribor&tenor=6m&role=projection&type=fixing= | =EUR-EURIBOR-6M= | =Yield/EUR/EUR6M= | — |
 | =oresmd://ir/eur?index=estr&tenor=1d&role=discount&type=fixing= | =EUR-ESTR= | =Yield/EUR/EUR1D= | — |
-| =oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y= | — | — | =IR_SWAP/RATE/USD/2D/3M/5Y= |
-| =oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=discount&metric=rate&point=6m= | — | — | =DISCOUNT/RATE/USD/USD3M/6M= |
+| =oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y= | — | — | =IR_SWAP/RATE/USD/2D/3M/5Y= |
+| =oresmd://ir/usd?curve_id=USD3M&tenor=6m&type=quote&quote=discount&metric=rate= | — | — | =DISCOUNT/RATE/USD/USD3M/6M= |
 | =oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m= | — | — | =MM/RATE/EUR/EURIBOR/3M/1M= |
 | =oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=fra&metric=rate&point=6m= | — | — | =FRA/RATE/EUR/EURIBOR/3M/6M= |
 | =oresmd://ir/usd?index=libor&tenor=3m&type=quote&quote=imm_fra&metric=rate&point=5y= | — | — | =IMM_FRA/RATE/USD/LIBOR/3M/5Y= |
@@ -340,8 +340,8 @@ needs =point=.
 | =oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y= | — | — | =BMA_SWAP/RATIO/USD/3M/5Y= |
 | =oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=rate&point=5y= | — | — | =ZERO/RATE/EUR/EURIBOR/3M/5Y= |
 | =oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y= | — | — | =ZERO/YIELD_SPREAD/EUR/EURIBOR/3M/5Y= |
-| =oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme= | — | — | =MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME= |
-| =oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme= | — | — | =OI_FUTURE/PRICE/USD/SOFR/3M/CME= |
+| =oresmd://ir/eur?tenor=3m&contract_month=2024-04&contract_code=XICE:FEI&type=quote&quote=mm_future&metric=price= | — | — | =MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M= |
+| =oresmd://ir/usd?tenor=3m&contract_month=2024-01&contract_code=XCME:SRA&type=quote&quote=oi_future&metric=price= | — | — | =OI_FUTURE/PRICE/USD/2024-01/XCME:SRA/3M= |
 
 *** Tenor-index gap, resolved
 

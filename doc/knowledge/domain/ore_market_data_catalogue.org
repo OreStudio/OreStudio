@@ -59,8 +59,8 @@ Common dimensions (order varies by type):
 | =ZERO/RATE= | =ZERO/RATE/EUR/A365/Continuous/5Y= | decimal zero rate | Directly quoted zero-coupon rate | Curve construction where par swaps unavailable; bond pricing |
 | =ZERO/YIELD_SPREAD= | =ZERO/YIELD_SPREAD/EUR/.../5Y= | decimal spread | Spread over a reference zero curve | Credit-risky bonds, spread curves |
 | =DISCOUNT/RATE= | =DISCOUNT/RATE/USD/USD-DUMMY/1D= | discount factor | Directly quoted discount factor | Curve construction alternative to bootstrapping |
-| =MM_FUTURE/PRICE= | =MM_FUTURE/PRICE/USD/2025-09/3M= | price (100 − rate) | Money-market (Eurodollar / STIR) futures | Short-end bootstrap |
-| =OI_FUTURE/PRICE= | =OI_FUTURE/PRICE/USD/2025-09/SOFR= | price | Overnight-index futures (SOFR futures) | OIS short-end bootstrap |
+| =MM_FUTURE/PRICE= | =MM_FUTURE/PRICE/USD/2025-09/XCME:SRA/3M= | price (100 − rate) | Money-market (Eurodollar / STIR) futures | Short-end bootstrap |
+| =OI_FUTURE/PRICE= | =OI_FUTURE/PRICE/USD/2025-09/XCME:SRA/3M= | price | Overnight-index futures (SOFR futures) | OIS short-end bootstrap |
 
 *** Note on OIS curves
 =IR_SWAP= quotes with index tenor =1D= build OIS discount curves (SOFR, ESTR,

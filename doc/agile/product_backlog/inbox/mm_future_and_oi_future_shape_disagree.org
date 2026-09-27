@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 7C05E102-91B7-4D0B-A165-3099BA2DBBF8
+:END:
+#+title: The shape table gives MM_FUTURE and OI_FUTURE the same corpus shape at two depths
+#+description: Both futures types are written ccy/contract-month/exchange:code/tenor, but the shape table qualifies MM_FUTURE at depth 2 and OI_FUTURE at depth 1. Which segments identify the series is unsettled, and it decides what a stored series is.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* Partly resolved: the grammar is settled, the depth is not
+
+The blocking claim below -- that this blocks oresmd -- is withdrawn. oresmd
+models the *key grammar*, and the corpus is unanimous about it: 939 keys, both
+types six segments, =ccy/contract-month/exchange:code/tenor=, with no
+five-segment form anywhere. The oresmd identifier now carries
+=contract_month= and =contract_code= and names every one of those keys, so
+nothing waits on the depth question.
+
+The depth question itself stays open, and it is a storage question rather than
+a grammar one: what a stored =market_series= row is, and therefore what the two
+rows in =ore_series_key_shapes_populate.sql= should say. The three readings
+below are still live, and the decision still belongs to whoever owns the
+series identity. What is no longer true is that the corpus is silent -- it is
+silent on the depth, but it is explicit about the shape.
+
+The catalogue half of the finding is fixed: =ore_market_data_catalogue.org= now
+documents both types with the exchange contract code the corpus writes.
+
+* What
+
+ORE writes the two listed-futures families in the same shape, and the shape
+table describes them two different ways:
+
+| Type | Corpus key | Shape table |
+|------+------------+-------------|
+| MM_FUTURE | =MM_FUTURE/PRICE/EUR/2025-10/XICE:FEI/3M= | =ccy/expiry/tenor=, qualifier depth 2 |
+| OI_FUTURE | =OI_FUTURE/PRICE/USD/2025-08/XCME:SRA/3M= | =ccy/contract_month/exchange:code/tenor=, qualifier depth 1 |
+
+Both keys are six segments and identical in shape: currency, contract month,
+exchange and code, then the reference tenor. The depths differ, so the two
+types store different things.
+
+At depth 2 the qualifier is =currency/contract-month= and the point is
+=exchange:code/tenor=, which gives one series per contract with exactly one
+point each -- a series per observation.
+
+At depth 1 the qualifier is the currency alone and the point is
+=contract-month/exchange:code/tenor=, which gives one series per currency
+holding every contract as a point -- a strip as a curve.
+
+Neither is obviously right, and a third reading is available: the series is the
+contract itself, =currency/contract-month/exchange:code= at depth 3, with the
+reference tenor as its point.
+
+The corpus cannot settle it either, because it makes the question moot. The
+ordering puts the contract month between the currency and the exchange, so a
+single qualifier depth cannot separate "the contract month identifies the
+series" from "the exchange and tenor do". Every depth is a compromise.
+
+The market data catalogue does not settle it either, and its silence is the
+clearest evidence that the shape changed. It documents both as five segments --
+=MM_FUTURE/PRICE/USD/2025-09/3M= and =OI_FUTURE/PRICE/USD/2025-09/SOFR=, currency,
+contract month, then a tenor or an index -- with no exchange at all. The corpus
+writes six. So the exchange was added to the key after the catalogue was
+written, and neither our shape table nor the catalogue has been reconciled with
+that.
+
+* Why
+
+The depth is not a display choice. It decides what a stored =market_series= row
+is, how many observations each holds, and what the classification rules
+classify. Changing it after data is imported changes the identity of every row,
+and while this project recreates the database from scratch -- so the change is
+recoverable -- the decision should still be made rather than absorbed.
+
+It also blocks oresmd. Both types are among the eleven ORE series types with no
+oresmd representation, and the oresmd identifier needs to know which segments
+are the series' identity before it can carry them. Guessing would put a wrong
+identity in the model and, from there, in every stored series.
+
+The other two registry rows that state a depth for a futures-like key agree with
+neither, so the correction is not a one-line edit to one row: the shape table
+needs a decision about what a listed future's series is, then both rows
+rewritten to say it.
+
+* References
+
+- =projects/ores.sql/populate/ore/ore_series_key_shapes_populate.sql= -- the two
+  rows, with their descriptions and qualifier depths.
+- =doc/knowledge/domain/ore_market_data_catalogue.org= -- both types at five
+  segments, without the exchange the corpus writes.
+- =projects/ores.codegen/scripts/check_oresmd_ore_coverage.py= -- records both
+  types as unrepresented, and why.
+- =external/ore/examples/= -- the corpus keys above, and 939 lines of them.
+
+* See also
+
+- [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Story: Clean ores.marketdata to the component clean standard]]

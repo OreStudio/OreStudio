@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 07a7e4b6-db74-4aed-8e0a-ca6b4160f224
+:END:
+#+title: Shape profile oresmd quote type family
+#+description: Quote types keyed by a shape profile rather than a currency: the shape factor, whose coordinate is a date, a second of the day and a period.
+#+type: ores.codegen.oresmd_quote_type
+#+asset_class: shape_profile
+#+validate: inline
+#+authority: shape_profile
+#+component: ores.marketdata
+#+level: s2
+#+filetags: :codegen:oresmd:shape_profile:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+* Quote types
+
+The class carries no currency, no tenor and no metric key: the entity is the
+profile and the coordinate is the date, the second of the day and the period the
+profile is sampled on. ORE writes the metric as the second segment, so the one
+metric is its own quote type here -- the `metric` query key is one of the IR-only
+keys every other class rejects.
+
+| enum_name | ore_type | ore_constant | ore_metric | point_semantics | qualifier_shape | comment |
+|-----------+----------+--------------+------------+-----------------+-----------------+---------|
+| shape_factor | SHAPE_PROFILE | shape_profile | SHAPE_FACTOR | composite | no_ccy | SHAPE_PROFILE/SHAPE_FACTOR/PROFILE/DATE/SECOND/PERIOD, plus the DST flag the corpus writes as a seventh segment. |
+
+* Enum brief
+
+The `quote` query key for shape profiles. Shape-profile-only; only meaningful
+when `type=quote`.
+
+* Identifier brief
+
+A fully-resolved oresmd identifier for a shape profile (asset_class=shape_profile).
+
+* Requirement brief
+
+A logical, possibly-partial oresmd requirement for a shape profile.
+
+* Fields
+
+| name | cpp_type | mandatory | query_key | default |
+|------+----------+-----------+-----------+---------|
+| profile_id | std::string | yes | | |
+| type | instrument_type | yes | type | instrument_type::quote |
+| quote_type | std::optional<shape_profile_quote_type> | no | quote | |
+| point | std::optional<std::string> | no | point | |
+
+* Reject keys
+
+| key |
+|-----|
+| ccy |
+| index |
+| tenor |
+| second_tenor |
+| second_ccy |
+| second_factor |
+| curve_id |
+| settle |
+| day_count |
+| shift |
+| strip |
+| role |
+| metric |
+
+* URI order
+
+| key |
+|-----|
+| type |
+| quote |
+| point |
+
+* Test cases
+** Projections
+
+| uri | expected | description |
+|-----+----------+-------------|
+| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0,sec | SHAPE_PROFILE/SHAPE_FACTOR/PJM_WH_RT_PK/2021-03-01/0/SEC | shape_profile_factor_quote_key_matches_the_corpus |
+| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-01-01,7200,sec,dst | SHAPE_PROFILE/SHAPE_FACTOR/PJM_WH_RT_PK/2021-01-01/7200/SEC/DST | shape_profile_factor_dst_quote_key_matches_the_corpus |
+| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0 | nullopt | shape_profile_factor_rejects_a_point_that_is_not_a_coordinate |
+
+** Round-trip
+
+| uri | description |
+|-----+-------------|
+| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0,sec | round_trip_shape_profile_factor |
+| oresmd://shape_profile/pjm_wh_rt_pk_15min?type=quote&quote=shape_factor&point=2021-03-01,10800,sec,dst | round_trip_shape_profile_factor_dst |
+
+** Rejection
+
+| uri | description |
+|-----+-------------|
+| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0,sec&ccy=usd | reject_shape_profile_uri_with_ccy |
+| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&metric=rate | reject_shape_profile_uri_with_ir_only_metric |

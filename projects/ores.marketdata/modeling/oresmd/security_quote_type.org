@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: f2c8b5a7-3869-4e8a-8232-c9abf9267f07
+:END:
+#+title: Security oresmd quote type family
+#+description: Quote types keyed by a security identifier rather than a currency: bond price, bond yield spread, bond conversion factor, and a security-level recovery rate.
+#+type: ores.codegen.oresmd_quote_type
+#+asset_class: security
+#+validate: inline
+#+authority: security
+#+component: ores.marketdata
+#+level: s2
+#+filetags: :codegen:oresmd:security:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+* Quote types
+
+The class carries no currency, no tenor and no point: the entity is the security
+and the metric is the whole qualifier. ORE writes the metric as the second
+segment, so each metric is its own quote type here -- the class has no other
+dimension to tell them apart, and the `metric` query key is one of the IR-only
+keys every other class rejects.
+
+| enum_name | ore_type | ore_constant | ore_metric | point_semantics | qualifier_shape | comment |
+|-----------+----------+--------------+------------+-----------------+-----------------+---------|
+| bond_price | BOND | bond | PRICE | scalar | no_ccy | BOND/PRICE (bond clean price). |
+| bond_yield_spread | BOND | bond | YIELD_SPREAD | scalar | no_ccy | BOND/YIELD_SPREAD (bond yield spread). |
+| bond_conversion_factor | BOND | bond | CONVERSION_FACTOR | scalar | no_ccy | BOND/CONVERSION_FACTOR (bond futures conversion factor). |
+| recovery_rate | RECOVERY_RATE | recovery_rate | RATE | scalar | no_ccy | RECOVERY_RATE/RATE (recovery assumption named by a security rather than by an entity and a seniority). |
+
+* Enum brief
+
+The `quote` query key for security instruments. Security-only; only meaningful
+when `type=quote`.
+
+* Identifier brief
+
+A fully-resolved oresmd identifier for a security (asset_class=security).
+
+* Requirement brief
+
+A logical, possibly-partial oresmd requirement for a security instrument.
+
+* Fields
+
+| name | cpp_type | mandatory | query_key | default |
+|------+----------+-----------+-----------+---------|
+| security_id | std::string | yes | | |
+| type | instrument_type | yes | type | instrument_type::quote |
+| quote_type | std::optional<security_quote_type> | no | quote | |
+
+* Reject keys
+
+| key |
+|-----|
+| ccy |
+| index |
+| tenor |
+| second_tenor |
+| second_ccy |
+| second_factor |
+| curve_id |
+| settle |
+| day_count |
+| shift |
+| strip |
+| role |
+| metric |
+
+* URI order
+
+| key |
+|-----|
+| type |
+| quote |
+
+* Test cases
+** Projections
+
+| uri | expected | description |
+|-----+----------+-------------|
+| oresmd://security/isin:de000a3h2wp2?type=quote&quote=bond_price | BOND/PRICE/ISIN:DE000A3H2WP2 | security_bond_price_quote_key_matches_the_corpus |
+| oresmd://security/security_1?type=quote&quote=bond_yield_spread | BOND/YIELD_SPREAD/SECURITY_1 | security_bond_yield_spread_quote_key_matches_the_corpus |
+| oresmd://security/security_1_fwdexp_20251220?type=quote&quote=bond_conversion_factor | BOND/CONVERSION_FACTOR/SECURITY_1_FWDEXP_20251220 | security_bond_conversion_factor_quote_key_matches_the_corpus |
+| oresmd://security/security_1?type=quote&quote=recovery_rate | RECOVERY_RATE/RATE/SECURITY_1 | security_recovery_rate_quote_key_matches_the_corpus |
+
+** Round-trip
+
+| uri | description |
+|-----+-------------|
+| oresmd://security/isin:de000a3h2wp2?type=quote&quote=bond_price | round_trip_security_bond_price |
+| oresmd://security/security_1?type=quote&quote=bond_yield_spread | round_trip_security_bond_yield_spread |
+| oresmd://security/security_1_fwdexp_20251220?type=quote&quote=bond_conversion_factor | round_trip_security_bond_conversion_factor |
+| oresmd://security/security_1?type=quote&quote=recovery_rate | round_trip_security_recovery_rate |
+
+** Rejection
+
+| uri | description |
+|-----+-------------|
+| oresmd://security/security_1?ccy=usd&type=quote&quote=bond_price | reject_security_uri_with_ccy |
+| oresmd://security/security_1?type=quote&quote=bond_price&metric=price | reject_security_uri_with_ir_only_metric |

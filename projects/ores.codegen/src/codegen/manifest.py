@@ -137,6 +137,7 @@ def discover_models(
             # quote-type specs in modeling/oresmd/). Deeper nesting is
             # not scanned; the type filter below keeps any non-codegen
             # org file out regardless of depth.
+            candidates: set = set()
             for org_path in (
                 list(modeling_dir.glob("*.org"))
                 + list(modeling_dir.glob("*/*.org"))
@@ -149,7 +150,19 @@ def discover_models(
                 short_type = org_type.removeprefix("ores.codegen.")
                 if apply_exclusions and short_type in comp.exclude_org_types:
                     continue
-                matches.add(org_path)
+                candidates.add(org_path)
+            # A directory with a batch manifest is generated through the manifest
+            # alone. The manifest's loader reads every sibling spec itself, so
+            # rendering a spec separately writes the same umbrella outputs once
+            # more per spec and whichever path sorts last wins -- which is how
+            # adding one spec file can silently replace the whole generated file
+            # set. The oresmd quote-type specs are the case this exists for.
+            manifest_dirs = {p.parent for p in candidates if p.name == "model.org"}
+            matches = {
+                p
+                for p in candidates
+                if p.name == "model.org" or p.parent not in manifest_dirs
+            }
     return sorted(matches)
 
 

@@ -41,7 +41,10 @@ enum class metric {
     price,        ///< A price quote (e.g. MM_FUTURE/PRICE, OI_FUTURE/PRICE).
     basis_spread, ///< A basis spread quote (e.g. BASIS_SWAP/BASIS_SPREAD).
     ratio,        ///< A ratio quote (e.g. BMA_SWAP/RATIO).
-    yield_spread  ///< A yield spread quote (e.g. ZERO/YIELD_SPREAD).
+    yield_spread, ///< A yield spread quote (e.g. ZERO/YIELD_SPREAD).
+    conversion_factor, ///< A conversion factor quote (e.g. BOND/CONVERSION_FACTOR).
+    shape_factor, ///< A shape factor quote (e.g. SHAPE_PROFILE/SHAPE_FACTOR).
+    transition_probability ///< A rating transition probability (e.g. RATING/TRANSITION_PROBABILITY).
 };
 {{/first_asset_class}}
 {{/oresmd_quote_type}}

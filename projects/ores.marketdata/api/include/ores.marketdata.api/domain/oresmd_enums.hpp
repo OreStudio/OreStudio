@@ -57,11 +57,15 @@ enum class curve_role {
  * implies metric=rate, quote=mm_future implies metric=price).
  */
 enum class metric {
-    rate,         ///< A rate quote (e.g. MM/RATE, FRA/RATE, IR_SWAP/RATE, ZERO/RATE).
-    price,        ///< A price quote (e.g. MM_FUTURE/PRICE, OI_FUTURE/PRICE).
-    basis_spread, ///< A basis spread quote (e.g. BASIS_SWAP/BASIS_SPREAD).
-    ratio,        ///< A ratio quote (e.g. BMA_SWAP/RATIO).
-    yield_spread  ///< A yield spread quote (e.g. ZERO/YIELD_SPREAD).
+    rate,                  ///< A rate quote (e.g. MM/RATE, FRA/RATE, IR_SWAP/RATE, ZERO/RATE).
+    price,                 ///< A price quote (e.g. MM_FUTURE/PRICE, OI_FUTURE/PRICE).
+    basis_spread,          ///< A basis spread quote (e.g. BASIS_SWAP/BASIS_SPREAD).
+    ratio,                 ///< A ratio quote (e.g. BMA_SWAP/RATIO).
+    yield_spread,          ///< A yield spread quote (e.g. ZERO/YIELD_SPREAD).
+    conversion_factor,     ///< A conversion factor quote (e.g. BOND/CONVERSION_FACTOR).
+    shape_factor,          ///< A shape factor quote (e.g. SHAPE_PROFILE/SHAPE_FACTOR).
+    transition_probability ///< A rating transition probability (e.g.
+                           ///< RATING/TRANSITION_PROBABILITY).
 };
 
 /**
@@ -82,7 +86,9 @@ enum class ir_quote_type {
     cc_fix_float_swap, ///< CC_FIX_FLOAT_SWAP (cross-currency fix-float swap rate).
     zero,              ///< ZERO (zero-coupon rate).
     mm_future,         ///< MM_FUTURE (money market future price).
-    oi_future          ///< OI_FUTURE (overnight index future price).
+    oi_future,         ///< OI_FUTURE (overnight index future price).
+    capfloor,          ///< CAPFLOOR (cap/floor volatility on a strike grid).
+    bond_option        ///< BOND_OPTION (bond option implied vol).
 };
 
 /**
@@ -124,11 +130,17 @@ enum class index_family {
  * METRIC column. Credit-only; only meaningful when `type=quote`.
  */
 enum class credit_quote_type {
-    cds,              ///< CDS/CREDIT_SPREAD (single-name CDS spread).
-    hazard_rate,      ///< HAZARD_RATE/RATE (bootstrapped hazard rate).
-    recovery_rate,    ///< RECOVERY_RATE/RATE (recovery rate assumption).
-    cds_index,        ///< CDS_INDEX/BASE_CORRELATION (index base correlation).
-    index_cds_tranche ///< INDEX_CDS_TRANCHE/BASE_CORRELATION (tranche base correlation).
+    cds, ///< CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/TENOR, and the seven-segment form carrying the
+         ///< restructuring clause between the currency and the tenor (XR14, MR14)
+    hazard_rate,   ///< HAZARD_RATE/RATE/ENTITY/SENIORITY/CCY/TENOR, with the same optional
+                   ///< restructuring clause
+    recovery_rate, ///< RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY, plus the restructuring clause on
+                   ///< the keys that name one
+    cds_index,     ///< CDS_INDEX/BASE_CORRELATION (index base correlation).
+    index_cds_tranche, ///< INDEX_CDS_TRANCHE/BASE_CORRELATION (tranche base correlation).
+    index_cds_option   ///< INDEX_CDS_OPTION/MODEL/INDEX/TENOR/EXPIRY/STRIKE, plus the four-segment
+                       ///< term-vol form INDEX_CDS_OPTION/MODEL/INDEX/TENOR; the metric segment is
+                       ///< the vol model, not this table's ore_metric
     // rating descoped — RATING/TRANSITION_PROBABILITY needs provider/from_rating/to_rating
     // fields the current credit_market_data_identifier has no equivalent for; tracked for
     // its own task.
@@ -149,9 +161,12 @@ enum class equity_quote_type {
  * only meaningful when `type=quote`.
  */
 enum class commodity_quote_type {
-    spot, ///< COMMODITY/PRICE (spot price, the default).
-    fwd,  ///< COMMODITY_FWD/PRICE (commodity forward price).
-    cpr   ///< CPR/RATE (conditional prepayment rate).
+    spot,  ///< COMMODITY/PRICE (spot price, the default).
+    fwd,   ///< COMMODITY_FWD/PRICE (commodity forward price).
+    cpr,   ///< CPR/RATE (conditional prepayment rate).
+    option ///< COMMODITY_OPTION/MODEL/CODE/CCY/EXPIRY[/DELTA/PREMIUM/CALL_PUT]/STRIKE -- the equity
+           ///< option's three shapes, with a commodity code where the equity has a ticker; the
+           ///< metric segment is the vol model, not this table's ore_metric
 };
 
 /**
@@ -168,9 +183,16 @@ enum class fx_quote_type {
  * only meaningful when `type=quote`.
  */
 enum class inflation_quote_type {
-    zc_swap,    ///< ZC_INFLATIONSWAP/RATE (zero-coupon inflation swap rate).
-    yy_swap,    ///< YY_INFLATIONSWAP/RATE (year-on-year inflation swap rate).
-    seasonality ///< SEASONALITY/RATE (seasonality adjustment factor).
+    zc_swap,     ///< ZC_INFLATIONSWAP/RATE (zero-coupon inflation swap rate).
+    yy_swap,     ///< YY_INFLATIONSWAP/RATE (year-on-year inflation swap rate).
+    seasonality, ///< SEASONALITY/RATE (seasonality adjustment factor).
+    zc_capfloor, ///< 6-segment: ZC_INFLATIONCAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE, and
+                 ///< the same shape under RATE_NVOL.
+    yy_capfloor, ///< 6-segment: YY_INFLATIONCAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE, and
+                 ///< the same shape under RATE_NVOL.
+    cf_price     ///< 6-segment: CAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE -- the inflation
+                 ///< cap/floor price under the older CAPFLOOR type name, which the corpus carries
+                 ///< beside ZC_INFLATIONCAPFLOOR/PRICE for the same instrument.
 };
 
 /**
@@ -178,7 +200,38 @@ enum class inflation_quote_type {
  * only meaningful when `type=quote`.
  */
 enum class correlation_quote_type {
-    pairwise ///< CORRELATION/RATE (pairwise factor correlation).
+    pairwise ///< CORRELATION/RATE (pairwise factor correlation): one factor pair alone, or two
+             ///< operands with the expiry and strike after them.
+};
+
+/**
+ * @brief The `quote` query key for security instruments. Security-only; only meaningful
+ * when `type=quote`.
+ */
+enum class security_quote_type {
+    bond_price,             ///< BOND/PRICE (bond clean price).
+    bond_yield_spread,      ///< BOND/YIELD_SPREAD (bond yield spread).
+    bond_conversion_factor, ///< BOND/CONVERSION_FACTOR (bond futures conversion factor).
+    recovery_rate ///< RECOVERY_RATE/RATE (recovery assumption named by a security rather than by an
+                  ///< entity and a seniority).
+};
+
+/**
+ * @brief The `quote` query key for shape profiles. Shape-profile-only; only meaningful
+ * when `type=quote`.
+ */
+enum class shape_profile_quote_type {
+    shape_factor ///< SHAPE_PROFILE/SHAPE_FACTOR/PROFILE/DATE/SECOND/PERIOD, plus the DST flag the
+                 ///< corpus writes as a seventh segment.
+};
+
+/**
+ * @brief The `quote` query key for rating providers. Rating-only; only meaningful when
+ * `type=quote`.
+ */
+enum class rating_quote_type {
+    transition_probability ///< RATING/TRANSITION_PROBABILITY/PROVIDER/FROM/TO, and the four-segment
+                           ///< form the corpus also writes, which names the provider and no grades.
 };
 
 /**

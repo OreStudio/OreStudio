@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 2deb5dd8-4bba-4793-80c9-54001dd120d9
+:END:
+#+title: The DISCOUNT model invented a tenor out of the curve name
+#+description: ORE writes DISCOUNT/RATE/CCY/CURVE/TENOR, where CURVE is an opaque curve name such as USD-SOFR-3M. The model instead derived the identifier's tenor by stripping the currency off the curve, so 9,075 keys were rejected and 36,948 carried a tenor that was not a tenor. Fixed: the curve is now kept verbatim.
+#+type: capture
+#+level: cross
+#+filetags:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* Resolved
+
+Fixed as proposed below, in the oresmd facet. The curve segment is now the
+identifier's =curve_id=, kept verbatim and recorded always, and the trailing
+segment is its tenor; the =ccy + tenor= derivation is gone from both
+directions. Measured after the change: =DISCOUNT= names and round-trips all
+45,469 corpus keys, up from 36,394 named and 9,075 rejected. The canonical URI
+of the 36,948 keys that used to project changed, which is why the fix landed
+before the import boundary stores any.
+
+Two things the first diagnosis got wrong, both worth keeping:
+
+- It was called a one-character guard bug. It was a derivation. Relaxing the
+  guard alone would have left =id.tenor= unset and the forward dereferences it.
+- The key round-tripped either way, so no measurement of round-tripping could
+  ever have found it. The =tenor= field was simply wrong, and only the per-type
+  unnamed count showed it.
+
+* What
+
+ORE writes the discount family as five segments, and the fourth is a curve
+*name*, not a currency-plus-tenor:
+
+| Corpus key | Curve the producer named |
+|------------+--------------------------|
+| =DISCOUNT/RATE/USD/USD-SOFR-3M/10Y= | =USD-SOFR-3M= |
+| =DISCOUNT/RATE/USD/USD-SOFR/10Y= | =USD-SOFR= |
+| =DISCOUNT/RATE/USD/USD-FedFunds/10Y= | =USD-FedFunds= |
+| =DISCOUNT/RATE/EUR/EUR/10Y= | =EUR= |
+
+The fifth segment is the tenor. The curve names are the ones
+=curveconfig.xml= declares, and they include index names, index-and-tenor
+names, a central-bank name, and the bare currency.
+
+=from_ir_discount= models the opposite: it assumes the curve is the currency
+with the tenor appended, so it strips the currency off the curve to recover a
+=tenor= and keeps the fifth segment in =point=.
+
+* Why
+
+Two measured consequences, over the 45,469 corpus =DISCOUNT= keys:
+
+- **9,075 keys do not project at all.** They are the =DISCOUNT/RATE/EUR/EUR/...=
+  form, where the curve equals the currency. Stripping the currency leaves an
+  empty tenor, and the guard reads =curve.size() <= ccy.size()=, so it rejects
+  the key. A representative is =DISCOUNT/RATE/EUR/EUR/1D=. The corpus also
+  carries a degenerate =DISCOUNT/RATE/EUR/EUR/= with the tenor missing.
+- **36,948 keys project, and carry a nonsense tenor.** For
+  =DISCOUNT/RATE/USD/USD-SOFR-3M/10Y= the identifier gets
+  =tenor="-sofr-3m"= and =point="10y"=. The key round-trips, which is why the
+  round-trip measurement never showed it: the derivation is lossless, it is
+  just wrong. =tenor= is a real field of =ir_market_data_identifier=, so every
+  consumer that reads it for a discount identifier reads =-SOFR-3M=.
+
+The forward projection can emit the currency-named curve today, which is what
+makes the reject look like a one-character bug in the guard. It is not: the
+forward only reaches that form because =curve_id= is recorded when it differs
+from the derivation, and the derivation itself is the defect. Relaxing the
+guard alone would leave =id.tenor= unset and the forward dereferences it.
+
+* The smallest fix
+
+Model the curve the way =ZERO= already models its own: an opaque =curve_id=,
+recorded always, with the fifth segment supplying the identifier's tenor. Drop
+the =ccy + tenor= derivation from both directions.
+
+That changes the canonical URI of the 36,948 keys that project today, from
+=...?tenor=-sofr-3m&...&point=10y= to =...?curve_id=USD-SOFR-3M&tenor=10y=.
+The change is worth making before the import boundary starts storing URIs,
+because afterwards it is a data migration rather than an edit.
+
+* References
+
+- =projects/ores.codegen/library/templates/ores.cpp.oresmd.projections.org= --
+  =curve_id()=, =from_ir_discount()= and the =discount= branch of =quote_key_ir()=.
+- =projects/ores.marketdata/modeling/oresmd/ir_quote_type.org= -- the =discount=
+  row and its =curve_id= qualifier shape.
+- =external/ore/examples/= -- the 45,469 keys, 9,075 of them rejected.
+- =projects/ores.marketdata/core/tests/oresmd_ore_coverage_tests.cpp= -- the
+  measured per-type table that showed the 80.0% rate.
+
+* See also
+
+- [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Story: Clean ores.marketdata to the component clean standard]]

@@ -9,6 +9,13 @@ A junction's messaging layer exists to serve parent-scoped list reads
 the messaging facets for a junction whose left and right sides both lack
 ``:list_by:``, so no regenerated stack sits without a subscriber.
 
+The gate drops the facets that merely *serve* the protocol as well. They
+name the derived request types, so a junction that renders no protocol
+must render no consumer of one either: the shell command unit and its
+recipe are the ones that caught this, because dropping only the messaging
+set left ``market_series_asset_class_commands.cpp`` including a protocol
+header no facet emits, and the unit did not compile.
+
 Both sides are pinned. The declaring side uses a live org -- the dq
 ``dataset_bundle_member`` junction declares ``:list_by:`` on its left
 side. The bare side is a fixture rather than a live org, because every
@@ -44,6 +51,16 @@ MESSAGING_TEMPLATES = frozenset({
 # decision: a junction either renders both halves of the wire shape or
 # neither, never a TypeScript module with no C++ header to pair it with.
 TS_PROTOCOL_TEMPLATE = "ts_protocol.ts.mustache"
+
+# The facets that consume the derived protocol rather than serve it. Each
+# one names the derived request types, so none can render without the
+# header that defines them.
+PROTOCOL_CONSUMER_TEMPLATES = frozenset({
+    "cpp_shell_command_header.hpp.mustache",
+    "cpp_shell_command_impl.cpp.mustache",
+    "cpp_shell_command_tests.cpp.mustache",
+    "shell_recipe.org.mustache",
+})
 
 # A junction with no side declaring ``:list_by:``. Field names are
 # arbitrary; the gate reads only the two side drawers.
@@ -121,6 +138,7 @@ def test_list_by_declaring_junction_keeps_full_messaging_stack():
     templates = {u["template"] for u in units}
     assert MESSAGING_TEMPLATES <= templates
     assert TS_PROTOCOL_TEMPLATE in templates
+    assert PROTOCOL_CONSUMER_TEMPLATES <= templates
 
 
 def test_bare_junction_resolves_no_messaging_and_keeps_its_stack(tmp_path):
@@ -135,3 +153,16 @@ def test_bare_junction_resolves_no_messaging_and_keeps_its_stack(tmp_path):
     # non-messaging stack, e.g. the SQL create and its TypeScript domain.
     assert "sql_schema_junction_create.mustache" in templates
     assert "domain_types.ts.mustache" in templates
+
+
+def test_bare_junction_resolves_no_consumer_of_its_absent_protocol(tmp_path):
+    bare = tmp_path / "ores.refdata.test_bare_junction.org"
+    bare.write_text(BARE_JUNCTION, encoding="utf-8")
+
+    bare_units, _, _ = resolve_targets(bare, CODEGEN_BASE)
+    templates = {u["template"] for u in bare_units}
+    assert not (PROTOCOL_CONSUMER_TEMPLATES & templates), (
+        "a junction with no protocol renders no shell command and no recipe; "
+        "both name the derived request types and the command unit does not "
+        "compile without the header"
+    )

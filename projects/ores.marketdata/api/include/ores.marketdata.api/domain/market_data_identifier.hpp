@@ -34,12 +34,31 @@ namespace ores::marketdata::domain {
 
 /**
  * @brief Volatility surface point: expiry, strike, and model subtype — the three dimensions
- * shared across all 8 ORE volatility sub-families. Only meaningful when `type=vol`.
+ * every ORE volatility sub-family shares — plus the option convention the listed ones add.
+ *
+ * The equity and commodity option families write more than a coordinate: a call/put flag,
+ * or a delta convention that puts a delta type in place of the strike and names where the
+ * premium is read. Those are optional because the rate, inflation and credit surfaces do
+ * not carry them. Only meaningful when `type=vol`.
  */
 struct volatility_surface_point final {
     std::string expiry;
     std::string strike;
     volatility_model_subtype model_subtype = volatility_model_subtype::rate_lnvol;
+    /**
+     * @brief The option's call/put flag, or the delta convention's own side.
+     */
+    std::optional<std::string> call_put;
+    /**
+     * @brief What the key quotes when the strike slot holds a delta: DEL, ATM or ATMF,
+     * the risk-reversal and butterfly conventions, and the swaption family's Smile,
+     * whose shift then takes the value's place.
+     */
+    std::optional<std::string> delta_type;
+    /**
+     * @brief Where the premium is read -- Spot, Fwd, or unset.
+     */
+    std::optional<std::string> premium_type;
 
     bool operator==(const volatility_surface_point&) const = default;
 };
@@ -75,7 +94,17 @@ struct ir_market_data_identifier final {
     std::string ccy;
     instrument_type type = instrument_type::quote;
     std::optional<index_family> index;
+    std::optional<std::string> index_spelling;
     std::optional<std::string> tenor;
+    std::optional<std::string> second_tenor;
+    std::optional<std::string> second_ccy;
+    std::optional<std::string> contract_month;
+    std::optional<std::string> contract_code;
+    std::optional<std::string> shift;
+    std::optional<std::string> strip;
+    std::optional<std::string> curve_id;
+    std::optional<std::string> settle;
+    std::optional<std::string> day_count;
     std::optional<curve_role> role;
     std::optional<domain::metric> metric;
     std::optional<domain::ir_quote_type> quote_type;
@@ -141,6 +170,7 @@ struct inflation_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<domain::inflation_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<volatility_surface_point> vol;
 
     bool operator==(const inflation_market_data_identifier&) const = default;
 };
@@ -151,9 +181,46 @@ struct inflation_market_data_identifier final {
 struct correlation_market_data_identifier final {
     std::string factor_pair;
     instrument_type type = instrument_type::quote;
+    std::optional<std::string> second_factor;
     std::optional<domain::correlation_quote_type> quote_type;
+    std::optional<std::string> point;
 
     bool operator==(const correlation_market_data_identifier&) const = default;
+};
+
+/**
+ * @brief A fully-resolved oresmd identifier for a security (asset_class=security).
+ */
+struct security_market_data_identifier final {
+    std::string security_id;
+    instrument_type type = instrument_type::quote;
+    std::optional<domain::security_quote_type> quote_type;
+
+    bool operator==(const security_market_data_identifier&) const = default;
+};
+
+/**
+ * @brief A fully-resolved oresmd identifier for a shape profile (asset_class=shape_profile).
+ */
+struct shape_profile_market_data_identifier final {
+    std::string profile_id;
+    instrument_type type = instrument_type::quote;
+    std::optional<domain::shape_profile_quote_type> quote_type;
+    std::optional<std::string> point;
+
+    bool operator==(const shape_profile_market_data_identifier&) const = default;
+};
+
+/**
+ * @brief A fully-resolved oresmd identifier for a rating provider (asset_class=rating).
+ */
+struct rating_market_data_identifier final {
+    std::string provider_id;
+    instrument_type type = instrument_type::quote;
+    std::optional<domain::rating_quote_type> quote_type;
+    std::optional<std::string> point;
+
+    bool operator==(const rating_market_data_identifier&) const = default;
 };
 
 /**
@@ -171,7 +238,10 @@ using market_data_identifier = std::variant<fx_market_data_identifier,
                                             credit_market_data_identifier,
                                             commodity_market_data_identifier,
                                             inflation_market_data_identifier,
-                                            correlation_market_data_identifier>;
+                                            correlation_market_data_identifier,
+                                            security_market_data_identifier,
+                                            shape_profile_market_data_identifier,
+                                            rating_market_data_identifier>;
 
 }
 

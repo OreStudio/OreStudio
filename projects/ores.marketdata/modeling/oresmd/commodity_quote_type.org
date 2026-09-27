@@ -20,6 +20,7 @@
 | spot | COMMODITY | PRICE | scalar | with_ccy | COMMODITY/PRICE (spot price, the default). |
 | fwd | COMMODITY_FWD | PRICE | tenor | with_ccy | COMMODITY_FWD/PRICE (commodity forward price). |
 | cpr | CPR | RATE | tenor | with_ccy | CPR/RATE (conditional prepayment rate). |
+| option | COMMODITY_OPTION | RATE | surface | with_ccy | COMMODITY_OPTION/MODEL/CODE/CCY/EXPIRY[/DELTA/PREMIUM/CALL_PUT]/STRIKE -- the equity option's three shapes, with a commodity code where the equity has a ticker; the metric segment is the vol model, not this table's ore_metric | COMMODITY_OPTION (commodity option implied vol). |
 
 * Enum brief
 
@@ -51,6 +52,14 @@ A logical, possibly-partial oresmd requirement for a commodity instrument.
 |-----|
 | index |
 | tenor |
+| second_tenor |
+| second_ccy |
+| second_factor |
+| curve_id |
+| settle |
+| day_count |
+| shift |
+| strip |
 | role |
 | metric |
 
@@ -62,6 +71,7 @@ A logical, possibly-partial oresmd requirement for a commodity instrument.
 | oresmd://commodity/gold?ccy=usd&type=quote&quote=spot | COMMODITY/PRICE/GOLD/USD | commodity_spot_quote_key |
 | oresmd://commodity/gold?ccy=usd&type=quote | COMMODITY/PRICE/GOLD/USD | commodity_quote_key_defaults_to_spot |
 | oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m | COMMODITY_FWD/PRICE/WTI/USD/6M | commodity_fwd_quote_key |
+| oresmd://commodity/wti_usd_vols?ccy=usd&type=vol&quote=option&model=rate_lnvol&point=1y,30.0 | COMMODITY_OPTION/RATE_LNVOL/WTI_USD_VOLS/USD/1Y/30.0 | commodity_option_vol_quote_key_matches_the_corpus |
 
 ** Round-trip
 
@@ -70,6 +80,7 @@ A logical, possibly-partial oresmd requirement for a commodity instrument.
 | oresmd://commodity/gold?ccy=usd&type=quote&quote=spot | round_trip_commodity |
 | oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m | round_trip_commodity_fwd |
 | oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y | round_trip_commodity_cpr |
+| oresmd://commodity/ice:b?ccy=usd&type=vol&quote=option&model=rate_lnvol&point=10m,del,fwd,call,0.10 | round_trip_commodity_option_delta_vol |
 
 ** Rejection
 

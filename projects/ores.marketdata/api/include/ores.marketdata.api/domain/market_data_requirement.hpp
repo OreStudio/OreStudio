@@ -53,7 +53,17 @@ struct ir_market_data_requirement final {
     std::optional<std::string> ccy;
     std::optional<instrument_type> type;
     std::optional<index_family> index;
+    std::optional<std::string> index_spelling;
     std::optional<std::string> tenor;
+    std::optional<std::string> second_tenor;
+    std::optional<std::string> second_ccy;
+    std::optional<std::string> contract_month;
+    std::optional<std::string> contract_code;
+    std::optional<std::string> shift;
+    std::optional<std::string> strip;
+    std::optional<std::string> curve_id;
+    std::optional<std::string> settle;
+    std::optional<std::string> day_count;
     std::optional<curve_role> role;
     std::optional<domain::metric> metric;
     std::optional<domain::ir_quote_type> quote_type;
@@ -109,9 +119,40 @@ struct inflation_market_data_requirement final {
 struct correlation_market_data_requirement final {
     std::optional<std::string> factor_pair;
     std::optional<instrument_type> type;
+    std::optional<std::string> second_factor;
     std::optional<correlation_quote_type> quote_type;
+    std::optional<std::string> point;
 
     bool operator==(const correlation_market_data_requirement&) const = default;
+};
+
+/** @brief A logical, possibly-partial oresmd requirement for a security instrument. */
+struct security_market_data_requirement final {
+    std::optional<std::string> security_id;
+    std::optional<instrument_type> type;
+    std::optional<security_quote_type> quote_type;
+
+    bool operator==(const security_market_data_requirement&) const = default;
+};
+
+/** @brief A logical, possibly-partial oresmd requirement for a shape profile. */
+struct shape_profile_market_data_requirement final {
+    std::optional<std::string> profile_id;
+    std::optional<instrument_type> type;
+    std::optional<shape_profile_quote_type> quote_type;
+    std::optional<std::string> point;
+
+    bool operator==(const shape_profile_market_data_requirement&) const = default;
+};
+
+/** @brief A logical, possibly-partial oresmd requirement for a rating provider. */
+struct rating_market_data_requirement final {
+    std::optional<std::string> provider_id;
+    std::optional<instrument_type> type;
+    std::optional<rating_quote_type> quote_type;
+    std::optional<std::string> point;
+
+    bool operator==(const rating_market_data_requirement&) const = default;
 };
 
 /**
@@ -124,7 +165,10 @@ using market_data_requirement = std::variant<fx_market_data_requirement,
                                              credit_market_data_requirement,
                                              commodity_market_data_requirement,
                                              inflation_market_data_requirement,
-                                             correlation_market_data_requirement>;
+                                             correlation_market_data_requirement,
+                                             security_market_data_requirement,
+                                             shape_profile_market_data_requirement,
+                                             rating_market_data_requirement>;
 
 }
 

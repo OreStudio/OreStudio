@@ -18,11 +18,11 @@
  *
  */
 #include "ores.workflow.core/messaging/workflow_query_handler.hpp"
-#include "ores.database/service/tenant_context.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.api/messaging/steps_query_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include <boost/lexical_cast.hpp>
@@ -312,24 +312,29 @@ void workflow_query_handler::get_step_result(ores::nats::message msg) {
     // so the answer must stay inside it: the service's own context would reach
     // every tenant's steps, and this reply carries the step's result, error and
     // log.
-    std::optional<ores::database::context> req_ctx;
-    try {
-        req_ctx = ores::database::service::tenant_context::with_tenant(ctx_, req->tenant_id);
-    } catch (const std::exception& e) {
+    //
+    // The id is parsed rather than resolved. There is no code to look up, because
+    // the engine minted the value it put in the header, and a request naming a
+    // tenant that does not exist can only be asking for rows the policy will not
+    // show it, so the read below answers found = false without an extra query.
+    // This runs on every step dispatch, so it stays off the database.
+    const auto tenant = ores::utility::uuid::tenant_id::from_string(req->tenant_id);
+    if (!tenant) {
         BOOST_LOG_SEV(lg(), warn) << "get_step_result names tenant '" << req->tenant_id
-                                  << "', which does not resolve: " << e.what();
+                                  << "', which is not a tenant id.";
         reply(nats_, msg, get_step_result_response{.found = false});
         return;
     }
+    const auto req_ctx = ctx_.with_tenant(*tenant, ctx_.actor());
 
-    const auto steps = step_repo_.read_latest(*req_ctx, boost::uuids::to_string(step_uuid));
+    const auto steps = step_repo_.read_latest(req_ctx, boost::uuids::to_string(step_uuid));
     if (steps.empty()) {
         reply(nats_, msg, get_step_result_response{.found = false});
         return;
     }
     const auto* step = &steps.front();
 
-    if (step->tenant_id != req_ctx->tenant_id()) {
+    if (step->tenant_id != req_ctx.tenant_id()) {
         reply(nats_, msg, get_step_result_response{.found = false});
         return;
     }

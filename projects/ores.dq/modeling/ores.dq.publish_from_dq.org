@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: 68343484-5AEC-4AB2-8E59-CD812AA120C8
+:END:
+#+title: ores.dq.publish_from_dq
+#+description: Codegen operation model for the publish-from-dq step command and result, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: dq
+#+subcomponent: api
+#+entity_singular: publish_from_dq
+#+namespace: ores::dq::messaging
+#+brief: Carries the publish-from-dq step command and the result it reports.
+#+filetags: :model:operation:dq:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+The payloads the bundle-publish workflow puts on a target service's
+publish-from-dq subject, and the result that service hands back.
+
+Neither struct is a bus message. The workflow's step builds the command and
+serialises it onto the dataset's target subject, and the handler serialises the
+result into the workflow step's result_json — so neither declares a subject, and
+the command carries no reply. The subjects the dq service subscribes are
+registration detail and stay in registrar.cpp.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#+end_src
+
+* Messages
+
+** publish_from_dq_command
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Command payload sent by the DQ workflow engine to a target service's
+ *        publish-from-dq NATS subject.
+ *
+ * The receiving handler calls a SECURITY DEFINER SQL function that reads the
+ * DQ artefact table for dataset_id and writes to the target service's tables.
+ */
+#+end_src
+
+*** dataset_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief UUID of the DQ dataset to publish.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief UUID of the target tenant.
+ */
+#+end_src
+
+*** mode
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How the target writes the rows: upsert, replace_all or insert_only.
+ */
+#+end_src
+
+*** params_json
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Extra per-artefact parameters, as JSON. May be an empty object.
+ */
+#+end_src
+
+** publish_from_dq_result
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Result returned by the target service's publish-from-dq handler.
+ *
+ * Serialised as JSON and passed to wf->complete() so the workflow engine can
+ * record counts and propagate them to the bundle publish result.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the publication completed.
+ */
+#+end_src
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it failed, when it did.
+ */
+#+end_src
+
+*** records_inserted
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows the publication inserted.
+ */
+#+end_src
+
+*** records_updated
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows the publication updated.
+ */
+#+end_src
+
+*** records_skipped
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows the publication left alone.
+ */
+#+end_src
+
+*** records_deleted
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows the publication removed.
+ */
+#+end_src
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

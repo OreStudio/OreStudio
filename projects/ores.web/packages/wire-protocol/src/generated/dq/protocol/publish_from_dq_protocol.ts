@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,17 +19,9 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_protocol.hpp.mustache
+ * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_DQ_API_MESSAGING_PUBLISH_FROM_DQ_PROTOCOL_HPP
-#define ORES_DQ_API_MESSAGING_PUBLISH_FROM_DQ_PROTOCOL_HPP
-
-#include <cstdint>
-#include <string>
-
-namespace ores::dq::messaging {
-
 /**
  * @brief Command payload sent by the DQ workflow engine to a target service's
  *        publish-from-dq NATS subject.
@@ -37,24 +29,24 @@ namespace ores::dq::messaging {
  * The receiving handler calls a SECURITY DEFINER SQL function that reads the
  * DQ artefact table for dataset_id and writes to the target service's tables.
  */
-struct publish_from_dq_command {
+export interface PublishFromDqCommand {
     /**
      * @brief UUID of the DQ dataset to publish.
      */
-    std::string dataset_id;
+    dataset_id: string;
     /**
      * @brief UUID of the target tenant.
      */
-    std::string tenant_id;
+    tenant_id: string;
     /**
      * @brief How the target writes the rows: upsert, replace_all or insert_only.
      */
-    std::string mode;
+    mode: string;
     /**
      * @brief Extra per-artefact parameters, as JSON. May be an empty object.
      */
-    std::string params_json;
-};
+    params_json: string;
+}
 
 /**
  * @brief Result returned by the target service's publish-from-dq handler.
@@ -62,33 +54,39 @@ struct publish_from_dq_command {
  * Serialised as JSON and passed to wf->complete() so the workflow engine can
  * record counts and propagate them to the bundle publish result.
  */
-struct publish_from_dq_result {
+export interface PublishFromDqResult {
     /**
      * @brief Whether the publication completed.
      */
-    bool success = false;
+    success: boolean;
     /**
      * @brief Why it failed, when it did.
      */
-    std::string error_message;
+    error_message: string;
     /**
      * @brief How many rows the publication inserted.
      */
-    std::uint64_t records_inserted = 0;
+    records_inserted: number;
     /**
      * @brief How many rows the publication updated.
      */
-    std::uint64_t records_updated = 0;
+    records_updated: number;
     /**
      * @brief How many rows the publication left alone.
      */
-    std::uint64_t records_skipped = 0;
+    records_skipped: number;
     /**
      * @brief How many rows the publication removed.
      */
-    std::uint64_t records_deleted = 0;
-};
-
+    records_deleted: number;
 }
 
-#endif
+export const subjects = {
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+} as const;

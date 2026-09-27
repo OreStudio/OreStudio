@@ -77,6 +77,78 @@ open decisions on
 [[id:061CE0DF-F9DE-4AC7-9536-B2EB6C547531][The target report configuration
 model]].
 
+** What the first slice settled, and what it did not
+
+The credit simulation slice was built in =ores.analytics=, which is one of the
+two options above, so the decision above is now load-bearing rather than
+theoretical. Three things came out of doing it.
+
+*** Evidence from ORE's own structure
+
+=ore.xml= partitions the documents for us. Its =Analytics= block names each
+analytic by type and gives it parameters that name the files it reads:
+
+#+begin_src xml
+<Analytics>
+  <Analytic type="zeroToParSensiConversion">
+    <Parameter name="active">Y</Parameter>
+    <Parameter name="marketConfigFile">simulation.xml</Parameter>
+    <Parameter name="sensitivityConfigFile">sensitivity.xml</Parameter>
+    <Parameter name="pricingEnginesFile">../../Input/pricingengine.xml</Parameter>
+#+end_src
+
+Two consequences. The parameter model is confirmed: scope is the block, subtype
+is the analytic type, name is the parameter name, value is text. And an analytic
+*names documents that are not analytics* — =pricingEnginesFile= points at
+=pricingengines.xml= — so an analytics configuration references other components
+rather than absorbing them. That is the =Referenced= half of the rule working as
+described.
+
+*** The gap that placement alone does not fix
+
+Nothing connects a =reporting.configuration= row to the content it names.
+=configurations= carries =configuration_type_code= and =owning_component= as
+text, and =credit_simulation_config= has its own uuid with no reference back, so
+"which rows are this configuration's content" is answered by convention and not
+by a key. That is the thing to settle before nine more documents are modelled,
+because the answer decides placement.
+
+The uniform shape that avoids a move later: =reporting.configuration= is the
+header, and the owning component's table carries a =configuration_id= foreign
+key to it. Then a configuration is one row in reporting plus its content in
+whichever component owns the concept, the binding from a report always points at
+=configurations.id=, and moving a concept between components changes the owner
+column and the table's component prefix, not the shape of the link.
+
+*** What moving costs, so the decision is made with the price known
+
+Every generated table name embeds its component
+(=ores_analytics_credit_simulation_configs_tbl=), each entity generates about
+38 files, and the component file lists are generated from the models. Moving one
+entity is therefore a table rename with foreign-key and grant updates, a
+regeneration in the new component, and the deletion of its artefacts in the old
+one. Cheap for one entity, expensive across twenty. Decide here.
+
+*** Recommendation
+
+- =ores.analytics= keeps the documents ORE's =Analytics= block names: simulation,
+  sensitivity, stress, SIMM calibration, historical return, Basel traffic light,
+  credit simulation, and the pricing engines it references. Credit simulation is
+  already there and does not move.
+- =ores.refdata= keeps what the run references: curves, conventions, calendars,
+  currencies, counterparties, portfolios, books, tenors, asset classes. This is
+  consistent with =ir_curve_bootstrap_config= already living there, and it means
+  the curve work reconciles with that table rather than starting a second curve
+  model in analytics.
+- =ores.reporting= keeps the run document and the registry: what was run, under
+  which setup, binding which configuration of which type. It owns no analytic's
+  content.
+- =ores.ore= keeps the mappers and no state.
+
+The test to apply to the next document: *does ORE name it in the Analytics
+block?* If yes it is analytics; if the run or an analytic merely references it,
+it belongs to the component that owns the concept.
+
 * See also
 
 - [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the index of this investigation, and where to read this page in it.

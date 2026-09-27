@@ -1,0 +1,156 @@
+:PROPERTIES:
+:ID: 3B8D5E14-6A29-4C7F-9D03-1E5F8A2C6B90
+:END:
+#+title: ores.analytics.credit_simulation_matrix_config
+#+description: Codegen entity model for the analytics =credit_simulation_matrix_config= table. One named credit migration transition matrix.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: A named credit migration transition matrix.
+#+entity_singular: credit_simulation_matrix_config
+#+entity_plural: credit_simulation_matrix_configs
+#+entity_title: Credit Simulation Matrix Config
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+A matrix is a named, reusable definition. ORE declares the states it spans
+through the =t0= and =t1= attributes of its =Data= element, and the
+probabilities as a square grid of text; the states and the probabilities
+are held as rows in =credit_simulation_matrix_cell_config=, so this table
+carries the name an entity refers to and nothing that can be derived.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: analytics
+:has_tenant_id:    true
+:has_workspace_id: true
+:profile:   uuid-identified-lookup
+:tablename: ores_analytics_credit_simulation_matrices_tbl
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate key for the matrix.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The name an entity uses to refer to this matrix, and the natural key
+within a configuration.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_credit_simulation_matrices_tbl
+:END:
+
+* Foreign keys
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: matrix
+:entity_plural_short:   matrices
+:entity_singular_words: transition matrix
+:entity_plural_words:   transition matrices
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: mtx
+:END:
+
+** Table display
+
+| Column      | Header      |
+|-------------+-------------|
+| name        | Name        |
+| version     | Version     |
+| modified_by | Modified By |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.analytics.api/domain/credit_simulation_matrix_config.hpp
+:domain_class:            analytics::domain::credit_simulation_matrix_config
+:protocol_include:        ores.analytics.api/messaging/credit_simulation_matrix_config_protocol.hpp
+:collection_name:         credit_simulation_matrix_configs
+:item_var:                credit_simulation_matrix_config
+:key_field:               name
+:get_request_class:       analytics::messaging::list_credit_simulation_matrix_configs_request
+:get_response_class:      analytics::messaging::list_credit_simulation_matrix_configs_response
+:get_message_type:        list_credit_simulation_matrix_configs_request
+:save_request_class:      analytics::messaging::put_credit_simulation_matrix_config_request
+:save_response_class:     analytics::messaging::put_credit_simulation_matrix_config_response
+:save_message_type:       put_credit_simulation_matrix_config_request
+:save_request_item_field: credit_simulation_matrix_config
+:delete_request_class:    analytics::messaging::delete_credit_simulation_matrix_config_request
+:delete_response_class:   analytics::messaging::delete_credit_simulation_matrix_config_response
+:delete_message_type:     delete_credit_simulation_matrix_config_request
+:has_uuid_primary_key:    true
+:has_change_reason_cache: false
+:has_explorer_api:        true
+:has_export_macro:        true
+:settings_group:          Credit Simulation Matrix ConfigListWindow
+:window_title:            Credit Simulation Matrix Config
+:icon:                    Credit Simulation Matrix Config
+:END:
+
+*** Detail fields
+
+| field | label | widget    | type   | is_key | is_required | placeholder   |
+|-------+-------+-----------+--------+--------+-------------+---------------|
+| name  | Name  | line_edit | string | true   | true        | Enter name    |
+
+*** Columns
+
+| enum_name | field  | header | type   | width |
+|-----------+--------+--------+--------+-------|
+| Name      | name   | Name   | string | 200   |
+| Version   | version | Version | int   | 80    |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+
+** Paste blocks
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.analytics]] — component group overview.

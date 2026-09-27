@@ -1,0 +1,210 @@
+:PROPERTIES:
+:ID: 6A63AAC7-4869-493A-97E7-55B919874784
+:END:
+#+title: Journey runtime
+#+description: The client half of a journey: what a step definition is, how one page derives the rail from the same list, how a step reaches the server through one BFF route, and what the browser may not do.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:journey:web:bff:runtime:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+A journey runs in the browser as an ordered list of step definitions.
+One page renders the rail from that same list, so the rail and the steps
+cannot disagree, and a second journey is a list of steps rather than a
+new page. A step reaches the server through exactly one hand-written BFF
+route, and never by naming a subject, because the browser is not told
+what the broker or the services are called.
+
+This page is the client half of the contract.
+[[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] is the server
+half: the composition classes, where the transaction boundary sits, and
+why a journey's state is a workflow instance rather than a journey
+entity. Read that page for what happens when a step runs on the server,
+and this one for what the browser is allowed to do.
+
+The implementation is
+=projects/ores.web/packages/web/src/journeys/runtime.ts=. It is generic
+over the step body, so it carries no rendering library and its tests need
+no DOM.
+
+* Detail
+
+** What a step is
+
+A step is data, not a component. It carries these fields:
+
+#+ATTR_HTML: :class hug-leading
+| Field | What it is |
+|-------+------------|
+| =id= | The step's identity within one journey. Unique, and stable across releases, because a journey's positions are found by name. |
+| =title= | The rail's label, and the only label the step has. |
+| =lead= | One sentence above the body, saying what this step is for. |
+| =body= | The step's content, opaque to the runtime. The browser passes a node; a test passes a string. |
+| =next= | The footer's primary action: a label, whether it is enabled, and the work it runs. Absent on a step that advances by itself. |
+| =final= | Whether the person is barred from coming back here once they have passed it. Set it on a step that changed server state, so =true= means the step is a one-way door. |
+
+Two of those carry the load. =next= is the /only/ place a step reaches
+the server, and =final= is the only place a step describes what happened
+to the server.
+
+A step does not declare its own order, its own index, or the rail's
+label. Those come from the list and from =title=, so there is no second
+answer to disagree with.
+
+** The rail and the back rule
+
+The rail is =steps.map(...)=. One entry per step, in the order the steps
+declare. The page passes the list and the current position and receives
+the entries; it never passes titles, order or count separately, because
+a caller that could would eventually pass them differently.
+
+A position outside the journey throws rather than rendering an empty
+rail. A step list and a position that do not agree is a defect in the
+caller, and clamping it would hide the defect behind a page that looks
+almost right.
+
+/Going back/ is refused in two cases: at the first step, and when the
+step immediately before the current one is =final=. The second case is
+the one that matters. A step that changed server state is final, so
+nobody walks backwards into a half-finished write, and the rule lives in
+the definition rather than in each page because a page can forget it.
+
+Two journeys that share steps share them by inlining. First run spreads
+the new tenant steps into its own list:
+
+#+begin_src typescript
+const firstRun = defineJourney([
+    welcome,
+    administrator,
+    ...newTenantSteps(dependencies),
+    firstSignIn,
+    ready,
+]);
+#+end_src
+
+The positions of the inlined steps are then found with
+=indexOfStep(steps, 'provisioning')=, never with arithmetic. Arithmetic
+is what makes an inlined journey fragile: a step added to the inner list
+would silently change what the outer journey means by "the fourth step",
+and nothing would fail.
+
+This is a rule for the journeys that follow rather than a description of
+the tree today: the module has no production caller yet, because no
+journey has been built on it. The first caller is first run, and the
+first thing it must not do is count.
+
+=defineJourney= validates the list once, at the point it is written. It
+refuses an empty journey, and it refuses a repeated step id, which is
+exactly how an inlined journey collides. Without that check the named
+lookup would answer with the wrong step, quietly.
+
+** How a step reaches the server
+
+One hand-written BFF route per step. The route parses its request with a
+generated schema, calls one wire-protocol client method, and parses the
+reply with the same kind of schema. The browser posts to a path it knows
+and never names a subject.
+
+There is no generic forwarding route. A route that took a subject and a
+payload from the browser would hand the browser the one thing the BFF
+exists to withhold: the ability to name anything on the broker. The
+route list is therefore the BFF's authority, and it is enumerated in
+[[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]].
+
+A route is added by modelling the operation if it is not modelled
+already, adding the wire-protocol client method, adding the route, and
+listing the route. A step that needs an operation no route exposes is a
+missing route, not a reason to widen an existing one.
+
+** What the browser may not do
+
+- It may not name a subject, a host, a port, a namespace or a
+  certificate.
+- It may not hold the bearer token. The session is an opaque cookie, and
+  only the BFF can read it.
+- It may not reach the broker. Mutual TLS is not available to a browser,
+  which is why the BFF exists at all.
+- It may not reach =ores.http=. That component is the platform's REST
+  gateway for callers outside the browser, and the browser has one HTTP
+  surface.
+- It may not carry a business rule the server does not also enforce. The
+  shared password policy is the standing exception, and it is one because
+  the screen has to react before the request is sent.
+
+** Where a journey's state lives
+
+Only the server-side workflow resumes. The steps around it hold nothing
+the server knows about, so a person who leaves the page and returns
+re-enters them, and the screen says so rather than implying otherwise.
+
+That is a deliberate limit, and it is why no journey entity is added. A
+journey whose work takes minutes puts that work in a workflow instance;
+the steps around it are a path over immediate operations. Persisting the
+rail position would mean a record that exists for the interface alone,
+and the interface can lose it for the price of re-entry.
+
+The consequence for the runtime is that a step's =next= action must be
+safe to run twice, or the server must refuse the second attempt. The
+runtime does not deduplicate, and it does not claim to.
+
+** The bootstrap gate
+
+The installation is in bootstrap mode while =system.bootstrap_mode= is
+set. The BFF reads it through =iam.v1.bootstrap.status=, and while it is
+set:
+
+- the only page is */setup*, which runs the first run journey;
+- signing in is refused before the credentials are used, because an
+  installation with no accounts has no password that could be right;
+- the rest of the shell's routes are not offered.
+
+=ores_iam_create_initial_admin_fn= clears the flag, so the gate closes
+when the system administrator is created and not before.
+
+** How a wire type reaches the browser
+
+One model, one projection, one parse:
+
+#+begin_src text
+org entity model
+  ores.codegen, the ores.ts.protocol and ores.ts.domain facets
+    packages/wire-protocol/src/generated/{component}/{protocol,domain}/
+      the @ores/wire-protocol/browser entry point
+        a Zod schema in the browser transport
+          the parsed value a screen may use
+#+end_src
+
+The generated tree is committed and drift-gated, so the projection cannot
+wander from the model. Nothing in that chain is edited by hand, and the
+browser imports the =/browser= entry point rather than the package root,
+because the root carries the Node transport.
+
+** The packages, and the direction between them
+
+#+ATTR_HTML: :class hug-leading
+| Package | May import |
+|---------+------------|
+| =@ores/wire-protocol= | nothing of ours. It is the floor. |
+| =@ores/contracts= | nothing of ours. It is a leaf. |
+| =@ores/bff= | =wire-protocol=, =contracts= |
+| =@ores/web= | =wire-protocol= (the =/browser= entry), =contracts= |
+
+The direction is one way. Nothing imports =@ores/web=, because the
+browser is the end of the chain, and a cycle among these four means one
+of them is doing another's job.
+
+One row of that table is a permission rather than a description.
+=@ores/web= may import =@ores/contracts=, and it does not today: the
+package is the BFF's, and the browser parses with
+=@ores/wire-protocol/browser=. Either the browser starts importing it or
+the package's stated job changes; which one is recorded as a defect in
+[[id:FC08DD66-DB25-4B4F-8A26-572A513393FF][the audit]].
+
+* See also
+
+- [[https://react.dev/learn/you-might-not-need-an-effect][React: you might not need an effect]] — the rule behind keeping server
+  state in the query cache rather than in component state.
+- [[https://zod.dev/basics][Zod: basics]] — =.safeParse= and the result the transport narrows on.
+- [[https://typescript-eslint.io/rules/switch-exhaustiveness-check/][=switch-exhaustiveness-check=]] — how a union over rail states stays
+  exhaustive as states are added.

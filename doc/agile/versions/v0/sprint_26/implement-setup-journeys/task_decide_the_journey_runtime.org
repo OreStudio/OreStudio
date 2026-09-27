@@ -1,0 +1,192 @@
+:PROPERTIES:
+:ID: 8EC41D9E-757B-427B-8E3E-58BC0EA4BEEB
+:END:
+#+title: Task: Decide the journey runtime and the step-call contract
+#+description: Write the contract every journey is built to: what a step definition is, how one page renders the rail from the same list, and how a step reaches the server through a BFF route and a wire-client method.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/decide-the-journey-runtime
+#+pr: 2287
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The contract every journey is built to, written down once and
+implemented once, so that the second journey is a list of steps and
+nothing else.
+
+Three questions have to be answered before the first journey can be
+built, and none of them is answered today. What is a step definition:
+which fields it carries, and which of those the server sees. How does
+one page render the rail when the rail and the steps must not be able to
+disagree. And how does a step reach a server subject, given that the
+browser cannot name one.
+
+The answers are signed off in
+[[id:FC08DD66-DB25-4B4F-8A26-572A513393FF][the architecture audit]] and
+recorded in the story's =* Decisions=: one hand-written BFF route per
+step, the BFF as the browser's only HTTP surface, and only the
+server-side workflow resumable. This task turns them into a page and
+into code.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next          | Nothing. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- A knowledge page under =doc/knowledge/architecture/= defines a step
+  definition, the rail, the rule for a step that cannot be returned
+  past, the step-call contract, and what a step may not do. It obeys
+  [[id:9AB395D6-0265-4DEB-BA95-04D24C8444AF][the knowledge document contract]].
+- The rail is derived from the step list and nothing else, so the rail
+  and the steps cannot disagree. A test proves it by building the rail
+  from a list and asserting the two agree.
+- A journey can inline another journey's steps, and the positions are
+  found by name rather than by arithmetic, so adding a step to one
+  journey cannot silently change another.
+- The step-call contract is stated as a rule a route can be checked
+  against, not as a description of the routes that happen to exist.
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] names the step and
+  the human step, and its exists-or-missing table says what is actually
+  there. The progress reads exist and are subscribed; the progress event's
+  subject follows the BFF's convention while its payload does not match
+  what the browser decodes; and retry does not exist at all.
+- [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]] links
+  the page.
+- =npm run typecheck= and =npm test= pass.
+
+* Plan
+
+1. *Write the contract page.* =doc/knowledge/architecture/journey_runtime.org=.
+   It owns the client half of a journey: the step definition, the rail
+   and the back rule, the step-call contract, the bootstrap gate, and
+   what a step must not do. It links
+   [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] for the server
+   half rather than restating it.
+2. *Land the rail model.* =packages/web/src/journeys/runtime.ts=. The
+   step type is generic over its body, so the model carries no React
+   dependency and its tests need no DOM. The rail, the back rule, the
+   next position and the named lookup are pure functions.
+3. *Test the model.* =packages/web/src/journeys/runtime.test.ts=. The
+   cases that matter are the ones a second journey would break: the
+   rail equals the step list in length and order, a final step blocks
+   the return, an inlined journey's positions are found by name, and an
+   unknown step id fails loudly rather than producing =undefined=.
+4. *Add the vocabulary to [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey
+   execution]]*: the step, the human step, and who owns a step's
+   declared inputs.
+5. *Correct that document's exists-or-missing table* against the code.
+6. *Link the page* from
+   [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]].
+
+The React component that renders a rail is /not/ here. It needs the
+shared primitives, which the next task restores, and a contract that is
+only provable through a rendered page would be a contract nobody can
+read. The seam is the step type: this task owns it, the next renders it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The component's test files and cases, before | 10 files, 70 cases | =npm test= | =ef8df25c61= |
+| The compiler gate, before | green | =npm run typecheck= | =ef8df25c61= |
+| The component's test files and cases, after | 11 files, 83 cases | =npm test= | =daa13c0603= |
+| The compiler gate, after | green | =npm run typecheck= | =daa13c0603= |
+| A type error in a test file | invisible: the gate still exits 0 | append =const deliberatelyWrong: number = "not a number";= to a test file, run =npm run typecheck=, then revert | =daa13c0603= |
+
+* Notes
+
+The =before= rows reproduce at =ef8df25c61=, the merge base. The =after=
+rows cite =daa13c0603=, the commit that adds the rail model and its
+tests, because that is the tree they were measured on. A figure whose
+commit does not contain the file it counts is not a measurement, and an
+earlier draft of this table made exactly that mistake.
+
+The last row is a counterfactual and it is the one that matters. It is
+how the test-file typecheck gap was found, and it is filed as
+[[id:A99BD090-BC0E-4736-8E2D-10F98F16F55B][a capture]] because the fix is
+not this task's.
+
+The rail model carries no rendering dependency, so its tests need no DOM
+and no test environment. That is deliberate: the ordering rules are the
+part that must be right, and requiring a renderer to check them would
+have made them the part nobody checks.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2287][#2287]] | [web] Define the journey runtime and the step-call contract |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =defineJourney= returns the array it was given without freezing or copying, so a caller could mutate it and reintroduce a duplicate id undetected | =packages/web/src/journeys/runtime.ts= | Accept | Right, and the module's own premise makes it the wrong hole to leave: the check is the whole reason the definition is validated once. =readonly= is what the compiler enforces and nothing at run time, so the list is now frozen before it is returned, and a test pushes onto the result and expects the throw. The reviewer offered to defer this until a real journey exists; it costs one call and a test, and closing it now means the first journey is built on a guard that holds. |
+| 2 | The task's State field still read STARTED | this task | Accept | Closed with this round. |
+
+* Result
+
+The contract is written and the part of it that is code is in place.
+=journey_runtime.org= owns the client half: what a step is, why the rail is
+derived from the step list rather than passed beside it, the rule that a
+step which changed server state is final, the step-call contract of one
+hand-written BFF route per step, the bootstrap gate, the direction between
+the four packages, and the path from an org model to a parsed value.
+=journey_execution.org= gained the step and the human step and had its
+exists-or-missing table corrected against the code, and
+=component_specification.org= links the page.
+
+=runtime.ts= implements the rail model, generic over the step body so it
+carries no rendering library and its tests need no DOM, and it is frozen
+once validated so a caller cannot undo the check that made it valid.
+=defineJourney= refuses an empty journey and a repeated step id, and
+positions are found by name rather than by arithmetic, which is what lets
+first run inline the new tenant steps without counting them.
+
+Two things this task did not do, both recorded rather than implied. The
+React component that renders a rail belongs to the next task, because it
+needs the shared primitives the reduction commit deleted. And the rules the
+page states are not all enforced: most of them name a lint rule from a gate
+the component does not have, which is the single largest gap the TypeScript
+Clean Standard records.
+
+Verified on the branch: =npm run typecheck= exits 0, =npm test= passes 11
+test files and 84 cases of which the rail model contributes 14, =compass
+lint= is clean and =validate_docs.sh= reports all 40 components passing.

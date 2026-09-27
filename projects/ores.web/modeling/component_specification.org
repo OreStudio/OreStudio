@@ -24,7 +24,7 @@ The component is one npm workspace with four packages. Each package has one job.
 |---|---|---|
 | =@ores/web= | =packages/web= | The browser application: the shell, the session, the i18n catalogue, and the styling. |
 | =@ores/bff= | =packages/bff= | The Fastify server. It owns the NATS connection and the session token. |
-| =@ores/contracts= | =packages/contracts= | The HTTP shapes that the BFF and the browser both parse. It has no Node dependency. |
+| =@ores/contracts= | =packages/contracts= | The HTTP shapes shared between the server and the interface. It has no Node dependency, so the browser can parse them. Only the BFF imports it today, and the browser parses with =@ores/wire-protocol/browser= instead; the intent is that both sides parse one schema and the split is not yet finished. |
 | =@ores/wire-protocol= | =packages/wire-protocol= | The ORE NATS protocol: the msgpack codec, the subjects, the schemas, the session lifecycle, and the mTLS transport. |
 
 Only =@ores/wire-protocol= carries generated code. See §6.
@@ -113,6 +113,16 @@ failure, not a surprise later.
 The shell reads the session and nothing else. The routes below that no module
 calls yet are served by the BFF and reachable, and a journey screen adds the
 call it needs.
+
+The rule a journey follows is
+[[id:6A63AAC7-4869-493A-97E7-55B919874784][Journey runtime]]: one
+hand-written route per step, each parsing a generated schema, and no generic
+route that takes a subject from the browser. This table is therefore the
+browser's whole authority, and a step that needs an operation no route exposes
+is a missing route rather than a reason to widen one.
+
+The BFF is the browser's only HTTP surface. =ores.http= is the platform's REST
+gateway for callers outside the browser, and no route here forwards to it.
 
 ** The HTTP surface
 

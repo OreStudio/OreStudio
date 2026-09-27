@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 767A3138-2D4C-4330-8281-DBCFEACF244D
+:END:
+#+title: The shared change-event schema reads a country-shaped field
+#+description: The browser decodes every change notification with a schema whose id field is alpha2_codes, a name from the country event, while the generic entity_change_event publishes entity_ids. Every field has a default, so any non-country subscription succeeds and silently delivers an empty id list.
+#+type: capture
+#+level: cross
+#+filetags: :web:eventing:bff:defect:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The browser decodes every change notification with one schema
+(=changeEventSchema= in
+=projects/ores.web/packages/wire-protocol/src/client.ts=), and that
+schema's identifier field is named =alpha2_codes=:
+
+#+begin_src typescript
+const changeEventSchema = z.object({
+  timestamp: z.string().default(''),
+  alpha2_codes: z.array(z.string()).default([]),
+  tenant_id: z.string().default(''),
+});
+#+end_src
+
+=alpha2_codes= is the field of
+=projects/ores.refdata/api/include/ores.refdata.api/eventing/country_changed_event.hpp=.
+The generic event every other component publishes is
+=projects/ores.eventing/api/include/ores.eventing.api/domain/entity_change_event.hpp=,
+whose identifier field is =entity_ids=.
+
+The event subject convention is uniform: the BFF subscribes to
+=ores.<component>.<entity>_changed= for whatever a session asks to watch. The
+payload is not uniform, and the browser can only read one of the two
+shapes.
+
+Every field in the schema has a default, and the comment above it says
+why: an event is news rather than a contract, and a partly-readable
+notification beats none. That reasoning is sound, and it is what makes
+this silent. Decoding a workflow event yields no error, no warning and
+=ids: []=, so a subscriber concludes nothing changed.
+
+* Why
+
+Found on 2026-09-27 by the independent verification of PR #2287, while
+checking the claim that a journey can follow a workflow's progress on the
+existing change-notification channel. The subject claim was right and the
+payload claim was wrong.
+
+It is latent today rather than live, because the consumer the channel was
+built for — the browser's change-event watcher — has no screen using it
+yet. The [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]] page
+already records that the transport survives and "the visual language for
+a consumer that is not built yet".
+
+It stops being latent with the first journey that waits on server work.
+Provisioning is that journey: the person watches a workflow run, and the
+event that should tell the page to re-read the instance arrives with an
+empty id list.
+
+Two ways out, and the choice belongs to whoever owns the event contract:
+
+- Name the field for what it is. The browser schema reads =entity_ids=,
+  and a country event becomes a special case rather than the default. The
+  event's own comment already says the contents vary by entity —
+  "For currencies, this contains ISO codes. For accounts, UUIDs." — so a
+  name that says =alpha2_codes= was always describing one caller.
+- Keep the shared shape and give the workflow its own subject and schema.
+
+Either way the failure mode must stop being silent, which means the
+schema should not default the identifier list to empty without the
+subscriber being able to tell a real empty list from an unreadable
+payload.
+
+* References
+
+- [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]] — the channel,
+  the payload, and the consumer that is not built.
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — where the
+  claim this falsifies was made.
+- =projects/ores.eventing/api/include/ores.eventing.api/domain/entity_change_event.hpp=
+  — the generic payload.
+
+* See also
+
+- [[https://zod.dev/basics][Zod: basics]] — =.default()= and why a defaulted
+  field cannot distinguish absent from empty.

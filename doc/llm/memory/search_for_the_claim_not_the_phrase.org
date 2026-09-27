@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 506B9E01-ABBB-400A-935B-63EED0ADB8E7
+:END:
+#+title: Search for the claim, not the phrase
+#+description: When a reviewer falsifies a claim, find every document that makes it in any wording before fixing; a grep for the reported phrase proves the phrase is gone, not that the claim is.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :verification:documentation:review:memory:feedback:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+When a reviewer falsifies a claim, find every document that makes that claim in any wording before fixing any of them; a grep for the reported phrase proves the phrase is gone, not that the claim is.
+
+*Why:* A claim written once is usually written several times, in different words, because each document was written for its own reader. On PR 2287 the same false statement about a workflow event survived three verification rounds: the first found it in one document, a fix corrected that instance, the second found the same claim reworded in the audit, and a third found it in two more summary lines. Each check was a grep for phrases the reviewer had quoted, and every such grep returned clean while the claim was still there. Two documents in one branch contradicting each other is worse than either being wrong alone, because a reader is told to trust one of them.
+
+*How to apply:* When a claim is reported false: before editing, search the branch delta for the claim's substance rather than its wording. Read each hit in context instead of trusting a line match, because a sentence can span lines and a claim can be restated. Fix every instance in one commit, then re-read the documents that carry it rather than grepping them. The same applies to a number: a figure repeated in three documents has three chances to be stale, and a figure taken from a report rather than measured has one chance to be wrong.

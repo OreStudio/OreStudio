@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: DCF3E855-AEDF-4520-97B6-815A428DB514
+:END:
+#+title: Story: Implement the setup journeys in ores.web
+#+description: The first steps: first run, new tenant and new party run in ores.web, on the accepted seed-profile and provisioning contracts.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:journeys:setup:v0:sprint_26:
+#+category: feature
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A browser pointed at an empty installation takes a person from nothing
+to a working installation, and then to as many tenants and parties as
+they need. Three [[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup]] journeys run against the
+real server:
+
+- [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] — the system administrator, the
+  first tenant inline, the first sign-in, and *Ready*. This is the only
+  journey in the catalogue that can run on an empty database.
+- [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] — the same steps on
+  their own, for every tenant after the first.
+- [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] — a legal entity added to
+  a tenant, with the accounts that work in it.
+
+The three share one runtime and one step library. First run expands the
+new tenant steps inline, so the person sees one flat rail of eight
+steps and never a journey inside a journey.
+
+This is the first group of
+[[id:961BE2F3-3FE2-4140-BB18-EBDC89DF0913][Implement the user journeys in ores.web]], and it
+lands the two things every later group needs. The *runtime*, because a
+journey is an ordered list of steps and one page renders that list. And
+the *provisioning contract*, because provisioning is server-side work
+that takes minutes and can fail half way, and no journey in the
+catalogue can be honest about a half-finished installation until the
+state and the progress are real.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | The contract is written and the rail model is in place. [[id:FC08DD66-DB25-4B4F-8A26-572A513393FF][The architecture audit]] is done and signed off. Nothing renders yet, because no page has been built on the model. |
+| Waiting on    | The architecture documents, which are corrected as their own change. |
+| Next          | Restore the UI primitives the reduction commit deleted and port the rail component onto =runtime.ts=. |
+| Last touched  | 2026-09-27                               |
+
+* Acceptance
+
+- First run runs in =ores.web=, from an empty database to *Ready*,
+  against the real server. No step is simulated and no profile is held
+  in the code.
+- New tenant and New party run on the same runtime. They reuse the new
+  tenant step library, and first run inlines those same steps.
+- The provisioning progress is server-side. A person can close the page
+  and come back and continue. A failed step stops the instance, and a
+  retry resumes from that step and keeps the steps that completed.
+- The seed profiles are registered data. Adding a profile is adding a
+  row; adding a step kind is code.
+- The forced password change fires. The tenant administrator of an
+  *Empty operational* tenant sets a password only they know at first
+  sign-in.
+- The password rules the screen shows are the rules the server
+  enforces, read from the server rather than declared in the client.
+- The bootstrap gate holds. While the system is in bootstrap mode the
+  *Setup* page is the only page, and nobody can sign in.
+- A scripted end-to-end run proves the path on a fresh database, in the
+  shape of =scripts/verify-login.ts=.
+- The shell drives the same three journeys through the same contract.
+  =provision system=, =provision tenant= and =provision party= call the
+  generic provision request once this story has added it, and the three
+  end-to-end provisioning recipes under
+  =doc/recipes/shell/provisioning/= each run from an empty installation to
+  a working tenant without orchestrating anything client-side.
+- Every gap the three journey documents record is closed, or stated on
+  the screen and recorded in this story.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6F644305-4D98-4F58-8BFF-1CF3E8B46427][Correct and add the architecture the journeys depend on]] | BACKLOG | | | Make the architecture documents true before the first journey task starts: correct the contradictions the audit found, rewrite the stale decision record, and add the page that defines the journey runtime and the BFF boundary. |
+| [[id:8EC41D9E-757B-427B-8E3E-58BC0EA4BEEB][Decide the journey runtime and the step-call contract]] | DONE | 2026-09-27 | 2026-09-27 | Write the contract every journey is built to: what a step definition is, how one page renders the rail from the same list, and how a step reaches the server through a BFF route and a wire-client method. |
+| [[id:946954A3-23B7-43AC-A4AB-42E65698FED7][Line the shell's provisioning up with the journey contract]] | BACKLOG | | | Replace the three porcelain provisioning commands' client-side orchestration with thin calls to the same subjects the browser reaches, and keep the three end-to-end provisioning scripts working through them. |
+
+* Plan
+
+The architecture change lands first, because step 1 decides the runtime
+and the step-call contract and cannot decide them against documents that
+still contradict each other.
+
+The steps are ordered so that each one leaves a state a person can
+look at. The first three land before the provisioning contract, because
+none of them depends on it and all of them are permanent.
+
+| # | Step | What it leaves behind |
+|---+------+-----------------------|
+| 1 | Decide the journey runtime and the step-call contract | The step definition, the page that renders the rail from it, the rule for a step that cannot be returned past, and how a step reaches a subject: which BFF route and which wire-client method. |
+| 2 | Restore the UI primitives and port the journey runtime | The primitives, the password field, the password policy and its test, and the brand artwork, restored from =e47043269f^=. The rail and the step parts ported from =prototype/first-run-journey= with the simulation removed. |
+| 3 | Build the application shell, the route table and the bootstrap gate | =AppShell= and =PublicShell=, the routes, and */setup* as the only page while the system is in bootstrap mode. |
+| 4 | Reach the bootstrap and journey subjects from the browser | BFF routes and wire-protocol client methods for bootstrap status, create administrator, seed profile read, provision, progress and retry. |
+| 5 | Model the seed profile and its step catalogue, and seed the two profiles | =iam.v1.seed_profiles.list= and =.get=, each profile's parameter schema and its prefilled tenant details, and *Empty operational* and *ACME demo* as rows. |
+| 6 | Add the generic provision request that returns an instance id at once | =iam.v1.tenants.provision=, taking the profile code and its parameters, for every tenant, the first one included. |
+| 7 | Order the tenant provisioning steps as a workflow definition | The provision-tenant definition over the fixed step kinds, in the shape =workflow.v1.parties.provision= already uses, running provision party once per party. |
+| 8 | Follow the progress, retry from the failed step, and settle the event payload | The read the page follows, the retry verb, and the payload mismatch. The event subject exists and the retry verb does not; what the engine publishes does not match what the browser decodes, so the page needs a read and the mismatch needs an owner. |
+| 9 | Carry the forced password change, and read the password policy | The login handler copies =password_reset_required= into its reply, and a read returns the policy the server enforces. |
+| 10 | Build the First run journey | Welcome, create the administrator, the inlined new tenant steps, hand off, first sign-in, *Ready*. |
+| 11 | Build the New tenant and New party journeys | The same steps on their own rails, plus the party journey's legal-entity search and its account selection. |
+| 12 | Line the shell's provisioning up with the same contract | =provision system=, =provision tenant= and =provision party= become thin callers of the same subjects the browser calls, and the orchestration they do today moves to the server. |
+| 13 | Prove the three journeys on a fresh database, on both clients | The three end-to-end provisioning recipes each run from an empty installation to a working tenant on the shell, and the same three journeys run in the browser. |
+
+* Decisions
+
+- *The three journeys share one runtime and one step library.* First
+  run inlines the new tenant steps. Positions in the rail are named
+  rather than counted, so adding a step to one journey cannot silently
+  shift the meaning of another.
+- *The accepted contracts are the target.* The design retires
+  =iam.v1.bootstrap.provision-tenant= and =iam.v1.tenants.provision-acme=;
+  the generic request replaces both, first tenant included.
+  =iam.v1.bootstrap.create-admin= stays, because the accepted contract
+  keeps system bootstrap to the system administrator alone.
+- *The seed profile is data.* A profile orders step kinds from a fixed
+  catalogue, so a new profile is a row and a new step kind is code. The
+  screen builds its form from the profile's declared parameter schema
+  and holds no profile of its own.
+- *The provisioning steps are idempotent.* A retry resumes from the
+  failed step and keeps the steps that completed. Discarding a
+  half-provisioned tenant is a separate administrator action.
+- *The journey's state is a workflow instance.* It already carries the
+  kind, the current step, the request, the result and the error. No
+  journey entity is added, and no subject returns a journey as an
+  object. [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] records why.
+- *Bootstrap mode is the system setting =system.bootstrap_mode=.*
+  =ores_iam_create_initial_admin_fn= clears it, so the gate closes when
+  the administrator is created and not before.
+- *The prototype is the design record for the rail, not for the code.*
+  =prototype/first-run-journey= is the accepted authority on the step
+  sequence, the copy and the layout. The variants that lost, and the
+  prototype switcher, are not carried.
+- *=ores.workflow= is another environment's component.* Two of its
+  stories are in flight:
+  [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][its clean-up]] and
+  [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][its end-to-end exercise]]. This story
+  consumes the engine and adds the retry verb the journey needs. It does
+  not rewrite the engine or its models.
+- *A step reaches the server through one hand-written BFF route per
+  step,* each parsing a generated schema and each listed in
+  [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]].
+  There is no generic forwarding route, so the browser cannot name a
+  subject.
+- *The BFF is the browser's only HTTP surface.* =ores.http= serves
+  external clients, and the browser never reaches it.
+- *Only the server-side workflow resumes.* The steps around it hold no
+  server state, so a journey progress record is not added and the
+  decision that no journey entity is needed stands.
+- *ores.iam owns the seed profile, its parameter schema and the
+  step-kind catalogue.*
+- *The architecture documents are corrected before this story's first
+  task starts.*
+  [[id:FC08DD66-DB25-4B4F-8A26-572A513393FF][The audit]] found the accepted
+  sprint 25 catalogue still mandating a journey entity and shell journey
+  commands, three journey documents claiming =ores.workflow= does not
+  exist, and no page defining the runtime at all. The answers above are
+  recorded in that audit and land as their own documentation change.
+- *Every journey has two clients, and the shell is the other one.*
+  =ores.shell= already carries the three Setup journeys as porcelain
+  commands — =provision system=, =provision tenant= and =provision
+  party=. Three recipes under =doc/recipes/shell/provisioning/= run a
+  whole system provisioning, one per value the =--source= flag accepts,
+  and between them they cover the three journeys this story builds in the
+  browser:
+
+  - =acme_system_provision.org= creates a tenant called =acme=,
+    provisions it with =--source synthetic=, then adds a party and sets
+    the default party.
+  - =barclays_system_provision.org= creates =barclays=, provisions it
+    with =--source gleif= against a root LEI, then adds a party and sets
+    the default party.
+  - =how_do_i_provision_the_system_with_acme_corporation_holding_group.org=
+    creates =acme_corporation= and provisions it with =--source acme=,
+    which reaches the synchronous =provision-acme= handler. It stops
+    after the tenant stage and additionally publishes two compute
+    packages and the risk-management bundle, so it is the only one of
+    the three that does not run the party journey.
+
+  A step's contract therefore has two callers from the day it lands, and
+  a contract that suits only one of them is wrong.
+- *The shell's provisioning orchestration is replaced, not preserved.*
+  The accepted
+  [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][seed profile contract]] already
+  decided this: "ores.web and ores.shell are thin callers. The shell's
+  client-side orchestration is deleted." The three porcelain commands
+  are 696 lines that publish bundles, wait on workflows, generate a
+  synthetic organisation and associate parties themselves. The generic
+  request moves that work to the server, so the shell's commands become
+  thin callers of the same subjects the browser calls. This is accepted
+  scope that was never implemented, not new scope.
+- *The shell is lined up in the same group, not afterwards.* A shell
+  that still drives the retired subjects while the browser uses the new
+  one is two clients disagreeing about what provisioning is, and the
+  disagreement is invisible until somebody runs one of those scripts.
+- *The three end-to-end provisioning recipes are the acceptance
+  sequence.* They are the only artefacts in the tree that take an empty
+  database to a working tenant, one per provisioning path, and between
+  them they cover the three journeys — two of them through the party
+  journey as well as the tenant one. All three are kept working, and they
+  are what the story's last plan step runs.
+
+* Out of scope
+
+- The *Tenants* and *Parties* pages as permanent homes. The journeys
+  link to them; the pages are their own work.
+- The [[id:B3B7B4D1-6E1F-4C7A-9D2E-5A8C3F0B7E41][Entry]] group. First run signs in
+  through the path that exists. The Entry story builds the screen, self
+  registration and the failure paths.
+- The seed profile step kinds that no profile uses yet.
+- The =ores.qt= bootstrap wizards, which are evidence and not a design.
+- The producer of a profile's bundles, which belongs to the component
+  that owns that data.
+
+* Documents
+
+| Document | Kind | Purpose |
+|----------+------+---------|
+| [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] | user_journey | The journey this story implements first, and its list of gaps. |
+| [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] | user_journey | The steps first run inlines, and the profile contract. |
+| [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] | user_journey | The third journey, and the party workflow. |
+| [[id:DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003][Prototype the first run journey]] | task | Where the rail, the copy and the layout were accepted. |
+| [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] | knowledge | The composition classes, and why the state is a workflow instance. |
+| [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] | knowledge | The standard the C++ work in this story is held to. |
+| [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] | knowledge | The standard the TypeScript work in this story is held to: the full strictness set, no unchecked escape hatch, parse at the boundary, and one gate per item. |
+| =doc/recipes/shell/provisioning/acme_system_provision.org= | recipe | End-to-end on the synthetic path: system, tenant and party, with the sign-ins between them. |
+| =doc/recipes/shell/provisioning/barclays_system_provision.org= | recipe | End-to-end on the GLEIF path: system, tenant and party, with the sign-ins between them. |
+| =doc/recipes/shell/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.org= | recipe | End-to-end on the =--source acme= path: system and tenant, which reaches the synchronous =provision-acme= handler that retires with the generic request. It stops after the tenant stage and publishes compute packages and a bundle, so it does not run the party journey. |
+| [[id:FC08DD66-DB25-4B4F-8A26-572A513393FF][Audit the journey, provisioning and web-client architecture before the first implementation story]] | investigation | What the architecture documents say today, what is stale, and what is written nowhere. The story starts only after this is signed off. |

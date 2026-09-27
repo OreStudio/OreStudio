@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:journey:workflow:saga:orchestration:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-09-27
 
 * Summary
 
@@ -25,20 +25,33 @@ order, idempotency, retry and progress, and never field rules.
 
 ** The vocabulary
 
-Three words are in play and they are not synonyms. Each sits at a different level.
+Four words are in play and they are not synonyms. Each sits at a different level.
 
 #+ATTR_HTML: :class hug-leading
 | Term | What it is | Where it lives |
 |------+------------+----------------|
 | [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]] | A design artefact: what one person is trying to do, written before anything is built. Its implemented form is a definition — an ordered list of steps. | =doc/knowledge/journeys/= |
+| /step/ | One entry in that list: an identity, a title, what it shows, what it does, and whether the person may return to it. The client half of the contract is [[id:6A63AAC7-4869-493A-97E7-55B919874784][Journey runtime]]. | The journey definition, in the client |
 | [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] | Persisted progress: which journey, which step, what it is waiting for. | [[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]] |
 | /saga/ | A consistency strategy for one step that must write several entities and must be recoverable rather than atomic. | A step's implementation |
 
-The temptation is to call the second one a "journey" too, because it holds a
-journey's state. Resist it, because *the journey is not server-side; its state
-is*. That sentence settles the confusion, and it is why this page drops the
-phrase "server-side journey" altogether: it is a category error, not a
-distinction.
+A step is one of two kinds, and the kind decides whether it survives a
+reload.
+
+- A *workflow step* runs server work that takes time. Its progress is the
+  workflow instance, so the person can leave and come back, and a retry
+  resumes it.
+- A *human step* waits on the person: a sign-in, a new password, a party
+  chosen. Nothing on the server records that the person is here, so the
+  step does not survive a reload. The journey document must say which
+  steps those are, because the screen has to be honest about it rather
+  than implying the whole rail is resumable.
+
+The temptation is to call the workflow instance a "journey" too, because
+it holds a journey's state. Resist it, because *the journey is not
+server-side; its state is*. That sentence settles the confusion, and it
+is why this page drops the phrase "server-side journey" altogether: it is
+a category error, not a distinction.
 
 The same reasoning means no second entity is needed. =workflow_instance= already
 carries everything a journey's progress requires: =type= names the journey,
@@ -150,13 +163,25 @@ it removes the seam rather than policing it.
 |-------+-------|
 | [[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]], with =workflow_instance= and =workflow_step= | Exists |
 | [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]], for a service acting as a person | Exists |
-| =account_setup_service=, the first coordinator | Exists, and is where the =account_type= defect lives |
-| Progress streaming | Missing: =provision-acme= returns its steps only at the end |
+| =account_setup_service=, the first coordinator | Exists. =account_operations_service::create_account= takes no account type and hard-codes =user=; a separate =create_service_account= takes one and refuses =user= outright. That second entry point is the enforcement the guard rails above ask for, and it is why the defect is now a dead field rather than an impossible service account: =save_account_request= still carries an =account_type= that reaches neither of them. |
+| Workflow progress reads: =workflow.v1.instances.steps= and =workflow.v1.instances.list= | Exists, and subscribed |
+| The =workflow_instance_changed= event | Exists. Its subject matches the convention the BFF subscribes on, =ores.<component>.<entity>_changed=. Its *payload* does not match what the browser decodes: the engine sends an =entity_change_event= carrying =entity_ids=, and the shared browser schema reads =alpha2_codes=, a field named for the country event it was written for. Every field in that schema has a default, so the mismatch fails silently: the subscription succeeds and delivers an empty identifier list. Following a workflow therefore needs a read, and it also needs either the payload aligned or a channel that carries the instance id. Filed as [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][a capture]]. |
+| Tenant provisioning through the engine | Missing. =provision-acme= is a hand-written synchronous orchestrator, so it emits no progress and returns no instance. This, not the read, is why a person waits with no feedback. |
+| A retry or resume verb | Missing. The only recovery is =workflow_engine::recover_in_progress()=, called once at service start. |
+| A generic =iam.v1.tenants.provision= that returns an instance id at once | Missing |
+| A seed profile: its model, its table and its read | Missing |
 | A composite account-creation subject | Missing |
 | A joined roster read | Missing |
 | A =journey= entity beside =workflow_instance= | Not needed; see the vocabulary above |
 
-Sixteen of the twenty-one journeys are direct or read-only, and need none of this.
+Fifteen of the twenty-one journeys are runs of immediate operations, and
+one, See who has access, is a read model, so sixteen need none of the
+machinery above. The five that do are the three Setup journeys, which are
+workflows, and Bring someone in and Change someone's details, which are
+composite. A journey with several writes is still direct when each write
+is its own step and none has to land with another, which is the shape
+Register a service account has; it is direct for that reason, not because
+its step count is small.
 
 * See also
 

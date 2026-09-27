@@ -1,0 +1,279 @@
+:PROPERTIES:
+:ID: CDE625E2-96AE-4644-9921-282339925F3E
+:END:
+#+title: TypeScript Clean Standard
+#+description: The checklist a TypeScript package passes to be clean: the compiler's full strictness, no unchecked escape hatch, parse at the boundary, exhaustive unions, one-way dependencies, and every gate green.
+#+type: knowledge
+#+level: cross
+#+filetags: :typescript:checklist:architecture:web:standard:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+A TypeScript package is clean when the compiler runs at full strictness,
+nothing silences it, every value that arrives from outside is parsed once
+at the boundary, a union is matched exhaustively, the dependency
+direction is one way, and every gate passes. This is the
+[[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]'s sibling for
+the TypeScript in the tree, which today is the four packages of
+[[id:60088AA3-832B-45F1-91C2-4723C75554EE][ores.web]]. The C++ standard cannot govern
+these packages: it is written around SQL, a repository, a service and a
+generated registrar, and this component has none of those.
+
+It exists because the same reasons apply. The component is about to grow
+from a shell into every journey in the catalogue, and the conventions
+that make TypeScript safe are the ones a compiler and a linter can
+enforce. Those that cannot be enforced are named as review, and never
+dressed up as a check.
+
+Every item names the check that proves it. A check that does not exist
+yet is named all the same, because the gap is the work, and a standard
+that only lists what is already true standardises nothing.
+
+* Detail
+
+** How to read the checklist
+
+Each item has an identifier, the kind of package it applies to, and the
+evidence that proves it. The kinds are:
+
+- *All*: every TypeScript package in the tree.
+- *Shared*: a package the browser can reach without pulling in Node. That
+  is =@ores/wire-protocol= through its =/browser= entry, whose root entry
+  does carry the NATS client, and =@ores/contracts=, whose shipped source
+  imports nothing from Node; its =devDependencies= do carry =@types/node=
+  for the build, which is a different claim. Only the BFF imports
+  =@ores/contracts= today, and closing that gap is one of the defects
+  [[id:FC08DD66-DB25-4B4F-8A26-572A513393FF][the architecture audit]]
+  records.
+- *Browser*: code the browser runs, in =packages/web=.
+- *Server*: code Node runs, in =packages/bff=.
+- *Generated*: a file =ores.codegen= writes into
+  =packages/wire-protocol/src/generated/=.
+
+An item that does not apply is recorded as "not applicable" with the
+reason, never skipped in silence. An item that cannot pass is recorded
+on the task with its reason and the date, and the package is not called
+clean.
+
+There is no registry. The Component Clean Standard keeps one because
+thirty-five components each need a row, an accepted-exception list and a
+gate that reads them; four packages in one component do not. When a
+second TypeScript component appears, the registry becomes worth building
+and this paragraph is where it starts.
+
+The items are ordered by how a reader should work, not by importance.
+Work in the order of the sections: an inventory before an edit, types
+before data, data before effects, and verification last, because
+verification is what proves the rest.
+
+** 1. Baseline and inventory
+
+#+ATTR_HTML: :class hug-leading
+| Id    | Applies to | Item | Evidence |
+|-------+------------+------+----------|
+| TS-B01 | All | Record the baseline before any edit: the typecheck, the suite, the format check and the file census, each with its command and the commit it ran at. A later difference is attributable only against this baseline. | The four commands, in the task's =* Measurements= table |
+| TS-B02 | All | Classify every source file as hand-written, generated, or dead. A file no entry point reaches and no consumer imports is dead. | The generated marker against the tree, and =npm run typecheck= after a deletion |
+| TS-B03 | All | Census every public export by its consumer: production, test-only, or none. A test-only consumer is dead code, because a test is not a consumer. Name the intended consumer, or delete the symbol with its test. | =git grep= over =projects/ores.web= for each export, excluding its own package and tests |
+| TS-B04 | All | Read the package's open captures and the in-flight branches that touch it, so the work does not collide with them. | Links on the task |
+| TS-B05 | All | The declared engine floor is not below the floor any installed tool declares. This is a real defect class: a floor stated lower than the toolchain's own rejects nobody here and breaks a contributor's install. | =node -p "require('./node_modules/<tool>/package.json').engines"= for each tool, against =engines.node= |
+
+** 2. Types and the type system
+
+The compiler is the strongest gate this standard has, so the first items
+are the ones it already proves. The rest are the mistakes it does not
+catch, and each names the rule that does.
+
+#+ATTR_HTML: :class hug-leading
+| Id    | Applies to | Item | Evidence |
+|-------+------------+------+----------|
+| TS-T01 | All | The compiler runs at full strictness: =strict=, =noUncheckedIndexedAccess=, =exactOptionalPropertyTypes=, =noImplicitOverride=, =noImplicitReturns=, =noFallthroughCasesInSwitch=, =noPropertyAccessFromIndexSignature=, =useUnknownInCatchVariables=, =verbatimModuleSyntax=, =erasableSyntaxOnly=, =isolatedModules= and =moduleDetection force=. Weakening a flag is a decision for this standard, not a local edit. | =tsconfig.base.json=; =npm run typecheck= |
+| TS-T02 | All | No =any=. It switches the type system off at exactly the place it is most needed. Reach for =unknown= and narrow it. | =@typescript-eslint/no-explicit-any=, with the =no-unsafe-*= family for what flows from it |
+| TS-T03 | All | No non-null assertion. =!= silences the compiler instead of proving the value is there. | =@typescript-eslint/no-non-null-assertion= |
+| TS-T04 | All | No unchecked assertion. =as= is a promise the compiler cannot check. Parse the value, or narrow it. | =@typescript-eslint/no-unsafe-type-assertion= |
+| TS-T05 | All | Make illegal states unrepresentable. Use a discriminated union over the states, not a struct of optional fields with a comment naming which combinations are legal. | Type review, and =@typescript-eslint/no-unnecessary-condition= to find the branches a correct union makes dead |
+| TS-T06 | All | Brand a semantic primitive rather than aliasing it: =type TenantId = string & { readonly __brand: unique symbol }=. A plain alias brands nothing, because it is the same type to the compiler. | Type review. There is no gate for this one |
+| TS-T07 | All | Match a union exhaustively, and prove it with =never= in the default branch, so a new variant breaks the build instead of falling through. | =@typescript-eslint/switch-exhaustiveness-check= |
+| TS-T08 | All | =readonly= on every field, parameter and collection that is not mutated. | =@typescript-eslint/prefer-readonly=; review |
+| TS-T09 | All | No =enum=. It is not erasable, and a union of literals or an =as const= object says the same thing without emitting code. Note that =erasableSyntaxOnly= rejects a plain =enum= and does /not/ reject an ambient =declare enum=, so this item needs the rule as well as the flag. | =tsc= for the ordinary case; =no-restricted-syntax= on =TSEnumDeclaration= for the rest |
+| TS-T10 | All | =type= for data and unions. =interface= only where declaration merging is genuinely required. | =@typescript-eslint/consistent-type-definitions= |
+| TS-T11 | All | Import a type with =import type=, so a type-only edge never becomes a runtime one. | =verbatimModuleSyntax= at compile time; =@typescript-eslint/consistent-type-imports= and =no-import-type-side-effects= for the style |
+| TS-T12 | All | Never silence the compiler. =@ts-expect-error= carries a reason and fails once the error goes away; =@ts-ignore= and =@ts-nocheck= do not. | =@typescript-eslint/ban-ts-comment= |
+| TS-T13 | All | Declare the return type of an exported function. Inference is for locals; a published signature is part of the interface. | =@typescript-eslint/explicit-module-boundary-types= |
+| TS-T14 | All | Derive a wire shape from its model. A hand-written type that duplicates a generated one is drift with a delay on it. | The generated marker; =check_component_drift.py --dry-run= |
+| TS-T15 | All | No =Function=, no =Object=, no ={}= as a type. Each accepts almost anything and says nothing. | =@typescript-eslint/no-restricted-types= |
+
+** 3. Data at the boundary
+
+A boundary is where a value the compiler knows nothing about becomes one
+it does. The rule is parse, do not validate: the parse produces the typed
+value, and there is no second representation downstream.
+
+#+ATTR_HTML: :class hug-leading
+| Id    | Applies to | Item | Evidence |
+|-------+------------+------+----------|
+| TS-D01 | All | Every value that arrives from outside — an HTTP body, a NATS reply, =JSON.parse=, =localStorage=, an environment variable — is parsed once at the boundary into a typed value, and nothing downstream sees the raw shape. | The transport parses every reply; a test per route with a malformed payload |
+| TS-D02 | All | A payload that does not match its schema fails at the boundary, not three layers down. Return the parse result rather than casting it. | =safeParse= at the transport and at every server route; the =no-unsafe-*= rules |
+| TS-D03 | Server | Validate every request body, query parameter and path parameter against a schema before a handler reads it. | The route schema; a test per route with a body the schema rejects |
+| TS-D04 | Shared | One schema per wire shape, declared once and imported by both sides. Two spellings of one shape drift, and the drift arrives as a runtime parse failure. | Package review; =@ores/contracts= is the intended home |
+| TS-D05 | All | Narrow a parsed union on its discriminant. Do not reach into an unparsed value by field name. | =@typescript-eslint/no-unsafe-member-access=; review |
+| TS-D06 | All | A quantity carries its unit in its type, not in its parameter name. | Type review |
+
+** 4. Architecture and module boundaries
+
+#+ATTR_HTML: :class hug-leading
+| Id    | Applies to | Item | Evidence |
+|-------+------------+------+----------|
+| TS-A01 | All | The dependency direction is one way: =web= and =bff= depend on =wire-protocol=, =contracts= is a leaf, and nothing depends on =web=. | A dependency check over the workspace; review |
+| TS-A02 | All | A package exposes named entry points, and nothing imports across a package boundary except through them. | The package =exports= map; dependency-cruiser or =eslint-plugin-boundaries= |
+| TS-A03 | All | No import cycle. A cycle is a design fault that surfaces as an initialisation-order bug. | =import/no-cycle= or dependency-cruiser =no-circular= |
+| TS-A04 | All | No barrel file that re-exports a directory. It hides the dependency graph and defeats tree shaking. | =no-restricted-syntax= on =ExportAllDeclaration=; review |
+| TS-A05 | All | One module, one reason to change. When a file's exports do not share a subject, split it. | Review |
+| TS-A06 | Browser | The browser learns nothing about where the server is: no host, no port, no namespace, no certificate. The BFF is its only HTTP surface. | Route review; no deployment detail in a browser response |
+| TS-A07 | Browser | The browser never holds the bearer token. The session is an opaque cookie, and only the server can read it. | The session provider; review |
+
+** 5. Components and rendering
+
+#+ATTR_HTML: :class hug-leading
+| Id    | Applies to | Item | Evidence |
+|-------+------------+------+----------|
+| TS-C01 | Browser | A component is a function that returns a node. No class components. | Review |
+| TS-C02 | Browser | Server state is read through the query cache. Component state holds what the interface owns, never a copy of what the server owns. | Review, against the runtime page |
+| TS-C03 | Browser | A journey is an ordered list of step definitions, and one page renders the rail from that same list, so the rail and the steps cannot disagree. | The runtime page; a test that the rail and the step list agree |
+| TS-C04 | Browser | Text is reached by key, never by an English word in the code. The catalogue carries the words. | The i18n catalogue test; =npm test= |
+| TS-C05 | Browser | Styling uses the theme tokens, never a raw colour. | Review, against =styles.css= |
+| TS-C06 | Browser | A hook obeys the rules of hooks, and an effect declares every dependency. | =eslint-plugin-react-hooks= |
+
+** 6. Effects, errors and asynchronous work
+
+#+ATTR_HTML: :class hug-leading
+| Id    | Applies to | Item | Evidence |
+|-------+------------+------+----------|
+| TS-E01 | All | No floating promise. Every promise is awaited, returned, or discarded with a stated reason. | =@typescript-eslint/no-floating-promises= |
+| TS-E02 | All | A promise-returning function is not passed where a void return is expected, unless nothing can act on the rejection and that is written down. | =@typescript-eslint/no-misused-promises= |
+| TS-E03 | All | A caught value is =unknown= and is narrowed before use. =e.message= on something that is not an =Error= is the bug this prevents. | =useUnknownInCatchVariables=; =@typescript-eslint/use-unknown-in-catch-callback-variable= |
+| TS-E04 | All | Throw an =Error=, and only an =Error=. | =@typescript-eslint/only-throw-error= |
+| TS-E05 | All | An error a person sees states what failed and what to do next. It never prints a stack, a subject or an internal identifier. | The error mapper; review |
+| TS-E06 | All | An operation that may be retried is idempotent, or it says that it is not. | Review, against the operation's model |
+
+** 7. Tests
+
+#+ATTR_HTML: :class hug-leading
+| Id    | Applies to | Item | Evidence |
+|-------+------------+------+----------|
+| TS-X01 | All | No vacuous test. Every test fails when its subject does nothing, so a test that asserts only a length, a non-throw, a truthiness, or one production run against another is a finding. Assert a literal expected value. | Stub the subject and re-run. The test must fail |
+| TS-X02 | All | Call the code the way its user does, and assert what the user observes. | Review |
+| TS-X03 | All | Every source file is exercised by a test, or is recorded with the reason it is not. | A per-file survey against the suite's file list |
+| TS-X04 | All | A claim about a type is asserted as a type, not stated in a comment. | =expectTypeOf= or =assertType=, with typechecking enabled in the test config |
+| TS-X05 | All | A test is deterministic: no wall clock, no network, no dependence on the order the files run in. | Re-run, and run once with the file order shuffled |
+| TS-X06 | All | A codec pins its bytes. A golden test catches the change that a round-trip test passes. | The codec golden test |
+| TS-X07 | All | An unhandled rejection fails the run, and the escape hatch that disables that is absent from the configuration. | =vitest= fails on an unhandled rejection by default; review the config for =dangerouslyIgnoreUnhandledErrors= |
+| TS-X08 | All | A coverage floor is declared, and it does not go down. | =test.coverage.thresholds= with =@vitest/coverage-v8= |
+
+** 8. Generated artefacts and the toolchain
+
+#+ATTR_HTML: :class hug-leading
+| Id    | Applies to | Item | Evidence |
+|-------+------------+------+----------|
+| TS-R01 | Generated | Every generated file carries the generated marker, and no hand-written file carries it. | The marker against the census |
+| TS-R02 | Generated | No generated file is edited by hand, and none is formatted by a different tool from the one that wrote it. Either the generator emits canonical output, or the generated paths are excluded from the formatter. | =git diff= after regeneration; =.prettierignore=, or a formatting step inside the generator |
+| TS-R03 | Generated | Regeneration is byte-identical to the checked-in tree, and idempotent: a second run changes nothing. | =check_component_drift.py --dry-run=, run twice |
+| TS-R04 | All | A generator defect is fixed in the template, with a regression test in the codegen suite. | The codegen suite |
+| TS-R05 | All | The generated TypeScript compiles under the same strictness as the hand-written code. | =npm run typecheck=, over the generated tree included |
+
+** 9. Structure and hygiene
+
+#+ATTR_HTML: :class hug-leading
+| Id    | Applies to | Item | Evidence |
+|-------+------------+------+----------|
+| TS-H01 | All | Formatting is mechanical and gated: the configuration is committed, the whole component passes the check, and the check runs on a pull request. | =prettier --check .= for the check itself, and the CI workflow once it runs that check. It does not today, so this item needs a configuration, a formatted tree and a workflow step, in that order. |
+| TS-H02 | All | No dead code, no commented-out code, no unused variable or export. | =@typescript-eslint/no-unused-vars=; the census; review |
+| TS-H03 | All | Comments follow the project comment rules: sparse, above the code, no edit history, and no narration of what the next line already says. | A comment review pass |
+| TS-H04 | All | A file that exports one thing is named for it. A boolean reads as a predicate. A type is a noun. | =eslint-plugin-check-file= for the file name; review for the rest |
+| TS-H05 | All | No =console= in shipped code. The server logs through the project logger. | =no-console= |
+| TS-H06 | All | No default export. Every importer may rename a default export, so one symbol acquires as many names as it has importers. | =import/no-default-export=; review |
+| TS-H07 | All | No mutation of a function parameter. | =no-param-reassign= |
+
+** 10. Verification
+
+#+ATTR_HTML: :class hug-leading
+| Id    | Applies to | Item | Evidence |
+|-------+------------+------+----------|
+| TS-V01 | All | Every package typechecks, and no strictness flag was weakened to make it pass. | =npm run typecheck= |
+| TS-V02 | All | Every package's tests pass. Record the file count and the case count. | =npm test= |
+| TS-V03 | All | The component builds: the browser bundle and the server. | =npm run build= |
+| TS-V04 | All | The format check passes over the whole component, generated files included or excluded by decision rather than by accident. | =npm run format:check= |
+| TS-V05 | All | The lint gate is green: a flat ESLint configuration over the type-checked rule set, with the framework overrides the packages need. | =npm run lint=. The script does not exist yet, and neither does the configuration, so this item is unproved until both are added; the audit below records that. |
+| TS-V06 | All | The declared engine floor is not below any installed tool's floor. | =node -p= against each tool's =package.json= |
+| TS-V07 | Browser | The client runs against the live fleet: sign in, and the journey under test completes. A mock or a unit test does not prove this. | The verification script against a running stack |
+| TS-V08 | All | Every gate above runs on a pull request that touches the component. | The TypeScript workflow runs =typecheck= and =test= on those paths today; =build=, =format:check=, =lint=, coverage and the live-fleet check must be added to it, so this item is met when that workflow names them all. |
+
+** What the first audit found
+
+Measured on 2026-09-27, before any of this was acted on. The compiler
+gate, the suite and the format figures come from =ef8df25c61=; the
+branch that adds this page adds two files to the component, so where a
+figure moves, the cell gives both. The numbers are the reason the
+standard says what it says.
+
+| What | Value | Command |
+|------+-------+---------|
+| The compiler gate | green | =npm run typecheck= |
+| The suite | green: 10 files, 70 cases at =ef8df25c61= | =npm test= |
+| The format gate | red on 363 files at =ef8df25c61=, 365 on this branch | =prettier --check .= |
+| ... of which generated | 303, unchanged by this branch | =prettier --list-different . \| grep -c /generated/= |
+| ... of which hand-written | 60 at =ef8df25c61=, 62 on this branch | the same list, generated paths removed |
+| A configuration that reproduces the tree | none found. The closest tested, single quotes at 100 columns, differs on 333 files at =ef8df25c61= and 335 on this branch | =prettier --list-different --single-quote --print-width 100 .= |
+| A tracked Prettier configuration | none. The package declares the dependency and two scripts, and configures neither | =find . -name '.prettierrc*' -o -name 'prettier.config*'= |
+| ESLint configurations in the repository | zero | =find . -name 'eslint.config*' -o -name '.eslintrc*'= |
+| The declared engine floor | ~>= 22.11.0~, below the =vitest@5.0.1= floor of ~^22.12.0, ^24.0.0 or >=26.0.0~ | =node -p "require('./node_modules/vitest/package.json').engines"= |
+
+Four things follow from that table.
+
+The compiler gate is the one that works, and it earns its place: the
+strictness set already makes implicit =any=, an unchecked index, an
+=undefined= in an optional property and a fall-through switch into
+compile errors. It is also the only gate that is not optional, which is
+what makes the exclusion of the test files worth a separate item.
+
+The format gate is named in =package.json= and has never run. There is no
+configuration at all, in the component or above it, so this is not a
+missing file that somebody deleted: the component has never been
+formatted by the tool it declares, and the style it does follow was never
+captured. Two decisions follow, and they are separate. The generated tree
+should be the generator's business, not the formatter's, because 303 of
+the 363 files are generated and hand-formatting them is undone by the
+next regeneration. The hand-written tree should be formatted once,
+against a configuration committed with it.
+
+The lint gate does not exist, and most of the items above name a rule
+from it. This is the one gate the standard requires and the component
+does not have. It is also the gate that catches what the compiler
+cannot: the unsafe assertion, the non-null assertion, the floating
+promise, the unbound method, the non-exhaustive switch, and the missing
+=import type= that =verbatimModuleSyntax= only partly covers. Nothing
+enforces TS-T02, TS-T03, TS-T04, TS-T07, TS-T12, TS-T13, TS-T15, TS-E01
+or TS-H02/H05/H06/H07 today, and a review is the only thing standing in
+for all of them.
+
+The engine floor is a live defect rather than a convention. A
+contributor on the declared minimum installs a tool that refuses to run,
+and nothing in the repository says so.
+
+One item is worth stating because it is easy to get wrong.
+=erasableSyntaxOnly= rejects an =enum=, a =namespace= and a class
+parameter property, and does /not/ reject a =declare enum=. That was
+checked by compiling each form, which is why TS-T09 leans on both the
+flag and the rule.
+
+* See also
+
+- [[https://typescript-eslint.io/users/configs/][typescript-eslint: shared configurations]] — which rules the type-checked
+  configurations include, and which are left for the project to enable.
+- [[https://typescript-eslint.io/blog/project-service/][typescript-eslint: the project service]] — the mechanism a monorepo with
+  tsconfig project references uses instead of a hand-written project list.
+- [[https://typescript-eslint.io/rules/no-unsafe-type-assertion/][=no-unsafe-type-assertion=]] — the rule behind TS-T04, and the one
+  =strictTypeChecked= does not include.
+- [[https://vitest.dev/guide/coverage.html][Vitest: coverage]] — the threshold keys TS-X08 relies on.
+- [[https://vitest.dev/config/dangerouslyignoreunhandlederrors.html][Vitest: =dangerouslyIgnoreUnhandledErrors=]] — the escape hatch TS-X07
+  forbids.
+- [[https://eslint.org/docs/latest/use/configure/configuration-files][ESLint: flat configuration files]] — the shape of the gate TS-V05 names.

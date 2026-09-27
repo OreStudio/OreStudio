@@ -2,7 +2,7 @@
   "name": "@ores/contracts",
   "version": "0.0.1",
   "private": true,
-  "description": "The HTTP contracts shared by the BFF and the browser. One schema, parsed on both sides.",
+  "description": "The HTTP contracts shared by the BFF and the browser. Parsed on the server today, and the browser is to parse the same schemas.",
   "type": "module",
   "exports": {
     ".": {

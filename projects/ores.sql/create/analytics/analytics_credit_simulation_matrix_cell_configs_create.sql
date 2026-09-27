@@ -22,7 +22,7 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- * Credit Simulation Transition Matrix Cell Config Table
+ * Credit Simulation Matrix Cell Config Table
  *
  * ORE writes a transition matrix as one Data element whose text is a
  * whitespace or comma separated square grid, with optional t0 and t1
@@ -32,7 +32,7 @@
  * the probability.
  */
 
-create table if not exists "ores_analytics_credit_simulation_transition_matrix__tbl" (
+create table if not exists "ores_analytics_credit_simulation_matrix_cells_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
@@ -58,23 +58,23 @@ create table if not exists "ores_analytics_credit_simulation_transition_matrix__
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists credit_simulation_transition_matrix_cell_configs_version_uniq_idx
-on "ores_analytics_credit_simulation_transition_matrix__tbl" (tenant_id, id, version)
+create unique index if not exists credit_simulation_matrix_cell_configs_version_uniq_idx
+on "ores_analytics_credit_simulation_matrix_cells_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists credit_simulation_transition_matrix_cell_configs_id_uniq_idx
-on "ores_analytics_credit_simulation_transition_matrix__tbl" (tenant_id, id)
+create unique index if not exists credit_simulation_matrix_cell_configs_id_uniq_idx
+on "ores_analytics_credit_simulation_matrix_cells_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists credit_simulation_transition_matrix_cell_configs_tenant_idx
-on "ores_analytics_credit_simulation_transition_matrix__tbl" (tenant_id)
+create index if not exists credit_simulation_matrix_cell_configs_tenant_idx
+on "ores_analytics_credit_simulation_matrix_cells_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists credit_simulation_transition_matrix_cell_configs_workspace_idx
-on "ores_analytics_credit_simulation_transition_matrix__tbl" (workspace_id)
+create index if not exists credit_simulation_matrix_cell_configs_workspace_idx
+on "ores_analytics_credit_simulation_matrix_cells_tbl" (workspace_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function ores_analytics_credit_simulation_transition_matrix__insert_fn()
+create or replace function ores_analytics_credit_simulation_matrix_cells_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -85,9 +85,9 @@ begin
     -- Validate workspace_id
     NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
 
-    -- Validate transition_matrix_id (soft FK to ores_analytics_credit_simulation_transition_matrix_configs_tbl)
+    -- Validate transition_matrix_id (soft FK to ores_analytics_credit_simulation_matrix_configs_tbl)
     if not exists (
-        select 1 from ores_analytics_credit_simulation_transition_matrix_configs_tbl
+        select 1 from ores_analytics_credit_simulation_matrix_configs_tbl
         where tenant_id = NEW.tenant_id
           and id = NEW.transition_matrix_id
           and valid_to = ores_utility_infinity_timestamp_fn()
@@ -101,7 +101,7 @@ begin
 
     -- Version management
     select version into current_version
-    from "ores_analytics_credit_simulation_transition_matrix__tbl"
+    from "ores_analytics_credit_simulation_matrix_cells_tbl"
     where tenant_id = NEW.tenant_id
       and id = NEW.id
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -129,7 +129,7 @@ begin
         -- multi-write to this row (e.g. a composite entity's parent
         -- touched twice by two different children in one transaction)
         -- would collide with itself. clock_timestamp() always advances.
-        update "ores_analytics_credit_simulation_transition_matrix__tbl"
+        update "ores_analytics_credit_simulation_matrix_cells_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and id = NEW.id
@@ -148,13 +148,13 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
-create or replace trigger ores_analytics_credit_simulation_transition_matrix__insert_trg
-before insert on "ores_analytics_credit_simulation_transition_matrix__tbl"
-for each row execute function ores_analytics_credit_simulation_transition_matrix__insert_fn();
+create or replace trigger ores_analytics_credit_simulation_matrix_cells_insert_trg
+before insert on "ores_analytics_credit_simulation_matrix_cells_tbl"
+for each row execute function ores_analytics_credit_simulation_matrix_cells_insert_fn();
 
-create or replace rule ores_analytics_credit_simulation_transition_matrix__delete_rule as
-on delete to "ores_analytics_credit_simulation_transition_matrix__tbl" do instead (
-    update "ores_analytics_credit_simulation_transition_matrix__tbl"
+create or replace rule ores_analytics_credit_simulation_matrix_cells_delete_rule as
+on delete to "ores_analytics_credit_simulation_matrix_cells_tbl" do instead (
+    update "ores_analytics_credit_simulation_matrix_cells_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and id = OLD.id

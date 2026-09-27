@@ -1,15 +1,15 @@
 :PROPERTIES:
 :ID: 7C4E1A62-9B3D-4F58-8E21-5A6C0D9F3B47
 :END:
-#+title: ores.analytics.credit_simulation_transition_matrix_cell_config
-#+description: Codegen entity model for the analytics =credit_simulation_transition_matrix_cell_config= table. One row per cell of an ORE credit simulation transition matrix.
+#+title: ores.analytics.credit_simulation_matrix_cell_config
+#+description: Codegen entity model for the analytics =credit_simulation_matrix_cell_config= table. One row per cell of an ORE credit simulation transition matrix.
 #+type: ores.codegen.entity
 #+component: analytics
 #+filetags: :model:entity:analytics:
 #+brief: One cell of a credit migration transition matrix.
-#+entity_singular: credit_simulation_transition_matrix_cell_config
-#+entity_plural: credit_simulation_transition_matrix_cell_configs
-#+entity_title: Credit Simulation Transition Matrix Cell Config
+#+entity_singular: credit_simulation_matrix_cell_config
+#+entity_plural: credit_simulation_matrix_cell_configs
+#+entity_title: Credit Simulation Matrix Cell Config
 #+created: 2026-09-27
 #+updated: 2026-09-27
 
@@ -85,16 +85,16 @@ on import and formatted on export.
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_analytics_credit_simulation_transition_matrix_cells_tbl
+:tablename: ores_analytics_credit_simulation_matrix_cells_tbl
 :END:
 
 * Foreign keys
 
 ** transition_matrix_id
 :PROPERTIES:
-:table:         ores_analytics_credit_simulation_transition_matrix_configs_tbl
+:table:         ores_analytics_credit_simulation_matrix_configs_tbl
 :target_column: id
-:parent_entity: credit_simulation_transition_matrix_config
+:parent_entity: credit_simulation_matrix_config
 :nullable:      false
 :error_message: Invalid transition_matrix_id: %. No active transition matrix found with this id.
 :list_by:       true
@@ -154,30 +154,30 @@ The matrix this cell belongs to.
 
 ** Presentation
 :PROPERTIES:
-:domain_include:          ores.analytics.api/domain/credit_simulation_transition_matrix_cell_config.hpp
-:domain_class:            analytics::domain::credit_simulation_transition_matrix_cell_config
-:protocol_include:        ores.analytics.api/messaging/credit_simulation_transition_matrix_cell_config_protocol.hpp
-:collection_name:         credit_simulation_transition_matrix_cell_configs
-:item_var:                credit_simulation_transition_matrix_cell_config
+:domain_include:          ores.analytics.api/domain/credit_simulation_matrix_cell_config.hpp
+:domain_class:            analytics::domain::credit_simulation_matrix_cell_config
+:protocol_include:        ores.analytics.api/messaging/credit_simulation_matrix_cell_config_protocol.hpp
+:collection_name:         credit_simulation_matrix_cell_configs
+:item_var:                credit_simulation_matrix_cell_config
 :key_field:               from_state
-:get_request_class:       analytics::messaging::list_credit_simulation_transition_matrix_cell_configs_request
-:get_response_class:      analytics::messaging::list_credit_simulation_transition_matrix_cell_configs_response
-:get_message_type:        list_credit_simulation_transition_matrix_cell_configs_request
-:save_request_class:      analytics::messaging::put_credit_simulation_transition_matrix_cell_config_request
-:save_response_class:     analytics::messaging::put_credit_simulation_transition_matrix_cell_config_response
-:save_message_type:       put_credit_simulation_transition_matrix_cell_config_request
-:save_request_item_field: credit_simulation_transition_matrix_cell_config
-:delete_request_class:    analytics::messaging::delete_credit_simulation_transition_matrix_cell_config_request
-:delete_response_class:   analytics::messaging::delete_credit_simulation_transition_matrix_cell_config_response
-:delete_message_type:     delete_credit_simulation_transition_matrix_cell_config_request
+:get_request_class:       analytics::messaging::list_credit_simulation_matrix_cell_configs_request
+:get_response_class:      analytics::messaging::list_credit_simulation_matrix_cell_configs_response
+:get_message_type:        list_credit_simulation_matrix_cell_configs_request
+:save_request_class:      analytics::messaging::put_credit_simulation_matrix_cell_config_request
+:save_response_class:     analytics::messaging::put_credit_simulation_matrix_cell_config_response
+:save_message_type:       put_credit_simulation_matrix_cell_config_request
+:save_request_item_field: credit_simulation_matrix_cell_config
+:delete_request_class:    analytics::messaging::delete_credit_simulation_matrix_cell_config_request
+:delete_response_class:   analytics::messaging::delete_credit_simulation_matrix_cell_config_response
+:delete_message_type:     delete_credit_simulation_matrix_cell_config_request
 :has_uuid_primary_key:    true
 :has_change_reason_cache: false
 :has_explorer_api:        true
 :has_export_macro:        true
-:parent_entity_singular:  credit_simulation_transition_matrix_config
-:settings_group:          Credit Simulation Transition Matrix Cell ConfigListWindow
-:window_title:            Credit Simulation Transition Matrix Cell Config
-:icon:                    Credit Simulation Transition Matrix Cell Config
+:parent_entity_singular:  credit_simulation_matrix_config
+:settings_group:          Credit Simulation Matrix Cell ConfigListWindow
+:window_title:            Credit Simulation Matrix Cell Config
+:icon:                    Credit Simulation Matrix Cell Config
 :END:
 
 *** Detail fields

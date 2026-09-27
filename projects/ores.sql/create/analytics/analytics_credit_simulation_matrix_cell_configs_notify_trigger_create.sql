@@ -23,7 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
-create or replace function ores_analytics_credit_simulation_transition_matrix__notify_fn()
+create or replace function ores_analytics_credit_simulation_matrix_cells_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
@@ -61,7 +61,7 @@ begin
 
     notification_payload := jsonb_build_object(
         'event_id', gen_random_uuid()::text,
-        'entity', 'ores.analytics.credit_simulation_transition_matrix_cell_config',
+        'entity', 'ores.analytics.credit_simulation_matrix_cell_config',
         'key', changed_key::text,
         'action', change_action,
         'version', changed_version,
@@ -70,12 +70,12 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_analytics_credit_simulation_transition_matrix_', notification_payload::text);
+    perform pg_notify('ores_analytics_credit_simulation_matrix_cells', notification_payload::text);
 
     return null;
 end;
 $$ language plpgsql;
 
-create or replace trigger ores_analytics_credit_simulation_transition_matrix__notify_trg
-after insert or update or delete on ores_analytics_credit_simulation_transition_matrix__tbl
-for each row execute function ores_analytics_credit_simulation_transition_matrix__notify_fn();
+create or replace trigger ores_analytics_credit_simulation_matrix_cells_notify_trg
+after insert or update or delete on ores_analytics_credit_simulation_matrix_cells_tbl
+for each row execute function ores_analytics_credit_simulation_matrix_cells_notify_fn();

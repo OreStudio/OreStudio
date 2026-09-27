@@ -442,8 +442,8 @@ const fr: SourceCatalogue = {
     setup: {
         title: 'Configurer cette installation',
         bootstrapMode:
-            "Cette installation n'a pas encore d'administrateur. Elle est en mode amorçage, il n'y a donc rien pour se connecter.",
-        next: "La création du premier administrateur est ce qui commence le parcours de configuration. Tant que ce parcours n'existe pas, cette page est le point d'arrêt du navigateur.",
+            "Cette installation n'a pas encore de compte administrateur et fonctionne en mode amorçage. Personne ne peut se connecter tant qu'un administrateur n'existe pas.",
+        next: 'Le processus de configuration commence par la création du premier compte administrateur.',
     },
 
     gate: {

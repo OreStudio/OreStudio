@@ -446,8 +446,8 @@ const pt: SourceCatalogue = {
     setup: {
         title: 'Configurar esta instalação',
         bootstrapMode:
-            'Esta instalação ainda não tem administrador. Está em modo de arranque, por isso não há nada para onde iniciar sessão.',
-        next: 'Criar o primeiro administrador é o que inicia o percurso de configuração. Enquanto esse percurso não existir, esta página é onde o navegador para.',
+            'Esta instalação ainda não tem uma conta de administrador e está em modo de arranque. Ninguém pode iniciar sessão enquanto não existir um administrador.',
+        next: 'O processo de configuração começa com a criação da primeira conta de administrador.',
     },
 
     gate: {

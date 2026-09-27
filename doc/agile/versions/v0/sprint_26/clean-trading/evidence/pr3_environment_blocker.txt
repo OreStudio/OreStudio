@@ -159,3 +159,99 @@ a dataset whose key is already published aborts the populate. It is
 generated SQL, so the fix belongs in the dq model or the publish
 template. It is recorded in PR #2232 for that owner, and the environment
 still cannot be rebuilt end to end until it lands with the other four.
+
+The rebuild after the rebase, and defect 7
+------------------------------------------
+Measured 2026-09-27 after the rebase onto main, on
+feature/model-missing-trading-families.
+
+The database rebuild now succeeds. Defects 1 to 5 are fixed on main, and
+three local workarounds carried the last three steps: =storage= was added
+to =SERVICE_NAMES=, the storage service account was seeded, and the
+coding-schemes publish skipped an existing live row. The populate ran to
+the end and the grants were applied. The workarounds are uncommitted, so
+this branch carries only trading work.
+
+The build then failed, and not in trading:
+
+    projects/ores.workflow/core/src/service/fsm_state_map.cpp:21:10:
+    fatal error: 'ores.dq.api/messaging/fsm_protocol.hpp' file not found
+
+dq modelled the FSM pair in =dd131c388b=, merged as PR #2216 before the
+PR 2 merge. That commit deleted =fsm_protocol.hpp=, =fsm_handler.hpp= and
+=fsm_service.{hpp,cpp}=, and the generated pair replaced them. The
+replacement has no machine filter: the old =get_fsm_states_request=
+carried a =machine_name=, the new =list_fsm_states_request= carries none,
+and the new =fsm_state= carries a =machine_id= uuid instead of a name.
+Two consumers still call the deleted shape:
+
+    projects/ores.workflow/core/src/service/fsm_state_map.cpp
+    projects/ores.reporting/core/src/messaging/registrar.cpp:62
+
+The second passes the machine name =report_instance_lifecycle=. Nothing
+in dq maps that name to a machine id, so the migration needs a decision
+from the dq, workflow and reporting owners. No local workaround was
+attempted: any replacement would invent a machine identity that the model
+does not state.
+
+Consequence: =cmake --build --preset linux-clang-debug-make= fails at the
+default =all= target, so no worktree can run the full =ctest= suite from
+main's tree. The build has been in this state since PR #2216, before the
+PR 2 merge; only targeted builds have been green since.
+
+The same defect stops the service start. After =compass services start=,
+21 of 24 units are ready and three are not. Two of the three fail on the
+deleted subject, from the binary the previous build left behind:
+
+    ores.workflow.service: NATS request failed: no service is handling
+    subject 'ores.dev.merry_newton.dq.v1.fsm-states.list'
+    ores.reporting.service: the same subject and the same error
+
+The third, =ores.storage.service=, fails before that, on its database
+role:
+
+    Failed to create connection pool: Connection to postgres failed:
+    FATAL: password authentication failed for user
+    "ores_merry_newton_storage_service"
+
+The storage role is minted from the service registry, and the registry
+has no storage entry, so the two local workarounds above cover the
+populate and the account row but not the role. A storage service unit
+exists and starts; the environment behind it does not.
+
+What the FSM fix needs
+----------------------
+The machine table survives the remodelling as hand-written SQL:
+
+    projects/ores.sql/create/dq/dq_fsm_machines_create.sql
+
+It carries =id= and =name=, and the seed reads the id by name
+(=populate/dq/dq_fsm_trade_status_populate.sql=). dq modelled only
+=fsm_state= and =fsm_transition=, so the machine has no model, no
+protocol and no domain type, and =list_fsm_states_request= has no
+machine filter. A caller therefore cannot reach the mapping the table
+still holds. The owner's choice is to model the machine, or to state a
+machine filter on the state list request that joins the table.
+
+Defect 8, found after the second rebase
+---------------------------------------
+Measured 2026-09-27 on =bb9dec46dd=, the merge of PR #2239, which
+modelled the dq dataset entity. The default build then failed in two
+components:
+
+    projects/ores.workflow/core/src/service/fsm_state_map.cpp
+    projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp
+
+The iam file calls the deleted dataset shape at lines 796, 797 and 799,
+and again at 914, 915 and 917:
+
+    no type named 'get_datasets_request' in namespace 'ores::dq::messaging';
+    did you mean 'get_dataset_request'?
+    no member named 'limit' in 'ores::dq::messaging::get_dataset_request'
+    no member named 'datasets' in 'ores::dq::messaging::get_dataset_response'
+
+The two failed targets are =ores.workflow.core.lib= and
+=ores.iam.core.lib=. Both defects are consumer migrations that dq's two
+remodelling pull requests (#2216, #2239) left behind, and both are
+outside this branch's footprint, which is trading, its ores.ore and
+ores.shell consumers, and their records.

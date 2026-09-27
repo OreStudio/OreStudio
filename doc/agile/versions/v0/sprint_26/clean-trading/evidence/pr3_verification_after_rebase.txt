@@ -1,0 +1,80 @@
+PR 3: the verification cycle after the rebase
+
+Measured 2026-09-27 on feature/model-missing-trading-families, tip
+11a5108ad5 rebased onto bb9dec46dd (the merge of PR #2239).
+
+The rebase
+----------
+Fourteen commits replay onto main. One conflict: the port commit's
+regenerated commodity_instrument.hpp against main's hand-written
+decomposition. The port's shape wins, which is what its message already
+states: the three nested blocks (terms, option, pricing, exotic) become
+the flat instrument the nine modelled siblings use. Every other file
+applies cleanly, so the tree carries trading, its ores.ore and
+ores.shell consumers, and their records, and nothing else.
+
+The database
+------------
+=./compass.sh db recreate -y -k= succeeds, exit 0. Defects 1 to 5 are
+fixed on main. Three local workarounds carried the last steps, and they
+are uncommitted, so the branch carries no dq or iam work:
+
+    projects/ores.sql/service_vars.sh                                   storage in SERVICE_NAMES
+    projects/ores.sql/populate/iam/iam_service_accounts_populate.sql    the storage account row
+    projects/ores.sql/create/dq/dq_coding_schemes_population_functions_create.sql
+                                                                        skip an existing live row
+
+pr3_environment_blocker.txt records all eight defects. The populate runs
+to the end and the grants are applied, which is what the suites need.
+
+The build
+---------
+Two targets fail, both outside the branch's footprint:
+
+    projects/ores.workflow/core/src/service/fsm_state_map.cpp:21
+        'ores.dq.api/messaging/fsm_protocol.hpp' file not found        defect 7
+    projects/ores.iam/core/include/.../tenant_provisioning_handler.hpp:796,797,799,914,915,917
+        no type named 'get_datasets_request'                           defect 8
+
+Everything else builds with =cmake --build ... -- -k=, including every
+trading, ores.ore and ores.shell target.
+
+The services
+------------
+=./compass.sh services start= ends with 22 of 24 units running. The three
+that are not are the environment's own defects:
+
+    ores.reporting.service   subject dq.v1.fsm-states.list is gone      defect 7
+    ores.workflow.service    the same subject                           defect 7
+    ores.storage.service     its database role does not exist           defects 2 and 3, role side
+
+The command takes 482 seconds, and the wait is the reason: the fleet's
+readiness check waits up to 300 seconds for a "Service ready" line and
+then retries the failed units for up to 180 seconds. A unit that cannot
+ever become ready therefore costs the full window. busctl is not the
+cause: =ORES_USE_BUSCTL=1= is in .env and =busctl --user list= works.
+
+The suite
+---------
+=ctest --test-dir build/output/linux-clang-debug-make --output-on-failure=
+runs 86 tests in 313 seconds: 79 pass, 7 fail. Every failure is in
+another component:
+
+    ores.scheduler.core.tests    the NATS publish handler's refusal text changed
+    ores.dq.api.tests            the coding-scheme table drops description and subject area
+    ores.dq.core.tests           a written row stays at version 0; ores_dq_lei_entities_tbl
+                                 and ores_dq_lei_relationships_tbl do not exist
+    ores.shell.api.tests         to_iso8601_utc states a space where the test wants 'T'
+    ores.refdata.core.tests      the suites insert business units, portfolios and books whose
+                                 natural keys the seed now holds
+    ores.reporting.core.tests    the same version-0 create against a seeded natural key
+    ores.marketdata.core.tests   a series classification rule event never arrives
+
+Five of the seven are the seeded database meeting a suite written against
+an empty one: the recreate now populates the tables the suites use. The
+two upstream build defects mean iam and workflow ran with their previous
+binaries.
+
+Every suite this branch owns is green: ores.trading.api, ores.trading.core,
+ores.trading.service, ores.ore.api, ores.ore.core, ores.ore.service,
+ores.shell.trading and ores.shell.application, eight suites in all.

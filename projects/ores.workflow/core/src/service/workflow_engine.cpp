@@ -230,8 +230,8 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
     next_step.idempotency_key = boost::uuids::to_string(next_id);
     next_step.compensation_subject = step_def.compensation_subject;
     next_step.recorded_at = std::chrono::system_clock::now();
-    // The instance carries the actor from the start request, so later steps
-    // keep the attribution instead of reverting to the service account.
+    // The instance carries the actor from the start request, so every step of
+    // the run is attributed to the same caller.
     next_step.modified_by = instance.modified_by;
 
     // Persist before publishing (ensures restart can re-dispatch).
@@ -315,8 +315,8 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
         comp_step.command_json = comp_json;
         comp_step.idempotency_key = boost::uuids::to_string(comp_id);
         comp_step.recorded_at = std::chrono::system_clock::now();
-        // A compensation step is the same run's work, so it keeps the actor
-        // the instance was started by rather than the service's own account.
+        // A compensation step is the same run's work, so it carries the
+        // actor the instance was started by.
         comp_step.modified_by = instance.modified_by;
         step_repo_.write(ctx_, comp_step);
 
